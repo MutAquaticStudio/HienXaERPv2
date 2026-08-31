@@ -41,4 +41,18 @@ describe("P1 repository safety contract", () => {
     expect(sql).toContain("app_private.is_active_user(auth.uid())");
     expect(sql).not.toContain("raw_user_meta_data ->> 'role'");
   });
+
+  it("hardens the Supabase Automatic RLS event-trigger function", () => {
+    const sql = readFileSync(
+      join(
+        root,
+        "supabase/migrations/20260831150000_harden_supabase_auto_rls_function.sql",
+      ),
+      "utf8",
+    );
+    expect(sql).toContain("to_regprocedure('public.rls_auto_enable()')");
+    expect(sql).toContain(
+      "revoke execute on function public.rls_auto_enable() from public, anon, authenticated",
+    );
+  });
 });
