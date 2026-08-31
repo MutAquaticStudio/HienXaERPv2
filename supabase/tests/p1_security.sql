@@ -1,5 +1,9 @@
 begin;
 
+-- Keep hosted verification disposable when pgTAP is not already enabled.
+create extension if not exists pgtap with schema extensions;
+set local search_path = public, extensions;
+
 select plan(7);
 
 insert into auth.users (

@@ -1,6 +1,6 @@
 # HIỀN XA ERP
 
-P1 builds the platform and security foundation for a modular-monolith ERP using Next.js, TypeScript, Vercel and exactly one hosted Supabase project in the Production role.
+P1 provides the platform/security foundation and P2 adds construction master data: materials, material-specific UOM conversions, warehouses, vehicles, operational employee profiles and worker skills. The modular monolith uses Next.js, TypeScript, Vercel and exactly one hosted Supabase project in the Production role.
 
 ## Local development
 
@@ -21,6 +21,16 @@ The hosted architecture is:
 - Exactly one Supabase Cloud Production project provides PostgreSQL, Auth and private Storage.
 
 Do not link the local CLI to the hosted project during routine phase work. Hosted Supabase migrations remain a separate, explicit deployment action.
+
+## Phase 2 invariants
+
+- Packaging conversions belong to a material; there is no global `1 bag = 50 kg` rule.
+- Every conversion version points to its material base UOM, preventing conversion cycles by construction.
+- `EXACT`, `PACKAGING`, `ESTIMATED` and `MEASURED` remain visible in the UI; estimates are explicitly disclosed.
+- Conversion versions and transaction snapshots are immutable. A used UOM is deactivated, never deleted.
+- Vehicle load profiles are planning capacity and are not universal UOM conversions.
+
+See [the P2 architecture note](docs/architecture/p2-master-data-uom.md) for the data model and verification evidence.
 
 ## Verification
 

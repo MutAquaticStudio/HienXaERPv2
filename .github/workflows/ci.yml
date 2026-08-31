@@ -1,4 +1,4 @@
-name: P1 verification
+name: Checkpoint verification
 
 on:
   pull_request:

@@ -17,6 +17,8 @@ export const SYNTHETIC_OFFICE_PRINCIPAL: Principal = {
     "evidence.read",
     "user.manage",
     "role.manage",
+    "master_data.read",
+    "master_data.manage",
   ],
   scopes: [{ kind: "ALL" }],
 };

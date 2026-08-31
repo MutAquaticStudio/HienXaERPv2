@@ -1,32 +1,11 @@
-import {
-  Banknote,
-  Boxes,
-  CircleDollarSign,
-  Database,
-  Gauge,
-  PackageSearch,
-  Settings,
-  ShoppingBag,
-  Users,
-} from "lucide-react";
-import Link from "next/link";
+import { Banknote } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Brand } from "@/components/brand";
 import { LargeTextToggle } from "@/components/large-text-toggle";
+import { OfficeNav } from "@/components/office-nav";
 import { logout } from "@/app/login/actions";
 import type { Principal } from "@/modules/platform/types";
-
-const navItems = [
-  { href: "/app", label: "Tổng quan", icon: Gauge },
-  { href: "/app/sales", label: "Bán hàng", icon: ShoppingBag },
-  { href: "/app/sourcing", label: "Mua & nguồn hàng", icon: PackageSearch },
-  { href: "/app/operations", label: "Vận hành", icon: Boxes },
-  { href: "/app/finance", label: "Tài chính", icon: CircleDollarSign },
-  { href: "/app/workforce", label: "Nhân sự & sản lượng", icon: Users },
-  { href: "/app/data", label: "Dữ liệu", icon: Database },
-  { href: "/app/settings", label: "Audit / Cài đặt", icon: Settings },
-] as const;
 
 export function OfficeShell({
   principal,
@@ -39,18 +18,7 @@ export function OfficeShell({
     <div className="office-shell">
       <aside className="office-sidebar">
         <Brand />
-        <nav aria-label="Điều hướng văn phòng">
-          {navItems.map(({ href, label, icon: Icon }, index) => (
-            <Link
-              href={href}
-              key={href}
-              className={index === 0 ? "nav-link nav-link-active" : "nav-link"}
-            >
-              <Icon aria-hidden="true" size={22} />
-              <span>{label}</span>
-            </Link>
-          ))}
-        </nav>
+        <OfficeNav />
         <div className="sidebar-foot">
           <Banknote size={22} aria-hidden="true" />
           <span>Đúng dữ liệu, rõ trách nhiệm</span>
