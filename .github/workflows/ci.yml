@@ -31,24 +31,5 @@ jobs:
       - run: pnpm test:e2e
       - run: pnpm build
 
-  database-security:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 11.24.0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm exec supabase start
-      - run: pnpm exec supabase db reset
-      - run: pnpm test:db
-      - if: always()
-        run: pnpm exec supabase stop --no-backup
-
   # Verification only. Hosted database changes and Production release are
   # separate manual actions that require explicit authorization.

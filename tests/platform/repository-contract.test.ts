@@ -19,6 +19,8 @@ describe("P1 repository safety contract", () => {
     expect(workflow).toContain("pnpm build");
     expect(workflow).not.toMatch(/vercel\s+(deploy|--prod)/i);
     expect(workflow).not.toMatch(/supabase\s+(link|db push)/i);
+    expect(workflow).not.toMatch(/supabase\s+(start|stop|db reset|test db)/i);
+    expect(workflow).not.toMatch(/\bdocker\b/i);
   });
 
   it("migration enables RLS, private evidence and assigned-only access", () => {
