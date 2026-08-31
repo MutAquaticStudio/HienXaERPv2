@@ -1,0 +1,29 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# Next.js
+.next/
+out/
+*.tsbuildinfo
+
+# local environments and secrets
+.env
+.env.*
+!.env.example
+
+# local Supabase runtime
+supabase/.branches/
+supabase/.temp/
+
+# test output
+coverage/
+playwright-report/
+test-results/
+
+# editor / operating system
+.DS_Store
+*.log
+
+# Vercel local linkage
+.vercel/

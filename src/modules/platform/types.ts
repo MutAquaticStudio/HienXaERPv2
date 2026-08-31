@@ -1,0 +1,71 @@
+export const EMPLOYEE_STATUSES = [
+  "INVITED",
+  "ACTIVE",
+  "SUSPENDED",
+  "DISABLED",
+] as const;
+
+export type EmployeeStatus = (typeof EMPLOYEE_STATUSES)[number];
+
+export const ROLE_TEMPLATES = [
+  "OWNER_ADMIN",
+  "SALES",
+  "PURCHASING_SOURCING",
+  "DISPATCHER",
+  "WAREHOUSE",
+  "FINANCE",
+  "DRIVER",
+  "OPERATOR_WORKER",
+  "SUPERVISOR",
+  "AUDITOR_VIEWER",
+] as const;
+
+export type RoleTemplate = (typeof ROLE_TEMPLATES)[number];
+
+export const PERMISSIONS = [
+  "platform.access_office",
+  "platform.access_worker",
+  "finance.read",
+  "margin.read",
+  "work_item.read_assigned",
+  "work_pool.read",
+  "audit.view",
+  "evidence.create",
+  "evidence.read",
+  "user.manage",
+  "role.manage",
+] as const;
+
+export type Permission = (typeof PERMISSIONS)[number];
+
+export const DATA_SCOPE_KINDS = [
+  "ALL",
+  "BRANCH",
+  "WAREHOUSE",
+  "ASSIGNED_ONLY",
+  "SELF",
+] as const;
+
+export type DataScopeKind = (typeof DATA_SCOPE_KINDS)[number];
+
+export interface DataScope {
+  kind: DataScopeKind;
+  branchId?: string;
+  warehouseId?: string;
+}
+
+export interface Principal {
+  userId: string;
+  displayName: string;
+  status: EmployeeStatus;
+  roles: RoleTemplate[];
+  permissions: Permission[];
+  scopes: DataScope[];
+}
+
+export interface ScopedResource {
+  assignedUserId?: string | null;
+  branchId?: string | null;
+  warehouseId?: string | null;
+  ownerUserId?: string | null;
+}
