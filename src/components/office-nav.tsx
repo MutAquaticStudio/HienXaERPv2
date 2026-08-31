@@ -17,7 +17,7 @@ const navItems = [
   { href: "/app", label: "Tổng quan", icon: Gauge },
   { href: "/app/sales", label: "Bán hàng", icon: ShoppingBag },
   { href: "/app/sourcing", label: "Mua & nguồn hàng", icon: PackageSearch },
-  { href: "/app/operations", label: "Vận hành", icon: Boxes },
+  { href: "/app/inventory", label: "Kho & bãi", icon: Boxes },
   { href: "/app/finance", label: "Tài chính", icon: CircleDollarSign },
   { href: "/app/workforce", label: "Nhân sự & sản lượng", icon: Users },
   { href: "/app/data", label: "Dữ liệu", icon: Database },

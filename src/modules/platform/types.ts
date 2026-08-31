@@ -61,6 +61,13 @@ export const PERMISSIONS = [
   "purchase_order.create",
   "purchase_order.confirm",
   "purchase_order.send",
+  "inventory.read",
+  "inventory.reserve",
+  "inventory.receive",
+  "inventory.issue",
+  "inventory.count",
+  "inventory.adjust",
+  "inventory.policy.manage",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];

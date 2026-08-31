@@ -44,6 +44,13 @@ export const SYNTHETIC_OFFICE_PRINCIPAL: Principal = {
     "purchase_order.create",
     "purchase_order.confirm",
     "purchase_order.send",
+    "inventory.read",
+    "inventory.reserve",
+    "inventory.receive",
+    "inventory.issue",
+    "inventory.count",
+    "inventory.adjust",
+    "inventory.policy.manage",
   ],
   scopes: [{ kind: "ALL" }],
 };

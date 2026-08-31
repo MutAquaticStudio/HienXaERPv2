@@ -17,7 +17,7 @@ const systemStates = [
   },
   {
     title: "Sẵn sàng vận hành",
-    detail: "Đơn bán đã nối với nguồn hàng và đơn mua",
+    detail: "Tồn kho được suy ra từ sổ chuyển động bất biến",
     icon: CheckCircle2,
   },
 ] as const;
@@ -29,12 +29,12 @@ export default function OfficeHomePage() {
         <p className="page-context">Tổng quan hệ thống</p>
         <h1>Chào buổi sáng</h1>
         <p>
-          HIỀN XA ERP đã nối báo giá và đơn bán với nguồn kho, nhà cung cấp và
-          giao thẳng công trình. Giá mua được khóa theo phiên bản trước khi gửi
-          đơn mua.
+          HIỀN XA ERP đã nối đơn bán với nguồn hàng, giữ tồn theo kho và ghi
+          nhận nhập, xuất, kiểm kê bằng sổ chuyển động. Tồn thực tế, đã giữ và
+          khả dụng luôn được suy ra thay vì sửa tay.
         </p>
-        <Link className="primary-button button-link" href="/app/sourcing">
-          Mở mua & nguồn hàng
+        <Link className="primary-button button-link" href="/app/inventory">
+          Mở kho & bãi
         </Link>
       </section>
       <section className="system-section" aria-labelledby="system-status-title">

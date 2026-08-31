@@ -2127,6 +2127,106 @@ h2 {
   }
 }
 
+/* P6 — inventory and yard control */
+.inventory-workspace > *,
+.inventory-workspace .commercial-panel,
+.inventory-workspace .commercial-two-column > *,
+.inventory-workspace .commercial-form-grid > * {
+  min-width: 0;
+}
+
+.inventory-workspace .commercial-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.inventory-workspace .commercial-kpi-grid article,
+.inventory-workspace .commercial-card {
+  display: grid;
+  min-width: 0;
+  gap: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  background: var(--color-surface);
+}
+
+.inventory-workspace .commercial-kpi-grid article span,
+.inventory-workspace .commercial-card p,
+.inventory-workspace .commercial-card small {
+  color: var(--color-muted);
+}
+
+.inventory-workspace .commercial-kpi-grid article strong {
+  font-size: clamp(1.35rem, 3vw, 2rem);
+}
+
+.inventory-workspace .commercial-panel {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  background: var(--color-surface);
+  box-shadow: var(--shadow);
+}
+
+.inventory-workspace .commercial-two-column,
+.inventory-workspace .commercial-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.inventory-workspace .commercial-section-heading h2,
+.inventory-workspace .commercial-section-heading p,
+.inventory-workspace .commercial-card p {
+  margin: 0;
+}
+
+.inventory-workspace .commercial-table-shell {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+}
+
+.inventory-workspace .commercial-table-shell table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+}
+
+.inventory-workspace .commercial-table-shell th,
+.inventory-workspace .commercial-table-shell td {
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.8rem;
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.inventory-workspace .commercial-table-shell td:first-child {
+  white-space: normal;
+}
+
+.inventory-workspace .commercial-table-shell td small {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--color-muted);
+}
+
+@media (max-width: 760px) {
+  .inventory-workspace .commercial-kpi-grid,
+  .inventory-workspace .commercial-two-column,
+  .inventory-workspace .commercial-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .inventory-workspace .commercial-panel {
+    overflow: hidden;
+  }
+}
+
 /* P5 — supplier orders, split sourcing, and dropship */
 .sourcing-workspace .master-metrics {
   grid-template-columns: repeat(4, minmax(0, 1fr));
