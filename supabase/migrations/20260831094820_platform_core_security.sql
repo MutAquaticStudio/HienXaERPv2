@@ -146,6 +146,7 @@ create table app_private.idempotency_keys (
 );
 
 revoke all on app_private.idempotency_keys from public, anon, authenticated;
+alter table app_private.idempotency_keys enable row level security;
 
 create or replace function app_private.is_active_user(check_user_id uuid default auth.uid())
 returns boolean

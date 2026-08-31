@@ -33,6 +33,9 @@ describe("P1 repository safety contract", () => {
       "utf8",
     );
     expect(sql).toContain("alter table public.work_items enable row level security");
+    expect(sql).toContain(
+      "alter table app_private.idempotency_keys enable row level security",
+    );
     expect(sql).toContain("assigned_user_id = auth.uid()");
     expect(sql).toContain("public = false");
     expect(sql).toContain("app_private.is_active_user(auth.uid())");
