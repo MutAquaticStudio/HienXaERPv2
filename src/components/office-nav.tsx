@@ -8,6 +8,7 @@ import {
   PackageSearch,
   Settings,
   ShoppingBag,
+  Truck,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -18,6 +19,7 @@ const navItems = [
   { href: "/app/sales", label: "Bán hàng", icon: ShoppingBag },
   { href: "/app/sourcing", label: "Mua & nguồn hàng", icon: PackageSearch },
   { href: "/app/inventory", label: "Kho & bãi", icon: Boxes },
+  { href: "/app/dispatch", label: "Điều phối", icon: Truck },
   { href: "/app/finance", label: "Tài chính", icon: CircleDollarSign },
   { href: "/app/workforce", label: "Nhân sự & sản lượng", icon: Users },
   { href: "/app/data", label: "Dữ liệu", icon: Database },

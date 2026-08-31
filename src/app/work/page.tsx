@@ -1,24 +1,25 @@
-import { ClipboardList, RefreshCw } from "lucide-react";
+import { randomUUID } from "node:crypto";
 import type { Metadata } from "next";
+
+import { AccessDenied } from "@/components/access-denied";
+import { DriverDeliveryWorkspace } from "@/components/driver-delivery-workspace";
+import { getDeliverySnapshot } from "@/modules/delivery/service";
+import { hasPermission } from "@/modules/platform/authorization";
+import { getCurrentPrincipal } from "@/modules/platform/principal";
 
 export const metadata: Metadata = { title: "Việc của tôi" };
 
-export default function WorkerHomePage() {
+export default async function WorkerHomePage() {
+  const principal = await getCurrentPrincipal("worker");
+  if (!principal || !hasPermission(principal, "delivery.update_assigned")) return <AccessDenied />;
+  const data = await getDeliverySnapshot(principal);
+  const initialKeys = Object.fromEntries(data.deliveries.flatMap((delivery) => [
+    [`progress:${delivery.id}`, randomUUID()],
+    [`fail:${delivery.id}`, randomUUID()],
+    [`proof:${delivery.id}`, randomUUID()],
+    [`photo:${delivery.id}`, randomUUID()],
+  ]));
   return (
-    <section aria-labelledby="worker-heading">
-      <h1 id="worker-heading">Việc của tôi</h1>
-      <div className="empty-work-card">
-        <ClipboardList aria-hidden="true" size={66} />
-        <h2>Chưa có việc được giao</h2>
-        <p>Khi có việc mới, bạn sẽ thấy ngay tại đây.</p>
-      </div>
-      <button className="primary-button worker-cta" type="button">
-        <RefreshCw aria-hidden="true" size={24} />
-        TẢI LẠI
-      </button>
-      <p className="worker-feedback" aria-live="polite">
-        Dữ liệu sẽ tự cập nhật khi có kết nối.
-      </p>
-    </section>
+    <DriverDeliveryWorkspace deliveries={data.deliveries} evidence={data.evidence} initialKeys={initialKeys} />
   );
 }

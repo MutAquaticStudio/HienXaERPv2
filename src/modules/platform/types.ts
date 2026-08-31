@@ -68,6 +68,13 @@ export const PERMISSIONS = [
   "inventory.count",
   "inventory.adjust",
   "inventory.policy.manage",
+  "delivery.read",
+  "delivery.plan",
+  "delivery.assign",
+  "delivery.dispatch",
+  "delivery.update_assigned",
+  "delivery.proof.create",
+  "delivery.confirm",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];

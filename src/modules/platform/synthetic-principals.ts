@@ -51,6 +51,13 @@ export const SYNTHETIC_OFFICE_PRINCIPAL: Principal = {
     "inventory.count",
     "inventory.adjust",
     "inventory.policy.manage",
+    "delivery.read",
+    "delivery.plan",
+    "delivery.assign",
+    "delivery.dispatch",
+    "delivery.update_assigned",
+    "delivery.proof.create",
+    "delivery.confirm",
   ],
   scopes: [{ kind: "ALL" }],
 };
@@ -65,6 +72,9 @@ export const SYNTHETIC_WORKER_PRINCIPAL: Principal = {
     "work_item.read_assigned",
     "evidence.create",
     "evidence.read",
+    "delivery.dispatch",
+    "delivery.update_assigned",
+    "delivery.proof.create",
   ],
   scopes: [{ kind: "ASSIGNED_ONLY" }, { kind: "SELF" }],
 };
