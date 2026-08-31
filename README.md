@@ -1,6 +1,6 @@
 # HIỀN XA ERP
 
-P1 provides the platform/security foundation and P2 adds construction master data: materials, material-specific UOM conversions, warehouses, vehicles, operational employee profiles and worker skills. The modular monolith uses Next.js, TypeScript, Vercel and exactly one hosted Supabase project in the Production role.
+P1 provides the platform/security foundation, P2 adds construction master data, and P3 adds Customer 360, effective-dated commercial pricing and controlled customer credit. The modular monolith uses Next.js, TypeScript, Vercel and exactly one hosted Supabase project in the Production role.
 
 ## Local development
 
@@ -31,6 +31,16 @@ Do not link the local CLI to the hosted project during routine phase work. Hoste
 - Vehicle load profiles are planning capacity and are not universal UOM conversions.
 
 See [the P2 architecture note](docs/architecture/p2-master-data-uom.md) for the data model and verification evidence.
+
+## Phase 3 invariants
+
+- Price resolution is deterministic: customer + material, customer + material group, customer tier, then default material price.
+- Price rules and credit policies are effective-dated immutable versions; overlapping periods are rejected.
+- Selling-price snapshots preserve the historical amount, UOM and source rule version.
+- Customer advances remain separate from receivables in every credit and finance read model.
+- Sales can read credit status but cannot bypass a block without explicit permission. Every override needs a meaningful reason and immutable audit evidence.
+
+See [the P3 architecture note](docs/architecture/p3-customer-360-pricing.md) for the data model and verification evidence.
 
 ## Verification
 

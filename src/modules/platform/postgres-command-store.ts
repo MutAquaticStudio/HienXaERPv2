@@ -89,7 +89,7 @@ class PostgresCommandTransaction implements CommandTransaction {
         ${input.entityType},
         ${input.entityId ?? null},
         ${input.idempotencyKey},
-        ${this.sql.json({ phase: "P2" })}
+        ${this.sql.json({ command: input.eventType })}
       )
     `;
   }

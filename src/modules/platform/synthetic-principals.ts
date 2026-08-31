@@ -19,6 +19,13 @@ export const SYNTHETIC_OFFICE_PRINCIPAL: Principal = {
     "role.manage",
     "master_data.read",
     "master_data.manage",
+    "customer.read",
+    "customer.manage",
+    "pricing.read",
+    "pricing.manage",
+    "customer_credit.read",
+    "customer_credit.manage",
+    "customer_credit.override",
   ],
   scopes: [{ kind: "ALL" }],
 };

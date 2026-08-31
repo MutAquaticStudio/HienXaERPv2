@@ -17,7 +17,7 @@ const systemStates = [
   },
   {
     title: "Sẵn sàng vận hành",
-    detail: "Nền tảng P1 đã được thiết lập",
+    detail: "Dữ liệu nền và khách hàng đã sẵn sàng",
     icon: CheckCircle2,
   },
 ] as const;
@@ -29,11 +29,11 @@ export default function OfficeHomePage() {
         <p className="page-context">Tổng quan hệ thống</p>
         <h1>Chào buổi sáng</h1>
         <p>
-          HIỀN XA ERP đã có nền tảng bảo mật. Hãy bắt đầu cấu hình dữ liệu khi
-          phase tiếp theo được phê duyệt.
+          HIỀN XA ERP đã có nền tảng bảo mật, dữ liệu vật liệu và hồ sơ khách
+          hàng. Hãy kiểm tra giá bán và tín dụng trước khi giao dịch.
         </p>
-        <Link className="primary-button button-link" href="/app/settings">
-          Kiểm tra thiết lập
+        <Link className="primary-button button-link" href="/app/sales">
+          Mở hồ sơ khách hàng
         </Link>
       </section>
       <section className="system-section" aria-labelledby="system-status-title">
