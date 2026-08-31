@@ -6,9 +6,9 @@ import { describe, expect, it } from "vitest";
 const root = process.cwd();
 
 describe("P1 repository safety contract", () => {
-  it("enables automatic Vercel Git deployment", () => {
+  it("keeps automatic Vercel Git deployment disabled", () => {
     const config = JSON.parse(readFileSync(join(root, "vercel.json"), "utf8"));
-    expect(config.git.deploymentEnabled).toBe(true);
+    expect(config.git.deploymentEnabled).toBe(false);
   });
 
   it("CI verifies code without a deploy or hosted migration command", () => {

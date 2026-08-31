@@ -31,5 +31,5 @@ jobs:
       - run: pnpm test:e2e
       - run: pnpm build
 
-  # Verification only. Vercel Git integration owns application deployment;
-  # hosted Supabase migrations remain a separate explicit action.
+  # Verification only. Vercel Production deployment and hosted Supabase
+  # migrations remain separate explicit actions after the phase checkpoint.

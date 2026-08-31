@@ -1,6 +1,6 @@
 # HIỀN XA ERP
 
-P1 provides the platform/security foundation, P2 adds construction master data, and P3 adds Customer 360, effective-dated commercial pricing and controlled customer credit. The modular monolith uses Next.js, TypeScript, Vercel and exactly one hosted Supabase project in the Production role.
+P1 provides the platform/security foundation, P2 adds construction master data, P3 adds Customer 360 and commercial controls, and P4 adds versioned quotations plus guarded Sales Orders. The modular monolith uses Next.js, TypeScript, Vercel and exactly one hosted Supabase project in the Production role.
 
 ## Local development
 
@@ -17,7 +17,7 @@ Synthetic authentication renders the protected shells with fake local identities
 The hosted architecture is:
 
 - GitHub runs lint, type checking and tests for each checkpoint.
-- A push to the connected GitHub repository triggers the Vercel build; pushes to the Production branch deploy the Next.js Production application.
+- A push to GitHub runs the full checkpoint build in GitHub Actions. Vercel Production deployment remains a separate explicit action after the phase checkpoint.
 - Exactly one Supabase Cloud Production project provides PostgreSQL, Auth and private Storage.
 
 Do not link the local CLI to the hosted project during routine phase work. Hosted Supabase migrations remain a separate, explicit deployment action.
@@ -42,10 +42,21 @@ See [the P2 architecture note](docs/architecture/p2-master-data-uom.md) for the 
 
 See [the P3 architecture note](docs/architecture/p3-customer-360-pricing.md) for the data model and verification evidence.
 
+## Phase 4 invariants
+
+- Price refresh is draft-only. Sent and accepted quotation revisions are immutable.
+- A below-rule selling price requires explicit `price.override`, a meaningful reason and immutable approval evidence.
+- Only the exact accepted revision converts to a Sales Order; price and UOM snapshots remain frozen.
+- Confirmation performs a credit check and requires controlled override for a block.
+- Confirmation creates fulfillment requirements, not Work Items, inventory movements, deliveries or AR.
+- `SALES ORDER CONFIRMED != CUSTOMER OWES MONEY` remains a database-tested invariant.
+
+See [the P4 architecture note](docs/architecture/p4-quotation-sales-order.md) for the state machines, transaction boundary and verification evidence.
+
 ## Verification
 
 ```bash
 pnpm verify
 ```
 
-Automatic Vercel Git deployments are enabled in `vercel.json`. Once the GitHub repository is connected to the Vercel project, every push triggers a Vercel build and the configured Production branch deploys Production. Applying hosted Supabase migrations always requires a separate explicit instruction.
+Automatic Vercel Git deployments are disabled in `vercel.json` so a checkpoint cannot publish application code before its reviewed schema. Applying hosted Supabase migrations and deploying the exact checkpoint SHA to Vercel Production always require a separate explicit instruction.

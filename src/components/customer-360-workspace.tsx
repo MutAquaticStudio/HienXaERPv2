@@ -15,6 +15,7 @@ import {
   ShieldAlert,
   UsersRound,
 } from "lucide-react";
+import Link from "next/link";
 
 import {
   saveCustomer360Action,
@@ -53,7 +54,6 @@ function formatMoney(value: string, currency = "VND") {
     maximumFractionDigits: currency === "VND" ? 0 : 2,
   }).format(numeric);
 }
-
 function SubmitButton({ label = "Lưu dữ liệu" }: { label?: string }) {
   const { pending } = useFormStatus();
   return (
@@ -211,20 +211,25 @@ export function Customer360Workspace({
             Xem một hồ sơ đầy đủ, tìm đúng giá đang hiệu lực và kiểm tra tín dụng trước khi bán.
           </p>
         </div>
-        <label className="customer-picker">
-          <span>Khách hàng đang xem</span>
-          <select
-            aria-label="Khách hàng đang xem"
-            onChange={(event) => setCustomerId(event.target.value)}
-            value={customer?.id ?? ""}
-          >
-            {data.customers.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.code} · {item.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="customer-header-actions">
+          <Link className="secondary-button button-link" href="/app/sales/orders">
+            Báo giá & đơn bán
+          </Link>
+          <label className="customer-picker">
+            <span>Khách hàng đang xem</span>
+            <select
+              aria-label="Khách hàng đang xem"
+              onChange={(event) => setCustomerId(event.target.value)}
+              value={customer?.id ?? ""}
+            >
+              {data.customers.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.code} · {item.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
       </header>
 
       <section className="master-metrics" aria-label="Tóm tắt khách hàng">

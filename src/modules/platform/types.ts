@@ -43,6 +43,14 @@ export const PERMISSIONS = [
   "customer_credit.read",
   "customer_credit.manage",
   "customer_credit.override",
+  "quotation.read",
+  "quotation.create",
+  "quotation.send",
+  "quotation.accept",
+  "sales_order.read",
+  "sales_order.create",
+  "sales_order.confirm",
+  "price.override",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];
