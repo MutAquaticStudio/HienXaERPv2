@@ -16,11 +16,11 @@ Synthetic authentication renders the protected shells with fake local identities
 
 The hosted architecture is:
 
-- GitHub runs lint, type checking, tests and the production build for each checkpoint.
-- Vercel runs the Next.js Production application.
+- GitHub runs lint, type checking and tests for each checkpoint.
+- A push to the connected GitHub repository triggers the Vercel build; pushes to the Production branch deploy the Next.js Production application.
 - Exactly one Supabase Cloud Production project provides PostgreSQL, Auth and private Storage.
 
-Do not link the local CLI to the hosted project during routine phase work. Hosted migrations and the Vercel Production release remain explicit deployment actions.
+Do not link the local CLI to the hosted project during routine phase work. Hosted Supabase migrations remain a separate, explicit deployment action.
 
 ## Verification
 
@@ -28,4 +28,4 @@ Do not link the local CLI to the hosted project during routine phase work. Hoste
 pnpm verify
 ```
 
-Automatic Vercel Git deployments are disabled in `vercel.json`. Pushing a checkpoint to GitHub runs verification but does not deploy Production. Applying migrations or deploying the approved checkpoint SHA to Production always requires a separate explicit instruction.
+Automatic Vercel Git deployments are enabled in `vercel.json`. Once the GitHub repository is connected to the Vercel project, every push triggers a Vercel build and the configured Production branch deploys Production. Applying hosted Supabase migrations always requires a separate explicit instruction.
