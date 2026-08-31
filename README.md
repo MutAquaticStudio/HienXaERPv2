@@ -1,6 +1,6 @@
 # HIỀN XA ERP
 
-P1 provides the platform/security foundation, P2 adds construction master data, P3 adds Customer 360 and commercial controls, and P4 adds versioned quotations plus guarded Sales Orders. The modular monolith uses Next.js, TypeScript, Vercel and exactly one hosted Supabase project in the Production role.
+P1 provides the platform/security foundation, P2 adds construction master data, P3 adds Customer 360 and commercial controls, P4 adds versioned quotations plus guarded Sales Orders, and P5 adds supplier sourcing, purchase orders and dropship. The modular monolith uses Next.js, TypeScript, Vercel and exactly one hosted Supabase project in the Production role.
 
 ## Local development
 
@@ -52,6 +52,17 @@ See [the P3 architecture note](docs/architecture/p3-customer-360-pricing.md) for
 - `SALES ORDER CONFIRMED != CUSTOMER OWES MONEY` remains a database-tested invariant.
 
 See [the P4 architecture note](docs/architecture/p4-quotation-sales-order.md) for the state machines, transaction boundary and verification evidence.
+
+## Phase 5 invariants
+
+- Every supply allocation links to one Sales Order line and supports split sourcing without exceeding ordered quantity.
+- `WAREHOUSE`, `SUPPLIER_DIRECT` and `SUPPLIER_TO_WAREHOUSE` have mutually exclusive route requirements.
+- Supplier-direct delivery stores the real customer/site and never creates a fake warehouse movement.
+- Supplier prices are effective-dated immutable versions; every Purchase Order line references an immutable purchase-cost snapshot.
+- Supplier delivered, customer accepted and customer billable quantities remain three separate values.
+- Purchase Order confirmation and sending create no AP, payable or inventory ledger entry.
+
+See [the P5 architecture note](docs/architecture/p5-sourcing-dropship.md) for the sourcing routes, Purchase Order state machine and verification evidence.
 
 ## Verification
 

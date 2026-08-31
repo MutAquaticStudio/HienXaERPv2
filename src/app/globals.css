@@ -2126,3 +2126,259 @@ h2 {
     padding: 0.9rem;
   }
 }
+
+/* P5 — supplier orders, split sourcing, and dropship */
+.sourcing-workspace .master-metrics {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.dropship-invariant {
+  border-color: #d5ab62;
+  background: #fff9ed;
+}
+
+.sourcing-table {
+  margin-top: 1rem;
+}
+
+.sourcing-table th,
+.sourcing-table td {
+  white-space: nowrap;
+}
+
+.sourcing-table td:first-child,
+.sourcing-table td:nth-child(2) {
+  min-width: 190px;
+  white-space: normal;
+}
+
+.sourcing-table td small {
+  display: block;
+  margin-top: 0.15rem;
+  color: var(--color-muted);
+}
+
+.status-planned,
+.status-draft {
+  border-color: #aab8c8;
+  background: #f2f5f8;
+  color: #344b62;
+}
+
+.status-ordered,
+.status-in-progress,
+.status-acknowledged,
+.status-partially-delivered {
+  border-color: #9db7d8;
+  background: #eef5ff;
+  color: #174675;
+}
+
+.status-delivered {
+  border-color: #8fc6a2;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+}
+
+.sourcing-command-form {
+  padding-top: 0.9rem;
+}
+
+.direct-route-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  border-left: 4px solid #d08b1f;
+  border-radius: var(--radius-sm);
+  padding: 0.8rem;
+  background: #fff9ed;
+}
+
+.direct-route-preview div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.direct-route-preview span {
+  color: var(--color-muted);
+  font-size: 0.82rem;
+}
+
+.po-ready-list,
+.supplier-grid,
+.supplier-form-grid,
+.po-action-row {
+  display: grid;
+  gap: 1rem;
+}
+
+.po-ready-list {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  background: var(--color-surface);
+}
+
+.po-ready-list h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.po-ready-list article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.4fr);
+  align-items: center;
+  gap: 1rem;
+  border-top: 1px solid var(--color-border);
+  padding-top: 0.85rem;
+}
+
+.po-ready-list article div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.po-ready-list article span {
+  color: var(--color-muted);
+}
+
+.purchase-order-card {
+  border-left: 5px solid #314e6f;
+}
+
+.po-action-row {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  margin-top: 1rem;
+  border-top: 1px solid var(--color-border);
+  padding-top: 1rem;
+}
+
+.cancel-po-disclosure {
+  border: 1px solid #d7b184;
+  border-radius: var(--radius-sm);
+  background: #fffaf4;
+}
+
+.cancel-po-disclosure summary {
+  padding: 0.8rem;
+  color: #7a4200;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.cancel-po-disclosure form {
+  padding: 0 0.8rem 0.8rem;
+}
+
+.supplier-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.supplier-card {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1.15rem;
+  background: var(--color-surface);
+  box-shadow: var(--shadow);
+}
+
+.supplier-card > svg {
+  flex: 0 0 auto;
+  color: var(--color-primary-dark);
+}
+
+.supplier-card div {
+  display: grid;
+  min-width: 0;
+  gap: 0.2rem;
+}
+
+.supplier-card h2,
+.supplier-card p {
+  margin: 0;
+}
+
+.supplier-card span,
+.supplier-card p,
+.supplier-card small {
+  color: var(--color-muted);
+}
+
+.supplier-card span {
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.supplier-form-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}
+
+.evidence-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  border: 1px dashed #8da5bc;
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  background: #f6f9fc;
+}
+
+.evidence-note div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.evidence-note span {
+  color: var(--color-muted);
+}
+
+@media (max-width: 960px) {
+  .po-action-row,
+  .supplier-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .sourcing-workspace .master-metrics,
+  .supplier-grid,
+  .po-ready-list article {
+    grid-template-columns: 1fr;
+  }
+
+  .sourcing-workspace .master-metrics div {
+    border-right: 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .sourcing-workspace .master-metrics div:last-child {
+    border-bottom: 0;
+  }
+
+  .sourcing-workspace .master-tabs,
+  .sourcing-workspace .master-table-wrap {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
+  }
+
+  .sourcing-workspace .master-tabs {
+    padding-inline: 0;
+  }
+}
+
+@media (max-width: 460px) {
+  .sourcing-workspace .commercial-tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .sourcing-workspace .commercial-tabs button {
+    justify-content: flex-start;
+  }
+}

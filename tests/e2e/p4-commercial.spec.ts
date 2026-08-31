@@ -31,6 +31,7 @@ test("P4 keeps quote revisions explicit and confirms without AR", async ({
   await page.setViewportSize({ width: 1440, height: 1100 });
   await page.goto("/app/sales/orders");
 
+  await expect(page).toHaveTitle(/Báo giá & đơn bán/);
   await expect(
     page.getByRole("heading", { name: "Báo giá & đơn bán" }),
   ).toBeVisible();
@@ -66,6 +67,7 @@ test("P4 quotation actions remain usable at 375px", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto("/app/sales/orders");
 
+  await expect(page).toHaveTitle(/Báo giá & đơn bán/);
   await page.getByText("Thêm dòng vật liệu", { exact: true }).click();
   await page.getByLabel("Số lượng").fill("25");
   await page.getByRole("button", { name: "Thêm vào báo giá" }).click();

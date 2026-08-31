@@ -51,6 +51,16 @@ export const PERMISSIONS = [
   "sales_order.create",
   "sales_order.confirm",
   "price.override",
+  "supplier.read",
+  "supplier.manage",
+  "supplier_price.read",
+  "supplier_price.manage",
+  "sourcing.read",
+  "sourcing.manage",
+  "purchase_order.read",
+  "purchase_order.create",
+  "purchase_order.confirm",
+  "purchase_order.send",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];
