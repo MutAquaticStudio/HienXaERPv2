@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(14);
+select plan(16);
 
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
@@ -263,6 +263,27 @@ insert into public.delivery_actuals (
   'a7000000-0000-4000-8000-000000000002',
   'a7000000-0000-4000-8000-000000000003', 10, 10, 'Người nhận', now(),
   'a0000000-0000-4000-8000-000000000001'
+);
+insert into public.delivery_readiness_events (
+  id, event_number, delivery_id, event_type, payload, created_by
+) values (
+  'a7000000-0000-4000-8000-000000000006', 'DRE-REMED-0001',
+  'a7000000-0000-4000-8000-000000000002', 'DELIVERY_COMPLETED',
+  '{"status":"CONFIRMED"}'::jsonb,
+  'a0000000-0000-4000-8000-000000000001'
+);
+
+select is(
+  (select original_amount from public.receivables
+   where delivery_id = 'a7000000-0000-4000-8000-000000000002'),
+  180000::numeric,
+  'P7 completion recognizes the actual P8 receivable exactly once'
+);
+select is(
+  (select original_amount from public.payables
+   where delivery_id = 'a7000000-0000-4000-8000-000000000002'),
+  150000::numeric,
+  'Supplier-direct completion recognizes the actual P8 payable exactly once'
 );
 
 select lives_ok(
