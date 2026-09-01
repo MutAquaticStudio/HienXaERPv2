@@ -11,6 +11,15 @@ function migration() {
   return readFileSync(join(directory, name as string), "utf8");
 }
 
+function remediation() {
+  const directory = join(process.cwd(), "supabase/migrations");
+  const name = readdirSync(directory).find((item) =>
+    item.endsWith("_remediate_p8_p9_baseline.sql"),
+  );
+  expect(name).toBeTruthy();
+  return readFileSync(join(directory, name as string), "utf8");
+}
+
 describe("P9 profitability repository contract", () => {
   it("models lifecycle, immutable cost evidence and lifecycle audit explicitly", () => {
     const sql = migration();
@@ -51,5 +60,27 @@ describe("P9 profitability repository contract", () => {
     expect(sql).not.toMatch(
       /grant\s+(insert|update|delete|all).*public\.order_profitability\s+to authenticated/i,
     );
+  });
+
+  it("blocks automatic late costs before a finalized projection can change", () => {
+    const sql = remediation();
+    expect(sql).toContain("FINALIZED_PROFITABILITY_REQUIRES_REOPEN");
+    expect(sql).toContain("target.lifecycle = 'FINALIZED'");
+    expect(sql).toContain(
+      "actual_cost_amount is distinct from target.actual_direct_cost",
+    );
+  });
+
+  it("attributes real revenue to material, supplier, vehicle and service dimensions", () => {
+    const sql = remediation();
+    expect(sql).toContain(
+      "create table public.profitability_revenue_allocations",
+    );
+    expect(sql).toContain(
+      "app_private.record_profitability_revenue_allocation",
+    );
+    expect(sql).toContain("actual.accepted_quantity * sales_line.unit_price");
+    expect(sql).toContain("profitability_dimension_summary");
+    expect(sql).toContain("value.revenue - value.direct_cost");
   });
 });

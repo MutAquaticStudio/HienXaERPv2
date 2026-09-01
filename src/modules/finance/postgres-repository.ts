@@ -13,7 +13,11 @@ import { assertPermission } from "@/modules/platform/authorization";
 import { PlatformError } from "@/modules/platform/errors";
 import type { Permission, Principal } from "@/modules/platform/types";
 
-async function databasePermission(sql: Sql | TransactionSql, actorId: string, permission: Permission) {
+async function databasePermission(
+  sql: Sql | TransactionSql,
+  actorId: string,
+  permission: Permission,
+) {
   await sql`select app_private.assert_actor_permission(${actorId}, ${permission})`;
 }
 function missing(message: string): never {
@@ -22,6 +26,7 @@ function missing(message: string): never {
 
 interface SummaryRow {
   as_of_date: string;
+  currency: string;
   receivables: string;
   overdue_receivables: string;
   payables: string;
@@ -82,11 +87,27 @@ function mapDocument(row: DocumentRow): FinanceDocumentSummary {
   };
 }
 
-export async function readFinanceSnapshot(sql: Sql, principal: Principal): Promise<FinanceSnapshot> {
+export async function readFinanceSnapshot(
+  sql: Sql,
+  principal: Principal,
+): Promise<FinanceSnapshot> {
   assertPermission(principal, "finance.read");
   await databasePermission(sql, principal.userId, "finance.read");
-  const [summaryRows, accountRows, receivableRows, payableRows, paymentRows, customerAdvanceRows,
-    supplierAdvanceRows, expenseRows, bankRows, customerRows, supplierRows] = await Promise.all([
+  const [
+    summaryRows,
+    accountRows,
+    receivableRows,
+    payableRows,
+    paymentRows,
+    customerAdvanceRows,
+    supplierAdvanceRows,
+    expenseRows,
+    bankRows,
+    customerRows,
+    supplierRows,
+    salesOrderRows,
+    vehicleRows,
+  ] = await Promise.all([
     sql<SummaryRow[]>`select * from public.finance_working_capital_summary`,
     sql<AccountRow[]>`
       select account.id, account.account_code, account.account_name, account.account_type,
@@ -136,25 +157,77 @@ export async function readFinanceSnapshot(sql: Sql, principal: Principal): Promi
       left join public.payment_allocations allocation on allocation.payment_id = payment.id
       group by payment.id, account.account_name, customer.name_vi, supplier.name_vi
       order by payment.payment_date desc, payment.created_at desc limit 200`,
-    sql<{ id: string; advance_number: string; party_name: string; currency: string; original_amount: string; remaining_amount: string; status: "OPEN" | "PARTIALLY_APPLIED" | "APPLIED" | "REVERSED" }[]>`
+    sql<
+      {
+        id: string;
+        advance_number: string;
+        party_name: string;
+        currency: string;
+        original_amount: string;
+        remaining_amount: string;
+        status: "OPEN" | "PARTIALLY_APPLIED" | "APPLIED" | "REVERSED";
+      }[]
+    >`
       select advance.id, advance.advance_number, customer.name_vi as party_name,
         advance.currency, advance.original_amount, advance.remaining_amount, advance.status
       from public.customer_advances advance
       join public.customers customer on customer.id = advance.customer_id
       order by advance.created_at desc limit 100`,
-    sql<{ id: string; advance_number: string; party_name: string; currency: string; original_amount: string; remaining_amount: string; status: "OPEN" | "PARTIALLY_APPLIED" | "APPLIED" | "REVERSED" }[]>`
+    sql<
+      {
+        id: string;
+        advance_number: string;
+        party_name: string;
+        currency: string;
+        original_amount: string;
+        remaining_amount: string;
+        status: "OPEN" | "PARTIALLY_APPLIED" | "APPLIED" | "REVERSED";
+      }[]
+    >`
       select advance.id, advance.advance_number, supplier.name_vi as party_name,
         advance.currency, advance.original_amount, advance.remaining_amount, advance.status
       from public.supplier_advances advance
       join public.suppliers supplier on supplier.id = advance.supplier_id
       order by advance.created_at desc limit 100`,
-    sql<{ id: string; expense_number: string; account_name: string; category: string; description: string; currency: string; amount: string; expense_date: string; status: "DRAFT" | "POSTED" | "REVERSED" }[]>`
+    sql<
+      {
+        id: string;
+        expense_number: string;
+        account_name: string;
+        category: string;
+        description: string;
+        currency: string;
+        amount: string;
+        expense_date: string;
+        status: "DRAFT" | "POSTED" | "REVERSED";
+        allocated_amount: string;
+        allocated_percent: string;
+        allocation_count: number;
+      }[]
+    >`
       select expense.id, expense.expense_number, account.account_name, expense.category,
-        expense.description, expense.currency, expense.amount, expense.expense_date::text, expense.status
+        expense.description, expense.currency, expense.amount, expense.expense_date::text, expense.status,
+        coalesce(sum(allocation.amount), 0)::text as allocated_amount,
+        coalesce(sum(allocation.allocation_percent), 0)::text as allocated_percent,
+        count(allocation.id)::integer as allocation_count
       from public.expenses expense
       join public.financial_accounts account on account.id = expense.financial_account_id
+      left join public.expense_allocations allocation on allocation.expense_id = expense.id
+      group by expense.id, account.account_name
       order by expense.expense_date desc, expense.created_at desc limit 100`,
-    sql<{ id: string; financial_account_id: string; account_name: string; external_transaction_id: string; transaction_date: string; amount: string; currency: string; description: string; status: "UNMATCHED" | "MATCHED" }[]>`
+    sql<
+      {
+        id: string;
+        financial_account_id: string;
+        account_name: string;
+        external_transaction_id: string;
+        transaction_date: string;
+        amount: string;
+        currency: string;
+        description: string;
+        status: "UNMATCHED" | "MATCHED";
+      }[]
+    >`
       select transaction.id, transaction.financial_account_id, account.account_name,
         transaction.external_transaction_id, transaction.transaction_date::text,
         transaction.amount, transaction.currency, transaction.description, transaction.status
@@ -165,43 +238,140 @@ export async function readFinanceSnapshot(sql: Sql, principal: Principal): Promi
       select id, code, name_vi from public.customers where is_active order by name_vi`,
     sql<{ id: string; code: string; name_vi: string }[]>`
       select id, code, name_vi from public.suppliers where is_active order by name_vi`,
+    sql<{ id: string; code: string; name_vi: string }[]>`
+      select sales_order.id, sales_order.sales_order_number as code,
+        customer.name_vi || ' · ' || sales_order.currency as name_vi
+      from public.sales_orders sales_order
+      join public.customers customer on customer.id = sales_order.customer_id
+      where sales_order.status <> 'CANCELLED'
+      order by sales_order.created_at desc limit 200`,
+    sql<{ id: string; code: string; name_vi: string }[]>`
+      select id, plate_number as code, vehicle_type || ' · ' || plate_number as name_vi
+      from public.vehicles where is_active order by plate_number`,
   ]);
 
-  const summary = summaryRows[0] ?? {
-    as_of_date: new Date().toISOString().slice(0, 10), receivables: "0", overdue_receivables: "0",
-    payables: "0", overdue_payables: "0", cash_balance: "0", customer_advances: "0", supplier_advances: "0",
+  const fallbackSummary = {
+    as_of_date: new Date().toISOString().slice(0, 10),
+    receivables: "0",
+    overdue_receivables: "0",
+    payables: "0",
+    overdue_payables: "0",
+    cash_balance: "0",
+    customer_advances: "0",
+    supplier_advances: "0",
+    currency: "VND",
   };
+  const summary =
+    summaryRows.find((row) => row.currency === "VND") ??
+    summaryRows[0] ??
+    fallbackSummary;
+  const mapSummary = (row: SummaryRow) => ({
+    asOfDate: row.as_of_date,
+    currency: row.currency,
+    receivables: row.receivables,
+    overdueReceivables: row.overdue_receivables,
+    payables: row.payables,
+    overduePayables: row.overdue_payables,
+    cashBalance: row.cash_balance,
+    customerAdvances: row.customer_advances,
+    supplierAdvances: row.supplier_advances,
+  });
   return {
-    summary: {
-      asOfDate: summary.as_of_date,
-      receivables: summary.receivables,
-      overdueReceivables: summary.overdue_receivables,
-      payables: summary.payables,
-      overduePayables: summary.overdue_payables,
-      cashBalance: summary.cash_balance,
-      customerAdvances: summary.customer_advances,
-      supplierAdvances: summary.supplier_advances,
-    },
+    summary: mapSummary(summary),
+    summaries: summaryRows.length
+      ? summaryRows.map(mapSummary)
+      : [mapSummary(fallbackSummary)],
     accounts: accountRows.map((row) => ({
-      id: row.id, code: row.account_code, name: row.account_name,
-      type: row.account_type, currency: row.currency, balance: row.balance,
+      id: row.id,
+      code: row.account_code,
+      name: row.account_name,
+      type: row.account_type,
+      currency: row.currency,
+      balance: row.balance,
     })),
     receivables: receivableRows.map(mapDocument),
     payables: payableRows.map(mapDocument),
     payments: paymentRows.map((row): PaymentSummary => ({
-      id: row.id, number: row.payment_number, direction: row.direction, status: row.status,
-      accountName: row.account_name, partyId: row.party_id, partyName: row.party_name,
-      currency: row.currency, amount: row.amount, allocatedAmount: row.allocated_amount,
-      paymentDate: row.payment_date, externalReference: row.external_reference,
+      id: row.id,
+      number: row.payment_number,
+      direction: row.direction,
+      status: row.status,
+      accountName: row.account_name,
+      partyId: row.party_id,
+      partyName: row.party_name,
+      currency: row.currency,
+      amount: row.amount,
+      allocatedAmount: row.allocated_amount,
+      paymentDate: row.payment_date,
+      externalReference: row.external_reference,
     })),
     advances: [
-      ...customerAdvanceRows.map((row) => ({ id: row.id, number: row.advance_number, kind: "CUSTOMER" as const, partyName: row.party_name, currency: row.currency, originalAmount: row.original_amount, remainingAmount: row.remaining_amount, status: row.status })),
-      ...supplierAdvanceRows.map((row) => ({ id: row.id, number: row.advance_number, kind: "SUPPLIER" as const, partyName: row.party_name, currency: row.currency, originalAmount: row.original_amount, remainingAmount: row.remaining_amount, status: row.status })),
+      ...customerAdvanceRows.map((row) => ({
+        id: row.id,
+        number: row.advance_number,
+        kind: "CUSTOMER" as const,
+        partyName: row.party_name,
+        currency: row.currency,
+        originalAmount: row.original_amount,
+        remainingAmount: row.remaining_amount,
+        status: row.status,
+      })),
+      ...supplierAdvanceRows.map((row) => ({
+        id: row.id,
+        number: row.advance_number,
+        kind: "SUPPLIER" as const,
+        partyName: row.party_name,
+        currency: row.currency,
+        originalAmount: row.original_amount,
+        remainingAmount: row.remaining_amount,
+        status: row.status,
+      })),
     ],
-    expenses: expenseRows.map((row) => ({ id: row.id, number: row.expense_number, accountName: row.account_name, category: row.category, description: row.description, currency: row.currency, amount: row.amount, expenseDate: row.expense_date, status: row.status })),
-    bankTransactions: bankRows.map((row): BankTransactionSummary => ({ id: row.id, accountId: row.financial_account_id, accountName: row.account_name, externalId: row.external_transaction_id, transactionDate: row.transaction_date, amount: row.amount, currency: row.currency, description: row.description, status: row.status })),
-    customers: customerRows.map((row) => ({ id: row.id, code: row.code, name: row.name_vi })),
-    suppliers: supplierRows.map((row) => ({ id: row.id, code: row.code, name: row.name_vi })),
+    expenses: expenseRows.map((row) => ({
+      id: row.id,
+      number: row.expense_number,
+      accountName: row.account_name,
+      category: row.category,
+      description: row.description,
+      currency: row.currency,
+      amount: row.amount,
+      expenseDate: row.expense_date,
+      status: row.status,
+      allocatedAmount: row.allocated_amount,
+      allocatedPercent: row.allocated_percent,
+      allocationCount: Number(row.allocation_count),
+    })),
+    bankTransactions: bankRows.map((row): BankTransactionSummary => ({
+      id: row.id,
+      accountId: row.financial_account_id,
+      accountName: row.account_name,
+      externalId: row.external_transaction_id,
+      transactionDate: row.transaction_date,
+      amount: row.amount,
+      currency: row.currency,
+      description: row.description,
+      status: row.status,
+    })),
+    customers: customerRows.map((row) => ({
+      id: row.id,
+      code: row.code,
+      name: row.name_vi,
+    })),
+    suppliers: supplierRows.map((row) => ({
+      id: row.id,
+      code: row.code,
+      name: row.name_vi,
+    })),
+    salesOrders: salesOrderRows.map((row) => ({
+      id: row.id,
+      code: row.code,
+      name: row.name_vi,
+    })),
+    vehicles: vehicleRows.map((row) => ({
+      id: row.id,
+      code: row.code,
+      name: row.name_vi,
+    })),
   };
 }
 
@@ -213,7 +383,9 @@ export async function executeFinanceCommand(
   switch (input.kind) {
     case "finance.account.create": {
       await databasePermission(sql, principal.userId, "finance.manage");
-      const [row] = await sql<{ id: string }[]>`select app_private.create_financial_account(
+      const [row] = await sql<
+        { id: string }[]
+      >`select app_private.create_financial_account(
         ${input.accountCode}, ${input.accountName}, ${input.accountType}::public.financial_account_type,
         ${input.currency}, ${input.bankName}, ${input.maskedNumber}, ${principal.userId}
       ) as id`;
@@ -222,7 +394,9 @@ export async function executeFinanceCommand(
     }
     case "finance.payment.create": {
       await databasePermission(sql, principal.userId, "payment.create");
-      const [row] = await sql<{ id: string }[]>`select app_private.create_payment(
+      const [row] = await sql<
+        { id: string }[]
+      >`select app_private.create_payment(
         ${input.direction}::public.payment_direction, ${input.accountId}, ${input.destinationAccountId},
         ${input.customerId}, ${input.supplierId}, ${input.currency}, ${input.amount},
         ${input.paymentDate}, ${input.externalReference}, ${input.note}, ${principal.userId}
@@ -232,7 +406,9 @@ export async function executeFinanceCommand(
     }
     case "finance.payment.allocate": {
       await databasePermission(sql, principal.userId, "payment.allocate");
-      const [row] = await sql<{ id: string }[]>`select app_private.allocate_payment(
+      const [row] = await sql<
+        { id: string }[]
+      >`select app_private.allocate_payment(
         ${input.paymentId}, ${input.targetKind === "RECEIVABLE" ? input.targetId : null},
         ${input.targetKind === "PAYABLE" ? input.targetId : null}, ${input.amount}, ${principal.userId}
       ) as id`;
@@ -241,49 +417,81 @@ export async function executeFinanceCommand(
     }
     case "finance.payment.post": {
       await databasePermission(sql, principal.userId, "payment.post");
-      const [row] = await sql<{ id: string }[]>`select app_private.post_payment(${input.paymentId}, ${principal.userId}) as id`;
+      const [row] = await sql<
+        { id: string }[]
+      >`select app_private.post_payment(${input.paymentId}, ${principal.userId}) as id`;
       if (!row) missing("Không ghi sổ được khoản thu chi.");
       return { id: row.id, kind: input.kind };
     }
     case "finance.payment.reverse": {
       await databasePermission(sql, principal.userId, "payment.reverse");
-      const [row] = await sql<{ id: string }[]>`select app_private.reverse_payment(${input.paymentId}, ${input.reason}, ${principal.userId}) as id`;
+      const [row] = await sql<
+        { id: string }[]
+      >`select app_private.reverse_payment(${input.paymentId}, ${input.reason}, ${principal.userId}) as id`;
       if (!row) missing("Không hoàn tác được khoản thu chi.");
       return { id: row.id, kind: input.kind };
     }
     case "finance.advance.apply": {
       await databasePermission(sql, principal.userId, "payment.allocate");
-      const [row] = input.advanceKind === "CUSTOMER"
-        ? await sql<{ id: string }[]>`select app_private.apply_customer_advance(${input.advanceId}, ${input.targetId}, ${input.amount}, ${principal.userId}) as id`
-        : await sql<{ id: string }[]>`select app_private.apply_supplier_advance(${input.advanceId}, ${input.targetId}, ${input.amount}, ${principal.userId}) as id`;
+      const [row] =
+        input.advanceKind === "CUSTOMER"
+          ? await sql<
+              { id: string }[]
+            >`select app_private.apply_customer_advance(${input.advanceId}, ${input.targetId}, ${input.amount}, ${principal.userId}) as id`
+          : await sql<
+              { id: string }[]
+            >`select app_private.apply_supplier_advance(${input.advanceId}, ${input.targetId}, ${input.amount}, ${principal.userId}) as id`;
       if (!row) missing("Không cấn trừ được tiền ứng trước.");
       return { id: row.id, kind: input.kind };
     }
     case "finance.expense.create": {
       await databasePermission(sql, principal.userId, "expense.manage");
-      const [row] = await sql<{ id: string }[]>`select app_private.create_expense(
+      const [row] = await sql<
+        { id: string }[]
+      >`select app_private.create_expense(
         ${input.accountId}, ${input.expenseDate}, ${input.category}, ${input.description},
         ${input.currency}, ${input.amount}, ${principal.userId}
       ) as id`;
       if (!row) missing("Không lập được chi phí.");
       return { id: row.id, kind: input.kind };
     }
+    case "finance.expense.allocate": {
+      await databasePermission(sql, principal.userId, "expense.manage");
+      const [row] = await sql<
+        { id: string }[]
+      >`select app_private.allocate_expense(
+        ${input.expenseId}, ${input.allocationDimension}, ${input.allocationReferenceId},
+        ${input.allocationPercent}, ${input.directCostCategory}::public.direct_cost_category,
+        ${input.reason}, ${principal.userId}
+      ) as id`;
+      if (!row) missing("Không phân bổ được chi phí.");
+      return { id: row.id, kind: input.kind };
+    }
     case "finance.expense.post": {
       await databasePermission(sql, principal.userId, "expense.manage");
-      const [row] = await sql<{ id: string }[]>`select app_private.post_expense(${input.expenseId}, ${principal.userId}) as id`;
+      const [row] = await sql<
+        { id: string }[]
+      >`select app_private.post_expense(${input.expenseId}, ${principal.userId}) as id`;
       if (!row) missing("Không ghi sổ được chi phí.");
       return { id: row.id, kind: input.kind };
     }
     case "finance.expense.reverse": {
       await databasePermission(sql, principal.userId, "expense.manage");
-      const [row] = await sql<{ id: string }[]>`select app_private.reverse_expense(${input.expenseId}, ${input.reason}, ${principal.userId}) as id`;
+      const [row] = await sql<
+        { id: string }[]
+      >`select app_private.reverse_expense(${input.expenseId}, ${input.reason}, ${principal.userId}) as id`;
       if (!row) missing("Không hoàn tác được chi phí.");
       return { id: row.id, kind: input.kind };
     }
     case "finance.adjustment.post": {
-      const permission: Permission = input.targetKind === "RECEIVABLE" ? "receivable.adjust" : "payable.adjust";
+      const permission: Permission =
+        input.targetKind === "RECEIVABLE"
+          ? "receivable.adjust"
+          : "payable.adjust";
       await databasePermission(sql, principal.userId, permission);
-      const [row] = await sql<{ id: string }[]>`select app_private.post_finance_adjustment(
+      const [row] = await sql<
+        { id: string }[]
+      >`select app_private.post_finance_adjustment(
         ${input.targetKind}::public.finance_adjustment_target, ${input.targetId},
         ${input.signedAmount}, ${input.reason}, ${principal.userId}
       ) as id`;
@@ -291,7 +499,9 @@ export async function executeFinanceCommand(
       return { id: row.id, kind: input.kind };
     }
     case "finance.adjustment.reverse": {
-      const [row] = await sql<{ id: string }[]>`select app_private.reverse_finance_adjustment(
+      const [row] = await sql<
+        { id: string }[]
+      >`select app_private.reverse_finance_adjustment(
         ${input.adjustmentId}, ${input.reason}, ${principal.userId}
       ) as id`;
       if (!row) missing("Không hoàn tác được bút toán điều chỉnh.");
@@ -299,7 +509,9 @@ export async function executeFinanceCommand(
     }
     case "finance.bank.import": {
       await databasePermission(sql, principal.userId, "reconciliation.manage");
-      const [row] = await sql<{ id: string }[]>`select app_private.record_bank_transaction(
+      const [row] = await sql<
+        { id: string }[]
+      >`select app_private.record_bank_transaction(
         ${input.accountId}, ${input.externalId}, ${input.transactionDate}, ${input.signedAmount},
         ${input.currency}, ${input.description}, ${principal.userId}
       ) as id`;
@@ -308,7 +520,9 @@ export async function executeFinanceCommand(
     }
     case "finance.payment.reconcile": {
       await databasePermission(sql, principal.userId, "reconciliation.manage");
-      const [row] = await sql<{ id: string }[]>`select app_private.reconcile_payment(
+      const [row] = await sql<
+        { id: string }[]
+      >`select app_private.reconcile_payment(
         ${input.paymentId}, ${input.bankTransactionId}, ${principal.userId}
       ) as id`;
       if (!row) missing("Không đối chiếu được khoản thu chi.");

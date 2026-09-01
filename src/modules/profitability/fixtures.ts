@@ -7,19 +7,22 @@ const ORDERS = {
 };
 
 export const SYNTHETIC_PROFITABILITY: ProfitabilitySnapshot = {
-  commandCenter: {
-    asOfDate: "2026-09-01",
-    revenue: "842500000",
-    contributionProfit: "193775000",
-    actualMarginPercent: "23.00",
-    receivables: "428500000",
-    payables: "251300000",
-    cashBalance: "318400000",
-    workingCapital: "495600000",
-    estimatedCount: 1,
-    actualOpenCount: 1,
-    finalizedCount: 1,
-  },
+  commandCenters: [
+    {
+      asOfDate: "2026-09-01",
+      currency: "VND",
+      revenue: "842500000",
+      contributionProfit: "193775000",
+      actualMarginPercent: "23.00",
+      receivables: "428500000",
+      payables: "251300000",
+      cashBalance: "318400000",
+      workingCapital: "495600000",
+      estimatedCount: 1,
+      actualOpenCount: 1,
+      finalizedCount: 1,
+    },
+  ],
   orders: [
     {
       id: "92000000-0000-4000-8000-000000000001",
@@ -98,11 +101,31 @@ export const SYNTHETIC_PROFITABILITY: ProfitabilitySnapshot = {
     },
   ],
   costWaterfall: [
-    { category: "MATERIAL", basis: "ACTUAL", amount: "361000000" },
-    { category: "TRANSPORT", basis: "ACTUAL", amount: "41200000" },
-    { category: "LOADING", basis: "ACTUAL", amount: "12600000" },
-    { category: "FUEL", basis: "ACTUAL", amount: "10600000" },
-    { category: "DIRECT_LABOR", basis: "ACTUAL", amount: "7100000" },
+    {
+      category: "MATERIAL",
+      basis: "ACTUAL",
+      amount: "361000000",
+      currency: "VND",
+    },
+    {
+      category: "TRANSPORT",
+      basis: "ACTUAL",
+      amount: "41200000",
+      currency: "VND",
+    },
+    {
+      category: "LOADING",
+      basis: "ACTUAL",
+      amount: "12600000",
+      currency: "VND",
+    },
+    { category: "FUEL", basis: "ACTUAL", amount: "10600000", currency: "VND" },
+    {
+      category: "DIRECT_LABOR",
+      basis: "ACTUAL",
+      amount: "7100000",
+      currency: "VND",
+    },
   ],
   dimensions: [
     {
@@ -128,27 +151,27 @@ export const SYNTHETIC_PROFITABILITY: ProfitabilitySnapshot = {
       dimensionId: "51000000-0000-4000-8000-000000000001",
       dimensionName: "Bãi vật liệu Đông Anh",
       currency: "VND",
-      revenue: "0",
+      revenue: "301500000",
       directCost: "198000000",
-      contributionProfit: "-198000000",
+      contributionProfit: "103500000",
     },
     {
       dimension: "MATERIAL",
       dimensionId: "11000000-0000-4000-8000-000000000001",
       dimensionName: "Cát vàng xây dựng",
       currency: "VND",
-      revenue: "0",
+      revenue: "301500000",
       directCost: "187000000",
-      contributionProfit: "-187000000",
+      contributionProfit: "114500000",
     },
     {
       dimension: "VEHICLE",
       dimensionId: "71000000-0000-4000-8000-000000000001",
       dimensionName: "29H-812.45",
       currency: "VND",
-      revenue: "0",
+      revenue: "301500000",
       directCost: "32600000",
-      contributionProfit: "-32600000",
+      contributionProfit: "268900000",
     },
   ],
 };

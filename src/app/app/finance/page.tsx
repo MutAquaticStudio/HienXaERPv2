@@ -11,19 +11,33 @@ export const metadata: Metadata = { title: "Tài chính và dòng tiền" };
 
 export default async function FinancePage() {
   const principal = await getCurrentPrincipal("office");
-  if (!principal || !hasPermission(principal, "finance.read")) return <AccessDenied />;
+  if (!principal || !hasPermission(principal, "finance.read"))
+    return <AccessDenied />;
   const data = await getFinanceSnapshot(principal);
   const keyNames = [
-    "account:create", "payment:create", "expense:create", "bank:import",
+    "account:create",
+    "payment:create",
+    "expense:create",
+    "bank:import",
     ...data.payments.flatMap((payment) => [
-      `allocate:${payment.id}`, `post:${payment.id}`, `reverse:${payment.id}`, `reconcile:${payment.id}`,
+      `allocate:${payment.id}`,
+      `post:${payment.id}`,
+      `reverse:${payment.id}`,
+      `reconcile:${payment.id}`,
     ]),
-    ...data.expenses.flatMap((expense) => [`expense-post:${expense.id}`, `expense-reverse:${expense.id}`]),
+    ...data.expenses.flatMap((expense) => [
+      `expense-allocate:${expense.id}`,
+      `expense-post:${expense.id}`,
+      `expense-reverse:${expense.id}`,
+    ]),
     ...data.advances.map((advance) => `advance:${advance.id}`),
   ];
   return (
     <FinanceWorkspace
-      canAdjust={hasPermission(principal, "receivable.adjust") || hasPermission(principal, "payable.adjust")}
+      canAdjust={
+        hasPermission(principal, "receivable.adjust") ||
+        hasPermission(principal, "payable.adjust")
+      }
       canAllocate={hasPermission(principal, "payment.allocate")}
       canCreate={hasPermission(principal, "payment.create")}
       canManage={hasPermission(principal, "finance.manage")}
@@ -32,7 +46,9 @@ export default async function FinancePage() {
       canReverse={hasPermission(principal, "payment.reverse")}
       canManageExpense={hasPermission(principal, "expense.manage")}
       data={data}
-      initialKeys={Object.fromEntries(keyNames.map((name) => [name, randomUUID()]))}
+      initialKeys={Object.fromEntries(
+        keyNames.map((name) => [name, randomUUID()]),
+      )}
     />
   );
 }

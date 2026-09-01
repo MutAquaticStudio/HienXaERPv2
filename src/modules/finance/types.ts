@@ -1,13 +1,24 @@
-export const PAYMENT_STATUSES = ["DRAFT", "POSTED", "RECONCILED", "REVERSED"] as const;
-export const PAYMENT_DIRECTIONS = ["RECEIPT", "DISBURSEMENT", "INTERNAL_TRANSFER"] as const;
+export const PAYMENT_STATUSES = [
+  "DRAFT",
+  "POSTED",
+  "RECONCILED",
+  "REVERSED",
+] as const;
+export const PAYMENT_DIRECTIONS = [
+  "RECEIPT",
+  "DISBURSEMENT",
+  "INTERNAL_TRANSFER",
+] as const;
 
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 export type PaymentDirection = (typeof PAYMENT_DIRECTIONS)[number];
-export type FinanceDocumentStatus = "OPEN" | "PARTIALLY_SETTLED" | "SETTLED" | "REVERSED";
+export type FinanceDocumentStatus =
+  "OPEN" | "PARTIALLY_SETTLED" | "SETTLED" | "REVERSED";
 export type FinancialAccountType = "CASH" | "BANK";
 
 export interface WorkingCapitalSummary {
   asOfDate: string;
+  currency: string;
   receivables: string;
   overdueReceivables: string;
   payables: string;
@@ -76,6 +87,9 @@ export interface ExpenseSummary {
   amount: string;
   expenseDate: string;
   status: "DRAFT" | "POSTED" | "REVERSED";
+  allocatedAmount: string;
+  allocatedPercent: string;
+  allocationCount: number;
 }
 
 export interface BankTransactionSummary {
@@ -96,8 +110,15 @@ export interface PartyOption {
   name: string;
 }
 
+export interface ReferenceOption {
+  id: string;
+  code: string;
+  name: string;
+}
+
 export interface FinanceSnapshot {
   summary: WorkingCapitalSummary;
+  summaries: WorkingCapitalSummary[];
   accounts: FinancialAccountSummary[];
   receivables: FinanceDocumentSummary[];
   payables: FinanceDocumentSummary[];
@@ -107,6 +128,8 @@ export interface FinanceSnapshot {
   bankTransactions: BankTransactionSummary[];
   customers: PartyOption[];
   suppliers: PartyOption[];
+  salesOrders: ReferenceOption[];
+  vehicles: ReferenceOption[];
 }
 
 export type FinanceCommandKind =
@@ -117,6 +140,7 @@ export type FinanceCommandKind =
   | "finance.payment.reverse"
   | "finance.advance.apply"
   | "finance.expense.create"
+  | "finance.expense.allocate"
   | "finance.expense.post"
   | "finance.expense.reverse"
   | "finance.adjustment.post"

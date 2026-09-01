@@ -1,5 +1,8 @@
 import { PlatformError } from "@/modules/platform/errors";
-import type { FinanceDocumentStatus, PaymentStatus } from "@/modules/finance/types";
+import type {
+  FinanceDocumentStatus,
+  PaymentStatus,
+} from "@/modules/finance/types";
 
 const paymentTransitions: Record<PaymentStatus, readonly PaymentStatus[]> = {
   DRAFT: ["POSTED"],
@@ -8,7 +11,10 @@ const paymentTransitions: Record<PaymentStatus, readonly PaymentStatus[]> = {
   REVERSED: [],
 };
 
-export function assertPaymentTransition(from: PaymentStatus, to: PaymentStatus) {
+export function assertPaymentTransition(
+  from: PaymentStatus,
+  to: PaymentStatus,
+) {
   if (!paymentTransitions[from].includes(to)) {
     throw new PlatformError(
       `Không thể chuyển khoản thu chi từ ${from} sang ${to}.`,
@@ -24,12 +30,26 @@ export function assertAllocationWithinBounds(
   targetOutstanding: string | number,
   requestedAmount: string | number,
 ) {
-  const values = [paymentAmount, alreadyAllocated, targetOutstanding, requestedAmount].map(Number) as [number, number, number, number];
+  const values = [
+    paymentAmount,
+    alreadyAllocated,
+    targetOutstanding,
+    requestedAmount,
+  ].map(Number) as [number, number, number, number];
   if (values.some((value) => !Number.isFinite(value))) {
-    throw new PlatformError("Số tiền phân bổ không hợp lệ.", "INVALID_ALLOCATION_AMOUNT", 400);
+    throw new PlatformError(
+      "Số tiền phân bổ không hợp lệ.",
+      "INVALID_ALLOCATION_AMOUNT",
+      400,
+    );
   }
   const [payment, allocated, outstanding, requested] = values;
-  if (payment <= 0 || requested <= 0 || requested > outstanding || allocated + requested > payment) {
+  if (
+    payment <= 0 ||
+    requested <= 0 ||
+    requested > outstanding ||
+    allocated + requested > payment
+  ) {
     throw new PlatformError(
       "Số tiền phân bổ vượt khoản thanh toán hoặc công nợ còn lại.",
       "ALLOCATION_OUT_OF_RANGE",
@@ -44,10 +64,61 @@ export function resolveFinanceDocumentStatus(
 ): FinanceDocumentStatus {
   const original = Number(originalAmount);
   const outstanding = Number(outstandingAmount);
-  if (!Number.isFinite(original) || !Number.isFinite(outstanding) || original <= 0 || outstanding < 0 || outstanding > original) {
-    throw new PlatformError("Số dư công nợ không hợp lệ.", "INVALID_DOCUMENT_BALANCE", 400);
+  if (
+    !Number.isFinite(original) ||
+    !Number.isFinite(outstanding) ||
+    original <= 0 ||
+    outstanding < 0 ||
+    outstanding > original
+  ) {
+    throw new PlatformError(
+      "Số dư công nợ không hợp lệ.",
+      "INVALID_DOCUMENT_BALANCE",
+      400,
+    );
   }
   if (outstanding === 0) return "SETTLED";
   if (outstanding === original) return "OPEN";
   return "PARTIALLY_SETTLED";
+}
+
+export function calculateExpenseAllocation(
+  expenseAmount: string | number,
+  allocatedPercent: string | number,
+  allocatedAmount: string | number,
+  requestedPercent: string | number,
+) {
+  const [expense, currentPercent, currentAmount, requested] = [
+    expenseAmount,
+    allocatedPercent,
+    allocatedAmount,
+    requestedPercent,
+  ].map(Number) as [number, number, number, number];
+  if (
+    ![expense, currentPercent, currentAmount, requested].every(
+      Number.isFinite,
+    ) ||
+    expense <= 0 ||
+    currentPercent < 0 ||
+    currentAmount < 0 ||
+    requested <= 0 ||
+    requested > 100
+  ) {
+    throw new PlatformError(
+      "Tỷ lệ phân bổ chi phí không hợp lệ.",
+      "INVALID_EXPENSE_ALLOCATION",
+      400,
+    );
+  }
+  const amount = Math.round(expense * requested) / 100;
+  const totalPercent = currentPercent + requested;
+  const totalAmount = currentAmount + amount;
+  if (totalPercent > 100 || totalAmount > expense) {
+    throw new PlatformError(
+      "Phân bổ chi phí vượt tổng giá trị khoản chi.",
+      "EXPENSE_ALLOCATION_OUT_OF_RANGE",
+      409,
+    );
+  }
+  return { amount, totalAmount, totalPercent };
 }

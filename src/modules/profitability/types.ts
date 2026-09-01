@@ -19,6 +19,7 @@ export type DirectCostCategory = (typeof DIRECT_COST_CATEGORIES)[number];
 
 export interface ProfitabilityCommandCenter {
   asOfDate: string;
+  currency: string;
   revenue: string;
   contributionProfit: string;
   actualMarginPercent: string | null;
@@ -61,6 +62,7 @@ export interface DirectCostWaterfallItem {
   category: DirectCostCategory;
   basis: ProfitabilityBasis;
   amount: string;
+  currency: string;
 }
 
 export interface ProfitabilityDimensionSummary {
@@ -75,7 +77,7 @@ export interface ProfitabilityDimensionSummary {
 }
 
 export interface ProfitabilitySnapshot {
-  commandCenter: ProfitabilityCommandCenter;
+  commandCenters: ProfitabilityCommandCenter[];
   orders: OrderProfitabilitySummary[];
   costWaterfall: DirectCostWaterfallItem[];
   dimensions: ProfitabilityDimensionSummary[];
@@ -83,5 +85,6 @@ export interface ProfitabilitySnapshot {
 
 export type ProfitabilityCommandKind =
   | "profitability.cost.record"
+  | "profitability.revenue.allocate"
   | "profitability.finalize"
   | "profitability.reopen";

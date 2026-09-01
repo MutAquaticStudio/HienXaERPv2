@@ -51,9 +51,27 @@ describe("P9 profitability command validation", () => {
         form({
           kind: "profitability.reopen",
           salesOrderId: "order-001",
-        reason: "Sai",
+          reason: "Sai",
         }),
       ),
     ).toThrow(/ít nhất 10/);
+  });
+
+  it("accepts explicit service revenue attribution", () => {
+    expect(
+      parseProfitabilityForm(
+        form({
+          kind: "profitability.revenue.allocate",
+          salesOrderId: "order-001",
+          serviceReferenceId: "service-001",
+          amount: "12000000",
+          reason: "Doanh thu dịch vụ bơm bê tông theo biên bản nghiệm thu",
+        }),
+      ),
+    ).toMatchObject({
+      kind: "profitability.revenue.allocate",
+      serviceReferenceId: "service-001",
+      amount: "12000000",
+    });
   });
 });

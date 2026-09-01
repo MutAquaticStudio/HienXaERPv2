@@ -35,6 +35,7 @@ export default async function OfficeHomePage() {
     const keys = Object.fromEntries(
       data.orders.flatMap((order) => [
         [`cost:${order.id}`, randomUUID()],
+        [`revenue:${order.id}`, randomUUID()],
         [`finalize:${order.id}`, randomUUID()],
         [`reopen:${order.id}`, randomUUID()],
       ]),

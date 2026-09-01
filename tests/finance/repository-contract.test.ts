@@ -4,7 +4,18 @@ import { describe, expect, it } from "vitest";
 
 function migration() {
   const directory = join(process.cwd(), "supabase/migrations");
-  const name = readdirSync(directory).find((item) => item.endsWith("_p8_finance_working_capital.sql"));
+  const name = readdirSync(directory).find((item) =>
+    item.endsWith("_p8_finance_working_capital.sql"),
+  );
+  expect(name).toBeTruthy();
+  return readFileSync(join(directory, name as string), "utf8");
+}
+
+function remediation() {
+  const directory = join(process.cwd(), "supabase/migrations");
+  const name = readdirSync(directory).find((item) =>
+    item.endsWith("_remediate_p8_p9_baseline.sql"),
+  );
   expect(name).toBeTruthy();
   return readFileSync(join(directory, name as string), "utf8");
 }
@@ -13,11 +24,23 @@ describe("P8 finance repository contract", () => {
   it("models debt, ledgers, payments, advances, expenses and bank matching explicitly", () => {
     const sql = migration();
     for (const table of [
-      "receivables", "payables", "receivable_ledger_entries", "payable_ledger_entries",
-      "payments", "payment_allocations", "customer_advances", "supplier_advances",
-      "financial_accounts", "financial_movements", "expenses", "expense_allocations",
-      "finance_adjustments", "bank_transactions", "reconciliation_matches",
-    ]) expect(sql).toContain(`create table public.${table}`);
+      "receivables",
+      "payables",
+      "receivable_ledger_entries",
+      "payable_ledger_entries",
+      "payments",
+      "payment_allocations",
+      "customer_advances",
+      "supplier_advances",
+      "financial_accounts",
+      "financial_movements",
+      "expenses",
+      "expense_allocations",
+      "finance_adjustments",
+      "bank_transactions",
+      "reconciliation_matches",
+    ])
+      expect(sql).toContain(`create table public.${table}`);
   });
 
   it("recognizes delivery finance idempotently and only creates direct-source payable", () => {
@@ -32,8 +55,12 @@ describe("P8 finance repository contract", () => {
   it("never turns allocation proposals into posted allocations silently", () => {
     const sql = migration();
     expect(sql).toContain("payment_allocation_proposals");
-    expect(sql).toContain("where payment_id = p_payment_id and status = 'PENDING'");
-    expect(sql).not.toMatch(/insert into public\.payment_allocations[\s\S]{0,250}payment_allocation_proposals/i);
+    expect(sql).toContain(
+      "where payment_id = p_payment_id and status = 'PENDING'",
+    );
+    expect(sql).not.toMatch(
+      /insert into public\.payment_allocations[\s\S]{0,250}payment_allocation_proposals/i,
+    );
   });
 
   it("uses compensating movements and closes browser writes", () => {
@@ -42,12 +69,32 @@ describe("P8 finance repository contract", () => {
     expect(sql).toContain("reversal_of_id");
     expect(sql).toContain("FINANCE_LEDGER_UPDATE_REQUIRES_COMMAND");
     expect(sql).toContain("grant select on public.receivables");
-    expect(sql).not.toMatch(/grant\s+(insert|update|delete|all).*public\.payments\s+to authenticated/i);
+    expect(sql).not.toMatch(
+      /grant\s+(insert|update|delete|all).*public\.payments\s+to authenticated/i,
+    );
   });
 
   it("uses security-invoker working-capital and aging views", () => {
     const sql = migration();
     expect(sql).toContain("finance_aging with (security_invoker = true)");
-    expect(sql).toContain("finance_working_capital_summary with (security_invoker = true)");
+    expect(sql).toContain(
+      "finance_working_capital_summary with (security_invoker = true)",
+    );
+  });
+
+  it("makes expense allocation command-controlled, bounded and traceable", () => {
+    const sql = remediation();
+    expect(sql).toContain("app_private.allocate_expense");
+    expect(sql).toContain("DRAFT_EXPENSE_REQUIRED");
+    expect(sql).toContain("EXPENSE_ALLOCATION_EXCEEDS_EXPENSE");
+    expect(sql).toContain("created_by");
+    expect(sql).toContain("direct_cost_category");
+  });
+
+  it("enforces account currency and reports working capital per currency", () => {
+    const sql = remediation();
+    expect(sql).toContain("FINANCIAL_ACCOUNT_CURRENCY_MISMATCH");
+    expect(sql).toContain("finance_working_capital_summary");
+    expect(sql).toMatch(/group by[\s\S]{0,300}currency/i);
   });
 });

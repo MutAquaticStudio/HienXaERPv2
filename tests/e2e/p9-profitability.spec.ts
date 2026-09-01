@@ -37,8 +37,12 @@ test("P9 command center exposes margin, direct-cost waterfall and controlled lif
   await expect(
     page.getByRole("heading", { name: "Biên lợi nhuận theo đơn hàng" }),
   ).toBeVisible();
+  await expect(page.getByLabel("Tiền tệ")).toHaveValue("VND");
   await page.getByRole("tab", { name: "Nhà cung cấp" }).click();
   await expect(page.getByText("Bãi vật liệu Đông Anh").last()).toBeVisible();
+  await expect(
+    page.getByText(/doanh thu · .*chi phí trực tiếp/).first(),
+  ).toBeVisible();
   await expect(seriousAxeViolations(page)).resolves.toEqual([]);
   await page.screenshot({
     path: "docs/evidence/p9-command-center-implemented.png",

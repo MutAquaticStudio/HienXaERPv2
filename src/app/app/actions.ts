@@ -17,6 +17,8 @@ export interface ProfitabilityActionState {
 const messages = {
   "profitability.cost.record":
     "Đã ghi chi phí trực tiếp và cập nhật biên lợi nhuận.",
+  "profitability.revenue.allocate":
+    "Đã phân bổ doanh thu dịch vụ với nguồn và lý do kiểm toán.",
   "profitability.finalize":
     "Đã chốt lợi nhuận. Chi phí đến muộn cần mở lại có lý do.",
   "profitability.reopen": "Đã mở lại lợi nhuận và lưu dấu vết kiểm toán.",

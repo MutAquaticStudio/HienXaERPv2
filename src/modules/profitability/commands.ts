@@ -22,6 +22,13 @@ export type ProfitabilityCommandInput =
       reason: string;
       occurredAt: string;
     }
+  | {
+      kind: "profitability.revenue.allocate";
+      salesOrderId: string;
+      serviceReferenceId: string;
+      amount: string;
+      reason: string;
+    }
   | { kind: "profitability.finalize"; salesOrderId: string; reason: string }
   | { kind: "profitability.reopen"; salesOrderId: string; reason: string };
 
@@ -73,6 +80,23 @@ export function parseProfitabilityForm(
   const salesOrderId = id(formData, "salesOrderId", "Đơn bán");
   if (kind === "profitability.finalize" || kind === "profitability.reopen") {
     return { kind, salesOrderId, reason: reason(formData) };
+  }
+  if (kind === "profitability.revenue.allocate") {
+    const amount = required(formData, "amount", "Doanh thu phân bổ", 24);
+    if (!/^\d+(?:\.\d{1,2})?$/.test(amount) || Number(amount) <= 0) {
+      invalid("Doanh thu phân bổ phải lớn hơn 0.");
+    }
+    return {
+      kind,
+      salesOrderId,
+      serviceReferenceId: id(
+        formData,
+        "serviceReferenceId",
+        "Tham chiếu dịch vụ",
+      ),
+      amount,
+      reason: reason(formData),
+    };
   }
   if (kind !== "profitability.cost.record")
     invalid("Loại thao tác lợi nhuận không hợp lệ.");

@@ -23,6 +23,7 @@ async function databasePermission(
 
 interface CenterRow {
   as_of_date: string;
+  currency: string;
   revenue: string;
   contribution_profit: string;
   actual_margin_percent: string | null;
@@ -76,9 +77,10 @@ export async function readProfitabilitySnapshot(
         category: DirectCostWaterfallItem["category"];
         basis: DirectCostWaterfallItem["basis"];
         amount: string;
+        currency: string;
       }[]
     >`
-      select category, basis, amount from public.profitability_direct_cost_waterfall
+      select category, basis, amount, currency from public.profitability_direct_cost_waterfall
       order by basis, amount desc`,
     sql<
       {
@@ -94,8 +96,9 @@ export async function readProfitabilitySnapshot(
       select dimension, dimension_id, dimension_name, currency, revenue, direct_cost, contribution_profit
       from public.profitability_dimension_summary order by dimension, contribution_profit desc limit 300`,
   ]);
-  const center = centerRows[0] ?? {
+  const fallbackCenter: CenterRow = {
     as_of_date: new Date().toISOString().slice(0, 10),
+    currency: "VND",
     revenue: "0",
     contribution_profit: "0",
     actual_margin_percent: null,
@@ -108,19 +111,22 @@ export async function readProfitabilitySnapshot(
     finalized_count: 0,
   };
   return {
-    commandCenter: {
-      asOfDate: center.as_of_date,
-      revenue: center.revenue,
-      contributionProfit: center.contribution_profit,
-      actualMarginPercent: center.actual_margin_percent,
-      receivables: center.receivables,
-      payables: center.payables,
-      cashBalance: center.cash_balance,
-      workingCapital: center.working_capital,
-      estimatedCount: Number(center.estimated_count),
-      actualOpenCount: Number(center.actual_open_count),
-      finalizedCount: Number(center.finalized_count),
-    },
+    commandCenters: (centerRows.length ? centerRows : [fallbackCenter]).map(
+      (center) => ({
+        asOfDate: center.as_of_date,
+        currency: center.currency,
+        revenue: center.revenue,
+        contributionProfit: center.contribution_profit,
+        actualMarginPercent: center.actual_margin_percent,
+        receivables: center.receivables,
+        payables: center.payables,
+        cashBalance: center.cash_balance,
+        workingCapital: center.working_capital,
+        estimatedCount: Number(center.estimated_count),
+        actualOpenCount: Number(center.actual_open_count),
+        finalizedCount: Number(center.finalized_count),
+      }),
+    ),
     orders: orderRows.map((row) => ({
       id: row.id,
       salesOrderId: row.sales_order_id,
@@ -180,6 +186,21 @@ export async function executeProfitabilityCommand(
         "PROFITABILITY_RECORD_NOT_FOUND",
         404,
       );
+    return { id: row.id, kind: input.kind };
+  }
+  if (input.kind === "profitability.revenue.allocate") {
+    const [row] = await sql<{ id: string }[]>`
+      select app_private.record_profitability_revenue_allocation(
+        ${input.salesOrderId}, ${input.serviceReferenceId}, ${input.amount},
+        ${input.reason}, ${principal.userId}
+      ) as id`;
+    if (!row) {
+      throw new PlatformError(
+        "Không phân bổ được doanh thu dịch vụ.",
+        "PROFITABILITY_RECORD_NOT_FOUND",
+        404,
+      );
+    }
     return { id: row.id, kind: input.kind };
   }
   const functionName =

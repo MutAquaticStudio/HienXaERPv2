@@ -71,6 +71,7 @@ function CommandForm({
   idempotencyKey: string;
   kind:
     | "profitability.cost.record"
+    | "profitability.revenue.allocate"
     | "profitability.finalize"
     | "profitability.reopen";
   label: string;
@@ -153,29 +154,38 @@ export function ProfitabilityCommandCenter({
   const [dimension, setDimension] =
     useState<ProfitabilityDimensionSummary["dimension"]>("CUSTOMER");
   const [query, setQuery] = useState("");
+  const [currency, setCurrency] = useState(
+    data.commandCenters[0]?.currency ?? "VND",
+  );
   const orders = useMemo(
     () =>
       data.orders.filter(
         (order) =>
           (lifecycle === "ALL" || order.lifecycle === lifecycle) &&
+          order.currency === currency &&
           `${order.salesOrderNumber} ${order.customerName}`
             .toLowerCase()
             .includes(query.toLowerCase()),
       ),
-    [data.orders, lifecycle, query],
+    [currency, data.orders, lifecycle, query],
   );
   const dimensions = data.dimensions
-    .filter((item) => item.dimension === dimension)
+    .filter(
+      (item) => item.dimension === dimension && item.currency === currency,
+    )
     .slice(0, 6);
   const actualCosts = data.costWaterfall.filter(
-    (item) => item.basis === "ACTUAL",
+    (item) => item.basis === "ACTUAL" && item.currency === currency,
   );
   const maxCost = Math.max(
     ...actualCosts.map((item) => Number(item.amount)),
     1,
   );
   const keyFor = (name: string) => initialKeys[name] ?? `profitability-${name}`;
-  const center = data.commandCenter;
+  const center =
+    data.commandCenters.find((item) => item.currency === currency) ??
+    data.commandCenters[0];
+  if (!center) return null;
 
   return (
     <div className="profitability-workspace">
@@ -193,6 +203,19 @@ export function ProfitabilityCommandCenter({
           <span>
             Dữ liệu đến ngày<strong>{center.asOfDate}</strong>
           </span>
+          <label>
+            <span>Tiền tệ</span>
+            <select
+              onChange={(event) => setCurrency(event.target.value)}
+              value={currency}
+            >
+              {data.commandCenters.map((item) => (
+                <option key={item.currency} value={item.currency}>
+                  {item.currency}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
       </header>
 
@@ -200,13 +223,13 @@ export function ProfitabilityCommandCenter({
         <article>
           <CircleDollarSign />
           <span>Doanh thu hiệu lực</span>
-          <strong>{money(center.revenue)}</strong>
+          <strong>{money(center.revenue, center.currency)}</strong>
           <small>Báo giá → cam kết → thực tế</small>
         </article>
         <article>
           <TrendingUp />
           <span>Lợi nhuận đóng góp</span>
-          <strong>{money(center.contributionProfit)}</strong>
+          <strong>{money(center.contributionProfit, center.currency)}</strong>
           <small className="kpi-positive">
             {percent(center.actualMarginPercent)} biên hiện tại
           </small>
@@ -214,7 +237,7 @@ export function ProfitabilityCommandCenter({
         <article>
           <WalletCards />
           <span>Vốn lưu động</span>
-          <strong>{money(center.workingCapital)}</strong>
+          <strong>{money(center.workingCapital, center.currency)}</strong>
           <small>Tiền + phải thu − phải trả</small>
         </article>
         <article>
@@ -250,7 +273,7 @@ export function ProfitabilityCommandCenter({
                     }}
                   />
                 </div>
-                <strong>{money(item.amount)}</strong>
+                <strong>{money(item.amount, item.currency)}</strong>
               </div>
             ))}
             {!actualCosts.length ? (
@@ -467,27 +490,64 @@ export function ProfitabilityCommandCenter({
                                   </label>
                                 </CommandForm>
                                 {order.lifecycle === "ACTUAL_OPEN" ? (
-                                  <CommandForm
-                                    idempotencyKey={keyFor(
-                                      `finalize:${order.id}`,
-                                    )}
-                                    kind="profitability.finalize"
-                                    label="CHỐT LỢI NHUẬN"
-                                  >
-                                    <input
-                                      name="salesOrderId"
-                                      type="hidden"
-                                      value={order.salesOrderId}
-                                    />
-                                    <label>
-                                      <span>Lý do chốt</span>
-                                      <textarea
-                                        name="reason"
-                                        placeholder="Đã đối chiếu đủ chứng từ trực tiếp…"
-                                        required
+                                  <>
+                                    <CommandForm
+                                      idempotencyKey={keyFor(
+                                        `revenue:${order.id}`,
+                                      )}
+                                      kind="profitability.revenue.allocate"
+                                      label="PHÂN BỔ DOANH THU DỊCH VỤ"
+                                      tone="secondary"
+                                    >
+                                      <input
+                                        name="salesOrderId"
+                                        type="hidden"
+                                        value={order.salesOrderId}
                                       />
-                                    </label>
-                                  </CommandForm>
+                                      <label>
+                                        <span>UUID dịch vụ</span>
+                                        <input
+                                          name="serviceReferenceId"
+                                          required
+                                        />
+                                      </label>
+                                      <label>
+                                        <span>Doanh thu phân bổ</span>
+                                        <input
+                                          min="1"
+                                          name="amount"
+                                          required
+                                          step="1"
+                                          type="number"
+                                        />
+                                      </label>
+                                      <label>
+                                        <span>Lý do và nguồn doanh thu</span>
+                                        <textarea name="reason" required />
+                                      </label>
+                                    </CommandForm>
+                                    <CommandForm
+                                      idempotencyKey={keyFor(
+                                        `finalize:${order.id}`,
+                                      )}
+                                      kind="profitability.finalize"
+                                      label="CHỐT LỢI NHUẬN"
+                                    >
+                                      <input
+                                        name="salesOrderId"
+                                        type="hidden"
+                                        value={order.salesOrderId}
+                                      />
+                                      <label>
+                                        <span>Lý do chốt</span>
+                                        <textarea
+                                          name="reason"
+                                          placeholder="Đã đối chiếu đủ chứng từ trực tiếp…"
+                                          required
+                                        />
+                                      </label>
+                                    </CommandForm>
+                                  </>
                                 ) : null}
                               </>
                             ) : (
@@ -563,6 +623,7 @@ export function ProfitabilityCommandCenter({
                 <span>
                   <strong>{item.dimensionName}</strong>
                   <small>
+                    {money(item.revenue, item.currency)} doanh thu ·{" "}
                     {money(item.directCost, item.currency)} chi phí trực tiếp
                   </small>
                 </span>
@@ -593,28 +654,28 @@ export function ProfitabilityCommandCenter({
             <Landmark />
           </div>
           <strong className="working-capital-total">
-            {money(center.workingCapital)}
+            {money(center.workingCapital, center.currency)}
           </strong>
           <div>
             <span>
               <WalletCards />
               Tiền hiện có
             </span>
-            <b>{money(center.cashBalance)}</b>
+            <b>{money(center.cashBalance, center.currency)}</b>
           </div>
           <div>
             <span>
               <BanknoteArrowDown />
               Phải thu
             </span>
-            <b>{money(center.receivables)}</b>
+            <b>{money(center.receivables, center.currency)}</b>
           </div>
           <div>
             <span>
               <BanknoteArrowUp />
               Phải trả
             </span>
-            <b>− {money(center.payables)}</b>
+            <b>− {money(center.payables, center.currency)}</b>
           </div>
           <Link className="secondary-button button-link" href="/app/finance">
             Mở sổ tài chính

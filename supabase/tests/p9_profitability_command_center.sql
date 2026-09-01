@@ -3,11 +3,12 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(24);
+select plan(26);
 
 select has_table('public', 'order_profitability', 'Order profitability projection exists');
 select has_table('public', 'profitability_cost_entries', 'Immutable direct-cost evidence exists');
 select has_table('public', 'profitability_lifecycle_events', 'Lifecycle audit exists');
+select has_table('public', 'profitability_revenue_allocations', 'Dimension revenue evidence exists');
 select has_type('public', 'profitability_lifecycle', 'Profitability lifecycle is explicit');
 select has_type('public', 'profitability_basis', 'Quoted, committed and actual bases are explicit');
 select has_type('public', 'direct_cost_category', 'Direct-cost categories are explicit');
@@ -17,6 +18,11 @@ select has_function('app_private', 'capture_actual_profitability_for_delivery', 
 select has_function('app_private', 'record_profitability_direct_cost', array['uuid', 'profitability_basis', 'direct_cost_category', 'numeric', 'uuid', 'uuid', 'uuid', 'uuid', 'uuid', 'text', 'timestamp with time zone', 'uuid'], 'Direct costs use a command');
 select has_function('app_private', 'finalize_order_profitability', array['uuid', 'text', 'uuid'], 'Profitability can be finalized explicitly');
 select has_function('app_private', 'reopen_order_profitability', array['uuid', 'text', 'uuid'], 'Finalized profitability can be reopened explicitly');
+select has_function(
+  'app_private', 'record_profitability_revenue_allocation',
+  array['uuid', 'uuid', 'numeric', 'text', 'uuid'],
+  'Service revenue attribution uses a controlled command'
+);
 
 select has_view('public', 'profitability_order_summary', 'Order margin view exists');
 select has_view('public', 'profitability_direct_cost_waterfall', 'Direct-cost waterfall exists');
@@ -62,10 +68,13 @@ select results_eq(
   $$values (0::bigint)$$,
   'General overhead cannot be faked into direct-cost categories'
 );
-select results_eq(
-  $$select count(*)::bigint from public.profitability_command_center$$,
-  $$values (1::bigint)$$,
-  'Command center exposes one consolidated row'
+select ok(
+  (select count(*) > 0 from public.profitability_command_center)
+    and (
+      select count(*) = count(distinct currency)
+      from public.profitability_command_center
+    ),
+  'Command center exposes one consolidated row per currency'
 );
 
 select * from finish(true);
