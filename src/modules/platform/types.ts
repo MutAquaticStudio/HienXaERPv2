@@ -75,6 +75,18 @@ export const PERMISSIONS = [
   "delivery.update_assigned",
   "delivery.proof.create",
   "delivery.confirm",
+  "finance.manage",
+  "receivable.read",
+  "receivable.adjust",
+  "payable.read",
+  "payable.adjust",
+  "payment.read",
+  "payment.create",
+  "payment.allocate",
+  "payment.post",
+  "payment.reverse",
+  "reconciliation.manage",
+  "expense.manage",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];

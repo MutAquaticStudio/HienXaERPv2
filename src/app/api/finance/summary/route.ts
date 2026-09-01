@@ -1,6 +1,7 @@
 import { assertPermission } from "@/modules/platform/authorization";
 import { getCurrentPrincipal } from "@/modules/platform/principal";
 import { PlatformError } from "@/modules/platform/errors";
+import { getFinanceSnapshot } from "@/modules/finance/service";
 
 export async function GET() {
   const principal = await getCurrentPrincipal("office");
@@ -10,7 +11,8 @@ export async function GET() {
 
   try {
     assertPermission(principal, "finance.read");
-    return Response.json({ status: "PHASE_LOCKED", data: null });
+    const snapshot = await getFinanceSnapshot(principal);
+    return Response.json({ status: "READY", data: snapshot.summary });
   } catch (error) {
     const status = error instanceof PlatformError ? error.status : 403;
     return Response.json({ error: "ACCESS_DENIED" }, { status });
