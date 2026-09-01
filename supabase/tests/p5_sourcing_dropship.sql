@@ -403,13 +403,16 @@ select is(
   1::bigint,
   'Successful Purchase Order transition is audited once'
 );
-select ok(
-  to_regclass('public.payables') is null
-    and to_regclass('public.ap_ledger') is null,
-  'Purchase Order confirmation creates no AP source of truth'
+select is(
+  (select count(*) from public.payables
+   where purchase_order_id = '57000000-0000-4000-8000-000000000002'),
+  0::bigint,
+  'Purchase Order confirmation creates no payable before accepted delivery'
 );
-select ok(
-  to_regclass('public.inventory_movements') is null,
+select is(
+  (select count(*) from public.inventory_movements
+   where material_id = '51000000-0000-4000-8000-000000000002'),
+  0::bigint,
   'Supplier-direct confirmation creates no inventory movement'
 );
 select ok(

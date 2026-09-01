@@ -25,14 +25,35 @@ describe("P6 inventory repository contract", () => {
 
   it("serializes reservations and derives base quantity from a versioned conversion", () => {
     const sql = migration();
-    expect(sql).toContain("for update of source");
-    expect(sql).toContain("from app_private.inventory_positions");
-    expect(sql).toContain("for update;");
-    expect(sql).toContain("RESERVATION_BASE_UOM_CONVERSION_NOT_FOUND");
-    expect(sql).toContain("conversion_snapshot jsonb not null");
-    expect(sql).toContain(
+    const reserveStart = sql.indexOf(
+      "create or replace function app_private.reserve_stock",
+    );
+    const reserveEnd = sql.indexOf(
+      "create or replace function app_private.release_stock_reservation",
+      reserveStart,
+    );
+    const reserveSql = sql.slice(reserveStart, reserveEnd);
+    const allocationLock = reserveSql.indexOf("for update of source");
+    const positionRead = reserveSql.indexOf(
+      "from app_private.inventory_positions",
+    );
+    const positionLock = reserveSql.indexOf("for update;", positionRead);
+    const availabilityCheck = reserveSql.indexOf(
       "position.on_hand_quantity - position.reserved_quantity < base_quantity",
     );
+    const reservationUpdate = reserveSql.indexOf(
+      "update app_private.inventory_positions set",
+    );
+
+    expect(reserveStart).toBeGreaterThanOrEqual(0);
+    expect(reserveEnd).toBeGreaterThan(reserveStart);
+    expect(allocationLock).toBeGreaterThanOrEqual(0);
+    expect(positionRead).toBeGreaterThan(allocationLock);
+    expect(positionLock).toBeGreaterThan(positionRead);
+    expect(availabilityCheck).toBeGreaterThan(positionLock);
+    expect(reservationUpdate).toBeGreaterThan(availabilityCheck);
+    expect(sql).toContain("RESERVATION_BASE_UOM_CONVERSION_NOT_FOUND");
+    expect(sql).toContain("conversion_snapshot jsonb not null");
   });
 
   it("posts every receipt, issue and approved count variance to the ledger", () => {

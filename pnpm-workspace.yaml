@@ -2,12 +2,12 @@ packages:
   - .
 
 allowBuilds:
+  "@embedded-postgres/darwin-arm64": true
+  "@embedded-postgres/linux-x64": true
+  esbuild: true
+  sharp: true
+  supabase: true
   unrs-resolver: false
 
 minimumReleaseAgeExclude:
   - lucide-react@1.38.0
-
-onlyBuiltDependencies:
-  - esbuild
-  - sharp
-  - supabase

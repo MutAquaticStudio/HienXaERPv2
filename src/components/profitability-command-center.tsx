@@ -14,7 +14,15 @@ import {
   WalletCards,
 } from "lucide-react";
 import Link from "next/link";
-import { useActionState, useMemo, useState, type ReactNode } from "react";
+import {
+  useActionState,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 
 import {
   runProfitabilityAction,
@@ -59,15 +67,25 @@ const dimensionLabels: Record<
   VEHICLE: "Phương tiện",
   SERVICE: "Dịch vụ",
 };
+const dimensionOptions = [
+  "CUSTOMER",
+  "MATERIAL",
+  "SUPPLIER",
+  "VEHICLE",
+  "SERVICE",
+] as const;
+type DrilldownDimension = (typeof dimensionOptions)[number];
 
 function CommandForm({
   children,
+  description,
   idempotencyKey,
   kind,
   label,
   tone = "primary",
 }: {
   children: ReactNode;
+  description?: string;
   idempotencyKey: string;
   kind:
     | "profitability.cost.record"
@@ -86,12 +104,44 @@ function CommandForm({
     runProfitabilityAction,
     initial,
   );
+  const formRef = useRef<HTMLFormElement>(null);
+  const submittedDraft = useRef<Array<[string, string]>>([]);
+
+  useEffect(() => {
+    if (state.status !== "error" || !formRef.current) return;
+    for (const [name, value] of submittedDraft.current) {
+      const control = formRef.current.elements.namedItem(name);
+      if (
+        control instanceof HTMLInputElement ||
+        control instanceof HTMLSelectElement ||
+        control instanceof HTMLTextAreaElement
+      ) {
+        control.value = value;
+      }
+    }
+  }, [state]);
+
   return (
-    <form action={action} className="profitability-command-form">
+    <form
+      ref={formRef}
+      action={action}
+      className="profitability-command-form"
+      onSubmit={(event) => {
+        submittedDraft.current = Array.from(
+          new FormData(event.currentTarget).entries(),
+        ).flatMap(([name, value]) =>
+          typeof value === "string" ? [[name, value] as [string, string]] : [],
+        );
+      }}
+    >
       <input name="kind" type="hidden" value={kind} />
       <input name="idempotencyKey" type="hidden" value={state.idempotencyKey} />
       {children}
+      {description ? (
+        <p className="profitability-consequence">{description}</p>
+      ) : null}
       <button
+        aria-busy={pending}
         className={
           tone === "primary"
             ? "primary-button"
@@ -102,17 +152,38 @@ function CommandForm({
         disabled={pending}
         type="submit"
       >
-        {pending ? "ĐANG GHI…" : label}
+        {pending ? "Đang lưu…" : label}
       </button>
       {state.status !== "idle" ? (
         <p
+          aria-atomic="true"
           aria-live="polite"
           className={`form-message form-message-${state.status}`}
+          role={state.status === "error" ? "alert" : "status"}
         >
           {state.message}
         </p>
       ) : null}
     </form>
+  );
+}
+
+function LifecycleBadge({
+  lifecycle,
+}: {
+  lifecycle: OrderProfitabilitySummary["lifecycle"];
+}) {
+  const Icon =
+    lifecycle === "FINALIZED"
+      ? LockKeyhole
+      : lifecycle === "ACTUAL_OPEN"
+        ? RefreshCcw
+        : TrendingUp;
+  return (
+    <span className={`profitability-status status-${lifecycle.toLowerCase()}`}>
+      <Icon aria-hidden="true" />
+      {lifecycleLabel[lifecycle]}
+    </span>
   );
 }
 
@@ -151,8 +222,7 @@ export function ProfitabilityCommandCenter({
   canManage: boolean;
 }) {
   const [lifecycle, setLifecycle] = useState("ALL");
-  const [dimension, setDimension] =
-    useState<ProfitabilityDimensionSummary["dimension"]>("CUSTOMER");
+  const [dimension, setDimension] = useState<DrilldownDimension>("CUSTOMER");
   const [query, setQuery] = useState("");
   const [currency, setCurrency] = useState(
     data.commandCenters[0]?.currency ?? "VND",
@@ -187,15 +257,42 @@ export function ProfitabilityCommandCenter({
     data.commandCenters[0];
   if (!center) return null;
 
+  function moveDimensionTab(
+    event: KeyboardEvent<HTMLButtonElement>,
+    current: DrilldownDimension,
+  ) {
+    const currentIndex = dimensionOptions.indexOf(current);
+    let nextIndex = currentIndex;
+    if (event.key === "ArrowRight") {
+      nextIndex = (currentIndex + 1) % dimensionOptions.length;
+    } else if (event.key === "ArrowLeft") {
+      nextIndex =
+        (currentIndex - 1 + dimensionOptions.length) % dimensionOptions.length;
+    } else if (event.key === "Home") {
+      nextIndex = 0;
+    } else if (event.key === "End") {
+      nextIndex = dimensionOptions.length - 1;
+    } else {
+      return;
+    }
+    event.preventDefault();
+    const nextDimension = dimensionOptions[nextIndex];
+    if (!nextDimension) return;
+    setDimension(nextDimension);
+    event.currentTarget.parentElement
+      ?.querySelector<HTMLButtonElement>(`#dimension-tab-${nextDimension}`)
+      ?.focus();
+  }
+
   return (
     <div className="profitability-workspace">
       <header className="profitability-header">
         <div>
-          <p className="page-context">P9 · Profitability & Command Center</p>
+          <p className="page-context">P9 · Lợi nhuận và điều hành</p>
           <h1>Trung tâm điều hành lợi nhuận</h1>
           <p>
-            Đọc biên đóng góp từ doanh thu đến chi phí trực tiếp — không phân bổ
-            giả định chi phí chung.
+            Theo dõi doanh thu, chi phí trực tiếp và phần lợi nhuận còn lại mà
+            không phân bổ giả định chi phí chung.
           </p>
         </div>
         <div className="profitability-as-of">
@@ -254,10 +351,10 @@ export function ProfitabilityCommandCenter({
         <article className="profitability-waterfall">
           <div className="profitability-section-heading">
             <div>
-              <p>Waterfall chi phí trực tiếp</p>
+              <p>Cơ cấu chi phí trực tiếp</p>
               <h2>Chi phí thực tế theo cấu phần</h2>
             </div>
-            <span>Không gồm overhead chung</span>
+            <span>Không gồm chi phí chung</span>
           </div>
           <div className="cost-bars">
             {actualCosts.map((item) => (
@@ -295,7 +392,7 @@ export function ProfitabilityCommandCenter({
             <li>
               <span>1</span>
               <div>
-                <strong>ESTIMATED</strong>
+                <strong>Ước tính</strong>
                 <small>Báo giá và chi phí tham chiếu</small>
               </div>
               <b>{center.estimatedCount}</b>
@@ -303,7 +400,7 @@ export function ProfitabilityCommandCenter({
             <li>
               <span>2</span>
               <div>
-                <strong>ACTUAL_OPEN</strong>
+                <strong>Đang ghi nhận thực tế</strong>
                 <small>Đang nhận doanh thu, chi phí thực tế</small>
               </div>
               <b>{center.actualOpenCount}</b>
@@ -311,7 +408,7 @@ export function ProfitabilityCommandCenter({
             <li>
               <span>3</span>
               <div>
-                <strong>FINALIZED</strong>
+                <strong>Đã chốt</strong>
                 <small>Chi phí muộn phải mở lại có lý do</small>
               </div>
               <b>{center.finalizedCount}</b>
@@ -323,7 +420,7 @@ export function ProfitabilityCommandCenter({
       <section className="profitability-orders-panel">
         <div className="profitability-section-heading">
           <div>
-            <p>Expected vs actual</p>
+            <p>Kế hoạch so với thực tế</p>
             <h2>Biên lợi nhuận theo đơn hàng</h2>
           </div>
           <span>{orders.length} đơn phù hợp</span>
@@ -356,12 +453,10 @@ export function ProfitabilityCommandCenter({
             <thead>
               <tr>
                 <th>Đơn hàng / khách hàng</th>
-                <th>Doanh thu hiệu lực</th>
-                <th>Chi phí trực tiếp</th>
-                <th>Lợi nhuận đóng góp</th>
-                <th>Biên / chênh lệch</th>
-                <th>Vòng đời</th>
-                <th aria-label="Thao tác" />
+                <th>Kết quả tài chính</th>
+                <th>Biên lợi nhuận</th>
+                <th>Trạng thái</th>
+                <th aria-label="Cập nhật đơn" />
               </tr>
             </thead>
             <tbody>
@@ -369,7 +464,7 @@ export function ProfitabilityCommandCenter({
                 const hasActual = Number(order.actualRevenue) > 0;
                 return (
                   <tr key={order.id}>
-                    <td>
+                    <td data-label="Đơn hàng">
                       <strong>{order.salesOrderNumber}</strong>
                       <span>{order.customerName}</span>
                       <small>
@@ -377,63 +472,70 @@ export function ProfitabilityCommandCenter({
                         {order.vehiclePlate}
                       </small>
                     </td>
-                    <td>
-                      <strong>
-                        {money(
-                          hasActual
-                            ? order.actualRevenue
-                            : order.committedRevenue,
-                          order.currency,
-                        )}
-                      </strong>
-                      <small>{hasActual ? "Thực tế" : "Cam kết"}</small>
-                    </td>
-                    <td>
-                      <strong>
-                        {money(
-                          hasActual
-                            ? order.actualDirectCost
-                            : order.committedDirectCost,
-                          order.currency,
-                        )}
-                      </strong>
-                      <small>Chi phí trực tiếp</small>
-                    </td>
-                    <td>
-                      <strong>
-                        {money(
-                          hasActual
-                            ? order.actualContributionProfit
-                            : order.committedContributionProfit,
-                          order.currency,
-                        )}
-                      </strong>
-                      <small>
-                        Báo giá{" "}
-                        {money(order.quotedContributionProfit, order.currency)}
-                      </small>
-                    </td>
-                    <td>
-                      <MarginCell order={order} />
-                    </td>
-                    <td>
-                      <span
-                        className={`profitability-status status-${order.lifecycle.toLowerCase()}`}
-                      >
-                        {lifecycleLabel[order.lifecycle]}
+                    <td
+                      className="profitability-financial-cell"
+                      data-label="Kết quả tài chính"
+                    >
+                      <span>
+                        <small>
+                          Doanh thu {hasActual ? "thực tế" : "cam kết"}
+                        </small>
+                        <strong>
+                          {money(
+                            hasActual
+                              ? order.actualRevenue
+                              : order.committedRevenue,
+                            order.currency,
+                          )}
+                        </strong>
+                      </span>
+                      <span>
+                        <small>Chi phí trực tiếp</small>
+                        <strong>
+                          {money(
+                            hasActual
+                              ? order.actualDirectCost
+                              : order.committedDirectCost,
+                            order.currency,
+                          )}
+                        </strong>
+                      </span>
+                      <span>
+                        <small>Lợi nhuận còn lại</small>
+                        <strong>
+                          {money(
+                            hasActual
+                              ? order.actualContributionProfit
+                              : order.committedContributionProfit,
+                            order.currency,
+                          )}
+                        </strong>
+                        <small>
+                          Báo giá{" "}
+                          {money(
+                            order.quotedContributionProfit,
+                            order.currency,
+                          )}
+                        </small>
                       </span>
                     </td>
-                    <td>
+                    <td data-label="Biên lợi nhuận">
+                      <MarginCell order={order} />
+                    </td>
+                    <td data-label="Trạng thái">
+                      <LifecycleBadge lifecycle={order.lifecycle} />
+                    </td>
+                    <td data-label="Cập nhật đơn">
                       {canManage ? (
                         <details className="profitability-order-actions">
-                          <summary>Thao tác</summary>
+                          <summary>Cập nhật đơn</summary>
                           <div>
                             {order.lifecycle !== "FINALIZED" ? (
                               <>
                                 <CommandForm
                                   idempotencyKey={keyFor(`cost:${order.id}`)}
                                   kind="profitability.cost.record"
-                                  label="GHI CHI PHÍ"
+                                  label="Ghi chi phí"
                                   tone="secondary"
                                 >
                                   <input
@@ -496,7 +598,7 @@ export function ProfitabilityCommandCenter({
                                         `revenue:${order.id}`,
                                       )}
                                       kind="profitability.revenue.allocate"
-                                      label="PHÂN BỔ DOANH THU DỊCH VỤ"
+                                      label="Ghi doanh thu dịch vụ"
                                       tone="secondary"
                                     >
                                       <input
@@ -505,7 +607,7 @@ export function ProfitabilityCommandCenter({
                                         value={order.salesOrderId}
                                       />
                                       <label>
-                                        <span>UUID dịch vụ</span>
+                                        <span>Mã dịch vụ</span>
                                         <input
                                           name="serviceReferenceId"
                                           required
@@ -531,7 +633,8 @@ export function ProfitabilityCommandCenter({
                                         `finalize:${order.id}`,
                                       )}
                                       kind="profitability.finalize"
-                                      label="CHỐT LỢI NHUẬN"
+                                      description="Sau khi chốt, chi phí đến muộn chỉ được ghi khi mở lại và nêu rõ lý do."
+                                      label="Chốt lợi nhuận"
                                     >
                                       <input
                                         name="salesOrderId"
@@ -554,7 +657,8 @@ export function ProfitabilityCommandCenter({
                               <CommandForm
                                 idempotencyKey={keyFor(`reopen:${order.id}`)}
                                 kind="profitability.reopen"
-                                label="MỞ LẠI CÓ KIỂM SOÁT"
+                                description="Mở lại cho phép ghi chi phí đến muộn; lý do và lần mở lại được lưu trong lịch sử."
+                                label="Mở lại lợi nhuận"
                                 tone="risk"
                               >
                                 <input
@@ -579,6 +683,13 @@ export function ProfitabilityCommandCenter({
                   </tr>
                 );
               })}
+              {!orders.length ? (
+                <tr>
+                  <td className="profitability-empty-row" colSpan={5}>
+                    Không có đơn hàng phù hợp với bộ lọc hiện tại.
+                  </td>
+                </tr>
+              ) : null}
             </tbody>
           </table>
         </div>
@@ -588,7 +699,7 @@ export function ProfitabilityCommandCenter({
         <article className="profitability-dimensions">
           <div className="profitability-section-heading">
             <div>
-              <p>Drill-down lợi nhuận</p>
+              <p>Chi tiết lợi nhuận</p>
               <h2>Xem theo chiều phân tích</h2>
             </div>
           </div>
@@ -597,27 +708,29 @@ export function ProfitabilityCommandCenter({
             role="tablist"
             aria-label="Chiều phân tích"
           >
-            {(
-              [
-                "CUSTOMER",
-                "MATERIAL",
-                "SUPPLIER",
-                "VEHICLE",
-                "SERVICE",
-              ] as const
-            ).map((item) => (
+            {dimensionOptions.map((item) => (
               <button
+                aria-controls="profitability-dimension-panel"
                 aria-selected={dimension === item}
+                id={`dimension-tab-${item}`}
                 key={item}
                 onClick={() => setDimension(item)}
+                onKeyDown={(event) => moveDimensionTab(event, item)}
                 role="tab"
+                tabIndex={dimension === item ? 0 : -1}
                 type="button"
               >
                 {dimensionLabels[item]}
               </button>
             ))}
           </div>
-          <div className="dimension-list">
+          <div
+            aria-labelledby={`dimension-tab-${dimension}`}
+            className="dimension-list"
+            id="profitability-dimension-panel"
+            role="tabpanel"
+            tabIndex={0}
+          >
             {dimensions.map((item) => (
               <div key={`${item.dimension}-${item.dimensionId}`}>
                 <span>
@@ -686,11 +799,11 @@ export function ProfitabilityCommandCenter({
       <aside className="profitability-policy-note">
         <RefreshCcw aria-hidden="true" />
         <div>
-          <strong>Chi phí đến muộn sau FINALIZED</strong>
+          <strong>Chi phí đến muộn sau khi đã chốt</strong>
           <p>
-            Không sửa âm thầm số đã chốt. Finance phải mở lại với lý do, ghi chi
-            phí có nguồn và chốt lại; mọi chuyển trạng thái đều được giữ trong
-            lịch sử.
+            Không sửa âm thầm số đã chốt. Bộ phận Tài chính phải mở lại với lý
+            do, ghi chi phí có nguồn và chốt lại; mọi chuyển trạng thái đều được
+            giữ trong lịch sử.
           </p>
         </div>
       </aside>

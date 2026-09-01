@@ -257,10 +257,12 @@ select results_eq(
   $$values (10000000::numeric, 28200000::numeric)$$,
   'Confirmation increases uninvoiced exposure but does not create customer debt'
 );
-select ok(
-  to_regclass('public.receivables') is null
-    and to_regclass('public.ar_ledger') is null,
-  'P4 confirmation creates no AR source-of-truth table or entry'
+select results_eq(
+  $$select count(*), to_regclass('public.ar_ledger') is null
+    from public.receivables
+    where sales_order_id = '46000000-0000-4000-8000-000000000001'$$,
+  $$values (0::bigint, true)$$,
+  'P4 confirmation creates no receivable or legacy AR entry before delivery acceptance'
 );
 select ok(
   not exists (
