@@ -10,6 +10,7 @@ export const SYNTHETIC_OFFICE_PRINCIPAL: Principal = {
     "platform.access_worker",
     "finance.read",
     "margin.read",
+    "profitability.manage",
     "work_item.read_assigned",
     "work_pool.read",
     "audit.view",

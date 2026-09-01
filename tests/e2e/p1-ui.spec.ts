@@ -33,10 +33,12 @@ test("office shell matches the P1 accessible foundation", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/app");
 
-  await expect(page.getByRole("heading", { name: "Chào buổi sáng" })).toBeVisible();
-  await expect(page.getByText("Hệ thống an toàn", { exact: true })).toBeVisible();
-  await expect(page.getByText("Dữ liệu được bảo vệ", { exact: true })).toBeVisible();
-  await expect(page.getByText("Sẵn sàng vận hành", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Trung tâm điều hành lợi nhuận" }),
+  ).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Điều hướng văn phòng" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Bật chế độ chữ lớn" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Đăng xuất" })).toBeVisible();
   await expect(seriousAxeViolations(page)).resolves.toEqual([]);
 
   await page.screenshot({

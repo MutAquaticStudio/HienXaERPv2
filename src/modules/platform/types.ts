@@ -27,6 +27,7 @@ export const PERMISSIONS = [
   "platform.access_worker",
   "finance.read",
   "margin.read",
+  "profitability.manage",
   "work_item.read_assigned",
   "work_pool.read",
   "audit.view",

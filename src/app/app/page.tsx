@@ -1,8 +1,14 @@
+import { randomUUID } from "node:crypto";
 import { CheckCircle2, LockKeyhole, ShieldCheck } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata: Metadata = { title: "Tổng quan" };
+import { ProfitabilityCommandCenter } from "@/components/profitability-command-center";
+import { hasPermission } from "@/modules/platform/authorization";
+import { getCurrentPrincipal } from "@/modules/platform/principal";
+import { getProfitabilitySnapshot } from "@/modules/profitability/service";
+
+export const metadata: Metadata = { title: "Trung tâm điều hành lợi nhuận" };
 
 const systemStates = [
   {
@@ -22,7 +28,25 @@ const systemStates = [
   },
 ] as const;
 
-export default function OfficeHomePage() {
+export default async function OfficeHomePage() {
+  const principal = await getCurrentPrincipal("office");
+  if (principal && hasPermission(principal, "margin.read")) {
+    const data = await getProfitabilitySnapshot(principal);
+    const keys = Object.fromEntries(
+      data.orders.flatMap((order) => [
+        [`cost:${order.id}`, randomUUID()],
+        [`finalize:${order.id}`, randomUUID()],
+        [`reopen:${order.id}`, randomUUID()],
+      ]),
+    );
+    return (
+      <ProfitabilityCommandCenter
+        canManage={hasPermission(principal, "profitability.manage")}
+        data={data}
+        initialKeys={keys}
+      />
+    );
+  }
   return (
     <div className="office-home">
       <section className="welcome-block">
