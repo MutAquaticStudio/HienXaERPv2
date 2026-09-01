@@ -24,11 +24,14 @@ select has_function(
 select has_function('app_private', 'confirm_delivery', array['uuid', 'jsonb', 'text', 'uuid'], 'Confirmation is database-serialized');
 
 select results_eq(
-  $$select enumlabel::text from pg_enum
+  $$select enumlabel::text collate "C" from pg_enum
     join pg_type on pg_type.oid = pg_enum.enumtypid
     where pg_type.typname = 'delivery_status' order by enumsortorder$$,
-  $$values ('PLANNED'), ('ASSIGNED'), ('DISPATCHED'), ('ARRIVED'),
-    ('DELIVERED'), ('CONFIRMED'), ('PARTIAL'), ('FAILED'), ('CANCELLED')$$,
+  $$values ('PLANNED'::text collate "C"), ('ASSIGNED'::text collate "C"),
+    ('DISPATCHED'::text collate "C"), ('ARRIVED'::text collate "C"),
+    ('DELIVERED'::text collate "C"), ('CONFIRMED'::text collate "C"),
+    ('PARTIAL'::text collate "C"), ('FAILED'::text collate "C"),
+    ('CANCELLED'::text collate "C")$$,
   'Delivery state machine contains the required states'
 );
 
@@ -49,12 +52,13 @@ select ok(
   'Authenticated reads are available behind RLS'
 );
 select results_eq(
-  $$select permission.code from public.role_permissions role_permission
+  $$select permission.code collate "C" from public.role_permissions role_permission
     join public.roles role on role.id = role_permission.role_id
     join public.permissions permission on permission.id = role_permission.permission_id
     where role.code = 'DRIVER' and permission.code like 'delivery.%'
     order by permission.code$$,
-  $$values ('delivery.dispatch'), ('delivery.proof.create'), ('delivery.update_assigned')$$,
+  $$values ('delivery.dispatch'::text collate "C"), ('delivery.proof.create'::text collate "C"),
+    ('delivery.update_assigned'::text collate "C")$$,
   'Driver receives only assigned workflow and proof permissions'
 );
 
