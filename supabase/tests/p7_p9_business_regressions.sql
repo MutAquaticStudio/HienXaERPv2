@@ -72,14 +72,13 @@ insert into public.quotations (
   'a0000000-0000-4000-8000-000000000001'
 );
 insert into public.quotation_revisions (
-  id, quotation_id, revision_number, valid_until, status, sent_at, locked_at, accepted_at, created_by
+  id, quotation_id, revision_number, valid_until, created_by
 ) values (
   'a3000000-0000-4000-8000-000000000002',
-  'a3000000-0000-4000-8000-000000000001', 1, '2026-12-31', 'ACCEPTED',
-  now(), now(), now(), 'a0000000-0000-4000-8000-000000000001'
+  'a3000000-0000-4000-8000-000000000001', 1, '2026-12-31',
+  'a0000000-0000-4000-8000-000000000001'
 );
-update public.quotations set
-  active_revision_id = 'a3000000-0000-4000-8000-000000000002', status = 'ACCEPTED'
+update public.quotations set active_revision_id = 'a3000000-0000-4000-8000-000000000002'
 where id = 'a3000000-0000-4000-8000-000000000001';
 insert into public.quotation_lines (
   id, revision_id, line_number, material_id, material_code_snapshot,
@@ -96,6 +95,13 @@ insert into public.quotation_lines (
   'a2000000-0000-4000-8000-000000000004', 18000, 18000, 'VND', 'RULE_MATCH',
   'a0000000-0000-4000-8000-000000000001'
 );
+update public.quotation_revisions
+set status = 'SENT', sent_at = now(), locked_at = now()
+where id = 'a3000000-0000-4000-8000-000000000002';
+update public.quotation_revisions set status = 'ACCEPTED', accepted_at = now()
+where id = 'a3000000-0000-4000-8000-000000000002';
+update public.quotations set status = 'ACCEPTED'
+where id = 'a3000000-0000-4000-8000-000000000001';
 insert into public.sales_orders (
   id, sales_order_number, quotation_id, quotation_revision_id, customer_id,
   customer_code_snapshot, customer_name_snapshot, customer_site_id,
