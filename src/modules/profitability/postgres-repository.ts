@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { Sql, TransactionSql } from "postgres";
+import type { createClient } from "@/lib/supabase/server";
 
 import type { ProfitabilityCommandInput } from "@/modules/profitability/commands";
 import type {
@@ -21,7 +22,7 @@ async function databasePermission(
   await sql`select app_private.assert_actor_permission(${actorId}, ${permission})`;
 }
 
-interface CenterRow {
+export interface CenterRow {
   as_of_date: string;
   currency: string;
   revenue: string;
@@ -35,7 +36,7 @@ interface CenterRow {
   actual_open_count: number;
   finalized_count: number;
 }
-interface OrderRow {
+export interface OrderRow {
   id: string;
   sales_order_id: string;
   sales_order_number: string;
@@ -61,41 +62,32 @@ interface OrderRow {
   vehicle_plate: string;
 }
 
-export async function readProfitabilitySnapshot(
-  sql: Sql,
-  principal: Principal,
-): Promise<ProfitabilitySnapshot> {
-  assertPermission(principal, "margin.read");
-  await databasePermission(sql, principal.userId, "margin.read");
-  const [centerRows, orderRows, costRows, dimensionRows] = await Promise.all([
-    sql<CenterRow[]>`select * from public.profitability_command_center`,
-    sql<
-      OrderRow[]
-    >`select * from public.profitability_order_summary order by updated_at desc limit 200`,
-    sql<
-      {
-        category: DirectCostWaterfallItem["category"];
-        basis: DirectCostWaterfallItem["basis"];
-        amount: string;
-        currency: string;
-      }[]
-    >`
-      select category, basis, amount, currency from public.profitability_direct_cost_waterfall
-      order by basis, amount desc`,
-    sql<
-      {
-        dimension: ProfitabilityDimensionSummary["dimension"];
-        dimension_id: string;
-        dimension_name: string;
-        currency: string;
-        revenue: string;
-        direct_cost: string;
-        contribution_profit: string;
-      }[]
-    >`
-      select dimension, dimension_id, dimension_name, currency, revenue, direct_cost, contribution_profit
-      from public.profitability_dimension_summary order by dimension, contribution_profit desc limit 300`,
-  ]);
+export interface ProfitabilityReadRows {
+  centerRows: CenterRow[];
+  orderRows: OrderRow[];
+  costRows: {
+    category: DirectCostWaterfallItem["category"];
+    basis: DirectCostWaterfallItem["basis"];
+    amount: string;
+    currency: string;
+  }[];
+  dimensionRows: {
+    dimension: ProfitabilityDimensionSummary["dimension"];
+    dimension_id: string;
+    dimension_name: string;
+    currency: string;
+    revenue: string;
+    direct_cost: string;
+    contribution_profit: string;
+  }[];
+}
+
+export function mapProfitabilitySnapshot({
+  centerRows,
+  orderRows,
+  costRows,
+  dimensionRows,
+}: ProfitabilityReadRows): ProfitabilitySnapshot {
   const fallbackCenter: CenterRow = {
     as_of_date: new Date().toISOString().slice(0, 10),
     currency: "VND",
@@ -163,6 +155,93 @@ export async function readProfitabilitySnapshot(
       contributionProfit: row.contribution_profit,
     })),
   };
+}
+
+export async function readProfitabilitySnapshot(
+  sql: Sql,
+  principal: Principal,
+): Promise<ProfitabilitySnapshot> {
+  assertPermission(principal, "margin.read");
+  await databasePermission(sql, principal.userId, "margin.read");
+  const [centerRows, orderRows, costRows, dimensionRows] = await Promise.all([
+    sql<CenterRow[]>`select * from public.profitability_command_center`,
+    sql<
+      OrderRow[]
+    >`select * from public.profitability_order_summary order by updated_at desc limit 200`,
+    sql<
+      {
+        category: DirectCostWaterfallItem["category"];
+        basis: DirectCostWaterfallItem["basis"];
+        amount: string;
+        currency: string;
+      }[]
+    >`
+      select category, basis, amount, currency from public.profitability_direct_cost_waterfall
+      order by basis, amount desc`,
+    sql<
+      {
+        dimension: ProfitabilityDimensionSummary["dimension"];
+        dimension_id: string;
+        dimension_name: string;
+        currency: string;
+        revenue: string;
+        direct_cost: string;
+        contribution_profit: string;
+      }[]
+    >`
+      select dimension, dimension_id, dimension_name, currency, revenue, direct_cost, contribution_profit
+      from public.profitability_dimension_summary order by dimension, contribution_profit desc limit 300`,
+  ]);
+  return mapProfitabilitySnapshot({ centerRows, orderRows, costRows, dimensionRows });
+}
+
+type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
+
+export async function readProfitabilitySnapshotFromSupabase(
+  supabase: SupabaseServerClient,
+  principal: Principal,
+): Promise<ProfitabilitySnapshot> {
+  assertPermission(principal, "margin.read");
+  const [centerResult, orderResult, costResult, dimensionResult] = await Promise.all([
+    supabase.from("profitability_command_center").select("*").limit(1),
+    supabase
+      .from("profitability_order_summary")
+      .select("*")
+      .order("updated_at", { ascending: false })
+      .limit(200),
+    supabase
+      .from("profitability_direct_cost_waterfall")
+      .select("category, basis, amount, currency")
+      .order("basis", { ascending: true })
+      .order("amount", { ascending: false }),
+    supabase
+      .from("profitability_dimension_summary")
+      .select(
+        "dimension, dimension_id, dimension_name, currency, revenue, direct_cost, contribution_profit",
+      )
+      .order("dimension", { ascending: true })
+      .order("contribution_profit", { ascending: false })
+      .limit(300),
+  ]);
+  const firstError = [
+    centerResult.error,
+    orderResult.error,
+    costResult.error,
+    dimensionResult.error,
+  ].find(Boolean);
+  if (firstError) {
+    throw new PlatformError(
+      "Không đọc được dữ liệu trung tâm lợi nhuận.",
+      "PROFITABILITY_READ_FAILED",
+      503,
+    );
+  }
+  return mapProfitabilitySnapshot({
+    centerRows: (centerResult.data ?? []) as CenterRow[],
+    orderRows: (orderResult.data ?? []) as OrderRow[],
+    costRows: (costResult.data ?? []) as ProfitabilityReadRows["costRows"],
+    dimensionRows: (dimensionResult.data ?? []) as ProfitabilityReadRows["dimensionRows"],
+  });
 }
 
 export async function executeProfitabilityCommand(

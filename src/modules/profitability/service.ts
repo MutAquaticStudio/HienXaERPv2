@@ -1,11 +1,12 @@
 import "server-only";
 
 import { getDatabaseClient } from "@/lib/postgres/server";
+import { createClient } from "@/lib/supabase/server";
 import type { ProfitabilityCommandInput } from "@/modules/profitability/commands";
 import { SYNTHETIC_PROFITABILITY } from "@/modules/profitability/fixtures";
 import {
   executeProfitabilityCommand,
-  readProfitabilitySnapshot,
+  readProfitabilitySnapshotFromSupabase,
 } from "@/modules/profitability/postgres-repository";
 import type { ProfitabilitySnapshot } from "@/modules/profitability/types";
 import { assertPermission } from "@/modules/platform/authorization";
@@ -81,7 +82,7 @@ export async function getProfitabilitySnapshot(
 ): Promise<ProfitabilitySnapshot> {
   assertPermission(principal, "margin.read");
   if (canUseSyntheticAuth()) return structuredClone(SYNTHETIC_PROFITABILITY);
-  return readProfitabilitySnapshot(getDatabaseClient(), principal);
+  return readProfitabilitySnapshotFromSupabase(await createClient(), principal);
 }
 
 export async function runProfitabilityCommand(
