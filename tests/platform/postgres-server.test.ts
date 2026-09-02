@@ -16,6 +16,7 @@ describe("Production Postgres client lifecycle", () => {
     postgresMock.mockReset();
     process.env.APP_ENV = "production";
     process.env.VERCEL_ENV = "production";
+    delete process.env.ALLOW_LOCAL_SYNTHETIC_AUTH;
     process.env.NEXT_PUBLIC_SUPABASE_URL = "https://example.supabase.co";
     process.env.SUPABASE_DB_URL = "postgresql://example.test/db";
   });
