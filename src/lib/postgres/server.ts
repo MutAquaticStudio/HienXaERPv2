@@ -18,12 +18,22 @@ export function getDatabaseClient(): Sql {
     );
   }
 
-  databaseClient ??= postgres(connectionString, {
+  if (databaseClient) return databaseClient;
+
+  const client = postgres(connectionString, {
     ssl: "require",
     max: 1,
-    idle_timeout: 20,
+    // Vercel may freeze a function while the pooler closes an idle socket.
+    // Keep the pooler-friendly lifetime short and discard the singleton when
+    // the socket closes so the next invocation establishes a fresh connection.
+    idle_timeout: 10,
+    max_lifetime: 300,
     connect_timeout: 10,
     prepare: false,
+    onclose: () => {
+      if (databaseClient === client) databaseClient = null;
+    },
   });
-  return databaseClient;
+  databaseClient = client;
+  return client;
 }
