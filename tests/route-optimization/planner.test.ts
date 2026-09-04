@@ -44,4 +44,33 @@ describe("RO1 planning guardrails", () => {
       "TIME_WINDOW_VIOLATION", "POOL_CLAIM_BLOCKS_APPLY", "DRIVER_HAS_EXISTING_ASSIGNMENTS",
     ]));
   });
+
+  it("passes a fresh GPS position only as a recommendation input and lowers confidence for stale GPS", async () => {
+    const gpsVehicle: RouteVehicleOption = {
+      ...vehicle,
+      currentLocation: {
+        latitude: "21.1714382", longitude: "106.0697221",
+        recordedAt: "2026-09-01T07:14:35.000Z", freshness: "LIVE",
+      },
+    };
+    let providerOrigin: RouteVehicleOption["currentLocation"];
+    const live = await prepareRoutePlan({
+      candidates: [candidate("live", 1, "4")], vehicle: gpsVehicle, driverActiveAssignmentCount: 0,
+      provider: { order: async (items, origin) => {
+        providerOrigin = origin;
+        return items.map((item) => ({ deliveryId: item.id, estimatedTravelMinutes: 15 }));
+      } },
+    });
+    expect(providerOrigin).toEqual(gpsVehicle.currentLocation);
+    expect(live.warnings.map((item) => item.code)).toContain("GPS_CURRENT_LOCATION_AVAILABLE");
+    expect(live.orderedDeliveryIds).toEqual(["live"]);
+
+    const stale = await prepareRoutePlan({
+      candidates: [candidate("stale", 1, "4")],
+      vehicle: { ...gpsVehicle, currentLocation: { ...gpsVehicle.currentLocation!, freshness: "STALE" } },
+      driverActiveAssignmentCount: 0,
+      provider: { order: async (items) => items.map((item) => ({ deliveryId: item.id, estimatedTravelMinutes: null })) },
+    });
+    expect(stale.warnings.map((item) => item.code)).toContain("GPS_LOCATION_STALE");
+  });
 });

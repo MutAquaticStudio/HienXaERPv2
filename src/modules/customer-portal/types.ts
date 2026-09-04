@@ -72,6 +72,9 @@ export interface CustomerPortalDelivery {
   status: string;
   canAcknowledge: boolean;
   acknowledgementId: string | null;
+  trackingFreshness: "LIVE" | "STALE" | "OFFLINE" | null;
+  progressMessage: string;
+  etaMessage: string;
   lines: Array<{
     id: string;
     materialName: string;

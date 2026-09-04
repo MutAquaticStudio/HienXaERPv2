@@ -76,6 +76,9 @@ export const SYNTHETIC_CUSTOMER_PORTAL_SNAPSHOT: CustomerPortalSnapshot = {
       status: "DELIVERED",
       canAcknowledge: true,
       acknowledgementId: null,
+      trackingFreshness: null,
+      progressMessage: "Theo dõi theo trạng thái giao hàng đã được ghi nhận.",
+      etaMessage: "Dự kiến đến: chuyến đã hoàn tất giao hàng.",
       lines: [
         {
           id: "00000000-0000-4000-8000-000000000602",

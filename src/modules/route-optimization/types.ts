@@ -17,7 +17,9 @@ export interface RoutePlanWarning {
     | "TIME_WINDOW_UNAVAILABLE"
     | "TIME_WINDOW_VIOLATION"
     | "DRIVER_HAS_EXISTING_ASSIGNMENTS"
-    | "POOL_CLAIM_BLOCKS_APPLY";
+    | "POOL_CLAIM_BLOCKS_APPLY"
+    | "GPS_CURRENT_LOCATION_AVAILABLE"
+    | "GPS_LOCATION_STALE";
   message: string;
   deliveryId?: string;
 }
@@ -59,6 +61,12 @@ export interface RouteVehicleOption {
   maxPayloadKg: string | null;
   maxVolumeM3: string | null;
   loadProfiles: RouteLoadProfile[];
+  currentLocation?: {
+    latitude: string;
+    longitude: string;
+    recordedAt: string;
+    freshness: "LIVE" | "STALE" | "OFFLINE";
+  } | null;
 }
 
 export interface RouteDriverOption {

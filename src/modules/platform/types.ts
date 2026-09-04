@@ -84,6 +84,8 @@ export const PERMISSIONS = [
   "delivery.confirm",
   "route_plan.read",
   "route_plan.manage",
+  "gps.location.submit",
+  "gps.location.read_fleet",
   "finance.manage",
   "receivable.read",
   "receivable.adjust",

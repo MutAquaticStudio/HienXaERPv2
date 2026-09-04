@@ -78,7 +78,11 @@ async function preparedPlan(
 ): Promise<PreparedRoutePlan> {
   const snapshot = canUseSyntheticAuth()
     ? structuredClone(SYNTHETIC_ROUTE_OPTIMIZATION)
-    : await readRouteOptimizationSnapshot(getDatabaseClient(), principal);
+    : await readRouteOptimizationSnapshot(
+      getDatabaseClient(),
+      principal,
+      principal.permissions.includes("gps.location.read_fleet"),
+    );
   const selected = input.deliveryIds.map((id) => snapshot.candidates.find((candidate) => candidate.id === id));
   if (selected.some((candidate) => !candidate)) {
     throw new PlatformError("Một hoặc nhiều chuyến không còn đủ điều kiện để lập lộ trình.", "ROUTE_PLAN_DELIVERY_NOT_ELIGIBLE", 409);
@@ -98,7 +102,11 @@ async function preparedPlan(
 export async function getRouteOptimizationSnapshot(principal: Principal): Promise<RouteOptimizationSnapshot> {
   assertPermission(principal, "route_plan.read");
   if (canUseSyntheticAuth()) return structuredClone(SYNTHETIC_ROUTE_OPTIMIZATION);
-  return readRouteOptimizationSnapshot(getDatabaseClient(), principal);
+  return readRouteOptimizationSnapshot(
+    getDatabaseClient(),
+    principal,
+    principal.permissions.includes("gps.location.read_fleet"),
+  );
 }
 
 export async function getApprovedDriverRoute(principal: Principal): Promise<ApprovedDriverRoute | null> {

@@ -51,6 +51,14 @@ interface VehicleRow {
   max_volume_m3: string | null;
 }
 
+interface VehicleLocationRow {
+  vehicle_id: string;
+  latitude: string;
+  longitude: string;
+  recorded_at: string;
+  freshness_status: "LIVE" | "STALE" | "OFFLINE";
+}
+
 interface LoadProfileRow {
   vehicle_id: string;
   material_id: string | null;
@@ -109,9 +117,10 @@ function mapStop(row: StopRow): RoutePlanStop {
 export async function readRouteOptimizationSnapshot(
   sql: Sql,
   principal: Principal,
+  includeGpsLocation = false,
 ): Promise<RouteOptimizationSnapshot> {
   await databasePermission(sql, principal.userId, "route_plan.read");
-  const [candidateRows, vehicleRows, profileRows, driverRows, planRows, stopRows] = await Promise.all([
+  const [candidateRows, vehicleRows, profileRows, driverRows, planRows, stopRows, locationRows] = await Promise.all([
     sql<CandidateRow[]>`
       select delivery.id, delivery.delivery_number, delivery.customer_name_snapshot,
         delivery.pickup_address_snapshot, delivery.drop_address_snapshot,
@@ -174,6 +183,11 @@ export async function readRouteOptimizationSnapshot(
       from public.route_plan_stops stop
       join public.route_plans route_plan on route_plan.id = stop.route_plan_id
       order by route_plan.created_at desc, stop.stop_sequence`,
+    includeGpsLocation
+      ? sql<VehicleLocationRow[]>`
+          select vehicle_id, latitude, longitude, recorded_at::text, freshness_status
+          from public.active_vehicle_location_view`
+      : Promise.resolve([]),
   ]);
 
   const profilesByVehicle = new Map<string, RouteLoadProfile[]>();
@@ -210,6 +224,17 @@ export async function readRouteOptimizationSnapshot(
       maxPayloadKg: row.max_payload_kg,
       maxVolumeM3: row.max_volume_m3,
       loadProfiles: profilesByVehicle.get(row.id) ?? [],
+      currentLocation: locationRows.find((location) => location.vehicle_id === row.id)
+        ? (() => {
+          const location = locationRows.find((item) => item.vehicle_id === row.id)!;
+          return {
+            latitude: location.latitude,
+            longitude: location.longitude,
+            recordedAt: location.recorded_at,
+            freshness: location.freshness_status,
+          };
+        })()
+        : null,
     })),
     drivers: driverRows.map((row) => ({
       userId: row.user_id,

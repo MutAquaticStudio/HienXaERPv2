@@ -66,12 +66,15 @@ export async function readCustomerPortalSnapshot(
     sql<{
       id: string; delivery_number: string; order_number: string; site_name: string | null;
       scheduled_date: string; delivered_at: string | null; status: string; acknowledgement_id: string | null;
+      freshness_status: "LIVE" | "STALE" | "OFFLINE" | null;
     }[]>`select delivery.id, delivery.delivery_number, sales_order.sales_order_number as order_number,
         delivery.customer_site_name_snapshot as site_name, delivery.scheduled_date::text,
-        delivery.delivered_at::text, delivery.status::text, acknowledgement.id as acknowledgement_id
+        delivery.delivered_at::text, delivery.status::text, acknowledgement.id as acknowledgement_id,
+        location.freshness_status
       from public.deliveries delivery
       join public.sales_orders sales_order on sales_order.id = delivery.sales_order_id
       left join public.customer_delivery_acknowledgements acknowledgement on acknowledgement.delivery_id = delivery.id
+      left join public.active_vehicle_location_view location on location.delivery_id = delivery.id
       where delivery.customer_id = ${principal.customerId}
       order by delivery.scheduled_date desc, delivery.created_at desc`,
     sql<{
@@ -141,18 +144,34 @@ export async function readCustomerPortalSnapshot(
       quantity: line.ordered_quantity, uomId: line.uom_id, uomSymbol: line.uom_symbol,
     })),
   }));
-  const deliveries: CustomerPortalDelivery[] = deliveryRows.map((delivery) => ({
-    id: delivery.id, deliveryNumber: delivery.delivery_number, orderNumber: delivery.order_number,
-    siteName: delivery.site_name, scheduledDate: delivery.scheduled_date,
-    deliveredAt: delivery.delivered_at, status: delivery.status,
-    canAcknowledge: ["DELIVERED", "CONFIRMED", "PARTIAL"].includes(delivery.status),
-    acknowledgementId: delivery.acknowledgement_id,
-    lines: deliveryLineRows.filter((line) => line.delivery_id === delivery.id).map((line) => ({
-      id: line.id, materialName: line.material_name, plannedQuantity: line.planned_quantity,
-      actualQuantity: line.actual_quantity, acceptedQuantity: line.accepted_quantity,
-      uomSymbol: line.uom_symbol,
-    })),
-  }));
+  const deliveries: CustomerPortalDelivery[] = deliveryRows.map((delivery) => {
+    const trackingFreshness = delivery.freshness_status;
+    const progressMessage = trackingFreshness === "LIVE"
+      ? "Chuyến đang được điều phối theo dõi. Không hiển thị vị trí chính xác của tài xế."
+      : trackingFreshness === "STALE"
+        ? "Vị trí vận hành cập nhật đã cũ; điều phối đang xác nhận tiến độ."
+        : ["DISPATCHED", "ARRIVED"].includes(delivery.status)
+          ? "Chuyến đang được xử lý; điều phối sẽ cập nhật tiến độ khi có thông tin mới."
+          : "Theo dõi theo trạng thái giao hàng đã được ghi nhận.";
+    const etaMessage = trackingFreshness === "LIVE"
+      ? "Dự kiến đến: đang cập nhật theo lộ trình; đây là ước tính, không phải giờ cam kết."
+      : trackingFreshness === "STALE"
+        ? "Dự kiến đến: cần điều phối xác nhận lại do vị trí cập nhật đã cũ."
+        : "Dự kiến đến: sẽ được cập nhật khi chuyến bắt đầu chia sẻ vị trí hợp lệ.";
+    return {
+      id: delivery.id, deliveryNumber: delivery.delivery_number, orderNumber: delivery.order_number,
+      siteName: delivery.site_name, scheduledDate: delivery.scheduled_date,
+      deliveredAt: delivery.delivered_at, status: delivery.status,
+      canAcknowledge: ["DELIVERED", "CONFIRMED", "PARTIAL"].includes(delivery.status),
+      acknowledgementId: delivery.acknowledgement_id, trackingFreshness,
+      progressMessage, etaMessage,
+      lines: deliveryLineRows.filter((line) => line.delivery_id === delivery.id).map((line) => ({
+        id: line.id, materialName: line.material_name, plannedQuantity: line.planned_quantity,
+        actualQuantity: line.actual_quantity, acceptedQuantity: line.accepted_quantity,
+        uomSymbol: line.uom_symbol,
+      })),
+    };
+  });
 
   return {
     customerName: principal.customerName,

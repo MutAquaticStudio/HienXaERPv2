@@ -7,7 +7,7 @@ import type {
 } from "@/modules/route-optimization/types";
 
 export interface DistanceProvider {
-  order(candidates: RoutePlanningCandidate[]): Promise<Array<{
+  order(candidates: RoutePlanningCandidate[], origin?: RouteVehicleOption["currentLocation"]): Promise<Array<{
     deliveryId: string;
     estimatedTravelMinutes: number | null;
   }>>;
@@ -160,9 +160,20 @@ export async function prepareRoutePlan(input: {
       "Tài xế đã có chuyến đang phân công trong ngày; hãy đối chiếu ca làm trước khi duyệt.",
     ));
   }
+  if (input.vehicle.currentLocation?.freshness === "LIVE") {
+    warnings.push(warning(
+      "GPS_CURRENT_LOCATION_AVAILABLE",
+      "Đề xuất có thể dùng vị trí xe mới nhất làm đầu vào. GPS chỉ hỗ trợ ước lượng; điều phối vẫn phải duyệt trước khi áp dụng P7.",
+    ));
+  } else if (input.vehicle.currentLocation) {
+    warnings.push(warning(
+      "GPS_LOCATION_STALE",
+      "Vị trí xe đã cũ; hệ thống dùng điểm xuất phát kế hoạch và hạ độ tin cậy của đề xuất.",
+    ));
+  }
 
   try {
-    const ordered = await input.provider.order(input.candidates);
+    const ordered = await input.provider.order(input.candidates, input.vehicle.currentLocation);
     if (!validProviderOrder(input.candidates, ordered)) throw new Error("DISTANCE_PROVIDER_RESULT_INVALID");
     return {
       orderedDeliveryIds: ordered.map((item) => item.deliveryId),

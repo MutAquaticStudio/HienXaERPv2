@@ -6243,3 +6243,256 @@ h2 {
     display: grid;
   }
 }
+
+/* GPS1 foreground telemetry. The controls deliberately follow the P9 Office
+   accessibility baseline: no compact touch targets or horizontal overflow. */
+.gps-tracker,
+.fleet-live-map {
+  margin-top: 1.25rem;
+}
+
+.gps-tracker {
+  display: grid;
+  gap: 1rem;
+  border: 1px solid #9bc9aa;
+  border-radius: var(--radius-md);
+  padding: clamp(1rem, 3vw, 1.5rem);
+  background: linear-gradient(135deg, #f5fcf7, #fff);
+  box-shadow: 0 5px 18px rgb(11 24 56 / 5%);
+}
+
+.gps-tracker-heading,
+.gps-tracking-state,
+.gps-tracker-actions,
+.fleet-provider-note,
+.fleet-location-card > header,
+.fleet-location-card > header > div,
+.fleet-location-card > header b,
+.fleet-location-card > p,
+.fleet-empty {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.gps-tracker-heading,
+.fleet-location-card > header {
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.gps-tracker-heading h2,
+.fleet-live-map h2 {
+  margin: 0.15rem 0 0.35rem;
+  font-size: clamp(1.35rem, 2.6vw, 1.8rem);
+}
+
+.gps-tracker-heading > svg {
+  flex: 0 0 auto;
+  color: var(--color-primary-dark);
+}
+
+.gps-live-icon {
+  color: var(--color-primary);
+  animation: gps-pulse 1.25s ease-in-out infinite;
+}
+
+.gps-tracking-state {
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+  background: #fff;
+}
+
+.gps-tracking-state > svg {
+  flex: 0 0 auto;
+  color: var(--color-muted);
+}
+
+.gps-tracking-state-live {
+  border-color: #57a96f;
+  background: var(--color-primary-soft);
+}
+
+.gps-tracking-state-live > svg,
+.gps-tracking-state-live strong {
+  color: var(--color-primary-dark);
+}
+
+.gps-tracking-state strong,
+.gps-tracking-state span {
+  display: block;
+}
+
+.gps-tracking-state span,
+.gps-tracker-copy,
+.gps-last-seen,
+.gps-tracker-unavailable p,
+.fleet-provider-note,
+.fleet-location-card dt,
+.fleet-location-card > p,
+.fleet-empty p,
+.customer-delivery-progress p {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.gps-tracker-copy {
+  line-height: 1.55;
+}
+
+.gps-last-seen {
+  font-size: 0.9rem;
+}
+
+.gps-tracker-actions {
+  flex-wrap: wrap;
+}
+
+.gps-action {
+  min-height: var(--worker-control-height);
+  font-size: 0.93rem;
+}
+
+.gps-tracker-unavailable,
+.fleet-empty {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  background: #fff;
+}
+
+.gps-tracker-unavailable > svg,
+.fleet-empty > svg {
+  flex: 0 0 auto;
+  color: var(--color-muted);
+}
+
+.gps-feedback {
+  margin: 0;
+}
+
+.fleet-provider-note {
+  align-items: center;
+  margin: 0.15rem 0 1rem;
+  line-height: 1.5;
+}
+
+.fleet-provider-note > svg {
+  flex: 0 0 auto;
+  color: var(--color-primary-dark);
+}
+
+.fleet-location-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.fleet-location-card {
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  background: #fff;
+}
+
+.fleet-location-live { border-top: 4px solid var(--color-primary); }
+.fleet-location-stale { border-top: 4px solid #b7791f; }
+.fleet-location-offline { border-top: 4px solid #718096; }
+
+.fleet-location-card header strong,
+.fleet-location-card header span {
+  display: block;
+}
+
+.fleet-location-card header span {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.fleet-location-card header b {
+  flex: 0 0 auto;
+  align-items: center;
+  color: var(--color-primary-dark);
+  font-size: 0.82rem;
+  text-align: right;
+}
+
+.fleet-location-stale header b { color: #8a5412; }
+.fleet-location-offline header b { color: #475569; }
+
+.fleet-location-card dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.fleet-location-card dl div {
+  min-width: 0;
+}
+
+.fleet-location-card dt {
+  margin-bottom: 0.15rem;
+  font-size: 0.84rem;
+}
+
+.fleet-location-card dd {
+  overflow-wrap: anywhere;
+  margin: 0;
+  font-weight: 750;
+}
+
+.fleet-location-card > p {
+  align-items: flex-start;
+  line-height: 1.45;
+}
+
+.fleet-location-card > p > svg {
+  flex: 0 0 auto;
+  margin-top: 0.15rem;
+  color: var(--color-primary-dark);
+}
+
+.customer-delivery-progress {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.9rem 0;
+  border-left: 3px solid var(--color-primary);
+  padding: 0.65rem 0.75rem;
+  background: #f1faf4;
+}
+
+.customer-delivery-progress strong {
+  display: block;
+  margin-bottom: 0.18rem;
+}
+
+.customer-delivery-progress span,
+.customer-delivery-progress small {
+  color: var(--color-muted);
+  line-height: 1.45;
+}
+
+.customer-delivery-progress small { font-size: 0.88rem; }
+
+.fleet-location-card > p span { display: grid; gap: 0.18rem; }
+.fleet-location-card > p strong { color: var(--color-text); }
+
+@keyframes gps-pulse {
+  50% { opacity: 0.4; transform: scale(0.9); }
+}
+
+@media (max-width: 700px) {
+  .fleet-location-grid { grid-template-columns: 1fr; }
+  .gps-tracker-heading,
+  .fleet-location-card > header { gap: 0.55rem; }
+  .fleet-location-card dl { grid-template-columns: 1fr; }
+  .gps-tracker-actions,
+  .gps-action { width: 100%; }
+  .fleet-location-card header b { text-align: left; }
+}
