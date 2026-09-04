@@ -39,6 +39,7 @@ export function OfficeNav() {
             className={active ? "nav-link nav-link-active" : "nav-link"}
             href={href}
             key={href}
+            prefetch={false}
           >
             <Icon aria-hidden="true" size={22} />
             <span>{label}</span>

@@ -23,6 +23,19 @@ describe("P1 repository safety contract", () => {
     expect(workflow).not.toMatch(/\bdocker\b/i);
   });
 
+  it("does not prefetch every authenticated workspace from persistent navigation", () => {
+    const officeNavigation = readFileSync(
+      join(root, "src/components/office-nav.tsx"),
+      "utf8",
+    );
+    const workerNavigation = readFileSync(
+      join(root, "src/components/worker-shell.tsx"),
+      "utf8",
+    );
+    expect(officeNavigation).toContain("prefetch={false}");
+    expect(workerNavigation).toContain("prefetch={false}");
+  });
+
   it("migration enables RLS, private evidence and assigned-only access", () => {
     const migrationName = readdirSync(join(root, "supabase/migrations")).find(
       (name) => name.endsWith("_platform_core_security.sql"),

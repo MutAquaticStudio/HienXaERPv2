@@ -33,6 +33,7 @@ export function WorkerShell({
             href={href}
             key={href}
             aria-current={pathname === href ? "page" : undefined}
+            prefetch={false}
           >
             <Icon aria-hidden="true" size={26} />
             <span>{label}</span>
