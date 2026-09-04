@@ -16,7 +16,7 @@ export default async function WorkerHomePage() {
   if (!principal || !hasPermission(principal, "work_item.read_assigned")) return <AccessDenied />;
   const [data, deliveryData] = await Promise.all([
     getWorkforceSnapshot(principal, "worker"),
-    getDeliverySnapshot(principal),
+    getDeliverySnapshot(principal, "assigned"),
   ]);
   const initialKeys = Object.fromEntries(data.assigned.flatMap((item) => [
     [`start:${item.id}`, randomUUID()],

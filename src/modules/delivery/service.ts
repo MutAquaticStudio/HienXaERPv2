@@ -1,9 +1,11 @@
 import "server-only";
 
+import { createClient } from "@/lib/supabase/server";
 import type { DeliveryCommandInput } from "@/modules/delivery/commands";
 import { SYNTHETIC_DELIVERY } from "@/modules/delivery/fixtures";
 import {
   executeDeliveryCommand,
+  readAssignedDeliverySnapshotFromSupabase,
   readDeliverySnapshot,
 } from "@/modules/delivery/postgres-repository";
 import type { DeliverySnapshot } from "@/modules/delivery/types";
@@ -67,7 +69,10 @@ function permissionFor(input: DeliveryCommandInput): Permission {
   }
 }
 
-export async function getDeliverySnapshot(principal: Principal): Promise<DeliverySnapshot> {
+export async function getDeliverySnapshot(
+  principal: Principal,
+  view: "full" | "assigned" = "full",
+): Promise<DeliverySnapshot> {
   if (!principal.permissions.includes("delivery.read") && !principal.permissions.includes("delivery.update_assigned")) {
     assertPermission(principal, "delivery.read");
   }
@@ -81,7 +86,9 @@ export async function getDeliverySnapshot(principal: Principal): Promise<Deliver
     }
     return snapshot;
   }
-  return readDeliverySnapshot(getDatabaseClient(), principal);
+  return view === "assigned"
+    ? readAssignedDeliverySnapshotFromSupabase(await createClient(), principal)
+    : readDeliverySnapshot(getDatabaseClient(), principal);
 }
 
 export async function runDeliveryCommand(

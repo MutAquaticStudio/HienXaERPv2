@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { Sql, TransactionSql } from "postgres";
+import type { createClient } from "@/lib/supabase/server";
 
 import type { DeliveryCommandInput } from "@/modules/delivery/commands";
 import type { DeliverySnapshot, DeliveryStatus } from "@/modules/delivery/types";
@@ -39,6 +40,34 @@ interface LineRow {
   uom_symbol_snapshot: string;
   actual_quantity: string | null;
   accepted_quantity: string | null;
+}
+
+type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
+
+interface AssignedDeliveryRow {
+  id: string;
+  delivery_number: string;
+  sales_order_id: string;
+  customer_name_snapshot: string;
+  sourcing_mode: DeliveryRow["sourcing_mode"];
+  pickup_address_snapshot: string;
+  drop_address_snapshot: string;
+  scheduled_date: string;
+  status: DeliveryStatus;
+}
+
+interface AssignedDeliveryAssignmentRow {
+  delivery_id: string;
+  vehicle_id: string;
+  driver_user_id: string;
+}
+
+function deliveryReadFailed(): never {
+  throw new PlatformError(
+    "Chưa đọc được dữ liệu chuyến giao. Hãy thử tải lại.",
+    "DELIVERY_READ_FAILED",
+    503,
+  );
 }
 
 export async function readDeliverySnapshot(sql: Sql, principal: Principal): Promise<DeliverySnapshot> {
@@ -172,6 +201,194 @@ export async function readDeliverySnapshot(sql: Sql, principal: Principal): Prom
       employeeCode: row.employee_code,
     })),
     evidence: evidenceRows.map((row) => ({ id: row.id, label: row.storage_path })),
+  };
+}
+
+export async function readAssignedDeliverySnapshotFromSupabase(
+  supabase: SupabaseServerClient,
+  principal: Principal,
+): Promise<DeliverySnapshot> {
+  if (
+    !principal.permissions.includes("delivery.read") &&
+    !principal.permissions.includes("delivery.update_assigned")
+  ) {
+    assertPermission(principal, "delivery.update_assigned");
+  }
+
+  const assignmentResult = await supabase
+    .from("delivery_assignments")
+    .select("delivery_id, vehicle_id, driver_user_id")
+    .eq("driver_user_id", principal.userId)
+    .in("status", ["ASSIGNED", "ACCEPTED"]);
+  if (assignmentResult.error) deliveryReadFailed();
+
+  const assignments = (assignmentResult.data ?? []) as AssignedDeliveryAssignmentRow[];
+  const deliveryIds = [...new Set(assignments.map((row) => row.delivery_id))];
+  const evidenceQuery = supabase
+    .from("evidence")
+    .select("id, storage_path")
+    .eq("owner_user_id", principal.userId)
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  if (deliveryIds.length === 0) {
+    const evidenceResult = await evidenceQuery;
+    if (evidenceResult.error) deliveryReadFailed();
+    return {
+      deliveries: [],
+      planningOptions: [],
+      vehicles: [],
+      drivers: [],
+      evidence: (evidenceResult.data ?? []).map((row) => ({
+        id: row.id,
+        label: row.storage_path,
+      })),
+    };
+  }
+
+  const [deliveryResult, lineResult, actualResult, proofResult, evidenceResult] =
+    await Promise.all([
+      supabase
+        .from("deliveries")
+        .select(
+          "id, delivery_number, sales_order_id, customer_name_snapshot, sourcing_mode, pickup_address_snapshot, drop_address_snapshot, scheduled_date, status",
+        )
+        .in("id", deliveryIds)
+        .order("scheduled_date", { ascending: true })
+        .limit(200),
+      supabase
+        .from("delivery_lines")
+        .select(
+          "id, delivery_id, material_name_snapshot, material_code_snapshot, planned_quantity, uom_symbol_snapshot",
+        )
+        .in("delivery_id", deliveryIds)
+        .order("line_number", { ascending: true }),
+      supabase
+        .from("delivery_actuals")
+        .select("delivery_line_id, actual_quantity, accepted_quantity")
+        .in("delivery_id", deliveryIds),
+      supabase
+        .from("delivery_proofs")
+        .select("delivery_id")
+        .in("delivery_id", deliveryIds),
+      evidenceQuery,
+    ]);
+  if (
+    [
+      deliveryResult.error,
+      lineResult.error,
+      actualResult.error,
+      proofResult.error,
+      evidenceResult.error,
+    ].some(Boolean)
+  ) {
+    deliveryReadFailed();
+  }
+
+  const deliveryRows = (deliveryResult.data ?? []) as AssignedDeliveryRow[];
+  const salesOrderIds = [
+    ...new Set(deliveryRows.map((row) => row.sales_order_id)),
+  ];
+  const vehicleIds = [...new Set(assignments.map((row) => row.vehicle_id))];
+  const driverIds = [...new Set(assignments.map((row) => row.driver_user_id))];
+  const [salesOrderResult, vehicleResult, driverResult] = await Promise.all([
+    supabase
+      .from("sales_orders")
+      .select("id, sales_order_number")
+      .in("id", salesOrderIds),
+    supabase
+      .from("vehicles")
+      .select("id, code, plate_number")
+      .in("id", vehicleIds),
+    supabase
+      .from("user_profiles")
+      .select("user_id, display_name")
+      .in("user_id", driverIds),
+  ]);
+  if (
+    [salesOrderResult.error, vehicleResult.error, driverResult.error].some(
+      Boolean,
+    )
+  ) {
+    deliveryReadFailed();
+  }
+
+  const lines = (lineResult.data ?? []) as Array<
+    Omit<LineRow, "actual_quantity" | "accepted_quantity">
+  >;
+  const actuals = (actualResult.data ?? []) as Array<{
+    delivery_line_id: string;
+    actual_quantity: string;
+    accepted_quantity: string;
+  }>;
+  const proofCounts = new Map<string, number>();
+  for (const proof of proofResult.data ?? []) {
+    proofCounts.set(
+      proof.delivery_id,
+      (proofCounts.get(proof.delivery_id) ?? 0) + 1,
+    );
+  }
+  const salesOrders = new Map(
+    (salesOrderResult.data ?? []).map((row) => [row.id, row.sales_order_number]),
+  );
+  const vehicles = new Map(
+    (vehicleResult.data ?? []).map((row) => [
+      row.id,
+      `${row.code} · ${row.plate_number}`,
+    ]),
+  );
+  const drivers = new Map(
+    (driverResult.data ?? []).map((row) => [row.user_id, row.display_name]),
+  );
+
+  return {
+    deliveries: deliveryRows.map((row) => {
+      const assignment = assignments.find(
+        (item) => item.delivery_id === row.id,
+      );
+      return {
+        id: row.id,
+        deliveryNumber: row.delivery_number,
+        salesOrderNumber: salesOrders.get(row.sales_order_id) ?? "—",
+        customerName: row.customer_name_snapshot,
+        sourcingMode: row.sourcing_mode,
+        pickupAddress: row.pickup_address_snapshot,
+        dropAddress: row.drop_address_snapshot,
+        scheduledDate: row.scheduled_date,
+        status: row.status,
+        vehicleName: assignment
+          ? (vehicles.get(assignment.vehicle_id) ?? null)
+          : null,
+        driverName: assignment
+          ? (drivers.get(assignment.driver_user_id) ?? null)
+          : null,
+        driverUserId: assignment?.driver_user_id ?? null,
+        proofCount: proofCounts.get(row.id) ?? 0,
+        lines: lines
+          .filter((line) => line.delivery_id === row.id)
+          .map((line) => {
+            const actual = actuals.find(
+              (item) => item.delivery_line_id === line.id,
+            );
+            return {
+              id: line.id,
+              materialName: line.material_name_snapshot,
+              materialCode: line.material_code_snapshot,
+              plannedQuantity: line.planned_quantity,
+              uomSymbol: line.uom_symbol_snapshot,
+              actualQuantity: actual?.actual_quantity ?? null,
+              acceptedQuantity: actual?.accepted_quantity ?? null,
+            };
+          }),
+      };
+    }),
+    planningOptions: [],
+    vehicles: [],
+    drivers: [],
+    evidence: (evidenceResult.data ?? []).map((row) => ({
+      id: row.id,
+      label: row.storage_path,
+    })),
   };
 }
 

@@ -38,4 +38,23 @@ describe("P7 delivery repository contract", () => {
     const sql = migration();
     expect(sql).not.toMatch(/insert into public\.(receivables|payables|payments)/i);
   });
+
+  it("reads the worker delivery projection through assignment-scoped Supabase REST", () => {
+    const page = readFileSync(
+      join(process.cwd(), "src/app/work/page.tsx"),
+      "utf8",
+    );
+    const service = readFileSync(
+      join(process.cwd(), "src/modules/delivery/service.ts"),
+      "utf8",
+    );
+    const repository = readFileSync(
+      join(process.cwd(), "src/modules/delivery/postgres-repository.ts"),
+      "utf8",
+    );
+    expect(page).toContain('getDeliverySnapshot(principal, "assigned")');
+    expect(service).toContain("readAssignedDeliverySnapshotFromSupabase");
+    expect(repository).toContain('.eq("driver_user_id", principal.userId)');
+    expect(repository).toContain('.from("delivery_assignments")');
+  });
 });
