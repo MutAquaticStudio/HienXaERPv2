@@ -100,8 +100,10 @@ select ok(
   'Only drivers submit and dispatch roles read the fleet'
 );
 select ok(
-  position('when location.recorded_at >= now() - interval ''90 seconds'' then ''live''' in lower(pg_get_viewdef('public.active_vehicle_location_view'::regclass, true))) > 0
-  and position('then ''stale''' in lower(pg_get_viewdef('public.active_vehicle_location_view'::regclass, true))) > 0,
+  position('now() - ''00:01:30''::interval' in lower(pg_get_viewdef('public.active_vehicle_location_view'::regclass, true))) > 0
+  and position('then ''live''::text' in lower(pg_get_viewdef('public.active_vehicle_location_view'::regclass, true))) > 0
+  and position('now() - ''00:15:00''::interval' in lower(pg_get_viewdef('public.active_vehicle_location_view'::regclass, true))) > 0
+  and position('then ''stale''::text' in lower(pg_get_viewdef('public.active_vehicle_location_view'::regclass, true))) > 0,
   'Fleet view marks stale telemetry instead of rendering old positions as live'
 );
 
