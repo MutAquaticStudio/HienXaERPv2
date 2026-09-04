@@ -3,6 +3,7 @@
 import {
   Boxes,
   CircleDollarSign,
+  Coins,
   Construction,
   Database,
   Gauge,
@@ -23,7 +24,8 @@ const navItems = [
   { href: "/app/dispatch", label: "Điều phối", icon: Truck },
   { href: "/app/service", label: "Dịch vụ", icon: Construction },
   { href: "/app/finance", label: "Tài chính", icon: CircleDollarSign },
-  { href: "/app/workforce", label: "Nhân sự & sản lượng", icon: Users },
+  { href: "/app/workforce", label: "Điều hành công việc", icon: Users },
+  { href: "/app/compensation", label: "Thu nhập & sản lượng", icon: Coins },
   { href: "/app/data", label: "Dữ liệu", icon: Database },
   { href: "/app/settings", label: "Audit / Cài đặt", icon: Settings },
 ] as const;

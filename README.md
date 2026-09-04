@@ -86,6 +86,18 @@ See [the P10 architecture note](docs/architecture/p10-employee-os-work-pool.md) 
 
 See [the P11 architecture note](docs/architecture/p11-service-jobs.md) for the execution lifecycle, billing boundary and verification evidence.
 
+## Phase 12 invariants
+
+- Compensation plans are effective-dated immutable versions. Resolution is deterministic: employee override, role plan, then company default.
+- A worker reporting `DONE` never creates payable earnings. A verified WorkItem and a matching effective rule are both required.
+- Every earning allocation snapshots the selected plan, rule, rate, units and worker; multi-worker shares must reconcile to 100% or the verified units.
+- Approval records entitlement only. P8 Payments remains the cash ledger, and payroll links never create or repost money.
+- Adjustments and reversals are additive audit records or explicit state changes; historical snapshots are never overwritten.
+- Variable earnings attributable to a delivery or ServiceJob feed direct labor. Fixed monthly salary, bonuses and manual adjustments do not.
+- Worker reads are self-scoped and read-only; all payable earning mutations remain server commands.
+
+See [the P12 architecture note](docs/architecture/p12-compensation-productivity.md) for plan resolution, earning/payroll boundaries and verification evidence.
+
 ## Verification
 
 ```bash

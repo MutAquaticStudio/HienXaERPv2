@@ -84,6 +84,12 @@ export const SYNTHETIC_OFFICE_PRINCIPAL: Principal = {
     "service_job.approve",
     "service_job.confirm",
     "service_job.cost.manage",
+    "compensation.read",
+    "compensation.manage",
+    "earning.read_self",
+    "earning.approve",
+    "earning.adjust",
+    "payroll.close",
   ],
   scopes: [{ kind: "ALL" }],
 };
@@ -107,6 +113,7 @@ export const SYNTHETIC_WORKER_PRINCIPAL: Principal = {
     "delivery.update_assigned",
     "delivery.proof.create",
     "service_job.update_assigned",
+    "earning.read_self",
   ],
   scopes: [{ kind: "ASSIGNED_ONLY" }, { kind: "SELF" }],
 };

@@ -36,14 +36,20 @@ describe("P1 repository safety contract", () => {
     expect(workerNavigation).toContain("prefetch={false}");
   });
 
-  it("keeps worker earnings locked until its baseline phase", () => {
-    const workerSection = readFileSync(
-      join(root, "src/app/work/[section]/page.tsx"),
+  it("opens worker earnings through the self-scoped P12 route", () => {
+    const earningsPage = readFileSync(
+      join(root, "src/app/work/earnings/page.tsx"),
       "utf8",
     );
-    expect(workerSection).toContain("Dự kiến mở tại P12");
-    expect(workerSection).toContain("Lương thưởng &amp; Năng suất");
-    expect(workerSection).not.toContain("Chưa mở trong P1");
+    const repository = readFileSync(
+      join(root, "src/modules/compensation/postgres-repository.ts"),
+      "utf8",
+    );
+    expect(earningsPage).toContain(
+      'hasPermission(principal, "earning.read_self")',
+    );
+    expect(repository).toContain('.eq("worker_user_id", principal.userId)');
+    expect(earningsPage).not.toContain("Dự kiến mở");
   });
 
   it("migration enables RLS, private evidence and assigned-only access", () => {
@@ -55,7 +61,9 @@ describe("P1 repository safety contract", () => {
       join(root, "supabase/migrations", migrationName as string),
       "utf8",
     );
-    expect(sql).toContain("alter table public.work_items enable row level security");
+    expect(sql).toContain(
+      "alter table public.work_items enable row level security",
+    );
     expect(sql).toContain(
       "alter table app_private.idempotency_keys enable row level security",
     );

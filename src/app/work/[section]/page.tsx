@@ -2,8 +2,6 @@ import { LockKeyhole } from "lucide-react";
 import { notFound } from "next/navigation";
 
 const labels: Record<string, string> = {
-  pool: "Bể công việc",
-  earnings: "Thu nhập",
   profile: "Tôi",
 };
 
@@ -20,8 +18,11 @@ export default async function WorkerSectionPage({
     <section className="worker-locked-state">
       <h1>{title}</h1>
       <LockKeyhole aria-hidden="true" size={56} />
-      <h2>Dự kiến mở tại P12</h2>
-      <p>Thu nhập thuộc phase Lương thưởng &amp; Năng suất theo baseline.</p>
+      <h2>Thông tin cá nhân đang được hoàn thiện</h2>
+      <p>
+        Bạn vẫn có thể xem việc, thu nhập và trạng thái đối soát từ thanh điều
+        hướng.
+      </p>
     </section>
   );
 }

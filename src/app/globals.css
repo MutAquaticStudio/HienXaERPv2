@@ -1096,7 +1096,7 @@ h2 {
   left: 0;
   z-index: 10;
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   border-top: 1px solid var(--color-border);
   padding: 0.35rem max(0.25rem, env(safe-area-inset-right))
     max(0.35rem, env(safe-area-inset-bottom))
@@ -5095,5 +5095,562 @@ h2 {
 
   .sourcing-workspace .commercial-tabs button {
     justify-content: flex-start;
+  }
+}
+
+/* P12 — compensation, productivity and worker earnings */
+.compensation-workspace,
+.my-earnings {
+  min-width: 0;
+}
+
+.compensation-workspace {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.compensation-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.compensation-header h1 {
+  max-width: 900px;
+  margin-bottom: 0.65rem;
+  font-size: clamp(2rem, 3.8vw, 3.2rem);
+}
+
+.compensation-header p:not(.page-context) {
+  max-width: 820px;
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.compensation-header > svg {
+  flex: 0 0 auto;
+  color: var(--color-primary);
+}
+
+.compensation-metrics,
+.my-earning-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.compensation-metrics article,
+.my-earning-metrics article {
+  display: grid;
+  min-width: 0;
+  min-height: 132px;
+  align-content: center;
+  gap: 0.2rem;
+  border-right: 1px solid var(--color-border);
+  padding: 1rem 1.15rem;
+}
+
+.compensation-metrics article:last-child,
+.my-earning-metrics article:last-child {
+  border-right: 0;
+}
+
+.compensation-metrics svg,
+.my-earning-metrics svg {
+  color: var(--color-primary-dark);
+}
+
+.compensation-metrics span,
+.my-earning-metrics span {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.compensation-metrics strong,
+.my-earning-metrics strong {
+  overflow-wrap: anywhere;
+  color: var(--color-text);
+  font-size: clamp(1.25rem, 2.2vw, 1.65rem);
+  line-height: 1.2;
+}
+
+.compensation-invariant,
+.my-earning-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  border: 1px solid #83b394;
+  border-left: 6px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.15rem;
+  background: var(--color-primary-soft);
+}
+
+.compensation-invariant svg,
+.my-earning-note svg {
+  flex: 0 0 auto;
+  margin-top: 0.15rem;
+  color: var(--color-primary-dark);
+}
+
+.compensation-invariant p,
+.my-earning-note p {
+  margin: 0.15rem 0 0;
+  color: #334c3d;
+}
+
+.compensation-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 0.7rem;
+}
+
+.compensation-tabs button {
+  display: flex;
+  min-height: var(--control-height);
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  color: var(--color-text);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.compensation-tabs button[aria-selected="true"] {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.compensation-panel {
+  display: grid;
+  gap: 1.2rem;
+}
+
+.compensation-section-heading h2,
+.compensation-section-heading p {
+  margin-bottom: 0.25rem;
+}
+
+.compensation-section-heading p {
+  color: var(--color-muted);
+}
+
+.compensation-command {
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: #fff;
+}
+
+.compensation-command > summary {
+  display: flex;
+  min-height: var(--control-height);
+  align-items: center;
+  padding: 0.7rem 1rem;
+  color: var(--color-primary-dark);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.compensation-command[open] > summary {
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-subtle);
+}
+
+.compensation-command-risk > summary {
+  color: var(--color-danger);
+}
+
+.compensation-form {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem;
+}
+
+.compensation-form-grid,
+.compensation-setup-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+  align-items: start;
+}
+
+.compensation-form label {
+  display: grid;
+  min-width: 0;
+  gap: 0.35rem;
+  font-weight: 800;
+}
+
+.compensation-form label > span {
+  color: #263752;
+  font-size: 0.9rem;
+}
+
+.compensation-form input,
+.compensation-form select,
+.compensation-form textarea,
+.compensation-form button,
+.compensation-risk-button {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--control-height);
+}
+
+.compensation-form input,
+.compensation-form select,
+.compensation-form textarea {
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.75rem;
+  background: #fff;
+  color: var(--color-text);
+}
+
+.compensation-form textarea {
+  min-height: calc(var(--control-height) * 2);
+  resize: vertical;
+}
+
+.compensation-form input:focus,
+.compensation-form select:focus,
+.compensation-form textarea:focus {
+  border-color: var(--color-focus);
+  outline: 3px solid rgb(21 94 239 / 18%);
+}
+
+.compensation-consequence {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.compensation-consequence svg {
+  flex: 0 0 auto;
+  margin-top: 0.15rem;
+  color: var(--color-primary-dark);
+}
+
+.compensation-risk-button {
+  border: 2px solid var(--color-danger);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 1rem;
+  background: #fff;
+  color: var(--color-danger);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.compensation-risk-button:hover {
+  background: var(--color-danger-soft);
+}
+
+.earning-list,
+.compensation-plan-list,
+.payroll-list,
+.my-earning-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.earning-card,
+.compensation-plan-list > article,
+.payroll-list > article,
+.my-earning-list > article {
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  border-left: 6px solid #8292a8;
+  border-radius: var(--radius-md);
+  padding: 1.15rem;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.earning-approved,
+.payroll-list > article {
+  border-left-color: var(--color-primary);
+}
+
+.earning-pending_approval {
+  border-left-color: #b36b00;
+}
+
+.earning-reversed {
+  border-left-color: var(--color-danger);
+}
+
+.earning-card > header,
+.compensation-plan-list > article > header,
+.payroll-list > article > header,
+.my-earning-list > article > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.earning-card header span,
+.compensation-plan-list header span,
+.payroll-list header span,
+.my-earning-list header span {
+  color: var(--color-muted);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.earning-card header h2,
+.compensation-plan-list header h2,
+.payroll-list header h2,
+.my-earning-list header h2 {
+  margin: 0.15rem 0 0;
+  overflow-wrap: anywhere;
+  font-size: 1.3rem;
+}
+
+.earning-card header > strong,
+.compensation-plan-list header > strong,
+.payroll-list header > strong,
+.my-earning-list header > strong {
+  flex: 0 0 auto;
+  border: 1px solid currentcolor;
+  border-radius: 999px;
+  padding: 0.3rem 0.65rem;
+  color: var(--color-primary-dark);
+  font-size: 0.82rem;
+}
+
+.earning-card > dl,
+.payroll-list > article > dl,
+.my-earning-list > article > dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin: 1rem 0;
+}
+
+.earning-card dl div,
+.payroll-list dl div,
+.my-earning-list dl div {
+  display: grid;
+  min-width: 0;
+  gap: 0.15rem;
+  border-top: 1px solid var(--color-border);
+  padding-top: 0.6rem;
+}
+
+.earning-card dt,
+.payroll-list dt,
+.my-earning-list dt {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.earning-card dd,
+.payroll-list dd,
+.my-earning-list dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-weight: 900;
+}
+
+.earning-allocations,
+.payroll-lines {
+  display: grid;
+  gap: 0.65rem;
+  margin: 1rem 0;
+}
+
+.earning-allocations > div,
+.payroll-lines > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.1rem 1rem;
+  border-radius: var(--radius-sm);
+  padding: 0.8rem;
+  background: var(--color-surface-subtle);
+}
+
+.earning-allocations small,
+.payroll-lines small {
+  grid-column: 1 / -1;
+  color: var(--color-muted);
+}
+
+.payroll-lines > div > p {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.1rem 1rem;
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.payroll-lines > div > .compensation-command {
+  grid-column: 1 / -1;
+  margin-top: 0.55rem;
+}
+
+.compensation-plan-list > article > p {
+  color: var(--color-muted);
+}
+
+.compensation-plan-list > article > div p {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.35fr) minmax(0, 1fr);
+  gap: 1rem;
+  border-top: 1px solid var(--color-border);
+  margin: 0;
+  padding: 0.65rem 0;
+}
+
+.compensation-plan-list > article > div span {
+  color: var(--color-muted);
+}
+
+.my-earnings {
+  display: grid;
+  gap: 1rem;
+}
+
+.worker-content .my-earnings h1 {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip: auto;
+  clip-path: none;
+  white-space: normal;
+  margin-bottom: 0.4rem;
+  font-size: 2.25rem;
+}
+
+.my-earnings > header > p:last-child {
+  color: var(--color-muted);
+}
+
+.my-earning-metrics {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.my-earning-metrics article:nth-child(2) {
+  border-right: 0;
+}
+
+.my-earning-metrics article:nth-child(-n + 2) {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.my-earning-list > article > dl {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.my-earning-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 2px solid var(--color-primary);
+  padding-top: 0.8rem;
+}
+
+.my-earning-total strong {
+  color: var(--color-primary-dark);
+  font-size: 1.45rem;
+}
+
+.my-earning-adjustment,
+.my-earning-paid {
+  margin: 0.4rem 0 0;
+  color: var(--color-muted);
+}
+
+.worker-service-link {
+  display: flex;
+  min-height: var(--worker-control-height);
+  margin-top: 0.8rem;
+}
+
+@media (max-width: 960px) {
+  .compensation-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .compensation-metrics article:nth-child(2) {
+    border-right: 0;
+  }
+  .compensation-metrics article:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--color-border);
+  }
+  .compensation-form-grid,
+  .compensation-setup-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .compensation-header > svg {
+    display: none;
+  }
+  .compensation-tabs {
+    grid-template-columns: 1fr;
+  }
+  .compensation-tabs button {
+    justify-content: flex-start;
+  }
+  .earning-card > header,
+  .compensation-plan-list > article > header,
+  .payroll-list > article > header,
+  .my-earning-list > article > header {
+    display: grid;
+  }
+  .earning-card header > strong,
+  .compensation-plan-list header > strong,
+  .payroll-list header > strong,
+  .my-earning-list header > strong {
+    justify-self: start;
+  }
+  .earning-card > dl,
+  .payroll-list > article > dl,
+  .my-earning-list > article > dl,
+  .compensation-plan-list > article > div p {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 460px) {
+  .compensation-metrics,
+  .my-earning-metrics {
+    grid-template-columns: 1fr;
+  }
+  .compensation-metrics article,
+  .my-earning-metrics article {
+    min-height: 112px;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .compensation-metrics article:last-child,
+  .my-earning-metrics article:last-child {
+    border-bottom: 0;
+  }
+  .earning-allocations > div,
+  .payroll-lines > div,
+  .payroll-lines > div > p,
+  .my-earning-total {
+    grid-template-columns: 1fr;
+  }
+  .my-earning-total {
+    display: grid;
   }
 }

@@ -101,6 +101,12 @@ export const PERMISSIONS = [
   "service_job.approve",
   "service_job.confirm",
   "service_job.cost.manage",
+  "compensation.read",
+  "compensation.manage",
+  "earning.read_self",
+  "earning.approve",
+  "earning.adjust",
+  "payroll.close",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];
