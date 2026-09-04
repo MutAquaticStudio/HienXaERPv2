@@ -10,6 +10,10 @@ import { canUseSyntheticAuth } from "@/modules/platform/environment";
 export async function login(formData: FormData) {
   const identity = String(formData.get("identity") ?? "").trim();
   const password = String(formData.get("password") ?? "");
+  // A portal visitor may return only to the customer portal after password
+  // authentication. Never accept arbitrary redirect targets from the browser.
+  const next = String(formData.get("next") ?? "");
+  const customerDestination = next === "/customer" ? "/customer" : null;
 
   if (
     !identity ||
@@ -28,7 +32,7 @@ export async function login(formData: FormData) {
       sameSite: "lax",
       path: "/",
     });
-    redirect(isWorker ? "/work" : "/app");
+    redirect(customerDestination ?? (isWorker ? "/work" : "/app"));
   }
 
   if (!getSupabasePublicConfig()) {
@@ -42,7 +46,7 @@ export async function login(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword(credentials);
 
   if (error) redirect("/login?error=invalid_credentials");
-  redirect("/app");
+  redirect(customerDestination ?? "/app");
 }
 
 export async function logout() {

@@ -17,9 +17,9 @@ const errorMessages: Record<string, string> = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; next?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, next } = await searchParams;
   const message = error ? errorMessages[error] : undefined;
 
   return (
@@ -54,6 +54,7 @@ export default async function LoginPage({
             </div>
           )}
           <form action={login} className="login-form">
+            {next === "/customer" ? <input name="next" type="hidden" value="/customer" /> : null}
             <label htmlFor="identity">Số điện thoại hoặc email</label>
             <div className="input-wrap">
               <UserRound aria-hidden="true" size={22} />
