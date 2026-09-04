@@ -6496,3 +6496,217 @@ h2 {
   .gps-action { width: 100%; }
   .fleet-location-card header b { text-align: left; }
 }
+
+/* CHAT1: context-bound operational messages. Keep every mobile control at the
+   same Office baseline and let the durable server record lead the UI. */
+.operational-chat-panel {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  border: 1px solid #9bbba7;
+  border-radius: var(--radius-md);
+  padding: clamp(1rem, 3vw, 1.5rem);
+  background: linear-gradient(135deg, #f7fcf8, #fff);
+  box-shadow: 0 5px 18px rgb(11 24 56 / 5%);
+}
+
+.operational-chat-heading,
+.chat-context-card,
+.chat-conversation-card > header,
+.chat-message header,
+.chat-send-contract,
+.chat-private-attachment,
+.chat-closed,
+.chat-empty,
+.chat-unread {
+  display: flex;
+  gap: 0.7rem;
+}
+
+.operational-chat-heading {
+  align-items: flex-start;
+}
+
+.operational-chat-heading > svg {
+  flex: 0 0 auto;
+  margin-top: 0.15rem;
+  color: var(--color-primary-dark);
+}
+
+.operational-chat-heading h2 {
+  margin: 0.1rem 0 0.35rem;
+  color: var(--color-text);
+  font-size: clamp(1.35rem, 2.6vw, 1.8rem);
+}
+
+.operational-chat-heading p,
+.chat-context-card span,
+.chat-send-contract,
+.chat-message time,
+.chat-closed,
+.chat-empty {
+  margin: 0;
+  color: var(--color-muted);
+  line-height: 1.5;
+}
+
+.chat-context-list,
+.chat-conversation-list {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.chat-context-card,
+.chat-conversation-card {
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  background: #fff;
+}
+
+.chat-context-card {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.chat-context-card > div { min-width: 0; }
+.chat-context-card strong,
+.chat-context-card span { display: block; }
+.chat-context-card span { margin-top: 0.25rem; font-size: 0.94rem; }
+
+.chat-open-form,
+.chat-mark-read,
+.chat-composer,
+.chat-close-form {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.chat-open-form { justify-items: start; }
+
+.chat-conversation-card > header {
+  align-items: flex-start;
+  justify-content: space-between;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid #dce4e8;
+}
+
+.chat-conversation-card > header strong,
+.chat-conversation-card > header span { display: block; }
+.chat-conversation-card > header span { margin-top: 0.2rem; color: var(--color-muted); font-size: 0.9rem; font-weight: 750; }
+
+.chat-unread {
+  flex: 0 0 auto;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.4rem 0.65rem;
+  background: #fff4d8;
+  color: #805600;
+  font-size: 0.88rem;
+}
+
+.chat-message-list {
+  display: grid;
+  gap: 0.75rem;
+  max-height: 32rem;
+  overflow: auto;
+  margin: 0.9rem 0;
+  padding-right: 0.2rem;
+}
+
+.chat-message {
+  min-width: 0;
+  border-left: 4px solid #94a3b8;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 0.8rem 0.9rem;
+  background: #f8fafc;
+}
+
+.chat-message-employee { border-left-color: var(--color-primary); background: #f1faf4; }
+.chat-message-customer { border-left-color: #3b82f6; background: #eff6ff; }
+.chat-message header { align-items: baseline; justify-content: space-between; }
+.chat-message header strong { color: var(--color-text); }
+.chat-message time { font-size: 0.85rem; text-align: right; }
+.chat-message p { overflow-wrap: anywhere; margin: 0.5rem 0 0; line-height: 1.55; }
+
+.chat-private-attachment,
+.chat-send-contract,
+.chat-closed,
+.chat-empty {
+  align-items: flex-start;
+}
+
+.chat-private-attachment {
+  align-items: center;
+  width: max-content;
+  max-width: 100%;
+  margin-top: 0.6rem;
+  border-radius: 999px;
+  padding: 0.3rem 0.55rem;
+  background: #e6f0ff;
+  color: #153e75;
+  font-size: 0.88rem;
+}
+
+.chat-composer {
+  margin-top: 1rem;
+  border-top: 1px solid #dce4e8;
+  padding-top: 1rem;
+}
+
+.chat-composer label,
+.chat-close-form label {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+  color: var(--color-text);
+  font-weight: 750;
+}
+
+.chat-composer textarea,
+.chat-composer select,
+.chat-close-form textarea,
+.chat-quiet-button,
+.chat-close-button {
+  width: 100%;
+  min-height: var(--control-height);
+  border: 1px solid #95a5b4;
+  border-radius: 8px;
+  padding: 0.55rem 0.7rem;
+  background: #fff;
+  color: var(--color-text);
+  font: inherit;
+}
+
+.chat-composer textarea,
+.chat-close-form textarea { min-height: 112px; resize: vertical; }
+.chat-composer .primary-button,
+.chat-open-form .primary-button,
+.chat-close-button { width: max-content; min-height: var(--control-height); }
+
+.chat-send-contract { font-size: 0.92rem; }
+.chat-send-contract > svg,
+.chat-private-attachment > svg,
+.chat-closed > svg,
+.chat-empty > svg { flex: 0 0 auto; margin-top: 0.12rem; }
+
+.chat-mark-read { margin-top: 0.7rem; justify-items: start; }
+.chat-quiet-button { width: max-content; cursor: pointer; color: var(--color-primary-dark); font-weight: 800; }
+.chat-close-details { margin-top: 0.9rem; }
+.chat-close-details summary { min-height: var(--control-height); cursor: pointer; color: var(--color-danger); font-weight: 800; }
+.chat-close-form { margin-top: 0.7rem; border-left: 3px solid var(--color-danger); padding-left: 0.8rem; }
+.chat-close-button { cursor: pointer; border-color: var(--color-danger); background: var(--color-danger-soft); color: var(--color-danger); font-weight: 850; }
+.chat-closed { margin: 1rem 0 0; color: #5b2830; }
+
+@media (max-width: 700px) {
+  .chat-context-card { align-items: stretch; flex-direction: column; }
+  .chat-open-form .primary-button,
+  .chat-composer .primary-button,
+  .chat-close-button,
+  .chat-quiet-button { width: 100%; }
+  .chat-conversation-card > header { gap: 0.6rem; flex-direction: column; }
+  .chat-message-list { max-height: none; }
+  .chat-message header { gap: 0.35rem; flex-direction: column; }
+  .chat-message time { text-align: left; }
+}
