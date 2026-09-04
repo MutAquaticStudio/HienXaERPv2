@@ -47,9 +47,9 @@ select ok(
 );
 select ok(
   not exists (
-    select 1 from pg_constraint constraint
-    join pg_class source on source.oid = constraint.conrelid
-    join pg_class target on target.oid = constraint.confrelid
+    select 1 from pg_constraint constraint_row
+    join pg_class source on source.oid = constraint_row.conrelid
+    join pg_class target on target.oid = constraint_row.confrelid
     where source.relname = 'customer_payment_notices' and target.relname = 'payments'
   ),
   'Payment notices do not point to P8 Payment'
