@@ -1,5 +1,6 @@
 import { fileURLToPath } from "node:url";
-import { expect, test, type Page } from "@playwright/test";
+import { captureTestEvidence } from "./evidence";
+import { expect, test, type Page } from "./fixtures";
 
 const axePath = fileURLToPath(
   new URL("../../node_modules/axe-core/axe.min.js", import.meta.url),
@@ -72,10 +73,7 @@ test("P11 Office shows service lifecycle, separate approved hours and profitabil
   await expect(completed.getByLabel("Giờ thực tế")).toHaveValue("7.33");
   await expect(completed.getByLabel("Giờ được duyệt")).toHaveValue("7.33");
   await expect(seriousAxeViolations(page)).resolves.toEqual([]);
-  await page.screenshot({
-    path: "docs/evidence/p11-service-jobs-implemented.png",
-    fullPage: true,
-  });
+  await captureTestEvidence(page, test.info(), "p11-service-jobs-implemented.png");
 });
 
 test("P11 Office remains usable on a narrow large-text layout and keeps invalid approval recoverable", async ({
@@ -139,8 +137,5 @@ test("P11 worker can log field events with 56px mobile controls", async ({
   );
   await noHorizontalOverflow(page);
   await expect(seriousAxeViolations(page)).resolves.toEqual([]);
-  await page.screenshot({
-    path: "docs/evidence/p11-service-job-mobile-implemented.png",
-    fullPage: true,
-  });
+  await captureTestEvidence(page, test.info(), "p11-service-job-mobile-implemented.png");
 });

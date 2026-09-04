@@ -1,6 +1,6 @@
 import { fileURLToPath } from "node:url";
 
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures";
 
 const axePath = fileURLToPath(new URL("../../node_modules/axe-core/axe.min.js", import.meta.url));
 

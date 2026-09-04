@@ -1,6 +1,7 @@
 import { fileURLToPath } from "node:url";
 
-import { expect, test, type Page } from "@playwright/test";
+import { captureTestEvidence } from "./evidence";
+import { expect, test, type Page } from "./fixtures";
 
 const axePath = fileURLToPath(
   new URL("../../node_modules/axe-core/axe.min.js", import.meta.url),
@@ -74,10 +75,7 @@ test("P5 shows split sourcing, locked purchase cost and no fake inventory", asyn
   ).toBeVisible();
 
   await expect(seriousAxeViolations(page)).resolves.toEqual([]);
-  await page.screenshot({
-    path: "docs/evidence/p5-sourcing-dropship-implemented.png",
-    fullPage: true,
-  });
+  await captureTestEvidence(page, test.info(), "p5-sourcing-dropship-implemented.png");
 });
 
 test("P5 direct-sourcing form remains usable at 375px", async ({ page }) => {
@@ -107,8 +105,5 @@ test("P5 direct-sourcing form remains usable at 375px", async ({ page }) => {
     )
     .toBe(true);
   await expect(seriousAxeViolations(page)).resolves.toEqual([]);
-  await page.screenshot({
-    path: "docs/evidence/p5-sourcing-dropship-mobile-implemented.png",
-    fullPage: true,
-  });
+  await captureTestEvidence(page, test.info(), "p5-sourcing-dropship-mobile-implemented.png");
 });

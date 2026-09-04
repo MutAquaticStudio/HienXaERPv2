@@ -16,11 +16,40 @@ describe("P1 repository safety contract", () => {
       join(root, ".github/workflows/ci.yml"),
       "utf8",
     );
-    expect(workflow).toContain("pnpm build");
+    const packageJson = JSON.parse(
+      readFileSync(join(root, "package.json"), "utf8"),
+    ) as { scripts: Record<string, string> };
+    expect(workflow).toContain("pnpm verify");
+    expect(packageJson.scripts.verify).toContain("pnpm test:e2e");
+    expect(packageJson.scripts["test:e2e"]).toContain("pnpm build");
+    const playwrightConfig = readFileSync(
+      join(root, "playwright.config.ts"),
+      "utf8",
+    );
+    expect(playwrightConfig).toContain("next start");
+    expect(playwrightConfig).not.toContain("next dev --hostname");
     expect(workflow).not.toMatch(/vercel\s+(deploy|--prod)/i);
     expect(workflow).not.toMatch(/supabase\s+(link|db push)/i);
     expect(workflow).not.toMatch(/supabase\s+(start|stop|db reset|test db)/i);
     expect(workflow).not.toMatch(/\bdocker\b/i);
+  });
+
+  it("keeps E2E evidence out of tracked documentation and releases preflighted", () => {
+    const e2eDirectory = join(root, "tests/e2e");
+    for (const filename of readdirSync(e2eDirectory)) {
+      if (!filename.endsWith(".ts")) continue;
+      const source = readFileSync(join(e2eDirectory, filename), "utf8");
+      expect(source).not.toContain("docs/evidence/");
+    }
+    const evidence = readFileSync(join(e2eDirectory, "evidence.ts"), "utf8");
+    const preflight = readFileSync(
+      join(root, "scripts/release-preflight.mjs"),
+      "utf8",
+    );
+    expect(evidence).toContain("testInfo.outputPath");
+    expect(preflight).toContain('["status", "--porcelain"]');
+    expect(preflight).toContain('["ls-remote", "--exit-code", "origin", "refs/heads/main"]');
+    expect(preflight).toContain('pnpm, ["verify"]');
   });
 
   it("does not prefetch every authenticated workspace from persistent navigation", () => {

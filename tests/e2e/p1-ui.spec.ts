@@ -1,6 +1,7 @@
 import { fileURLToPath } from "node:url";
 
-import { expect, test, type Page } from "@playwright/test";
+import { captureTestEvidence } from "./evidence";
+import { expect, test, type Page } from "./fixtures";
 
 const axePath = fileURLToPath(
   new URL("../../node_modules/axe-core/axe.min.js", import.meta.url),
@@ -41,10 +42,7 @@ test("office shell matches the P1 accessible foundation", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Đăng xuất" })).toBeVisible();
   await expect(seriousAxeViolations(page)).resolves.toEqual([]);
 
-  await page.screenshot({
-    path: "docs/evidence/p1-office-implemented.png",
-    fullPage: true,
-  });
+  await captureTestEvidence(page, test.info(), "p1-office-implemented.png");
 });
 
 test("worker shell is usable at 375px with large text and touch targets", async ({
@@ -64,10 +62,7 @@ test("worker shell is usable at 375px with large text and touch targets", async 
     expect(box?.height).toBeGreaterThanOrEqual(48);
   }
 
-  await page.screenshot({
-    path: "docs/evidence/p1-worker-implemented.png",
-    fullPage: true,
-  });
+  await captureTestEvidence(page, test.info(), "p1-worker-implemented.png");
 
   const before = await page.locator("html").evaluate((element) =>
     Number.parseFloat(getComputedStyle(element).fontSize),
@@ -95,10 +90,7 @@ test("login is keyboard-usable and a worker is denied direct Finance access", as
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto("/login");
 
-  await page.screenshot({
-    path: "docs/evidence/p1-login-implemented.png",
-    fullPage: true,
-  });
+  await captureTestEvidence(page, test.info(), "p1-login-implemented.png");
 
   await page.keyboard.press("Tab");
   await expect(page.getByLabel("Số điện thoại hoặc email")).toBeFocused();

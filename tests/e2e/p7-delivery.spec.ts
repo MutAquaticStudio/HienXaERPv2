@@ -1,5 +1,6 @@
 import { fileURLToPath } from "node:url";
-import { expect, test, type Page } from "@playwright/test";
+import { captureTestEvidence } from "./evidence";
+import { expect, test, type Page } from "./fixtures";
 
 const axePath = fileURLToPath(new URL("../../node_modules/axe-core/axe.min.js", import.meta.url));
 interface AxeViolation { impact: string | null }
@@ -21,7 +22,7 @@ test("P7 dispatcher board exposes assignment, routes and warehouse handoff", asy
   await expect(page.getByText(/Kho Hiền Xã.*KĐT Đông Ngàn/)).toBeVisible();
   await expect(page.getByRole("button", { name: "Bàn giao & xuất phát" }).first()).toBeVisible();
   await expect(seriousAxeViolations(page)).resolves.toEqual([]);
-  await page.screenshot({ path: "docs/evidence/p7-dispatch-delivery-implemented.png", fullPage: true });
+  await captureTestEvidence(page, test.info(), "p7-dispatch-delivery-implemented.png");
 });
 
 test("P7 driver flow is card-based and usable at 375px", async ({ page }) => {
@@ -41,7 +42,7 @@ test("P7 driver flow is card-based and usable at 375px", async ({ page }) => {
   await expect(page.getByText("Đã lưu bằng chứng.")).toBeVisible();
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   await expect(seriousAxeViolations(page)).resolves.toEqual([]);
-  await page.screenshot({ path: "docs/evidence/p7-driver-proof-mobile-implemented.png", fullPage: true });
+  await captureTestEvidence(page, test.info(), "p7-driver-proof-mobile-implemented.png");
 });
 
 test("driver remains blocked from office finance and margin", async ({ page }) => {

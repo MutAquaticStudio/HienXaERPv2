@@ -1,6 +1,7 @@
 import { fileURLToPath } from "node:url";
 
-import { expect, test, type Page } from "@playwright/test";
+import { captureTestEvidence } from "./evidence";
+import { expect, test, type Page } from "./fixtures";
 
 const axePath = fileURLToPath(
   new URL("../../node_modules/axe-core/axe.min.js", import.meta.url),
@@ -66,10 +67,7 @@ test("P2 master data workspace exposes precise UOM and operational masters", asy
   ).toBeVisible();
 
   await expect(seriousAxeViolations(page)).resolves.toEqual([]);
-  await page.screenshot({
-    path: "docs/evidence/p2-master-data-implemented.png",
-    fullPage: true,
-  });
+  await captureTestEvidence(page, test.info(), "p2-master-data-implemented.png");
 });
 
 test("P2 master form reports audited success and remains usable on mobile", async ({
@@ -99,8 +97,5 @@ test("P2 master form reports audited success and remains usable on mobile", asyn
     )
     .toBe(true);
   await expect(seriousAxeViolations(page)).resolves.toEqual([]);
-  await page.screenshot({
-    path: "docs/evidence/p2-master-data-mobile-implemented.png",
-    fullPage: true,
-  });
+  await captureTestEvidence(page, test.info(), "p2-master-data-mobile-implemented.png");
 });

@@ -1,6 +1,7 @@
 import { fileURLToPath } from "node:url";
 
-import { expect, test, type Page } from "@playwright/test";
+import { captureTestEvidence } from "./evidence";
+import { expect, test, type Page } from "./fixtures";
 
 const axePath = fileURLToPath(
   new URL("../../node_modules/axe-core/axe.min.js", import.meta.url),
@@ -63,10 +64,7 @@ test("P3 Customer 360 resolves price and makes credit blocks explicit", async ({
   await expect(page.getByText(/quá hạn vượt số ngày/i)).toBeVisible();
 
   await expect(seriousAxeViolations(page)).resolves.toEqual([]);
-  await page.screenshot({
-    path: "docs/evidence/p3-customer-360-implemented.png",
-    fullPage: true,
-  });
+  await captureTestEvidence(page, test.info(), "p3-customer-360-implemented.png");
 });
 
 test("P3 customer form is audited and usable on mobile", async ({ page }) => {
@@ -92,8 +90,5 @@ test("P3 customer form is audited and usable on mobile", async ({ page }) => {
     )
     .toBe(true);
   await expect(seriousAxeViolations(page)).resolves.toEqual([]);
-  await page.screenshot({
-    path: "docs/evidence/p3-customer-360-mobile-implemented.png",
-    fullPage: true,
-  });
+  await captureTestEvidence(page, test.info(), "p3-customer-360-mobile-implemented.png");
 });

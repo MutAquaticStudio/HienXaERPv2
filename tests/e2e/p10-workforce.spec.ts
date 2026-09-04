@@ -1,5 +1,6 @@
 import { fileURLToPath } from "node:url";
-import { expect, test, type Page } from "@playwright/test";
+import { captureTestEvidence } from "./evidence";
+import { expect, test, type Page } from "./fixtures";
 
 const axePath = fileURLToPath(new URL("../../node_modules/axe-core/axe.min.js", import.meta.url));
 interface AxeViolation { impact: string | null }
@@ -46,7 +47,7 @@ test("P10 worker home exposes active work, heartbeat and a recoverable blocked f
   await expectWorkerControls(page);
   await expectNoHorizontalOverflow(page);
   await expect(seriousAxeViolations(page)).resolves.toEqual([]);
-  await page.screenshot({ path: "docs/evidence/p10-worker-os-mobile-implemented.png", fullPage: true });
+  await captureTestEvidence(page, test.info(), "p10-worker-os-mobile-implemented.png");
 });
 
 test("P10 work pool is eligibility-scoped, claimable and large-text safe", async ({ page }) => {
@@ -85,5 +86,5 @@ test("P10 supervisor queue aggregates work and protects consequential decisions"
   await expect(form.getByText("Lý do cần ít nhất 10 ký tự.")).toBeVisible();
   await expect(form.getByLabel("Lý do quyết định")).toHaveValue("ngắn");
   await expect(seriousAxeViolations(page)).resolves.toEqual([]);
-  await page.screenshot({ path: "docs/evidence/p10-supervisor-queue-implemented.png", fullPage: true });
+  await captureTestEvidence(page, test.info(), "p10-supervisor-queue-implemented.png");
 });

@@ -1,6 +1,7 @@
 import { fileURLToPath } from "node:url";
 
-import { expect, test, type Page } from "@playwright/test";
+import { captureTestEvidence } from "./evidence";
+import { expect, test, type Page } from "./fixtures";
 
 const axePath = fileURLToPath(
   new URL("../../node_modules/axe-core/axe.min.js", import.meta.url),
@@ -57,10 +58,7 @@ test("P4 keeps quote revisions explicit and confirms without AR", async ({
   ).toBeVisible();
 
   await expect(seriousAxeViolations(page)).resolves.toEqual([]);
-  await page.screenshot({
-    path: "docs/evidence/p4-quotation-sales-order-implemented.png",
-    fullPage: true,
-  });
+  await captureTestEvidence(page, test.info(), "p4-quotation-sales-order-implemented.png");
 });
 
 test("P4 quotation actions remain usable at 375px", async ({ page }) => {
@@ -83,8 +81,5 @@ test("P4 quotation actions remain usable at 375px", async ({ page }) => {
     )
     .toBe(true);
   await expect(seriousAxeViolations(page)).resolves.toEqual([]);
-  await page.screenshot({
-    path: "docs/evidence/p4-quotation-sales-order-mobile-implemented.png",
-    fullPage: true,
-  });
+  await captureTestEvidence(page, test.info(), "p4-quotation-sales-order-mobile-implemented.png");
 });

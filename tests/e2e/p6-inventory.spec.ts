@@ -1,5 +1,6 @@
 import { fileURLToPath } from "node:url";
-import { expect, test, type Page } from "@playwright/test";
+import { captureTestEvidence } from "./evidence";
+import { expect, test, type Page } from "./fixtures";
 
 const axePath = fileURLToPath(
   new URL("../../node_modules/axe-core/axe.min.js", import.meta.url),
@@ -46,10 +47,7 @@ test("P6 shows derived balances, reservation conversion and immutable ledger", a
   ).toBeVisible();
   await expect(page.getByText("IM-2026-000002", { exact: true })).toBeVisible();
   await expect(seriousAxeViolations(page)).resolves.toEqual([]);
-  await page.screenshot({
-    path: "docs/evidence/p6-inventory-yard-implemented.png",
-    fullPage: true,
-  });
+  await captureTestEvidence(page, test.info(), "p6-inventory-yard-implemented.png");
 });
 
 test("P6 inventory actions remain usable at 375px", async ({ page }) => {
@@ -67,8 +65,5 @@ test("P6 inventory actions remain usable at 375px", async ({ page }) => {
     )
     .toBe(true);
   await expect(seriousAxeViolations(page)).resolves.toEqual([]);
-  await page.screenshot({
-    path: "docs/evidence/p6-inventory-yard-mobile-implemented.png",
-    fullPage: true,
-  });
+  await captureTestEvidence(page, test.info(), "p6-inventory-yard-mobile-implemented.png");
 });

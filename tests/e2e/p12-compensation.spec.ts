@@ -1,5 +1,6 @@
 import { fileURLToPath } from "node:url";
-import { expect, test, type Page } from "@playwright/test";
+import { captureTestEvidence } from "./evidence";
+import { expect, test, type Page } from "./fixtures";
 
 const axePath = fileURLToPath(
   new URL("../../node_modules/axe-core/axe.min.js", import.meta.url),
@@ -82,10 +83,7 @@ test("P12 Office separates entitlement, plans, payroll and P8 payment linkage", 
     page.getByText(/không tạo hoặc đăng sổ tiền lần nữa/i),
   ).toBeVisible();
   await expect(seriousAxeViolations(page)).resolves.toEqual([]);
-  await page.screenshot({
-    path: "docs/evidence/p12-compensation-office-implemented.png",
-    fullPage: true,
-  });
+  await captureTestEvidence(page, test.info(), "p12-compensation-office-implemented.png");
 });
 
 test("P12 Office keeps an invalid approval recoverable on mobile large text", async ({
@@ -131,10 +129,7 @@ test("P12 Worker sees only own earnings with four 56px primary destinations", as
   await visibleControlsAtLeast(page, ".worker-nav a", 56);
   await noHorizontalOverflow(page);
   await expect(seriousAxeViolations(page)).resolves.toEqual([]);
-  await page.screenshot({
-    path: "docs/evidence/p12-my-earnings-mobile-implemented.png",
-    fullPage: true,
-  });
+  await captureTestEvidence(page, test.info(), "p12-my-earnings-mobile-implemented.png");
 });
 
 test("P12 remains complete at a 200 percent text-layout equivalent", async ({

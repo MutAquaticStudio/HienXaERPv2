@@ -1,5 +1,6 @@
 import { fileURLToPath } from "node:url";
-import { expect, test, type Page } from "@playwright/test";
+import { captureTestEvidence } from "./evidence";
+import { expect, test, type Page } from "./fixtures";
 
 const axePath = fileURLToPath(
   new URL("../../node_modules/axe-core/axe.min.js", import.meta.url),
@@ -46,10 +47,7 @@ test("P8 finance workspace exposes working capital, debt and explicit posting", 
     page.getByText("Đã lập khoản thu chi ở trạng thái nháp."),
   ).toBeVisible();
   await expect(seriousAxeViolations(page)).resolves.toEqual([]);
-  await page.screenshot({
-    path: "docs/evidence/p8-finance-working-capital-implemented.png",
-    fullPage: true,
-  });
+  await captureTestEvidence(page, test.info(), "p8-finance-working-capital-implemented.png");
 });
 
 test("P8 finance remains readable without horizontal overflow on a small screen", async ({

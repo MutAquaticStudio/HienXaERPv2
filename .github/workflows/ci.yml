@@ -25,11 +25,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
-      - run: pnpm typecheck
-      - run: pnpm test
-      - run: pnpm test:e2e
-      - run: pnpm build
+      - run: pnpm verify
 
   # Verification only. Vercel Production deployment and hosted Supabase
   # migrations remain separate explicit actions after the phase checkpoint.

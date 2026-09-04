@@ -1,5 +1,6 @@
 import { fileURLToPath } from "node:url";
-import { expect, test, type Page } from "@playwright/test";
+import { captureTestEvidence } from "./evidence";
+import { expect, test, type Page } from "./fixtures";
 
 const axePath = fileURLToPath(
   new URL("../../node_modules/axe-core/axe.min.js", import.meta.url),
@@ -60,10 +61,7 @@ test("P9 command center exposes margin, direct-cost waterfall and controlled lif
     page.getByText(/doanh thu · .*chi phí trực tiếp/).first(),
   ).toBeVisible();
   await expect(seriousAxeViolations(page)).resolves.toEqual([]);
-  await page.screenshot({
-    path: "docs/evidence/p9-command-center-implemented.png",
-    fullPage: true,
-  });
+  await captureTestEvidence(page, test.info(), "p9-command-center-implemented.png");
 });
 
 test("P9 command center stays within a small viewport", async ({ page }) => {

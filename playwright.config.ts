@@ -4,8 +4,8 @@ export default defineConfig({
   testDir: "./tests/e2e",
   timeout: 30_000,
   fullyParallel: false,
-  // Next dev compiles pages on demand; serial files keep accessibility suites
-  // deterministic on the smaller GitHub Actions runner.
+  // Run the same compiled server shape used by a Production deployment.
+  // Serial files keep accessibility suites deterministic on GitHub Actions.
   workers: 1,
   reporter: "list",
   use: {
@@ -17,7 +17,7 @@ export default defineConfig({
   },
   webServer: {
     command:
-      "APP_ENV=test ALLOW_LOCAL_SYNTHETIC_AUTH=true ./node_modules/.bin/next dev --hostname 127.0.0.1 --port 3100",
+      "APP_ENV=test ALLOW_LOCAL_SYNTHETIC_AUTH=true ./node_modules/.bin/next start --hostname 127.0.0.1 --port 3100",
     url: "http://127.0.0.1:3100/api/health",
     reuseExistingServer: true,
     timeout: 120_000,
