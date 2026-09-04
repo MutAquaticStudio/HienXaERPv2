@@ -17,7 +17,7 @@ test("CHAT1 worker chat is mobile-safe, server-confirmed, and never a Delivery c
   await page.goto("/work");
   const chat = page.getByRole("region", { name: "Trao đổi vận hành" });
   await expect(chat).toBeVisible();
-  await expect(chat.getByText("Chuyến giao DLV-2026-000013")).toBeVisible();
+  await expect(chat.getByRole("article", { name: "Hội thoại Chuyến giao DLV-2026-000013" })).toBeVisible();
   const composer = chat.locator(".chat-composer").first();
   await composer.getByLabel("Nội dung trao đổi").fill("Tôi đã đến điểm giao và cần điều phối xác nhận lối vào.");
   await composer.getByRole("button", { name: "GỬI TIN NHẮN" }).click();

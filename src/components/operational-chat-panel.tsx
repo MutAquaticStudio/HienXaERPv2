@@ -31,6 +31,14 @@ function statusLabel(status: OperationalConversation["status"]) {
   return status === "OPEN" ? "ĐANG MỞ" : "ĐÃ ĐÓNG";
 }
 
+function contextLabel(contextType: ChatContextOption["contextType"]) {
+  if (contextType === "DELIVERY") return "Chuyến giao";
+  if (contextType === "SALES_ORDER") return "Đơn hàng";
+  if (contextType === "SERVICE_JOB") return "Công việc dịch vụ";
+  if (contextType === "PORTAL_ISSUE") return "Sự cố vận hành";
+  return "Hỗ trợ khách hàng";
+}
+
 function ActionButton({ label, tone = "primary" }: { label: string; tone?: "primary" | "quiet" | "danger" }) {
   const { pending } = useFormStatus();
   const className = tone === "primary" ? "primary-button" : tone === "danger" ? "chat-close-button" : "chat-quiet-button";
@@ -44,10 +52,10 @@ function ActionFeedback({ state }: { state: ChatActionState }) {
   return <p aria-live="polite" className={state.status === "error" ? "form-error" : "form-success"} role={state.status === "error" ? "alert" : "status"}>{state.message}</p>;
 }
 
-function OpenConversation({ context, surface }: { context: ChatContextOption; surface: Surface }) {
+function OpenConversation({ context, surface, ordinal }: { context: ChatContextOption; surface: Surface; ordinal: number }) {
   const [state, action] = useActionState(runChatAction, initialState(`open-${context.contextId.replaceAll("-", "")}`));
-  return <article className="chat-context-card">
-    <div><strong>{context.subject}</strong><span>Hội thoại chỉ trao đổi vận hành; không thay nút xác nhận nghiệp vụ.</span></div>
+  return <article aria-label={`Mở hội thoại ${context.subject}`} className="chat-context-card">
+    <div><strong>{contextLabel(context.contextType)} {ordinal}</strong><span>Hội thoại chỉ trao đổi vận hành; không thay nút xác nhận nghiệp vụ.</span></div>
     <form action={action} className="chat-open-form">
       <input name="kind" type="hidden" value="chat.conversation.ensure" />
       <input name="surface" type="hidden" value={surface} />
@@ -132,7 +140,7 @@ function ConversationCard({
 }) {
   return <article className="chat-conversation-card" aria-label={`Hội thoại ${conversation.subject}`}>
     <header>
-      <div><strong>{conversation.subject}</strong><span>{statusLabel(conversation.status)}</span></div>
+      <div><strong>Hội thoại vận hành</strong><span>{statusLabel(conversation.status)}</span></div>
       {conversation.unreadCount ? <b className="chat-unread"><BellRing aria-hidden="true" size={16} />{conversation.unreadCount} chưa đọc</b> : null}
     </header>
     <div className="chat-message-list" aria-live="polite">
@@ -178,7 +186,7 @@ export function OperationalChatPanel({
   const unopenedContexts = contexts.filter((context) => !conversationKeys.has(`${context.contextType}:${context.contextId}`));
   return <section className="operational-chat-panel" aria-labelledby={`chat-panel-${surface}`}>
     <header className="operational-chat-heading"><MessageCircleMore aria-hidden="true" size={27} /><div><h2 id={`chat-panel-${surface}`}>Trao đổi vận hành</h2><p>Chỉ người tham gia theo ngữ cảnh được phép mới đọc hoặc gửi. Realtime chỉ làm mới hiển thị sau khi tin nhắn đã được lưu.</p></div></header>
-    {unopenedContexts.length ? <div className="chat-context-list">{unopenedContexts.map((context) => <OpenConversation context={context} key={`${context.contextType}:${context.contextId}`} surface={surface} />)}</div> : null}
+    {unopenedContexts.length ? <div className="chat-context-list">{unopenedContexts.map((context, index) => <OpenConversation context={context} key={`${context.contextType}:${context.contextId}`} ordinal={index + 1} surface={surface} />)}</div> : null}
     {snapshot.conversations.length ? <div className="chat-conversation-list">{snapshot.conversations.map((conversation) => <ConversationCard canManage={canManage} conversation={conversation} evidence={snapshot.evidence} key={conversation.id} surface={surface} />)}</div> : !unopenedContexts.length ? <p className="chat-empty"><CircleAlert aria-hidden="true" size={19} />Chưa có ngữ cảnh phù hợp để mở hội thoại.</p> : null}
   </section>;
 }
