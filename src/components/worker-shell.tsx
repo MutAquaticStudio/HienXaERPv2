@@ -1,5 +1,8 @@
+"use client";
+
 import { CircleUserRound, ClipboardList, Coins, Layers3 } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { LargeTextToggle } from "@/components/large-text-toggle";
@@ -16,6 +19,7 @@ export function WorkerShell({
 }: {
   children: ReactNode;
 }) {
+  const pathname = usePathname();
   return (
     <div className="worker-shell">
       <header className="worker-header">
@@ -24,11 +28,11 @@ export function WorkerShell({
       </header>
       <main className="worker-content">{children}</main>
       <nav className="worker-nav" aria-label="Điều hướng người lao động">
-        {workerNavigation.map(({ href, label, icon: Icon }, index) => (
+        {workerNavigation.map(({ href, label, icon: Icon }) => (
           <Link
             href={href}
             key={href}
-            aria-current={index === 0 ? "page" : undefined}
+            aria-current={pathname === href ? "page" : undefined}
           >
             <Icon aria-hidden="true" size={26} />
             <span>{label}</span>

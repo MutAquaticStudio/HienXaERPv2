@@ -4,6 +4,9 @@ export default defineConfig({
   testDir: "./tests/e2e",
   timeout: 30_000,
   fullyParallel: false,
+  // Next dev compiles pages on demand; serial files keep accessibility suites
+  // deterministic on the smaller GitHub Actions runner.
+  workers: 1,
   reporter: "list",
   use: {
     baseURL: "http://127.0.0.1:3100",

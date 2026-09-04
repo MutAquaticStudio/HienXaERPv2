@@ -31,9 +31,9 @@ function nextAction(delivery: DeliveryCard) {
   return null;
 }
 
-export function DriverDeliveryWorkspace({ deliveries, evidence, initialKeys }: { deliveries: DeliveryCard[]; evidence: DeliveryEvidenceOption[]; initialKeys: Record<string, string> }) {
+export function DriverDeliveryWorkspace({ deliveries, evidence, initialKeys, heading = "Việc của tôi", showReload = true }: { deliveries: DeliveryCard[]; evidence: DeliveryEvidenceOption[]; initialKeys: Record<string, string>; heading?: string; showReload?: boolean }) {
   return <section aria-labelledby="driver-delivery-heading" className="driver-delivery-workspace">
-    <p className="page-context">Chuyến được giao</p><h1 id="driver-delivery-heading">Việc của tôi</h1>
+    <p className="page-context">Chuyến được giao</p><h1 id="driver-delivery-heading">{heading}</h1>
     {deliveries.map((delivery) => {
       const action = nextAction(delivery);
       return <article className="driver-delivery-card" key={delivery.id}>
@@ -61,6 +61,6 @@ export function DriverDeliveryWorkspace({ deliveries, evidence, initialKeys }: {
       </article>;
     })}
     {!deliveries.length ? <div className="empty-work-card"><Truck size={66} /><h2>Chưa có chuyến được giao</h2><p>Khi điều phối phân công, bạn sẽ thấy ngay tại đây.</p></div> : null}
-    <button className="primary-button worker-cta" onClick={() => window.location.reload()} type="button"><RefreshCw />TẢI LẠI</button>
+    {showReload ? <button className="primary-button worker-cta" onClick={() => window.location.reload()} type="button"><RefreshCw />TẢI LẠI</button> : null}
   </section>;
 }

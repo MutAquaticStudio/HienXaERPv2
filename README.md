@@ -64,6 +64,17 @@ See [the P4 architecture note](docs/architecture/p4-quotation-sales-order.md) fo
 
 See [the P5 architecture note](docs/architecture/p5-sourcing-dropship.md) for the sourcing routes, Purchase Order state machine and verification evidence.
 
+## Phase 10 invariants
+
+- Delivery and ServiceJob remain the business sources of truth; WorkItem coordinates execution only after the business command succeeds.
+- A claim locks the work item and serializes worker-capacity checks. Two workers cannot win the same item, and a double-tap by one worker creates no duplicate claim.
+- Driver and operator active-work limits, the five-minute start lease and heartbeat windows are explicit database policy.
+- Unresponsive workers cannot claim new work until a supervisor resolves the exception.
+- Work with external side effects is never blindly returned to the pool.
+- Worker mutations are server-only commands; browser reads remain RLS-scoped.
+
+See [the P10 architecture note](docs/architecture/p10-employee-os-work-pool.md) for the work lifecycle, concurrency boundary and verification evidence.
+
 ## Verification
 
 ```bash
