@@ -7,6 +7,8 @@ import { parseDeliveryForm } from "@/modules/delivery/commands";
 import { runDeliveryCommand } from "@/modules/delivery/service";
 import { PlatformError } from "@/modules/platform/errors";
 import { getCurrentPrincipal } from "@/modules/platform/principal";
+import { parsePortalIssueForm } from "@/modules/portal-issues/commands";
+import { runPortalIssueCommand } from "@/modules/portal-issues/service";
 import { parseWorkForm } from "@/modules/workforce/commands";
 import { runWorkCommand } from "@/modules/workforce/service";
 
@@ -17,6 +19,7 @@ export interface DriverDeliveryActionState {
 }
 
 export type WorkerWorkActionState = DriverDeliveryActionState;
+export type WorkerIssueActionState = DriverDeliveryActionState;
 
 function workErrorMessage(error: unknown) {
   if (error instanceof PlatformError) return error.message;
@@ -87,6 +90,37 @@ export async function runDriverDeliveryAction(
       message: error instanceof PlatformError
         ? error.message
         : "Chưa gửi được. Chuyến vẫn giữ trạng thái cũ; hãy thử lại khi có mạng.",
+      idempotencyKey: key,
+    };
+  }
+}
+
+export async function runWorkerIssueAction(
+  previous: WorkerIssueActionState,
+  formData: FormData,
+): Promise<WorkerIssueActionState> {
+  const submitted = formData.get("idempotencyKey");
+  const key = typeof submitted === "string" && submitted ? submitted : previous.idempotencyKey;
+  try {
+    const principal = await getCurrentPrincipal("worker");
+    if (!principal) throw new PlatformError("Bạn cần đăng nhập để tiếp tục.", "AUTHENTICATION_REQUIRED", 401);
+    const input = parsePortalIssueForm(formData);
+    await runPortalIssueCommand(principal, key, input);
+    revalidatePath("/work");
+    revalidatePath("/work/service");
+    revalidatePath("/app/workforce");
+    revalidatePath("/app/dispatch");
+    return {
+      status: "success",
+      message: "Đã gửi sự cố cho giám sát. Công việc gốc chưa bị thay đổi.",
+      idempotencyKey: randomUUID(),
+    };
+  } catch (error) {
+    return {
+      status: "error",
+      message: error instanceof PlatformError
+        ? error.message
+        : "Chưa gửi được sự cố. Công việc gốc vẫn giữ nguyên; hãy thử lại khi có mạng.",
       idempotencyKey: key,
     };
   }

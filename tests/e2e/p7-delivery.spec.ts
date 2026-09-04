@@ -25,6 +25,10 @@ test("P7 dispatcher board exposes assignment, routes and warehouse handoff", asy
 });
 
 test("P7 driver flow is card-based and usable at 375px", async ({ page }) => {
+  await page.context().grantPermissions(["geolocation"], {
+    origin: "http://127.0.0.1:3100",
+  });
+  await page.context().setGeolocation({ latitude: 21.1212345, longitude: 105.9587654 });
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto("/work");
   await expect(page.getByRole("heading", { name: "Việc của tôi" })).toBeVisible();
@@ -33,7 +37,7 @@ test("P7 driver flow is card-based and usable at 375px", async ({ page }) => {
   await expect(page.getByRole("button", { name: "ĐÃ GIAO HÀNG" })).toBeVisible();
   await page.getByRole("button", { name: "ĐÃ LẤY HÀNG" }).click();
   await expect(page.getByText("Đã cập nhật chuyến giao.")).toBeVisible();
-  await page.getByRole("button", { name: "LƯU VỊ TRÍ" }).first().click();
+  await page.getByRole("button", { name: "LƯU VỊ TRÍ HIỆN TẠI" }).first().click();
   await expect(page.getByText("Đã lưu bằng chứng.")).toBeVisible();
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   await expect(seriousAxeViolations(page)).resolves.toEqual([]);

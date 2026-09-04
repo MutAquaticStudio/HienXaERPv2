@@ -1,5 +1,5 @@
 import type { RoleTemplate } from "@/modules/platform/types";
-import type { WorkItemStatus } from "@/modules/workforce/types";
+import type { WorkItemCard, WorkItemStatus } from "@/modules/workforce/types";
 
 const transitions: Record<WorkItemStatus, readonly WorkItemStatus[]> = {
   AVAILABLE: ["CLAIMED", "CANCELLED"],
@@ -59,4 +59,23 @@ export function nextHeartbeatState(input: {
   if (elapsed > response + grace) return "UNRESPONSIVE";
   if (elapsed > response) return "HEARTBEAT_MISSED";
   return input.current;
+}
+
+function workerPriorityRank(status: WorkItemStatus) {
+  if (status === "IN_PROGRESS") return 0;
+  if (status === "CLAIMED") return 1;
+  if (["BLOCKED", "HEARTBEAT_MISSED", "UNRESPONSIVE"].includes(status)) return 2;
+  if (["DONE", "VERIFIED"].includes(status)) return 4;
+  return 3;
+}
+
+export function orderWorkerWorkItems(items: WorkItemCard[]) {
+  return [...items].sort((left, right) => {
+    const rank = workerPriorityRank(left.status) - workerPriorityRank(right.status);
+    if (rank !== 0) return rank;
+    const leftDue = left.dueAt ? new Date(left.dueAt).getTime() : Number.MAX_SAFE_INTEGER;
+    const rightDue = right.dueAt ? new Date(right.dueAt).getTime() : Number.MAX_SAFE_INTEGER;
+    if (leftDue !== rightDue) return leftDue - rightDue;
+    return left.workNumber.localeCompare(right.workNumber, "vi");
+  });
 }

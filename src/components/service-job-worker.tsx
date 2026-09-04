@@ -12,9 +12,15 @@ import {
   Square,
   TimerReset,
 } from "lucide-react";
-import { useActionState, useEffect, useRef, type ReactNode } from "react";
+import { useActionState, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { runWorkerServiceJobAction } from "@/app/work/service/actions";
+import {
+  WorkerEvidenceUploader,
+  type UploadedEvidence,
+} from "@/components/worker-evidence-uploader";
+import { WorkerIssueForm } from "@/components/worker-issue-form";
+import type { BrowserSupabaseConfig } from "@/lib/supabase/client";
 import type { ServiceJobActionState } from "@/app/app/service/actions";
 import type {
   ServiceJobSnapshot,
@@ -136,12 +142,18 @@ function WorkerLogForm({
 
 function WorkerJobCard({
   data,
+  evidence,
   initialKeys,
   job,
+  onEvidenceUploaded,
+  supabaseConfig,
 }: {
   data: ServiceJobSnapshot;
+  evidence: ServiceJobSnapshot["evidence"];
   initialKeys: Record<string, string>;
   job: ServiceJobSummary;
+  onEvidenceUploaded: (evidence: UploadedEvidence) => void;
+  supabaseConfig: BrowserSupabaseConfig | null;
 }) {
   const allowed = allowedWorkerLogs(job.status);
   const logs = data.logs.filter((log) => log.serviceJobId === job.id);
@@ -246,29 +258,38 @@ function WorkerJobCard({
               </label>
             </WorkerLogForm>
           ) : null}
-          {allowed.includes("EVIDENCE") && data.evidence.length ? (
-            <WorkerLogForm
-              idempotencyKey={keyFor("EVIDENCE")}
-              job={job}
-              label="GẮN BẰNG CHỨNG"
-              logType="EVIDENCE"
-              tone="secondary"
-            >
-              <label>
-                Ảnh / biên bản
-                <select name="evidenceId" required>
-                  {data.evidence.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Ghi chú
-                <input name="note" />
-              </label>
-            </WorkerLogForm>
+          {allowed.includes("EVIDENCE") ? (
+            <>
+              <WorkerEvidenceUploader
+                config={supabaseConfig}
+                entityId={job.id}
+                entityType="SERVICE_JOB"
+                onUploaded={onEvidenceUploaded}
+              />
+              <WorkerLogForm
+                idempotencyKey={keyFor("EVIDENCE")}
+                job={job}
+                label="GẮN BẰNG CHỨNG"
+                logType="EVIDENCE"
+                tone="secondary"
+              >
+                <label>
+                  Ảnh / biên bản đã gửi
+                  <select defaultValue="" name="evidenceId" required>
+                    <option disabled value="">Chọn ảnh hoặc biên bản đã gửi</option>
+                    {evidence.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Ghi chú
+                  <input name="note" />
+                </label>
+              </WorkerLogForm>
+            </>
           ) : null}
           {allowed.includes("INCIDENT") ? (
             <WorkerLogForm
@@ -307,6 +328,9 @@ function WorkerJobCard({
           tiếp theo.
         </p>
       )}
+      {allowed.includes("INCIDENT") ? (
+        <WorkerIssueForm sourceId={job.id} sourceType="SERVICE_JOB" />
+      ) : null}
       {logs.length ? (
         <details className="service-worker-history">
           <summary>Nhật ký gần đây ({logs.length})</summary>
@@ -333,10 +357,20 @@ function WorkerJobCard({
 export function ServiceJobWorker({
   data,
   initialKeys,
+  supabaseConfig,
 }: {
   data: ServiceJobSnapshot;
   initialKeys: Record<string, string>;
+  supabaseConfig: BrowserSupabaseConfig | null;
 }) {
+  const [uploadedEvidence, setUploadedEvidence] = useState<UploadedEvidence[]>([]);
+  const evidence = [
+    ...uploadedEvidence,
+    ...data.evidence.filter((item) => !uploadedEvidence.some((uploaded) => uploaded.id === item.id)),
+  ];
+  const onEvidenceUploaded = (item: UploadedEvidence) => {
+    setUploadedEvidence((current) => current.some((existing) => existing.id === item.id) ? current : [item, ...current]);
+  };
   return (
     <div className="service-worker-workspace">
       <header className="service-worker-header">
@@ -354,9 +388,12 @@ export function ServiceJobWorker({
         {data.jobs.map((job) => (
           <WorkerJobCard
             data={data}
+            evidence={evidence}
             initialKeys={initialKeys}
             job={job}
             key={job.id}
+            onEvidenceUploaded={onEvidenceUploaded}
+            supabaseConfig={supabaseConfig}
           />
         ))}
       </div>

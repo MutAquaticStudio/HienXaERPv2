@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 
 import { AccessDenied } from "@/components/access-denied";
 import { ServiceJobWorker } from "@/components/service-job-worker";
+import { getSupabasePublicConfig } from "@/lib/supabase/config";
 import { hasPermission } from "@/modules/platform/authorization";
 import { getCurrentPrincipal } from "@/modules/platform/principal";
 import { getServiceJobSnapshot } from "@/modules/service-jobs/service";
@@ -20,5 +21,5 @@ export default async function WorkerServiceJobsPage() {
       SERVICE_LOG_TYPES.map((type) => [`${type}:${job.id}`, randomUUID()]),
     ),
   );
-  return <ServiceJobWorker data={data} initialKeys={keys} />;
+  return <ServiceJobWorker data={data} initialKeys={keys} supabaseConfig={getSupabasePublicConfig()} />;
 }

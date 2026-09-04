@@ -5,7 +5,9 @@ import {
   canTransitionWorkItem,
   isClaimLeaseExpired,
   nextHeartbeatState,
+  orderWorkerWorkItems,
 } from "@/modules/workforce/workflow";
+import { SYNTHETIC_WORKFORCE } from "@/modules/workforce/fixtures";
 
 describe("P10 employee OS workflow", () => {
   it("keeps the worker state machine explicit", () => {
@@ -66,5 +68,21 @@ describe("P10 employee OS workflow", () => {
         now,
       }),
     ).toBe("HEARTBEAT_MISSED");
+  });
+
+  it("keeps the worker home priority independent from due-date ordering", () => {
+    const poolItem = structuredClone(SYNTHETIC_WORKFORCE.pool[0]!);
+    const items = structuredClone([
+      ...SYNTHETIC_WORKFORCE.assigned,
+      ...SYNTHETIC_WORKFORCE.completed,
+      { ...poolItem, status: "CLAIMED" as const },
+      { ...poolItem, id: "a1000000-0000-4000-8000-000000000105", workNumber: "WRK-2026-000105", status: "BLOCKED" as const },
+    ]);
+    expect(orderWorkerWorkItems(items).map((item) => item.status)).toEqual([
+      "IN_PROGRESS",
+      "CLAIMED",
+      "BLOCKED",
+      "DONE",
+    ]);
   });
 });

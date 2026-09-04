@@ -14,6 +14,7 @@ import type {
   WorkItemStatus,
   WorkNotification,
 } from "@/modules/workforce/types";
+import { orderWorkerWorkItems } from "@/modules/workforce/workflow";
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
 
@@ -115,6 +116,19 @@ function mapNotification(row: NotificationRow): WorkNotification {
   };
 }
 
+function vietnamDateKey(date: Date) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const value = (type: "year" | "month" | "day") =>
+    parts.find((part) => part.type === type)?.value ?? "";
+
+  return `${value("year")}-${value("month")}-${value("day")}`;
+}
+
 export async function readWorkforceSnapshotFromSupabase(
   supabase: SupabaseServerClient,
   principal: Principal,
@@ -156,9 +170,24 @@ export async function readWorkforceSnapshotFromSupabase(
   const officeActive = items.filter((item) =>
     ["CLAIMED", "IN_PROGRESS", "BLOCKED", "HEARTBEAT_MISSED", "UNRESPONSIVE"].includes(item.status),
   );
+  const today = vietnamDateKey(new Date());
+  const completedToday = own.filter(
+    (item) =>
+      ["DONE", "VERIFIED"].includes(item.status) &&
+      item.completedAt?.startsWith(today),
+  );
+  const activeOwn = own.filter((item) => !["DONE", "VERIFIED"].includes(item.status));
+  const workerPool = items
+    .filter((item) => item.status === "AVAILABLE" && item.isEligible)
+    .map((item) => ({
+      ...item,
+      customerName: null,
+      pickupAddress: null,
+      dropAddress: null,
+    }));
   return {
-    assigned: view === "office" ? officeActive : own.filter((item) => !["DONE", "VERIFIED"].includes(item.status)),
-    pool: items.filter((item) => item.status === "AVAILABLE" && item.isEligible),
+    assigned: view === "office" ? officeActive : orderWorkerWorkItems([...activeOwn, ...completedToday]),
+    pool: workerPool,
     attention: items.filter((item) => ["BLOCKED", "HEARTBEAT_MISSED", "UNRESPONSIVE", "DONE"].includes(item.status)),
     completed: (view === "office" ? items : own).filter((item) => ["DONE", "VERIFIED"].includes(item.status)),
     notifications: ((notificationResult.data ?? []) as NotificationRow[]).map(mapNotification),

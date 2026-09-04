@@ -26,6 +26,7 @@ import {
   runWorkerWorkAction,
   type WorkerWorkActionState,
 } from "@/app/work/actions";
+import { WorkerIssueForm } from "@/components/worker-issue-form";
 import type {
   WorkforceSnapshot,
   WorkCommandKind,
@@ -171,7 +172,7 @@ function WorkCard({
           </dt>
           <dd>{formatTime(item.dueAt)}</dd>
         </div>
-        {item.customerName ? (
+      {!pool && item.customerName ? (
           <div>
             <dt>
               <PackageCheck aria-hidden="true" />
@@ -180,7 +181,7 @@ function WorkCard({
             <dd>{item.customerName}</dd>
           </div>
         ) : null}
-        {item.pickupAddress ? (
+        {!pool && item.pickupAddress ? (
           <div>
             <dt>
               <MapPin aria-hidden="true" />
@@ -286,6 +287,9 @@ function WorkCard({
           <CheckCircle2 />
           Đã ghi nhận kết quả, đang chờ giám sát xác minh.
         </p>
+      ) : null}
+      {!pool && item.claimedBy ? (
+        <WorkerIssueForm sourceId={item.id} sourceType="WORK_ITEM" />
       ) : null}
       {!pool && item.sourceType === "SERVICE_JOB" ? (
         <Link

@@ -21,6 +21,7 @@ import {
   type CommandTransaction,
 } from "@/modules/platform/server-command";
 import type { Permission, Principal } from "@/modules/platform/types";
+import { orderWorkerWorkItems } from "@/modules/workforce/workflow";
 
 class SyntheticTransaction implements CommandTransaction {
   private readonly records = new Map<string, CommandRecord<unknown>>();
@@ -78,8 +79,17 @@ export async function getWorkforceSnapshot(
   if (canUseSyntheticAuth()) {
     const snapshot = structuredClone(SYNTHETIC_WORKFORCE);
     if (view === "worker") {
-      snapshot.assigned = snapshot.assigned.filter((item) => item.claimedBy === principal.userId);
+      snapshot.assigned = orderWorkerWorkItems([
+        ...snapshot.assigned.filter((item) => item.claimedBy === principal.userId),
+        ...snapshot.completed.filter((item) => item.claimedBy === principal.userId),
+      ]);
       snapshot.completed = snapshot.completed.filter((item) => item.claimedBy === principal.userId);
+      snapshot.pool = snapshot.pool.map((item) => ({
+        ...item,
+        customerName: null,
+        pickupAddress: null,
+        dropAddress: null,
+      }));
       snapshot.attention = [];
       snapshot.workers = [];
     }

@@ -147,8 +147,8 @@ export async function readDeliverySnapshot(sql: Sql, principal: Principal): Prom
           join public.user_roles user_role on user_role.user_id = profile.user_id
           join public.roles role on role.id = user_role.role_id and role.code = 'DRIVER'
           where profile.status = 'ACTIVE' and operational.is_active order by profile.display_name`,
-    sql<{ id: string; storage_path: string }[]>`
-      select id, storage_path from public.evidence
+    sql<{ id: string; storage_path: string; entity_type: string | null; entity_id: string | null }[]>`
+      select id, storage_path, entity_type, entity_id from public.evidence
       where owner_user_id = ${principal.userId} or ${driverOnly} = false
       order by created_at desc limit 100`,
   ]);
@@ -200,7 +200,14 @@ export async function readDeliverySnapshot(sql: Sql, principal: Principal): Prom
       displayName: row.display_name,
       employeeCode: row.employee_code,
     })),
-    evidence: evidenceRows.map((row) => ({ id: row.id, label: row.storage_path })),
+    evidence: evidenceRows
+      .filter(
+        (row) =>
+          !driverOnly ||
+          (row.entity_type === "DELIVERY" &&
+            deliveryRows.some((delivery) => delivery.id === row.entity_id)),
+      )
+      .map((row) => ({ id: row.id, label: row.storage_path })),
   };
 }
 
@@ -224,27 +231,24 @@ export async function readAssignedDeliverySnapshotFromSupabase(
 
   const assignments = (assignmentResult.data ?? []) as AssignedDeliveryAssignmentRow[];
   const deliveryIds = [...new Set(assignments.map((row) => row.delivery_id))];
-  const evidenceQuery = supabase
-    .from("evidence")
-    .select("id, storage_path")
-    .eq("owner_user_id", principal.userId)
-    .order("created_at", { ascending: false })
-    .limit(100);
-
   if (deliveryIds.length === 0) {
-    const evidenceResult = await evidenceQuery;
-    if (evidenceResult.error) deliveryReadFailed();
     return {
       deliveries: [],
       planningOptions: [],
       vehicles: [],
       drivers: [],
-      evidence: (evidenceResult.data ?? []).map((row) => ({
-        id: row.id,
-        label: row.storage_path,
-      })),
+      evidence: [],
     };
   }
+
+  const evidenceQuery = supabase
+    .from("evidence")
+    .select("id, storage_path")
+    .eq("owner_user_id", principal.userId)
+    .eq("entity_type", "DELIVERY")
+    .in("entity_id", deliveryIds)
+    .order("created_at", { ascending: false })
+    .limit(100);
 
   const [deliveryResult, lineResult, actualResult, proofResult, evidenceResult] =
     await Promise.all([

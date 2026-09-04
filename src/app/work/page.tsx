@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 
 import { AccessDenied } from "@/components/access-denied";
 import { DriverDeliveryWorkspace } from "@/components/driver-delivery-workspace";
+import { getSupabasePublicConfig } from "@/lib/supabase/config";
 import { WorkerWorkspace } from "@/components/worker-workspace";
 import { getDeliverySnapshot } from "@/modules/delivery/service";
 import { hasPermission } from "@/modules/platform/authorization";
@@ -33,6 +34,6 @@ export default async function WorkerHomePage() {
   return <>
     <WorkerWorkspace data={data} initialKeys={initialKeys} mode="assigned" />
     <div className="worker-source-divider"><strong>Chi tiết chuyến giao</strong><span>Delivery là nguồn nghiệp vụ; công việc ở trên phản ánh kết quả.</span></div>
-    <DriverDeliveryWorkspace deliveries={deliveryData.deliveries} evidence={deliveryData.evidence} heading="Chi tiết chuyến giao" initialKeys={deliveryKeys} showReload={false} />
+    <DriverDeliveryWorkspace deliveries={deliveryData.deliveries} evidence={deliveryData.evidence} heading="Chi tiết chuyến giao" initialKeys={deliveryKeys} showReload={false} supabaseConfig={getSupabasePublicConfig()} />
   </>;
 }
