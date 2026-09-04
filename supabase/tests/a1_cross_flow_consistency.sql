@@ -88,7 +88,7 @@ select ok(
   'Exact GPS remains worker-self or fleet-authorized only'
 );
 select ok(
-  exists (select 1 from pg_constraint where conrelid = 'public.route_plans'::regclass and conname = 'route_plans_status_shape')
+  exists (select 1 from pg_constraint where conrelid = 'public.route_plans'::regclass and conname = 'route_plan_approval_shape')
   and exists (select 1 from pg_constraint where conrelid = 'public.conversations'::regclass and conname = 'conversations_context_once'),
   'Route and conversation histories keep explicit lifecycle invariants'
 );
