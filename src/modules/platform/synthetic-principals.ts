@@ -77,6 +77,13 @@ export const SYNTHETIC_OFFICE_PRINCIPAL: Principal = {
     "payment.reverse",
     "reconciliation.manage",
     "expense.manage",
+    "service_job.read",
+    "service_job.manage",
+    "service_job.assign",
+    "service_job.update_assigned",
+    "service_job.approve",
+    "service_job.confirm",
+    "service_job.cost.manage",
   ],
   scopes: [{ kind: "ALL" }],
 };
@@ -85,7 +92,7 @@ export const SYNTHETIC_WORKER_PRINCIPAL: Principal = {
   userId: "00000000-0000-4000-8000-000000000002",
   displayName: "Trần Văn Nam",
   status: "ACTIVE",
-  roles: ["DRIVER"],
+  roles: ["DRIVER", "OPERATOR_WORKER"],
   permissions: [
     "platform.access_worker",
     "work_item.read_assigned",
@@ -99,6 +106,7 @@ export const SYNTHETIC_WORKER_PRINCIPAL: Principal = {
     "delivery.dispatch",
     "delivery.update_assigned",
     "delivery.proof.create",
+    "service_job.update_assigned",
   ],
   scopes: [{ kind: "ASSIGNED_ONLY" }, { kind: "SELF" }],
 };

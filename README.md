@@ -75,6 +75,17 @@ See [the P5 architecture note](docs/architecture/p5-sourcing-dropship.md) for th
 
 See [the P10 architecture note](docs/architecture/p10-employee-os-work-pool.md) for the work lifecycle, concurrency boundary and verification evidence.
 
+## Phase 11 invariants
+
+- ServiceJob is the source of truth; its P10 WorkItem is only an execution projection.
+- START, breaks, fuel, evidence, incidents and END are immutable operational logs.
+- Actual elapsed hours never overwrite approved billable hours or billing quantity.
+- Customer confirmation creates one billing event, one receivable and one recognition ledger entry in one transaction.
+- Job profitability includes direct service costs and posted Finance expenses allocated to that ServiceJob.
+- Operators can update only assigned jobs; Office scheduling, assignment, cost, approval and confirmation remain separate permissions.
+
+See [the P11 architecture note](docs/architecture/p11-service-jobs.md) for the execution lifecycle, billing boundary and verification evidence.
+
 ## Verification
 
 ```bash

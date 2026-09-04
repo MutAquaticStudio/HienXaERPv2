@@ -94,6 +94,13 @@ export const PERMISSIONS = [
   "payment.reverse",
   "reconciliation.manage",
   "expense.manage",
+  "service_job.read",
+  "service_job.manage",
+  "service_job.assign",
+  "service_job.update_assigned",
+  "service_job.approve",
+  "service_job.confirm",
+  "service_job.cost.manage",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];

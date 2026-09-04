@@ -125,12 +125,14 @@ export async function readFinanceSnapshot(
     sql<DocumentRow[]>`
       select receivable.id, receivable.receivable_number as document_number,
         customer.id as party_id, customer.name_vi as party_name,
-        sales_order.sales_order_number as source_number, receivable.currency,
+        coalesce(sales_order.sales_order_number, service_job.job_number) as source_number,
+        receivable.currency,
         receivable.original_amount, receivable.outstanding_amount, receivable.due_date::text,
         greatest(current_date - receivable.due_date, 0) as days_overdue, receivable.status
       from public.receivables receivable
       join public.customers customer on customer.id = receivable.customer_id
-      join public.sales_orders sales_order on sales_order.id = receivable.sales_order_id
+      left join public.sales_orders sales_order on sales_order.id = receivable.sales_order_id
+      left join public.service_jobs service_job on service_job.id = receivable.service_job_id
       order by receivable.due_date, receivable.created_at desc limit 200`,
     sql<DocumentRow[]>`
       select payable.id, payable.payable_number as document_number,

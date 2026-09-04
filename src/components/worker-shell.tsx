@@ -1,6 +1,12 @@
 "use client";
 
-import { CircleUserRound, ClipboardList, Coins, Layers3 } from "lucide-react";
+import {
+  CircleUserRound,
+  ClipboardList,
+  Coins,
+  Construction,
+  Layers3,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -10,15 +16,12 @@ import { LargeTextToggle } from "@/components/large-text-toggle";
 const workerNavigation = [
   { href: "/work", label: "Việc của tôi", icon: ClipboardList },
   { href: "/work/pool", label: "Bể công việc", icon: Layers3 },
+  { href: "/work/service", label: "Dịch vụ", icon: Construction },
   { href: "/work/earnings", label: "Thu nhập", icon: Coins },
   { href: "/work/profile", label: "Tôi", icon: CircleUserRound },
 ] as const;
 
-export function WorkerShell({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export function WorkerShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   return (
     <div className="worker-shell">
