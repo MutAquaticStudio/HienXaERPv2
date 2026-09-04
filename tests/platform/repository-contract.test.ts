@@ -36,6 +36,16 @@ describe("P1 repository safety contract", () => {
     expect(workerNavigation).toContain("prefetch={false}");
   });
 
+  it("keeps worker earnings locked until its baseline phase", () => {
+    const workerSection = readFileSync(
+      join(root, "src/app/work/[section]/page.tsx"),
+      "utf8",
+    );
+    expect(workerSection).toContain("Dự kiến mở tại P12");
+    expect(workerSection).toContain("Lương thưởng &amp; Năng suất");
+    expect(workerSection).not.toContain("Chưa mở trong P1");
+  });
+
   it("migration enables RLS, private evidence and assigned-only access", () => {
     const migrationName = readdirSync(join(root, "supabase/migrations")).find(
       (name) => name.endsWith("_platform_core_security.sql"),

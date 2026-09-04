@@ -20,8 +20,8 @@ export default async function WorkerSectionPage({
     <section className="worker-locked-state">
       <h1>{title}</h1>
       <LockKeyhole aria-hidden="true" size={56} />
-      <h2>Chưa mở trong P1</h2>
-      <p>Chức năng này sẽ được mở ở đúng phase đã quy định.</p>
+      <h2>Dự kiến mở tại P12</h2>
+      <p>Thu nhập thuộc phase Lương thưởng &amp; Năng suất theo baseline.</p>
     </section>
   );
 }
