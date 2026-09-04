@@ -62,6 +62,9 @@ it("applies CP1 and keeps customer commands within their existing P4/P7/P8 sourc
     const name = readdirSync(directory).find((item) => item.endsWith("_cp1_customer_portal.sql"));
     expect(name).toBeTruthy();
     await client.query(readFileSync(join(directory, name as string), "utf8"));
+    const a1Name = readdirSync(directory).find((item) => item.endsWith("_a1_core_command_boundaries.sql"));
+    expect(a1Name).toBeTruthy();
+    await client.query(readFileSync(join(directory, a1Name as string), "utf8"));
     await client.query(`
       insert into public.customer_portal_memberships(auth_user_id, customer_id) values
         ('10000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000001'),
@@ -123,8 +126,13 @@ it("applies CP1 and keeps customer commands within their existing P4/P7/P8 sourc
       (select count(*) from public.sales_orders)::text as order_count,
       (select count(*) from public.receivables)::text as receivable_count,
       (select actual_quantity::text from public.delivery_actuals where id = '81000000-0000-4000-8000-000000000001') as actual_quantity,
-      (select count(*) from public.payments)::text as payment_count`);
-    expect(invariants.rows[0]).toMatchObject({ order_count: "0", receivable_count: "1", actual_quantity: "60", payment_count: "0" });
+      (select count(*) from public.payments)::text as payment_count,
+      (select status from public.quotation_revisions where id = '60000000-0000-4000-8000-000000000001') as revision_status,
+      (select status from public.quotations where id = '70000000-0000-4000-8000-000000000001') as quotation_status`);
+    expect(invariants.rows[0]).toMatchObject({
+      order_count: "0", receivable_count: "1", actual_quantity: "60", payment_count: "0",
+      revision_status: "ACCEPTED", quotation_status: "ACCEPTED",
+    });
   } finally {
     await client.end().catch(() => undefined);
     if (started) await database.stop(); else await rm(databaseDir, { recursive: true, force: true });
