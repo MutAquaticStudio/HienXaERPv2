@@ -65,6 +65,8 @@ export const SYNTHETIC_OFFICE_PRINCIPAL: Principal = {
     "delivery.update_assigned",
     "delivery.proof.create",
     "delivery.confirm",
+    "route_plan.read",
+    "route_plan.manage",
     "finance.manage",
     "receivable.read",
     "receivable.adjust",
