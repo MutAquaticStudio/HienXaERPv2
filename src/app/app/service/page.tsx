@@ -1,4 +1,6 @@
 import { randomUUID } from "node:crypto";
+import { Suspense } from "react";
+import { DeferredRead } from "@/components/deferred-read";
 import type { Metadata } from "next";
 
 import { AccessDenied } from "@/components/access-denied";
@@ -18,10 +20,7 @@ export default async function ServiceJobsPage() {
   const principal = await getCurrentPrincipal("office");
   if (!principal || !hasPermission(principal, "service_job.read"))
     return <AccessDenied />;
-  const [data, chat] = await Promise.all([
-    getServiceJobSnapshot(principal, "office"),
-    hasPermission(principal, "chat.read") ? getOperationalChatSnapshot(principal, "office") : Promise.resolve(null),
-  ]);
+  const data = await getServiceJobSnapshot(principal, "office");
   const names = [
     "type:new",
     "machine:new",
@@ -50,6 +49,6 @@ export default async function ServiceJobsPage() {
         names.map((name) => [name, randomUUID()]),
       )}
     />
-    {chat ? <OperationalChatPanel canManage={hasPermission(principal, "chat.manage")} contexts={chatContexts} snapshot={chat} surface="office" supabaseConfig={getSupabasePublicConfig()} /> : null}
+    {hasPermission(principal, "chat.read") ? <Suspense fallback={<p role="status">Đang tải trao đổi...</p>}><DeferredRead label="trao đổi" load={() => getOperationalChatSnapshot(principal, "office")} render={chat => <OperationalChatPanel canManage={hasPermission(principal, "chat.manage")} contexts={chatContexts} snapshot={chat} surface="office" supabaseConfig={getSupabasePublicConfig()} />} /></Suspense> : null}
   </>;
 }

@@ -1,3 +1,4 @@
+import { withDatabaseRead } from "@/lib/postgres/read";
 import "server-only";
 
 import type { InventoryCommandInput } from "@/modules/inventory/commands";
@@ -96,7 +97,7 @@ export async function getInventorySnapshot(
 ): Promise<InventorySnapshot> {
   assertPermission(principal, "inventory.read");
   if (canUseSyntheticAuth()) return structuredClone(SYNTHETIC_INVENTORY);
-  return readInventorySnapshot(getDatabaseClient(), principal);
+  return withDatabaseRead("inventory", (sql) => readInventorySnapshot(sql, principal));
 }
 
 export async function runInventoryCommand(

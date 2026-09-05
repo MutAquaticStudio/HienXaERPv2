@@ -1,3 +1,4 @@
+import type { SnapshotPage } from "@/modules/platform/snapshot-view";
 export const CUSTOMER_TIERS = [
   "STANDARD",
   "SILVER",
@@ -167,6 +168,7 @@ export interface CustomerTimelineEvent {
 }
 
 export interface Customer360Snapshot {
+  page?: SnapshotPage;
   customers: Customer[];
   contacts: CustomerContact[];
   sites: CustomerSite[];

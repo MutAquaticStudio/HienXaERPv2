@@ -1,3 +1,4 @@
+import type { SnapshotPage } from "@/modules/platform/snapshot-view";
 import type {
   FulfillmentRequirement,
   SalesOrderLine,
@@ -160,6 +161,7 @@ export interface PurchaseOrderEvidence {
 }
 
 export interface SourcingSnapshot {
+  page?: SnapshotPage;
   suppliers: Supplier[];
   supplierPrices: SupplierPrice[];
   purchaseCostSnapshots: PurchaseCostSnapshot[];

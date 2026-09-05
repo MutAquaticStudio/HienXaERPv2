@@ -1,4 +1,6 @@
 import { randomUUID } from "node:crypto";
+import { Suspense } from "react";
+import { DeferredRead } from "@/components/deferred-read";
 import type { Metadata } from "next";
 
 import { AccessDenied } from "@/components/access-denied";
@@ -23,12 +25,7 @@ export default async function DispatchPage() {
   const canReadRoutePlans = hasPermission(principal, "route_plan.read");
   const canReadFleetLocation = hasPermission(principal, "gps.location.read_fleet");
   const canReadChat = hasPermission(principal, "chat.read");
-  const [data, routeData, fleetData, chat] = await Promise.all([
-    getDeliverySnapshot(principal),
-    canReadRoutePlans ? getRouteOptimizationSnapshot(principal) : Promise.resolve(null),
-    canReadFleetLocation ? getFleetTrackingSnapshot(principal) : Promise.resolve(null),
-    canReadChat ? getOperationalChatSnapshot(principal, "office") : Promise.resolve(null),
-  ]);
+  const data = await getDeliverySnapshot(principal);
   const initialKeys = Object.fromEntries(
     [
       ...data.planningOptions.map((item) => `plan:${item.id}`),
@@ -54,16 +51,18 @@ export default async function DispatchPage() {
         data={data}
         initialKeys={initialKeys}
       />
-      {fleetData ? <FleetLiveMap data={fleetData} /> : null}
-      {routeData ? <RoutePlanWorkspace
+      {canReadFleetLocation ? <Suspense fallback={<p role="status">Đang tải vị trí phương tiện...</p>}>
+        <DeferredRead label="vị trí phương tiện" load={() => getFleetTrackingSnapshot(principal)} render={fleetData => <FleetLiveMap data={fleetData} />} />
+      </Suspense> : null}
+      {canReadRoutePlans ? <Suspense fallback={<p role="status">Đang tải lộ trình...</p>}><DeferredRead label="lộ trình" load={() => getRouteOptimizationSnapshot(principal)} render={routeData => <RoutePlanWorkspace
         canManage={hasPermission(principal, "route_plan.manage")}
         data={routeData}
         initialKeys={Object.fromEntries([
           ["create", randomUUID()],
           ...routeData.plans.flatMap((plan) => [[`approve:${plan.id}`, randomUUID()], [`apply:${plan.id}`, randomUUID()]]),
         ])}
-      /> : null}
-      {chat ? <OperationalChatPanel canManage={hasPermission(principal, "chat.manage")} contexts={chatContexts} snapshot={chat} surface="office" supabaseConfig={getSupabasePublicConfig()} /> : null}
+      />} /></Suspense> : null}
+      {canReadChat ? <Suspense fallback={<p role="status">Đang tải trao đổi...</p>}><DeferredRead label="trao đổi" load={() => getOperationalChatSnapshot(principal, "office")} render={chat => <OperationalChatPanel canManage={hasPermission(principal, "chat.manage")} contexts={chatContexts} snapshot={chat} surface="office" supabaseConfig={getSupabasePublicConfig()} />} /></Suspense> : null}
     </>
   );
 }

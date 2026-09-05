@@ -1,3 +1,4 @@
+import { parseSnapshotView } from "@/modules/platform/snapshot-view";
 import { randomUUID } from "node:crypto";
 
 import type { Metadata } from "next";
@@ -10,7 +11,7 @@ import { getSourcingSnapshot } from "@/modules/sourcing/service";
 
 export const metadata: Metadata = { title: "Mua & nguồn hàng" };
 
-export default async function SourcingPage() {
+export default async function SourcingPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const principal = await getCurrentPrincipal("office");
   if (
     !principal ||
@@ -20,7 +21,8 @@ export default async function SourcingPage() {
     return <AccessDenied />;
   }
 
-  const data = await getSourcingSnapshot(principal);
+  const view = parseSnapshotView(await searchParams, ["allocations","orders","suppliers"]);
+  const data = await getSourcingSnapshot(principal, view);
   const keyNames = [
     "supplier.create",
     "supplier-price.record",
@@ -39,6 +41,8 @@ export default async function SourcingPage() {
 
   return (
     <SourcingWorkspace
+      key={view.tab + (view.after ?? "")}
+      initialTab={view.tab as "allocations" | "orders" | "suppliers"}
       canConfirmPurchaseOrder={hasPermission(
         principal,
         "purchase_order.confirm",

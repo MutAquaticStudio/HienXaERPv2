@@ -1,3 +1,4 @@
+import type { SnapshotPage } from "@/modules/platform/snapshot-view";
 export const UOM_DIMENSIONS = [
   "MASS",
   "VOLUME",
@@ -129,6 +130,7 @@ export interface WorkerSkillAssignment {
 }
 
 export interface MasterDataSnapshot {
+  page?: SnapshotPage;
   materialGroups: MaterialGroup[];
   uoms: Uom[];
   materials: Material[];

@@ -1,5 +1,5 @@
 import { getSupabasePublicConfig } from "@/lib/supabase/config";
-import { getDatabaseClient } from "@/lib/postgres/server";
+import { withDatabaseRead } from "@/lib/postgres/read";
 import { PlatformError } from "@/modules/platform/errors";
 
 export async function GET() {
@@ -20,9 +20,9 @@ export async function GET() {
     }
 
     if (databaseConfigured) {
-      const [probe] = await getDatabaseClient()<
+      const [probe] = await withDatabaseRead("health", (sql) => sql<
         { database_reachable: number }[]
-      >`select 1 as database_reachable`;
+      >`select 1 as database_reachable`);
       databaseReachable = probe?.database_reachable === 1;
       if (!databaseReachable) {
         throw new PlatformError(

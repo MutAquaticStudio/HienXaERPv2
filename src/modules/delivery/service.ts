@@ -1,3 +1,4 @@
+import { withDatabaseRead } from "@/lib/postgres/read";
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
@@ -88,7 +89,7 @@ export async function getDeliverySnapshot(
   }
   return view === "assigned"
     ? readAssignedDeliverySnapshotFromSupabase(await createClient(), principal)
-    : readDeliverySnapshot(getDatabaseClient(), principal);
+    : withDatabaseRead("delivery", (sql) => readDeliverySnapshot(sql, principal));
 }
 
 export async function runDeliveryCommand(

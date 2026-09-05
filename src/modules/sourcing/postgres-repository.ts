@@ -1,3 +1,5 @@
+import { SNAPSHOT_PAGE_SIZE, snapshotPage, type SnapshotView } from "@/modules/platform/snapshot-view";
+import { observeRead } from "@/lib/postgres/read-observability";
 import "server-only";
 
 import { randomUUID } from "node:crypto";
@@ -21,7 +23,7 @@ async function assertDatabasePermission(
   actorId: string,
   permission: Permission,
 ) {
-  await sql`select app_private.assert_actor_permission(${actorId}, ${permission})`;
+  await observeRead("sourcing.permission", () => sql`select app_private.assert_actor_permission(${actorId}, ${permission})`);
 }
 
 function missing(message: string): never {
@@ -33,13 +35,24 @@ function conflict(message: string, code = "INVALID_SOURCING_STATE"): never {
 }
 
 export async function readSourcingSnapshot(
-  sql: Sql,
+  sql: Sql | TransactionSql,
   principal: Principal,
+  view?: SnapshotView,
 ): Promise<SourcingSnapshot> {
   assertPermission(principal, "sourcing.read");
   assertPermission(principal, "purchase_order.read");
   await assertDatabasePermission(sql, principal.userId, "sourcing.read");
   await assertDatabasePermission(sql, principal.userId, "purchase_order.read");
+
+  const candidates = view ? await observeRead("sourcing.page", () =>
+    view.tab === "orders"
+      ? sql<{ id: string }[]>`select id from public.purchase_orders where (${view.after ?? null}::uuid is null or id > ${view.after ?? null}::uuid) order by id limit ${SNAPSHOT_PAGE_SIZE + 1}`
+      : view.tab === "suppliers"
+        ? sql<{ id: string }[]>`select id from public.suppliers where (${view.after ?? null}::uuid is null or id > ${view.after ?? null}::uuid) order by id limit ${SNAPSHOT_PAGE_SIZE + 1}`
+        : sql<{ id: string }[]>`select line.id from public.sales_order_lines line join public.sales_orders so on so.id = line.sales_order_id where (so.status in ('CONFIRMED', 'FULFILLING') or exists (select 1 from public.supply_allocations history where history.sales_order_line_id = line.id)) and (${view.after ?? null}::uuid is null or line.id > ${view.after ?? null}::uuid) order by line.id limit ${SNAPSHOT_PAGE_SIZE + 1}`
+  ) : [];
+  const selected = snapshotPage(candidates, view);
+  const ids = selected.rows.map(row => row.id);
 
   const [
     supplierRows,
@@ -57,7 +70,7 @@ export async function readSourcingSnapshot(
     uomRows,
     warehouseRows,
   ] = await Promise.all([
-    sql<
+    (!view || view.tab !== "orders") ? observeRead("sourcing.readSourcingSnapshot.1", () => sql<
       {
         id: string;
         code: string;
@@ -71,8 +84,9 @@ export async function readSourcingSnapshot(
       }[]
     >`select id, code, name_vi as name, tax_code, phone, email, address,
         is_active, created_at::text from public.suppliers
-      order by is_active desc, code`,
-    sql<
+      where (${!view || view.tab !== "suppliers"} or id = any(${sql.array(ids, 2950)}))
+      order by is_active desc, code`) : [],
+    (!view || view.tab === "suppliers") ? observeRead("sourcing.readSourcingSnapshot.2", () => sql<
       {
         id: string;
         supplier_id: string;
@@ -98,8 +112,9 @@ export async function readSourcingSnapshot(
       join public.suppliers as supplier on supplier.id = price.supplier_id
       join public.materials as material on material.id = price.material_id
       join public.uom_catalog as uom on uom.id = price.uom_id
-      order by price.valid_to is null desc, price.valid_from desc, price.version desc`,
-    sql<
+      where (${!view} or price.supplier_id = any(${sql.array(ids, 2950)}))
+      order by price.valid_to is null desc, price.valid_from desc, price.version desc`) : [],
+    !view ? observeRead("sourcing.readSourcingSnapshot.3", () => sql<
       {
         id: string;
         source_supplier_price_id: string;
@@ -120,8 +135,8 @@ export async function readSourcingSnapshot(
         supplier_name_snapshot, material_id, material_code_snapshot,
         material_name_snapshot, uom_id, uom_symbol_snapshot, unit_cost,
         currency, supplier_price_version, captured_at::text
-      from public.purchase_cost_snapshots order by captured_at desc`,
-    sql<
+      from public.purchase_cost_snapshots order by captured_at desc`) : [],
+    (!view || view.tab === "orders") ? observeRead("sourcing.readSourcingSnapshot.4", () => sql<
       {
         id: string;
         purchase_order_number: string;
@@ -154,8 +169,9 @@ export async function readSourcingSnapshot(
       left join public.warehouses as warehouse on warehouse.id = po.warehouse_id
       left join public.customers as customer on customer.id = po.direct_customer_id
       left join public.customer_sites as site on site.id = po.direct_customer_site_id
-      order by po.created_at desc`,
-    sql<
+      where (${!view} or po.id = any(${sql.array(ids, 2950)}))
+      order by po.created_at desc`) : [],
+    (!view || view.tab === "orders") ? observeRead("sourcing.readSourcingSnapshot.5", () => sql<
       {
         id: string;
         purchase_order_id: string;
@@ -178,8 +194,8 @@ export async function readSourcingSnapshot(
         line_number, material_id, material_code_snapshot, material_name_snapshot,
         ordered_quantity, uom_id, uom_symbol_snapshot, uom_snapshot,
         purchase_cost_snapshot_id, unit_cost, currency, line_amount
-      from public.purchase_order_lines order by purchase_order_id, line_number`,
-    sql<
+      from public.purchase_order_lines where (${!view} or purchase_order_id = any(${sql.array(ids, 2950)})) order by purchase_order_id, line_number`) : [],
+    (!view || view.tab === "allocations") ? observeRead("sourcing.readSourcingSnapshot.6", () => sql<
       {
         id: string;
         fulfillment_requirement_id: string;
@@ -227,8 +243,9 @@ export async function readSourcingSnapshot(
       left join public.warehouses as warehouse on warehouse.id = allocation.warehouse_id
       left join public.customers as customer on customer.id = allocation.direct_customer_id
       left join public.customer_sites as site on site.id = allocation.direct_customer_site_id
-      order by allocation.created_at desc`,
-    sql<
+      where (${!view} or allocation.sales_order_line_id = any(${sql.array(ids, 2950)}))
+      order by allocation.created_at desc`) : [],
+    (!view || view.tab === "orders") ? observeRead("sourcing.readSourcingSnapshot.7", () => sql<
       {
         id: string;
         purchase_order_id: string;
@@ -237,8 +254,8 @@ export async function readSourcingSnapshot(
         created_at: string;
       }[]
     >`select id, purchase_order_id, evidence_id, label, created_at::text
-      from public.purchase_order_evidence order by created_at desc`,
-    sql<
+      from public.purchase_order_evidence where (${!view} or purchase_order_id = any(${sql.array(ids, 2950)})) order by created_at desc`) : [],
+    (!view || view.tab === "allocations") ? observeRead("sourcing.readSourcingSnapshot.8", () => sql<
       {
         id: string;
         sales_order_id: string;
@@ -267,9 +284,9 @@ export async function readSourcingSnapshot(
         line.currency, line.line_amount, line.price_safety_status
       from public.sales_order_lines as line
       join public.sales_orders as sales_order on sales_order.id = line.sales_order_id
-      where sales_order.status in ('CONFIRMED', 'FULFILLING')
-      order by sales_order.created_at desc, line.line_number`,
-    sql<
+      where sales_order.status in ('CONFIRMED', 'FULFILLING') and (${!view} or line.id = any(${sql.array(ids, 2950)}))
+      order by sales_order.created_at desc, line.line_number`) : [],
+    (!view || view.tab === "allocations") ? observeRead("sourcing.readSourcingSnapshot.9", () => sql<
       {
         id: string;
         sales_order_id: string;
@@ -285,8 +302,8 @@ export async function readSourcingSnapshot(
     >`select id, sales_order_id, sales_order_line_id, requirement_type, status,
         required_quantity, uom_id, uom_symbol_snapshot, customer_site_id,
         created_at::text from public.fulfillment_requirements
-      where status <> 'CANCELLED' order by created_at desc`,
-    sql<
+      where status <> 'CANCELLED' and (${!view} or sales_order_line_id = any(${sql.array(ids, 2950)})) order by created_at desc`) : [],
+    (!view || view.tab === "allocations") ? observeRead("sourcing.readSourcingSnapshot.10", () => sql<
       {
         id: string;
         code: string;
@@ -299,8 +316,8 @@ export async function readSourcingSnapshot(
         is_active: boolean;
       }[]
     >`select id, code, name_vi as name, legal_name, tax_code, phone, email,
-        tier, is_active from public.customers order by is_active desc, code`,
-    sql<
+        tier, is_active from public.customers order by is_active desc, code`) : [],
+    (!view || view.tab === "allocations") ? observeRead("sourcing.readSourcingSnapshot.11", () => sql<
       {
         id: string;
         customer_id: string;
@@ -313,8 +330,8 @@ export async function readSourcingSnapshot(
       }[]
     >`select id, customer_id, code, name_vi as name, address, delivery_notes,
         is_default, is_active from public.customer_sites
-      order by is_active desc, is_default desc, code`,
-    sql<
+      order by is_active desc, is_default desc, code`) : [],
+    (!view || view.tab === "suppliers") ? observeRead("sourcing.readSourcingSnapshot.12", () => sql<
       {
         id: string;
         code: string;
@@ -336,18 +353,19 @@ export async function readSourcingSnapshot(
       join public.material_groups as material_group on material_group.id = material.material_group_id
       join public.uom_catalog as sales_uom on sales_uom.id = material.sales_uom_id
       join public.uom_catalog as purchase_uom on purchase_uom.id = material.purchase_uom_id
-      order by material.is_active desc, material.code`,
-    sql<
+      order by material.is_active desc, material.code`) : [],
+    (!view || view.tab === "suppliers") ? observeRead("sourcing.readSourcingSnapshot.13", () => sql<
       { id: string; symbol: string; name: string; is_active: boolean }[]
     >`select id, symbol, name_vi as name, is_active
-       from public.uom_catalog order by is_active desc, code`,
-    sql<
+       from public.uom_catalog order by is_active desc, code`) : [],
+    (!view || view.tab === "allocations") ? observeRead("sourcing.readSourcingSnapshot.14", () => sql<
       { id: string; code: string; name: string; is_active: boolean }[]
     >`select id, code, name_vi as name, is_active
-       from public.warehouses order by is_active desc, code`,
+       from public.warehouses order by is_active desc, code`) : [],
   ]);
 
   return {
+    page: selected.page,
     suppliers: supplierRows.map((row) => ({
       id: row.id,
       code: row.code,

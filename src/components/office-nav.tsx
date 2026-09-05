@@ -13,7 +13,7 @@ import {
   Truck,
   Users,
 } from "lucide-react";
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 
 const navItems = [
@@ -29,6 +29,11 @@ const navItems = [
   { href: "/app/data", label: "Dữ liệu", icon: Database },
   { href: "/app/settings", label: "Audit / Cài đặt", icon: Settings },
 ] as const;
+
+function NavigationLabel({ label }: { label: string }) {
+  const { pending } = useLinkStatus();
+  return <span aria-live="polite">{label}{pending ? " · Đang mở..." : ""}</span>;
+}
 
 export function OfficeNav() {
   const pathname = usePathname();
@@ -46,7 +51,7 @@ export function OfficeNav() {
             prefetch={false}
           >
             <Icon aria-hidden="true" size={22} />
-            <span>{label}</span>
+            <NavigationLabel label={label} />
           </Link>
         );
       })}

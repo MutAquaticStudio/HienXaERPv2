@@ -1,4 +1,6 @@
 "use client";
+import { SnapshotPagination } from "@/components/snapshot-pagination";
+import { useWorkspaceTab } from "@/components/use-workspace-tab";
 
 import { useActionState, useMemo, useState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
@@ -136,6 +138,7 @@ function EmptyRow({ columns, label }: { columns: number; label: string }) {
 }
 
 export function Customer360Workspace({
+  initialTab,
   data,
   initialKeys,
   today,
@@ -144,6 +147,7 @@ export function Customer360Workspace({
   canManageCredit,
   canOverrideCredit,
 }: {
+  initialTab?: WorkspaceTab;
   data: Customer360Snapshot;
   initialKeys: Record<Customer360EntityKind, string>;
   today: string;
@@ -152,7 +156,7 @@ export function Customer360Workspace({
   canManageCredit: boolean;
   canOverrideCredit: boolean;
 }) {
-  const [tab, setTab] = useState<WorkspaceTab>("profile");
+  const { tab, setTab, pending } = useWorkspaceTab<WorkspaceTab>("profile", initialTab);
   const [customerId, setCustomerId] = useState(data.customers[0]?.id ?? "");
   const [materialId, setMaterialId] = useState(data.materials[0]?.id ?? "");
   const [priceDate, setPriceDate] = useState(today);
@@ -231,11 +235,13 @@ export function Customer360Workspace({
           </label>
         </div>
       </header>
+      {pending ? <p role="status">Đang tải tab...</p> : null}
+      <SnapshotPagination pathname="/app/sales" tab={tab} page={data.page} />
 
       <section className="master-metrics" aria-label="Tóm tắt khách hàng">
-        <div><strong>{data.customers.filter((item) => item.isActive).length}</strong><span>Khách hàng đang hoạt động</span></div>
-        <div><strong>{data.priceRules.filter((item) => !item.validTo).length}</strong><span>Quy tắc giá hiện hành</span></div>
-        <div><strong>{blockedCustomers}</strong><span>Khách hàng đang bị chặn tín dụng</span></div>
+        <div><strong>{data.customers.filter((item) => item.isActive).length}</strong><span>Khách hàng đang hoạt động{data.page ? " trong trang" : ""}</span></div>
+        {(!initialTab || tab === "pricing") ? <div><strong>{data.priceRules.filter((item) => !item.validTo).length}</strong><span>Quy tắc giá hiện hành đã tải</span></div> : null}
+        <div><strong>{blockedCustomers}</strong><span>Khách hàng đang bị chặn tín dụng{data.page ? " trong trang" : ""}</span></div>
       </section>
 
       <div className="master-tabs" role="tablist" aria-label="Nội dung khách hàng">

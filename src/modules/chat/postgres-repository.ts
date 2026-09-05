@@ -1,3 +1,4 @@
+import { observeRead } from "@/lib/postgres/read-observability";
 import "server-only";
 
 import type { Sql, TransactionSql } from "postgres";
@@ -41,10 +42,10 @@ function readFailed(): never {
 }
 
 export async function readOperationalChatSnapshot(
-  sql: Sql,
+  sql: Sql | TransactionSql,
   actorId: string,
 ): Promise<OperationalChatSnapshot> {
-  const conversationRows = await sql<ConversationRow[]>`
+  const conversationRows = await observeRead("chat.readOperationalChatSnapshot.1", () => sql<ConversationRow[]>`
     select conversation.id, conversation.context_type, conversation.context_id,
       conversation.subject_snapshot, conversation.status, conversation.closed_at::text,
       conversation.close_reason, participant.last_read_at::text
@@ -54,23 +55,23 @@ export async function readOperationalChatSnapshot(
     where participant.actor_user_id = ${actorId}
     order by conversation.created_at desc
     limit 100
-  `;
+  `);
   const ids = conversationRows.map((conversation) => conversation.id);
   const [messageRows, evidenceRows] = await Promise.all([
     ids.length
-      ? sql<MessageRow[]>`
+      ? observeRead("chat.readOperationalChatSnapshot.2", () => sql<MessageRow[]>`
           select id, conversation_id, sender_user_id, sender_kind,
             sender_display_name_snapshot, body, evidence_id, created_at::text
           from public.conversation_messages
           where conversation_id = any(${ids}::uuid[])
           order by created_at asc, id asc
-        `
+        `)
       : Promise.resolve([] as MessageRow[]),
-    sql<{ id: string; storage_path: string }[]>`
+    observeRead("chat.readOperationalChatSnapshot.3", () => sql<{ id: string; storage_path: string }[]>`
       select id, storage_path from public.evidence
       where owner_user_id = ${actorId}
       order by created_at desc limit 100
-    `,
+    `),
   ]);
   if (!conversationRows || !messageRows || !evidenceRows) readFailed();
   const conversations: OperationalConversation[] = conversationRows.map((conversation) => {

@@ -1,3 +1,4 @@
+import { parseSnapshotView } from "@/modules/platform/snapshot-view";
 import { randomUUID } from "node:crypto";
 
 import type { Metadata } from "next";
@@ -27,13 +28,14 @@ const formKinds: MasterEntityKind[] = [
   "worker-skill-assignment",
 ];
 
-export default async function MasterDataPage() {
+export default async function MasterDataPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const principal = await getCurrentPrincipal("office");
   if (!principal || !hasPermission(principal, "master_data.read")) {
     return <AccessDenied />;
   }
 
-  const data = await getMasterDataSnapshot(principal);
+  const view = parseSnapshotView(await searchParams, ["materials","operations","people"]);
+  const data = await getMasterDataSnapshot(principal, view);
   const initialKeys = Object.fromEntries(
     formKinds.map((kind) => [kind, randomUUID()]),
   ) as Record<MasterEntityKind, string>;
@@ -72,6 +74,8 @@ export default async function MasterDataPage() {
 
   return (
     <MasterDataWorkspace
+      key={view.tab + (view.after ?? "")}
+      initialTab={view.tab as "materials" | "operations" | "people"}
       data={data}
       initialKeys={initialKeys}
       toggleKeys={toggleKeys}

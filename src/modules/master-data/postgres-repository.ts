@@ -1,3 +1,5 @@
+import { SNAPSHOT_PAGE_SIZE, snapshotPage, type SnapshotView } from "@/modules/platform/snapshot-view";
+import { observeRead } from "@/lib/postgres/read-observability";
 import "server-only";
 
 import type { Sql, TransactionSql } from "postgres";
@@ -27,23 +29,24 @@ async function assertDatabasePermission(
   actorId: string,
   permission: "master_data.read" | "master_data.manage",
 ): Promise<void> {
-  await sql`select app_private.assert_actor_permission(${actorId}, ${permission})`;
+  await observeRead("master-data.permission", () => sql`select app_private.assert_actor_permission(${actorId}, ${permission})`);
 }
 
 export async function readMasterData(
-  sql: Sql,
+  sql: Sql | TransactionSql,
   principal: Principal,
+  view?: SnapshotView,
 ): Promise<MasterDataSnapshot> {
   assertPermission(principal, "master_data.read");
   await assertDatabasePermission(sql, principal.userId, "master_data.read");
 
-  const materialGroupRows = await sql<
+  const materialGroupRows = (!view || view.tab !== "people") ? await observeRead("master-data.readMasterData.1", () => sql<
     (BasicRow & { description: string | null })[]
   >`
     select id, code, name_vi as name, description, is_active
     from public.material_groups order by is_active desc, code
-  `;
-  const uomRows = await sql<
+  `) : [];
+  const uomRows = (!view || view.tab !== "people") ? await observeRead("master-data.readMasterData.2", () => sql<
     (BasicRow & {
       symbol: string;
       dimension: UomDimension;
@@ -52,8 +55,8 @@ export async function readMasterData(
   >`
     select id, code, name_vi as name, symbol, dimension, decimal_scale, is_active
     from public.uom_catalog order by is_active desc, dimension, code
-  `;
-  const materialRows = await sql<
+  `) : [];
+  const materialRows = (!view || view.tab !== "people") ? await observeRead("master-data.readMasterData.3", () => sql<
     (BasicRow & {
       group_id: string;
       group_name: string;
@@ -83,9 +86,14 @@ export async function readMasterData(
     join public.uom_catalog as base_uom on base_uom.id = material.base_uom_id
     join public.uom_catalog as purchase_uom on purchase_uom.id = material.purchase_uom_id
     join public.uom_catalog as sales_uom on sales_uom.id = material.sales_uom_id
-    order by material.is_active desc, material.code
-  `;
-  const conversionRows = await sql<
+    where (${view?.after ?? null}::uuid is null or material.id > ${view?.after ?? null}::uuid)
+    order by material.id
+    limit ${view ? SNAPSHOT_PAGE_SIZE + 1 : null}
+  `) : [];
+  const selected = snapshotPage(materialRows, view);
+  const materialIds = selected.rows.map(row => row.id);
+
+  const conversionRows = (!view || view.tab === "materials") ? await observeRead("master-data.readMasterData.4", () => sql<
     {
       id: string;
       material_id: string;
@@ -120,13 +128,14 @@ export async function readMasterData(
     join public.materials as material on material.id = conversion.material_id
     join public.uom_catalog as source_uom on source_uom.id = conversion.from_uom_id
     join public.uom_catalog as target_uom on target_uom.id = conversion.to_uom_id
+    where (${!view} or conversion.material_id = any(${sql.array(materialIds, 2950)}))
     order by conversion.is_current desc, material.code, source_uom.code, conversion.version desc
-  `;
-  const warehouseRows = await sql<(BasicRow & { address: string | null })[]>`
+  `) : [];
+  const warehouseRows = (!view || view.tab !== "materials") ? await observeRead("master-data.readMasterData.5", () => sql<(BasicRow & { address: string | null })[]>`
     select id, code, name_vi as name, address, is_active
     from public.warehouses order by is_active desc, code
-  `;
-  const vehicleRows = await sql<
+  `) : [];
+  const vehicleRows = (!view || view.tab === "operations") ? await observeRead("master-data.readMasterData.6", () => sql<
     (BasicRow & {
       plate_number: string;
       vehicle_type: string;
@@ -150,8 +159,8 @@ export async function readMasterData(
     from public.vehicles as vehicle
     left join public.warehouses as warehouse on warehouse.id = vehicle.home_warehouse_id
     order by vehicle.is_active desc, vehicle.code
-  `;
-  const loadProfileRows = await sql<
+  `) : [];
+  const loadProfileRows = (!view || view.tab === "operations") ? await observeRead("master-data.readMasterData.7", () => sql<
     {
       id: string;
       vehicle_id: string;
@@ -180,18 +189,18 @@ export async function readMasterData(
     left join public.materials as material on material.id = profile.material_id
     left join public.material_groups as material_group on material_group.id = profile.material_group_id
     order by profile.is_active desc, vehicle.code, target_name
-  `;
-  const skillRows = await sql<BasicRow[]>`
+  `) : [];
+  const skillRows = (!view || view.tab === "people") ? await observeRead("master-data.readMasterData.8", () => sql<BasicRow[]>`
     select id, code, name_vi as name, is_active
     from public.worker_skill_catalog order by is_active desc, code
-  `;
-  const employeeRows = await sql<
+  `) : [];
+  const employeeRows = (!view || view.tab === "people") ? await observeRead("master-data.readMasterData.9", () => sql<
     { user_id: string; display_name: string; status: string }[]
   >`
     select user_id, display_name, status::text
     from public.user_profiles order by display_name
-  `;
-  const employeeProfileRows = await sql<
+  `) : [];
+  const employeeProfileRows = (!view || view.tab === "people") ? await observeRead("master-data.readMasterData.10", () => sql<
     {
       user_id: string;
       display_name: string;
@@ -214,8 +223,8 @@ export async function readMasterData(
     join public.user_profiles as user_profile on user_profile.user_id = profile.user_id
     left join public.warehouses as warehouse on warehouse.id = profile.home_warehouse_id
     order by profile.is_active desc, profile.employee_code
-  `;
-  const assignmentRows = await sql<
+  `) : [];
+  const assignmentRows = (!view || view.tab === "people") ? await observeRead("master-data.readMasterData.11", () => sql<
     {
       user_id: string;
       display_name: string;
@@ -236,7 +245,7 @@ export async function readMasterData(
     join public.user_profiles as profile on profile.user_id = assignment.user_id
     join public.worker_skill_catalog as skill on skill.id = assignment.skill_id
     order by assignment.is_active desc, profile.display_name, skill.code
-  `;
+  `) : [];
 
   return {
     materialGroups: materialGroupRows.map((row) => ({
@@ -255,7 +264,8 @@ export async function readMasterData(
       decimalScale: row.decimal_scale,
       isActive: row.is_active,
     })),
-    materials: materialRows.map((row) => ({
+    page: view?.tab === "people" ? undefined : selected.page,
+    materials: selected.rows.map((row) => ({
       id: row.id,
       code: row.code,
       name: row.name,

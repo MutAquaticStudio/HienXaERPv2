@@ -1,3 +1,4 @@
+import { parseSnapshotView } from "@/modules/platform/snapshot-view";
 import { randomUUID } from "node:crypto";
 
 import type { Metadata } from "next";
@@ -20,19 +21,22 @@ const formKinds: Customer360EntityKind[] = [
   "credit-override",
 ];
 
-export default async function Customer360Page() {
+export default async function Customer360Page({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const principal = await getCurrentPrincipal("office");
   if (!principal || !hasPermission(principal, "customer.read")) {
     return <AccessDenied />;
   }
 
-  const data = await getCustomer360Snapshot(principal);
+  const view = parseSnapshotView(await searchParams, ["profile","pricing","credit"]);
+  const data = await getCustomer360Snapshot(principal, view);
   const initialKeys = Object.fromEntries(
     formKinds.map((kind) => [kind, randomUUID()]),
   ) as Record<Customer360EntityKind, string>;
 
   return (
     <Customer360Workspace
+      key={view.tab + (view.after ?? "")}
+      initialTab={view.tab as "profile" | "pricing" | "credit"}
       canManageCustomers={hasPermission(principal, "customer.manage")}
       canManageCredit={hasPermission(principal, "customer_credit.manage")}
       canManagePricing={hasPermission(principal, "pricing.manage")}

@@ -1,3 +1,5 @@
+import { snapshotPage, type SnapshotView } from "@/modules/platform/snapshot-view";
+import { withDatabaseRead } from "@/lib/postgres/read";
 import "server-only";
 
 import type { SaveCustomer360Input } from "@/modules/customer-360/commands";
@@ -99,10 +101,20 @@ function permissionFor(input: SaveCustomer360Input): Permission {
 
 export async function getCustomer360Snapshot(
   principal: Principal,
+  view?: SnapshotView,
 ): Promise<Customer360Snapshot> {
   assertPermission(principal, "customer.read");
-  if (canUseSyntheticAuth()) return structuredClone(SYNTHETIC_CUSTOMER_360);
-  return readCustomer360(getDatabaseClient(), principal);
+  if (canUseSyntheticAuth()) {
+    const data = structuredClone(SYNTHETIC_CUSTOMER_360);
+    if (view) {
+      const sorted = [...data.customers].sort((a,b) => a.id.localeCompare(b.id)).filter(row => !view.after || row.id > view.after);
+      const result = snapshotPage(sorted, view);
+      data.customers = result.rows;
+      data.page = result.page;
+    }
+    return data;
+  }
+  return withDatabaseRead("customer-360", (sql) => readCustomer360(sql, principal, view));
 }
 
 export async function saveCustomer360(
