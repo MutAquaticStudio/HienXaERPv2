@@ -1,3 +1,4 @@
+import { observeRead } from "@/lib/postgres/read-observability";
 import "server-only";
 
 import type { JSONValue, Sql, TransactionSql } from "postgres";
@@ -19,7 +20,7 @@ import type {
 } from "@/modules/route-optimization/types";
 
 async function databasePermission(sql: Sql | TransactionSql, actorId: string, permission: "route_plan.read" | "route_plan.manage" | "delivery.update_assigned") {
-  await sql`select app_private.assert_actor_permission(${actorId}, ${permission})`;
+  await observeRead("route-optimization.permission", () => sql`select app_private.assert_actor_permission(${actorId}, ${permission})`);
 }
 
 function routeReadFailed(): never {
@@ -115,13 +116,13 @@ function mapStop(row: StopRow): RoutePlanStop {
 }
 
 export async function readRouteOptimizationSnapshot(
-  sql: Sql,
+  sql: Sql | TransactionSql,
   principal: Principal,
   includeGpsLocation = false,
 ): Promise<RouteOptimizationSnapshot> {
   await databasePermission(sql, principal.userId, "route_plan.read");
   const [candidateRows, vehicleRows, profileRows, driverRows, planRows, stopRows, locationRows] = await Promise.all([
-    sql<CandidateRow[]>`
+    observeRead("route-optimization.readRouteOptimizationSnapshot.1", () => sql<CandidateRow[]>`
       select delivery.id, delivery.delivery_number, delivery.customer_name_snapshot,
         delivery.pickup_address_snapshot, delivery.drop_address_snapshot,
         delivery.scheduled_date::text,
@@ -148,14 +149,14 @@ export async function readRouteOptimizationSnapshot(
       where delivery.status = 'PLANNED'
       group by delivery.id, work_item.priority, work_item.assignment_mode
       order by delivery.scheduled_date, coalesce(work_item.priority, 3), delivery.delivery_number
-      limit 100`,
-    sql<VehicleRow[]>`
+      limit 100`),
+    observeRead("route-optimization.readRouteOptimizationSnapshot.2", () => sql<VehicleRow[]>`
       select id, code, plate_number, vehicle_type, max_payload_kg, max_volume_m3
-      from public.vehicles where is_active order by code`,
-    sql<LoadProfileRow[]>`
+      from public.vehicles where is_active order by code`),
+    observeRead("route-optimization.readRouteOptimizationSnapshot.3", () => sql<LoadProfileRow[]>`
       select vehicle_id, material_id, material_group_id, planned_quantity, uom_id
-      from public.vehicle_load_profiles where is_active`,
-    sql<DriverRow[]>`
+      from public.vehicle_load_profiles where is_active`),
+    observeRead("route-optimization.readRouteOptimizationSnapshot.4", () => sql<DriverRow[]>`
       select profile.user_id, profile.display_name, operational.employee_code,
         count(assignment.id) filter (where assignment.status in ('ASSIGNED', 'ACCEPTED'))::text as active_assignment_count
       from public.user_profiles profile
@@ -165,8 +166,8 @@ export async function readRouteOptimizationSnapshot(
       left join public.delivery_assignments assignment on assignment.driver_user_id = profile.user_id
       where profile.status = 'ACTIVE'
       group by profile.user_id, profile.display_name, operational.employee_code
-      order by profile.display_name`,
-    sql<PlanRow[]>`
+      order by profile.display_name`),
+    observeRead("route-optimization.readRouteOptimizationSnapshot.5", () => sql<PlanRow[]>`
       select route_plan.id, route_plan.plan_number, route_plan.scheduled_date::text,
         vehicle.code || ' · ' || vehicle.plate_number as vehicle_name,
         profile.display_name as driver_name, route_plan.status, route_plan.provider_mode,
@@ -174,19 +175,19 @@ export async function readRouteOptimizationSnapshot(
       from public.route_plans route_plan
       join public.vehicles vehicle on vehicle.id = route_plan.vehicle_id
       join public.user_profiles profile on profile.user_id = route_plan.driver_user_id
-      order by route_plan.created_at desc limit 30`,
-    sql<StopRow[]>`
+      order by route_plan.created_at desc limit 30`),
+    observeRead("route-optimization.readRouteOptimizationSnapshot.6", () => sql<StopRow[]>`
       select stop.id, stop.route_plan_id, stop.delivery_id, stop.stop_sequence,
         stop.delivery_number_snapshot, stop.customer_name_snapshot,
         stop.pickup_address_snapshot, stop.drop_address_snapshot,
         stop.priority_snapshot, stop.constraint_warnings
       from public.route_plan_stops stop
       join public.route_plans route_plan on route_plan.id = stop.route_plan_id
-      order by route_plan.created_at desc, stop.stop_sequence`,
+      order by route_plan.created_at desc, stop.stop_sequence`),
     includeGpsLocation
-      ? sql<VehicleLocationRow[]>`
+      ? observeRead("route-optimization.readRouteOptimizationSnapshot.7", () => sql<VehicleLocationRow[]>`
           select vehicle_id, latitude, longitude, recorded_at::text, freshness_status
-          from public.active_vehicle_location_view`
+          from public.active_vehicle_location_view`)
       : Promise.resolve([]),
   ]);
 
@@ -259,11 +260,11 @@ export async function readRouteOptimizationSnapshot(
 }
 
 export async function readApprovedDriverRoute(
-  sql: Sql,
+  sql: Sql | TransactionSql,
   principal: Principal,
 ): Promise<ApprovedDriverRoute | null> {
   await databasePermission(sql, principal.userId, "delivery.update_assigned");
-  const [plan] = await sql<PlanRow[]>`
+  const [plan] = await observeRead("route-optimization.readApprovedDriverRoute.1", () => sql<PlanRow[]>`
     select route_plan.id, route_plan.plan_number, route_plan.scheduled_date::text,
       vehicle.code || ' · ' || vehicle.plate_number as vehicle_name,
       profile.display_name as driver_name, route_plan.status, route_plan.provider_mode,
@@ -275,16 +276,16 @@ export async function readApprovedDriverRoute(
       and route_plan.status in ('APPROVED', 'APPLIED')
       and route_plan.scheduled_date = current_date
     order by route_plan.approved_at desc nulls last, route_plan.created_at desc
-    limit 1`;
+    limit 1`);
   if (!plan) return null;
-  const stops = await sql<StopRow[]>`
+  const stops = await observeRead("route-optimization.readApprovedDriverRoute.2", () => sql<StopRow[]>`
     select id, route_plan_id, delivery_id, stop_sequence,
       delivery_number_snapshot, customer_name_snapshot,
       pickup_address_snapshot, drop_address_snapshot,
       priority_snapshot, constraint_warnings
     from public.route_plan_stops
     where route_plan_id = ${plan.id}
-    order by stop_sequence`;
+    order by stop_sequence`);
   return {
     planNumber: plan.plan_number,
     scheduledDate: plan.scheduled_date,

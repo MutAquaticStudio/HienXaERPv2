@@ -1,3 +1,5 @@
+import { SNAPSHOT_PAGE_SIZE, snapshotPage, type SnapshotView } from "@/modules/platform/snapshot-view";
+import { observeRead } from "@/lib/postgres/read-observability";
 import "server-only";
 
 import type { Sql, TransactionSql } from "postgres";
@@ -17,17 +19,18 @@ async function assertDatabasePermission(
   actorId: string,
   permission: Permission,
 ): Promise<void> {
-  await sql`select app_private.assert_actor_permission(${actorId}, ${permission})`;
+  await observeRead("customer-360.permission", () => sql`select app_private.assert_actor_permission(${actorId}, ${permission})`);
 }
 
 export async function readCustomer360(
-  sql: Sql,
+  sql: Sql | TransactionSql,
   principal: Principal,
+  view?: SnapshotView,
 ): Promise<Customer360Snapshot> {
   assertPermission(principal, "customer.read");
   await assertDatabasePermission(sql, principal.userId, "customer.read");
 
-  const customerRows = await sql<
+  const customerRows = await observeRead("customer-360.readCustomer360.1", () => sql<
     {
       id: string;
       code: string;
@@ -43,9 +46,14 @@ export async function readCustomer360(
     select id, code, name_vi as name, legal_name, tax_code, phone, email,
       tier, is_active
     from public.customers
-    order by is_active desc, code
-  `;
-  const contactRows = await sql<
+    where (${view?.after ?? null}::uuid is null or id > ${view?.after ?? null}::uuid)
+    order by id
+    limit ${view ? SNAPSHOT_PAGE_SIZE + 1 : null}
+  `);
+  const selected = snapshotPage(customerRows, view);
+  const customerIds = selected.rows.map(row => row.id);
+
+  const contactRows = (!view || view.tab === "profile") ? await observeRead("customer-360.readCustomer360.2", () => sql<
     {
       id: string;
       customer_id: string;
@@ -59,9 +67,10 @@ export async function readCustomer360(
   >`
     select id, customer_id, name, role_name, phone, email, is_primary, is_active
     from public.customer_contacts
+    where (${!view} or customer_id = any(${sql.array(customerIds, 2950)}))
     order by is_active desc, is_primary desc, name
-  `;
-  const siteRows = await sql<
+  `) : [];
+  const siteRows = (!view || view.tab === "profile") ? await observeRead("customer-360.readCustomer360.3", () => sql<
     {
       id: string;
       customer_id: string;
@@ -76,9 +85,10 @@ export async function readCustomer360(
     select id, customer_id, code, name_vi as name, address, delivery_notes,
       is_default, is_active
     from public.customer_sites
+    where (${!view} or customer_id = any(${sql.array(customerIds, 2950)}))
     order by is_active desc, is_default desc, code
-  `;
-  const materialRows = await sql<
+  `) : [];
+  const materialRows = (!view || view.tab === "pricing") ? await observeRead("customer-360.readCustomer360.4", () => sql<
     {
       id: string;
       code: string;
@@ -101,19 +111,19 @@ export async function readCustomer360(
       on material_group.id = material.material_group_id
     join public.uom_catalog as sales_uom on sales_uom.id = material.sales_uom_id
     order by material.is_active desc, material.code
-  `;
-  const materialGroupRows = await sql<
+  `) : [];
+  const materialGroupRows = (!view || view.tab === "pricing") ? await observeRead("customer-360.readCustomer360.5", () => sql<
     { id: string; code: string; name: string; is_active: boolean }[]
   >`
     select id, code, name_vi as name, is_active
     from public.material_groups order by is_active desc, code
-  `;
-  const uomRows = await sql<
+  `) : [];
+  const uomRows = (!view || view.tab === "pricing") ? await observeRead("customer-360.readCustomer360.6", () => sql<
     { id: string; symbol: string; name: string; is_active: boolean }[]
   >`
     select id, symbol, name_vi as name, is_active
     from public.uom_catalog order by is_active desc, code
-  `;
+  `) : [];
 
   let priceRuleRows: {
     id: string;
@@ -134,9 +144,9 @@ export async function readCustomer360(
     version: number;
     change_reason: string;
   }[] = [];
-  if (hasPermission(principal, "pricing.read")) {
+  if ((!view || view.tab === "pricing") && hasPermission(principal, "pricing.read")) {
     await assertDatabasePermission(sql, principal.userId, "pricing.read");
-    priceRuleRows = await sql<typeof priceRuleRows>`
+    priceRuleRows = await observeRead("customer-360.readCustomer360.7", () => sql<typeof priceRuleRows>`
       select rule.id, rule.scope, rule.customer_id,
         customer.name_vi as customer_name, rule.customer_tier,
         rule.material_id, material.name_vi as material_name,
@@ -150,8 +160,9 @@ export async function readCustomer360(
       left join public.material_groups as material_group
         on material_group.id = rule.material_group_id
       join public.uom_catalog as uom on uom.id = rule.uom_id
+      where (${!view} or rule.customer_id is null or rule.customer_id = any(${sql.array(customerIds, 2950)}))
       order by rule.valid_to is null desc, rule.valid_from desc, rule.version desc
-    `;
+    `);
   }
 
   let creditPolicyRows: {
@@ -184,28 +195,31 @@ export async function readCustomer360(
   }[] = [];
   if (hasPermission(principal, "customer_credit.read")) {
     await assertDatabasePermission(sql, principal.userId, "customer_credit.read");
-    creditPolicyRows = await sql<typeof creditPolicyRows>`
+    creditPolicyRows = await observeRead("customer-360.readCustomer360.8", () => sql<typeof creditPolicyRows>`
       select id, customer_id, credit_limit, allowed_overdue_days,
         valid_from::text, valid_to::text, version, change_reason
       from public.customer_credit_policies
+    where (${!view} or customer_id = any(${sql.array(customerIds, 2950)}))
       order by valid_to is null desc, valid_from desc, version desc
-    `;
-    exposureRows = await sql<typeof exposureRows>`
+    `);
+    exposureRows = await observeRead("customer-360.readCustomer360.9", () => sql<typeof exposureRows>`
       select customer_id, receivable_amount, uninvoiced_order_amount,
         overdue_amount, oldest_overdue_days, customer_advance_amount,
         calculated_at::text
       from public.customer_credit_exposures
+    where (${!view} or customer_id = any(${sql.array(customerIds, 2950)}))
       order by calculated_at desc
-    `;
-    financeRows = await sql<typeof financeRows>`
+    `);
+    financeRows = await observeRead("customer-360.readCustomer360.10", () => sql<typeof financeRows>`
       select customer_id, lifetime_revenue, receivable_amount, overdue_amount,
         customer_advance_amount, last_sale_at::text, refreshed_at::text
       from public.customer_finance_summaries
+    where (${!view} or customer_id = any(${sql.array(customerIds, 2950)}))
       order by refreshed_at desc
-    `;
+    `);
   }
 
-  const timelineRows = await sql<
+  const timelineRows = (!view || view.tab === "profile") ? await observeRead("customer-360.readCustomer360.11", () => sql<
     {
       id: string;
       customer_id: string;
@@ -217,12 +231,14 @@ export async function readCustomer360(
   >`
     select id, customer_id, event_type, title, detail, occurred_at::text
     from public.customer_timeline_events
+    where (${!view} or customer_id = any(${sql.array(customerIds, 2950)}))
     order by occurred_at desc
     limit 200
-  `;
+  `) : [];
 
   return {
-    customers: customerRows.map((row) => ({
+    page: selected.page,
+    customers: selected.rows.map((row) => ({
       id: row.id,
       code: row.code,
       name: row.name,

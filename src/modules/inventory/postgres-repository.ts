@@ -1,3 +1,4 @@
+import { observeRead } from "@/lib/postgres/read-observability";
 import "server-only";
 
 import { randomUUID } from "node:crypto";
@@ -100,7 +101,7 @@ async function databasePermission(
   actorId: string,
   permission: Permission,
 ) {
-  await sql`select app_private.assert_actor_permission(${actorId}, ${permission})`;
+  await observeRead("inventory.permission", () => sql`select app_private.assert_actor_permission(${actorId}, ${permission})`);
 }
 
 function missing(message: string): never {
@@ -192,7 +193,7 @@ async function conversionToBase(
 }
 
 export async function readInventorySnapshot(
-  sql: Sql,
+  sql: Sql | TransactionSql,
   principal: Principal,
 ): Promise<InventorySnapshot> {
   assertPermission(principal, "inventory.read");
@@ -207,15 +208,15 @@ export async function readInventorySnapshot(
     warehouseRows,
     evidenceRows,
   ] = await Promise.all([
-    sql<
+    observeRead("inventory.readInventorySnapshot.1", () => sql<
       PositionRow[]
     >`select warehouse_id, warehouse_code, warehouse_name, material_id,
       material_code, material_name, base_uom_id, base_uom_symbol,
       on_hand_quantity, reserved_quantity, available_quantity, inventory_value,
       moving_average_cost, minimum_quantity, target_quantity, is_low_stock,
       updated_at::text from public.inventory_stock_status
-      order by is_low_stock desc, warehouse_code, material_code limit 200`,
-    sql<
+      order by is_low_stock desc, warehouse_code, material_code limit 200`),
+    observeRead("inventory.readInventorySnapshot.2", () => sql<
       MovementRow[]
     >`select movement.id, movement.movement_number, warehouse.name_vi as warehouse_name,
       material.name_vi as material_name, uom.symbol as base_uom_symbol,
@@ -226,8 +227,8 @@ export async function readInventorySnapshot(
       join public.warehouses as warehouse on warehouse.id = movement.warehouse_id
       join public.materials as material on material.id = movement.material_id
       join public.uom_catalog as uom on uom.id = movement.base_uom_id
-      order by movement.occurred_at desc limit 100`,
-    sql<ReservationRow[]>`select reservation.id, reservation.reservation_number,
+      order by movement.occurred_at desc limit 100`),
+    observeRead("inventory.readInventorySnapshot.3", () => sql<ReservationRow[]>`select reservation.id, reservation.reservation_number,
       reservation.supply_allocation_id, sales_order.sales_order_number,
       warehouse.name_vi as warehouse_name, material.name_vi as material_name,
       reservation.document_quantity, reservation.document_uom_symbol_snapshot,
@@ -238,8 +239,8 @@ export async function readInventorySnapshot(
       join public.sales_orders as sales_order on sales_order.id = line.sales_order_id
       join public.warehouses as warehouse on warehouse.id = reservation.warehouse_id
       join public.materials as material on material.id = reservation.material_id
-      order by reservation.created_at desc limit 100`,
-    sql<AllocationRow[]>`select allocation.id, sales_order.sales_order_number,
+      order by reservation.created_at desc limit 100`),
+    observeRead("inventory.readInventorySnapshot.4", () => sql<AllocationRow[]>`select allocation.id, sales_order.sales_order_number,
       warehouse.name_vi as warehouse_name, line.material_name_snapshot as material_name,
       allocation.allocated_quantity, allocation.uom_symbol_snapshot
       from public.supply_allocations as allocation
@@ -248,8 +249,8 @@ export async function readInventorySnapshot(
       join public.warehouses as warehouse on warehouse.id = allocation.warehouse_id
       left join public.stock_reservations as reservation on reservation.supply_allocation_id = allocation.id
       where allocation.sourcing_mode = 'WAREHOUSE' and allocation.status <> 'CANCELLED'
-        and reservation.id is null order by allocation.created_at desc limit 100`,
-    sql<CountRow[]>`select stock_count.id, stock_count.count_number,
+        and reservation.id is null order by allocation.created_at desc limit 100`),
+    observeRead("inventory.readInventorySnapshot.5", () => sql<CountRow[]>`select stock_count.id, stock_count.count_number,
       warehouse.name_vi as warehouse_name, material.name_vi as material_name,
       uom.symbol as base_uom_symbol, line.system_quantity, line.counted_quantity,
       line.variance_quantity, stock_count.status, stock_count.counted_at::text
@@ -258,20 +259,20 @@ export async function readInventorySnapshot(
       join public.warehouses as warehouse on warehouse.id = stock_count.warehouse_id
       join public.materials as material on material.id = line.material_id
       join public.uom_catalog as uom on uom.id = line.base_uom_id
-      order by stock_count.counted_at desc limit 100`,
-    sql<
+      order by stock_count.counted_at desc limit 100`),
+    observeRead("inventory.readInventorySnapshot.6", () => sql<
       MaterialRow[]
     >`select material.id, material.code, material.name_vi as name,
       material.base_uom_id, uom.symbol as base_uom_symbol
       from public.materials as material join public.uom_catalog as uom on uom.id = material.base_uom_id
-      where material.is_active = true order by material.code`,
-    sql<
+      where material.is_active = true order by material.code`),
+    observeRead("inventory.readInventorySnapshot.7", () => sql<
       WarehouseRow[]
-    >`select id, code, name_vi as name from public.warehouses where is_active = true order by code`,
-    sql<
+    >`select id, code, name_vi as name from public.warehouses where is_active = true order by code`),
+    observeRead("inventory.readInventorySnapshot.8", () => sql<
       EvidenceRow[]
     >`select id, storage_path as label, created_at::text as captured_at
-      from public.evidence order by created_at desc limit 100`,
+      from public.evidence order by created_at desc limit 100`),
   ]);
   return {
     positions: positionRows.map((row) => ({

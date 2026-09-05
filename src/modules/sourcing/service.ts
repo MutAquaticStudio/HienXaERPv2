@@ -1,3 +1,5 @@
+import { snapshotPage, type SnapshotView } from "@/modules/platform/snapshot-view";
+import { withDatabaseRead } from "@/lib/postgres/read";
 import "server-only";
 
 import type { SourcingCommandInput } from "@/modules/sourcing/commands";
@@ -104,11 +106,36 @@ function permissionFor(input: SourcingCommandInput): Permission {
 
 export async function getSourcingSnapshot(
   principal: Principal,
+  view?: SnapshotView,
 ): Promise<SourcingSnapshot> {
   assertPermission(principal, "sourcing.read");
   assertPermission(principal, "purchase_order.read");
-  if (canUseSyntheticAuth()) return structuredClone(SYNTHETIC_SOURCING);
-  return readSourcingSnapshot(getDatabaseClient(), principal);
+  if (canUseSyntheticAuth()) {
+    const data = structuredClone(SYNTHETIC_SOURCING);
+    if (view) {
+      const candidates = view.tab === "orders" ? data.purchaseOrders
+        : view.tab === "suppliers" ? data.suppliers
+        : [...new Set([...data.salesOrderLines.map(row => row.id), ...data.allocations.map(row => row.salesOrderLineId)])].map(id => ({ id }));
+      const sorted = [...candidates].sort((a,b) => a.id.localeCompare(b.id)).filter(row => !view.after || row.id > view.after);
+      const result = snapshotPage(sorted, view);
+      const ids = new Set(result.rows.map(row => row.id));
+      if (view.tab === "orders") {
+        data.purchaseOrders = data.purchaseOrders.filter(row => ids.has(row.id));
+        data.purchaseOrderLines = data.purchaseOrderLines.filter(row => ids.has(row.purchaseOrderId));
+        data.evidence = data.evidence.filter(row => ids.has(row.purchaseOrderId));
+      } else if (view.tab === "suppliers") {
+        data.suppliers = data.suppliers.filter(row => ids.has(row.id));
+        data.supplierPrices = data.supplierPrices.filter(row => ids.has(row.supplierId));
+      } else {
+        data.salesOrderLines = data.salesOrderLines.filter(row => ids.has(row.id));
+        data.allocations = data.allocations.filter(row => ids.has(row.salesOrderLineId));
+        data.fulfillmentRequirements = data.fulfillmentRequirements.filter(row => ids.has(row.salesOrderLineId));
+      }
+      data.page = result.page;
+    }
+    return data;
+  }
+  return withDatabaseRead("sourcing", (sql) => readSourcingSnapshot(sql, principal, view));
 }
 
 export async function runSourcingCommand(

@@ -1,3 +1,4 @@
+import { withDatabaseRead } from "@/lib/postgres/read";
 import "server-only";
 
 import { getDatabaseClient } from "@/lib/postgres/server";
@@ -25,14 +26,14 @@ export async function getOperationalChatSnapshot(
   if (canUseSyntheticAuth()) {
     return structuredClone(surface === "worker" ? SYNTHETIC_WORKER_CHAT : SYNTHETIC_OFFICE_CHAT);
   }
-  return readOperationalChatSnapshot(getDatabaseClient(), principal.userId);
+  return withDatabaseRead("chat", (sql) => readOperationalChatSnapshot(sql, principal.userId));
 }
 
 export async function getCustomerOperationalChatSnapshot(
   principal: CustomerPortalPrincipal,
 ): Promise<OperationalChatSnapshot> {
   if (canUseSyntheticAuth()) return structuredClone(SYNTHETIC_CUSTOMER_CHAT);
-  return readOperationalChatSnapshot(getDatabaseClient(), principal.authUserId);
+  return withDatabaseRead("chat", (sql) => readOperationalChatSnapshot(sql, principal.authUserId));
 }
 
 function permissionFor(command: ChatCommand) {

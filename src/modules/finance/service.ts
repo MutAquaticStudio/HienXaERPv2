@@ -1,3 +1,4 @@
+import { withDatabaseRead } from "@/lib/postgres/read";
 import "server-only";
 
 import type { FinanceCommandInput } from "@/modules/finance/commands";
@@ -108,7 +109,7 @@ export async function getFinanceSnapshot(
 ): Promise<FinanceSnapshot> {
   assertPermission(principal, "finance.read");
   if (canUseSyntheticAuth()) return structuredClone(SYNTHETIC_FINANCE);
-  return readFinanceSnapshot(getDatabaseClient(), principal);
+  return withDatabaseRead("finance", (sql) => readFinanceSnapshot(sql, principal));
 }
 
 export async function runFinanceCommand(

@@ -1,3 +1,5 @@
+import { snapshotPage, type SnapshotView } from "@/modules/platform/snapshot-view";
+import { withDatabaseRead } from "@/lib/postgres/read";
 import "server-only";
 
 import type {
@@ -90,10 +92,20 @@ class SyntheticCommandStore implements CommandStore {
 
 export async function getMasterDataSnapshot(
   principal: Principal,
+  view?: SnapshotView,
 ): Promise<MasterDataSnapshot> {
   assertPermission(principal, "master_data.read");
-  if (canUseSyntheticAuth()) return structuredClone(SYNTHETIC_MASTER_DATA);
-  return readMasterData(getDatabaseClient(), principal);
+  if (canUseSyntheticAuth()) {
+    const data = structuredClone(SYNTHETIC_MASTER_DATA);
+    if (view) {
+      const sorted = [...data.materials].sort((a,b) => a.id.localeCompare(b.id)).filter(row => !view.after || row.id > view.after);
+      const result = snapshotPage(sorted, view);
+      data.materials = result.rows;
+      data.page = view.tab === "people" ? undefined : result.page;
+    }
+    return data;
+  }
+  return withDatabaseRead("master-data", (sql) => readMasterData(sql, principal, view));
 }
 
 export async function saveMasterData(

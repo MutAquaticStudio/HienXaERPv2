@@ -1,4 +1,6 @@
 "use client";
+import { SnapshotPagination } from "@/components/snapshot-pagination";
+import { useWorkspaceTab } from "@/components/use-workspace-tab";
 
 import {
   useActionState,
@@ -168,6 +170,7 @@ function Field({
 }
 
 export function SourcingWorkspace({
+  initialTab,
   data,
   initialKeys,
   today,
@@ -178,6 +181,7 @@ export function SourcingWorkspace({
   canConfirmPurchaseOrder,
   canSendPurchaseOrder,
 }: {
+  initialTab?: WorkspaceTab;
   data: SourcingSnapshot;
   initialKeys: Record<string, string>;
   today: string;
@@ -188,7 +192,7 @@ export function SourcingWorkspace({
   canConfirmPurchaseOrder: boolean;
   canSendPurchaseOrder: boolean;
 }) {
-  const [tab, setTab] = useState<WorkspaceTab>("allocations");
+  const { tab, setTab, pending } = useWorkspaceTab<WorkspaceTab>("allocations", initialTab);
   const [mode, setMode] = useState<SourcingMode>("WAREHOUSE");
   const [selectedLineId, setSelectedLineId] = useState(
     data.salesOrderLines[0]?.id ?? "",
@@ -238,24 +242,30 @@ export function SourcingWorkspace({
           Xem đơn bán
         </Link>
       </header>
+      {pending ? <p role="status">Đang tải tab...</p> : null}
+      <SnapshotPagination pathname="/app/sourcing" tab={tab} page={data.page} />
 
       <section className="master-metrics" aria-label="Tóm tắt nguồn hàng">
+        {(!initialTab || tab === "suppliers") ?
         <div>
           <strong>{data.suppliers.length}</strong>
-          <span>Nhà cung cấp</span>
-        </div>
+          <span>Nhà cung cấp{data.page ? " trong trang" : ""}</span>
+        </div> : null}
+        {(!initialTab || tab === "allocations") ? <>
         <div>
           <strong>{data.allocations.length}</strong>
-          <span>Phần chia nguồn</span>
+          <span>Phần chia nguồn{data.page ? " trong trang" : ""}</span>
         </div>
         <div>
           <strong>{directAllocations}</strong>
-          <span>Giao thẳng</span>
+          <span>Giao thẳng{data.page ? " trong trang" : ""}</span>
         </div>
+        </> : null}
+        {(!initialTab || tab === "orders") ?
         <div>
           <strong>{openOrders}</strong>
-          <span>Đơn mua đang mở</span>
-        </div>
+          <span>Đơn mua đang mở{data.page ? " trong trang" : ""}</span>
+        </div> : null}
       </section>
 
       <div

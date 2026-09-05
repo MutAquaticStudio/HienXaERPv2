@@ -1,4 +1,6 @@
 "use client";
+import { SnapshotPagination } from "@/components/snapshot-pagination";
+import { useWorkspaceTab } from "@/components/use-workspace-tab";
 
 import { useActionState, useState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
@@ -253,15 +255,17 @@ function ConversionCalculator({ data }: { data: MasterDataSnapshot }) {
 }
 
 export function MasterDataWorkspace({
+  initialTab,
   data,
   initialKeys,
   toggleKeys,
 }: {
+  initialTab?: WorkspaceTab;
   data: MasterDataSnapshot;
   initialKeys: Record<MasterEntityKind, string>;
   toggleKeys: Record<string, string>;
 }) {
-  const [tab, setTab] = useState<WorkspaceTab>("materials");
+  const { tab, setTab, pending } = useWorkspaceTab<WorkspaceTab>("materials", initialTab);
   const activeMaterials = data.materials.filter((item) => item.isActive).length;
   const currentConversions = data.conversions.filter(
     (item) => item.isCurrent,
@@ -281,16 +285,21 @@ export function MasterDataWorkspace({
         </div>
         <Database aria-hidden="true" size={54} />
       </header>
+      {pending ? <p role="status">Đang tải tab...</p> : null}
+      <SnapshotPagination pathname="/app/data" tab={tab} page={data.page} />
 
       <section className="master-metrics" aria-label="Tóm tắt dữ liệu P2">
+        {(!initialTab || tab === "materials") ? <>
         <div>
           <strong>{activeMaterials}</strong>
-          <span>vật liệu đang dùng</span>
+          <span>vật liệu đang dùng{data.page ? " trong trang" : ""}</span>
         </div>
         <div>
           <strong>{currentConversions}</strong>
-          <span>quy đổi hiện hành</span>
+          <span>quy đổi hiện hành{data.page ? " trong trang" : ""}</span>
         </div>
+        </> : null}
+        {(!initialTab || tab === "operations") ? <>
         <div>
           <strong>{data.warehouses.length}</strong>
           <span>kho / bãi</span>
@@ -299,6 +308,7 @@ export function MasterDataWorkspace({
           <strong>{activeVehicles}</strong>
           <span>phương tiện hoạt động</span>
         </div>
+        </> : null}
       </section>
 
       <div

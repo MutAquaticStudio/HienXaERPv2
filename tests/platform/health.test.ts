@@ -2,8 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const { sqlProbe } = vi.hoisted(() => ({ sqlProbe: vi.fn() }));
 
-vi.mock("@/lib/postgres/server", () => ({
-  getDatabaseClient: () => sqlProbe,
+vi.mock("@/lib/postgres/read", () => ({
+  withDatabaseRead: (_module: string, work: (sql: typeof sqlProbe) => unknown) => work(sqlProbe),
 }));
 
 vi.mock("@/lib/supabase/config", () => ({

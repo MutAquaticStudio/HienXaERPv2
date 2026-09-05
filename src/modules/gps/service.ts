@@ -1,3 +1,4 @@
+import { withDatabaseRead } from "@/lib/postgres/read";
 import "server-only";
 
 import { getDatabaseClient } from "@/lib/postgres/server";
@@ -56,13 +57,13 @@ class SyntheticStore implements CommandStore {
 export async function getWorkerTrackingSnapshot(principal: Principal): Promise<WorkerTrackingSnapshot> {
   assertPermission(principal, "gps.location.submit");
   if (canUseSyntheticAuth()) return structuredClone(SYNTHETIC_WORKER_TRACKING);
-  return readWorkerTrackingSnapshot(getDatabaseClient(), principal);
+  return withDatabaseRead("gps", (sql) => readWorkerTrackingSnapshot(sql, principal));
 }
 
 export async function getFleetTrackingSnapshot(principal: Principal): Promise<FleetTrackingSnapshot> {
   assertPermission(principal, "gps.location.read_fleet");
   if (canUseSyntheticAuth()) return structuredClone(SYNTHETIC_FLEET_TRACKING);
-  return readFleetTrackingSnapshot(getDatabaseClient(), principal);
+  return withDatabaseRead("gps", (sql) => readFleetTrackingSnapshot(sql, principal));
 }
 
 export async function runGpsLocationCommand(

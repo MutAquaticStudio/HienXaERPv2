@@ -1,3 +1,4 @@
+import { observeRead } from "@/lib/postgres/read-observability";
 import "server-only";
 
 import type { Sql, TransactionSql } from "postgres";
@@ -16,7 +17,7 @@ async function databasePermission(
   actorId: string,
   permission: "gps.location.submit" | "gps.location.read_fleet",
 ) {
-  await sql`select app_private.assert_actor_permission(${actorId}, ${permission})`;
+  await observeRead("gps.permission", () => sql`select app_private.assert_actor_permission(${actorId}, ${permission})`);
 }
 
 function readFailed(): never {
@@ -28,11 +29,11 @@ function readFailed(): never {
 }
 
 export async function readWorkerTrackingSnapshot(
-  sql: Sql,
+  sql: Sql | TransactionSql,
   principal: Principal,
 ): Promise<WorkerTrackingSnapshot> {
   await databasePermission(sql, principal.userId, "gps.location.submit");
-  const rows = await sql<{
+  const rows = await observeRead("gps.readWorkerTrackingSnapshot.1", () => sql<{
     id: string;
     delivery_number: string;
     vehicle_name: string;
@@ -57,7 +58,7 @@ export async function readWorkerTrackingSnapshot(
       and delivery.status in ('DISPATCHED', 'ARRIVED')
     order by delivery.dispatched_at desc nulls last, delivery.updated_at desc
     limit 2
-  `;
+  `);
   if (rows.length > 1) {
     return {
       activeDelivery: null,
@@ -85,11 +86,11 @@ export async function readWorkerTrackingSnapshot(
 }
 
 export async function readFleetTrackingSnapshot(
-  sql: Sql,
+  sql: Sql | TransactionSql,
   principal: Principal,
 ): Promise<FleetTrackingSnapshot> {
   await databasePermission(sql, principal.userId, "gps.location.read_fleet");
-  const rows = await sql<{
+  const rows = await observeRead("gps.readFleetTrackingSnapshot.1", () => sql<{
     vehicle_id: string;
     vehicle_code: string;
     plate_number: string;
@@ -109,7 +110,7 @@ export async function readFleetTrackingSnapshot(
       speed_mps, recorded_at::text, freshness_status
     from public.active_vehicle_location_view
     order by recorded_at desc
-  `;
+  `);
   if (!rows) readFailed();
   return {
     locations: rows.map((row) => ({

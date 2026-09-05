@@ -1,3 +1,4 @@
+import { observeRead } from "@/lib/postgres/read-observability";
 import "server-only";
 
 import type { Sql, TransactionSql } from "postgres";
@@ -18,7 +19,7 @@ async function databasePermission(
   actorId: string,
   permission: Permission,
 ) {
-  await sql`select app_private.assert_actor_permission(${actorId}, ${permission})`;
+  await observeRead("finance.permission", () => sql`select app_private.assert_actor_permission(${actorId}, ${permission})`);
 }
 function missing(message: string): never {
   throw new PlatformError(message, "FINANCE_RECORD_NOT_FOUND", 404);
@@ -88,7 +89,7 @@ function mapDocument(row: DocumentRow): FinanceDocumentSummary {
 }
 
 export async function readFinanceSnapshot(
-  sql: Sql,
+  sql: Sql | TransactionSql,
   principal: Principal,
 ): Promise<FinanceSnapshot> {
   assertPermission(principal, "finance.read");
@@ -108,8 +109,8 @@ export async function readFinanceSnapshot(
     salesOrderRows,
     vehicleRows,
   ] = await Promise.all([
-    sql<SummaryRow[]>`select * from public.finance_working_capital_summary`,
-    sql<AccountRow[]>`
+    observeRead("finance.readFinanceSnapshot.1", () => sql<SummaryRow[]>`select * from public.finance_working_capital_summary`),
+    observeRead("finance.readFinanceSnapshot.2", () => sql<AccountRow[]>`
       select account.id, account.account_code, account.account_name, account.account_type,
         account.currency,
         coalesce(sum(case
@@ -121,8 +122,8 @@ export async function readFinanceSnapshot(
       left join public.financial_movements movement on movement.financial_account_id = account.id
       left join public.financial_movements original on original.id = movement.reversal_of_id
       where account.is_active
-      group by account.id order by account.account_code`,
-    sql<DocumentRow[]>`
+      group by account.id order by account.account_code`),
+    observeRead("finance.readFinanceSnapshot.3", () => sql<DocumentRow[]>`
       select receivable.id, receivable.receivable_number as document_number,
         customer.id as party_id, customer.name_vi as party_name,
         coalesce(sales_order.sales_order_number, service_job.job_number) as source_number,
@@ -133,8 +134,8 @@ export async function readFinanceSnapshot(
       join public.customers customer on customer.id = receivable.customer_id
       left join public.sales_orders sales_order on sales_order.id = receivable.sales_order_id
       left join public.service_jobs service_job on service_job.id = receivable.service_job_id
-      order by receivable.due_date, receivable.created_at desc limit 200`,
-    sql<DocumentRow[]>`
+      order by receivable.due_date, receivable.created_at desc limit 200`),
+    observeRead("finance.readFinanceSnapshot.4", () => sql<DocumentRow[]>`
       select payable.id, payable.payable_number as document_number,
         supplier.id as party_id, supplier.name_vi as party_name,
         purchase_order.purchase_order_number as source_number, payable.currency,
@@ -143,8 +144,8 @@ export async function readFinanceSnapshot(
       from public.payables payable
       join public.suppliers supplier on supplier.id = payable.supplier_id
       join public.purchase_orders purchase_order on purchase_order.id = payable.purchase_order_id
-      order by payable.due_date, payable.created_at desc limit 200`,
-    sql<PaymentRow[]>`
+      order by payable.due_date, payable.created_at desc limit 200`),
+    observeRead("finance.readFinanceSnapshot.5", () => sql<PaymentRow[]>`
       select payment.id, payment.payment_number, payment.direction, payment.status,
         account.account_name,
         coalesce(payment.customer_id, payment.supplier_id) as party_id,
@@ -158,8 +159,8 @@ export async function readFinanceSnapshot(
       left join public.suppliers supplier on supplier.id = payment.supplier_id
       left join public.payment_allocations allocation on allocation.payment_id = payment.id
       group by payment.id, account.account_name, customer.name_vi, supplier.name_vi
-      order by payment.payment_date desc, payment.created_at desc limit 200`,
-    sql<
+      order by payment.payment_date desc, payment.created_at desc limit 200`),
+    observeRead("finance.readFinanceSnapshot.6", () => sql<
       {
         id: string;
         advance_number: string;
@@ -174,8 +175,8 @@ export async function readFinanceSnapshot(
         advance.currency, advance.original_amount, advance.remaining_amount, advance.status
       from public.customer_advances advance
       join public.customers customer on customer.id = advance.customer_id
-      order by advance.created_at desc limit 100`,
-    sql<
+      order by advance.created_at desc limit 100`),
+    observeRead("finance.readFinanceSnapshot.7", () => sql<
       {
         id: string;
         advance_number: string;
@@ -190,8 +191,8 @@ export async function readFinanceSnapshot(
         advance.currency, advance.original_amount, advance.remaining_amount, advance.status
       from public.supplier_advances advance
       join public.suppliers supplier on supplier.id = advance.supplier_id
-      order by advance.created_at desc limit 100`,
-    sql<
+      order by advance.created_at desc limit 100`),
+    observeRead("finance.readFinanceSnapshot.8", () => sql<
       {
         id: string;
         expense_number: string;
@@ -216,8 +217,8 @@ export async function readFinanceSnapshot(
       join public.financial_accounts account on account.id = expense.financial_account_id
       left join public.expense_allocations allocation on allocation.expense_id = expense.id
       group by expense.id, account.account_name
-      order by expense.expense_date desc, expense.created_at desc limit 100`,
-    sql<
+      order by expense.expense_date desc, expense.created_at desc limit 100`),
+    observeRead("finance.readFinanceSnapshot.9", () => sql<
       {
         id: string;
         financial_account_id: string;
@@ -235,21 +236,21 @@ export async function readFinanceSnapshot(
         transaction.amount, transaction.currency, transaction.description, transaction.status
       from public.bank_transactions transaction
       join public.financial_accounts account on account.id = transaction.financial_account_id
-      order by transaction.transaction_date desc, transaction.imported_at desc limit 100`,
-    sql<{ id: string; code: string; name_vi: string }[]>`
-      select id, code, name_vi from public.customers where is_active order by name_vi`,
-    sql<{ id: string; code: string; name_vi: string }[]>`
-      select id, code, name_vi from public.suppliers where is_active order by name_vi`,
-    sql<{ id: string; code: string; name_vi: string }[]>`
+      order by transaction.transaction_date desc, transaction.imported_at desc limit 100`),
+    observeRead("finance.readFinanceSnapshot.10", () => sql<{ id: string; code: string; name_vi: string }[]>`
+      select id, code, name_vi from public.customers where is_active order by name_vi`),
+    observeRead("finance.readFinanceSnapshot.11", () => sql<{ id: string; code: string; name_vi: string }[]>`
+      select id, code, name_vi from public.suppliers where is_active order by name_vi`),
+    observeRead("finance.readFinanceSnapshot.12", () => sql<{ id: string; code: string; name_vi: string }[]>`
       select sales_order.id, sales_order.sales_order_number as code,
         customer.name_vi || ' · ' || sales_order.currency as name_vi
       from public.sales_orders sales_order
       join public.customers customer on customer.id = sales_order.customer_id
       where sales_order.status <> 'CANCELLED'
-      order by sales_order.created_at desc limit 200`,
-    sql<{ id: string; code: string; name_vi: string }[]>`
+      order by sales_order.created_at desc limit 200`),
+    observeRead("finance.readFinanceSnapshot.13", () => sql<{ id: string; code: string; name_vi: string }[]>`
       select id, plate_number as code, vehicle_type || ' · ' || plate_number as name_vi
-      from public.vehicles where is_active order by plate_number`,
+      from public.vehicles where is_active order by plate_number`),
   ]);
 
   const fallbackSummary = {

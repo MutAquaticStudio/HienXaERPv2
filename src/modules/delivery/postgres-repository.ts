@@ -1,3 +1,4 @@
+import { observeRead } from "@/lib/postgres/read-observability";
 import "server-only";
 
 import type { Sql, TransactionSql } from "postgres";
@@ -10,7 +11,7 @@ import { PlatformError } from "@/modules/platform/errors";
 import type { Permission, Principal } from "@/modules/platform/types";
 
 async function databasePermission(sql: Sql | TransactionSql, actorId: string, permission: Permission) {
-  await sql`select app_private.assert_actor_permission(${actorId}, ${permission})`;
+  await observeRead("delivery.permission", () => sql`select app_private.assert_actor_permission(${actorId}, ${permission})`);
 }
 function missing(message: string): never {
   throw new PlatformError(message, "DELIVERY_RECORD_NOT_FOUND", 404);
@@ -70,7 +71,7 @@ function deliveryReadFailed(): never {
   );
 }
 
-export async function readDeliverySnapshot(sql: Sql, principal: Principal): Promise<DeliverySnapshot> {
+export async function readDeliverySnapshot(sql: Sql | TransactionSql, principal: Principal): Promise<DeliverySnapshot> {
   const driverOnly = !principal.permissions.includes("delivery.read");
   if (driverOnly) {
     assertPermission(principal, "delivery.update_assigned");
@@ -80,8 +81,7 @@ export async function readDeliverySnapshot(sql: Sql, principal: Principal): Prom
     await databasePermission(sql, principal.userId, "delivery.read");
   }
 
-  const [deliveryRows, lineRows, planningRows, vehicleRows, driverRows, evidenceRows] = await Promise.all([
-    sql<DeliveryRow[]>`
+  const deliveryRows = await observeRead("delivery.readDeliverySnapshot.1", () => sql<DeliveryRow[]>`
       select delivery.id, delivery.delivery_number, sales_order.sales_order_number,
         delivery.customer_name_snapshot, delivery.sourcing_mode,
         delivery.pickup_address_snapshot, delivery.drop_address_snapshot,
@@ -96,8 +96,9 @@ export async function readDeliverySnapshot(sql: Sql, principal: Principal): Prom
       left join public.vehicles vehicle on vehicle.id = assignment.vehicle_id
       left join public.user_profiles profile on profile.user_id = assignment.driver_user_id
       where (${driverOnly} = false or assignment.driver_user_id = ${principal.userId})
-      order by delivery.scheduled_date, delivery.created_at desc limit 200`,
-    sql<LineRow[]>`
+      order by delivery.scheduled_date, delivery.created_at desc limit 200`);
+  const deliveryIds = deliveryRows.map(row => row.id);
+  const [lineRows, planningRows, vehicleRows, driverRows, evidenceRows] = await Promise.all([observeRead("delivery.readDeliverySnapshot.2", () => sql<LineRow[]>`
       select line.id, line.delivery_id, line.material_name_snapshot,
         line.material_code_snapshot, line.planned_quantity, line.uom_symbol_snapshot,
         actual.actual_quantity, actual.accepted_quantity
@@ -106,11 +107,12 @@ export async function readDeliverySnapshot(sql: Sql, principal: Principal): Prom
       join public.deliveries delivery on delivery.id = line.delivery_id
       left join public.delivery_assignments assignment on assignment.delivery_id = delivery.id
         and assignment.status in ('ASSIGNED', 'ACCEPTED')
-      where (${driverOnly} = false or assignment.driver_user_id = ${principal.userId})
-      order by line.delivery_id, line.line_number`,
-    driverOnly
+      where delivery.id = any(${sql.array(deliveryIds, 2950)})
+        and (${driverOnly} = false or assignment.driver_user_id = ${principal.userId})
+      order by line.delivery_id, line.line_number`),
+driverOnly
       ? Promise.resolve([])
-      : sql<{
+      : observeRead("delivery.readDeliverySnapshot.3", () => sql<{
           id: string; sales_order_number: string; customer_name_snapshot: string;
           material_name_snapshot: string; allocated_quantity: string; uom_symbol_snapshot: string;
           sourcing_mode: "WAREHOUSE" | "SUPPLIER_DIRECT" | "SUPPLIER_TO_WAREHOUSE";
@@ -132,26 +134,25 @@ export async function readDeliverySnapshot(sql: Sql, principal: Principal): Prom
           left join public.stock_reservations reservation on reservation.supply_allocation_id = allocation.id
           where delivery_line.id is null and allocation.status <> 'CANCELLED'
             and (allocation.sourcing_mode <> 'WAREHOUSE' or reservation.status = 'ACTIVE')
-          order by allocation.created_at desc limit 100`,
-    driverOnly
+          order by allocation.created_at desc limit 100`),
+driverOnly
       ? Promise.resolve([])
-      : sql<{ id: string; code: string; plate_number: string; vehicle_type: string }[]>`
+      : observeRead("delivery.readDeliverySnapshot.4", () => sql<{ id: string; code: string; plate_number: string; vehicle_type: string }[]>`
           select id, code, plate_number, vehicle_type from public.vehicles
-          where is_active = true order by code`,
-    driverOnly
+          where is_active = true order by code`),
+driverOnly
       ? Promise.resolve([])
-      : sql<{ user_id: string; display_name: string; employee_code: string }[]>`
+      : observeRead("delivery.readDeliverySnapshot.5", () => sql<{ user_id: string; display_name: string; employee_code: string }[]>`
           select profile.user_id, profile.display_name, operational.employee_code
           from public.user_profiles profile
           join public.employee_operational_profiles operational on operational.user_id = profile.user_id
           join public.user_roles user_role on user_role.user_id = profile.user_id
           join public.roles role on role.id = user_role.role_id and role.code = 'DRIVER'
-          where profile.status = 'ACTIVE' and operational.is_active order by profile.display_name`,
-    sql<{ id: string; storage_path: string; entity_type: string | null; entity_id: string | null }[]>`
+          where profile.status = 'ACTIVE' and operational.is_active order by profile.display_name`),
+observeRead("delivery.readDeliverySnapshot.6", () => sql<{ id: string; storage_path: string; entity_type: string | null; entity_id: string | null }[]>`
       select id, storage_path, entity_type, entity_id from public.evidence
       where owner_user_id = ${principal.userId} or ${driverOnly} = false
-      order by created_at desc limit 100`,
-  ]);
+      order by created_at desc limit 100`)]);
 
   return {
     deliveries: deliveryRows.map((row) => ({

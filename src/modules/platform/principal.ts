@@ -1,6 +1,7 @@
 import "server-only";
 
 import { cookies } from "next/headers";
+import { cache } from "react";
 
 import { createClient } from "@/lib/supabase/server";
 import { getSupabasePublicConfig } from "@/lib/supabase/config";
@@ -42,7 +43,7 @@ interface ScopeRow {
   warehouse_id: string | null;
 }
 
-export async function getCurrentPrincipal(
+export const getCurrentPrincipal = cache(async function getCurrentPrincipal(
   surface: ProductSurface,
 ): Promise<Principal | null> {
   if (canUseSyntheticAuth()) {
@@ -117,4 +118,4 @@ export async function getCurrentPrincipal(
     permissions: permissions.map((permission) => permission.code),
     scopes,
   };
-}
+});

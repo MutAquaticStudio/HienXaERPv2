@@ -100,6 +100,20 @@ See [the P12 architecture note](docs/architecture/p12-compensation-productivity.
 
 ## Verification
 
+### Module navigation and read deadlines
+
+- Office navigation shows a pending label immediately and streams a loading state. Module errors keep the sidebar available; retry refreshes server data.
+- Snapshot reads use an isolated read-only transaction with a 15-second statement timeout, a 5-second lock timeout, and a 45-second overall connection/read deadline. A deadline closes only that read connection. The write/idempotency connection is separate.
+- At most four read connections run concurrently per process. Additional reads wait at most five seconds before returning a busy error. This is a per-process bound, not a fleet-wide database connection cap.
+- Server Supabase HTTP requests have a 15-second timeout including response-body consumption. Principal resolution is memoized only within the current React request.
+- Sales, Master Data and Sourcing load the selected tab through `?tab=...`. Lists use 50-record UUID cursor pages (`?after=...`); related rows follow the selected parents without truncating individual order lines, allocations, credit policies or price rules. Counters explicitly describe the displayed page. Master Data pages materials; other lookup catalogs remain complete when the selected tab needs them.
+- Delivery loads lines only for its displayed deliveries. Route planning, GPS and chat stream separately, so an optional panel failure does not remove the main workspace.
+- `read.start`, `read.success` and `read.error` logs include module, operation, read ID, duration and row count/error code. `database.connection` reports the connection mode and port. Logs exclude SQL parameters, credentials and raw database error messages.
+- Check `database.connection` in production for `transaction-pooler` on port `6543`. Obtain the exact endpoint from the project's Supabase Connect panel; do not guess a hostname or change ports blindly. Transaction-local settings and `prepare: false` support transaction pooling.
+- Use [read-only database diagnostics](scripts/diagnose-module-reads.sql) in the correct Supabase project to inspect plans and existing indexes before proposing a migration. Repository migrations already contain several relevant foreign-key indexes. No speculative index or hosted schema change is included in this fix.
+
+Production pooler configuration and query plans cannot be verified through the current Supabase connector: its account does not list the Hiền Xa project. Vercel CLI can access the project but does not export its Secret `SUPABASE_DB_URL`; do not copy that secret into a local environment file. Runtime logs and the project's SQL Editor are the remaining verification paths.
+
 ```bash
 pnpm verify
 ```
