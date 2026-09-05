@@ -104,4 +104,14 @@ See [the P12 architecture note](docs/architecture/p12-compensation-productivity.
 pnpm verify
 ```
 
+Recent checkpoint change:
+
+- `src/app/globals.css`: responsive fix for Office sidebar (`/app` shell) so mobile navigation is not hidden and remains scrollable.
+
+To publish this exact checkpoint to Vercel Production, run:
+
+```bash
+pnpm dlx vercel@latest --prod
+```
+
 Automatic Vercel Git deployments are disabled in `vercel.json` so a checkpoint cannot publish application code before its reviewed schema. Applying hosted Supabase migrations and deploying the exact checkpoint SHA to Vercel Production always require a separate explicit instruction.
