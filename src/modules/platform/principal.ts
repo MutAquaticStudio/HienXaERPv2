@@ -6,6 +6,7 @@ import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { getSupabasePublicConfig } from "@/lib/supabase/config";
 import { canUseSyntheticAuth } from "@/modules/platform/environment";
+import { PlatformError } from "@/modules/platform/errors";
 import {
   SYNTHETIC_OFFICE_PRINCIPAL,
   SYNTHETIC_WORKER_PRINCIPAL,
@@ -43,6 +44,14 @@ interface ScopeRow {
   warehouse_id: string | null;
 }
 
+function authorizationUnavailable(): never {
+  throw new PlatformError(
+    "Tạm thời không tải được quyền truy cập. Hãy thử lại.",
+    "AUTHORIZATION_UNAVAILABLE",
+    503,
+  );
+}
+
 export const getCurrentPrincipal = cache(async function getCurrentPrincipal(
   surface: ProductSurface,
 ): Promise<Principal | null> {
@@ -60,6 +69,9 @@ export const getCurrentPrincipal = cache(async function getCurrentPrincipal(
 
   const supabase = await createClient();
   const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError && (!userError.status || userError.status === 429 || userError.status >= 500)) {
+    authorizationUnavailable();
+  }
   if (userError || !userData.user) return null;
 
   const userId = userData.user.id;
@@ -76,13 +88,17 @@ export const getCurrentPrincipal = cache(async function getCurrentPrincipal(
       .eq("user_id", userId),
   ]);
 
+  if (profileResult.error || userRolesResult.error || scopesResult.error) {
+    authorizationUnavailable();
+  }
   const profile = profileResult.data as ProfileRow | null;
-  if (profileResult.error || !profile) return null;
+  if (!profile) return null;
 
   const roleIds = (userRolesResult.data ?? []).map((row) => row.role_id);
   const roleResult = roleIds.length
     ? await supabase.from("roles").select("id, code").in("id", roleIds)
     : { data: [], error: null };
+  if (roleResult.error) authorizationUnavailable();
   const roles = (roleResult.data ?? []) as RoleRow[];
 
   const rolePermissionResult = roleIds.length
@@ -91,6 +107,7 @@ export const getCurrentPrincipal = cache(async function getCurrentPrincipal(
         .select("permission_id")
         .in("role_id", roleIds)
     : { data: [], error: null };
+  if (rolePermissionResult.error) authorizationUnavailable();
   const permissionIds = (rolePermissionResult.data ?? []).map(
     (row) => row.permission_id,
   );
@@ -100,6 +117,7 @@ export const getCurrentPrincipal = cache(async function getCurrentPrincipal(
         .select("id, code")
         .in("id", permissionIds)
     : { data: [], error: null };
+  if (permissionResult.error) authorizationUnavailable();
   const permissions = (permissionResult.data ?? []) as PermissionRow[];
 
   const scopes: DataScope[] = ((scopesResult.data ?? []) as ScopeRow[]).map(

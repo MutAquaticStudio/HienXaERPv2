@@ -1,6 +1,7 @@
 import "server-only";
 
 import { getDatabaseClient } from "@/lib/postgres/server";
+import { withDatabaseRead } from "@/lib/postgres/read";
 import { createClient } from "@/lib/supabase/server";
 import { canUseSyntheticAuth } from "@/modules/platform/environment";
 import { PlatformError } from "@/modules/platform/errors";
@@ -31,7 +32,7 @@ export async function getCustomerPortalAccess(): Promise<CustomerPortalAccess> {
   const { data, error } = await supabase.auth.getUser();
   if (error || !data.user) return { kind: "unauthenticated" };
 
-  const rows = await getDatabaseClient()<{
+  const rows = await withDatabaseRead("customer-portal.access", (sql) => sql<{
     customer_id: string;
     customer_name: string;
     portal_role: "CONTACT" | "BILLING";
@@ -40,7 +41,7 @@ export async function getCustomerPortalAccess(): Promise<CustomerPortalAccess> {
     join public.customers customer on customer.id = membership.customer_id
     where membership.auth_user_id = ${data.user.id}
       and membership.active and customer.is_active
-    limit 1`;
+    limit 1`);
   const membership = rows[0];
   if (!membership) return { kind: "not-member" };
   return {
@@ -58,7 +59,9 @@ export async function getCustomerPortalSnapshot(
   principal: CustomerPortalPrincipal,
 ): Promise<CustomerPortalSnapshot> {
   if (canUseSyntheticAuth()) return SYNTHETIC_CUSTOMER_PORTAL_SNAPSHOT;
-  return readCustomerPortalSnapshot(getDatabaseClient(), principal);
+  return withDatabaseRead("customer-portal", (sql) =>
+    readCustomerPortalSnapshot(sql, principal),
+  );
 }
 
 export async function runCustomerPortalCommand(

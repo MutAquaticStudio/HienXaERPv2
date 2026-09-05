@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
 import { getSupabasePublicConfig } from "@/lib/supabase/config";
+import { boundedSupabaseFetch } from "@/lib/supabase/bounded-fetch";
 
 export async function updateSession(request: NextRequest) {
   const config = getSupabasePublicConfig();
@@ -9,6 +10,7 @@ export async function updateSession(request: NextRequest) {
 
   let response = NextResponse.next({ request });
   const supabase = createServerClient(config.url, config.publishableKey, {
+    global: { fetch: boundedSupabaseFetch },
     cookies: {
       getAll() {
         return request.cookies.getAll();
@@ -28,6 +30,17 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  await supabase.auth.getClaims();
+  try {
+    const { error } = await supabase.auth.getClaims();
+    if (error && (!error.status || error.status === 429 || error.status >= 500)) {
+      throw error;
+    }
+  } catch {
+    // Do not mistake an unavailable auth service for an invalid session.
+    return NextResponse.json(
+      { error: "Dịch vụ đăng nhập tạm thời không phản hồi. Hãy thử lại." },
+      { status: 503, headers: { "Cache-Control": "no-store", "Retry-After": "5" } },
+    );
+  }
   return response;
 }

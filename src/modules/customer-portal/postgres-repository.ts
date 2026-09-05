@@ -17,7 +17,7 @@ function quoteStatus(status: string): CustomerPortalQuote["status"] {
 }
 
 export async function readCustomerPortalSnapshot(
-  sql: Sql,
+  sql: Sql | TransactionSql,
   principal: CustomerPortalPrincipal,
 ): Promise<CustomerPortalSnapshot> {
   const [quoteRows, lineRows, orderRows, orderLineRows, deliveryRows, deliveryLineRows, debtRows, siteRows, materialRows, requestRows, noticeRows] = await Promise.all([
