@@ -4,6 +4,8 @@ import { randomUUID } from "node:crypto";
 
 import type { JSONValue, Sql, TransactionSql } from "postgres";
 
+import { observeRead } from "@/lib/postgres/read-observability";
+
 import type { CommercialCommandInput } from "@/modules/commercial/commands";
 import { evaluatePriceSafety } from "@/modules/commercial/price-safety";
 import type {
@@ -41,13 +43,17 @@ function conflict(message: string, code = "INVALID_COMMERCIAL_STATE"): never {
 }
 
 export async function readCommercialSnapshot(
-  sql: Sql,
+  sql: Sql | TransactionSql,
   principal: Principal,
 ): Promise<CommercialSnapshot> {
   assertPermission(principal, "quotation.read");
   assertPermission(principal, "sales_order.read");
-  await assertDatabasePermission(sql, principal.userId, "quotation.read");
-  await assertDatabasePermission(sql, principal.userId, "sales_order.read");
+  await observeRead("commercial.permission.quotation", () =>
+    assertDatabasePermission(sql, principal.userId, "quotation.read"),
+  );
+  await observeRead("commercial.permission.sales-order", () =>
+    assertDatabasePermission(sql, principal.userId, "sales_order.read"),
+  );
 
   const [
     customerRows,
@@ -64,7 +70,7 @@ export async function readCommercialSnapshot(
     salesOrderLineRows,
     requirementRows,
   ] = await Promise.all([
-    sql<
+    observeRead("commercial.customers", () => sql<
       {
         id: string;
         code: string;
@@ -77,8 +83,8 @@ export async function readCommercialSnapshot(
         is_active: boolean;
       }[]
     >`select id, code, name_vi as name, legal_name, tax_code, phone, email, tier, is_active
-      from public.customers order by is_active desc, code`,
-    sql<
+      from public.customers order by is_active desc, code`),
+    observeRead("commercial.sites", () => sql<
       {
         id: string;
         customer_id: string;
@@ -91,8 +97,8 @@ export async function readCommercialSnapshot(
       }[]
     >`select id, customer_id, code, name_vi as name, address, delivery_notes,
         is_default, is_active from public.customer_sites
-      order by is_active desc, is_default desc, code`,
-    sql<
+      order by is_active desc, is_default desc, code`),
+    observeRead("commercial.materials", () => sql<
       {
         id: string;
         code: string;
@@ -109,12 +115,12 @@ export async function readCommercialSnapshot(
       from public.materials as material
       join public.material_groups as material_group on material_group.id = material.material_group_id
       join public.uom_catalog as uom on uom.id = material.sales_uom_id
-      order by material.is_active desc, material.code`,
-    sql<
+      order by material.is_active desc, material.code`),
+    observeRead("commercial.uoms", () => sql<
       { id: string; symbol: string; name: string; is_active: boolean }[]
     >`select id, symbol, name_vi as name, is_active
-      from public.uom_catalog order by is_active desc, code`,
-    sql<
+      from public.uom_catalog order by is_active desc, code`),
+    observeRead("commercial.price-rules", () => sql<
       {
         id: string;
         scope: PriceRuleScope;
@@ -144,8 +150,8 @@ export async function readCommercialSnapshot(
       left join public.materials as material on material.id = rule.material_id
       left join public.material_groups as material_group on material_group.id = rule.material_group_id
       join public.uom_catalog as uom on uom.id = rule.uom_id
-      order by rule.valid_to is null desc, rule.valid_from desc, rule.version desc`,
-    sql<
+      order by rule.valid_to is null desc, rule.valid_from desc, rule.version desc`),
+    observeRead("commercial.credit-policies", () => sql<
       {
         id: string;
         customer_id: string;
@@ -159,8 +165,8 @@ export async function readCommercialSnapshot(
     >`select id, customer_id, credit_limit, allowed_overdue_days,
         valid_from::text, valid_to::text, version, change_reason
       from public.customer_credit_policies
-      order by valid_to is null desc, valid_from desc, version desc`,
-    sql<
+      order by valid_to is null desc, valid_from desc, version desc`),
+    observeRead("commercial.credit-exposures", () => sql<
       {
         customer_id: string;
         receivable_amount: string;
@@ -172,8 +178,8 @@ export async function readCommercialSnapshot(
       }[]
     >`select customer_id, receivable_amount, uninvoiced_order_amount,
         overdue_amount, oldest_overdue_days, customer_advance_amount,
-        calculated_at::text from public.customer_credit_exposures`,
-    sql<
+        calculated_at::text from public.customer_credit_exposures`),
+    observeRead("commercial.quotations", () => sql<
       {
         id: string;
         quotation_number: string;
@@ -194,8 +200,8 @@ export async function readCommercialSnapshot(
       from public.quotations as quote
       join public.customers as customer on customer.id = quote.customer_id
       left join public.customer_sites as site on site.id = quote.customer_site_id
-      order by quote.created_at desc`,
-    sql<
+      order by quote.created_at desc`),
+    observeRead("commercial.revisions", () => sql<
       {
         id: string;
         quotation_id: string;
@@ -214,8 +220,8 @@ export async function readCommercialSnapshot(
     >`select id, quotation_id, revision_number, status, valid_until::text,
         currency, subtotal_amount, total_amount, notes, sent_at::text,
         accepted_at::text, locked_at::text, created_at::text
-      from public.quotation_revisions order by created_at desc, revision_number desc`,
-    sql<
+      from public.quotation_revisions order by created_at desc, revision_number desc`),
+    observeRead("commercial.quotation-lines", () => sql<
       {
         id: string;
         revision_id: string;
@@ -244,8 +250,8 @@ export async function readCommercialSnapshot(
         price_rule_id, price_snapshot_id, reference_unit_price, unit_price,
         currency, line_amount, price_safety_status, price_override_reason,
         price_approved_by, price_approved_at::text, price_refreshed_at::text
-      from public.quotation_lines order by revision_id, line_number`,
-    sql<
+      from public.quotation_lines order by revision_id, line_number`),
+    observeRead("commercial.sales-orders", () => sql<
       {
         id: string;
         sales_order_number: string;
@@ -269,8 +275,8 @@ export async function readCommercialSnapshot(
         customer_site_id, customer_site_name_snapshot, status, currency,
         total_amount, credit_status, credit_decision_snapshot,
         confirmed_at::text, created_at::text
-      from public.sales_orders order by created_at desc`,
-    sql<
+      from public.sales_orders order by created_at desc`),
+    observeRead("commercial.sales-order-lines", () => sql<
       {
         id: string;
         sales_order_id: string;
@@ -296,8 +302,8 @@ export async function readCommercialSnapshot(
         ordered_quantity, uom_id, uom_symbol_snapshot, uom_snapshot,
         price_snapshot_id, price_rule_id, reference_unit_price, unit_price,
         currency, line_amount, price_safety_status
-      from public.sales_order_lines order by sales_order_id, line_number`,
-    sql<
+      from public.sales_order_lines order by sales_order_id, line_number`),
+    observeRead("commercial.fulfillment-requirements", () => sql<
       {
         id: string;
         sales_order_id: string;
@@ -313,7 +319,7 @@ export async function readCommercialSnapshot(
     >`select id, sales_order_id, sales_order_line_id, requirement_type, status,
         required_quantity, uom_id, uom_symbol_snapshot, customer_site_id,
         created_at::text from public.fulfillment_requirements
-      order by created_at desc`,
+      order by created_at desc`),
   ]);
 
   return {

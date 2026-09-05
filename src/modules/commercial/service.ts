@@ -1,5 +1,7 @@
 import "server-only";
 
+import { withDatabaseRead } from "@/lib/postgres/read";
+
 import type { CommercialCommandInput } from "@/modules/commercial/commands";
 import { SYNTHETIC_COMMERCIAL } from "@/modules/commercial/fixtures";
 import {
@@ -107,7 +109,9 @@ export async function getCommercialSnapshot(
   assertPermission(principal, "quotation.read");
   assertPermission(principal, "sales_order.read");
   if (canUseSyntheticAuth()) return structuredClone(SYNTHETIC_COMMERCIAL);
-  return readCommercialSnapshot(getDatabaseClient(), principal);
+  return withDatabaseRead("commercial", (sql) =>
+    readCommercialSnapshot(sql, principal),
+  );
 }
 
 export async function runCommercialCommand(
