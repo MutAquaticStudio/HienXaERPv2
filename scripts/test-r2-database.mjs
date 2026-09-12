@@ -42,7 +42,7 @@ try {
   assert.equal(rlsCount, 9, "RLS must protect every R2 table");
 
   const [{ count: permissionCount }] = await queryRows("select count(*)::int as count from public.permissions");
-  assert.equal(permissionCount, 43, "action permissions must be explicit");
+  assert.equal(permissionCount, 51, "action permissions must be explicit");
 
   await database.exec(`
     insert into auth.users(id) values
@@ -58,6 +58,7 @@ try {
     insert into public.roles(id, code, name) values
       ('40000000-0000-0000-0000-000000000001', 'sales', 'Bán hàng');
     insert into public.role_permissions(role_id, permission_code) values
+      ('40000000-0000-0000-0000-000000000001', 'dashboard.read'),
       ('40000000-0000-0000-0000-000000000001', 'orders.read'),
       ('40000000-0000-0000-0000-000000000001', 'orders.create'),
       ('40000000-0000-0000-0000-000000000001', 'orders.confirm'),
@@ -93,7 +94,15 @@ try {
       ('40000000-0000-0000-0000-000000000001', 'delivery.billing.override'),
       ('40000000-0000-0000-0000-000000000001', 'delivery.exception'),
       ('40000000-0000-0000-0000-000000000001', 'evidence.manage'),
-      ('40000000-0000-0000-0000-000000000001', 'finance.ar.adjust');
+      ('40000000-0000-0000-0000-000000000001', 'finance.ar.adjust'),
+      ('40000000-0000-0000-0000-000000000001', 'finance.account.manage'),
+      ('40000000-0000-0000-0000-000000000001', 'finance.payment.post'),
+      ('40000000-0000-0000-0000-000000000001', 'finance.payment.reverse'),
+      ('40000000-0000-0000-0000-000000000001', 'finance.ap.adjust'),
+      ('40000000-0000-0000-0000-000000000001', 'finance.expense.read'),
+      ('40000000-0000-0000-0000-000000000001', 'finance.expense.manage'),
+      ('40000000-0000-0000-0000-000000000001', 'finance.reconcile'),
+      ('40000000-0000-0000-0000-000000000001', 'finance.profit.read');
     insert into public.employee_branch_access(employee_id, branch_id, role_id) values
       ('30000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', '40000000-0000-0000-0000-000000000001'),
       ('30000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000002', '40000000-0000-0000-0000-000000000001');
@@ -496,11 +505,139 @@ try {
     (select original_amount_vnd from public.receivable_obligations where delivery_verification_id = '${directVerification.id}') as customer_receivable`);
   assert.deepEqual([directFacts.supplier_payable.toString(), directFacts.customer_receivable.toString()], ["1250000", "1260000"], "supplier and customer verified quantities remain independent facts");
 
+  const [financeAccount] = await queryRows(`select public.create_finance_account(
+    '20000000-0000-0000-0000-000000000001', 'CASH_MAIN', 'Quỹ tiền mặt chính', 'CASH',
+    'b7000000-0000-0000-0000-000000000001') as id`);
+  const receivablesBefore = await queryRows(`select id, outstanding_amount_vnd
+    from public.receivable_read
+    where branch_id = '20000000-0000-0000-0000-000000000001'
+      and customer_id = '50000000-0000-0000-0000-000000000001'
+      and outstanding_amount_vnd >= 500000
+    order by recorded_at
+    limit 2`);
+  assert.equal(receivablesBefore.length, 2, "finance fixture must expose two customer obligations for multi-allocation");
+  const allocationPayload = JSON.stringify(receivablesBefore.map((item) => ({ obligation_id: item.id, amount_vnd: 500000 })));
+  const revenueBeforePayment = (await queryRows("select coalesce(sum(amount_vnd), 0)::bigint as amount from public.revenue_entries"))[0].amount;
+  const [postedReceipt] = await queryRows(`select public.post_payment(
+    '20000000-0000-0000-0000-000000000001', 'RECEIPT',
+    '50000000-0000-0000-0000-000000000001', null, '${financeAccount.id}', 2000000,
+    '2026-09-12T12:00:00Z', 'CASH', 'THU-MULTI-001', '${allocationPayload}'::jsonb, 250000,
+    'b7000000-0000-0000-0000-000000000002') as id`);
+  const [postedReceiptReplay] = await queryRows(`select public.post_payment(
+    '20000000-0000-0000-0000-000000000001', 'RECEIPT',
+    '50000000-0000-0000-0000-000000000001', null, '${financeAccount.id}', 2000000,
+    '2026-09-12T12:00:00Z', 'CASH', 'THU-MULTI-001', '${allocationPayload}'::jsonb, 250000,
+    'b7000000-0000-0000-0000-000000000002') as id`);
+  assert.equal(postedReceiptReplay.id, postedReceipt.id, "payment replay returns the committed payment");
+  const [receiptPosition] = await queryRows(`select allocated_amount_vnd, advance_amount_vnd, unallocated_amount_vnd
+    from public.payment_read where id = '${postedReceipt.id}'`);
+  assert.deepEqual(
+    [receiptPosition.allocated_amount_vnd.toString(), receiptPosition.advance_amount_vnd.toString(), receiptPosition.unallocated_amount_vnd.toString()],
+    ["1000000", "250000", "750000"],
+    "payment allocation, advance, and unallocated positions remain distinct",
+  );
+  const receivablesAfterPayment = await queryRows(`select id, outstanding_amount_vnd from public.receivable_read
+    where id = any(array['${receivablesBefore[0].id}'::uuid, '${receivablesBefore[1].id}'::uuid]) order by id`);
+  const beforeOutstanding = receivablesBefore.reduce((total, item) => total + BigInt(item.outstanding_amount_vnd), 0n);
+  const afterOutstanding = receivablesAfterPayment.reduce((total, item) => total + BigInt(item.outstanding_amount_vnd), 0n);
+  assert.equal(beforeOutstanding - afterOutstanding, 1000000n, "multi-allocation reduces exact target outstanding only");
+  const revenueAfterPayment = (await queryRows("select coalesce(sum(amount_vnd), 0)::bigint as amount from public.revenue_entries"))[0].amount;
+  assert.equal(revenueAfterPayment.toString(), revenueBeforePayment.toString(), "receipt changes cash and AR, never revenue");
+
+  let paymentPayloadConflictRejected = false;
+  try {
+    await queryRows(`select public.post_payment(
+      '20000000-0000-0000-0000-000000000001', 'RECEIPT',
+      '50000000-0000-0000-0000-000000000001', null, '${financeAccount.id}', 2000001,
+      '2026-09-12T12:00:00Z', 'CASH', 'THU-MULTI-001', '${allocationPayload}'::jsonb, 250000,
+      'b7000000-0000-0000-0000-000000000002')`);
+  } catch { paymentPayloadConflictRejected = true; }
+  assert.equal(paymentPayloadConflictRejected, true, "same payment operation rejects a different payload");
+
+  const [reversal] = await queryRows(`select public.reverse_payment('${postedReceipt.id}', 'Khách yêu cầu hoàn tác phiếu thu sai',
+    'b7000000-0000-0000-0000-000000000003') as id`);
+  const [reversalFacts] = await queryRows(`select
+    (select sum(cash_delta_vnd)::bigint from public.payment_read where id = any(array['${postedReceipt.id}'::uuid, '${reversal.id}'::uuid])) as cash_effect,
+    (select posting_state from public.payment_read where id = '${postedReceipt.id}') as original_state,
+    (select sum(outstanding_amount_vnd)::bigint from public.receivable_read where id = any(array['${receivablesBefore[0].id}'::uuid, '${receivablesBefore[1].id}'::uuid])) as restored_outstanding`);
+  assert.deepEqual(
+    [reversalFacts.cash_effect.toString(), reversalFacts.original_state, reversalFacts.restored_outstanding.toString()],
+    ["0", "REVERSED", beforeOutstanding.toString()],
+    "reversal appends inverse cash/allocation effects and restores outstanding",
+  );
+
+  const [supplierForExpense] = await queryRows(`select supplier_id from public.payable_read
+    where branch_id = '20000000-0000-0000-0000-000000000001' limit 1`);
+  const [expenseCategory] = await queryRows(`select public.create_expense_category(
+    '20000000-0000-0000-0000-000000000001', 'ADMIN', 'Chi phí hành chính',
+    'b7000000-0000-0000-0000-000000000004') as id`);
+  const [expense] = await queryRows(`select public.create_expense(
+    '20000000-0000-0000-0000-000000000001', '${expenseCategory.id}', '${supplierForExpense.supplier_id}',
+    300000, '2026-09-12T12:30:00Z', '2026-09-20', 'Văn phòng phẩm tháng 9', 'ADMIN', null, null,
+    'b7000000-0000-0000-0000-000000000005') as id`);
+  const paymentsBeforeExpenseApproval = (await queryRows("select count(*)::int as count from public.payments"))[0].count;
+  await queryRows(`select public.approve_expense('${expense.id}', 1, 'b7000000-0000-0000-0000-000000000006')`);
+  await queryRows(`select public.approve_expense('${expense.id}', 1, 'b7000000-0000-0000-0000-000000000006')`);
+  const [expenseFacts] = await queryRows(`select
+    (select count(*)::int from public.payable_obligations where expense_id = '${expense.id}') as payable_count,
+    (select count(*)::int from public.payments) as payment_count,
+    (select approval_state from public.expenses where id = '${expense.id}') as approval_state`);
+  assert.deepEqual(
+    [expenseFacts.payable_count, expenseFacts.payment_count, expenseFacts.approval_state],
+    [1, paymentsBeforeExpenseApproval, "APPROVED"],
+    "expense approval creates one AP source and does not post cash",
+  );
+
+  const [supplierPayment] = await queryRows(`select public.post_payment(
+    '20000000-0000-0000-0000-000000000001', 'DISBURSEMENT', null, '${supplierForExpense.supplier_id}',
+    '${financeAccount.id}', 200000, '2026-09-12T13:00:00Z', 'BANK_TRANSFER', 'CHI-DOISOAT-001', '[]'::jsonb, 0,
+    'b7000000-0000-0000-0000-000000000007') as id`);
+  const cashBeforeReconciliation = (await queryRows("select sum(cash_delta_vnd)::bigint as amount from public.payment_read"))[0].amount;
+  await queryRows(`select public.record_payment_reconciliation('${supplierPayment.id}', 100000,
+    '2026-09-12T13:05:00Z', 'BANK-LINE-001', 'b7000000-0000-0000-0000-000000000008')`);
+  const [reconciledPayment] = await queryRows(`select reconciliation_state, reconciliation_difference_vnd from public.payment_read where id = '${supplierPayment.id}'`);
+  const cashAfterReconciliation = (await queryRows("select sum(cash_delta_vnd)::bigint as amount from public.payment_read"))[0].amount;
+  assert.deepEqual(
+    [reconciledPayment.reconciliation_state, reconciledPayment.reconciliation_difference_vnd.toString(), cashAfterReconciliation.toString()],
+    ["PARTIAL", "100000", cashBeforeReconciliation.toString()],
+    "reconciliation records matching state without posting money again",
+  );
+
+  const dashboardStarted = performance.now();
+  const [dashboard] = await queryRows(`select public.finance_dashboard_snapshot(
+    '20000000-0000-0000-0000-000000000001', '2026-09-01T00:00:00+07:00', '2026-10-01T00:00:00+07:00', now(),
+    null, null, null, null) as snapshot`);
+  const dashboardDurationMs = performance.now() - dashboardStarted;
+  const dashboardPayloadBytes = Buffer.byteLength(JSON.stringify(dashboard.snapshot));
+  assert.equal(dashboard.snapshot.revenue.value_vnd.toString(), revenueBeforePayment.toString(), "dashboard revenue remains sourced from verified business facts");
+  assert.equal(dashboard.snapshot.operating_expense.value_vnd.toString(), "300000", "dashboard reads approved Opex once");
+
+  await database.exec(`reset role;
+    update public.finance_accounts set active = false where id = '${financeAccount.id}';
+    update public.expense_categories set active = false where id = '${expenseCategory.id}';
+    set role authenticated;
+    select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000001', false);`);
+  const [receiptAfterAccountDeactivation] = await queryRows(`select public.post_payment(
+    '20000000-0000-0000-0000-000000000001', 'RECEIPT',
+    '50000000-0000-0000-0000-000000000001', null, '${financeAccount.id}', 2000000,
+    '2026-09-12T12:00:00Z', 'CASH', 'THU-MULTI-001', '${allocationPayload}'::jsonb, 250000,
+    'b7000000-0000-0000-0000-000000000002') as id`);
+  const [expenseAfterCategoryDeactivation] = await queryRows(`select public.create_expense(
+    '20000000-0000-0000-0000-000000000001', '${expenseCategory.id}', '${supplierForExpense.supplier_id}',
+    300000, '2026-09-12T12:30:00Z', '2026-09-20', 'Văn phòng phẩm tháng 9', 'ADMIN', null, null,
+    'b7000000-0000-0000-0000-000000000005') as id`);
+  assert.deepEqual(
+    [receiptAfterAccountDeactivation.id, expenseAfterCategoryDeactivation.id],
+    [postedReceipt.id, expense.id],
+    "committed command replay remains stable after referenced master data is deactivated",
+  );
+
   let movementMutationRejected = false;
   try { await database.exec("reset role; update public.inventory_movements set base_quantity_delta = 1 where movement_type = 'PURCHASE_RECEIPT'"); } catch { movementMutationRejected = true; }
   assert.equal(movementMutationRejected, true, "inventory movement ledger is append-only");
 
-  console.info("Isolated PostgreSQL checks passed: R2 access through R6 inventory/delivery golden-flow invariants.");
+  console.info(`R7 dashboard local sample: ${dashboardDurationMs.toFixed(2)} ms, ${dashboardPayloadBytes} bytes.`);
+  console.info("Isolated PostgreSQL checks passed: R2 access through R7 finance/dashboard golden-flow invariants.");
 } finally {
   await database.close();
 }

@@ -40,7 +40,7 @@ Không cần copy requirement text vào đây.
 ```yaml
 DOC_LOCK: VALID
 DOCSET_FINGERPRINT: GIT_TREE:cbe9de71d8dc3ea607f77d50e6f0d092afc52696
-ACTIVE_CONTEXT_PACK: PLAN-CTX-BASE + PLAN-CTX-R6
+ACTIVE_CONTEXT_PACK: PLAN-CTX-BASE + PLAN-CTX-R7
 INSTRUCTION_AUDIT_REF: R0-I-001 VALID
 DEPLOY_GUARD_REF: R0-D-001 VALID
 SCHEMA_SNAPSHOT_REF: R3-S-001 VALID_ISOLATED
@@ -74,7 +74,7 @@ Theo báo cáo người dùng, cleanup không sửa dữ liệu/Storage và chư
 ```yaml
 DOCSET: HX-V2-DOCSET-4.2
 CURRENT_PHASE: see tasks.md
-APPLICATION_V2_DOMAIN_CODE: R6_INVENTORY_DELIVERY_IMPLEMENTED
+APPLICATION_V2_DOMAIN_CODE: R7_FINANCE_DASHBOARD_IMPLEMENTED
 PRODUCTION_AUDIT: EMPTY_BASELINE_OWNER_REPORTED
 ACCEPTANCE: NOT_REQUESTED
 ```
@@ -331,3 +331,34 @@ CHECK_EVIDENCE:
 
 PRODUCTION:
 NOT_TOUCHED
+
+# R7 CHECKPOINT - FINANCE AND DASHBOARD
+
+PHASE: R7
+STATUS: IMPLEMENTED
+CONTEXT_PACK: PLAN-CTX-BASE + PLAN-CTX-R7
+CONTRACT_REFS: SPEC-190, SPEC-200, SPEC-210, SPEC-460, SPEC-BE-004, SPEC-BE-005, SPEC-BE-006, UX-230, UX-420, UX-430, UX-440, UX-850, UX-860, UX-FLOW-005
+
+IMPLEMENTATION:
+- Added append-only cash payments, manual many-to-many allocation, customer/supplier advances, reversals, adjustments, reconciliation, expense approval, and explicit AP source linkage.
+- Added AR, AP, cashbook, expense, profitability, and dashboard read models with permission-aware quality states and bounded as-of filtering.
+- Added admin finance routes, manual payment allocator, source drilldown, dashboard filters, KPI cards, chart, and ranked obligation views.
+- Preserved payment, expense, reconciliation, and source-ledger invariants through RPC commands, row locks, RLS, immutable posted records, and idempotency receipts.
+
+CHECKS:
+- L1 targeted database golden flow: PASS.
+- L2 affected R2-R7 database regression: PASS.
+- L3 typecheck: PASS.
+- L3 lint: PASS.
+- L3 unit tests: PASS, 16/16.
+- L3 production build: PASS.
+- Dashboard local sample: 2.79 ms, 731 bytes; local evidence only, not a production percentile claim.
+- True multi-session allocation race: NOT_RUN_NO_CONTAINER.
+- pgTAP: NOT_RUN_NO_CONTAINER.
+- L4 full-system verification: NOT_RUN_PHASE_SCOPE.
+- Acceptance: NOT_REQUESTED.
+
+DEFERRED:
+- Salary and commission remain INCOMPLETE_PENDING_R8.
+
+PRODUCTION: NOT_TOUCHED
