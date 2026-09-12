@@ -42,7 +42,7 @@ try {
   assert.equal(rlsCount, 9, "RLS must protect every R2 table");
 
   const [{ count: permissionCount }] = await queryRows("select count(*)::int as count from public.permissions");
-  assert.equal(permissionCount, 27, "action permissions must be explicit");
+  assert.equal(permissionCount, 43, "action permissions must be explicit");
 
   await database.exec(`
     insert into auth.users(id) values
@@ -75,7 +75,25 @@ try {
       ('40000000-0000-0000-0000-000000000001', 'purchasing.price.read'),
       ('40000000-0000-0000-0000-000000000001', 'purchasing.price.manage'),
       ('40000000-0000-0000-0000-000000000001', 'suppliers.read'),
-      ('40000000-0000-0000-0000-000000000001', 'catalog.read');
+      ('40000000-0000-0000-0000-000000000001', 'catalog.read'),
+      ('40000000-0000-0000-0000-000000000001', 'delivery.read'),
+      ('40000000-0000-0000-0000-000000000001', 'finance.ar.read'),
+      ('40000000-0000-0000-0000-000000000001', 'finance.ap.read'),
+      ('40000000-0000-0000-0000-000000000001', 'inventory.read'),
+      ('40000000-0000-0000-0000-000000000001', 'inventory.reserve'),
+      ('40000000-0000-0000-0000-000000000001', 'inventory.receive'),
+      ('40000000-0000-0000-0000-000000000001', 'inventory.count'),
+      ('40000000-0000-0000-0000-000000000001', 'inventory.adjust'),
+      ('40000000-0000-0000-0000-000000000001', 'inventory.cost.read'),
+      ('40000000-0000-0000-0000-000000000001', 'delivery.create'),
+      ('40000000-0000-0000-0000-000000000001', 'delivery.assign'),
+      ('40000000-0000-0000-0000-000000000001', 'delivery.handoff'),
+      ('40000000-0000-0000-0000-000000000001', 'delivery.submit'),
+      ('40000000-0000-0000-0000-000000000001', 'delivery.verify'),
+      ('40000000-0000-0000-0000-000000000001', 'delivery.billing.override'),
+      ('40000000-0000-0000-0000-000000000001', 'delivery.exception'),
+      ('40000000-0000-0000-0000-000000000001', 'evidence.manage'),
+      ('40000000-0000-0000-0000-000000000001', 'finance.ar.adjust');
     insert into public.employee_branch_access(employee_id, branch_id, role_id) values
       ('30000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', '40000000-0000-0000-0000-000000000001'),
       ('30000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000002', '40000000-0000-0000-0000-000000000001');
@@ -146,6 +164,8 @@ try {
       values ('74000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', 'SUP_A', 'Nhà cung cấp A', 'Hải Dương');
     insert into public.warehouses(id, branch_id, code, name, address_text)
       values ('75000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', 'WH_A', 'Kho trung tâm', 'Hà Nội');
+    insert into public.vehicles(id, branch_id, code, plate_number)
+      values ('75000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000001', 'TRUCK_A', '30A-12345');
     insert into public.purchase_price_rules(id, branch_id, supplier_id, material_id, purchase_uom_id, unit_cost_vnd, version, source_type, effective_from, created_by)
       values ('76000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', '74000000-0000-0000-0000-000000000001', '72000000-0000-0000-0000-000000000001', '70000000-0000-0000-0000-000000000002', 2500000, 1, 'CONTRACT', '2026-01-01', '10000000-0000-0000-0000-000000000001');
   `);
@@ -332,7 +352,155 @@ try {
     where p.id = '${linkedPurchase.id}' and p.source_sales_order_id = sl.sales_order_id`);
   assert.equal(linkedPairCount, 1, "linked draft use-case keeps explicit SO, sales line, PO, and purchase line FKs");
 
-  console.info("Isolated PostgreSQL checks passed: R2 access, R3 catalog/credit, R4 sales, and R5 purchasing/sourcing invariants.");
+  const [evidence] = await queryRows(`select public.create_evidence_upload(
+    '20000000-0000-0000-0000-000000000001', 'inventory-evidence', 'r6/receipt-proof.jpg', 'INTERNAL',
+    'a0000000-0000-0000-0000-000000000001') as id`);
+  await queryRows(`select public.finalize_evidence_upload('${evidence.id}', '${"a".repeat(64)}', 1024,
+    'a0000000-0000-0000-0000-000000000002')`);
+  const [receipt] = await queryRows(`select public.receive_purchase_order('${warehousePurchase.id}',
+    '[{"purchase_order_line_id":"${warehousePurchaseLineId}","received_quantity":"1"}]'::jsonb,
+    '${evidence.id}', '2026-09-12T10:00:00Z', 'a0000000-0000-0000-0000-000000000003') as id`);
+  const [receiptReplay] = await queryRows(`select public.receive_purchase_order('${warehousePurchase.id}',
+    '[{"purchase_order_line_id":"${warehousePurchaseLineId}","received_quantity":"1"}]'::jsonb,
+    '${evidence.id}', '2026-09-12T10:00:00Z', 'a0000000-0000-0000-0000-000000000003') as id`);
+  assert.equal(receiptReplay.id, receipt.id, "purchase receipt replay must not duplicate stock or AP");
+  const [receivedPosition] = await queryRows(`select on_hand_base_quantity, reserved_base_quantity, available_base_quantity,
+    inventory_value_vnd from public.warehouse_inventory_read
+    where warehouse_id = '75000000-0000-0000-0000-000000000001' and material_id = '72000000-0000-0000-0000-000000000001'`);
+  assert.deepEqual(
+    [receivedPosition.on_hand_base_quantity, receivedPosition.reserved_base_quantity, receivedPosition.available_base_quantity, receivedPosition.inventory_value_vnd],
+    ["1000.000000", "0", "1000.000000", "2500000"],
+    "receipt posts exact stock/value while reservations remain separate",
+  );
+  const [{ count: receiptPayableCount }] = await queryRows(`select count(*)::int as count from public.payable_obligations where purchase_receipt_id = '${receipt.id}'`);
+  assert.equal(receiptPayableCount, 1, "verified warehouse receipt creates one source-linked payable");
+
+  const [warehouseSalesOrder] = await queryRows(createOrderSql("a1000000-0000-0000-0000-000000000001"));
+  await queryRows(`select public.confirm_sales_order('${warehouseSalesOrder.id}', 'a1000000-0000-0000-0000-000000000002')`);
+  const [{ id: warehouseSalesLine }] = await queryRows(`select id from public.sales_order_lines where sales_order_id = '${warehouseSalesOrder.id}'`);
+  const [deliveryAllocation] = await queryRows(`select public.upsert_supply_allocation('${warehouseSalesLine}', 'WAREHOUSE', null,
+    '75000000-0000-0000-0000-000000000001', 1000, null, null,
+    'a1000000-0000-0000-0000-000000000003') as id`);
+  const [warehouseDelivery] = await queryRows(`select public.create_delivery_from_allocation('${deliveryAllocation.id}', 600,
+    current_date + 1, 'a1000000-0000-0000-0000-000000000004') as id`);
+  const [warehouseDeliveryReplay] = await queryRows(`select public.create_delivery_from_allocation('${deliveryAllocation.id}', 600,
+    current_date + 1, 'a1000000-0000-0000-0000-000000000004') as id`);
+  assert.equal(warehouseDeliveryReplay.id, warehouseDelivery.id, "delivery creation replays one entity and one reservation");
+  let overReservationRejected = false;
+  try {
+    await queryRows(`select public.reserve_inventory('${warehouseSalesLine}', '75000000-0000-0000-0000-000000000001',
+      500, 'a1000000-0000-0000-0000-000000000005')`);
+  } catch { overReservationRejected = true; }
+  assert.equal(overReservationRejected, true, "active reservations cannot oversubscribe warehouse availability");
+  const [reservedPosition] = await queryRows(`select on_hand_base_quantity, reserved_base_quantity, available_base_quantity
+    from public.warehouse_inventory_read where warehouse_id = '75000000-0000-0000-0000-000000000001'
+      and material_id = '72000000-0000-0000-0000-000000000001'`);
+  assert.deepEqual(
+    [reservedPosition.on_hand_base_quantity, reservedPosition.reserved_base_quantity, reservedPosition.available_base_quantity],
+    ["1000.000000", "600.000000", "400.000000"],
+    "reservation reduces available but not on-hand",
+  );
+  const [assignment] = await queryRows(`select public.assign_delivery('${warehouseDelivery.id}',
+    '30000000-0000-0000-0000-000000000001', '75000000-0000-0000-0000-000000000002', null, null, 1,
+    'a1000000-0000-0000-0000-000000000006') as id`);
+  const [assignmentReplay] = await queryRows(`select public.assign_delivery('${warehouseDelivery.id}',
+    '30000000-0000-0000-0000-000000000001', '75000000-0000-0000-0000-000000000002', null, null, 1,
+    'a1000000-0000-0000-0000-000000000006') as id`);
+  assert.equal(assignmentReplay.id, assignment.id, "assignment replay survives the version change it caused");
+  const [handoff] = await queryRows(`select public.handoff_delivery('${warehouseDelivery.id}', 2,
+    '2026-09-12T10:30:00Z', 'a1000000-0000-0000-0000-000000000007') as id`);
+  const [handoffReplay] = await queryRows(`select public.handoff_delivery('${warehouseDelivery.id}', 2,
+    '2026-09-12T10:30:00Z', 'a1000000-0000-0000-0000-000000000007') as id`);
+  assert.equal(handoffReplay.id, handoff.id, "handoff replay does not move stock twice");
+  const [{ transit: transitAfterHandoff, warehouse: warehouseAfterHandoff }] = await queryRows(`select
+    (select sum(base_quantity_delta::numeric)::text from public.inventory_movement_read where delivery_id = '${warehouseDelivery.id}') as transit,
+    (select on_hand_base_quantity from public.warehouse_inventory_read where warehouse_id = '75000000-0000-0000-0000-000000000001' and material_id = '72000000-0000-0000-0000-000000000001') as warehouse`);
+  assert.deepEqual([transitAfterHandoff, warehouseAfterHandoff], ["600.000000", "400.000000"], "handoff transfers custody without changing total owned quantity");
+  await queryRows(`select public.mark_delivery_arrived('${warehouseDelivery.id}', 3, 'a1000000-0000-0000-0000-000000000008')`);
+  const [{ id: warehouseDeliveryLine }] = await queryRows(`select id from public.delivery_lines where delivery_id = '${warehouseDelivery.id}'`);
+  const [warehouseResult] = await queryRows(`select public.submit_delivery_result('${warehouseDelivery.id}', 'PARTIAL',
+    '[{"delivery_line_id":"${warehouseDeliveryLine}","actual_base_quantity":"500"}]'::jsonb,
+    'Chị Lan', 'Thiếu 100 kg trên xe', null, null, 4, 'a1000000-0000-0000-0000-000000000009') as id`);
+  const [warehouseVerification] = await queryRows(`select public.verify_delivery('${warehouseResult.id}',
+    '[{"delivery_line_id":"${warehouseDeliveryLine}","accepted_base_quantity":"480","billable_base_quantity":"470","billing_variance_reason":"Khách chỉ chấp nhận tính tiền 470 kg"}]'::jsonb,
+    5, 'a1000000-0000-0000-0000-000000000010') as id`);
+  const [warehouseVerificationReplay] = await queryRows(`select public.verify_delivery('${warehouseResult.id}',
+    '[{"delivery_line_id":"${warehouseDeliveryLine}","accepted_base_quantity":"480","billable_base_quantity":"470","billing_variance_reason":"Khách chỉ chấp nhận tính tiền 470 kg"}]'::jsonb,
+    5, 'a1000000-0000-0000-0000-000000000010') as id`);
+  assert.equal(warehouseVerificationReplay.id, warehouseVerification.id, "delivery verification replay does not duplicate AR/revenue/cost");
+  const [{ id: warehouseVerificationLine }] = await queryRows(`select id from public.delivery_verification_lines where delivery_verification_id = '${warehouseVerification.id}'`);
+  const [{ original_amount_vnd: warehouseAr }] = await queryRows(`select original_amount_vnd from public.receivable_obligations where delivery_verification_id = '${warehouseVerification.id}'`);
+  assert.equal(warehouseAr.toString(), "1410000", "billable quantity creates exact source-linked receivable");
+  const [{ amount_delta_vnd: warehouseCost }] = await queryRows(`select amount_delta_vnd from public.direct_cost_entries where delivery_verification_id = '${warehouseVerification.id}'`);
+  assert.equal(warehouseCost.toString(), "1200000", "accepted warehouse quantity records MWA cost once");
+
+  const [remainderCase] = await queryRows(`select public.open_return_case('${warehouseVerificationLine}', 'TRANSIT_REMAINDER', 100,
+    'Phần còn lại trả kho', null, 'a2000000-0000-0000-0000-000000000001') as id`);
+  await queryRows(`select public.resolve_return_case('${remainderCase.id}', 'RETURNED',
+    '75000000-0000-0000-0000-000000000001', 'Kho đã kiểm nhận phần còn lại', null, 1,
+    'a2000000-0000-0000-0000-000000000002')`);
+  const [lossCase] = await queryRows(`select public.open_return_case('${warehouseVerificationLine}', 'TRANSIT_LOSS', 20,
+    'Hao hụt có biên bản', null, 'a2000000-0000-0000-0000-000000000003') as id`);
+  await queryRows(`select public.resolve_return_case('${lossCase.id}', 'LOSS_APPROVED', null,
+    'Quản lý duyệt biên bản hao hụt', null, 1, 'a2000000-0000-0000-0000-000000000004')`);
+  const [{ transit: transitAfterResolution }] = await queryRows(`select coalesce(sum(base_quantity_delta), 0)::text as transit
+    from (select base_quantity_delta::numeric as base_quantity_delta from public.inventory_movement_read where delivery_id = '${warehouseDelivery.id}') movement`);
+  assert.equal(transitAfterResolution, "0.000000", "verified, returned, and lost quantities fully reconcile transit custody");
+
+  const [stockCount] = await queryRows(`select public.open_stock_count('20000000-0000-0000-0000-000000000001',
+    '75000000-0000-0000-0000-000000000001', now(), 'a3000000-0000-0000-0000-000000000001') as id`);
+  const [countLine] = await queryRows(`select public.record_stock_count_line('${stockCount.id}',
+    '72000000-0000-0000-0000-000000000001', 490, 2500, 'Thiếu 10 kg theo biên bản', null, 1,
+    'a3000000-0000-0000-0000-000000000002') as id`);
+  const [countLineReplay] = await queryRows(`select public.record_stock_count_line('${stockCount.id}',
+    '72000000-0000-0000-0000-000000000001', 490, 2500, 'Thiếu 10 kg theo biên bản', null, 1,
+    'a3000000-0000-0000-0000-000000000002') as id`);
+  assert.equal(countLineReplay.id, countLine.id, "count line replay survives count version increment");
+  await queryRows(`select public.approve_stock_count('${stockCount.id}', 2, 'a3000000-0000-0000-0000-000000000003')`);
+  const [{ on_hand_base_quantity: countedOnHand }] = await queryRows(`select on_hand_base_quantity from public.warehouse_inventory_read
+    where warehouse_id = '75000000-0000-0000-0000-000000000001' and material_id = '72000000-0000-0000-0000-000000000001'`);
+  assert.equal(countedOnHand, "490.000000", "stock count approval appends the exact variance movement");
+
+  await database.exec("reset role; update public.customers set credit_limit_vnd = 30000000 where id = '50000000-0000-0000-0000-000000000001'; set role authenticated");
+  await queryRows(`select public.confirm_sales_order('${overflowOrder.id}', 'a4000000-0000-0000-0000-000000000001')`);
+  await queryRows(`select public.confirm_purchase_order('${directPurchase.id}', 'a4000000-0000-0000-0000-000000000002')`);
+  const [{ count: movementCountBeforeDirect }] = await queryRows("select count(*)::int as count from public.inventory_movement_read");
+  const [supplierFulfillment] = await queryRows(`select public.verify_supplier_fulfillment('${directPurchase.id}',
+    '[{"purchase_order_line_id":"${(await queryRows(`select id from public.purchase_order_line_read where purchase_order_id = '${directPurchase.id}'`))[0].id}","supplier_quantity":"0.5"}]'::jsonb,
+    null, 'NCC-GIAO-001', 'a4000000-0000-0000-0000-000000000003') as id`);
+  const [supplierFulfillmentReplay] = await queryRows(`select public.verify_supplier_fulfillment('${directPurchase.id}',
+    '[{"purchase_order_line_id":"${(await queryRows(`select id from public.purchase_order_line_read where purchase_order_id = '${directPurchase.id}'`))[0].id}","supplier_quantity":"0.5"}]'::jsonb,
+    null, 'NCC-GIAO-001', 'a4000000-0000-0000-0000-000000000003') as id`);
+  assert.equal(supplierFulfillmentReplay.id, supplierFulfillment.id, "supplier fulfillment replay does not duplicate AP or direct cost");
+  const [{ id: directAllocation }] = await queryRows(`select id from public.supply_allocations where purchase_order_line_id in
+    (select id from public.purchase_order_line_read where purchase_order_id = '${directPurchase.id}') and supply_mode = 'SUPPLIER_DIRECT'`);
+  const [directDelivery] = await queryRows(`select public.create_delivery_from_allocation('${directAllocation}', 500,
+    current_date + 1, 'a4000000-0000-0000-0000-000000000004') as id`);
+  await queryRows(`select public.assign_delivery('${directDelivery.id}', null, null, 'Xe nhà cung cấp', '0900000000', 1,
+    'a4000000-0000-0000-0000-000000000005')`);
+  await queryRows(`select public.handoff_delivery('${directDelivery.id}', 2, '2026-09-12T11:00:00Z',
+    'a4000000-0000-0000-0000-000000000006')`);
+  await queryRows(`select public.mark_delivery_arrived('${directDelivery.id}', 3,
+    'a4000000-0000-0000-0000-000000000007')`);
+  const [{ id: directDeliveryLine }] = await queryRows(`select id from public.delivery_lines where delivery_id = '${directDelivery.id}'`);
+  const [directResult] = await queryRows(`select public.submit_delivery_result('${directDelivery.id}', 'PARTIAL',
+    '[{"delivery_line_id":"${directDeliveryLine}","actual_base_quantity":"450"}]'::jsonb,
+    'Anh Minh', 'Khách nhận 450 kg', null, null, 4, 'a4000000-0000-0000-0000-000000000008') as id`);
+  const [directVerification] = await queryRows(`select public.verify_delivery('${directResult.id}',
+    '[{"delivery_line_id":"${directDeliveryLine}","accepted_base_quantity":"430","billable_base_quantity":"420","billing_variance_reason":"Khách duyệt tính tiền 420 kg"}]'::jsonb,
+    5, 'a4000000-0000-0000-0000-000000000009') as id`);
+  const [{ count: movementCountAfterDirect }] = await queryRows("select count(*)::int as count from public.inventory_movement_read");
+  assert.equal(movementCountAfterDirect, movementCountBeforeDirect, "supplier-direct fulfillment and delivery create no fake inventory movement");
+  const [directFacts] = await queryRows(`select
+    (select original_amount_vnd from public.payable_obligations where supplier_fulfillment_id = '${supplierFulfillment.id}') as supplier_payable,
+    (select original_amount_vnd from public.receivable_obligations where delivery_verification_id = '${directVerification.id}') as customer_receivable`);
+  assert.deepEqual([directFacts.supplier_payable.toString(), directFacts.customer_receivable.toString()], ["1250000", "1260000"], "supplier and customer verified quantities remain independent facts");
+
+  let movementMutationRejected = false;
+  try { await database.exec("reset role; update public.inventory_movements set base_quantity_delta = 1 where movement_type = 'PURCHASE_RECEIPT'"); } catch { movementMutationRejected = true; }
+  assert.equal(movementMutationRejected, true, "inventory movement ledger is append-only");
+
+  console.info("Isolated PostgreSQL checks passed: R2 access through R6 inventory/delivery golden-flow invariants.");
 } finally {
   await database.close();
 }

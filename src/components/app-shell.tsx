@@ -13,6 +13,8 @@ const navigation = {
     { href: "/admin/quotations", label: "Báo giá", icon: FileText, permission: "quotation.read" },
     { href: "/admin/orders", label: "Đơn bán", icon: ShoppingCart, permission: "orders.read" },
     { href: "/admin/purchase-orders", label: "Đơn mua", icon: PackageSearch, permission: "purchasing.read" },
+    { href: "/admin/inventory", label: "Tồn kho", icon: Warehouse, permission: "inventory.read" },
+    { href: "/admin/dispatch", label: "Điều phối", icon: ClipboardCheck, permission: "delivery.read" },
     { href: "/admin/deliveries", label: "Giao hàng", icon: Truck, permission: "delivery.read" },
     { href: "/admin/debts", label: "Công nợ", icon: WalletCards, permission: "finance.ar.read" },
     { href: "/admin/customers", label: "Khách hàng", icon: UsersRound, permission: "customers.read" },

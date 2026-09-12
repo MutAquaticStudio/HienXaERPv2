@@ -40,7 +40,7 @@ Không cần copy requirement text vào đây.
 ```yaml
 DOC_LOCK: VALID
 DOCSET_FINGERPRINT: GIT_TREE:cbe9de71d8dc3ea607f77d50e6f0d092afc52696
-ACTIVE_CONTEXT_PACK: PLAN-CTX-BASE+PLAN-CTX-R5
+ACTIVE_CONTEXT_PACK: PLAN-CTX-BASE + PLAN-CTX-R6
 INSTRUCTION_AUDIT_REF: R0-I-001 VALID
 DEPLOY_GUARD_REF: R0-D-001 VALID
 SCHEMA_SNAPSHOT_REF: R3-S-001 VALID_ISOLATED
@@ -74,7 +74,7 @@ Theo báo cáo người dùng, cleanup không sửa dữ liệu/Storage và chư
 ```yaml
 DOCSET: HX-V2-DOCSET-4.2
 CURRENT_PHASE: see tasks.md
-APPLICATION_V2_DOMAIN_CODE: R5_PURCHASING_SOURCING_IMPLEMENTED
+APPLICATION_V2_DOMAIN_CODE: R6_INVENTORY_DELIVERY_IMPLEMENTED
 PRODUCTION_AUDIT: EMPTY_BASELINE_OWNER_REPORTED
 ACCEPTANCE: NOT_REQUESTED
 ```
@@ -284,3 +284,50 @@ Chỉ append khi acceptance.md được mở:
 | — | — | — | — | NOT_REQUESTED | — |
 
 # KẾT THÚC implementation.md
+
+## R6 — Inventory & Delivery checkpoint
+
+STATUS:
+IMPLEMENTED
+
+CONTRACT_REFS:
+- PLAN-CTX-R6
+- SPEC-170
+- SPEC-180
+- SPEC-FIN-002
+- SPEC-FIN-003
+- SPEC-440
+- SPEC-DATA-001
+- SPEC-OPS-001
+- SPEC-OPS-002
+- SPEC-OPS-003
+- UX-360
+- UX-370
+- UX-380
+- UX-390
+- UX-FLOW-006
+- UX-FLOW-007
+- UX-FLOW-011
+
+IMPLEMENTATION_EVIDENCE:
+- Append-only inventory movement ledger with derived on-hand, active reservation, and available quantities.
+- Stock-count cutoff, line capture, approval, evidence reference, and append-only variance adjustment.
+- Purchase receipt with Moving Weighted Average and AP source; direct supplier fulfillment remains independent from warehouse inventory.
+- Delivery state machine, assignments, handoff/transit custody, field result, independent verification, returns/remainders/loss handling.
+- Delivery verification creates AR, revenue, and direct cost from explicit source records in one transaction with idempotency.
+- Private evidence staging, Storage upload, checksum finalization, hosted object-existence guard, and audience policy.
+- Inventory, stock-count, dispatch, delivery, purchase receipt, and source-linked order interfaces.
+- Cancellation guards prevent commercial source documents from being cancelled after downstream fulfillment history exists.
+
+CHECK_EVIDENCE:
+- TypeScript: PASS
+- Lint: PASS
+- Unit regression: PASS (7 files, 16 tests)
+- Isolated PostgreSQL migration and R2-R6 golden flow: PASS
+- Production build: PASS
+- True multi-session reservation/count race: NOT_RUN_NO_CONTAINER
+- Container-backed pgTAP: NOT_RUN_NO_CONTAINER
+- Acceptance verification: NOT_REQUESTED
+
+PRODUCTION:
+NOT_TOUCHED
