@@ -1,6 +1,6 @@
 "use client";
 
-import { Boxes, ClipboardCheck, Factory, LayoutDashboard, LogOut, Menu, PackageSearch, ShieldCheck, ShoppingCart, Truck, UserRound, UsersRound, WalletCards, Warehouse, X } from "lucide-react";
+import { Boxes, ClipboardCheck, Factory, FileText, LayoutDashboard, LogOut, Menu, PackageSearch, ShieldCheck, ShoppingCart, Truck, UserRound, UsersRound, WalletCards, Warehouse, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -10,6 +10,7 @@ type Surface = "admin" | "work" | "customer";
 const navigation = {
   admin: [
     { href: "/admin", label: "Tổng quan", icon: LayoutDashboard, exact: true, permission: "dashboard.read" },
+    { href: "/admin/quotations", label: "Báo giá", icon: FileText, permission: "quotation.read" },
     { href: "/admin/orders", label: "Đơn bán", icon: ShoppingCart, permission: "orders.read" },
     { href: "/admin/purchase-orders", label: "Đơn mua", icon: PackageSearch, permission: "purchasing.read" },
     { href: "/admin/deliveries", label: "Giao hàng", icon: Truck, permission: "delivery.read" },
@@ -26,6 +27,7 @@ const navigation = {
   ],
   customer: [
     { href: "/customer", label: "Tài khoản", icon: UserRound, exact: true },
+    { href: "/customer/quotations", label: "Báo giá", icon: FileText },
     { href: "/customer/orders", label: "Đơn của tôi", icon: ShoppingCart },
     { href: "/customer/debts", label: "Công nợ", icon: WalletCards },
   ],

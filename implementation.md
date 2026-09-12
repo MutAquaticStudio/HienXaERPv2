@@ -74,7 +74,7 @@ Theo báo cáo người dùng, cleanup không sửa dữ liệu/Storage và chư
 ```yaml
 DOCSET: HX-V2-DOCSET-4.2
 CURRENT_PHASE: see tasks.md
-APPLICATION_V2_DOMAIN_CODE: R1_BASELINE_IMPLEMENTED
+APPLICATION_V2_DOMAIN_CODE: R4_SALES_IMPLEMENTED
 PRODUCTION_AUDIT: EMPTY_BASELINE_OWNER_REPORTED
 ACCEPTANCE: NOT_REQUESTED
 ```
@@ -89,11 +89,11 @@ Chỉ điền khi R0/R1 xác minh thật:
 | package_manager | `pnpm@11.24.0` | R1-GATE-001 | 2026-09-12 |
 | app_routes | `src/app` | R1-GATE-001 | 2026-09-12 |
 | module_root | `src/modules` | R1-GATE-001 | 2026-09-12 |
-| db_migration_path | — | NOT_VERIFIED | — |
-| unit_command | — | NOT_VERIFIED | — |
-| db_test_command | — | NOT_VERIFIED | — |
-| typecheck_command | — | NOT_VERIFIED | — |
-| build_command | — | NOT_VERIFIED | — |
+| db_migration_path | `supabase/migrations` | R4-GATE-001 | 2026-09-12 |
+| unit_command | `pnpm test` | R4-GATE-001 | 2026-09-12 |
+| db_test_command | `pnpm db:test:isolated` | R4-DB-001 | 2026-09-12 |
+| typecheck_command | `pnpm typecheck` | R4-GATE-001 | 2026-09-12 |
+| build_command | `pnpm build` | R4-GATE-001 | 2026-09-12 |
 
 ## R0 evidence
 
@@ -129,6 +129,17 @@ Chỉ điền khi R0/R1 xác minh thật:
 - Production: `NOT_TOUCHED`; all schema/data execution used an in-memory isolated PostgreSQL runtime.
 - Owner override: the deletion supersedes the preservation assumptions in `SPEC-PRODUCT-004` and `SPEC-MIG-001` for the removed baseline. No Spec file was silently rewritten.
 
+## R4 evidence
+
+- `R4-DB-001` (`COMMAND_OUTPUT`): CLI migration `20260912105455_sales_quotes_orders.sql` ran after R2/R3 on isolated PostgreSQL. Quote/revision/acceptance, SO/lines, command receipts, credit linkage, RLS/grants, immutable sent revision guards, and security-definer commands are present.
+- `R4-IDEM-001` (`DB`): same-key replay and changed-payload conflict passed for document creation; exact revision send/accept/new revision/from-quote, no automatic SO on acceptance, no AR on SO confirm, and cancellation credit release passed.
+- `R4-SEC-001` (`DB+SOURCE_OBSERVED`): price/UOM snapshots are recomputed and checked server-side; all pricing scopes are validated in the DB command; Finance Contact portal acceptance uses the same exact-revision command while Receiver remains view-only.
+- `R4-UI-001` (`SOURCE_OBSERVED`): live list/create/detail screens replace Sales MOCK pages; quotation actions are state-aware, three SO state axes are shown separately, and action feedback preserves the next operational context.
+- `R4-PDF-001` (`COMMAND_OUTPUT`): Noto Sans Vietnamese WOFF2 embedded successfully in a generated PDF. The API route generates the requested revision directly and does not claim a Storage artifact upload.
+- `R4-GATE-001` (`COMMAND_OUTPUT`): lint, typecheck, 16 unit regression checks, isolated DB checks, and production build passed; the route table includes internal quote/order, customer quotation, and revision PDF routes.
+- Residual verification: true two-session credit contention and Supabase pgTAP remain `NOT_RUN_NO_CONTAINER`; no RACE PASS is claimed. Sales usability/acceptance QA is `NOT_REQUESTED`.
+- Production: `NOT_TOUCHED`; all DB execution remained in-memory and no Cloud Supabase project or deployment was created.
+
 DOC_CONFORMANCE:
 scope=R0
 docset=HX-V2-DOCSET-4.2
@@ -136,13 +147,20 @@ contract_refs=TASK-R0-01..06+PLAN-CTX-R0
 result=PASS
 deviation=OWNER_OVERRIDE_SPEC-PRODUCT-004_SPEC-MIG-001
 
+DOC_CONFORMANCE:
+scope=R4
+docset=HX-V2-DOCSET-4.2
+contract_refs=TASK-R4-01..06+PLAN-CTX-R4
+result=PASS
+deviation=NONE
+
 # IMP-040 — Module registry
 
 Chỉ thêm module khi source thật tồn tại:
 
 | Module | Paths | DB objects | Public commands/queries | State | Evidence |
 |---|---|---|---|---|---|
-| — | — | — | — | NOT_IMPLEMENTED | — |
+| Sales | `src/modules/sales`, `src/app/admin/orders`, `src/app/admin/quotations`, `src/app/customer/quotations` | quotation/revision/acceptance, sales_order/lines, command_receipts | create/send/accept/revise/confirm/cancel/from-quote; list/detail/PDF | IMPLEMENTED_LOCAL | R4-DB-001,R4-UI-001 |
 
 # IMP-050 — Verification registry
 
@@ -150,7 +168,7 @@ Một row cho một lần kiểm có giá trị tái dùng:
 
 | ID | Scope | Tree/diff | Command/environment | Result | Log/artifact |
 |---|---|---|---|---|---|
-| — | — | — | — | NOT_RUN | — |
+| R4-GATE-001 | R4 Sales | local working tree | lint + typecheck + 16 unit + isolated PostgreSQL + build | PASS_WITH_LIMITATION | true multi-session race NOT_RUN_NO_CONTAINER |
 
 Không tạo verification framework riêng; bảng này chỉ là sổ tham chiếu.
 
