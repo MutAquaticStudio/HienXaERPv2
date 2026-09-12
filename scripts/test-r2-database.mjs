@@ -42,7 +42,7 @@ try {
   assert.equal(rlsCount, 9, "RLS must protect every R2 table");
 
   const [{ count: permissionCount }] = await queryRows("select count(*)::int as count from public.permissions");
-  assert.equal(permissionCount, 22, "action permissions must be explicit");
+  assert.equal(permissionCount, 27, "action permissions must be explicit");
 
   await database.exec(`
     insert into auth.users(id) values
@@ -67,7 +67,15 @@ try {
       ('40000000-0000-0000-0000-000000000001', 'quotation.read'),
       ('40000000-0000-0000-0000-000000000001', 'quotation.create'),
       ('40000000-0000-0000-0000-000000000001', 'quotation.send'),
-      ('40000000-0000-0000-0000-000000000001', 'quotation.accept');
+      ('40000000-0000-0000-0000-000000000001', 'quotation.accept'),
+      ('40000000-0000-0000-0000-000000000001', 'purchasing.read'),
+      ('40000000-0000-0000-0000-000000000001', 'purchasing.create'),
+      ('40000000-0000-0000-0000-000000000001', 'purchasing.confirm'),
+      ('40000000-0000-0000-0000-000000000001', 'purchasing.cancel'),
+      ('40000000-0000-0000-0000-000000000001', 'purchasing.price.read'),
+      ('40000000-0000-0000-0000-000000000001', 'purchasing.price.manage'),
+      ('40000000-0000-0000-0000-000000000001', 'suppliers.read'),
+      ('40000000-0000-0000-0000-000000000001', 'catalog.read');
     insert into public.employee_branch_access(employee_id, branch_id, role_id) values
       ('30000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', '40000000-0000-0000-0000-000000000001'),
       ('30000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000002', '40000000-0000-0000-0000-000000000001');
@@ -134,6 +142,12 @@ try {
     update public.customers set credit_limit_vnd = 10000000 where id = '50000000-0000-0000-0000-000000000001';
     insert into public.customer_sites(id, customer_id, code, name, address_text)
       values ('73000000-0000-0000-0000-000000000001', '50000000-0000-0000-0000-000000000001', 'SITE_A', 'Công trình A', 'Hà Nội');
+    insert into public.suppliers(id, branch_id, code, name, address_text)
+      values ('74000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', 'SUP_A', 'Nhà cung cấp A', 'Hải Dương');
+    insert into public.warehouses(id, branch_id, code, name, address_text)
+      values ('75000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', 'WH_A', 'Kho trung tâm', 'Hà Nội');
+    insert into public.purchase_price_rules(id, branch_id, supplier_id, material_id, purchase_uom_id, unit_cost_vnd, version, source_type, effective_from, created_by)
+      values ('76000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', '74000000-0000-0000-0000-000000000001', '72000000-0000-0000-0000-000000000001', '70000000-0000-0000-0000-000000000002', 2500000, 1, 'CONTRACT', '2026-01-01', '10000000-0000-0000-0000-000000000001');
   `);
 
   const [{ conversion_ok: conversionOk }] = await queryRows(`select (2::numeric * numerator / denominator) = 100::numeric as conversion_ok
@@ -246,7 +260,79 @@ try {
   const [{ state: portalAcceptedState }] = await queryRows(`select state from public.quotation_revisions where id = '${portalRevisionId}'`);
   assert.equal(portalAcceptedState, "ACCEPTED", "finance customer membership can accept the exact portal revision");
 
-  console.info("Isolated PostgreSQL checks passed: R2 access, R3 catalog/credit, and R4 quotation/order invariants.");
+  await database.exec("select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000001', false)");
+  const purchaseLineObject = { material_id: "72000000-0000-0000-0000-000000000001", ordered_uom_id: "70000000-0000-0000-0000-000000000002", quantity: "1", conversion_numerator: "1000", conversion_denominator: "1", rounding_mode: "HALF_UP", unit_cost_vnd: "2500000", purchase_price_rule_id: "76000000-0000-0000-0000-000000000001", purchase_price_rule_version: 1, price_source_type: "CONTRACT" };
+  const purchaseLine = JSON.stringify([purchaseLineObject]);
+  const createPurchaseSql = (operationId) => `select public.create_purchase_order_draft(
+    '20000000-0000-0000-0000-000000000001', '74000000-0000-0000-0000-000000000001',
+    '75000000-0000-0000-0000-000000000001', current_date + 2, 'Giao tại kho',
+    '${purchaseLine}'::jsonb, '${operationId}') as id`;
+  const [warehousePurchase] = await queryRows(createPurchaseSql("93000000-0000-0000-0000-000000000001"));
+  const [warehousePurchaseReplay] = await queryRows(createPurchaseSql("93000000-0000-0000-0000-000000000001"));
+  assert.equal(warehousePurchaseReplay.id, warehousePurchase.id, "warehouse PO draft must replay idempotently");
+  await queryRows(`select public.confirm_purchase_order('${warehousePurchase.id}', '93000000-0000-0000-0000-000000000002')`);
+  await database.exec("reset role");
+  const [{ count: apAfterPurchaseConfirm }] = await queryRows("select count(*)::int as count from public.payable_obligations");
+  assert.equal(apAfterPurchaseConfirm, 0, "PO confirmation must not create payable obligation");
+  await database.exec("set role authenticated");
+
+  const [{ id: sourceSalesLineId }] = await queryRows(`select id from public.sales_order_lines where sales_order_id = '${overflowOrder.id}'`);
+  const halfPurchaseLine = JSON.stringify({ ...purchaseLineObject, quantity: "0.5" });
+  const createDirectSql = (operationId) => `select public.create_direct_purchase_from_sales_line(
+    '${sourceSalesLineId}', '74000000-0000-0000-0000-000000000001', 0.5,
+    '${halfPurchaseLine}'::jsonb, current_date + 2, '${operationId}') as id`;
+  const [directPurchase] = await queryRows(createDirectSql("94000000-0000-0000-0000-000000000001"));
+  const [directPurchaseReplay] = await queryRows(createDirectSql("94000000-0000-0000-0000-000000000001"));
+  assert.equal(directPurchaseReplay.id, directPurchase.id, "direct PO retry must not create a second PO or allocation");
+  const [{ count: directAllocationCount }] = await queryRows(`select count(*)::int as count from public.supply_allocations where sales_order_line_id = '${sourceSalesLineId}' and supply_mode = 'SUPPLIER_DIRECT'`);
+  assert.equal(directAllocationCount, 1, "direct PO creates one explicit sales-line allocation");
+
+  let splitOverflowRejected = false;
+  try {
+    await queryRows(`select public.upsert_supply_allocation('${sourceSalesLineId}', 'WAREHOUSE', null,
+      '75000000-0000-0000-0000-000000000001', 600, null, null,
+      '94000000-0000-0000-0000-000000000002')`);
+  } catch { splitOverflowRejected = true; }
+  assert.equal(splitOverflowRejected, true, "split allocations cannot exceed the sales line need");
+  const [warehouseAllocation] = await queryRows(`select public.upsert_supply_allocation('${sourceSalesLineId}', 'WAREHOUSE', null,
+    '75000000-0000-0000-0000-000000000001', 400, null, null,
+    '94000000-0000-0000-0000-000000000003') as id`);
+  await queryRows(`select public.upsert_supply_allocation('${sourceSalesLineId}', 'WAREHOUSE', null,
+    '75000000-0000-0000-0000-000000000001', 450, '${warehouseAllocation.id}', 1,
+    '94000000-0000-0000-0000-000000000004')`);
+  let staleAllocationRejected = false;
+  try {
+    await queryRows(`select public.upsert_supply_allocation('${sourceSalesLineId}', 'WAREHOUSE', null,
+      '75000000-0000-0000-0000-000000000001', 400, '${warehouseAllocation.id}', 1,
+      '94000000-0000-0000-0000-000000000005')`);
+  } catch { staleAllocationRejected = true; }
+  assert.equal(staleAllocationRejected, true, "allocation update must reject a stale expected version");
+
+  const [{ id: warehousePurchaseLineId }] = await queryRows(`select id from public.purchase_order_line_read where purchase_order_id = '${warehousePurchase.id}'`);
+  const [{ id: secondSalesLineId }] = await queryRows(`select id from public.sales_order_lines where sales_order_id = '${fromQuoteOrder.id}'`);
+  await queryRows(`select public.upsert_supply_allocation('${secondSalesLineId}', 'SUPPLIER_TO_WAREHOUSE',
+    '${warehousePurchaseLineId}', '75000000-0000-0000-0000-000000000001', 300, null, null,
+    '95000000-0000-0000-0000-000000000001')`);
+  const [{ count: warehouseSupplyCount }] = await queryRows(`select count(*)::int as count from public.supply_allocations where sales_order_line_id = '${secondSalesLineId}' and supply_mode = 'SUPPLIER_TO_WAREHOUSE'`);
+  assert.equal(warehouseSupplyCount, 1, "supplier-to-warehouse mode links exact PO line, warehouse, and sales line");
+
+  const linkedPurchaseLine = JSON.stringify(purchaseLineObject);
+  const linkedSalesLine = JSON.stringify(JSON.parse(pricedLine)[0]);
+  const linkedDraftSql = (operationId) => `select public.create_linked_direct_drafts(
+    '20000000-0000-0000-0000-000000000001', '74000000-0000-0000-0000-000000000001',
+    '50000000-0000-0000-0000-000000000001', '73000000-0000-0000-0000-000000000001',
+    '${linkedPurchaseLine}'::jsonb, '${linkedSalesLine}'::jsonb, current_date + 4,
+    'Hai draft liên kết', '${operationId}') as id`;
+  const [linkedPurchase] = await queryRows(linkedDraftSql("96000000-0000-0000-0000-000000000001"));
+  const [linkedPurchaseReplay] = await queryRows(linkedDraftSql("96000000-0000-0000-0000-000000000001"));
+  assert.equal(linkedPurchaseReplay.id, linkedPurchase.id, "linked SO/PO draft use-case must replay one pair");
+  const [{ count: linkedPairCount }] = await queryRows(`select count(*)::int as count
+    from public.purchase_orders p join public.purchase_order_line_read pl on pl.purchase_order_id = p.id
+    join public.sales_order_lines sl on sl.id = pl.linked_sales_order_line_id
+    where p.id = '${linkedPurchase.id}' and p.source_sales_order_id = sl.sales_order_id`);
+  assert.equal(linkedPairCount, 1, "linked draft use-case keeps explicit SO, sales line, PO, and purchase line FKs");
+
+  console.info("Isolated PostgreSQL checks passed: R2 access, R3 catalog/credit, R4 sales, and R5 purchasing/sourcing invariants.");
 } finally {
   await database.close();
 }

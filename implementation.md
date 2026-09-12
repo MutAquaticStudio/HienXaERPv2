@@ -40,7 +40,7 @@ Không cần copy requirement text vào đây.
 ```yaml
 DOC_LOCK: VALID
 DOCSET_FINGERPRINT: GIT_TREE:cbe9de71d8dc3ea607f77d50e6f0d092afc52696
-ACTIVE_CONTEXT_PACK: PLAN-CTX-BASE+PLAN-CTX-R3
+ACTIVE_CONTEXT_PACK: PLAN-CTX-BASE+PLAN-CTX-R5
 INSTRUCTION_AUDIT_REF: R0-I-001 VALID
 DEPLOY_GUARD_REF: R0-D-001 VALID
 SCHEMA_SNAPSHOT_REF: R3-S-001 VALID_ISOLATED
@@ -74,10 +74,58 @@ Theo báo cáo người dùng, cleanup không sửa dữ liệu/Storage và chư
 ```yaml
 DOCSET: HX-V2-DOCSET-4.2
 CURRENT_PHASE: see tasks.md
-APPLICATION_V2_DOMAIN_CODE: R4_SALES_IMPLEMENTED
+APPLICATION_V2_DOMAIN_CODE: R5_PURCHASING_SOURCING_IMPLEMENTED
 PRODUCTION_AUDIT: EMPTY_BASELINE_OWNER_REPORTED
 ACCEPTANCE: NOT_REQUESTED
 ```
+
+## R5_IMPLEMENTATION_EVIDENCE
+
+```yaml
+STATUS: IMPLEMENTED
+SCOPE: PURCHASING_AND_SOURCING
+CONTRACT_REFS: SPEC-160,SPEC-PUR-001,SPEC-PUR-002,SPEC-SRC-001,SPEC-SRC-002,SPEC-SRC-003,SPEC-JOURNEY-002,SPEC-JOURNEY-003,SPEC-JOURNEY-004,CONFIG-002,UX-320,UX-330,UX-FLOW-003,UX-FLOW-009
+RECEIVING_AND_AP: DEFERRED_TO_R6
+TRUE_MULTI_SESSION_ALLOCATION_RACE: NOT_RUN_NO_CONTAINER
+ACCEPTANCE: NOT_RUN_NOT_REQUESTED
+PRODUCTION: NOT_TOUCHED
+```
+
+- Purchase order drafts persist supplier, destination, dates, line conversion, and immutable purchase-price snapshots.
+- Confirm and cancel commands are idempotent; PO confirmation does not create accounts payable.
+- `WAREHOUSE`, `SUPPLIER_DIRECT`, and `SUPPLIER_TO_WAREHOUSE` allocations use explicit sales-line, purchase-line, and warehouse links.
+- Allocation capacity and optimistic versions prevent over-allocation and stale updates.
+- Both direct-entry paths create linked drafts atomically without auto-confirming either side; sales price remains owned by the sales order.
+- Purchase-cost reads are permission-aware and line reads enforce branch purchasing access.
+- Internal purchase list/create/detail, sales sourcing status, supplier purchase history, and supplier quick-create are implemented.
+
+### R5 module registry delta
+
+| Module | State | Contract |
+|---|---|---|
+| Purchasing and sourcing | IMPLEMENTED | SPEC-PUR-001..002; SPEC-SRC-001..003 |
+
+### R5 phase gate
+
+| Check | Result |
+|---|---|
+| Typecheck | PASS |
+| Lint | PASS |
+| Unit tests | PASS: 16 |
+| Isolated PostgreSQL | PASS: R2-R5 invariants |
+| Production build | PASS |
+| True multi-session allocation race | NOT_RUN_NO_CONTAINER |
+| Acceptance | NOT_RUN_NOT_REQUESTED |
+| Production | NOT_TOUCHED |
+
+### R5 conformance
+
+- Purchase prices are server-resolved or require an authorized manual override with a reason.
+- Direct sourcing creates no fake warehouse receipt or issue.
+- Split allocations cannot exceed the sales-line requirement.
+- No automatic confirmation occurs in either direct-entry path.
+- Performance thresholds remain referenced only from `Spec.md`.
+- Checks followed targeted task coverage and the R5 phase gate; there is no standalone smoke-test layer.
 
 # IMP-030 — Path & command registry
 
