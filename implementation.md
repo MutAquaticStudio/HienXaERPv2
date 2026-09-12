@@ -40,10 +40,10 @@ Không cần copy requirement text vào đây.
 ```yaml
 DOC_LOCK: VALID
 DOCSET_FINGERPRINT: GIT_TREE:cbe9de71d8dc3ea607f77d50e6f0d092afc52696
-ACTIVE_CONTEXT_PACK: PLAN-CTX-BASE+PLAN-CTX-R2
+ACTIVE_CONTEXT_PACK: PLAN-CTX-BASE+PLAN-CTX-R3
 INSTRUCTION_AUDIT_REF: R0-I-001 VALID
 DEPLOY_GUARD_REF: R0-D-001 VALID
-SCHEMA_SNAPSHOT_REF: R2-S-001 VALID_ISOLATED
+SCHEMA_SNAPSHOT_REF: R3-S-001 VALID_ISOLATED
 SECURITY_SNAPSHOT_REF: R2-SEC-001 VALID_ISOLATED
 DATA_BASELINE_REF: R0-DATA-001 VALID_EMPTY_OWNER_REPORTED
 COMMAND_MAP_REF: NONE
@@ -117,6 +117,16 @@ Chỉ điền khi R0/R1 xác minh thật:
 - `R2-GATE-001` (`COMMAND_OUTPUT`): lint, typecheck, 9 unit checks, isolated DB checks, and production build passed; 23 routes emitted. Local DB URL passed and cloud-shaped URL was rejected.
 - Residual verification: `supabase test db` / pgTAP was authored but not executed because Docker and Podman are absent. This is not recorded as a pgTAP PASS; equivalent migration and RLS paths ran in isolated PostgreSQL.
 - Production: `NOT_TOUCHED`; runtime config rejects Cloud Supabase unless `HX_CLOUD_RUNTIME_APPROVED=true` is supplied by a later human gate.
+
+## R3 evidence
+
+- `R3-S-001` (`COMMAND_OUTPUT`): the CLI-generated catalog/CRM/pricing/credit migration ran after R2 on isolated PostgreSQL. Material/UOM rational conversion, branch resources, Customer/Site, Supplier/contact, pricing versions, opening-source obligations, immutable adjustment ledgers, and credit commitments were created with FK/check/unique/RLS controls.
+- `R3-PRICE-001` (`UNIT`): deterministic precedence, effective-window filtering, latest version selection, manual-approved metadata, and immutable old price snapshots passed targeted tests.
+- `R3-CREDIT-001` (`DB+UNIT`): credit exposure formula, missing-limit/overflow denial, same-source idempotent replay, over-limit reservation rejection under customer-row lock, and append-only obligation rejection passed. Payment/Allocation/Advance/Reversal are intentionally absent until R7.
+- `R3-UI-001` (`SOURCE_OBSERVED`): `/admin/customers/[id]` is a permission-aware read composition over profile/sites/pricing/AR; `/admin/suppliers` and `/admin/products` use minimal DTOs. Sensitive finance, pricing, and internal-note fields are not requested without their permission.
+- `R3-GATE-001` (`COMMAND_OUTPUT`): lint, typecheck, 16 unit checks, isolated DB checks, and production build passed; 25 routes emitted.
+- Residual verification: true two-session credit contention and Supabase pgTAP remain `NOT_RUN_NO_CONTAINER`; no race PASS is claimed. The DB helper uses `SELECT ... FOR UPDATE` on the shared customer row and was checked sequentially for source replay/overflow only.
+- Production: `NOT_TOUCHED`; all schema/data execution used an in-memory isolated PostgreSQL runtime.
 - Owner override: the deletion supersedes the preservation assumptions in `SPEC-PRODUCT-004` and `SPEC-MIG-001` for the removed baseline. No Spec file was silently rewritten.
 
 DOC_CONFORMANCE:

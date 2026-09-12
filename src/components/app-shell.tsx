@@ -1,6 +1,6 @@
 "use client";
 
-import { ClipboardCheck, LayoutDashboard, LogOut, Menu, PackageSearch, ShieldCheck, ShoppingCart, Truck, UserRound, UsersRound, WalletCards, Warehouse, X } from "lucide-react";
+import { Boxes, ClipboardCheck, Factory, LayoutDashboard, LogOut, Menu, PackageSearch, ShieldCheck, ShoppingCart, Truck, UserRound, UsersRound, WalletCards, Warehouse, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -15,6 +15,8 @@ const navigation = {
     { href: "/admin/deliveries", label: "Giao hàng", icon: Truck, permission: "delivery.read" },
     { href: "/admin/debts", label: "Công nợ", icon: WalletCards, permission: "finance.ar.read" },
     { href: "/admin/customers", label: "Khách hàng", icon: UsersRound, permission: "customers.read" },
+    { href: "/admin/suppliers", label: "Nhà cung cấp", icon: Factory, permission: "suppliers.read" },
+    { href: "/admin/products", label: "Vật tư", icon: Boxes, permission: "catalog.read" },
     { href: "/admin/access", label: "Nhân viên & quyền", icon: ShieldCheck, permission: "roles.manage" },
   ],
   work: [

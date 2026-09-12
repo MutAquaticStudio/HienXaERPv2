@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { PGlite } from "@electric-sql/pglite";
 import { pgcrypto } from "@electric-sql/pglite/contrib/pgcrypto";
 
-const migrationUrl = new URL("../supabase/migrations/20260912101030_identity_access.sql", import.meta.url);
-const migration = await readFile(migrationUrl, "utf8");
+const migrationDirectory = new URL("../supabase/migrations/", import.meta.url);
+const migrationFiles = (await readdir(migrationDirectory)).filter((name) => name.endsWith(".sql")).sort();
+const migration = (await Promise.all(migrationFiles.map((name) => readFile(new URL(name, migrationDirectory), "utf8")))).join("\n");
 const database = await PGlite.create({ extensions: { pgcrypto } });
 
 async function queryRows(sql) {
@@ -41,7 +42,7 @@ try {
   assert.equal(rlsCount, 9, "RLS must protect every R2 table");
 
   const [{ count: permissionCount }] = await queryRows("select count(*)::int as count from public.permissions");
-  assert.equal(permissionCount, 9, "action permissions must be explicit");
+  assert.equal(permissionCount, 17, "action permissions must be explicit");
 
   await database.exec(`
     insert into auth.users(id) values
@@ -106,7 +107,72 @@ try {
   const portalCustomers = await queryRows("select code from public.customers order by code");
   assert.deepEqual(portalCustomers.map((row) => row.code), ["CUS_A"], "customer membership must not cross customer scope");
 
-  console.info("R2 isolated PostgreSQL checks passed: schema, constraints, RLS, cross-scope denial, command denial.");
+  await database.exec(`
+    reset role;
+    insert into public.units_of_measure(id, code, name, symbol, decimal_scale) values
+      ('70000000-0000-0000-0000-000000000001', 'kg', 'Kilôgam', 'kg', 3),
+      ('70000000-0000-0000-0000-000000000002', 'ton', 'Tấn', 'tấn', 3),
+      ('70000000-0000-0000-0000-000000000003', 'bag', 'Bao', 'bao', 0);
+    insert into public.material_groups(id, code, name) values
+      ('71000000-0000-0000-0000-000000000001', 'CEMENT', 'Xi măng');
+    insert into public.materials(id, group_id, code, name, base_uom_id, specification) values
+      ('72000000-0000-0000-0000-000000000001', '71000000-0000-0000-0000-000000000001', 'CEMENT_A', 'Xi măng A', '70000000-0000-0000-0000-000000000001', 'Bao 50 kg');
+    insert into public.material_uom_conversions(material_id, from_uom_id, to_uom_id, numerator, denominator, conversion_type)
+      values ('72000000-0000-0000-0000-000000000001', '70000000-0000-0000-0000-000000000003', '70000000-0000-0000-0000-000000000001', 50, 1, 'PACKAGING');
+    insert into public.pricing_rules(branch_id, scope_type, material_id, price_uom_id, unit_price_vnd, version, source_type, effective_from, created_by)
+      values ('20000000-0000-0000-0000-000000000001', 'DEFAULT', '72000000-0000-0000-0000-000000000001', '70000000-0000-0000-0000-000000000002', 3000000, 1, 'LIST', '2026-01-01', '10000000-0000-0000-0000-000000000001');
+    update public.customers set credit_limit_vnd = 10000000 where id = '50000000-0000-0000-0000-000000000001';
+  `);
+
+  const [{ conversion_ok: conversionOk }] = await queryRows(`select (2::numeric * numerator / denominator) = 100::numeric as conversion_ok
+    from public.material_uom_conversions
+    where material_id = '72000000-0000-0000-0000-000000000001' and from_uom_id = '70000000-0000-0000-0000-000000000003'`);
+  assert.equal(conversionOk, true, "packaging conversion keeps decimal precision");
+
+  let vehicleSettlementRejected = false;
+  try {
+    await database.exec(`insert into public.material_uom_conversions(material_id, from_uom_id, to_uom_id, numerator, denominator, conversion_type, settlement_allowed)
+      values ('72000000-0000-0000-0000-000000000001', '70000000-0000-0000-0000-000000000002', '70000000-0000-0000-0000-000000000001', 1000, 1, 'VEHICLE_LOAD', true)`);
+  } catch {
+    vehicleSettlementRejected = true;
+  }
+  assert.equal(vehicleSettlementRejected, true, "vehicle load cannot become an authoritative settlement conversion");
+
+  const firstCommitment = await queryRows(`select private.reserve_fixture_credit(
+    '50000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', 6000000,
+    'fixture-order-1', '10000000-0000-0000-0000-000000000001') as id`);
+  const replayedCommitment = await queryRows(`select private.reserve_fixture_credit(
+    '50000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', 6000000,
+    'fixture-order-1', '10000000-0000-0000-0000-000000000001') as id`);
+  assert.equal(replayedCommitment[0].id, firstCommitment[0].id, "same credit source replays idempotently");
+
+  let creditOverflowRejected = false;
+  try {
+    await queryRows(`select private.reserve_fixture_credit(
+      '50000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', 5000000,
+      'fixture-order-2', '10000000-0000-0000-0000-000000000001')`);
+  } catch {
+    creditOverflowRejected = true;
+  }
+  assert.equal(creditOverflowRejected, true, "credit reservation cannot exceed approved limit");
+  const [{ exposure_vnd: exposure }] = await queryRows("select exposure_vnd from public.customer_credit_exposure where customer_id = '50000000-0000-0000-0000-000000000001'");
+  assert.equal(exposure.toString(), "6000000", "credit exposure counts an open commitment once");
+
+  await database.exec(`
+    insert into public.opening_balance_sources(id, branch_id, side, source_ref, note)
+      values ('80000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', 'RECEIVABLE', 'OPEN-AR-1', 'Local opening fixture');
+    insert into public.receivable_obligations(id, branch_id, customer_id, opening_source_id, original_amount_vnd, due_date, recorded_by)
+      values ('81000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', '50000000-0000-0000-0000-000000000001', '80000000-0000-0000-0000-000000000001', 2000000, current_date + 7, '10000000-0000-0000-0000-000000000001');
+  `);
+  let immutableRejected = false;
+  try {
+    await database.exec("update public.receivable_obligations set original_amount_vnd = 1 where id = '81000000-0000-0000-0000-000000000001'");
+  } catch {
+    immutableRejected = true;
+  }
+  assert.equal(immutableRejected, true, "posted obligation is append-only");
+
+  console.info("Isolated PostgreSQL checks passed: R2 access plus R3 catalog, conversion, obligation, and credit invariants.");
 } finally {
   await database.close();
 }
