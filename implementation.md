@@ -38,14 +38,14 @@ Không cần copy requirement text vào đây.
 Đây là cache tham chiếu bằng chứng, không phải hệ thống phần mềm mới.
 
 ```yaml
-DOC_LOCK: NOT_ESTABLISHED
-DOCSET_FINGERPRINT: NONE
-ACTIVE_CONTEXT_PACK: NONE
-INSTRUCTION_AUDIT_REF: NONE
-DEPLOY_GUARD_REF: NONE
-SCHEMA_SNAPSHOT_REF: NONE
-SECURITY_SNAPSHOT_REF: NONE
-DATA_BASELINE_REF: NONE
+DOC_LOCK: VALID
+DOCSET_FINGERPRINT: GIT_TREE:cbe9de71d8dc3ea607f77d50e6f0d092afc52696
+ACTIVE_CONTEXT_PACK: PLAN-CTX-BASE+PLAN-CTX-R0
+INSTRUCTION_AUDIT_REF: R0-I-001 VALID
+DEPLOY_GUARD_REF: R0-D-001 VALID
+SCHEMA_SNAPSHOT_REF: R0-S-001 VALID_EMPTY_OWNER_REPORTED
+SECURITY_SNAPSHOT_REF: R0-SEC-001 VALID_EMPTY_OWNER_REPORTED
+DATA_BASELINE_REF: R0-DATA-001 VALID_EMPTY_OWNER_REPORTED
 COMMAND_MAP_REF: NONE
 ```
 
@@ -75,7 +75,7 @@ Theo báo cáo người dùng, cleanup không sửa dữ liệu/Storage và chư
 DOCSET: HX-V2-DOCSET-4.2
 CURRENT_PHASE: see tasks.md
 APPLICATION_V2_DOMAIN_CODE: NOT_VERIFIED / expected clean baseline before R0
-PRODUCTION_AUDIT: NOT_RUN_FOR_4_0
+PRODUCTION_AUDIT: EMPTY_BASELINE_OWNER_REPORTED
 ACCEPTANCE: NOT_REQUESTED
 ```
 
@@ -85,7 +85,7 @@ Chỉ điền khi R0/R1 xác minh thật:
 
 | Key | Actual value | Evidence | Last verified |
 |---|---|---|---|
-| repo_root | — | NOT_VERIFIED | — |
+| repo_root | `/Users/nox/Downloads/HienXaERP` | REPOSITORY_OBSERVED R0-I-001 | 2026-09-12 |
 | package_manager | — | NOT_VERIFIED | — |
 | app_routes | — | NOT_VERIFIED | — |
 | module_root | — | NOT_VERIFIED | — |
@@ -94,6 +94,21 @@ Chỉ điền khi R0/R1 xác minh thật:
 | db_test_command | — | NOT_VERIFIED | — |
 | typecheck_command | — | NOT_VERIFIED | — |
 | build_command | — | NOT_VERIFIED | — |
+
+## R0 evidence
+
+- `R0-I-001` (`REPOSITORY_OBSERVED`): repository `MutAquaticStudio/HienXaERPv2`, branch `main`, clean baseline at `1d5338a`; no applicable `AGENTS.md` or `CLAUDE.md` existed before DOCSET import.
+- `R0-D-001` (`REPOSITORY_OBSERVED`): remote repository is private; remote `main` was the only ref; current source contains no CI workflow. The connected Vercel team exposes only `nox-os` linked to `MutAquaticStudio/NOXOS`, so the Hiền Xa repository has no observed auto-deploy target in that scope.
+- `R0-S-001`, `R0-SEC-001`, `R0-DATA-001` (`USER_REPORTED`): Owner deleted Supabase project `hien-xa-erp-production` (`vknnzzecimfpnrsqbnuu`) before DOCSET-4.2 execution. No Production schema, Auth, Storage, business data, or performance baseline remains available to audit.
+- Migration classification: no legacy dataset is available; V2 local schema is the only writer during BUILD_ONLY. Any future Cloud Production project, credentials, migration, or deploy remains a human gate.
+- Owner override: the deletion supersedes the preservation assumptions in `SPEC-PRODUCT-004` and `SPEC-MIG-001` for the removed baseline. No Spec file was silently rewritten.
+
+DOC_CONFORMANCE:
+scope=R0
+docset=HX-V2-DOCSET-4.2
+contract_refs=TASK-R0-01..06+PLAN-CTX-R0
+result=PASS
+deviation=OWNER_OVERRIDE_SPEC-PRODUCT-004_SPEC-MIG-001
 
 # IMP-040 — Module registry
 
