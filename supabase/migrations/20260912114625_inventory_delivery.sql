@@ -1354,7 +1354,7 @@ begin
         for insert to authenticated
         with check (
           bucket_id in ('delivery-proofs', 'inventory-evidence')
-          and private.has_any_permission(array['evidence.manage'])
+          and private.has_any_permission('evidence.manage')
         )
       $policy$;
     end if;
@@ -1370,7 +1370,7 @@ begin
         for select to authenticated
         using (
           bucket_id in ('delivery-proofs', 'inventory-evidence')
-          and private.has_any_permission(array['evidence.manage'])
+          and private.has_any_permission('evidence.manage')
         )
       $policy$;
     end if;
