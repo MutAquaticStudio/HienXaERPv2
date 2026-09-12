@@ -2,8 +2,10 @@ import { ButtonLink } from "@/components/ui/button-link";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatFixtureVnd, recentOrders } from "@/modules/demo/fixtures";
 import Link from "next/link";
+import { requireInternalPermission } from "@/lib/access/context";
 
-export default function OrdersPage() {
+export default async function OrdersPage() {
+  await requireInternalPermission("orders.read");
   return (
     <>
       <header className="page-heading"><div><p className="eyebrow">Bán hàng</p><h1>Đơn bán</h1><p className="lede">Theo dõi từ lúc chốt đơn đến khi hoàn tất giao hàng và ghi nhận công nợ.</p></div><ButtonLink href="/admin/orders/new">Tạo đơn bán</ButtonLink></header>

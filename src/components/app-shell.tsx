@@ -1,6 +1,6 @@
 "use client";
 
-import { ClipboardCheck, LayoutDashboard, Menu, PackageSearch, ShoppingCart, Truck, UserRound, UsersRound, WalletCards, Warehouse, X } from "lucide-react";
+import { ClipboardCheck, LayoutDashboard, LogOut, Menu, PackageSearch, ShieldCheck, ShoppingCart, Truck, UserRound, UsersRound, WalletCards, Warehouse, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -9,12 +9,13 @@ type Surface = "admin" | "work" | "customer";
 
 const navigation = {
   admin: [
-    { href: "/admin", label: "Tổng quan", icon: LayoutDashboard, exact: true },
-    { href: "/admin/orders", label: "Đơn bán", icon: ShoppingCart },
-    { href: "/admin/purchase-orders", label: "Đơn mua", icon: PackageSearch },
-    { href: "/admin/deliveries", label: "Giao hàng", icon: Truck },
-    { href: "/admin/debts", label: "Công nợ", icon: WalletCards },
-    { href: "/admin/customers", label: "Khách hàng", icon: UsersRound },
+    { href: "/admin", label: "Tổng quan", icon: LayoutDashboard, exact: true, permission: "dashboard.read" },
+    { href: "/admin/orders", label: "Đơn bán", icon: ShoppingCart, permission: "orders.read" },
+    { href: "/admin/purchase-orders", label: "Đơn mua", icon: PackageSearch, permission: "purchasing.read" },
+    { href: "/admin/deliveries", label: "Giao hàng", icon: Truck, permission: "delivery.read" },
+    { href: "/admin/debts", label: "Công nợ", icon: WalletCards, permission: "finance.ar.read" },
+    { href: "/admin/customers", label: "Khách hàng", icon: UsersRound, permission: "customers.read" },
+    { href: "/admin/access", label: "Nhân viên & quyền", icon: ShieldCheck, permission: "roles.manage" },
   ],
   work: [
     { href: "/work", label: "Việc cần làm", icon: ClipboardCheck, exact: true },
@@ -34,7 +35,7 @@ const surfaceMeta = {
   customer: { name: "Khách hàng", user: "Cửa hàng Minh Phát", initials: "MP" },
 } as const;
 
-export function AppShell({ surface, children }: { surface: Surface; children: React.ReactNode }) {
+export function AppShell({ surface, children, permissions }: { surface: Surface; children: React.ReactNode; permissions?: readonly string[] }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const meta = surfaceMeta[surface];
@@ -48,13 +49,16 @@ export function AppShell({ surface, children }: { surface: Surface; children: Re
           <button className="mobile-close" type="button" aria-label="Đóng menu" onClick={() => setOpen(false)}><X size={22} /></button>
         </div>
         <nav className="nav-list">
-          {navigation[surface].map((item) => {
+          {navigation[surface].filter((item) => !("permission" in item) || permissions?.includes(item.permission)).map((item) => {
             const active = "exact" in item && item.exact ? pathname === item.href : pathname.startsWith(item.href);
             const Icon = item.icon;
             return <Link className={`nav-link${active ? " active" : ""}`} href={item.href} key={item.href} onClick={() => setOpen(false)}><Icon aria-hidden="true" size={20} strokeWidth={1.8} />{item.label}</Link>;
           })}
         </nav>
-        <div className="sidebar-foot">Bản dựng nội bộ · dữ liệu mẫu được gắn nhãn MOCK</div>
+        <div className="sidebar-foot">
+          <form action="/auth/logout" method="post"><button className="logout-button" type="submit"><LogOut size={17} />Đăng xuất</button></form>
+          Bản dựng nội bộ · dữ liệu mẫu được gắn nhãn MOCK
+        </div>
       </aside>
       <div className="workspace">
         <header className="topbar">

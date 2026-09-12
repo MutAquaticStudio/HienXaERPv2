@@ -1,5 +1,7 @@
 import { AppShell } from "@/components/app-shell";
+import { requireInternalAccess } from "@/lib/access/context";
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return <AppShell surface="admin">{children}</AppShell>;
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const access = await requireInternalAccess();
+  return <AppShell surface="admin" permissions={[...access.permissions]}>{children}</AppShell>;
 }

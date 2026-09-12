@@ -2,8 +2,10 @@ import { ButtonLink } from "@/components/ui/button-link";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { demoFlow, formatFixtureVnd, recentOrders } from "@/modules/demo/fixtures";
 import Link from "next/link";
+import { requireInternalPermission } from "@/lib/access/context";
 
-export default function AdminDashboard() {
+export default async function AdminDashboard() {
+  await requireInternalPermission("dashboard.read");
   return (
     <>
       <div className="mock-banner">MOCK · Luồng dữ liệu minh họa, chưa kết nối dữ liệu Production.</div>

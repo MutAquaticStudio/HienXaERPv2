@@ -40,11 +40,11 @@ Không cần copy requirement text vào đây.
 ```yaml
 DOC_LOCK: VALID
 DOCSET_FINGERPRINT: GIT_TREE:cbe9de71d8dc3ea607f77d50e6f0d092afc52696
-ACTIVE_CONTEXT_PACK: PLAN-CTX-BASE+PLAN-CTX-R1
+ACTIVE_CONTEXT_PACK: PLAN-CTX-BASE+PLAN-CTX-R2
 INSTRUCTION_AUDIT_REF: R0-I-001 VALID
 DEPLOY_GUARD_REF: R0-D-001 VALID
-SCHEMA_SNAPSHOT_REF: R0-S-001 VALID_EMPTY_OWNER_REPORTED
-SECURITY_SNAPSHOT_REF: R0-SEC-001 VALID_EMPTY_OWNER_REPORTED
+SCHEMA_SNAPSHOT_REF: R2-S-001 VALID_ISOLATED
+SECURITY_SNAPSHOT_REF: R2-SEC-001 VALID_ISOLATED
 DATA_BASELINE_REF: R0-DATA-001 VALID_EMPTY_OWNER_REPORTED
 COMMAND_MAP_REF: NONE
 ```
@@ -108,6 +108,15 @@ Chỉ điền khi R0/R1 xác minh thật:
 - `R1-DB-GUARD-001` (`COMMAND_OUTPUT`): local PostgreSQL URL was accepted and a non-local Supabase-shaped host was rejected. No connection or write was attempted.
 - `R1-PROTOTYPE-001` (`SOURCE_OBSERVED`): all prototype records are marked `MOCK` and preserve one linked sales → sourcing → delivery → debt example; VND uses bigint/string serialization and quantity conversion uses decimal arithmetic.
 - Production: `NOT_TOUCHED`; no Cloud Supabase project or deployment target was created.
+
+## R2 evidence
+
+- `R2-S-001` (`COMMAND_OUTPUT`): CLI-generated migration `20260912101030_identity_access.sql` ran on isolated PostgreSQL (PGlite 0.5.8) with nine tables, FK/check/partial-unique constraints, explicit grants, and RLS enabled on every R2 table.
+- `R2-SEC-001` (`COMMAND_OUTPUT`): branch isolation, customer isolation, receiver-vs-finance role separation, missing-permission denial, and direct `assign_employee_role` denial passed. The definer command has fixed `search_path`, derives actor from `auth.uid()`, revokes `PUBLIC`/`anon`, validates permission in DB, and appends audit.
+- `R2-AUTH-001` (`SOURCE_OBSERVED`): one Supabase Auth provider is shared by `/login`, `/work/login`, and `/customer/login`; recovery, logout cache clearing, branch revalidation, revoked-account checks, permission-filtered navigation, and server page/API guards are implemented.
+- `R2-GATE-001` (`COMMAND_OUTPUT`): lint, typecheck, 9 unit checks, isolated DB checks, and production build passed; 23 routes emitted. Local DB URL passed and cloud-shaped URL was rejected.
+- Residual verification: `supabase test db` / pgTAP was authored but not executed because Docker and Podman are absent. This is not recorded as a pgTAP PASS; equivalent migration and RLS paths ran in isolated PostgreSQL.
+- Production: `NOT_TOUCHED`; runtime config rejects Cloud Supabase unless `HX_CLOUD_RUNTIME_APPROVED=true` is supplied by a later human gate.
 - Owner override: the deletion supersedes the preservation assumptions in `SPEC-PRODUCT-004` and `SPEC-MIG-001` for the removed baseline. No Spec file was silently rewritten.
 
 DOC_CONFORMANCE:

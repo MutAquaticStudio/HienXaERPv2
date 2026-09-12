@@ -1,8 +1,10 @@
 import { ButtonLink } from "@/components/ui/button-link";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { demoFlow, formatFixtureVnd } from "@/modules/demo/fixtures";
+import { requireInternalPermission } from "@/lib/access/context";
 
 export default async function OrderDetailPage({ params }: PageProps<"/admin/orders/[id]">) {
+  await requireInternalPermission("orders.read");
   const { id } = await params;
   const order = demoFlow.salesOrder;
   return (

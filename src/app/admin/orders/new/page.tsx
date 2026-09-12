@@ -1,6 +1,8 @@
 import { ButtonLink } from "@/components/ui/button-link";
+import { requireInternalPermission } from "@/lib/access/context";
 
-export default function NewOrderPage() {
+export default async function NewOrderPage() {
+  await requireInternalPermission("orders.create");
   return (
     <>
       <header className="page-heading"><div><p className="eyebrow">Bán hàng</p><h1>Tạo đơn bán</h1><p className="lede">Bản mẫu biểu mẫu cho bước nhập và xác nhận thông tin đơn.</p></div></header>

@@ -1,0 +1,3 @@
+export default function RecoveryConfirmPage() {
+  return <main className="auth-screen"><section className="auth-story"><span className="brand-mark">HX</span><p className="eyebrow">Khôi phục tài khoản</p><h1>Liên kết đã được xác minh.</h1></section><section className="auth-panel"><div className="auth-card"><p className="eyebrow">Bước tiếp theo</p><h2>Cập nhật mật khẩu</h2><p className="muted">Màn cập nhật chỉ mở khi Supabase Auth xác nhận recovery session. Provider configuration sẽ kích hoạt form này trong môi trường được phê duyệt.</p><a className="button button-secondary auth-submit" href="/login">Về đăng nhập</a></div></section></main>;
+}

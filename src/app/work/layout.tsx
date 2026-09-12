@@ -1,5 +1,3 @@
-import { AppShell } from "@/components/app-shell";
-
 export default function WorkLayout({ children }: { children: React.ReactNode }) {
-  return <AppShell surface="work">{children}</AppShell>;
+  return children;
 }
