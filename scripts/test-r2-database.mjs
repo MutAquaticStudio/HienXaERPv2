@@ -42,7 +42,7 @@ try {
   assert.equal(rlsCount, 9, "RLS must protect every R2 table");
 
   const [{ count: permissionCount }] = await queryRows("select count(*)::int as count from public.permissions");
-  assert.equal(permissionCount, 51, "action permissions must be explicit");
+  assert.equal(permissionCount, 61, "action permissions must be explicit");
 
   await database.exec(`
     insert into auth.users(id) values
@@ -102,7 +102,17 @@ try {
       ('40000000-0000-0000-0000-000000000001', 'finance.expense.read'),
       ('40000000-0000-0000-0000-000000000001', 'finance.expense.manage'),
       ('40000000-0000-0000-0000-000000000001', 'finance.reconcile'),
-      ('40000000-0000-0000-0000-000000000001', 'finance.profit.read');
+      ('40000000-0000-0000-0000-000000000001', 'finance.profit.read'),
+      ('40000000-0000-0000-0000-000000000001', 'workforce.read'),
+      ('40000000-0000-0000-0000-000000000001', 'work.manage'),
+      ('40000000-0000-0000-0000-000000000001', 'work.claim'),
+      ('40000000-0000-0000-0000-000000000001', 'work.verify'),
+      ('40000000-0000-0000-0000-000000000001', 'service.read'),
+      ('40000000-0000-0000-0000-000000000001', 'service.manage'),
+      ('40000000-0000-0000-0000-000000000001', 'service.verify'),
+      ('40000000-0000-0000-0000-000000000001', 'compensation.read'),
+      ('40000000-0000-0000-0000-000000000001', 'compensation.manage'),
+      ('40000000-0000-0000-0000-000000000001', 'compensation.approve');
     insert into public.employee_branch_access(employee_id, branch_id, role_id) values
       ('30000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', '40000000-0000-0000-0000-000000000001'),
       ('30000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000002', '40000000-0000-0000-0000-000000000001');
@@ -612,6 +622,101 @@ try {
   assert.equal(dashboard.snapshot.revenue.value_vnd.toString(), revenueBeforePayment.toString(), "dashboard revenue remains sourced from verified business facts");
   assert.equal(dashboard.snapshot.operating_expense.value_vnd.toString(), "300000", "dashboard reads approved Opex once");
 
+  const [{ id: serviceSiteId }] = await queryRows(`select id from public.customer_sites
+    where customer_id = '50000000-0000-0000-0000-000000000001' limit 1`);
+  const createService = (operationId, start, end) => `select public.create_service_job(
+    '20000000-0000-0000-0000-000000000001', '50000000-0000-0000-0000-000000000001', '${serviceSiteId}',
+    'Vận hành máy', 'Vận hành máy theo ca đã chốt', '${start}', '${end}', 10, 'giờ',
+    null, null, null, '${operationId}') as id`;
+  const [serviceJob] = await queryRows(createService('c8000000-0000-0000-0000-000000000001', '2026-09-13T01:00:00Z', '2026-09-13T05:00:00Z'));
+  const [serviceJobReplay] = await queryRows(createService('c8000000-0000-0000-0000-000000000001', '2026-09-13T01:00:00Z', '2026-09-13T05:00:00Z'));
+  assert.equal(serviceJobReplay.id, serviceJob.id, "service creation replay returns one source job");
+  const [collisionJob] = await queryRows(createService('c8000000-0000-0000-0000-000000000002', '2026-09-13T02:00:00Z', '2026-09-13T06:00:00Z'));
+  const [workItem] = await queryRows(`select public.publish_work_item(
+    '20000000-0000-0000-0000-000000000001', 'SERVICE_JOB', '${serviceJob.id}', 'POOL_CLAIM', null,
+    'c8000000-0000-0000-0000-000000000003') as id`);
+  const [collisionWork] = await queryRows(`select public.publish_work_item(
+    '20000000-0000-0000-0000-000000000001', 'SERVICE_JOB', '${collisionJob.id}', 'POOL_CLAIM', null,
+    'c8000000-0000-0000-0000-000000000004') as id`);
+  const [claim] = await queryRows(`select public.claim_work_item('${workItem.id}', 1,
+    'c8000000-0000-0000-0000-000000000005') as id`);
+  const [claimReplay] = await queryRows(`select public.claim_work_item('${workItem.id}', 1,
+    'c8000000-0000-0000-0000-000000000005') as id`);
+  assert.equal(claimReplay.id, claim.id, "claim replay survives the state/version change it caused");
+  let collisionRejected = false;
+  try {
+    await queryRows(`select public.claim_work_item('${collisionWork.id}', 1,
+      'c8000000-0000-0000-0000-000000000006')`);
+  } catch { collisionRejected = true; }
+  assert.equal(collisionRejected, true, "overlapping work for the same employee is rejected under resource lock");
+
+  await queryRows(`select public.start_work_item('${workItem.id}', 2,
+    'c8000000-0000-0000-0000-000000000007')`);
+  await queryRows(`select public.heartbeat_work_item('${workItem.id}', 'Vẫn đang làm, tiến độ bình thường',
+    'c8000000-0000-0000-0000-000000000008')`);
+  const arBeforeWorkerResult = (await queryRows("select count(*)::int as count from public.receivable_obligations"))[0].count;
+  const [workResult] = await queryRows(`select public.submit_work_result('${workItem.id}', 10,
+    'Đã hoàn thành theo log hiện trường', 'Khách A', null, 3,
+    'c8000000-0000-0000-0000-000000000009') as id`);
+  const arAfterWorkerResult = (await queryRows("select count(*)::int as count from public.receivable_obligations"))[0].count;
+  assert.equal(arAfterWorkerResult, arBeforeWorkerResult, "worker DONE/result does not verify source or create AR");
+  let staleResultRejected = false;
+  try {
+    await queryRows(`select public.submit_work_result('${workItem.id}', 10,
+      'Offline payload cũ', 'Khách A', null, 3,
+      'c8000000-0000-0000-0000-000000000010')`);
+  } catch { staleResultRejected = true; }
+  assert.equal(staleResultRejected, true, "offline stale result is rejected by expected version");
+
+  const [serviceVerification] = await queryRows(`select public.verify_service_job('${serviceJob.id}', 8, 9,
+    800000, '2026-09-20', 'Billable 8, compensable 9 theo biên bản', 3, 4,
+    'c8000000-0000-0000-0000-000000000011') as id`);
+  const [serviceVerificationReplay] = await queryRows(`select public.verify_service_job('${serviceJob.id}', 8, 9,
+    800000, '2026-09-20', 'Billable 8, compensable 9 theo biên bản', 3, 4,
+    'c8000000-0000-0000-0000-000000000011') as id`);
+  assert.equal(serviceVerificationReplay.id, serviceVerification.id, "service verification replay creates one AR fact");
+  const [serviceFacts] = await queryRows(`select
+    (select original_amount_vnd from public.receivable_obligations where service_verification_id = '${serviceVerification.id}') as ar,
+    (select actual_quantity from public.service_verifications where id = '${serviceVerification.id}') as actual,
+    (select billable_quantity from public.service_verifications where id = '${serviceVerification.id}') as billable,
+    (select compensable_quantity from public.service_verifications where id = '${serviceVerification.id}') as compensable`);
+  assert.deepEqual([serviceFacts.ar.toString(), serviceFacts.actual, serviceFacts.billable, serviceFacts.compensable], ["800000", "10.000000", "8.000000", "9.000000"], "service actual, billable, compensable, and AR remain separate exact facts");
+
+  const [compRule] = await queryRows(`select public.create_compensation_rule(
+    '20000000-0000-0000-0000-000000000001', 'SERVICE_UNIT', 'Công dịch vụ theo đơn vị', null,
+    'PER_UNIT', 'FIXED_PER_BASIS', 50000, null, 'DIRECT_LABOR', '2026-01-01', null,
+    'c8000000-0000-0000-0000-000000000012') as id`);
+  const [earning] = await queryRows(`select public.calculate_earning_event('${compRule.id}',
+    'SERVICE_VERIFICATION', '${serviceVerification.id}', 'c8000000-0000-0000-0000-000000000013') as id`);
+  const [earningReplay] = await queryRows(`select public.calculate_earning_event('${compRule.id}',
+    'SERVICE_VERIFICATION', '${serviceVerification.id}', 'c8000000-0000-0000-0000-000000000013') as id`);
+  assert.equal(earningReplay.id, earning.id, "earning calculation replay keeps one source/rule event");
+  await queryRows(`select public.approve_earning_event('${earning.id}', 450000, '2026-09-20', 1,
+    'c8000000-0000-0000-0000-000000000014')`);
+  const [{ id: earningPayable }] = await queryRows(`select id from public.payable_obligations where earning_event_id = '${earning.id}'`);
+  const [employeePayment] = await queryRows(`select public.post_payment(
+    '20000000-0000-0000-0000-000000000001', 'DISBURSEMENT', null, null, '${financeAccount.id}', 200000,
+    '2026-09-13T06:00:00Z', 'BANK_TRANSFER', 'PAYROLL-SERVICE-001',
+    '[{"obligation_id":"${earningPayable}","amount_vnd":200000}]'::jsonb, 0,
+    'c8000000-0000-0000-0000-000000000015', '30000000-0000-0000-0000-000000000001') as id`);
+  const [earningPaymentFacts] = await queryRows(`select
+    (select outstanding_amount_vnd from public.payable_read where id = '${earningPayable}') as outstanding,
+    (select employee_id from public.payment_read where id = '${employeePayment.id}') as employee_id,
+    (select calculated_amount_vnd from public.earning_events where id = '${earning.id}') as calculated`);
+  assert.deepEqual([earningPaymentFacts.outstanding.toString(), earningPaymentFacts.employee_id, earningPaymentFacts.calculated.toString()], ["250000", "30000000-0000-0000-0000-000000000001", "450000"], "approved earning creates employee AP and payment only settles the allocated amount");
+
+  const [serviceDashboard] = await queryRows(`select public.finance_dashboard_snapshot(
+    '20000000-0000-0000-0000-000000000001', '2026-09-01T00:00:00+07:00', '2026-10-01T00:00:00+07:00', now(),
+    null, null, null, 'SERVICE') as snapshot`);
+  const [peopleDashboard] = await queryRows(`select public.finance_dashboard_snapshot(
+    '20000000-0000-0000-0000-000000000001', '2026-09-01T00:00:00+07:00', '2026-10-01T00:00:00+07:00', now(),
+    null, null, null, null) as snapshot`);
+  assert.deepEqual([serviceDashboard.snapshot.revenue.value_vnd.toString(), peopleDashboard.snapshot.salary_payable.value_vnd.toString(), peopleDashboard.snapshot.commission_payable.value_vnd.toString()], ["800000", "250000", "0"], "dashboard reads verified service revenue and approved outstanding compensation without ad hoc commission");
+  let resultMutationRejected = false;
+  try { await queryRows(`update public.work_item_results set actual_quantity = 11 where id = '${workResult.id}'`); }
+  catch { resultMutationRejected = true; }
+  assert.equal(resultMutationRejected, true, "submitted worker result is append-only");
+
   await database.exec(`reset role;
     update public.finance_accounts set active = false where id = '${financeAccount.id}';
     update public.expense_categories set active = false where id = '${expenseCategory.id}';
@@ -637,7 +742,7 @@ try {
   assert.equal(movementMutationRejected, true, "inventory movement ledger is append-only");
 
   console.info(`R7 dashboard local sample: ${dashboardDurationMs.toFixed(2)} ms, ${dashboardPayloadBytes} bytes.`);
-  console.info("Isolated PostgreSQL checks passed: R2 access through R7 finance/dashboard golden-flow invariants.");
+  console.info("Isolated PostgreSQL checks passed: R2 access through R8 work/service/compensation golden-flow invariants.");
 } finally {
   await database.close();
 }

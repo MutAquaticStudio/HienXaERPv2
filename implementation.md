@@ -40,7 +40,7 @@ Không cần copy requirement text vào đây.
 ```yaml
 DOC_LOCK: VALID
 DOCSET_FINGERPRINT: GIT_TREE:cbe9de71d8dc3ea607f77d50e6f0d092afc52696
-ACTIVE_CONTEXT_PACK: PLAN-CTX-BASE + PLAN-CTX-R7
+ACTIVE_CONTEXT_PACK: PLAN-CTX-BASE + PLAN-CTX-R8
 INSTRUCTION_AUDIT_REF: R0-I-001 VALID
 DEPLOY_GUARD_REF: R0-D-001 VALID
 SCHEMA_SNAPSHOT_REF: R3-S-001 VALID_ISOLATED
@@ -74,7 +74,7 @@ Theo báo cáo người dùng, cleanup không sửa dữ liệu/Storage và chư
 ```yaml
 DOCSET: HX-V2-DOCSET-4.2
 CURRENT_PHASE: see tasks.md
-APPLICATION_V2_DOMAIN_CODE: R7_FINANCE_DASHBOARD_IMPLEMENTED
+APPLICATION_V2_DOMAIN_CODE: R8_WORKFORCE_SERVICE_COMPENSATION_IMPLEMENTED
 PRODUCTION_AUDIT: EMPTY_BASELINE_OWNER_REPORTED
 ACCEPTANCE: NOT_REQUESTED
 ```
@@ -360,5 +360,35 @@ CHECKS:
 
 DEFERRED:
 - Salary and commission remain INCOMPLETE_PENDING_R8.
+
+PRODUCTION: NOT_TOUCHED
+
+# R8 CHECKPOINT - WORKFORCE, SERVICE, AND COMPENSATION
+
+PHASE: R8
+STATUS: IMPLEMENTED
+CONTEXT_PACK: PLAN-CTX-BASE + PLAN-CTX-R8
+CONTRACT_REFS: SPEC-220, SPEC-230, SPEC-240, SPEC-OPS-004, SPEC-REPORT-003, UX-410, UX-450, UX-460, UX-FLOW-012, UX-FLOW-013
+
+IMPLEMENTATION:
+- Added source-bound WorkItems for Delivery or ServiceJob with DIRECT and POOL_CLAIM assignment modes, expected-version commands, idempotency receipts, and worker/vehicle/machine schedule collision guards.
+- Added monitoring-only heartbeat, append-only worker result and WorkLog, and separate source verification; DONE never creates financial effects by itself.
+- Added ServiceJob scheduling and verification with distinct actual, billable, and compensable facts; verified billing creates one source-linked AR.
+- Added explicit versioned compensation calculators, traceable EarningEvents, approval, employee AP, adjustments, and settlement through the existing payment/allocation ledger.
+- Extended dashboard finance sources to verified service revenue and approved compensation without a parallel cost-fact ledger or ad hoc commission calculation.
+- Added workforce, service-job list/detail, and compensation administration surfaces with permission-scoped payroll visibility.
+
+CHECKS:
+- L1 targeted WorkItem/ServiceJob/Earning golden flow: PASS.
+- L2 affected R2-R8 database regression: PASS.
+- Sequential collision and stale-version invariants: PASS.
+- L3 typecheck: PASS.
+- L3 lint: PASS.
+- L3 unit tests: PASS, 16/16.
+- L3 production build: PASS.
+- True multi-session claim/resource race: NOT_RUN_NO_CONTAINER.
+- pgTAP: NOT_RUN_NO_CONTAINER.
+- L4 full-system verification: NOT_RUN_PHASE_SCOPE.
+- Acceptance: NOT_REQUESTED.
 
 PRODUCTION: NOT_TOUCHED
