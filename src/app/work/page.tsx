@@ -1,9 +1,46 @@
-import { StatusBadge } from "@/components/ui/status-badge";
-import { demoFlow } from "@/modules/demo/fixtures";
-import { AppShell } from "@/components/app-shell";
-import { requireInternalPermission } from "@/lib/access/context";
+import Link from "next/link";
 
-export default async function WorkPage() {
-  await requireInternalPermission("work.read", "/work/login");
-  return <AppShell surface="work"><div className="mock-banner">MOCK · Mặt tác nghiệp chỉ hiển thị việc phù hợp vai trò kho và giao nhận.</div><header className="page-heading"><div><p className="eyebrow">Tác nghiệp hôm nay</p><h1>3 việc cần hoàn tất</h1><p className="lede">Danh sách ngắn, trạng thái rõ và ưu tiên thao tác tại hiện trường.</p></div></header><div className="three-column"><article className="card card-pad"><StatusBadge tone="warning">Ưu tiên</StatusBadge><h2 style={{ marginTop: 16 }}>Chuẩn bị 40 bao xi măng</h2><p className="muted">{demoFlow.salesOrder.id} · 2 tấn · Kho chính</p><button className="button button-primary" type="button">Xác nhận đã soạn</button></article><article className="card card-pad"><StatusBadge tone="info">Sau khi xuất kho</StatusBadge><h2 style={{ marginTop: 16 }}>Nhận chuyến giao</h2><p className="muted">{demoFlow.delivery.id} · Xe {demoFlow.delivery.vehicle}</p><button className="button button-secondary" type="button">Xem chỉ dẫn</button></article><article className="card card-pad"><StatusBadge tone="success">Đã sẵn sàng</StatusBadge><h2 style={{ marginTop: 16 }}>Đối chiếu chứng từ</h2><p className="muted">{demoFlow.purchaseOrder.id} · {demoFlow.purchaseOrder.supplier}</p><button className="button button-secondary" type="button">Mở chứng từ</button></article></div></AppShell>;
+import styles from "@/components/portal/portal.module.css";
+import { getWorkerPortalSnapshot } from "@/modules/portal/actions";
+import type { WorkerJob } from "@/modules/portal/types";
+
+function JobCard({ job, label }: { job: WorkerJob | null; label: string }) {
+  if (!job) {
+    return <article className={styles.card}><span className={styles.badge}>{label}</span><p>Chưa có công việc được phân công.</p></article>;
+  }
+  return (
+    <article className={styles.card + " " + styles.cardAccent}>
+      <span className={styles.badge}>{label} · {job.state}</span>
+      <h2>{job.title ?? job.number}</h2>
+      <div className={styles.meta}>
+        <span>{job.number}</span>
+        <span>{job.site_name ?? job.address ?? "Địa điểm đang cập nhật"}</span>
+      </div>
+      <Link className={styles.button} href={"/work/jobs/" + job.id}>Mở công việc</Link>
+    </article>
+  );
+}
+
+export default async function WorkHomePage() {
+  const snapshot = await getWorkerPortalSnapshot();
+  return (
+    <div className={styles.page}>
+      <header className={styles.hero}>
+        <p className={styles.heroEyebrow}>Ca làm việc của {snapshot.employee.display_name}</p>
+        <h1>{snapshot.current ? "Tiếp tục việc đang làm" : "Sẵn sàng cho việc tiếp theo"}</h1>
+        <p>Ưu tiên hiện tại, hành động tiếp theo và thông tin hiện trường nằm trong một luồng ngắn.</p>
+      </header>
+      <div className={styles.gridTwo}>
+        <JobCard job={snapshot.current} label="HIỆN TẠI" />
+        <JobCard job={snapshot.next} label="TIẾP THEO" />
+      </div>
+      <section className={styles.sectionHead}>
+        <div><h2>Hành động nhanh</h2><p>Không cần mở màn hình ERP dày đặc.</p></div>
+      </section>
+      <div className={styles.gridTwo}>
+        <Link className={styles.buttonSecondary} href="/work/pool">Xem kho việc có thể nhận</Link>
+        <Link className={styles.buttonSecondary} href="/work/earnings">Xem thu nhập của tôi</Link>
+      </div>
+    </div>
+  );
 }

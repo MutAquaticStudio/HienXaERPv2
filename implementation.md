@@ -392,3 +392,38 @@ CHECKS:
 - Acceptance: NOT_REQUESTED.
 
 PRODUCTION: NOT_TOUCHED
+
+## R9 CHECKPOINT — WORKER AND CUSTOMER PORTALS
+
+Status: BUILD_COMPLETE
+
+Implemented:
+- Worker current/next/pool/job/earnings/profile portal with assignment-aware commands.
+- Safe local result draft with stable operation ID/version and separate evidence retry.
+- Customer exact-revision quote change request and customer-safe order/delivery timeline.
+- Customer debt view and Payment Notice evidence/review workflow isolated from payment and receivable ledgers.
+- Active worker/customer authorization on every RPC and signed-evidence request.
+- Shared-device logout continues to clear cache, cookies, and storage.
+
+Contract references:
+- SPEC-250
+- SPEC-260
+- SPEC-470
+- SPEC-DATA-005
+- UX-600
+- UX-700
+- UX-AUTH-001
+
+Checks:
+- L1 targeted local-draft unit checks: PASS
+- L1 isolated PostgreSQL R2-R9 golden flow: PASS
+- L2 affected unit regression: PASS
+- L3 lint: PASS
+- L3 typecheck: PASS
+- L3 production build: PASS
+- Hosted Storage policy and signed URL runtime: NOT_RUN_NO_HOSTED_PROJECT
+- Browser usability review: NOT_REQUESTED
+
+Production: NOT_TOUCHED
+Supabase cloud: NOT_TOUCHED
+Acceptance: NOT_REQUESTED

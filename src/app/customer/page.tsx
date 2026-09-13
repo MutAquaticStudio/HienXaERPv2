@@ -1,9 +1,68 @@
-import { StatusBadge } from "@/components/ui/status-badge";
-import { demoFlow, formatFixtureVnd } from "@/modules/demo/fixtures";
-import { AppShell } from "@/components/app-shell";
-import { requireCustomerAccess } from "@/lib/access/context";
+import { randomUUID } from "node:crypto";
 
-export default async function CustomerPage() {
-  await requireCustomerAccess(["OWNER", "FINANCE_CONTACT"]);
-  return <AppShell surface="customer"><div className="mock-banner">MOCK · Cổng khách hàng chỉ hiển thị dữ liệu của khách đang đăng nhập.</div><header className="page-heading"><div><p className="eyebrow">Tài khoản của tôi</p><h1>Xin chào, Minh Phát</h1><p className="lede">Theo dõi đơn hàng và khoản phải thanh toán mà không cần liên hệ lại để hỏi trạng thái.</p></div></header><div className="two-column"><section className="card card-pad"><div className="section-head" style={{ padding: 0, marginBottom: 15 }}><h2>Đơn đang thực hiện</h2><StatusBadge tone="warning">{demoFlow.salesOrder.status}</StatusBadge></div><p><strong>{demoFlow.salesOrder.product}</strong> · {demoFlow.salesOrder.quantityTon} tấn</p><dl className="detail-grid"><div className="detail-item"><dt>Mã đơn</dt><dd className="mono">{demoFlow.salesOrder.id}</dd></div><div className="detail-item"><dt>Giá trị</dt><dd className="mono">{formatFixtureVnd(demoFlow.salesOrder.totalVnd)}</dd></div><div className="detail-item"><dt>Giao hàng</dt><dd>{demoFlow.delivery.status}</dd></div><div className="detail-item"><dt>Xe dự kiến</dt><dd>{demoFlow.delivery.vehicle}</dd></div></dl></section><section className="card card-pad"><h2>Thanh toán</h2><span className="metric-label">Số tiền còn phải trả</span><strong className="metric-value">{formatFixtureVnd(demoFlow.debt.outstandingVnd)}</strong><p className="muted">Hạn thanh toán: {demoFlow.debt.dueDate}</p><StatusBadge tone="success">{demoFlow.debt.status}</StatusBadge></section></div></AppShell>;
+import Link from "next/link";
+
+import styles from "@/components/portal/portal.module.css";
+import { getCustomerPortalSnapshot, requestQuotationChangeAction } from "@/modules/portal/actions";
+
+const money = (value: string | number = 0) => new Intl.NumberFormat("vi-VN", {
+  style: "currency",
+  currency: "VND",
+  maximumFractionDigits: 0,
+}).format(Number(value));
+
+export default async function CustomerHomePage() {
+  const snapshot = await getCustomerPortalSnapshot();
+  return (
+    <div className={styles.page}>
+      <header className={styles.hero}>
+        <p className={styles.heroEyebrow}>{snapshot.customer.code}</p>
+        <h1>{snapshot.customer.display_name}</h1>
+        <p>Báo giá cần xử lý, đơn hàng, giao nhận và công nợ theo đúng vai trò portal.</p>
+      </header>
+
+      {snapshot.quotation ? (
+        <section className={styles.card + " " + styles.cardAccent}>
+          <span className={styles.badge}>BÁO GIÁ · {snapshot.quotation.state ?? "ĐANG CHỜ"}</span>
+          <h2>{snapshot.quotation.number ?? "Báo giá hiện tại"}</h2>
+          <p>Mọi hành động được khóa vào đúng revision đang là current.</p>
+          <div className={styles.actions}>
+            <Link className={styles.button} href={"/customer/quotations/" + snapshot.quotation.id}>Xem và chấp nhận</Link>
+          </div>
+          <form action={requestQuotationChangeAction} className={styles.form}>
+            <input name="revision_id" type="hidden" value={snapshot.quotation.current_revision_id} />
+            <input name="operation_id" type="hidden" value={randomUUID()} />
+            <div className={styles.field}>
+              <label htmlFor="quote-change-reason">Yêu cầu điều chỉnh báo giá</label>
+              <textarea id="quote-change-reason" maxLength={1000} minLength={10} name="reason" required />
+            </div>
+            <button className={styles.buttonSecondary} type="submit">Gửi yêu cầu theo revision này</button>
+          </form>
+        </section>
+      ) : null}
+
+      <div className={styles.gridTwo}>
+        <section className={styles.card}>
+          <span className={styles.badge}>ĐƠN HÀNG</span>
+          <p className={styles.amount}>{snapshot.orders.length}</p>
+          <p>Đơn hàng trong phạm vi khách hàng này.</p>
+          <Link className={styles.link} href="/customer/orders">Xem timeline giao nhận</Link>
+        </section>
+        {snapshot.can_view_debt && snapshot.debt ? (
+          <section className={styles.card}>
+            <span className={styles.badge}>CÔNG NỢ</span>
+            <p className={styles.amount}>{money(snapshot.debt.outstanding_amount_vnd)}</p>
+            <p>Quá hạn {money(snapshot.debt.overdue_amount_vnd)}</p>
+            <Link className={styles.link} href="/customer/debts">Xem và gửi thông báo thanh toán</Link>
+          </section>
+        ) : (
+          <section className={styles.card}>
+            <span className={styles.badge}>GIAO NHẬN</span>
+            <p>Vai trò Người nhận chỉ thấy ngữ cảnh cần thiết để nhận hàng.</p>
+            <Link className={styles.link} href="/customer/orders">Xem lịch giao</Link>
+          </section>
+        )}
+      </div>
+    </div>
+  );
 }

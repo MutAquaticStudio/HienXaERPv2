@@ -42,13 +42,15 @@ try {
   assert.equal(rlsCount, 9, "RLS must protect every R2 table");
 
   const [{ count: permissionCount }] = await queryRows("select count(*)::int as count from public.permissions");
-  assert.equal(permissionCount, 61, "action permissions must be explicit");
+  assert.equal(permissionCount, 62, "action permissions must be explicit");
 
   await database.exec(`
     insert into auth.users(id) values
       ('10000000-0000-0000-0000-000000000001'),
       ('10000000-0000-0000-0000-000000000002'),
-      ('10000000-0000-0000-0000-000000000003');
+      ('10000000-0000-0000-0000-000000000003'),
+      ('10000000-0000-0000-0000-000000000004'),
+      ('10000000-0000-0000-0000-000000000005');
     insert into public.branches(id, code, name) values
       ('20000000-0000-0000-0000-000000000001', 'BRANCH_A', 'Chi nhánh A'),
       ('20000000-0000-0000-0000-000000000002', 'BRANCH_B', 'Chi nhánh B');
@@ -97,6 +99,7 @@ try {
       ('40000000-0000-0000-0000-000000000001', 'finance.ar.adjust'),
       ('40000000-0000-0000-0000-000000000001', 'finance.account.manage'),
       ('40000000-0000-0000-0000-000000000001', 'finance.payment.post'),
+      ('40000000-0000-0000-0000-000000000001', 'finance.payment_notice.review'),
       ('40000000-0000-0000-0000-000000000001', 'finance.payment.reverse'),
       ('40000000-0000-0000-0000-000000000001', 'finance.ap.adjust'),
       ('40000000-0000-0000-0000-000000000001', 'finance.expense.read'),
@@ -120,7 +123,9 @@ try {
       ('50000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', 'CUS_A', 'Khách A'),
       ('50000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000002', 'CUS_B', 'Khách B');
     insert into public.customer_portal_memberships(auth_user_id, customer_id, membership_role) values
-      ('10000000-0000-0000-0000-000000000003', '50000000-0000-0000-0000-000000000001', 'RECEIVER');
+      ('10000000-0000-0000-0000-000000000003', '50000000-0000-0000-0000-000000000001', 'RECEIVER'),
+      ('10000000-0000-0000-0000-000000000004', '50000000-0000-0000-0000-000000000001', 'OWNER'),
+      ('10000000-0000-0000-0000-000000000005', '50000000-0000-0000-0000-000000000001', 'RECEIVER');
   `);
 
   let uniqueRejected = false;
@@ -717,6 +722,198 @@ try {
   catch { resultMutationRejected = true; }
   assert.equal(resultMutationRejected, true, "submitted worker result is append-only");
 
+  const [workerJobPayload] = await queryRows(
+    "select public.worker_portal_job('" + workItem.id + "') as job",
+  );
+  assert.deepEqual(
+    [workerJobPayload.job.id, workerJobPayload.job.number, workerJobPayload.job.customer_name],
+    [workItem.id, workerJobPayload.job.number, "Khách A"],
+    "worker portal exposes only an authorized safe job payload",
+  );
+  await database.exec(
+    "select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000002', false);",
+  );
+  let crossWorkerJobRejected = false;
+  try {
+    await queryRows("select public.worker_portal_job('" + workItem.id + "')");
+  } catch {
+    crossWorkerJobRejected = true;
+  }
+  assert.equal(crossWorkerJobRejected, true, "worker portal denies another branch job by direct RPC");
+
+  await database.exec([
+    "reset role;",
+    "update public.employee_branch_access set active = false, revoked_at = now()",
+    "where employee_id = '30000000-0000-0000-0000-000000000001'",
+    "and branch_id = '20000000-0000-0000-0000-000000000001';",
+    "set role authenticated;",
+    "select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000001', false);",
+  ].join("\n"));
+  let revokedWorkerRejected = false;
+  try {
+    await queryRows("select public.worker_portal_snapshot()");
+  } catch {
+    revokedWorkerRejected = true;
+  }
+  assert.equal(revokedWorkerRejected, true, "revoked branch access blocks the next worker portal request");
+
+  await database.exec([
+    "reset role;",
+    "update public.employee_branch_access set active = true, revoked_at = null",
+    "where employee_id = '30000000-0000-0000-0000-000000000001'",
+    "and branch_id = '20000000-0000-0000-0000-000000000001';",
+    "set role authenticated;",
+    "select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000005', false);",
+  ].join("\n"));
+  const [receiverPortal] = await queryRows("select public.customer_portal_snapshot(null) as snapshot");
+  assert.deepEqual(
+    [receiverPortal.snapshot.membership_role, receiverPortal.snapshot.can_view_debt, receiverPortal.snapshot.debt],
+    ["RECEIVER", false, null],
+    "receiver gets delivery context without finance data",
+  );
+
+  await database.exec(
+    "select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000004', false);",
+  );
+  const [ownerPortal] = await queryRows("select public.customer_portal_snapshot(null) as snapshot");
+  assert.equal(ownerPortal.snapshot.can_view_debt, true, "owner can read its own debt snapshot");
+  let crossCustomerPortalRejected = false;
+  try {
+    await queryRows("select public.customer_portal_snapshot('50000000-0000-0000-0000-000000000002')");
+  } catch {
+    crossCustomerPortalRejected = true;
+  }
+  assert.equal(crossCustomerPortalRejected, true, "client customer id cannot cross membership scope");
+
+  const [portalEvidence] = await queryRows([
+    "select public.create_portal_evidence(",
+    "'PAYMENT_NOTICE', null, '50000000-0000-0000-0000-000000000001',",
+    "'application/pdf', 1024, 'd9000000-0000-0000-0000-000000000001') as evidence",
+  ].join("\n"));
+  await queryRows([
+    "select public.finalize_portal_evidence(",
+    "'" + portalEvidence.evidence.id + "', '" + "a".repeat(64) + "', 1024,",
+    "'d9000000-0000-0000-0000-000000000002')",
+  ].join("\n"));
+  await database.exec("reset role;");
+  const paymentCountBeforeNotice = (
+    await queryRows("select count(*)::int as count from public.payments")
+  )[0].count;
+  const outstandingQuery = [
+    "select coalesce(sum((to_jsonb(r)->>'outstanding_amount_vnd')::bigint),0)::bigint as amount",
+    "from public.receivable_read r",
+    "where to_jsonb(r)->>'customer_id' = '50000000-0000-0000-0000-000000000001'",
+  ].join("\n");
+  const outstandingBeforeNotice = (await queryRows(outstandingQuery))[0].amount;
+  await database.exec([
+    "set role authenticated;",
+    "select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000004', false);",
+  ].join("\n"));
+  const paymentNoticeSql = [
+    "select public.submit_payment_notice(",
+    "'50000000-0000-0000-0000-000000000001', '" + portalEvidence.evidence.id + "',",
+    "500000, '2026-09-13', 'BANK-PORTAL-001',",
+    "'Khách đã chuyển khoản và gửi để đối soát',",
+    "'d9000000-0000-0000-0000-000000000003') as id",
+  ].join("\n");
+  const [paymentNotice] = await queryRows(paymentNoticeSql);
+  const [paymentNoticeReplay] = await queryRows(paymentNoticeSql);
+  assert.equal(paymentNoticeReplay.id, paymentNotice.id, "payment notice retry is idempotent");
+  const [signableEvidence] = await queryRows(
+    "select public.get_portal_evidence_for_signing('" + portalEvidence.evidence.id + "') as evidence",
+  );
+  assert.equal(
+    signableEvidence.evidence.object_path,
+    portalEvidence.evidence.object_path,
+    "active member can request the private object path for short signing",
+  );
+  await database.exec("reset role;");
+  const paymentCountAfterNotice = (
+    await queryRows("select count(*)::int as count from public.payments")
+  )[0].count;
+  const outstandingAfterNotice = (await queryRows(outstandingQuery))[0].amount;
+  assert.deepEqual(
+    [paymentCountAfterNotice, outstandingAfterNotice.toString()],
+    [paymentCountBeforeNotice, outstandingBeforeNotice.toString()],
+    "payment notice neither posts cash nor reduces receivable outstanding",
+  );
+  await database.exec([
+    "set role authenticated;",
+    "select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000004', false);",
+  ].join("\n"));
+
+  const [r9PortalQuote] = await queryRows([
+    "select current_revision_id from public.quotations",
+    "where customer_id = '50000000-0000-0000-0000-000000000001'",
+    "and current_revision_id is not null limit 1",
+  ].join("\n"));
+  const changeRequestSql = [
+    "select public.request_quotation_change(",
+    "'" + r9PortalQuote.current_revision_id + "',",
+    "'Vui lòng điều chỉnh lại thời gian giao hàng',",
+    "'d9000000-0000-0000-0000-000000000004') as id",
+  ].join("\n");
+  const [changeRequest] = await queryRows(changeRequestSql);
+  const [changeRequestReplay] = await queryRows(changeRequestSql);
+  assert.equal(
+    changeRequestReplay.id,
+    changeRequest.id,
+    "quote change request binds and replays the exact current revision",
+  );
+
+  await database.exec(
+    "select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000001', false);",
+  );
+  await queryRows([
+    "select public.review_payment_notice('" + paymentNotice.id + "', 'ACCEPTED',",
+    "'Chứng từ hợp lệ, chờ quy trình phiếu thu riêng', 1,",
+    "'d9000000-0000-0000-0000-000000000005')",
+  ].join("\n"));
+  const [noticeReviewFacts] = await queryRows([
+    "select",
+    "(select review_state from public.payment_notices where id = '" + paymentNotice.id + "') as state,",
+    "(select count(*)::int from public.payments) as payment_count,",
+    "(" + outstandingQuery + ") as outstanding",
+  ].join("\n"));
+  assert.deepEqual(
+    [noticeReviewFacts.state, noticeReviewFacts.payment_count, noticeReviewFacts.outstanding.toString()],
+    ["ACCEPTED", paymentCountBeforeNotice, outstandingBeforeNotice.toString()],
+    "notice review changes only review state and never financial ledgers",
+  );
+
+  await database.exec([
+    "reset role;",
+    "update public.customer_portal_memberships set active = false, revoked_at = now()",
+    "where auth_user_id = '10000000-0000-0000-0000-000000000004'",
+    "and customer_id = '50000000-0000-0000-0000-000000000001';",
+    "set role authenticated;",
+    "select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000004', false);",
+  ].join("\n"));
+  let revokedCustomerRejected = false;
+  try {
+    await queryRows("select public.customer_portal_snapshot(null)");
+  } catch {
+    revokedCustomerRejected = true;
+  }
+  assert.equal(revokedCustomerRejected, true, "revoked membership blocks the next portal request");
+  let revokedEvidenceRejected = false;
+  try {
+    await queryRows(
+      "select public.get_portal_evidence_for_signing('" + portalEvidence.evidence.id + "')",
+    );
+  } catch {
+    revokedEvidenceRejected = true;
+  }
+  assert.equal(revokedEvidenceRejected, true, "revoked membership cannot mint another signed evidence URL");
+  await database.exec([
+    "reset role;",
+    "update public.customer_portal_memberships set active = true, revoked_at = null",
+    "where auth_user_id = '10000000-0000-0000-0000-000000000004'",
+    "and customer_id = '50000000-0000-0000-0000-000000000001';",
+    "set role authenticated;",
+    "select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000001', false);",
+  ].join("\n"));
+
   await database.exec(`reset role;
     update public.finance_accounts set active = false where id = '${financeAccount.id}';
     update public.expense_categories set active = false where id = '${expenseCategory.id}';
@@ -742,7 +939,7 @@ try {
   assert.equal(movementMutationRejected, true, "inventory movement ledger is append-only");
 
   console.info(`R7 dashboard local sample: ${dashboardDurationMs.toFixed(2)} ms, ${dashboardPayloadBytes} bytes.`);
-  console.info("Isolated PostgreSQL checks passed: R2 access through R8 work/service/compensation golden-flow invariants.");
+  console.info("Isolated PostgreSQL checks passed: R2 access through R9 worker/customer portal and payment-notice invariants.");
 } finally {
   await database.close();
 }
