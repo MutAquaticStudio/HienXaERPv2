@@ -3,7 +3,8 @@
 Repository: MutAquaticStudio/HienXaERPv2
 
 Supabase project: HienXaERPv2 (nbwynrwkdbtfsitafsxa), NOX-OS organization, Seoul.
-Project creation and all eight cloud migrations are confirmed. Authenticated workflows remain unverified.
+Project creation and all nine cloud migrations are confirmed. The authorized Owner bootstrap and
+the authenticated Purchase Order read path are verified; broader role and provider workflows remain pending.
 
 ## Configuration
 
@@ -31,9 +32,10 @@ must also be exercised before declaring the deployment ready.
 - Local build and unit checks passed in R9.
 - Local HTTP checks found missing Supabase runtime configuration.
 - Vercel deployment: succeeded; https://hienxa-erp-v2.vercel.app.
-- Hosted database migrations: 8/8 applied with migration history.
+- Hosted database migrations: 9/9 applied with migration history.
 - Hosted HTTP checks: 8/8 passed, exit code 0.
-- Acceptance: not run; authenticated workflows are blocked by missing bootstrap accounts and data.
+- Authorized Owner bootstrap: configured for branch HX with the owner role and permission set.
+- Acceptance: PARTIAL; technical release checks passed, while broader UAT/provider/recovery checks remain open.
 
 ## Deployment evidence: 2026-09-14
 
@@ -47,9 +49,9 @@ must also be exercised before declaring the deployment ready.
 - Vercel browser reported successful deployment. The Vercel connector returned 404 for the same
   deployment ID; browser evidence and direct HTTP checks are the basis of the deployment result.
 
-Supabase SQL Editor displayed all eight migration versions, from 20260912101030 through
-20260913100000. The remaining seven migrations were applied together in one transaction,
-with their original SQL stored in supabase_migrations.schema_migrations. No test fixtures were loaded.
+Supabase SQL Editor displayed the original eight migration versions, from 20260912101030 through
+20260913100000. The Purchase Order grant fix, version 20260914060713, was subsequently applied and
+recorded in supabase_migrations.schema_migrations. No test fixtures were loaded.
 
 Post-migration SQL results:
 
@@ -61,7 +63,7 @@ Post-migration SQL results:
 | delivery-proofs bucket public | false |
 | inventory-evidence bucket public | false |
 | portal-evidence bucket public | false |
-| Auth users / employees / branches / customer memberships | 0 / 0 / 0 / 0 |
+| Authorized application bootstrap | Owner account, branch HX, owner role and 62 permissions |
 
 Command: `node scripts/check-deployment.mjs https://hienxa-erp-v2.vercel.app`
 
@@ -79,13 +81,30 @@ Command: `node scripts/check-deployment.mjs https://hienxa-erp-v2.vercel.app`
 These results establish only the listed checks, not full RLS correctness, authenticated access,
 transactional business correctness, performance, or acceptance.
 
+## Acceptance evidence: 2026-09-14
+
+Candidate: `d9db020982b8f348752cfc0bca7b3acdc8a797a3`.
+
+- `CI=true pnpm check`: PASS. ESLint, route type generation, TypeScript, 8 test files / 18 tests,
+  and the optimized Next.js build with 51 generated pages completed successfully.
+- `CI=true pnpm db:test:isolated`: PASS. Isolated PostgreSQL checks covered access through the
+  worker/customer portal and payment-notice invariants; the R7 dashboard local sample was 5.39 ms
+  and 715 bytes.
+- `node scripts/check-deployment.mjs https://hienxa-erp-v2.vercel.app`: 8/8 PASS.
+- GitHub status checks for the candidate: both Vercel projects reported success.
+- Authenticated Owner browser check: `/admin/purchase-orders` rendered `0 đơn mua` and the empty
+  state without the previous PostgreSQL 42501 error.
+- Purchase Order regression: authenticated has `SELECT`, anon does not, RLS remains enabled, and
+  `purchase_order_read` is queryable under the authenticated role.
+
+Overall acceptance is `PARTIAL`, not `ACCEPTED`: the evidence above does not cover every case in
+acceptance.md and does not authorize rewriting missing evidence as PASS.
+
 ## Outstanding release conditions
 
-- Auth Site URL and redirect allowlist: not updated. Browser automation became stuck on the
-  Authentication sidebar; reload, a new-tab attempt, and session reset did not restore the form.
-  The new-tab paste attempt timed out and screenshots were unavailable. No Auth URL save was confirmed.
-- Bootstrap: no authorized application administrator, employee, branch, or customer membership exists.
-  The actual owner identity and initial business scope must be supplied before assigning privileges.
-- Authenticated login/recovery, worker/customer workflows, and Storage upload/signing: NOT_RUN.
-- Acceptance: NOT_RUN; no acceptance case is marked PASS from HTTP or schema checks alone.
-- Backup/restore and full release gate: NOT_RUN. This deployment is not a production-readiness sign-off.
+- Auth Site URL and redirect allowlist: configured for the deployed application URL.
+- Authenticated worker/customer role journeys and Storage upload/signing: NOT_RUN.
+- Provider sandbox behavior, recovery, concurrency at external boundaries, representative p95/p99
+  performance, backup/restore rehearsal, and multi-role Owner UAT: NOT_RUN or BLOCKED by missing harness/data.
+- Full release acceptance remains PARTIAL. Merging this scoped PR does not by itself establish
+  `ACCEPTED` or `READY_FOR_RELEASE` for the whole product.
