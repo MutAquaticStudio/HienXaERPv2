@@ -1,429 +1,1304 @@
-# implementation.md — Sổ trạng thái và bằng chứng thực tế
+# implementation.md — Audited GitHub Reality
 
-> **Bộ tài liệu:** `HX-V2-DOCSET-4.2`  
-> **Giao thức đồng bộ:** `SYNC-4.2`  
-> **Nguyên tắc:** chỉ ghi điều đã quan sát/chạy thật; không copy Spec hoặc backlog.
+> **DOCSET:** `HX-V2-DOCSET-4.4`
+> **SYNC:** `SYNC-4.4`
+> **Repository:** `MutAquaticStudio/HienXaERPv2`
 
-# IMP-000 — Evidence kind
+# IMP-000 — Fresh Audit Baseline
 
-- `REPOSITORY_OBSERVED`: đã đọc source/ref cụ thể.
-- `EXECUTED_LOCAL`: đã chạy command/test cục bộ.
-- `PRODUCTION_OBSERVED`: đã đọc Production bằng quyền phù hợp.
-- `USER_REPORTED`: người dùng cung cấp.
-- `NOT_VERIFIED`: chưa đủ bằng chứng.
+```yaml
+DEFAULT_BRANCH: main
+HEAD: 2a81dc87e2ad0de3ff3349fb0e894115e333c142
+HEAD_DATE: 2026-09-14
+HEAD_MESSAGE: Document deployment readiness and fix Purchase Order access (#4)
+R9_COMMIT: 26c0643327a136818b43b8dc02e1b0e705ded809
+AUDIT_DATE: 2026-09-15
+AUDIT_MODE: SOURCE_ROUTE_CONTRACT_READ_ONLY
+UI_BROWSER_AUDIT: NOT_RUN
+PRODUCTION_MUTATION: NO
+```
 
-Chưa chạy = `NOT_RUN`, không PASS.
+Latest commit check on 2026-09-15 found no newer commit than HEAD above.
 
+# IMP-010 — Audit Verdict
 
-# IMP-005 — Document conformance record
+The previous gap hypothesis materially matches current source.
 
-Mỗi batch/task có thay đổi source chỉ cần một dòng khi đáng ghi:
+Legend:
+- CONFIRMED = direct source/tree evidence.
+- PARTIAL = feature exists in part, contract remains incomplete.
+- DISPROVED = prior suspicion not a real gap.
+
+| Gap | Verdict | Severity | Evidence summary |
+|---|---|---:|---|
+| GAP-01 execution state drift | CONFIRMED | P0 | repo has R9 commit; current task state previously remained R8 |
+| GAP-02 master-data CRUD | PARTIAL | P0 | Customer/Material lists read-only; Supplier quick-create and employee invite exist, but complete CRUD/config absent |
+| GAP-03 Quote/SO multi-line create | CONFIRMED | P0 | commercial form accepts one material/UOM/qty; server sends `[line]` |
+| GAP-04 DRAFT edit | CONFIRMED | P0 | Quote/SO detail offers send/confirm/cancel/revision, no complete draft line editor |
+| GAP-05 quick Customer/Site | CONFIRMED | P0 | Sales form has selectors only |
+| GAP-06 price preview/manual sales override | CONFIRMED | P0 | price resolves server-side; no pre-save price/total/manual override input |
+| GAP-07 PO multi-line operation | CONFIRMED | P0 | form one-line; PO detail uses `firstLine` for receive/direct verification |
+| GAP-08 Delivery multi-line operation | CONFIRMED | P0 | delivery detail loads lines but key operations derive `line = lines[0]` |
+| GAP-09 Customer 360 | PARTIAL | P1 | profile/sites/pricing/AR exist; transaction CTAs/history remain incomplete/stale |
+| GAP-10 core list scale | CONFIRMED | P1 | Orders/Quotes/Customers and other lists use unbounded branch selects; missing server pagination/search contract |
+| GAP-11 Dashboard completion | PARTIAL | P1 | core KPI/AR/AP exist; expense breakdown/commission detail/context drill-down incomplete |
+| GAP-12 real admin identity context | CONFIRMED | P1 | admin AppShell hard-codes sample user/branch/company |
+| GAP-13 PaymentNotice discoverability | CONFIRMED | P1 | review route exists; admin nav has no entry |
+| GAP-14 customer order debt/docs | CONFIRMED | P1 | customer order detail shows delivery timeline but not contract debt/payment/documents |
+| GAP-15 access management | PARTIAL | P1 | list + invite exist; role/branch change/revoke/reactivate/permission management UI incomplete |
+| GAP-16 Settings surface | CONFIRMED | P1 | no settings route/feature found |
+| GAP-17 Reports | CONFIRMED | P1 | no reports route/feature found |
+| GAP-18 Audit log UI | CONFIRMED | P1 | no admin audit surface found |
+| GAP-19 low-stock alerts | CONFIRMED | P1 | no threshold/reorder/low-stock implementation found |
+| GAP-20 print/export templates | PARTIAL | P1 | quote PDF exists; delivery note/payment voucher/debt statement not found |
+| GAP-21 R10 | CONFIRMED | P1 | no routing/GPS/messaging module/migration/UI observed |
+| GAP-22 R11 | CONFIRMED | P1/HUMAN_GATE | no electronic-invoice implementation observed |
+| GAP-23 R12 | PARTIAL | P1 | deployment documentation exists, but release/migration/QA/cutover phase not complete |
+
+# IMP-020 — False Positives Removed
+
+## NOT-GAP-A — Worker/customer portal navigation
+`/work` and `/customer` use `PortalShell`, not the unused work/customer arrays in `AppShell`.
+Worker portal has current work, pool, earnings, profile navigation.
+Customer portal has home, quotations, orders, debt, profile.
+
+Verdict: DISPROVED as user-facing navigation gap.
+
+## NOT-GAP-B — Stock Count discoverability
+Inventory page links to `/admin/stock-counts`.
+
+Verdict: DISPROVED as missing-entry gap.
+
+# IMP-030 — Key Source Evidence
+
+Observed paths include:
+```text
+src/components/app-shell.tsx
+src/components/portal/portal-shell.tsx
+src/components/sales/commercial-document-form.tsx
+src/components/purchasing/purchase-order-form.tsx
+src/modules/sales/actions.ts
+src/app/admin/customers/page.tsx
+src/app/admin/customers/[id]/page.tsx
+src/app/admin/products/page.tsx
+src/app/admin/orders/[id]/page.tsx
+src/app/admin/purchase-orders/[id]/page.tsx
+src/app/admin/deliveries/[id]/page.tsx
+src/app/admin/page.tsx
+src/app/admin/payment-notices/page.tsx
+src/app/admin/access/page.tsx
+src/app/customer/orders/[id]/page.tsx
+supabase/migrations/
+```
+
+# IMP-040 — Positive Existing Foundation
+
+Do not rebuild:
+- identity/access/RLS direction;
+- exact money/quantity primitives;
+- quote revisions;
+- sales/purchasing/inventory/delivery domain;
+- AR/AP/payment separation;
+- PaymentNotice != Payment;
+- workforce/service/compensation;
+- worker/customer portal isolation.
+
+Recovery extends current implementation.
+
+# IMP-050 — Current Execution
+
+```yaml
+CURRENT_PHASE: GC
+CURRENT_TASK: GC-07
+GAP_AUDIT: COMPLETE_FOR_CURRENT_CHECKOUT
+GAP_CLOSURE: IN_PROGRESS
+R10: LOCKED_UNTIL_GC_25
+R11: LOCKED_UNTIL_R10_GATE_OR_INDEPENDENT_PROVIDER_NEUTRAL_SCOPE
+R12: LOCKED_UNTIL_PRIOR_GATE
+PRODUCTION: DO_NOT_TOUCH_WITHOUT_OWNER
+```
+
+# IMP-060 — Evidence Lifecycle
+
+GA source evidence remains VALID until affected files/schema/contract change.
+GC invalidates only its related gaps.
+No full re-audit after every fix.
+
+# IMP-070 — Gap Record Format
 
 ```text
-DOC_CONFORMANCE:
-scope=<task/batch>
-docset=<version>
-contract_refs=<task + context pack + requirement IDs chính>
-result=<PASS/BLOCKED>
-deviation=<NONE hoặc DOC_CONFLICT-ID>
-```
-
-Không cần copy requirement text vào đây.
-
-`PASS` chỉ có nghĩa thay đổi bám đúng contract của scope đó; không đồng nghĩa acceptance/QA đã PASS.
-
-
-# IMP-007 — Execution cache và invalidation
-
-Đây là cache tham chiếu bằng chứng, không phải hệ thống phần mềm mới.
-
-```yaml
-DOC_LOCK: VALID
-DOCSET_FINGERPRINT: GIT_TREE:cbe9de71d8dc3ea607f77d50e6f0d092afc52696
-ACTIVE_CONTEXT_PACK: PLAN-CTX-BASE + PLAN-CTX-R8
-INSTRUCTION_AUDIT_REF: R0-I-001 VALID
-DEPLOY_GUARD_REF: R0-D-001 VALID
-SCHEMA_SNAPSHOT_REF: R3-S-001 VALID_ISOLATED
-SECURITY_SNAPSHOT_REF: R2-SEC-001 VALID_ISOLATED
-DATA_BASELINE_REF: R0-DATA-001 VALID_EMPTY_OWNER_REPORTED
-COMMAND_MAP_REF: NONE
-```
-
-Mỗi ref chỉ cần trạng thái:
-`VALID / INVALIDATED / STALE_FOR_SCOPE / NOT_RUN`.
-
-Không tạo daemon/service/hash framework. Có thể dùng Git hash/file hash đơn giản hoặc exact commit/tree.
-
-Nếu ref VALID và không có trigger PLAN-015:
-- không gọi lại tool/API/query;
-- không đọc lại raw output;
-- dùng kết luận đã ghi;
-- chỉ mở raw evidence khi task cần chi tiết chưa được tóm tắt.
-
-Nếu invalid:
-- re-run phần bị invalid, không toàn audit.
-
-# IMP-010 — Baseline lịch sử gần nhất
-
-Repository và archive baseline trước DOCSET-4.0 đã từng được kiểm/ghi trong các bộ tài liệu trước. Trước khi R0 chạy phải xác minh lại branch/HEAD/archive/working tree và cơ chế deploy; không coi SHA cũ là current fact.
-
-Theo báo cáo người dùng, cleanup không sửa dữ liệu/Storage và chưa deploy; mức `USER_REPORTED` cho đến R0.
-
-# IMP-020 — Current execution
-
-```yaml
-DOCSET: HX-V2-DOCSET-4.2
-CURRENT_PHASE: see tasks.md
-APPLICATION_V2_DOMAIN_CODE: R8_WORKFORCE_SERVICE_COMPENSATION_IMPLEMENTED
-PRODUCTION_AUDIT: EMPTY_BASELINE_OWNER_REPORTED
-ACCEPTANCE: NOT_REQUESTED
-```
-
-## R5_IMPLEMENTATION_EVIDENCE
-
-```yaml
-STATUS: IMPLEMENTED
-SCOPE: PURCHASING_AND_SOURCING
-CONTRACT_REFS: SPEC-160,SPEC-PUR-001,SPEC-PUR-002,SPEC-SRC-001,SPEC-SRC-002,SPEC-SRC-003,SPEC-JOURNEY-002,SPEC-JOURNEY-003,SPEC-JOURNEY-004,CONFIG-002,UX-320,UX-330,UX-FLOW-003,UX-FLOW-009
-RECEIVING_AND_AP: DEFERRED_TO_R6
-TRUE_MULTI_SESSION_ALLOCATION_RACE: NOT_RUN_NO_CONTAINER
-ACCEPTANCE: NOT_RUN_NOT_REQUESTED
-PRODUCTION: NOT_TOUCHED
-```
-
-- Purchase order drafts persist supplier, destination, dates, line conversion, and immutable purchase-price snapshots.
-- Confirm and cancel commands are idempotent; PO confirmation does not create accounts payable.
-- `WAREHOUSE`, `SUPPLIER_DIRECT`, and `SUPPLIER_TO_WAREHOUSE` allocations use explicit sales-line, purchase-line, and warehouse links.
-- Allocation capacity and optimistic versions prevent over-allocation and stale updates.
-- Both direct-entry paths create linked drafts atomically without auto-confirming either side; sales price remains owned by the sales order.
-- Purchase-cost reads are permission-aware and line reads enforce branch purchasing access.
-- Internal purchase list/create/detail, sales sourcing status, supplier purchase history, and supplier quick-create are implemented.
-
-### R5 module registry delta
-
-| Module | State | Contract |
-|---|---|---|
-| Purchasing and sourcing | IMPLEMENTED | SPEC-PUR-001..002; SPEC-SRC-001..003 |
-
-### R5 phase gate
-
-| Check | Result |
-|---|---|
-| Typecheck | PASS |
-| Lint | PASS |
-| Unit tests | PASS: 16 |
-| Isolated PostgreSQL | PASS: R2-R5 invariants |
-| Production build | PASS |
-| True multi-session allocation race | NOT_RUN_NO_CONTAINER |
-| Acceptance | NOT_RUN_NOT_REQUESTED |
-| Production | NOT_TOUCHED |
-
-### R5 conformance
-
-- Purchase prices are server-resolved or require an authorized manual override with a reason.
-- Direct sourcing creates no fake warehouse receipt or issue.
-- Split allocations cannot exceed the sales-line requirement.
-- No automatic confirmation occurs in either direct-entry path.
-- Performance thresholds remain referenced only from `Spec.md`.
-- Checks followed targeted task coverage and the R5 phase gate; there is no standalone smoke-test layer.
-
-# IMP-030 — Path & command registry
-
-Chỉ điền khi R0/R1 xác minh thật:
-
-| Key | Actual value | Evidence | Last verified |
-|---|---|---|---|
-| repo_root | `/Users/nox/Downloads/HienXaERP` | REPOSITORY_OBSERVED R0-I-001 | 2026-09-12 |
-| package_manager | `pnpm@11.24.0` | R1-GATE-001 | 2026-09-12 |
-| app_routes | `src/app` | R1-GATE-001 | 2026-09-12 |
-| module_root | `src/modules` | R1-GATE-001 | 2026-09-12 |
-| db_migration_path | `supabase/migrations` | R4-GATE-001 | 2026-09-12 |
-| unit_command | `pnpm test` | R4-GATE-001 | 2026-09-12 |
-| db_test_command | `pnpm db:test:isolated` | R4-DB-001 | 2026-09-12 |
-| typecheck_command | `pnpm typecheck` | R4-GATE-001 | 2026-09-12 |
-| build_command | `pnpm build` | R4-GATE-001 | 2026-09-12 |
-
-## R0 evidence
-
-- `R0-I-001` (`REPOSITORY_OBSERVED`): repository `MutAquaticStudio/HienXaERPv2`, branch `main`, clean baseline at `1d5338a`; no applicable `AGENTS.md` or `CLAUDE.md` existed before DOCSET import.
-- `R0-D-001` (`REPOSITORY_OBSERVED`): remote repository is private; remote `main` was the only ref; current source contains no CI workflow. The connected Vercel team exposes only `nox-os` linked to `MutAquaticStudio/NOXOS`, so the Hiền Xa repository has no observed auto-deploy target in that scope.
-- `R0-S-001`, `R0-SEC-001`, `R0-DATA-001` (`USER_REPORTED`): Owner deleted Supabase project `hien-xa-erp-production` (`vknnzzecimfpnrsqbnuu`) before DOCSET-4.2 execution. No Production schema, Auth, Storage, business data, or performance baseline remains available to audit.
-- Migration classification: no legacy dataset is available; V2 local schema is the only writer during BUILD_ONLY. Any future Cloud Production project, credentials, migration, or deploy remains a human gate.
-
-## R1 evidence
-
-- `R1-GATE-001` (`COMMAND_OUTPUT`): `pnpm lint`, `pnpm typecheck`, 6 targeted unit checks, and `pnpm build` passed on Node 24 / Next.js 16.3.4; build emitted 14 routes across `/admin`, `/work`, `/customer`, and `/api/health`.
-- `R1-DB-GUARD-001` (`COMMAND_OUTPUT`): local PostgreSQL URL was accepted and a non-local Supabase-shaped host was rejected. No connection or write was attempted.
-- `R1-PROTOTYPE-001` (`SOURCE_OBSERVED`): all prototype records are marked `MOCK` and preserve one linked sales → sourcing → delivery → debt example; VND uses bigint/string serialization and quantity conversion uses decimal arithmetic.
-- Production: `NOT_TOUCHED`; no Cloud Supabase project or deployment target was created.
-
-## R2 evidence
-
-- `R2-S-001` (`COMMAND_OUTPUT`): CLI-generated migration `20260912101030_identity_access.sql` ran on isolated PostgreSQL (PGlite 0.5.8) with nine tables, FK/check/partial-unique constraints, explicit grants, and RLS enabled on every R2 table.
-- `R2-SEC-001` (`COMMAND_OUTPUT`): branch isolation, customer isolation, receiver-vs-finance role separation, missing-permission denial, and direct `assign_employee_role` denial passed. The definer command has fixed `search_path`, derives actor from `auth.uid()`, revokes `PUBLIC`/`anon`, validates permission in DB, and appends audit.
-- `R2-AUTH-001` (`SOURCE_OBSERVED`): one Supabase Auth provider is shared by `/login`, `/work/login`, and `/customer/login`; recovery, logout cache clearing, branch revalidation, revoked-account checks, permission-filtered navigation, and server page/API guards are implemented.
-- `R2-GATE-001` (`COMMAND_OUTPUT`): lint, typecheck, 9 unit checks, isolated DB checks, and production build passed; 23 routes emitted. Local DB URL passed and cloud-shaped URL was rejected.
-- Residual verification: `supabase test db` / pgTAP was authored but not executed because Docker and Podman are absent. This is not recorded as a pgTAP PASS; equivalent migration and RLS paths ran in isolated PostgreSQL.
-- Production: `NOT_TOUCHED`; runtime config rejects Cloud Supabase unless `HX_CLOUD_RUNTIME_APPROVED=true` is supplied by a later human gate.
-
-## R3 evidence
-
-- `R3-S-001` (`COMMAND_OUTPUT`): the CLI-generated catalog/CRM/pricing/credit migration ran after R2 on isolated PostgreSQL. Material/UOM rational conversion, branch resources, Customer/Site, Supplier/contact, pricing versions, opening-source obligations, immutable adjustment ledgers, and credit commitments were created with FK/check/unique/RLS controls.
-- `R3-PRICE-001` (`UNIT`): deterministic precedence, effective-window filtering, latest version selection, manual-approved metadata, and immutable old price snapshots passed targeted tests.
-- `R3-CREDIT-001` (`DB+UNIT`): credit exposure formula, missing-limit/overflow denial, same-source idempotent replay, over-limit reservation rejection under customer-row lock, and append-only obligation rejection passed. Payment/Allocation/Advance/Reversal are intentionally absent until R7.
-- `R3-UI-001` (`SOURCE_OBSERVED`): `/admin/customers/[id]` is a permission-aware read composition over profile/sites/pricing/AR; `/admin/suppliers` and `/admin/products` use minimal DTOs. Sensitive finance, pricing, and internal-note fields are not requested without their permission.
-- `R3-GATE-001` (`COMMAND_OUTPUT`): lint, typecheck, 16 unit checks, isolated DB checks, and production build passed; 25 routes emitted.
-- Residual verification: true two-session credit contention and Supabase pgTAP remain `NOT_RUN_NO_CONTAINER`; no race PASS is claimed. The DB helper uses `SELECT ... FOR UPDATE` on the shared customer row and was checked sequentially for source replay/overflow only.
-- Production: `NOT_TOUCHED`; all schema/data execution used an in-memory isolated PostgreSQL runtime.
-- Owner override: the deletion supersedes the preservation assumptions in `SPEC-PRODUCT-004` and `SPEC-MIG-001` for the removed baseline. No Spec file was silently rewritten.
-
-## R4 evidence
-
-- `R4-DB-001` (`COMMAND_OUTPUT`): CLI migration `20260912105455_sales_quotes_orders.sql` ran after R2/R3 on isolated PostgreSQL. Quote/revision/acceptance, SO/lines, command receipts, credit linkage, RLS/grants, immutable sent revision guards, and security-definer commands are present.
-- `R4-IDEM-001` (`DB`): same-key replay and changed-payload conflict passed for document creation; exact revision send/accept/new revision/from-quote, no automatic SO on acceptance, no AR on SO confirm, and cancellation credit release passed.
-- `R4-SEC-001` (`DB+SOURCE_OBSERVED`): price/UOM snapshots are recomputed and checked server-side; all pricing scopes are validated in the DB command; Finance Contact portal acceptance uses the same exact-revision command while Receiver remains view-only.
-- `R4-UI-001` (`SOURCE_OBSERVED`): live list/create/detail screens replace Sales MOCK pages; quotation actions are state-aware, three SO state axes are shown separately, and action feedback preserves the next operational context.
-- `R4-PDF-001` (`COMMAND_OUTPUT`): Noto Sans Vietnamese WOFF2 embedded successfully in a generated PDF. The API route generates the requested revision directly and does not claim a Storage artifact upload.
-- `R4-GATE-001` (`COMMAND_OUTPUT`): lint, typecheck, 16 unit regression checks, isolated DB checks, and production build passed; the route table includes internal quote/order, customer quotation, and revision PDF routes.
-- Residual verification: true two-session credit contention and Supabase pgTAP remain `NOT_RUN_NO_CONTAINER`; no RACE PASS is claimed. Sales usability/acceptance QA is `NOT_REQUESTED`.
-- Production: `NOT_TOUCHED`; all DB execution remained in-memory and no Cloud Supabase project or deployment was created.
-
-DOC_CONFORMANCE:
-scope=R0
-docset=HX-V2-DOCSET-4.2
-contract_refs=TASK-R0-01..06+PLAN-CTX-R0
-result=PASS
-deviation=OWNER_OVERRIDE_SPEC-PRODUCT-004_SPEC-MIG-001
-
-DOC_CONFORMANCE:
-scope=R4
-docset=HX-V2-DOCSET-4.2
-contract_refs=TASK-R4-01..06+PLAN-CTX-R4
-result=PASS
-deviation=NONE
-
-# IMP-040 — Module registry
-
-Chỉ thêm module khi source thật tồn tại:
-
-| Module | Paths | DB objects | Public commands/queries | State | Evidence |
-|---|---|---|---|---|---|
-| Sales | `src/modules/sales`, `src/app/admin/orders`, `src/app/admin/quotations`, `src/app/customer/quotations` | quotation/revision/acceptance, sales_order/lines, command_receipts | create/send/accept/revise/confirm/cancel/from-quote; list/detail/PDF | IMPLEMENTED_LOCAL | R4-DB-001,R4-UI-001 |
-
-# IMP-050 — Verification registry
-
-Một row cho một lần kiểm có giá trị tái dùng:
-
-| ID | Scope | Tree/diff | Command/environment | Result | Log/artifact |
-|---|---|---|---|---|---|
-| R4-GATE-001 | R4 Sales | local working tree | lint + typecheck + 16 unit + isolated PostgreSQL + build | PASS_WITH_LIMITATION | true multi-session race NOT_RUN_NO_CONTAINER |
-
-Không tạo verification framework riêng; bảng này chỉ là sổ tham chiếu.
-
-# IMP-060 — Policy & external gates
-
-| Gate | State | Evidence |
-|---|---|---|
-| POLICY-CREDIT | PENDING_OWNER_REVIEW | Spec proposal only |
-| POLICY-CUSTODY | PENDING_OWNER_REVIEW | Spec proposal only |
-| POLICY-BILLING | PENDING_OWNER_REVIEW | Spec proposal only |
-| POLICY-COST | PENDING_OWNER_REVIEW | Spec proposal only |
-| POLICY-PAYROLL | PENDING_OWNER_REVIEW | Spec proposal only |
-| POLICY-COMMISSION | PENDING_OWNER_REVIEW | Spec proposal only |
-| POLICY-INVOICE | PENDING_OWNER_REVIEW | Spec proposal only |
-| USER_REVIEW_UX | NOT_REQUESTED | — |
-| PROVIDER_INVOICE | NOT_SELECTED/NOT_VERIFIED | — |
-
-# IMP-070 — Architecture audit DOCSET-4.0
-
-**Phạm vi:** audit tài liệu trước implementation bằng khung tư duy thiết kế, audit Product Design trên tài liệu và review kiến trúc/rủi ro. Không có screenshot UI chạy thật, không có test ứng dụng/DB Production trong lượt này.
-
-Các sửa quan trọng:
-
-1. Backlog 3.4 có 226 task/~4.094 dòng; đổi sang task composite theo lát cắt để giảm context-switch.
-2. `source_type/source_id` đa hình authoritative bị loại; nguồn core dùng FK tường minh.
-3. R1 không còn job/outbox runner hoặc framework async dự phòng.
-4. Payment/Allocation/Advance/Reversal đầy đủ được dời về R7; R3 chỉ giữ obligation/credit substrate tối thiểu.
-5. `cost_fact` tổng quát không còn là mặc định; R7 trước hết tổng hợp canonical source.
-6. Job/outbox chỉ xuất hiện khi ranh giới external/long-running thật cần, mặc định lần đầu ở R11.
-7. Kiến trúc function-first; cấm base service/repository, internal HTTP, event bus/saga, generic workflow/rules engine nếu chưa có bằng chứng.
-8. Read model/query/cache/projection áp theo số đo; không materialize mặc định.
-9. UX bổ sung role landing và secondary flows nhận hàng, service, compensation, invoice để Codex không tự thiết kế các phase sau.
-10. Context pack theo phase thay hàng trăm READ refs lặp.
-11. DOCSET-4.2 bổ sung NO_REAUDIT, evidence invalidation và FAST_PATH để không re-plan/re-audit khi contract/evidence chưa đổi.
-
-**Kết luận tài liệu:** `CONTRACT_REVIEWED`.  
-**UI_TESTED:** `NOT_RUN`.  
-**APPLICATION_TESTED:** `NOT_RUN`.  
-**PRODUCTION_OBSERVED_FOR_4_0:** `NOT_RUN`.
-
-# IMP-080 — Handoff log format
-
-Sau task/batch append ngắn:
-
-```text
-date:
-scope:
-evidence_kind:
-changed:
+gap_id:
+status=OPEN/IN_PROGRESS/FIXED/DISPROVED/HUMAN_GATE
+contract_refs:
+source_evidence:
+changed_paths:
 checks:
-result:
-blocker:
-sync_impact:
-production_impact:
+remaining:
 ```
 
-Không ghi chain-of-thought.
+# IMP-080 — Check Result
 
-# IMP-ACCEPT-001 — Acceptance runs
+This audit did not run local build/tests or browser interaction.
+It establishes source/route/contract gaps, not usability acceptance.
 
-Chỉ append khi acceptance.md được mở:
+Before marking money/inventory/access fixes complete, run relevant DB/SEC/IDEM/RACE checks according to plan.
 
-| Run | Scope | Build/tree | Manual/technical evidence | Result | Open defects |
-|---|---|---|---|---|---|
-| — | — | — | — | NOT_REQUESTED | — |
+# IMP-090 — GA-01..GA-06 current checkout audit (2026-09-19)
 
-# KẾT THÚC implementation.md
+Document lock: `HX-V2-DOCSET-4.4 / SYNC-4.4`. The five Owner-supplied 4.4 files were copied verbatim from the `(1).md` counterparts into canonical paths during bootstrap. The prior 4.2 files are preserved outside the repo at `/Users/nox/Downloads/HienXaERP-docset-4.2-backup-2026-09-19`.
 
-## R6 — Inventory & Delivery checkpoint
+Exact 4.4 document SHA-256 fingerprints: Spec `ba80e00b03a86884293cd7e669b9362a2d44607d5edc1678f1d4c45e95abf1a6`; UXUI `5bb949c589d030cc9b22a95131529b0bc83a0258d4c04c306a438ad5e5a4ee6b`; plan `5639e07208b9b04f68da60051fa2d101241c069c79921c81c8cc4949f3090e82`; tasks baseline `7c265e63f690fccd45cd0a68746f8c4419de8d959a62c9637143b2c597ca2fb6`; implementation baseline `dfaa293bcb1419e1823b832fe88a73503cce35e925cc87a233356ad629b7cfe1`. These are baseline fingerprints before GC-01 state updates.
 
-STATUS:
-IMPLEMENTED
+GA-01 state: remote `origin` is `MutAquaticStudio/HienXaERPv2`; local branch `codex/deployment-readiness`, HEAD `424cc89e38ffa1a9650c8453fd6a4e4b62f82a5e`, tree `a38ef3e0ef5694a3a0293aa8000e321e6b8d97c4`. Existing 4.4 baseline described `main` at `2a81dc8`, which is not a local revision; source conclusions from it are not silently treated as current. Working tree contains prior QA, catalog, access and preview work. The Vercel QA preview `dpl_D15SjQJxkaLk6W8AbNawTViNHBCe` was READY on 2026-09-14; behavioral acceptance on that candidate remains NOT_RUN. Production was not mutated by this audit.
 
-CONTRACT_REFS:
-- PLAN-CTX-R6
-- SPEC-170
-- SPEC-180
-- SPEC-FIN-002
-- SPEC-FIN-003
-- SPEC-440
-- SPEC-DATA-001
-- SPEC-OPS-001
-- SPEC-OPS-002
-- SPEC-OPS-003
-- UX-360
-- UX-370
-- UX-380
-- UX-390
-- UX-FLOW-006
-- UX-FLOW-007
-- UX-FLOW-011
+GAP_REGISTER for this checkout (source/route audit only; no new runtime test):
 
-IMPLEMENTATION_EVIDENCE:
-- Append-only inventory movement ledger with derived on-hand, active reservation, and available quantities.
-- Stock-count cutoff, line capture, approval, evidence reference, and append-only variance adjustment.
-- Purchase receipt with Moving Weighted Average and AP source; direct supplier fulfillment remains independent from warehouse inventory.
-- Delivery state machine, assignments, handoff/transit custody, field result, independent verification, returns/remainders/loss handling.
-- Delivery verification creates AR, revenue, and direct cost from explicit source records in one transaction with idempotency.
-- Private evidence staging, Storage upload, checksum finalization, hosted object-existence guard, and audience policy.
-- Inventory, stock-count, dispatch, delivery, purchase receipt, and source-linked order interfaces.
-- Cancellation guards prevent commercial source documents from being cancelled after downstream fulfillment history exists.
+| gap_id | verdict | severity | contract_refs | source_evidence | user_impact | fix_task |
+|---|---|---|---|---|---|---|
+| GAP-01 | CONFIRMED | P0 | SPEC-GAP-001/002 | tasks.md baseline and this HEAD differ; prior implementation.md describes `2a81dc8` | execution state could authorize wrong phase | GC-01 |
+| GAP-02 | PARTIAL | P0 | SPEC-REC-001; UX-REC-004 | src/app/admin/catalog/page.tsx and src/modules/catalog/fields.ts cover seven kinds; no Warehouse/Vehicle/Machine/Branch CRUD | master data cannot be fully operated | GC-03..07 |
+| GAP-03 | CONFIRMED | P0 | SPEC-REC-002; UX-REC-002 | src/modules/sales/actions.ts `createDocument` sends `order_lines: [line]` / `quote_lines: [line]` | multi-item quote/order unavailable | GC-08 |
+| GAP-04 | CONFIRMED | P0 | SPEC-REC-003; UX-REC-003 | src/app/admin/quotations/[id]/page.tsx and orders/[id]/page.tsx have no DRAFT line edit path; PO same | draft corrections require workaround | GC-11..12 |
+| GAP-05 | CONFIRMED | P0 | SPEC-REC-005; UX-REC-002 | src/components/sales/commercial-document-form.tsx only selects existing Customer/Site | interrupts Sales draft | GC-10 |
+| GAP-06 | CONFIRMED | P0 | SPEC-REC-004; UX-REC-002 | src/modules/sales/actions.ts resolves price at Save; Sales form lacks manual price/source/total preview | user cannot verify price before Save | GC-09 |
+| GAP-07 | CONFIRMED | P0 | SPEC-REC-002; SPEC-GAP-002/7 | src/modules/purchasing/actions.ts sends `purchase_lines: [line]`; purchase-orders/[id]/page.tsx uses `firstLine` for receive/direct | wrong/incomplete line operation | GC-12..13 |
+| GAP-08 | CONFIRMED | P0 | SPEC-GAP-002/8 | src/app/admin/deliveries/[id]/page.tsx uses `lines[0]` for quantities/commands | multi-line result/verification unsafe | GC-14 |
+| GAP-09 | PARTIAL | P1 | SPEC-REC-007; UX-REC-005 | src/app/admin/customers/[id]/page.tsx has profile/site/price/AR but transaction sections are placeholder text | customer context fragmented | GC-15 |
+| GAP-10 | CONFIRMED | P1 | SPEC-REC-006; UX-REC-007 | nine core admin list pages use `.order()` without `.limit()`/`.range()` | lists fetch entire branch | GC-19 |
+| GAP-11 | PARTIAL | P1 | UX-REC-008 | src/app/admin/page.tsx has KPI and AR/AP links; no complete expense breakdown or commission drill-down | financial context incomplete | GC-20 |
+| GAP-12 | CONFIRMED | P1 | UX-REC-009 | src/components/app-shell.tsx hard-codes user and branch/company demo labels | wrong identity shown to users | GC-02 |
+| GAP-13 | CONFIRMED | P1 | UX-REC-010 | src/app/admin/payment-notices/page.tsx exists; src/components/app-shell.tsx has no entry | pending notice hard to find | GC-02 |
+| GAP-14 | CONFIRMED | P1 | UX-REC-011 | src/app/customer/orders/[id]/page.tsx shows delivery timeline only | customer lacks debt/payment/documents | GC-18 |
+| GAP-15 | PARTIAL | P1 | UX-REC-012 | src/app/admin/access/page.tsx and src/lib/auth/actions.ts now assign/change/revoke; no reactivate or explicit permission editor | access lifecycle incomplete | GC-17 |
+| GAP-16 | CONFIRMED | P1 | SPEC-REC-008; UX-REC-013 | no settings route in src/app/admin | operational settings not discoverable | GC-07 |
+| GAP-17 | CONFIRMED | P1 | SPEC-REC-008; UX-REC-013 | no reports route in src/app/admin | required reporting absent | GC-23 |
+| GAP-18 | CONFIRMED | P1 | SPEC-REC-008; UX-REC-013 | no audit UI route in src/app/admin | actors cannot inspect action history | GC-24 |
+| GAP-19 | CONFIRMED | P1 | UX-REC-014 | no threshold/low-stock schema or admin route in scoped source | stock warning absent | GC-21 |
+| GAP-20 | PARTIAL | P1 | SPEC-REC-009; UX-REC-015 | quotation PDF route exists; no delivery note/voucher/debt statement route | required documents unavailable | GC-22 |
+| GAP-21 | CONFIRMED | P1 | PLAN-045; SPEC-GAP-002/21 | no routing/GPS/messaging routes/modules in scoped source | R10 not implemented | R10-01..06 |
+| GAP-22 | CONFIRMED | P1 | PLAN-050; SPEC-GAP-002/22 | no invoice domain/routes; provider selection still HUMAN_GATE | R11 incomplete | R11-01..06 |
+| GAP-23 | PARTIAL | P1 | PLAN-055; SPEC-GAP-002/23 | qa scripts, QA migration and Vercel preview exist; full release/migration/recovery evidence absent | release readiness unproven | R12-01..08 |
 
-CHECK_EVIDENCE:
-- TypeScript: PASS
-- Lint: PASS
-- Unit regression: PASS (7 files, 16 tests)
-- Isolated PostgreSQL migration and R2-R6 golden flow: PASS
-- Production build: PASS
-- True multi-session reservation/count race: NOT_RUN_NO_CONTAINER
-- Container-backed pgTAP: NOT_RUN_NO_CONTAINER
-- Acceptance verification: NOT_REQUESTED
+`NEW_GAP-01`: Worker portal assigned-job UI remains unverified on the latest source; prior QA technical run failed the visible-title check before the SQL payload mapping fix. Source: `scripts/qa/uat.mjs`, `supabase/migrations/20260914100407_admin_catalog_worker_completion.sql`, prior QA artifact `2026-09-14T09-57-20-480Z-uat-technical`. Severity P1. Fix/check in GC-25 affected R9 regression; no acceptance PASS claim.
 
-PRODUCTION:
-NOT_TOUCHED
+GA_COMPLETE: TRUE for the current source checkout; all 23 seed gaps have a verdict. This is a read-only source audit. `GC-01` is open for state synchronization and targeted follow-up. Checks: DOC NEW PASS; UI/DB/SEC/IDEM/RACE/PERF NOT_RUN in GA; historical build evidence is candidate-specific, not fresh GA execution.
 
-# R7 CHECKPOINT - FINANCE AND DASHBOARD
+# IMP-100 — GC-A checkpoint (2026-09-19)
 
-PHASE: R7
-STATUS: IMPLEMENTED
-CONTEXT_PACK: PLAN-CTX-BASE + PLAN-CTX-R7
-CONTRACT_REFS: SPEC-190, SPEC-200, SPEC-210, SPEC-460, SPEC-BE-004, SPEC-BE-005, SPEC-BE-006, UX-230, UX-420, UX-430, UX-440, UX-850, UX-860, UX-FLOW-005
+Scope: GC-01 document execution-state sync and GC-02 authenticated admin identity plus PaymentNotice discoverability.
+Gap delta: GAP-01 FIXED for current local checkout; GAP-12 source fix applied, runtime UI NOT_RUN; GAP-13 finance navigation entry added, runtime UI NOT_RUN. Do not call GAP-12/13 acceptance PASS before affected UI check.
+Changed paths: Spec.md, UXUI.md, plan.md, tasks.md, implementation.md (Owner-supplied 4.4 sync); src/app/admin/layout.tsx; src/components/app-shell.tsx.
+New evidence: local `pnpm typecheck` PASS after GC-02. Reused evidence: GAP-02..23 source audit above; QA Preview build READY from 2026-09-14, not a check of GC-02.
+Checks: DOC NEW PASS; typecheck NEW PASS; UI/DB/SEC NOT_RUN for GC-02. Result: GC-01 COMPLETE; GC-02 IMPLEMENTED_LOCAL, UI verification pending at GC-25. Blocker: NONE for GC-03. Production impact: NOT_TOUCHED.
 
-IMPLEMENTATION:
-- Added append-only cash payments, manual many-to-many allocation, customer/supplier advances, reversals, adjustments, reconciliation, expense approval, and explicit AP source linkage.
-- Added AR, AP, cashbook, expense, profitability, and dashboard read models with permission-aware quality states and bounded as-of filtering.
-- Added admin finance routes, manual payment allocator, source drilldown, dashboard filters, KPI cards, chart, and ranked obligation views.
-- Preserved payment, expense, reconciliation, and source-ledger invariants through RPC commands, row locks, RLS, immutable posted records, and idempotency receipts.
+# IMP-101 — GC-03 Customer/Site checkpoint (2026-09-20)
 
-CHECKS:
-- L1 targeted database golden flow: PASS.
-- L2 affected R2-R7 database regression: PASS.
-- L3 typecheck: PASS.
-- L3 lint: PASS.
-- L3 unit tests: PASS, 16/16.
-- L3 production build: PASS.
-- Dashboard local sample: 2.79 ms, 731 bytes; local evidence only, not a production percentile claim.
-- True multi-session allocation race: NOT_RUN_NO_CONTAINER.
-- pgTAP: NOT_RUN_NO_CONTAINER.
-- L4 full-system verification: NOT_RUN_PHASE_SCOPE.
-- Acceptance: NOT_REQUESTED.
+Scope: Customer/Site create, edit, deactivate, profile fields, branch-scoped sales owner, credit limit, and quick-create actions. GAP-02 remains PARTIAL until GC-04..07; GC-03 is COMPLETE.
+Changed paths: src/modules/catalog/{fields,actions,editor}.ts(x); src/app/admin/catalog/page.tsx; src/modules/customers/actions.ts; supabase/migrations/20260920064133_customer_site_profile.sql, 20260920070000_customer_site_stale_conflict.sql, 20260920080000_customer_site_owner_credit.sql. Credit-limit changes require customers.manage and finance.ar.adjust; unauthorised fields are excluded from the catalog row projection.
+New evidence: local typecheck PASS; QA migration replay/seed 4/4 PASS; all three Customer/Site migrations applied only to Supabase QA. Targeted QA RPC checks PASS for Customer/Site create/edit/deactivate, branch employee options, denied worker access, invalid owner rejection, stale credit PT409, persisted values, and profile audit. Synthetic QA records were deactivated. Reused evidence: GA snapshot-source audit for SPEC-CUS-003; GC-02 shell check remains pending UI verification.
+Result: GC-03 PASS; blocker NONE for GC-04. Production impact: NOT_TOUCHED.
 
-DEFERRED:
-- Salary and commission remain INCOMPLETE_PENDING_R8.
+# IMP-102 — GC-04 Supplier checkpoint (2026-09-20)
 
-PRODUCTION: NOT_TOUCHED
+Scope: Supplier create/edit/deactivate through the existing catalog form and PO quick-create. GAP-02 remains PARTIAL pending GC-05..07; GC-04 is COMPLETE.
+Changed paths: src/modules/catalog/actions.ts; src/modules/purchasing/actions.ts; supabase/migrations/20260920090000_supplier_catalog_guard.sql. Existing quick-create no longer updates a Supplier that shares its code; a duplicate requires selecting the existing Supplier or another code. Generic catalog stale conflicts now return PT409 rather than a retry timeout.
+New evidence: local typecheck PASS; QA migration replay/seed 4/4 PASS; migration applied only to Supabase QA. Targeted QA RPC checks PASS for Supplier create/edit/deactivate, stale conflict, role/branch denial, duplicate quick-create without overwrite, idempotent quick-create retry, and audit. Synthetic QA suppliers were deactivated. Reused evidence: GC-03 catalog form and permission-aware projection; GA Supplier snapshot/source audit.
+Result: GC-04 PASS; blocker NONE for GC-05. Production impact: NOT_TOUCHED.
 
-# R8 CHECKPOINT - WORKFORCE, SERVICE, AND COMPENSATION
+# IMP-103 — GC-05 Material/UOM/Conversion checkpoint (2026-09-20)
 
-PHASE: R8
-STATUS: IMPLEMENTED
-CONTEXT_PACK: PLAN-CTX-BASE + PLAN-CTX-R8
-CONTRACT_REFS: SPEC-220, SPEC-230, SPEC-240, SPEC-OPS-004, SPEC-REPORT-003, UX-410, UX-450, UX-460, UX-FLOW-012, UX-FLOW-013
+Scope: Material, group, UOM and conversion catalog forms with targeted validation, including positive exact ratios, source note for estimated/measured conversions, VEHICLE_LOAD non-settlement and six-digit maximum rounding scale. Existing inactive references remain visible only to the record currently using them; new assignments remain disabled.
+Changed paths: src/modules/catalog/actions.ts; src/app/admin/catalog/page.tsx. No schema or migration change. New evidence: local typecheck PASS; targeted Supabase QA RPC checks PASS for group/UOM/material/conversion create, material edit, immutable base UOM, conversion-version guard, stale conflict, permission boundary and audit. Synthetic records were deactivated. Reused checks: QA migration replay/seed 4/4 from GC-04 (schema unchanged). Reused evidence: GA source audit of transaction snapshots and existing conversion schema constraints.
+Result: GC-05 IMPLEMENTED; affected UI check pending GC-B batch gate. Blocker: NONE for GC-06. Production impact: NOT_TOUCHED.
 
-IMPLEMENTATION:
-- Added source-bound WorkItems for Delivery or ServiceJob with DIRECT and POOL_CLAIM assignment modes, expected-version commands, idempotency receipts, and worker/vehicle/machine schedule collision guards.
-- Added monitoring-only heartbeat, append-only worker result and WorkLog, and separate source verification; DONE never creates financial effects by itself.
-- Added ServiceJob scheduling and verification with distinct actual, billable, and compensable facts; verified billing creates one source-linked AR.
-- Added explicit versioned compensation calculators, traceable EarningEvents, approval, employee AP, adjustments, and settlement through the existing payment/allocation ledger.
-- Extended dashboard finance sources to verified service revenue and approved compensation without a parallel cost-fact ledger or ad hoc commission calculation.
-- Added workforce, service-job list/detail, and compensation administration surfaces with permission-scoped payroll visibility.
+# IMP-104 — GC-06 operational config checkpoint (2026-09-20)
 
-CHECKS:
-- L1 targeted WorkItem/ServiceJob/Earning golden flow: PASS.
-- L2 affected R2-R8 database regression: PASS.
-- Sequential collision and stale-version invariants: PASS.
-- L3 typecheck: PASS.
-- L3 lint: PASS.
-- L3 unit tests: PASS, 16/16.
-- L3 production build: PASS.
-- True multi-session claim/resource race: NOT_RUN_NO_CONTAINER.
-- pgTAP: NOT_RUN_NO_CONTAINER.
-- L4 full-system verification: NOT_RUN_PHASE_SCOPE.
-- Acceptance: NOT_REQUESTED.
+Scope: Minimal Warehouse, Vehicle, Machine and Branch create/edit/deactivate through the existing catalog, without an asset-management platform. Roles with roles.manage can configure their branch; creating a branch copies an eligible admin role to give the creator initial access. Cross-branch edits and deactivating the creator's last accessible active branch are blocked.
+Changed paths: src/modules/catalog/{fields,actions}.ts; src/app/admin/catalog/page.tsx; supabase/migrations/20260920100000_operational_master_config.sql. New evidence: local typecheck PASS; QA migration replay/seed 4/4 PASS; migration applied only to Supabase QA. Targeted QA RPC checks PASS for Warehouse/Vehicle/Machine create/edit/deactivate, branch/role denial, Branch create/edit/deactivate, creator access, stale conflict and audit. Synthetic QA records were deactivated. Reused evidence: GC-03..05 catalog form and permissions checks.
+Result: GC-06 IMPLEMENTED; affected UI check pending GC-B batch gate. Blocker: NONE for GC-07. Production impact: NOT_TOUCHED.
 
-PRODUCTION: NOT_TOUCHED
+# IMP-105 — GC-07 Settings/pricing implementation (2026-09-20)
 
-## R9 CHECKPOINT — WORKER AND CUSTOMER PORTALS
+Scope: Permission-aware Settings hub for GC-03..06 and branch pricing configuration. Pricing changes create a new version or deactivate a rule; prior document snapshots are not rewritten.
+Changed paths: src/components/app-shell.tsx; src/app/admin/settings/{page,pricing/page}.tsx; src/modules/pricing/{actions,editor}.tsx; supabase/migrations/20260920110000_pricing_rule_config.sql; tasks.md; implementation.md.
+Gap delta: GAP-02 pricing/config implementation added; GAP-16 Settings route/entry implementation added. Both remain pending affected UI/DB/SEC checks before acceptance.
+New evidence: NOT_RUN. Reused evidence: GC-03..06 catalog CRUD and permission checks. Checks: typecheck/UI/DB/SEC NOT_RUN at this implementation checkpoint. Result: IMPLEMENTED_LOCAL, GC-B gate pending. Blocker: NONE. Production impact: NOT_TOUCHED.
 
-Status: BUILD_COMPLETE
+# IMP-106 — GC-B gate and GC-07 verification (2026-09-20)
 
-Implemented:
-- Worker current/next/pool/job/earnings/profile portal with assignment-aware commands.
-- Safe local result draft with stable operation ID/version and separate evidence retry.
-- Customer exact-revision quote change request and customer-safe order/delivery timeline.
-- Customer debt view and Payment Notice evidence/review workflow isolated from payment and receivable ledgers.
-- Active worker/customer authorization on every RPC and signed-evidence request.
-- Shared-device logout continues to clear cache, cookies, and storage.
+Scope: GC-03..07 master data/settings batch. GAP-02 and GAP-16 are FIXED at the QA-checked boundary; no Owner acceptance or Production assertion. Pricing rule edits create a new version, including a same-day replacement, while a stale predecessor is rejected.
+Gap IDs: GAP-02, GAP-16. Changed paths: supabase/migrations/20260920113000_pricing_version_boundary.sql; tasks.md; implementation.md. The GC-07 source paths are recorded in IMP-105.
+New evidence: local typecheck PASS; QA migration replay/seed 4/4 PASS; both pricing migrations applied only to Supabase QA `ffrwiglcrlumfvhubaxg`. Targeted QA RPC checks PASS for options, create, duplicate prevention, worker/cross-branch denial, stale version, replacement, same-day replacement, predecessor denial, deactivation, audit, and inactive synthetic cleanup. A QA-browser UI check PASS for all 11 catalog entry kinds, Settings/pricing links, pricing scope editor, 390px mobile width, and hidden privileged links/editor for Worker. Reused evidence: IMP-101..104 DB/permission/audit checks; GC-02 shell typecheck.
+Checks: typecheck NEW PASS; DB/SEC NEW PASS (QA only); UI NEW PASS (affected routes); QA replay NEW PASS; unrelated regression REUSED/NOT_RUN. Result: GC-B PASS, GC-07 PASS. Blocker: NONE for GC-08. Production impact: NOT_TOUCHED.
 
-Contract references:
-- SPEC-250
-- SPEC-260
-- SPEC-470
-- SPEC-DATA-005
-- UX-600
-- UX-700
-- UX-AUTH-001
+# IMP-107 — GC-08 multi-line Sales/Quote implementation (2026-09-20)
 
-Checks:
-- L1 targeted local-draft unit checks: PASS
-- L1 isolated PostgreSQL R2-R9 golden flow: PASS
-- L2 affected unit regression: PASS
-- L3 lint: PASS
-- L3 typecheck: PASS
-- L3 production build: PASS
-- Hosted Storage policy and signed URL runtime: NOT_RUN_NO_HOSTED_PROJECT
-- Browser usability review: NOT_REQUESTED
+Scope: Add/remove up to 50 independent Sales/Quote lines, preserve form state per line, validate aligned line payloads, batch-load material/conversion/pricing inputs, and submit the full line array to existing draft RPCs. Detail pages and SQL already display/compute exact authoritative line/document totals. Price-before-save UX remains GC-09.
+Gap IDs: GAP-03 implementation added. Changed paths: src/components/sales/commercial-document-form.tsx; src/modules/sales/actions.ts; src/app/admin/{orders,quotations}/new/page.tsx; src/app/globals.css; tasks.md; implementation.md. New evidence: NOT_RUN. Reused evidence: existing multi-line draft RPC and detail-page SQL/source audit. Checks: typecheck/UI/DB NOT_RUN at implementation checkpoint. Result: IMPLEMENTED_LOCAL; focused checks pending. Blocker: NONE. Production impact: NOT_TOUCHED.
 
-Production: NOT_TOUCHED
-Supabase cloud: NOT_TOUCHED
-Acceptance: NOT_REQUESTED
+# IMP-108 — GC-08 focused verification (2026-09-20)
+
+Scope: GC-08 Quote/SO multi-line create. GAP-03 FIXED at QA-checked boundary; GC-09 price preview remains open. Changed paths: src/modules/sales/actions.ts (type-narrowing correction); tasks.md; implementation.md. New evidence: typecheck initial FAIL on nullable customer narrowing, then targeted correction and RERUN PASS. QA-browser check PASS for add/remove preserving another line and two-line Quote/SO DRAFT submission. QA DB returned exact per-line totals 61,729 and 154,321 VND and document total 216,050 VND for both documents. QA price rule used for the check was deactivated afterward. Reused evidence: existing draft RPC multi-line contract and detail-page total rendering; QA migration replay from IMP-106 (schema unchanged). Checks: UI NEW PASS; DB NEW PASS; typecheck RERUN PASS; broader regression NOT_RUN. Result: GC-08 PASS; blocker NONE for GC-09. Production impact: NOT_TOUCHED.
+
+QA fixture note: DRAFT quotation `1e2ce3af-01a1-42a6-a0ca-1ef9d60d392a` and DRAFT sales order `d66b258b-71b4-4ae0-b8db-e8acf52ec1da` remain only in QA. A cleanup transaction rolled back because the quotation revision immutability trigger rejected deletion; no partial deletion occurred. Do not bypass the trigger merely to remove test fixtures.
+
+# IMP-109 — GC-09 Sales price preview implementation (2026-09-20)
+
+Scope: Reuse the authoritative Sales resolver for read-only per-line price/source/total preview, require preview before Save, compare the saved price snapshot with a fresh resolution, and support per-line MANUAL_APPROVED price only with pricing.manage and a reason. No cost data is returned to the form.
+Gap IDs: GAP-06 implementation added. Changed paths: src/modules/sales/actions.ts; src/components/sales/commercial-document-form.tsx; src/app/admin/{orders,quotations}/new/page.tsx; src/app/globals.css; tasks.md; implementation.md. New evidence: NOT_RUN. Reused evidence: GC-08 multi-line QA total checks and existing `private.assert_commercial_line` permission/snapshot contract. Checks: typecheck/UI/SEC/DB NOT_RUN at implementation checkpoint. Result: IMPLEMENTED_LOCAL; focused checks pending. Production impact: NOT_TOUCHED.
+
+# IMP-110 — GC-09 focused verification (2026-09-20)
+
+Scope: Sales/Quote price preview and manual override. GAP-06 FIXED at QA-checked boundary. Changed paths: tasks.md; implementation.md. New evidence: local typecheck PASS. QA-browser Owner check PASS for missing rule without default zero, MANUAL_APPROVED preview/line total, quantity change invalidating preview, and Quote DRAFT save. QA SQL confirmed unit price 123,457 VND, line/document total 61,729 VND, source MANUAL_APPROVED, override actor and reason. QA-browser Sales check PASS for hidden manual controls, LIST price preview, 390px width, stale-preview Save denial after rule replacement, and updated preview. Temporary QA pricing rules were deactivated. Reused evidence: IMP-108 multi-line creation and SQL totals; existing SQL permission/snapshot guard. Checks: typecheck NEW PASS; UI/DB/SEC NEW PASS (QA only); unrelated regression REUSED/NOT_RUN. Result: GC-09 PASS; blocker NONE for GC-10. Production impact: NOT_TOUCHED.
+
+QA fixture note: DRAFT quotation `c2b47e8c-100c-41db-8e54-cfba82ae50c8` remains in QA from the manual-override check. No customer message was sent and no order was confirmed.
+
+# IMP-111 — GC-10 quick Customer/Site implementation (2026-09-20)
+
+Scope: Permission-aware quick Customer and Site forms in the Sales/Quotation create flow. Parent document lines remain mounted; newly created Customer is selected and opens Site creation, and the new Site is auto-selected in the same draft.
+Gap IDs: GAP-05 implementation added. Changed paths: src/components/sales/commercial-document-form.tsx; src/modules/customers/actions.ts; src/app/admin/{orders,quotations}/new/page.tsx; src/app/globals.css; tasks.md; implementation.md. New evidence: NOT_RUN. Reused evidence: GC-03 quick Customer/Site RPC and permission checks, GC-08/09 Sales form checks. Checks: typecheck/UI/DB/SEC NOT_RUN at implementation checkpoint. Result: IMPLEMENTED_LOCAL; focused checks pending. Production impact: NOT_TOUCHED.
+
+# IMP-112 — GC-10 focused verification (2026-09-20)
+
+Scope: Inline Customer/Site creation from Sales/Quotation without losing the document draft. GAP-05 FIXED at QA-checked boundary. Changed paths: tasks.md; implementation.md. New evidence: local typecheck PASS. QA-browser Owner check PASS for create Customer then Site, auto-select both IDs, preservation of two line quantities and terms, same-draft manual price preview, and 390px layout. QA DB confirmed branch/customer/site linkage. QA-browser Sales without customers.manage had neither quick-create control. Synthetic QA Customer and Site were deactivated; Site cleanup used an exact-ID QA SQL update after a cleanup-only RPC omitted its required customer_id and returned 42501. Reused evidence: GC-03 quick-create DB/permission/audit checks, IMP-108/110 Sales and preview checks. Checks: typecheck NEW PASS; UI/DB/SEC NEW PASS (QA only); unrelated regression REUSED/NOT_RUN. Result: GC-10 PASS; blocker NONE for GC-11. Production impact: NOT_TOUCHED.
+
+# IMP-113 — GC-11 Quote/SO DRAFT edit (2026-09-20)
+
+Scope: In-place DRAFT edit for Sales Order and current Quotation revision, with line add/remove/quantity/UOM, terms/date, authorized manual price, fresh pre-save preview, draft-version conflict protection, idempotent RPC and audit. Existing customer/site stay fixed; SENT Quote and non-DRAFT Order are rejected in RPC. GAP-04 is PARTIAL until PO DRAFT edit in GC-12.
+Changed paths: supabase/migrations/20260920150000_commercial_draft_edit.sql; src/modules/sales/actions.ts; src/components/sales/commercial-document-form.tsx; src/app/admin/orders/[id]/{page.tsx,edit/page.tsx}; src/app/admin/quotations/[id]/{page.tsx,edit/page.tsx}; tasks.md; implementation.md.
+New evidence: local typecheck PASS and QA migration replay/seed 4/4 PASS. Migration applied only to QA `ffrwiglcrlumfvhubaxg`. QA RPC checks PASS for in-place Order line removal and Quote line addition, exact totals, version increment, same-operation replay, stale-version rejection and SENT Quote edit rejection. QA-browser Owner checks PASS for Order/Quote edit preloading and both preview/save flows returning to the same document. QA Sales RPC mutation was denied `forbidden`; this did not isolate the manual-price permission rule. A direct CONFIRMED Order negative check was NOT_RUN because no matching QA fixture existed; the common SQL state guard covers every non-DRAFT state. Existing MANUAL_APPROVED drafts require pricing.manage for editing to avoid unprivileged silent repricing.
+Reused evidence: IMP-108 multi-line editor and totals; IMP-110 price preview/manual override; existing immutable Quote line/revision triggers. Checks: DOC NEW PASS; typecheck NEW PASS; DB/IDEM/SEC NEW PASS at stated QA boundary; UI NEW PASS; full regression NOT_RUN. Result: GC-11 PASS at available QA boundary; blocker NONE for GC-12. Production impact: NOT_TOUCHED.
+
+# IMP-114 — GC-12 warehouse PO multi-line and DRAFT edit checkpoint (2026-09-20)
+
+Scope: Warehouse PO add/remove up to 50 lines, batched cost resolution, permission-gated cost/source/total preview, in-place DRAFT edit with version/idempotency/audit, and per-line receive/fulfillment controls in PO detail instead of implicit firstLine. Source-linked direct PO create/edit remains outside this completed slice because replacing linked lines would invalidate Sales allocations. GAP-04 and GAP-07 remain PARTIAL; GC-12 remains IN_PROGRESS.
+Changed paths: supabase/migrations/20260920160000_purchase_draft_multiline.sql; src/modules/purchasing/actions.ts; src/components/purchasing/purchase-order-form.tsx; src/app/admin/purchase-orders/{new/page.tsx,[id]/page.tsx,[id]/edit/page.tsx}; tasks.md; implementation.md.
+New evidence: local typecheck PASS; QA migration replay/seed 4/4 PASS; migration applied only to QA `ffrwiglcrlumfvhubaxg`. QA RPC created a two-line warehouse PO with exact total 228360 VND, updated the same PO to three lines with total 211109 VND, accepted same-operation replay once, and rejected stale version. QA browser created another two-line PO through preview/save and edited a three-line DRAFT down to two lines. That synthetic PO was then CONFIRMED in QA; edit RPC rejected it. UI per-line receipt controls received typecheck only, not a receipt/AP behavioral check. Synthetic active QA warehouse `dd9c098c-ef5c-43c9-8740-1dcdf16f810a`, DRAFT PO `3703e28b-0998-46c7-a8b6-bf08d3543c46`, and CONFIRMED PO `53cd3c7f-04e4-47d2-862d-12e38bd146fd` remain in QA.
+Reused evidence: existing `private.assert_purchase_line` cost/permission validation and confirmed PO mutation guards; GC-11 DRAFT version/idempotency pattern. Checks: typecheck NEW PASS; QA replay NEW PASS; DB/IDEM/SEC NEW PASS at stated boundary; UI NEW PASS for warehouse create/edit; source-linked direct and receipt/AP regression NOT_RUN. Result: GC-12 PARTIAL. Production impact: NOT_TOUCHED.
+
+NEW_GAP-02 (P2): `src/modules/purchasing/actions.ts` maps `draft_version_conflict` through its earlier generic `version_conflict` branch, so a stale PO DRAFT displays an allocation-specific message. RPC correctly rejects the stale write. Fix within GC-12 before PASS; not silently marked fixed.
+
+# IMP-115 — GC-11 completion before further GC-12 work (2026-09-20)
+
+Scope: Close the remaining Quote/SO DRAFT edit role and immutable-state evidence without advancing GC-12. Existing MANUAL_APPROVED line price/source/reason/conversion must match a line ID from the same DRAFT for an actor without pricing.manage; only quantity and other authorized draft fields may change, and the original override actor remains attached. Owner with pricing.manage retains the explicit override path.
+Changed paths: supabase/migrations/20260920170000_preserve_draft_manual_price.sql; src/modules/sales/actions.ts; src/components/sales/commercial-document-form.tsx; src/app/admin/orders/[id]/{page.tsx,edit/page.tsx}; src/app/admin/quotations/[id]/{page.tsx,edit/page.tsx}; tasks.md; implementation.md.
+New evidence: local typecheck PASS; QA migration replay/seed 4/4 PASS; migration applied only to QA `ffrwiglcrlumfvhubaxg`. A QA transaction changed a DRAFT SO to CONFIRMED and proved `update_sales_order_draft` denies the edit, then rolled back the fixture state. QA Sales on Branch A edited quantity of an Owner-approved manual-price SO, retained exact unit price and original override actor, replayed the same operation idempotently, and was denied a forged price change. QA-browser Sales edit/preview/save PASS with 30003 VND total and original approval preserved. Quote update with quotation.create temporarily added to the QA Sales role inside one transaction preserved total/override actor; both role and edit mutation were rolled back. QA-browser Owner Quote edit/preview/save regression PASS.
+Reused evidence: IMP-113 in-place multi-line Quote/SO edit, stale-version and SENT denial. Checks: typecheck NEW PASS; QA replay NEW PASS; DB/SEC/IDEM NEW PASS at stated QA boundary; affected UI NEW PASS; unrelated full suite NOT_RUN. Result: GC-11 PASS. GC-12 remains PARTIAL from IMP-114 and was not advanced in this checkpoint. Production impact: NOT_TOUCHED.
+
+# IMP-116 — GC-12 direct multi-line implementation attempt (2026-09-20)
+
+Scope: Add multi-line PO/SO direct creation, existing-SO per-line PO creation, source-linked PO DRAFT edit with stable line/allocation IDs, preserve approved manual purchase price for non-pricing editors, and correct stale-DRAFT error mapping. No GC-13 work started.
+Changed paths: supabase/migrations/20260920180000_gc12_direct_multiline_edit.sql; src/modules/purchasing/{actions.ts,form-options.ts}; src/components/purchasing/purchase-order-form.tsx; src/app/admin/purchase-orders/{new/page.tsx,[id]/page.tsx,[id]/edit/page.tsx}; tasks.md; implementation.md.
+New evidence: focused local `pnpm typecheck` FAIL at `src/modules/purchasing/actions.ts:253:77` (`customerResult.data` possibly null). Migration CLI unavailable (`supabase: command not found`); migration added as SQL file only. DB/UI/SEC/IDEM and QA migration checks NOT_RUN. NEW_GAP-02 mapping changed in source but NOT_VERIFIED. Result: GC-12 PARTIAL, gate BLOCKED by typecheck and pending QA checks. Reused evidence: IMP-114 warehouse PO multi-line checks. Production impact: NOT_TOUCHED.
+
+# IMP-117 — GC-12 targeted QA evidence and new role UI blocker (2026-09-21)
+
+Scope: Fix the nullable customer tier typing error and exercise GC-12 direct multi-line, source-linked DRAFT edit, stale/immutable boundaries, manual-cost role boundary and affected UI. Changed path: src/modules/purchasing/actions.ts; tasks.md; implementation.md.
+New evidence: `pnpm typecheck` PASS; `pnpm qa:test` 4/4 PASS; QA-only migration `20260920180000_gc12_direct_multiline_edit.sql` applied. QA rollback transaction: two-line PO from existing SO, same-operation replay, stable PO line/allocation IDs after DRAFT edit, stale-version denial, CONFIRMED edit denial, and two-line linked PO/SO creation PASS. QA Sales with transaction-only purchasing.create/price.read grant: manual cost and approver preserved on quantity edit, replay PASS, forged cost denied; transaction rolled back. QA-browser Owner: two-line direct PO cost preview/create/edit PASS; PO cancelled to release allocations. QA-browser Sales: fixed approved prices rendered, but cost-preview button remained disabled and edit could not be saved. Test cleanup `finally` executed cancellation/revocation without a cleanup exception; no independent post-cleanup read was run. Unrelated full suite NOT_RUN. Result: GC-12 PARTIAL; GC-13 NOT_OPENED. Production impact: NOT_TOUCHED.
+NEW_GAP-03 (P1): On a manual-price source-linked PO DRAFT, QA Sales with temporary purchasing.create/read/price.read but not purchasing.price.manage sees both approved costs as fixed, yet `Tính giá mua và xem trước` is disabled after a quantity edit. Affected path: src/components/purchasing/purchase-order-form.tsx and its options loading. User impact: authorized non-pricing editor cannot complete DRAFT edit in UI. Fix within GC-12 before PASS; do not infer cause without a focused check.
+
+# IMP-118 — GC-12 gate close and GC-13 handoff (2026-09-21)
+
+Scope: Close NEW_GAP-03 without broadening Supplier read access; source-linked DRAFT edit uses the authorized PO supplier snapshot when the actor cannot list Supplier master data, and purchase-line rebuilding accepts the already validated DRAFT supplier. Changed paths: src/modules/purchasing/actions.ts; src/app/admin/purchase-orders/[id]/edit/page.tsx; tasks.md; implementation.md.
+New evidence: QA Sales can read material and SO lines but Supplier list is empty; this caused the edit form's supplier-options guard to disable cost preview. Focused `pnpm typecheck` PASS. QA app preflight PASS. QA-browser Sales with temporary purchasing.create/read/price.read and without purchasing.price.manage: two approved prices rendered fixed, supplier snapshot option present, preview enabled, two-line quantity edit saved, unit costs 211/212 VND and per-line allocations retained. Test PO cancelled and transaction-scoped test role grants revoked in cleanup. Reused evidence: IMP-114 warehouse multi-line, IMP-117 QA migration/replay, direct PO/SO multi-line DB/SEC/IDEM, Owner UI, stale and CONFIRMED denial. Unrelated full suite NOT_RUN. Result: GC-12 PASS; NEW_GAP-02/03 CLOSED; GC-13 opened. Production impact: NOT_TOUCHED.
+
+## IMP-119 — GC-13 PO receiving and direct fulfillment, multi-line
+
+- scope: GC-13; one operation carries selected positive quantities for multiple PO lines, with per-line remaining quantities in the PO UI.
+- gap_ids: GC-13.
+- changed_paths: src/modules/inventory/actions.ts; src/app/admin/purchase-orders/[id]/page.tsx; supabase/migrations/20260921120000_gc13_purchase_order_line_progress.sql; tasks.md; implementation.md.
+- new_evidence: V-GC13-01 typecheck PASS; V-GC13-02 QA view access PASS (anon denied, Owner sees 2 lines, out-of-scope account sees 0); V-GC13-03 QA warehouse rollback PASS (2 receipt lines, 1 AP, same receipt on replay); V-GC13-04 QA warehouse UI PASS (one form, 2 line inputs with remaining quantity); V-GC13-05 QA direct rollback PASS (2 fulfillment lines, 1 AP, 1 direct cost linked to source SO, same fulfillment on replay); V-GC13-06 QA direct UI PASS (one form, 2 remaining quantities).
+- reused_evidence: IMP-118 / GC-12 two-line PO creation/editing and source-line allocations.
+- checks: TYPECHECK:NEW PASS; DB:NEW PASS; SEC:NEW PASS; IDEM:NEW PASS; UI:NEW PASS. No full suite.
+- result: PASS. QA direct PO fixture ea3bbc82-345d-42c5-9dee-8ce5b39b97ba cancelled after rollback checks; no retained fulfillment or AP.
+- blocker: NONE. QA view was applied directly for the focused check; the migration file remains the release source of truth.
+- production_impact: NOT_TOUCHED.
+
+## IMP-120 — GC-14 delivery multi-line, partial
+
+- scope: GC-14; create one delivery from selected allocations of the same SO, submit result and verify all delivery lines, select a verification line explicitly for return.
+- gap_ids: NEW_GAP-04, NEW_GAP-05.
+- changed_paths: src/modules/delivery/actions.ts; src/app/admin/orders/[id]/page.tsx; src/app/admin/deliveries/[id]/page.tsx; supabase/migrations/20260921130000_gc14_delivery_multiline.sql; tasks.md; implementation.md.
+- new_evidence: V-GC14-01 typecheck PASS; V-GC14-02 QA migration/grants PASS (anon cannot execute, authenticated can); V-GC14-03 QA rollback: one delivery with 2 lines and idempotent replay, 2 result lines, 2 verification lines, 1 AR, 1 revenue, second-line customer return resolved; V-GC14-04 QA rollback: transit remainder incorrectly accepted on fully accepted first line when second line of same material retained 0.5 base.
+- reused_evidence: IMP-119 GC-13 two-line PO/receipt source and QA Owner context.
+- checks: TYPECHECK:NEW PASS; DB:NEW PARTIAL; SEC:NEW PASS for new RPC grant; IDEM:NEW PASS for create replay; UI:NOT_RUN for multi-line delivery because fixture was transaction-only. No full suite.
+- result: PARTIAL. QA synthetic SO/credit/allocation/receipt/delivery/return fixture fully rolled back. QA migration was applied directly for focused testing; migration file remains release source of truth.
+- blocker: NEW_GAP-04 (P0) and NEW_GAP-05 (P1). GC-15 not opened.
+- production_impact: NOT_TOUCHED.
+
+### NEW_GAP-04 — Return transit balance is not line-scoped
+
+- verdict: CONFIRMED; severity: P0; contract_refs: tasks.md GC-14 and Owner instruction 16 (return per-line).
+- source_evidence: public.open_return_case in supabase/migrations/20260912114625_inventory_delivery.sql sums IN_TRANSIT movements by delivery_id + material_id, while the return case is attached to a delivery_line_id. V-GC14-04 accepted 0.5 TRANSIT_REMAINDER on a line with zero own remainder using 0.5 from another line of the same material.
+- user_impact: wrong-line return/loss can be opened and later misattribute inventory and cost.
+- fix_task: GC-14; compute available transit quantity from the selected delivery line's handoff, accepted quantity, and resolved/open return cases; reject direct-source transit cases without stock movement.
+
+### NEW_GAP-05 — Return selector labels duplicate-material lines ambiguously
+
+- verdict: CONFIRMED from current UI; severity: P1; contract_refs: tasks.md GC-14 (per-line return).
+- source_evidence: src/app/admin/deliveries/[id]/page.tsx return select labels use material name + accepted quantity, but omit a stable line number. Two lines with the same material and accepted quantity have identical labels although their values are different verification-line IDs.
+- user_impact: operator cannot reliably choose the intended line for a return case.
+- fix_task: GC-14; include stable line ordinal/source context in the option label without exposing restricted cost.
+
+## IMP-121 — GC-13 DoD and GC-14 closure (2026-09-21)
+- Scope: close GC-13 privilege hygiene; close GC-14 per-line return guard and duplicate-line labeling.
+- Gap IDs: NEW_GAP-04 FIXED; NEW_GAP-05 FIXED.
+- Changed paths: supabase/migrations/20260921120000_gc13_purchase_order_line_progress.sql; supabase/migrations/20260921140000_gc14_return_line_guard.sql; src/app/admin/deliveries/[id]/page.tsx; tasks.md; implementation.md.
+- New evidence: QA project ffrwiglcrlumfvhubaxg applied GC-14 return guard and GC-13 view grants. QA privileges: anon SELECT/EXECUTE denied, authenticated view SELECT and return EXECUTE allowed, view TRIGGER/TRUNCATE/REFERENCES denied. Focused QA transaction rolled back: 2 delivery lines, 2 result lines, 2 verification lines, 2 return cases; same-intent create replay; fully accepted first line and second-line overdraw both rejected with return_quantity_exceeds_source; valid second-line transit and customer returns resolved. UI line ordinal added to detail table and return selector.
+- Reused evidence: IMP-119 GC-13 two-line warehouse/direct receipt and supplier fulfillment; IMP-120 GC-14 multi-line creation/result/verification and UI form evidence.
+- Checks: QA DB/SEC/IDEM NEW PASS; typecheck NEW PASS; no full suite.
+- Result: GC-13 PASS; GC-14 PASS; GC-15 opened. Blocker: NONE for GC-14. Production impact: NOT_TOUCHED. QA direct DDL is not migration-history recorded; migration files remain release source.
+## IMP-122 — GC-15 Customer 360 (2026-09-21)
+- Scope: Customer detail with Profile, Sites, Pricing, Quotes, Orders, Deliveries, Receivables, Payments and traceable Documents contexts; contextual create actions and customer/site prefill.
+- Gap IDs: GC-15 FIXED.
+- Changed paths: src/app/admin/customers/[id]/page.tsx; src/components/sales/commercial-document-form.tsx; src/app/admin/orders/new/page.tsx; src/app/admin/quotations/new/page.tsx; tasks.md; implementation.md.
+- New evidence: all Customer 360 datasets are branch/customer scoped and bounded; permission checks suppress restricted finance/pricing/sales contexts; site CTA prefills only a customer/site pair present in server-loaded options; document links resolve to canonical business sources and do not claim an unissued PDF. Focused QA authenticated query returned bounded sites/prices/quotes/orders/deliveries/receivables/payments for one branch customer.
+- Reused evidence: IMP-116 sales multi-line/price preview and IMP-118 quick-create draft preservation.
+- Checks: UI/DOC source check NEW PASS; QA DB/SEC NEW PASS; typecheck NEW PASS; no full suite.
+- Result: GC-15 PASS; GC-16 opened. Blocker: NONE. Production impact: NOT_TOUCHED.
+
+## IMP-123 — GC-16 Supplier 360 (2026-09-21)
+- Scope: Supplier Profile, PO, Receipts, Direct Fulfillments, AP and Payments contexts with create-PO/payment actions and supplier prefill.
+- Gap IDs: GC-16 FIXED.
+- Changed paths: src/app/admin/suppliers/[id]/page.tsx; src/components/purchasing/purchase-order-form.tsx; src/app/admin/purchase-orders/new/page.tsx; tasks.md; implementation.md.
+- New evidence: all Supplier 360 datasets are branch/supplier scoped and bounded; purchase cost and finance contexts are permission-gated; supplier query prefill resolves only against server-loaded active branch options. Focused QA authenticated query validated purchase_order_read, purchase_receipt_read, supplier_fulfillment_read, payable_read and payment_read access and filters.
+- Reused evidence: IMP-119 two-line warehouse receipt/direct fulfillment and one AP per source; IMP-113 payment/AP canonical source checks.
+- Checks: UI/DOC source check NEW PASS; QA DB/SEC NEW PASS; typecheck NEW PASS; no full suite.
+- Result: GC-16 PASS; GC-17 opened. Blocker: NONE. Production impact: NOT_TOUCHED.
+
+## IMP-124 — GC-17 Access management partial (2026-09-21)
+- Scope: additive explicit permission grants, effective access resolution, revoke/reactivate, permission-aware administration UI and audit reasons.
+- Gap IDs: GC-17 PARTIAL; NEW_GAP-06 confirmed in new set_employee_explicit_permissions RPC.
+- Changed paths: supabase/migrations/20260921150000_gc17_access_management.sql; src/lib/access/context.ts; src/lib/auth/actions.ts; src/components/access/manage-access-form.tsx; src/app/admin/access/page.tsx; tasks.md; implementation.md.
+- New evidence: typecheck PASS. QA migration applied; table/RPC privilege check PASS (anon denied, authenticated subject to RLS/RPC). Focused rollback failed before mutation because PL/pgSQL identifier code is ambiguous in the permission validation query; transaction rolled back.
+- Reused evidence: existing assign_employee_role/revoke access boundary and audit implementation.
+- Checks: typecheck NEW PASS; QA DB/SEC NEW PASS; QA DB functional NEW FAIL (42702 ambiguous code). No full suite.
+- Result: GC-17 PARTIAL/BLOCKED; GC-18 NOT_OPENED. Blocker: qualify the unnest alias in set_employee_explicit_permissions, replace the QA function, then rerun grant/self/revoke/reactivate/audit rollback. Production impact: NOT_TOUCHED.
+
+## IMP-125 — GC-17 Access management closure (2026-09-21)
+- Scope: close NEW_GAP-06 and validate role/access/explicit permission administration.
+- Gap IDs: NEW_GAP-06 FIXED; GC-17 FIXED.
+- Changed paths: supabase/migrations/20260921150000_gc17_access_management.sql; tasks.md; implementation.md.
+- New evidence: qualified all unnest aliases in set_employee_explicit_permissions. QA function replaced. Focused authenticated transaction rolled back: additive catalog.manage became effective for target, self-change rejected as forbidden, revoke removed active access and explicit grant, revoked permission became false, reactivate and same-state replay returned stable access id, and permission/revoke/reactivate each emitted one audit event.
+- Reused evidence: IMP-124 privilege boundary/typecheck and GC-17 UI/source evidence.
+- Checks: DB/SEC/IDEM/AUDIT RERUN PASS; typecheck REUSED IMP-124; no full suite.
+- Result: GC-17 PASS; GC-18 opened. Blocker: NONE. Production impact: NOT_TOUCHED.
+
+## IMP-126 — GC-18 Customer portal order completeness (2026-09-21)
+- Scope: customer-safe order state, delivery timeline, role-scoped debt/payment state and relevant documents.
+- Gap IDs: GC-18 FIXED.
+- Changed paths: supabase/migrations/20260921160000_gc18_customer_order_portal.sql; src/modules/portal/types.ts; src/app/customer/orders/[id]/page.tsx; tasks.md; implementation.md.
+- New evidence: current-schema order/delivery payloads replace legacy fallback fields. QA role-bound transaction rolled back: Owner received commercial/fulfillment/payment state and finance/documents containers; Receiver received no debt, payment state or payment documents; outsider received forbidden_or_order_not_found. Serialized payload contained no supplier/cost/margin/payroll/internal-note/terms fields.
+- Reused evidence: customer membership and private evidence signing boundaries from portal implementation.
+- Checks: UI/SEC/DB NEW PASS; typecheck NEW PASS; no full suite.
+- Result: GC-18 PASS; GC-19 opened. Blocker: NONE. Production impact: NOT_TOUCHED.
+
+## IMP-127 — GC-19 bounded core lists (2026-09-21)
+- Scope: Orders, Quotations, PO, Customers, Suppliers, Deliveries, AR, AP and ServiceJob server-side search/filter/pagination.
+- Gap IDs: GC-19 FIXED.
+- Changed paths: src/lib/core-list.ts; src/components/ui/list-pager.tsx; nine core list pages; tasks.md; implementation.md.
+- New evidence: every core list uses server predicates, count, range of 25, deterministic primary sort plus id tie-break and GET URL state. AR/AP party context uses a separate bounded 100-obligation allocation query. Delivery resolves only vehicle IDs in the current page. QA authenticated queries for all nine sources returned at most 25 unique IDs; large Orders/Deliveries/AR/AP sources returned exactly 25.
+- Reused evidence: branch/RLS source views and list permission contracts.
+- Checks: UI/DB/PERF NEW PASS; typecheck NEW PASS; no full suite.
+- Result: GC-19 PASS; GC-20 opened. Blocker: NONE. Production impact: NOT_TOUCHED.
+
+
+## IMP-128 — GC-20 Dashboard completion
+
+- scope: Expense breakdown, commission summary/detail, and contextual AR/AP snapshot drill-down with preserved filters.
+- gap_ids: SPEC-GAP-002 dashboard completion slice.
+- changed_paths: `supabase/migrations/20260921170000_gc20_dashboard_detail.sql`, `src/app/admin/page.tsx`, `src/components/dashboard/dashboard-details.tsx`, `src/app/admin/dashboard/obligations/page.tsx`.
+- new_evidence: QA RPC contract proves detail totals equal canonical KPI totals when quality is READY; activity mismatch returns NOT_APPLICABLE; anon execute denied and authenticated execute allowed. TypeScript check passes.
+- reused_evidence: Existing finance snapshot semantic/cutoff checks and GC-19 bounded core-list evidence remain valid.
+- checks: DB:NEW PASS; SEC:NEW PASS; UI:NEW PASS; TYPECHECK:NEW PASS.
+- result: PASS.
+- blocker: NONE.
+- production_impact: NOT_TOUCHED.
+
+
+## IMP-129 — GC-21 Low-stock alerts
+
+- scope: Material/warehouse thresholds, deduplicated in-app low-stock warning, inventory context link, and prefilled draft-PO action without automatic ordering.
+- gap_ids: SPEC-GAP-002 low-stock alert slice.
+- changed_paths: `supabase/migrations/20260921180000_gc21_low_stock_alerts.sql`, `src/app/admin/inventory/actions.ts`, `src/app/admin/inventory/page.tsx`, `src/app/admin/page.tsx`, `src/app/admin/purchase-orders/new/page.tsx`, `src/components/purchasing/purchase-order-form.tsx`.
+- new_evidence: QA rollback proves one alert per branch/warehouse/material, update version progression, direct-write denial, function ACL, and zero purchase-order side effects. TypeScript passes.
+- reused_evidence: Inventory ledger/reservation evidence and GC-11/GC-13 PO draft behavior remain valid.
+- checks: DB:NEW PASS; SEC:NEW PASS; IDEM:NEW PASS; UI:NEW PASS; TYPECHECK:NEW PASS.
+- result: PASS.
+- blocker: NONE.
+- production_impact: NOT_TOUCHED.
+
+
+## IMP-130 — GC-22 Print/export
+
+- scope: Delivery note, receipt/payment voucher, and customer debt reconciliation PDFs with source-page actions; quotation PDF font corrected.
+- gap_ids: SPEC-REC-009 / UX-REC-015.
+- changed_paths: `public/fonts/NotoSansVietnamese-Regular.ttf`, `src/lib/pdf/standard-document.ts`, `src/app/api/deliveries/[id]/note/pdf/route.ts`, `src/app/api/payments/[id]/voucher/pdf/route.ts`, `src/app/api/customers/[id]/debt-statement/pdf/route.ts`, `src/app/api/quotation-revisions/[id]/pdf/route.ts`, and source-page CTA files.
+- new_evidence: Three A4 QA artifacts rendered with Poppler error count 0; Vietnamese glyphs, multipage table headers, footers, totals, and trace labels visually inspected. QA source-shape check and TypeScript pass.
+- reused_evidence: Quotation revision immutability, delivery verification, payment ledger, and finance obligation snapshot evidence remain valid.
+- checks: UI:NEW PASS; DOC:NEW PASS; DB:NEW PASS; TYPECHECK:NEW PASS.
+- result: PASS.
+- blocker: NONE.
+- production_impact: NOT_TOUCHED.
+
+
+## IMP-131 — GC-23 fixed reports (2026-09-21)
+
+- scope: Fixed Reports surface for receivables, payables, and operating expenses.
+- gap_ids: GC-23 FIXED.
+- changed_paths: `src/modules/reports/server.ts`, `src/app/admin/reports/page.tsx`, `src/app/admin/reports/loading.tsx`, `src/app/api/reports/export/route.ts`, `src/components/app-shell.tsx`, `tasks.md`, `implementation.md`.
+- new_evidence: Permission-aware fixed selector; URL-backed shared filters; canonical finance snapshot/detail/obligation sources; bounded deterministic tables; summary, chart, CSV export, and loading state. QA totals matched snapshot semantics: AR 45000000, AP 22500000, operating expense 0, all READY.
+- reused_evidence: GC-20 canonical dashboard semantics and authorization boundary.
+- checks: UI:NEW PASS; DOC:NEW PASS; DB:NEW PASS; TYPECHECK:NEW PASS; SEC:REUSED GC-20.
+- result: GC-23 PASS; GC-24 opened.
+- blocker: NONE.
+- production_impact: NOT_TOUCHED.
+
+
+## IMP-132 — GC-24 Audit Log UI (2026-09-21)
+
+- scope: Branch-scoped Audit Log UI with actor, entity, action, and time filters; human-readable event summary; technical detail on demand.
+- gap_ids: GC-24 FIXED.
+- changed_paths: `src/modules/audit/server.ts`, `src/app/admin/audit/page.tsx`, `src/app/admin/audit/loading.tsx`, `src/components/app-shell.tsx`, `tasks.md`, `implementation.md`.
+- new_evidence: Server-side combined filters, count, 25-row pagination, deterministic occurred_at/id ordering, role-aware navigation, actor-name resolution, readable summaries before collapsed raw identifiers. QA Owner read 15 branch events and the combined filter retained the sampled event; an authenticated outsider read zero rows.
+- reused_evidence: GC-17 `roles.manage` access-management boundary and immutable audit ledger RLS.
+- checks: UI:NEW PASS; DB:NEW PASS; SEC:NEW PASS; TYPECHECK:NEW PASS.
+- result: GC-24 PASS; GC-25 opened.
+- blocker: NONE.
+- production_impact: NOT_TOUCHED.
+
+
+## IMP-133 — GC-25 Gap Closure gate (2026-09-21)
+
+- scope: Recheck invalidated GC evidence, close the remaining worker-portal verification gap, and execute the GC phase gate.
+- gap_ids: NEW_GAP-01 FIXED; GC-25 PASS.
+- changed_paths: `tasks.md`, `implementation.md`.
+- new_evidence: QA worker RPC returned the assigned work item and exact title; targeted browser flow rendered `HXQA assigned work` on `/work` with access context 200. Optimized Next build compiled successfully and generated all 59 routes, including Reports, Audit and required document routes.
+- reused_evidence: GC-01 through GC-24 focused DOC/UI/UNIT/DB/SEC/IDEM/PERF evidence; latest typecheck from GC-24; unaffected checks were not rerun.
+- checks: UI:NEW PASS; DB:NEW PASS; GATE:NEW PASS; BUILD:NEW PASS; TYPECHECK:REUSED GC-24.
+- result: GC_COMPLETE TRUE; OPEN_P0 0; OPEN_CRITICAL_P1_IN_GC 0; R10-01 opened.
+- blocker: NONE.
+- production_impact: NOT_TOUCHED.
+
+
+## IMP-134 — R10-01/02 routing core (2026-09-21)
+
+- scope: Single OSRM recommendation adapter with explicit manual fallback, immutable RoutePlan proposal, and transactional Apply through the existing delivery assignment command.
+- gap_ids: GAP-21 routing slice FIXED; R10-01 PASS; R10-02 PASS.
+- changed_paths: `supabase/migrations/20260921200000_r10_routing.sql`, `supabase/migrations/20260921200500_r10_routing_apply_fix.sql`, `src/modules/routing/provider.ts`, `src/modules/routing/actions.ts`, `src/modules/routing/server.ts`, `tasks.md`, `implementation.md`.
+- new_evidence: Missing/failed provider preserves explicit manual order. QA rollback with two deliveries proved plan creation leaves assignments unchanged, Apply changes both assignments through `assign_delivery`, same-intent replay is stable, and an assignment change makes the later plan stale with no partial apply. Runtime ambiguity found by the focused check was qualified in source and QA replacement migration.
+- reused_evidence: Delivery assignment authorization/version invariant and command receipt idempotency.
+- checks: DB:NEW PASS; SEC:NEW PASS; IDEM:NEW PASS; RACE:NEW PASS; EXT:NEW PASS fallback boundary; TYPECHECK:NEW PASS.
+- result: R10-01 PASS; R10-02 PASS; R10-03 opened.
+- blocker: NONE.
+- production_impact: NOT_TOUCHED.
+
+
+## IMP-135 — R10-03 foreground GPS (2026-09-21)
+
+- scope: Foreground-only assignment-bound GPS sessions, ordered telemetry, current fleet snapshot, bounded history, configurable staleness/retention, and browser API/control boundary.
+- gap_ids: GAP-21 GPS slice FIXED; R10-03 PASS.
+- changed_paths: `supabase/migrations/20260921210000_r10_foreground_gps.sql`, `src/app/api/gps/session/start/route.ts`, `src/app/api/gps/session/ping/route.ts`, `src/app/api/gps/session/stop/route.ts`, `src/components/routing/foreground-gps-control.tsx`, `src/modules/routing/server.ts`, `tasks.md`, `implementation.md`.
+- new_evidence: QA rollback proved assigned-worker start, serialized ping replay, rejection of older captured points, latest-only fleet position, bounded history, retention cleanup, immediate denial after assignment supersession, idempotent stop, and zero outsider raw-coordinate rows. Browser control stops on hidden/unmount and does not run background tracking.
+- reused_evidence: Delivery assignment identity/version boundary and R10-02 Apply behavior.
+- checks: DB:NEW PASS; SEC:NEW PASS; IDEM:NEW PASS; RACE:NEW PASS; PERF:NEW PASS bounded history/current projection; TYPECHECK:NEW PASS.
+- result: R10-03 PASS; R10-04 opened.
+- blocker: NONE.
+- production_impact: NOT_TOUCHED.
+
+
+## IMP-136 — R10-04 messaging core (2026-09-21)
+
+- scope: Database-authoritative conversations, participants, messages, scoped audiences, retry idempotency and materialized list fields.
+- gap_ids: GAP-21 messaging backend FIXED; R10-04 PASS.
+- changed_paths: `supabase/migrations/20260921220000_r10_messaging.sql`, `supabase/migrations/20260921220500_r10_messaging_customer_name_fix.sql`, `tasks.md`, `implementation.md`.
+- new_evidence: QA rollback proved INTERNAL/CUSTOMER isolation, participant permission denial, create/send replay, last-message/unread projection, bounded list/page and read reset. Customer label schema mismatch was corrected before the successful check.
+- reused_evidence: Existing employee branch membership and customer portal membership identity boundary.
+- checks: DB:NEW PASS; SEC:NEW PASS; IDEM:NEW PASS; PERF:NEW PASS bounded projection queries.
+- result: R10-04 PASS; R10-05 opened.
+- blocker: NONE.
+- production_impact: NOT_TOUCHED.
+
+
+## IMP-137 — R10-05 UI/navigation (2026-09-21)
+
+- scope: Admin RoutePlan/manual stop ordering/Apply/fleet-current screen; admin, worker and customer messaging with bounded history and realtime refresh signal; assignment-scoped foreground GPS button in work-job detail.
+- gap_ids: GAP-21 UI slice FIXED; R10-05 PASS at available boundary.
+- changed_paths: `supabase/migrations/20260921211000_r10_worker_gps_assignment.sql`, `supabase/migrations/20260921211500_r10_worker_tracking_list.sql`, `supabase/migrations/20260921221000_r10_message_scope.sql`, `supabase/migrations/20260921220000_r10_messaging.sql`, `src/modules/messaging/server.ts`, `src/modules/messaging/actions.ts`, `src/components/messaging/messaging-controls.tsx`, `src/components/messaging/messaging-workspace.tsx`, `src/app/admin/messages/page.tsx`, `src/app/work/messages/page.tsx`, `src/app/customer/messages/page.tsx`, `src/components/routing/route-plan-controls.tsx`, `src/app/admin/routes/page.tsx`, `src/app/work/jobs/[id]/page.tsx`, `src/app/work/tracking/page.tsx`, `src/components/app-shell.tsx`, `src/components/portal/portal-shell.tsx`, `src/modules/routing/server.ts`, `src/modules/routing/provider.ts`, `src/modules/routing/actions.ts`.
+- new_evidence: QA browser Owner Routes/Messages, Worker Messages, Customer Messages render 200 with expected headings; two-stop manual reorder changes hidden order without DB write. Worker service job has no GPS control. Scoped list uses branch/customer and cursor; dedicated worker tracking page lists only active assignments, independent of WorkItem. QA rollback proved own assignment visible and outsider denied. Provider missing distance/duration falls back rather than converting missing values to zero; unavailable capacity/window validation is visibly flagged.
+- reused_evidence: R10-01/02 DB/IDEM/RACE, R10-03 telemetry authorization, R10-04 audience/projection validation.
+- checks: UI:NEW PASS; SEC:NEW PASS scoped RPC; TYPECHECK:NEW PASS before provider-warning tightening; phase typecheck/build pending R10-06.
+- result: R10-05 PASS at available boundary; R10-06 opened. Live provider sandbox and browser geolocation on an active worker delivery remain unverified, not a PASS claim.
+- blocker: NONE for independent R11/R12 work.
+- production_impact: NOT_TOUCHED.
+
+
+## IMP-138 — R10-06 phase implementation gate (2026-09-21)
+
+- scope: Phase gate for route provider, RoutePlan/apply, foreground GPS, messaging and role-scoped UI.
+- gap_ids: GAP-21 R10_PHASE_IMPLEMENTED; R10-06 PASS at available boundary.
+- changed_paths: `tasks.md`, `implementation.md`.
+- new_evidence: Optimized build generated 67 routes; TypeScript PASS. Local provider stub proved success ordering, missing-config fallback, invalid-payload fallback and timeout fallback. QA worker assignment RPC shows an assigned delivery even without WorkItem, outsider receives 42501.
+- reused_evidence: IMP-134 through IMP-137 targeted DB/SEC/IDEM/RACE/UI results; no full suite.
+- checks: DOC:NEW PASS; TYPECHECK:NEW PASS; BUILD:NEW PASS; EXT:NEW PASS local stub; DB/SEC/IDEM/RACE:REUSED. Live provider sandbox: NOT_RUN; actual-device foreground geolocation UAT: NOT_RUN.
+- result: R10_PHASE_IMPLEMENTED; R11-01 opened. External and device evidence is not accepted or called production-ready.
+- blocker: NONE for provider-neutral R11/R12 work.
+- production_impact: NOT_TOUCHED.
+
+
+## IMP-139 — R11-01 provider/policy decision (2026-09-21)
+
+- scope: Determine whether real invoice provider, legal form, tax policy, signing and API are selected.
+- gap_ids: GAP-22 provider integration HUMAN_GATE.
+- changed_paths: `tasks.md`, `implementation.md`.
+- new_evidence: Canonical SPEC-EINV-002 explicitly states provider and household-business issuing profile remain unselected. No provider configuration or enabled issue adapter was found in the R11 scope.
+- reused_evidence: R11 production lock and provider-neutral permission boundary.
+- checks: DOC:NEW PASS; EXT:NOT_RUN.
+- result: R11-01 HUMAN_GATE; R11-02 opened for independent provider-neutral work.
+- blocker: Provider-dependent issuing and legal policy cannot be completed without an Owner/provider decision.
+- production_impact: NOT_TOUCHED.
+
+
+## IMP-140 — R11-02 provider-neutral invoice source/coverage (2026-09-21)
+
+- scope: Verification-based invoice business drafts and source coverage without legal issuance or new AR.
+- gap_ids: GAP-22 provider-neutral domain FIXED; R11-02 PASS.
+- changed_paths: `supabase/migrations/20260921230000_r11_invoice_neutral.sql`, `tasks.md`, `implementation.md`.
+- new_evidence: QA rollback service source: draft/create replay, unique coverage, cancel and re-create, business approval/replay, stale denial, AR unchanged and legal/provider fields empty. Separate QA rollback two-line delivery source: two invoice lines and exact source amount total. `invoice_due_at` remains NULL pending policy while `billing_verified_at` snapshots verification time.
+- reused_evidence: Delivery/service verification and AR source-of-truth invariants; no revalidation of unrelated finance flows.
+- checks: DB:NEW PASS; SEC:NEW PASS; IDEM:NEW PASS; RACE:NEW PASS; DOC:NEW PASS.
+- result: R11-02 PASS; R11-03 NOT_REQUIRED until external async exists; R11-04 HUMAN_GATE; R11-05 opened.
+- blocker: Provider selection/policy only for issuing and legal document status.
+- production_impact: NOT_TOUCHED.
+
+## IMP-141 — R11-05/06 provider-neutral implementation gate (2026-09-21)
+
+- scope: Invoice adjustment drafts, purchase-source registry, business review UI and explicitly non-legal review PDF; close the provider-neutral R11 gate.
+- gap_ids: GAP-22 provider-neutral surfaces IMPLEMENTED; actual issue/legal documents HUMAN_GATE.
+- changed_paths: `supabase/migrations/20260921231000_r11_invoice_adjustment_registry.sql`, `supabase/migrations/20260921231500_r11_direct_fulfillment_evidence.sql`, `supabase/migrations/20260921232000_r11_purchase_registry_eligibility.sql`, `src/modules/invoicing/actions.ts`, `src/components/invoicing/invoice-command.tsx`, `src/app/admin/invoices/`, `src/app/api/invoices/[id]/review/pdf/route.ts`, `src/lib/pdf/standard-document.ts`, `src/components/app-shell.tsx`, `src/modules/routing/actions.ts`, `src/components/routing/route-plan-controls.tsx`, `src/modules/messaging/actions.ts`, `src/components/messaging/messaging-controls.tsx`, `tasks.md`, `implementation.md`.
+- new_evidence: QA rollback purchase registry source unique/replay and evidence boundary; service-source adjustment draft/replay/same-source duplicate denial, all rolled back. QA browser Owner invoice and purchase pages return 200. QA invoice/purchase rows are empty, so populated detail and review PDF runtime remain NOT_RUN. Typecheck PASS and optimized build PASS with 69 routes. Messaging/routing form operation IDs now persist across retry for the same intent.
+- reused_evidence: IMP-140 verified-source coverage, approval and no-new-AR checks; IMP-134/136 routing and messaging DB idempotency. No live provider, legal policy, signing or tax acceptance claimed.
+- checks: DB:NEW PASS; IDEM:NEW PASS; UI:NEW PASS lists only; TYPECHECK:NEW PASS; BUILD:NEW PASS; PDF runtime:NOT_RUN; EXT:NOT_RUN.
+- result: R11-05 IMPLEMENTED_TO_AVAILABLE_BOUNDARY; R11-06 provider-neutral implementation gate PASS; R12-01 opened.
+- blocker: Provider/legal/tax/signing/API human decision for real issue, and populated PDF QA evidence before release acceptance.
+- production_impact: NOT_TOUCHED.
+
+## IMP-142 — R12 release-candidate evidence and blockers (2026-09-21)
+
+- scope: R12-01..08 available non-Production boundary; targeted candidate reconciliation/security/performance, QA isolation/write fence, migration-history check and approval package. R11 gate invalidated only for the review PDF input path.
+- gap_ids: GAP-23 PARTIAL; NEW_GAP-02 CONFIRMED P0 release blocker: 19 local migrations from 20260921 are absent from QA `supabase_migrations.schema_migrations` despite corresponding R10/R11 schema objects existing. NEW_GAP-03 CONFIRMED P1: `/api/invoices/not-a-uuid/review/pdf` returns HTTP 500 (SQL 22P02) instead of rejecting malformed input; populated PDF route NOT_RUN.
+- changed_paths: `tasks.md`, `implementation.md`, `RELEASE_APPROVAL.md`. No application/source/schema repair in this batch.
+- new_evidence: QA guard ref `ffrwiglcrlumfvhubaxg`; 41 local migration files vs 22 recorded QA versions, 19 missing. No Docker/PostgreSQL binaries available for clean isolated schema. QA branch-A AR 50/50m, AP 50/25m, payment allocations AR 10m/AP 5m, inventory movements 0; SO/PO/AR/AP parent orphan counts zero; QA dataset 13 customers, 4 suppliers, 2 materials, 102 SO, 6 PO, 150 deliveries, 200 payments and 200 earning events. Worker `invoice_eligible_sources` denied 42501; admin RSC permission error streams generic page at HTTP 200 with no invoice headings. QA transaction read-only UPDATE denied 25006; application QA project ref matched with e-invoice disabled. Optimized build/typecheck PASS, 69 routes. Invoice list HTTP 100 samples at concurrency 5: p50 645ms, p95 733ms, p99 866ms, cold 1169ms; purchase list p50 641ms, p95 677ms, p99 754ms, cold 641ms; zero errors, local arm64 Node 24, QA DB region ap-northeast-2, warm HTTP server response, not click-to-useful, dataset below expanded scale. Owner UI has one h1/main, labelled fields and named links on both list pages.
+- reused_evidence: IMP-134..141 focused domain checks. No full suite rerun and no live provider/device results invented.
+- checks: DOC:NEW PASS scope mapping; DB:NEW PASS QA read-only reconciliation; SEC:NEW PASS worker RPC and QA write fence, HTTP status semantics PARTIAL; UI:NEW PASS lists, PDF invalid input FAIL; PERF:NEW PARTIAL representative tiny dataset; TYPECHECK/BUILD:REUSED IMP-141; MIG:BLOCKED clean rehearsal and ledger drift; BACKUP/RESTORE:NOT_RUN; EXT:NOT_RUN.
+- result: R11-05/06 downgraded to PARTIAL by NEW_GAP-03. R12-01 PARTIAL, R12-02 BLOCKED, R12-03/04 PARTIAL, R12-05 prepared but not approvable, R12-06 LOCKED, R12-07 NOT_RUN, R12-08 BLOCKED. Do not label R12/goal complete or accept release.
+- blocker: Legacy Production dataset unverified; clean local runtime absent; QA migration ledger drift; populated invoice review/PDF and input handling; full backup/restore, expanded perf, external provider/legal/device and separate Owner Production approval.
+- production_impact: NOT_TOUCHED.
+
+## IMP-143 — Targeted partial closure (2026-09-21)
+
+- scope: Correct malformed invoice-review PDF input handling and rerun the focused route gate; rehearse the full migration sequence in a separate QA PostgreSQL database without changing the primary QA schema.
+- gap_ids: NEW_GAP-03 FIXED (invalid UUID now 400; valid absent UUID 404). NEW_GAP-02 remains OPEN: primary QA ledger is missing 19 versions and was not blindly repaired.
+- changed_paths: `src/app/api/invoices/[id]/review/pdf/route.ts`, `tasks.md`, `implementation.md`, `RELEASE_APPROVAL.md`.
+- new_evidence: QA guard PASS. Owner QA requests returned 400 for `not-a-uuid` and 404 for a syntactically valid absent UUID; no SQL 22P02. Typecheck and optimized build PASS, 69 routes. A separate temporary database within the QA project, bootstrapped with minimal `auth.users`/`auth.uid()` stubs, applied all 41 migrations from zero and was dropped. This is PostgreSQL schema-order evidence, not a complete Supabase Auth/Storage environment. Two synthetic database-clone attempts were denied with 55006 because of pooler sessions; both temporary databases were dropped, and no full backup/restore PASS is claimed.
+- reused_evidence: IMP-140/141 invoice domain/adjustment, IMP-142 QA reconciliation/permission/performance/write-fence results. No unrelated checks rerun.
+- checks: DOC:NEW PASS scope mapping; UI/SEC:NEW PASS negative PDF route; TYPECHECK:NEW PASS; BUILD:NEW PASS; MIG:NEW PASS 41-file isolated SQL sequence, QA ledger still BLOCKED; BACKUP/RESTORE:NOT_RUN full system, synthetic clone FAIL; EXT:NOT_RUN.
+- result: R11-05 and R11-06 implemented/gated to available provider-neutral boundary. R12-02 improved from BLOCKED to PARTIAL; R12-04 remains PARTIAL; R12-08 remains BLOCKED. Production release is not authorized.
+- blocker: QA migration-ledger reconciliation, full Supabase rehearsal/backup-restore, actual legacy dataset inventory, populated invoice PDF acceptance, provider/legal/device decisions and explicit Production approval.
+- production_impact: NOT_TOUCHED.
+
+## IMP-144 — QA schema reconciliation and application recovery (2026-09-21)
+
+- scope: Resolve the QA migration-history drift without replaying DDL; rehearse application schema/data backup and restore; exercise the populated invoice review-PDF generator without committing immutable financial fixtures.
+- gap_ids: NEW_GAP-02 FIXED on QA. NEW_GAP-03 remains FIXED. R12-02 and R12-04 PASS only at their application-schema/data boundaries; human and managed-service gates remain explicit.
+- changed_paths: `supabase/migrations/20260921221000_r10_message_scope.sql`, `src/modules/invoicing/invoice-review-pdf.test.ts`, `tasks.md`, `implementation.md`, `RELEASE_APPROVAL.md`.
+- new_evidence: Direct TLS QA comparison against isolated 41-migration database: 1,448 columns, 905 constraints, 266 indexes, 27 views, 102 policies, 39 triggers and 97 RLS flags matched; 155 application functions matched after guarding the message-scope migration against duplicate `customers.read`. Clean schema and a synthetic customer/supplier snapshot cloned/restored successfully via direct connection. Official `supabase migration repair --status applied --db-url <guarded QA>` recorded the 19 previously manual versions; 41/41 local versions are now present in QA history. PostgreSQL 18 `pg_dump` via direct TLS produced an application archive (1,138,942 bytes; SHA-256 `df99207b9f9e963d72fde980afe2b88d0422974e13fd32c5f51db83c77ec802a`); `pg_restore` into an isolated QA database reconciled all 97 public tables by row count and AR 100,000,000 VND, AP 50,000,000 VND, payment 15,000,000 VND totals. The restore DB, archive and temporary tools were removed. QA PDF fixture preflight rolled back when immutable AR prevented deletion, so no synthetic finance row was committed. Focused route test created a real one-page PDF from mocked populated source data and passed malformed/absent ID cases (3/3); typecheck and optimized build PASS, 69 routes.
+- reused_evidence: IMP-140/141 invoice business invariants; IMP-142 QA reconciliation, worker permission, 100-request list timings and write-fence check; unrelated suites were not rerun.
+- checks: MIG:NEW PASS application schema and QA ledger; BACKUP/RESTORE:NEW PASS public/private application data, managed Auth/Storage/PITR NOT_RUN; DB:NEW PASS 97 table counts and financial totals; UNIT:NEW PASS 3/3 PDF cases; TYPECHECK/BUILD:NEW PASS; EXT/live-device:NOT_RUN.
+- result: R11 provider-neutral implementation remains PASS at available boundary. R12-02/04 now PASS at application boundaries. R12-08 remains BLOCKED because full release approval requires independent human, managed-service and Production gates.
+- blocker: Actual legacy Production inventory, provider/legal/tax/signing decision, live GPS/provider and expanded-scale UAT, managed Auth/Storage recovery and explicit Production authorization.
+- production_impact: NOT_TOUCHED.
+
+## IMP-145 — QA Auth/Storage data recovery extension (2026-09-21)
+
+- scope: Extend R12-04 QA backup/restore rehearsal to Auth and Storage PostgreSQL schemas and private Storage object bytes; assess six Security Advisor read-view warnings without changing schema.
+- gap_ids: GAP-23 PARTIAL. R12-04 remains PARTIAL overall pending managed-service/PITR recovery.
+- changed_paths: `tasks.md`, `implementation.md`, `RELEASE_APPROVAL.md`. No application source or migration change.
+- new_evidence: A first serial QA restore hit a 120-second client timeout and was discarded. A new 1,364,654-byte four-schema archive restored successfully with parallel workers into an isolated QA database. Counts and row-content hashes matched for `auth.users` 6, `auth.identities` 6, `storage.buckets` 3, `storage.objects` 4 and `public.customers` 13. Separately, all 4 private Storage objects (470,183 bytes) were backed up to restricted temporary files, restored into a unique QA bucket, and matched by SHA-256. Temporary database, bucket, archive, files and PostgreSQL tools were removed. Six Security Advisor `SECURITY DEFINER` read views have explicit branch-permission guards and no anon SELECT grant; all returned zero rows to authenticated role without a JWT, while a three-user sample saw PO rows only for an authorized multi-branch user. The QA dashboard reports no managed backups.
+- reused_evidence: IMP-144 public/private 97-table reconciliation and QA migration ledger 41/41; IMP-142 representative small-dataset performance. No unrelated checks rerun.
+- checks: BACKUP/RESTORE:NEW PASS QA PostgreSQL row data and Storage bytes; SEC:NEW PASS focused no-JWT/role sample, not exhaustive sign-off; managed Supabase backup/PITR and service-runtime recovery:NOT_RUN; R12-03 expanded-scale/per-role/accessibility:NOT_RUN.
+- result: R12-04 QA data-recovery boundary advanced; R12-04 overall PARTIAL and R12-08 BLOCKED. No Production release acceptance.
+- blocker: Managed platform backup/PITR/runtime rehearsal, legacy Production inventory, provider/legal decision, expanded-scale UAT and Owner release authorization.
+- production_impact: NOT_TOUCHED.
+
+## IMP-146 — Populated QA invoice PDF and role boundary (2026-09-21)
+
+- scope: Close the populated review-PDF QA evidence gap and correct unauthorized PDF HTTP semantics; advance R12-03 multi-role route checks without claiming full UAT.
+- gap_ids: NEW_GAP-04 CONFIRMED then FIXED: worker/customer PDF access returned 500 from an uncaught `AppError(FORBIDDEN)`; it now returns JSON 403 without PDF bytes. GAP-23 remains PARTIAL.
+- changed_paths: `src/app/api/invoices/[id]/review/pdf/route.ts`, `src/modules/invoicing/invoice-review-pdf.test.ts`, `tasks.md`, `implementation.md`, `RELEASE_APPROVAL.md`.
+- new_evidence: QA synthetic owner/sales/worker and customer OWNER/FINANCE_CONTACT/RECEIVER sessions produced 30/30 expected route-content visibility outcomes; denied Server Component pages still stream HTTP 200 and were not counted as HTTP 403. The existing `HXQA-SERVICE`/`HXQA-WORK` fixture passed a rollback preflight of start, submit, verify and draft creation with one 100,000 VND line. The same standard command chain was then committed on QA only, creating one service verification, one 100,000 VND AR obligation, and one DRAFT invoice with matching line total and active coverage. QA aggregate AR is now 100,100,000 VND, AP remains 50,000,000 VND; no provider issue was attempted. The Owner list contains the draft. The live PDF route returned 200 `application/pdf`, 304,155 bytes, one extracted page with QA customer, service source, quantity 10, 100,000 VND and explicit non-tax/non-e-invoice disclaimer; SHA-256 `6317ee35f7925b23cc156554d737f928a4656844907b3cb99d706d75b7e791ad`. After the route fix, Owner remained 200 PDF and worker/customer both returned JSON 403 `FORBIDDEN` with zero PDF bytes.
+- reused_evidence: IMP-140/141 invoice source/coverage domain invariants; IMP-144 migration ledger and public/private recovery; IMP-145 QA Auth/Storage data restore. No unrelated suite rerun.
+- checks: DB:NEW PASS rollback preflight and QA source/line/coverage reconciliation; UI:NEW PASS 30/30 route-content matrix and populated Owner invoice list; PDF:NEW PASS live one-page artifact; SEC:NEW PASS Owner 200 versus worker/customer 403; UNIT:NEW PASS 4/4 focused PDF cases; TYPECHECK:NEW PASS. Full accessibility, expanded-scale performance, immutable candidate and provider sandbox:NOT_RUN.
+- result: Populated QA review-PDF and NEW_GAP-04 FIXED. R11 remains implemented to provider-neutral boundary. R12-03 PARTIAL and R12-08 BLOCKED.
+- blocker: Expanded-scale and full-system UAT, managed Supabase backup/PITR, separately authorized Production legacy inventory, provider/legal decision and Owner release authorization.
+- production_impact: NOT_TOUCHED.
+
+## IMP-147 — Targeted QA accessibility and shared brand contrast (2026-09-21)
+
+- scope: Advance R12-03 accessibility evidence for login, admin, work and customer screens; fix a shared admin-shell contrast defect without changing navigation or business flow.
+- gap_ids: NEW_GAP-05 CONFIRMED then FIXED: `.brand span` overrode `.brand-mark`, producing #b9c8db text on white at 1.7:1 in five sampled admin role/route cases. GAP-23 remains PARTIAL.
+- changed_paths: `src/app/globals.css`, `tasks.md`, `implementation.md`, `RELEASE_APPROVAL.md`.
+- new_evidence: axe-core 4.13.0 was installed only in a temporary directory. Initial WCAG A/AA-tag scan covered admin/work/customer login (desktop/mobile) and seven authenticated surfaces (Owner dashboard/orders/invoices/access, Sales orders, worker work and customer orders). The five admin cases shared one serious `.brand-mark` contrast violation; the other five sampled surfaces had zero automated violations. CSS was narrowed to `.brand > div > span` so the subtitle retains its light color while `HX` uses #172c49 on white. Owner four admin desktop routes plus mobile dashboard and Sales orders were rerun: zero automated violations. Keyboard Tab samples on Owner orders and worker work visited eight visible controls each with solid 3px focus outlines. No screen-reader, 200% zoom, complete action-flow or representative-human UAT was claimed.
+- reused_evidence: IMP-146 six-role DOM visibility matrix and populated invoice/PDF checks; unchanged login/work/customer automated scans were not rerun after the admin-only selector change.
+- checks: UI/A11Y:NEW PASS for the sampled pages and affected contrast regression; DOC:NEW PASS scope mapping. Full WCAG/AT/zoom/touch/action UAT:NOT_RUN; PERF expanded scale:NOT_RUN.
+- result: NEW_GAP-05 FIXED. R12-03 remains PARTIAL and R12-08 remains BLOCKED.
+- blocker: Full accessibility/UAT, expanded-scale performance, managed platform backup/PITR, authorized legacy Production inventory, provider/legal decision and Owner release approval.
+- production_impact: NOT_TOUCHED.
+
+## IMP-148 — Bounded Orders list query plan (2026-09-21)
+
+- scope: Advance R12-03 performance readiness by removing the unconditional all-orders line aggregate from `sales_order_read`; preserve its existing columns and derived-state behavior.
+- gap_ids: GAP-23 PARTIAL; confirmed Orders list query-plan defect FIXED at QA schema boundary. Expanded-scale performance gate remains OPEN.
+- changed_paths: `supabase/migrations/20260921233000_r12_order_list_perf.sql`, `implementation.md`.
+- new_evidence: Guarded QA dry run listed exactly one pending migration; QA push applied it and recorded version `20260921233000`. The 102-row view retained the same ordered MD5 over order ID, fulfillment/payment states and total: `4c0c9766cf8b1cc841e8eeddfd93bf2b`. Before the change, `EXPLAIN ANALYZE` for a branch's first 25 Orders rows showed a whole-table `sales_order_lines` scan and aggregate before top-N sorting (3.987 ms on this small fixture). After the change it used `sales_orders_branch_created_id_idx` for the first 25 rows and per-order indexed line aggregates, without an all-lines scan (2.233 ms single sample). These single DB timings are plan evidence, not p95 or click-to-useful evidence.
+- reused_evidence: IMP-142 small-data 100-request HTTP sample and IMP-146 role boundary; no unrelated regression rerun.
+- checks: MIG:NEW PASS QA migration ledger and apply; DB:NEW PASS 102-row derived-state/total equivalence; PERF:NEW PASS bounded query-plan shape, expanded dataset/p95/p99 NOT_RUN.
+- result: Orders list query-plan defect fixed on QA. R12-03 remains PARTIAL; R12-08 remains BLOCKED and release approval remains NOT_APPROVABLE.
+- blocker: Expanded-scale performance and full-system UAT, managed backup/PITR, separately authorized legacy Production inventory, provider/legal/device decisions and Owner release authorization.
+- production_impact: NOT_TOUCHED.
+
+## IMP-149 — Targeted QA reflow and touch UAT (2026-09-21)
+
+- scope: Advance R12-03 operational accessibility on real QA sessions without posting business commands.
+- gap_ids: GAP-23 PARTIAL; no new defect confirmed in the sampled reflow/touch paths.
+- changed_paths: `implementation.md`, `RELEASE_APPROVAL.md`.
+- new_evidence: QA environment preflight matched project `ffrwiglcrlumfvhubaxg` with e-invoice disabled. Owner selected HXQA Branch A, then rendered Orders list, new Order, Invoices and Access at 640px and 320px CSS viewports (eight route/viewport combinations): each returned 200 with its actual page heading, had interactive controls, and had no document-level horizontal overflow. These widths approximate 200% and 400% reflow from a 1280px viewport; browser/text-only zoom and screen-reader behavior were not tested. At 390px with touch enabled, Owner new Order had no document overflow or interactive control outside the viewport; touch added a second line, removed it, and opened the inline Customer dialog while preserving `/admin/orders/new`. Worker `/work` and `/work/tracking` loaded their actual headings at 390px with no document overflow or interactive control outside the viewport. No business record was saved by this UAT.
+- reused_evidence: IMP-146 six-role content-visibility matrix, IMP-147 automated contrast/keyboard samples, IMP-148 bounded Orders query plan. No unrelated suite rerun.
+- checks: UI/A11Y:NEW PASS sampled reflow and touch interactions; full AT/browser zoom/representative action UAT:NOT_RUN; PERF expanded-scale:NOT_RUN.
+- result: R12-03 remains PARTIAL. The sampled Owner/Worker surfaces improved release evidence but do not satisfy full accessibility or acceptance gates.
+- blocker: Expanded-scale performance, full assistive-technology and representative-human UAT, managed backup/PITR, authorized legacy Production inventory, provider/legal/device decisions and Owner release approval.
+- production_impact: NOT_TOUCHED.
+
+## IMP-150 — Foreground GPS failure-state correction (2026-09-21)
+
+- scope: Close confirmed client-side failure-state defects in R10 foreground GPS without changing GPS RPCs, assignment policy or production data.
+- gap_ids: NEW_GAP-06 CONFIRMED then FIXED in source: permission denial message was overwritten by generic stop text; a failed stop was reported as successful and discarded the session ID; a failed start request could strand the start button in a disabled state. R10 live-device evidence remains PARTIAL.
+- changed_paths: `src/components/routing/foreground-gps-control.tsx`, `src/components/routing/foreground-gps-control.test.tsx`, `implementation.md`.
+- new_evidence: QA has zero active `delivery_assignments`, `gps_positions` and `gps_tracking_sessions`, so no real assignment/browser geolocation run was claimed. PostgreSQL `stop_gps_tracking` marks a session stopped only after its RPC succeeds; the client now retains the session ID and offers `Thử dừng GPS` when the stop HTTP request fails, while halting local `watchPosition`. Permission-denied text remains visible after a successful stop. Start/ping network failures lead to explicit recoverable states instead of an unhandled promise or permanently disabled start button. Focused JSDOM tests passed 3/3 for permission denial, stop failure/retry and start network failure; TypeScript typecheck passed. The first test run failed 2/3 because the new test file lacked explicit component cleanup; the harness was corrected and the rerun passed 3/3.
+- reused_evidence: IMP-134/137 GPS authorization and role-scoped assignment SQL checks; no DB/GPS regression suite rerun.
+- checks: UNIT:NEW PASS 3/3 after harness fix; TYPECHECK:NEW PASS; DB:REUSED for unchanged RPCs; real-device/browser GPS and provider sandbox:NOT_RUN.
+- result: NEW_GAP-06 FIXED at client failure-state boundary. R10 remains implemented to available boundary, not live-device accepted; R12-03 and release gate remain PARTIAL/BLOCKED respectively.
+- blocker: Active QA delivery assignment and physical-device foreground GPS UAT, provider sandbox, expanded-scale performance, managed recovery, Owner/provider/legal decisions and Production authorization.
+- production_impact: NOT_TOUCHED.
+
+## IMP-151 — QA browser GPS end-to-end fixture (2026-09-21)
+
+- scope: Exercise R10 foreground GPS through real QA app/API/RPC and a synthetic delivery assignment, then verify that both explicit Stop and leaving the page stop the server session.
+- gap_ids: R10-03 browser-emulated GPS evidence advanced; physical-device acceptance remains OPEN. No new application defect confirmed by the navigation-response timeout.
+- changed_paths: `implementation.md` only. QA data changed through standard `save_catalog_record` and `assign_delivery` RPCs: vehicle `HXQA-GPS-UAT-01` and delivery `HXQA-DEL-HXQA-O8-9-1` assigned to `HXQA-WORKER`; two GPS sessions/positions were created and stopped. No direct SQL write or Production mutation.
+- new_evidence: Before the fixture, QA had 75 synthetic PLANNED deliveries accessible to Worker but no active vehicle in that branch. Owner created a separate QA vehicle via the catalog RPC and assigned one synthetic delivery at version 1 via the delivery RPC. The Worker tracking page then displayed one active assignment. Chromium with an explicitly simulated QA location invoked `/api/gps/session/start`, `/ping` and `/stop`, all HTTP 200; PostgreSQL recorded one position and `STOPPED` status for the first session. A second start/ping followed by navigation away also ended in `STOPPED` with one position. Playwright did not observe the keepalive stop response after navigation, but direct QA session state confirmed server-side completion. No real location, customer message or provider call was sent.
+- reused_evidence: IMP-134/137 GPS permission and assignment checks; IMP-150 client error-state unit 3/3 and typecheck. No unrelated suite rerun.
+- checks: UI/API/DB:NEW PASS browser-emulated start/ping/explicit stop and navigation-stop state; SEC:REUSED Worker assignment scope; TYPECHECK:REUSED IMP-150; BUILD:NEW PASS optimized QA-configured build with 69 routes; real-device geolocation and route-provider sandbox:NOT_RUN.
+- result: R10 browser GPS path has end-to-end QA evidence; R10 live-device/provider acceptance and R12-03 remain PARTIAL. Release is still NOT_APPROVABLE.
+- blocker: Physical-device foreground/background UAT, live route-provider sandbox, expanded-scale performance, managed recovery, Owner/provider/legal decisions and Production authorization.
+- production_impact: NOT_TOUCHED.
+
+## IMP-152 — Bounded Purchase Orders list query plan (2026-09-21)
+
+- scope: Advance R12-03 expanded-scale readiness by moving `purchase_order_read` total-cost derivation from a whole-table line aggregate to a per-selected-PO aggregate, without changing price visibility or view columns.
+- gap_ids: GAP-23 PARTIAL; confirmed Purchase Orders list query-plan defect FIXED at QA schema boundary. Expanded-scale p95/p99 gate remains OPEN.
+- changed_paths: `supabase/migrations/20260921234000_r12_purchase_list_perf.sql`, `implementation.md`.
+- new_evidence: Guarded QA dry run listed only this migration, and QA push applied version `20260921234000`. The view retained `security_invoker=true`. Before and after, authenticated Owner saw 6/6 priced POs with identical ordered SHA-256 over `id,total_cost_vnd`: `187ee3f8e089703854a757a3de8a0e6a4019cdd57b46b4cbfa17517eac0a63bf`. The original plan scanned and aggregated all 12 `purchase_order_lines` before sorting the selected branch. After migration, `EXPLAIN ANALYZE` under a real Owner JWT with `purchasing.price.read=true` used `purchase_orders_branch_created_idx` and two per-PO indexed line aggregates for the two selected rows. A no-JWT SQL plan did not execute cost aggregates at all. Single-plan timings on six QA POs are not p95/p99 evidence.
+- reused_evidence: IMP-142 small-dataset PO HTTP sample and IMP-148 analogous Orders list plan correction; no unrelated regression rerun.
+- checks: MIG:NEW PASS QA migration/ledger; DB:NEW PASS Owner price equivalence; SEC:NEW PASS view invoker option and Owner permission-bound result; PERF:NEW PASS bounded plan shape, expanded-scale p95/p99 NOT_RUN.
+- result: Purchase Orders list query-plan defect fixed on QA. R12-03 remains PARTIAL; release approval remains NOT_APPROVABLE.
+- blocker: Representative expanded dataset/network/client measurements, full multi-role UAT, managed recovery, separately authorized legacy Production inventory, provider/legal/device decisions and Owner release authorization.
+- production_impact: NOT_TOUCHED.
+
+## IMP-153 — Bounded AR/AP balances and page navigation (2026-09-21)
+
+- scope: Remove cross-branch whole-table balance aggregates and exact-count work from the AR/AP core lists while preserving canonical financial row values, role security and filter/URL behavior.
+- gap_ids: NEW_GAP-07 CONFIRMED then FIXED at QA/source boundary: `receivable_read` and `payable_read` aggregated all adjustments/allocations before branch paging, and both pages requested an exact count of derived outstanding balances on every visit. GAP-23 expanded-scale release gate remains PARTIAL.
+- changed_paths: `supabase/migrations/20260921235000_r12_finance_list_perf.sql`, `src/app/admin/receivables/page.tsx`, `src/app/admin/payables/page.tsx`, `src/components/ui/list-pager.tsx`, `src/components/ui/list-pager.test.tsx`, `implementation.md`.
+- new_evidence: Guarded QA dry run listed only version `20260921235000`, then QA push applied it. Authenticated Owner full-row SHA-256 remained identical before/after for all 101 receivables (`1e0a0d95493fef42ec685f2ca94656b6d8393c87923ec0dd39a53051b71318f8`) and 100 payables (`eeedbb9275d7a5d5247bb403599eec6e0b79028c96c98caed0cfc9aebfef25c3`); both views retained `security_invoker=true`. Owner-JWT `EXPLAIN ANALYZE` showed branch/due index scans and exactly 25 per-obligation balance aggregates for each first-page query, instead of whole-table adjustment/allocation aggregates. The exact-count query still computed all 51/50 branch obligations, so the UI now requests 26 rows without count and renders 25, using the extra row only for `hasNext`; it does not claim a total. QA browser Owner pagination reconciled AR `25+25+1=51` and AP `25+25=50` against DB outstanding counts, with correct last-page navigation and no payment write. Pager URL/filter tests passed 2/2, typecheck passed, and QA-configured optimized build passed with 69 routes.
+- reused_evidence: IMP-142 QA write fence and small-data HTTP timing, IMP-144 financial restore/reconciliation, IMP-152 PO plan; no unrelated full regression rerun.
+- checks: MIG:NEW PASS; DB:NEW PASS full-row financial equivalence; SEC:NEW PASS retained invoker option and Owner-JWT view evaluation; UI:NEW PASS AR/AP page navigation; UNIT:NEW PASS 2/2 pager cases; TYPECHECK:NEW PASS; BUILD:NEW PASS 69 routes; PERF:NEW PASS bounded plan shape only, expanded-scale p95/p99 NOT_RUN.
+- result: NEW_GAP-07 FIXED at QA/source boundary. R12-03 remains PARTIAL and release remains NOT_APPROVABLE.
+- blocker: Representative 200k AR/AP and full expanded dataset performance under recorded client/network conditions, full multi-role/assistive-technology UAT, managed recovery, authorized legacy Production inventory, provider/legal/device decisions and Owner release authorization.
+- production_impact: NOT_TOUCHED.
+
+## IMP-154 — Indexed Deliveries list paths (2026-09-21)
+
+- scope: Advance R12-03 delivery-list scale readiness for the specified 150k-delivery dataset without altering delivery behavior or navigation.
+- gap_ids: NEW_GAP-08 CONFIRMED then FIXED at QA schema boundary: the branch-scoped Deliveries list sorted by `created_at DESC, id DESC` but had no matching index, and its optional execution-state filter had no matching sorted index. GAP-23 expanded-scale release gate remains PARTIAL.
+- changed_paths: `supabase/migrations/20260921235500_r12_delivery_list_indexes.sql`, `implementation.md`.
+- new_evidence: Guarded QA dry run listed only version `20260921235500`; QA push applied it. The existing active-assignment partial unique index was reused and no view/UI code changed. Authenticated Owner ordered SHA-256 over all 150 delivery IDs, execution states, vehicle IDs and created times remained `6be86294d696cc6bf0eaf0183e75be196993c1ae35f82b574ac7efdc75b71500`. Before the migration, the list plan scanned 75 branch deliveries and sorted to get 25. After it, unfiltered and `PLANNED` filtered plans each used their respective branch/sort index and read 25 delivery rows without an explicit sort. Single small-fixture plan timings are not expanded-scale p95/p99 evidence.
+- reused_evidence: IMP-137/151 scoped worker assignment and GPS checks; IMP-142 small-data QA timing. No unrelated regression rerun.
+- checks: MIG:NEW PASS QA migration/ledger; DB:NEW PASS 150-row view equivalence; PERF:NEW PASS indexed bounded plan shape, expanded 150k-delivery p95/p99 NOT_RUN.
+- result: NEW_GAP-08 FIXED at QA/schema boundary. R12-03 remains PARTIAL and release remains NOT_APPROVABLE.
+- blocker: Expanded dataset and recorded client/network p95/p99, full UAT, managed recovery, authorized legacy Production inventory, provider/legal/device decisions and Owner release authorization.
+- production_impact: NOT_TOUCHED.
+
+## IMP-155 — Bounded Expenses list with deep-link focus (2026-09-21)
+
+- scope: Remove the unbounded Operating Expenses fetch before R12-03's required 100k-expense scale, while keeping create/approve commands and the existing focus highlight usable.
+- gap_ids: NEW_GAP-09 CONFIRMED then FIXED at QA/source boundary: `/admin/expenses` fetched every `expense_read` row in a branch without a limit, cursor/page or deterministic secondary sort. GAP-23 expanded-scale release gate remains PARTIAL.
+- changed_paths: `src/app/admin/expenses/page.tsx`, `supabase/migrations/20260921235900_r12_expense_list_indexes.sql`, `implementation.md`.
+- new_evidence: Expense list now performs server-side search on number/category/supplier/description, approval-state filtering, deterministic `effective_at DESC, id DESC` ordering, and a 26-row sentinel request rendering 25 rows with URL-state pagination. A valid `focus` ID outside the page uses one additional bounded lookup and is visibly pinned rather than silently lost; management option queries no longer run for read-only users. Guarded QA dry run listed only migration `20260921235900`, and QA push applied both branch/sort indexes. `EXPLAIN ANALYZE` for unfiltered and DRAFT-filtered pages used the matching indexes and read 25 expense rows. QA Owner browser showed 25+25=50 branch expenses, one result for exact-number search, zero APPROVED results, and one pinned focused row outside page 1. No expense or AP command ran. Typecheck passed and QA-configured optimized build passed with 69 routes.
+- reused_evidence: IMP-153 sentinel pager behavior and URL tests; existing expense approval/AP domain checks. No unrelated full suite rerun.
+- checks: MIG:NEW PASS; UI:NEW PASS QA pagination/search/filter/focus; TYPECHECK:NEW PASS; BUILD:NEW PASS 69 routes; PERF:NEW PASS bounded plan shape, 100k-expense p95/p99 NOT_RUN.
+- result: NEW_GAP-09 FIXED at QA/source boundary. R12-03 remains PARTIAL; release remains NOT_APPROVABLE.
+- blocker: Expanded 100k-expense measurement and form-option scale, full multi-role UAT, managed recovery, authorized legacy Production inventory, provider/legal/device decisions and Owner release authorization.
+- production_impact: NOT_TOUCHED.
+
+### IMP-156 — R12 bounded commercial/service location lookup (2026-09-21)
+
+- scope: R12-03 representative-data usability and bounded form lookup; no Production release.
+- gap_ids: NEW_GAP-10 (Sales form loaded all customers/sites and could truncate at scale) FIXED; NEW_GAP-11 (ServiceJob creation capped customers at 200 and all branch sites at 300) FIXED for customer/site selectors.
+- changed_paths: `src/modules/sales/form-options.ts`, `src/modules/sales/form-lookup-actions.ts`, `src/components/sales/commercial-document-form.tsx`, `src/app/admin/orders/new/page.tsx`, `src/app/admin/quotations/new/page.tsx`, `src/app/admin/orders/[id]/edit/page.tsx`, `src/app/admin/quotations/[id]/edit/page.tsx`, `supabase/migrations/20260922000500_r12_sales_lookup_indexes.sql`, `src/app/admin/service-jobs/page.tsx`, `src/modules/workforce/form-lookup-actions.ts`, `src/components/workforce/service-job-location-fields.tsx`.
+- new_evidence: QA-only sales lookup migration applied and indexed; Owner Order URL prefill selected both customer/site (6 customer and 3 site options); Owner Quote customer/site search PASS (3/3 bounded options); Sales Order own-branch lookup PASS and cross-branch customer absent; Owner ServiceJob customer/site search, selection preservation, and cross-branch absence PASS. ServiceJob initial customer lookup is 25, site lookup is per selected customer and 25. No ServiceJob was created by these checks.
+- reused_evidence: IMP-148 through IMP-155 QA list-query and targeted performance evidence remains valid for unaffected inputs.
+- checks: `UNIT/TYPECHECK:NEW PASS` (`npm run typecheck`); `UI:NEW PASS` (targeted QA Playwright Order, Quote, ServiceJob); `SEC:NEW PASS` (Sales and ServiceJob cross-branch lookup); `BUILD:NEW PASS` (`npm run build`); `PERF:NOT_RUN` for expanded-data lookup p95/p99; `GATE:BLOCKED` for full R12.
+- result: Sales and ServiceJob customer/site lookup defects fixed; R12-03 remains PARTIAL and R12-08 remains BLOCKED. Employee/vehicle/machine selectors in ServiceJob still have a 200-option cap and need separate scale disposition; no claim of full R12 completion.
+- blocker: representative full UAT/AT, expanded-dataset p95/p99, managed backup/PITR evidence, physical-device GPS/provider sandbox, R11 legal/provider decision, immutable release candidate, and Owner-gated Production steps remain open under their existing gates.
+- production_impact: NOT_TOUCHED; QA schema migration only, no Production deployment, DML, cutover, invoice issue, or customer messaging.
+
+### IMP-157 — ServiceJob resource lookup completion (2026-09-21)
+
+- scope: close the remaining 200-option cap on optional employee, vehicle, and machine selectors in ServiceJob creation.
+- gap_ids: NEW_GAP-11 implementation closure extended to all five ServiceJob selectors; QA evidence for populated machine lookup remains partial because the QA branch has no active machine fixture.
+- changed_paths: `src/modules/workforce/form-lookup-actions.ts`, `src/components/workforce/service-job-resource-field.tsx`, `src/app/admin/service-jobs/page.tsx`.
+- new_evidence: employee/vehicle/machine initial options are branch-scoped and bounded to 25; each has server-side search bounded to 25 and preserves the selected option. Owner QA browser found and selected an employee and vehicle. No active machine fixture exists in the tested QA branch; no machine result was fabricated.
+- reused_evidence: IMP-156 customer/site lookup and cross-branch checks remain valid; no related contract/schema input changed.
+- checks: `UNIT/TYPECHECK:NEW PASS`; `UI:NEW PASS` for populated employee and vehicle; `UI:BLOCKED` for populated machine fixture; `BUILD:NEW PASS`; `PERF:NOT_RUN` for expanded-data lookup p95/p99.
+- result: 200-option resource cap removed in source; R12-03 remains PARTIAL and full R12 gate remains BLOCKED. IMP-156's note about the still-present 200-option cap is superseded by this entry.
+- blocker: representative machine fixture and external R12 gates recorded in IMP-156; Production permission and Owner approval are not implied.
+- production_impact: NOT_TOUCHED.
+
+### IMP-158 — R12 expanded QA lookup and Customer list evidence (2026-09-21)
+
+- scope: targeted R12-03 expanded-data checks for the newly bounded Sales/ServiceJob selectors and Customer list; this is not the full-system performance gate.
+- gap_ids: NEW_GAP-10 and NEW_GAP-11 QA scale evidence strengthened; IMP-157 populated-machine UI evidence gap closed.
+- changed_paths: no application/source change in this batch; QA-only deterministic synthetic rows added using guarded database connection. Added 10,000 `HXQA-SC*` customers split across branches, 20,000 `HXQA-SS*` sites, 500 `HXQA-WIDE*` sites for one Branch B customer, and one active `HXQA-SCALE-MACHINE` in Branch A. QA size was 22 MB before the scale insert and 31 MB after the first 30,000 rows; subsequent 501 rows remain within the configured QA capacity guard. Existing business rows were not edited.
+- new_evidence: local production-mode Next build bound to QA; 100 browser action samples, Sales customer search among 10,013 total customers: 0 errors, p50 1339 ms, p95 1348 ms, p99 1351 ms; initial Order form had 26 customer options including placeholder. 100 browser action samples, Sales site search for a customer with 502 sites: 0 errors, p50 828 ms, p95 841 ms, p99 1346 ms; initial site options 26 including placeholder. 100 full browser navigation samples, Customer list with 10,013 customers: 0 errors, 25 rows/page, p50 939 ms, p95 1074 ms, p99 1312 ms. ServiceJob QA UI found a customer outside the initial set and a site beyond the first 25. Active machine QA fixture could be found/selected in Branch A and was absent under Branch B context. The initial mixed-branch performance attempt stopped on Branch B customers under Branch A context; targeted inspection showed correct branch isolation, so those samples were excluded and the 100-sample same-branch run was performed instead.
+- reused_evidence: IMP-156/157 typecheck, build, Sales and ServiceJob functional/branch checks remain valid; no related source changed in this batch.
+- checks: `PERF:NEW PASS` only for the three stated QA browser scenarios; `UI:NEW PASS` for wide-site ServiceJob lookup and populated machine; `SEC:NEW PASS` for Branch A machine hidden from Branch B; `FULL_R12_GATE:NOT_RUN`.
+- result: targeted lookup-scale and Customer list evidence advanced R12-03, which remains PARTIAL. Measurements are single-user local-browser/QA-region warm-path observations; no concurrency, cold-cache reset, complete operational lifecycle, full representative dataset across every module, human task-duration UAT, or assistive-technology signoff is implied.
+- blocker: remaining R12 external/human gates and unmeasured workflows remain as recorded previously. Managed backup/PITR and Production legacy inventory still require their separate boundaries; R12-08 remains BLOCKED.
+- production_impact: NOT_TOUCHED; QA fixture DML only, no Production deployment, migration, DML, or cutover.
+
+### IMP-159 — ServiceJob form label association (2026-09-21)
+
+- scope: R12-03 targeted accessibility regression on the recently changed Order, Quote, and ServiceJob forms.
+- gap_ids: NEW_GAP-12 (six visible ServiceJob creation labels lacked programmatic association with their inputs) CONFIRMED and FIXED.
+- changed_paths: `src/app/admin/service-jobs/page.tsx`.
+- new_evidence: QA production-mode browser check found no unnamed visible controls in Order/Quote creation; ServiceJob initially had six unnamed controls (`serviceType`, `description`, `scheduledStart`, `scheduledEnd`, `plannedQuantity`, `unitLabel`). Each now has a unique `id` and associated `htmlFor`; targeted browser recheck found exactly one label for all six. After async site loading completed, keyboard focus traversed customer search input, search button, customer select, then site search input in DOM order. The earlier focus-order mismatch during loading was caused by temporarily disabled search buttons, not a keyboard trap.
+- reused_evidence: IMP-158 QA scale/branch/performance observations remain valid; labels did not alter query or permission inputs.
+- checks: `BUILD:NEW PASS`; `UI/ACCESSIBILITY:NEW PASS` for targeted label and keyboard checks; `AT:NOT_RUN` (no screen-reader or human assistive-technology signoff); full R12 accessibility sweep not claimed.
+- result: named ServiceJob controls fixed; R12-03 remains PARTIAL and R12-08 remains BLOCKED.
+- blocker: representative assistive-technology/human UAT and other R12 gates remain open.
+- production_impact: NOT_TOUCHED.
+
+### IMP-160 — R12 Order-scale and narrow-viewport action evidence (2026-09-21)
+
+- scope: R12-03 expanded-data performance and targeted reflow/action coverage; no Production change.
+- gap_ids: R12-03 PARTIAL evidence strengthened; no new application defect confirmed in this batch.
+- changed_paths: `tasks.md`, `implementation.md`; QA-only synthetic fixtures added, no application/source edit.
+- new_evidence: guarded QA insert added 20,000 deterministic `HXQA-SCALE-O*` DRAFT sales orders and 100,000 five-line rows, split across Branch A/B and linked to the previously added scale customers/sites. QA database was about 73 MB after insertion, below the configured capacity guard; `ANALYZE` refreshed QA planner statistics. Combined QA dataset: 10,013 customers, 20,523 sites, 20,102 sales orders, 100,500 sales-order lines. Local production-mode Next build bound to QA: Order list 100 full browser navigations, 0 errors, 25 rows/page, p50 1288 ms, p95 1433 ms, p99 1566 ms; five-line Order detail near end of the scale set, 100 navigations, 0 errors, p50 844 ms, p95 908 ms, p99 1232 ms. Success required HTTP 200 plus actual row/document content, not a shell-only response. At 320 px and 640 px, Order, Quote and ServiceJob creation pages had no document-level or search-row horizontal overflow. At 320 px, Order add/remove line changed material selector count 1→2→1, retained quantity `17` while quick-create customer dialog opened, and remained on the same route; no document was saved by this check.
+- reused_evidence: IMP-158 Sales lookup and Customer list scale timings; IMP-159 ServiceJob label/keyboard fix; unaffected QA role and branch evidence from IMP-156/157.
+- checks: `PERF:NEW PASS` for the two stated Order QA scenarios; `UI/REFLOW:NEW PASS` for the three stated pages at 320/640 px; `UI/ACTION:NEW PASS` for narrow Order line/quick-create no-save flow; `FULL_R12_GATE:NOT_RUN`.
+- result: targeted expanded-data performance and mobile action coverage advanced, but R12-03 remains PARTIAL. These are single-user QA/local-browser warm-path measurements, not cold-cache/concurrent/full-system proof; no human assistive-technology or complete cross-module UAT is implied.
+- blocker: remaining R12 external/human gates and unmeasured cross-domain scenarios unchanged; R12-08 remains BLOCKED.
+- production_impact: NOT_TOUCHED; QA synthetic DML and QA planner statistics only.
+
+### IMP-161 — R12 Delivery list exact-count bottleneck (2026-09-21)
+
+- scope: R12-03 expanded-data Delivery list performance and pagination correctness; no Production change.
+- gap_ids: NEW_GAP-13 (Delivery list exact count on `delivery_read` under RLS caused an avoidable slow everyday list request) CONFIRMED and FIXED.
+- changed_paths: `src/app/admin/deliveries/page.tsx`, `implementation.md`; QA-only deterministic delivery fixtures added, no schema migration.
+- new_evidence: guarded QA insertion added 30,000 synthetic Delivery headers linked to the 20,000 scale Sales Orders; QA database reached about 89 MB and `ANALYZE public.deliveries` refreshed planner statistics. These rows are list-scale fixtures, not completed delivery lifecycle facts. Before fix, 100 full QA browser navigations to Delivery page returned 25 rows with 0 errors but p50 1743 ms, p95 2588 ms, p99 3602 ms. Direct QA SQL plan for branch-scoped page used `deliveries_branch_created_id_idx` and executed in about 0.3 ms; direct count about 6.6 ms. Owner-authenticated Supabase/RLS 20-sample comparison isolated the cost: Delivery page query without exact count p95 176 ms, with exact count p95 1337 ms (Order view comparators p95 147/916 ms). The page now fetches one extra row, displays only the page-local row count, and uses `hasNext` without claiming an exact total. After fix, 100 full QA browser navigations returned 25 rows with 0 errors: p50 707 ms, p95 743 ms, p99 876 ms. Filtered `PLANNED` page 2 navigation preserved `state=PLANNED&page=2` and showed 25 rows. An initial test asserted URL immediately after a client-side click and was invalid; the focused retry waited for navigation and passed. Build including TypeScript passed.
+- reused_evidence: IMP-154 Delivery index and branch/sort evidence; IMP-160 Order-scale QA data and performance evidence remain valid.
+- checks: `BUILD:NEW PASS`; `PERF:NEW PASS` for the stated 100-sample Delivery QA list scenario; `UI:NEW PASS` for bounded rows and filtered pagination; no full-system performance claim.
+- result: confirmed Delivery list bottleneck fixed on QA. R12-03 remains PARTIAL because representative cross-domain lifecycle, concurrency, human AT/UAT and full-system gates are not complete; R12-08 remains BLOCKED.
+- blocker: external R12 gates unchanged; synthetic Delivery headers do not prove actual/accepted/billable correctness.
+- production_impact: NOT_TOUCHED; QA fixture DML only, no Production deployment, schema mutation or cutover.
+
+### IMP-162 — R12 expanded AR/AP list and fixture reconciliation (2026-09-21)
+
+- scope: R12-03 representative finance-list performance and synthetic opening-balance integrity on QA; no Production change.
+- gap_ids: R12-03 PARTIAL evidence strengthened; no new application defect confirmed in this batch.
+- changed_paths: `implementation.md`; QA-only deterministic opening-balance sources and obligations added, no application/schema edit.
+- new_evidence: guarded QA insertion added 10,000 receivable and 10,000 payable opening-balance sources plus matching obligations, split across Branch A/B and linked to existing QA scale customers/sites/suppliers. No payment, allocation, invoice issue or revenue was created. QA database was about 102 MB after insertion and planner statistics were refreshed. Owner-authenticated local production-mode QA browser: Receivables list 100 navigations, 0 errors, 25 rows/page, p50 701 ms, p95 763 ms, p99 939 ms; Payables list 100 navigations, 0 errors, 25 rows/page, p50 697 ms, p95 720 ms, p99 728 ms. Focused QA reconciliation of the new fixtures: AR 10,000 obligations, original and outstanding 10,000,000,000 VND, 0 source/customer/site orphans; AP 10,000 obligations, original and outstanding 5,000,000,000 VND, 0 source/supplier orphans.
+- reused_evidence: IMP-153 bounded AR/AP query implementation and earlier QA role/security checks; IMP-160/161 customer, Order and Delivery scale observations remain valid for unaffected inputs.
+- checks: `PERF:NEW PASS` only for the two stated AR/AP QA list scenarios; `DB:NEW PASS` for the stated fixture count/sum/orphan reconciliation; `FULL_R12_GATE:NOT_RUN`.
+- result: finance-list scale evidence advanced R12-03, which remains PARTIAL. These are synthetic opening balances and single-user warm-path browser observations, not full operational lifecycle, concurrency, real-provider, human UAT or Production evidence.
+- blocker: remaining R12 external/human gates and unmeasured modules unchanged; R12-08 remains BLOCKED.
+- production_impact: NOT_TOUCHED; QA fixture DML and QA planner statistics only.
+
+### IMP-163 — R12 ServiceJob list scale and invalid state filter (2026-09-21)
+
+- scope: R12-03 expanded-data ServiceJob list performance and state-filter correctness; no Production change.
+- gap_ids: NEW_GAP-14 (ServiceJob filter exposed `PLANNED`/`CLAIMED`, which are invalid for `service_jobs.execution_state`) CONFIRMED and FIXED; NEW_GAP-15 (default ServiceJob list joined and counted the full branch before pagination) CONFIRMED and FIXED for the default/state-filtered path.
+- changed_paths: `src/app/admin/service-jobs/page.tsx`, `tasks.md`, `implementation.md`; QA-only synthetic ServiceJob fixtures added, no schema migration.
+- new_evidence: guarded QA insert added 10,000 `SCHEDULED` ServiceJob headers linked to the scale customers/sites across Branch A/B; no WorkLog, verification, billable or earning facts were fabricated. QA database was about 105 MB and planner statistics refreshed. Before fix, 100 full Owner browser navigations yielded 25 rows with 0 errors but p50 3010 ms, p95 3562 ms, p99 4561 ms. Owner-authenticated Supabase/RLS samples showed full `service_job_read` p95 1475 ms without exact count and 2625 ms with exact count; option lookups were only about 139–194 ms p95 each. Direct SQL plan for the view paged after joining about 5,001 branch jobs to 10,013 customers and 20,523 sites. A QA-only trial selecting 26 base IDs then reading display details for 25 IDs had combined p95 607 ms. The implemented default/state path now uses that bounded two-step read; search retains the original field coverage without exact count, and both paths use a 26-row sentinel. Database constraint/default confirmed allowed states `SCHEDULED`, `IN_PROGRESS`, `RESULT_SUBMITTED`, `VERIFIED`, `CANCELLED`; the UI filter now uses exactly those states and human-readable labels. Targeted QA UI showed 25 rows, filtered `SCHEDULED` page 2 preserving URL state, one search result for a scale customer, and the correct displayed status label. After fix, 100 full Owner browser navigations to the default list had 0 errors, p50 1095 ms, p95 1220 ms, p99 1376 ms; 100 customer-name search navigations had 0 errors, p50 1860 ms, p95 1978 ms, p99 2352 ms.
+- reused_evidence: IMP-156/157 ServiceJob bounded form lookup and branch checks; IMP-160–162 QA scale, finance and Delivery observations remain valid for unaffected inputs.
+- checks: `BUILD:NEW PASS`; `UI:NEW PASS` for default/filter/page-2/search/state label; `PERF:NEW PASS` only for the two stated ServiceJob QA scenarios; `FULL_R12_GATE:NOT_RUN`.
+- result: confirmed ServiceJob default-list bottleneck and invalid filter fixed on QA. Customer-name search p95 is close to the ordinary-interaction target and p99 remains above it; no broad performance claim is made. R12-03 remains PARTIAL and R12-08 remains BLOCKED.
+- blocker: representative WorkItem/verification lifecycle, concurrency, assistive-technology/human UAT and external R12 gates remain open.
+- production_impact: NOT_TOUCHED; QA fixture DML and planner statistics only.
+
+### IMP-164 — ServiceJob denied-role content after list query change (2026-09-21)
+
+- scope: targeted invalidated multi-role security/UX check for R12-03 ServiceJob list; no Production change.
+- gap_ids: NEW_GAP-16 (a Worker without `service.read` saw the generic app error boundary rather than an explicit denial) CONFIRMED and FIXED locally for the ServiceJob page.
+- changed_paths: `src/app/admin/service-jobs/page.tsx`, `implementation.md`.
+- new_evidence: Owner Branch A search returned only Branch A job `HXQA-SCALE-J9998` and not Branch B job `HXQA-SCALE-J9999`; after selecting Branch B the inverse held. Worker had no ServiceJob rows, but before fix the page displayed generic “Đã có lỗi xảy ra”. The page now catches only `AppError(FORBIDDEN)` from `requireInternalPermission("service.read")` and renders an explicit accessible denial; other errors still propagate. Targeted QA browser recheck: Owner 25 rows, Worker denial text present and 0 rows. The HTML page response remains 200; this check proves role-safe content and clear denial, not an HTTP 403 status. The first post-edit build exposed a nullable-context TypeScript error, fixed by capturing the validated `branchId`; the subsequent optimized build passed. One Playwright selector initially matched Next's route announcer as well as the denial section; the focused selector retry passed.
+- reused_evidence: IMP-163 ServiceJob list/search/performance and filter evidence remains valid; the permission guard itself and RLS were not weakened.
+- checks: `BUILD:NEW PASS`; `SEC/UI:NEW PASS` for Owner A/B isolation and Worker denied content; `HTTP_403:NOT_CLAIMED`; full multi-role UAT not rerun.
+- result: local ServiceJob authorization UX defect fixed; R12-03 remains PARTIAL and R12-08 remains BLOCKED.
+- blocker: complete multi-role human UAT, assistive-technology signoff, remaining module-scale profiles and external R12 gates are still open.
+- production_impact: NOT_TOUCHED.
+
+### IMP-165 — R12 Purchase Order scale and CLOSED filter (2026-09-21)
+
+- scope: R12-03 Purchase Order list scale, multi-line aggregate display and state-filter coverage; no Production change.
+- gap_ids: NEW_GAP-17 (PO filter omitted valid `CLOSED` state) CONFIRMED and FIXED.
+- changed_paths: `src/app/admin/purchase-orders/page.tsx`, `tasks.md`, `implementation.md`; QA-only synthetic PO/line fixtures added, no schema migration.
+- new_evidence: guarded QA insert added 10,000 DRAFT `CUSTOMER_SITE` Purchase Orders with 50,000 lines, correct branch-specific supplier/customer/site links and five 500,000 VND lines per PO. QA database was about 127 MB and planner statistics refreshed. This fixture did not create receipt, supplier fulfillment or AP. Owner-authenticated local production-mode QA browser measured 100 full PO list navigations with 0 errors, 25 rows/page, p50 1211 ms, p95 1509 ms, p99 1701 ms; a five-line PO displayed 2,500,000 VND. Database schema and `purchaseStateLabel` support `CLOSED` with label “Đã hoàn tất”, but the UI filter omitted it. After adding the option, QA browser showed the correct option and selected URL state; the `CLOSED` query displayed the empty state because QA contains no CLOSED PO, while DRAFT search by a scale PO code returned exactly one row and its 2,500,000 VND total. No CLOSED PO was fabricated solely to make the filter pass. Optimized build including TypeScript passed.
+- reused_evidence: IMP-152 per-PO total/index QA evidence remains valid; earlier role/price-redaction checks remain valid because the selected fields and permission branch were not changed.
+- checks: `BUILD:NEW PASS`; `PERF:NEW PASS` for the stated Owner PO list scenario; `UI:NEW PASS` for filter option/empty state and multi-line total; populated CLOSED-result UAT remains NOT_RUN.
+- result: PO list scale and missing state option addressed on QA; R12-03 remains PARTIAL and R12-08 remains BLOCKED.
+- blocker: full PO fulfillment lifecycle, populated CLOSED-state UAT, cross-domain concurrency, human AT/UAT and external R12 gates remain open.
+- production_impact: NOT_TOUCHED; QA fixture DML and planner statistics only.
+
+### IMP-166 — R12 Supplier and Quotation list scale (2026-09-21)
+
+- scope: R12-03 expanded-data Supplier/Quotation list performance, search/pagination and quotation state-filter coverage; no Production change.
+- gap_ids: NEW_GAP-18 (Quotation exact count under RLS used most of the available list latency) CONFIRMED and FIXED with a 26-row sentinel; NEW_GAP-19 (Quotation filter omitted valid `EXPIRED` revision state) CONFIRMED and FIXED. No new Supplier defect confirmed.
+- changed_paths: `src/app/admin/quotations/page.tsx`, `tasks.md`, `implementation.md`; QA-only deterministic Supplier and Quotation fixtures added, no schema migration.
+- new_evidence: guarded QA insert added 10,000 branch-scoped suppliers; QA database reached about 130 MB. Owner browser Supplier list: 100 full navigations, 0 errors, 25 rows/page, p50 1229 ms, p95 1332 ms, p99 1534 ms; search by a supplier near the end of the fixture returned exactly one row and active-filter pagination linked to `state=ACTIVE&page=2`. A second guarded QA transaction added 10,000 DRAFT quotations, 10,000 current revisions and 50,000 lines, with five 1,000,000 VND lines and a matching 5,000,000 VND revision total per quotation; QA database reached about 153 MB and planner statistics were refreshed. No quote was sent or accepted. Before fix, Quotation list 100 full Owner browser navigations had 0 errors, 25 rows/page, p50 1840 ms, p95 1947 ms, p99 2400 ms; search by a scale quotation returned one row with the 5,000,000 VND total. Owner-authenticated Supabase/RLS comparison (20 samples each) showed Quotation page query p95 873 ms without exact count versus 2369 ms with exact count. The page now fetches one extra row, shows only page-local count, and uses `hasNext`; filter includes schema-valid `EXPIRED`. Targeted QA UI retained DRAFT page-2 filter, 25 rows/page, exact scale quote search/total, and EXPIRED option/URL state. No EXPIRED quotation was fabricated solely to exercise a populated result. After fix, 100 full Owner browser navigations had 0 errors, 25 rows/page, p50 1255 ms, p95 1453 ms, p99 1611 ms. Optimized build including TypeScript passed.
+- reused_evidence: earlier branch and quotation multi-line source checks remain valid; this batch changed list query/pagination and state option only.
+- checks: `BUILD:NEW PASS`; `PERF:NEW PASS` for the stated Supplier and Quotation QA list scenarios; `UI:NEW PASS` for search/pagination/visible totals and EXPIRED option; populated EXPIRED-result UAT remains NOT_RUN; `FULL_R12_GATE:NOT_RUN`.
+- result: Supplier scale evidence and Quotation list bottleneck/filter closure advanced R12-03, which remains PARTIAL; R12-08 remains BLOCKED. Synthetic DRAFT revisions do not prove quotation send/accept lifecycle.
+- blocker: complete cross-domain performance/concurrency, populated EXPIRED-state UAT, human AT/UAT and external R12 gates remain open.
+- production_impact: NOT_TOUCHED; QA fixture DML and planner statistics only.
+## IMP-167 — R12-03 QA Expense scale/list evidence (2026-09-21)
+
+- scope: Expense bounded-list and server-side search at representative synthetic QA scale; no Production access.
+- gap_ids: R12-03 performance/operational UX evidence only; R12-03 remains PARTIAL.
+- changed_paths: `implementation.md`; QA-only synthetic `public.expenses` rows (20,000 DRAFT rows, deterministic `HXQA-SCALE-E*` numbers, total draft amount 200,000,000 VND).
+- new_evidence: QA ref `ffrwiglcrlumfvhubaxg`; database grew from 153 MB to 163 MB; local optimized Next server, Owner browser, 100 list navigations at `/admin/expenses?page=1`: p95 1,230 ms, p99 1,270 ms, 0 non-200 responses; 30 search navigations with `q=HXQA-SCALE-E`: p95 1,815 ms, p99 1,872 ms, 0 non-200 responses. Visible rows used `src/app/admin/expenses/page.tsx` and contained the synthetic expense code.
+- reused_evidence: IMP-155 bounded Expense list/search implementation.
+- checks: PERF:NEW PASS for these sampled single-user QA paths; no concurrency or full-system claim.
+- result: Expense list and search meet the measured representative interaction target; R12-03 gate remains PARTIAL.
+- blocker: Remaining cross-domain UAT/AT, concurrency and full-system release evidence; external human/provider/Production gates unchanged.
+- production_impact: NOT_TOUCHED.
+
+## IMP-168 — R12-03 Reports/CSV permission and scale evidence (2026-09-21)
+
+- scope: Three fixed Reports on QA synthetic finance scale; CSV export authorization defect. No Production access.
+- gap_ids: `NEW_GAP-20260921-01` FIXED (P1, Reports CSV permission response); R12-03 remains PARTIAL.
+- contract_refs: R12-03 security/acceptance gate and Reports permission/export contract.
+- source_evidence: `src/app/api/reports/export/route.ts` called `requireInternalPermission` without mapping `AppError`, causing Worker-denied export to return HTTP 500 rather than 403; the route now returns the structured AppError body/status.
+- user_impact: Denied users received an apparent server failure instead of an accurate forbidden response; no unauthorized CSV data was returned.
+- changed_paths: `src/app/api/reports/export/route.ts`, `implementation.md`.
+- new_evidence: local optimized Next build and TypeScript PASS; Owner QA export HTTP 200, 100 receivable rows; Worker QA export HTTP 403 with `FORBIDDEN` after fix. Before fix Worker received HTTP 500 for all three report exports. Owner exports were HTTP 200 with 100 AR rows, 100 AP rows, and 0 approved Expense rows; totals matched on-screen values. Ten Owner browser navigations per report at QA scale: AR p95 2,382 ms, AP p95 944 ms, Expense p95 979 ms; each reported quality READY. Synthetic Expense fixtures are DRAFT and did not enter the approved expense total.
+- reused_evidence: IMP-167 QA scale fixture and prior branch-scoped finance data.
+- checks: BUILD:NEW PASS; SEC:NEW PASS for Owner/Worker AR export boundary; PERF:NEW PASS for the ten-sample report paths, not a concurrency or full-system claim.
+- result: `NEW_GAP-20260921-01` fixed; R12-03 remains PARTIAL.
+- blocker: Cross-domain UAT/AT, concurrency/full-system checks, external human/provider and Production-specific gates unchanged.
+- production_impact: NOT_TOUCHED.
+
+## IMP-169 — R12-03 concurrent Orders list fix (2026-09-21)
+
+- scope: Four concurrent read-only Owner QA paths on the optimized local build: Orders, Quotations, Expenses, AR Report; 30 navigations per path.
+- gap_ids: `NEW_GAP-20260921-02` FIXED (P1, Orders list performance/reliability under concurrent reads); R12-03 remains PARTIAL.
+- contract_refs: Core-list bounded-query contract and R12-03 representative performance/security gate.
+- source_evidence: `src/app/admin/orders/page.tsx` previously used exact count on `sales_order_read`; `supabase/migrations/20260921233000_r12_order_list_perf.sql` shows row-level derived fulfillment/payment/total subqueries. Under four readers, the old path had p95 7,377 ms and one failed request (>20,000 ms), with an Orders query error in the server log. The page now selects at most 26 branch-scoped IDs from indexed `sales_orders`, then hydrates only 25 visible IDs through `sales_order_read`, preserving deterministic order and filters.
+- user_impact: Orders could exceed the UX ceiling or fail under moderate concurrent reading.
+- changed_paths: `src/app/admin/orders/page.tsx`, `implementation.md`.
+- new_evidence: optimized Next build and TypeScript PASS. Page 1 and page 2 each display 25 rows with expected next/previous navigation; exact-order-code search returns the matching row. After the two-stage query, four concurrent readers (30 navigations each) reported Orders p95 1,198 ms/p99 1,760 ms, Quotations p95 2,029 ms/p99 2,385 ms, Expenses p95 1,756 ms/p99 1,941 ms, and AR Report p95 1,262 ms/p99 1,702 ms; 0 failed/non-200 navigations.
+- reused_evidence: IMP-167 and IMP-168 QA scale/report baselines; previously applied branch/sort indexes.
+- checks: BUILD:NEW PASS; UI:NEW PASS for Orders pagination/search; PERF:NEW PASS for these four-reader QA paths. This is not full-system load certification.
+- result: `NEW_GAP-20260921-02` fixed; R12-03 remains PARTIAL.
+- blocker: Remaining cross-domain operational UAT/AT and full-system release/security evidence; human/provider/Production gates unchanged.
+- production_impact: NOT_TOUCHED.
+
+## IMP-170 — R12-03 Reports customer filter at QA scale (2026-09-21)
+
+- scope: Reports customer filter on QA branches with 5,005 active customers each; no Production access.
+- gap_ids: `NEW_GAP-20260921-03` FIXED (P1, Reports customer discoverability beyond the first 200); R12-03 remains PARTIAL.
+- contract_refs: Reports shared-filter contract and R12-03 operational UX/performance gate.
+- source_evidence: `src/app/admin/reports/page.tsx` previously loaded the first 200 customer options only, making later customers unselectable. It now performs branch-scoped server-side name search with a 25-option limit, fetches the currently selected customer separately, and clears an inaccessible cross-branch selection before report/export filters are formed.
+- user_impact: Finance users could not filter reports to most customers in a large branch.
+- changed_paths: `src/app/admin/reports/page.tsx`, `implementation.md`.
+- new_evidence: optimized Next build/TypeScript PASS. QA Owner found the branch's 500th alphabetical customer (`HXQA Scale Customer 00988`) among 6 options for a specific name search, selected it, retained that UUID in the report and CSV link, and saw an out-of-branch customer UUID cleared from both selector and export link. Thirty browser navigations of the searched AR report: p95 3,248 ms, p99 6,366 ms, 0 non-200 responses.
+- reused_evidence: IMP-168 Reports source/CSV checks and IMP-169 QA scale/concurrency baseline.
+- checks: BUILD:NEW PASS; UI:NEW PASS for lookup/selection persistence; SEC:NEW PASS for cross-branch selection exclusion; PERF:NEW PARTIAL because p99 of this combined search-plus-AR-report path exceeds 5 seconds, though no sample reached the 10-second absolute ceiling.
+- result: Customer discoverability gap fixed; R12-03 performance/full-system gate remains PARTIAL.
+- blocker: Remaining representative cross-domain UAT/AT and performance/full-system release evidence; human/provider/Production gates unchanged.
+- production_impact: NOT_TOUCHED.
+
+## IMP-171 — R12-03 customer portal Data API column boundary (2026-09-21)
+
+- scope: Customer portal access to `customers` through Supabase Data API; QA only. No Production access or deployment.
+- gap_ids: `NEW_GAP-20260921-04` CONFIRMED then FIXED_IN_SOURCE_AND_QA (P0, internal customer note disclosure); R12-03 remains PARTIAL.
+- contract_refs: Customer portal customer-safe data boundary, backend RLS/permission contract, R12-03 SEC gate.
+- source_evidence: `customers_select` in `supabase/migrations/20260912101030_identity_access.sql` allowed any active portal membership to select the full base row, including `internal_note`. Before the fix, QA Finance, Receiver, and other-customer accounts could directly select their own row and receive the `HXQA-INTERNAL-SECRET` sentinel. Cross-customer rows were denied. `supabase/migrations/20260922000600_r12_customer_portal_customer_boundary.sql` removes the membership arm of that base-table policy and adds an explicit membership-checked, name-only RPC. `src/lib/access/context.ts` now uses that RPC for the real name required by quotation acceptance.
+- user_impact: A customer portal account could read its customer's internal notes through PostgREST even though the UI and snapshot RPC did not show them.
+- changed_paths: `supabase/migrations/20260922000600_r12_customer_portal_customer_boundary.sql`, `src/lib/access/context.ts`, `scripts/qa/uat.mjs`, `implementation.md`.
+- new_evidence: The migration DDL was applied transactionally to QA ref `ffrwiglcrlumfvhubaxg`. Afterward, the three portal roles saw 0 direct `customers` rows; each received only its own name from `customer_portal_display_name` and null for the other customer. Owner and Sales retained their internal table reads. Optimized Next build/TypeScript PASS. Finance, Receiver, and other-customer portal home/profile/quotation list/detail/orders/debts routes rendered without the internal sentinel; cross-customer quotation HTML did not contain the other customer's quote number or name, although Next returned HTTP 200 HTML for the denied route. A persistent UAT regression assertion was added but the full `uat.mjs` script was not run because its artifact path invokes git.
+- reused_evidence: Prior portal RPC snapshot/role checks; QA baseline customer sentinel as positive control.
+- additional_evidence: QA direct `customer_sites` reads returned a row to Owner/Sales and 0 rows to Finance, Receiver, and other-customer after the policy change. Six authenticated-readable `security_barrier` views without `security_invoker` were inspected in current QA: each definition explicitly gates branch rows by `private.has_permission` and masks cost columns by the corresponding price/cost permission. Owner had a nonzero PO-line cost positive control; Sales and three portal roles got 0 rows from the sampled PO-line cost view. `customer_portal_display_name(uuid)` has `EXECUTE` for `authenticated` and not for `anon`.
+- checks: SEC:NEW PASS for direct Data API and name-only RPC boundary; UI:NEW PASS for the sampled portal routes; BUILD:NEW PASS; UAT regression check: ADDED, NOT_RUN as a suite.
+- result: P0 source and QA boundary fixed. Production remains unmodified and must not be claimed remediated there.
+- blocker: Owner-authorized Production deployment/migration, remaining human UAT and full-system release evidence.
+- production_impact: NOT_TOUCHED.
+
+## IMP-172 — R12-03 technical multi-role UAT rerun (2026-09-21)
+
+- scope: Existing `scripts/qa/uat.mjs` against QA ref `ffrwiglcrlumfvhubaxg` and local optimized Next server; no Production access.
+- gap_ids: R12-03 technical UAT evidence improved; human UAT/full field-level audit remain PARTIAL.
+- changed_paths: `scripts/qa/uat.mjs`, `implementation.md`; QA-only synthetic `work_items` and `work_item_assignments` rows for `HXQA-UAT-WORK-CURRENT-20260921`.
+- new_evidence: Added an explicit QA guard and `HX_QA_NO_ARTIFACT=1` mode so this technical suite can run without invoking git. First run: 11/12 checks PASS, `worker-portal-assigned-job` FAIL because the original `HXQA assigned work` fixture had already reached `VERIFIED` and the worker snapshot correctly returned no current job. Created a separate QA `CLAIMED` work item and active assignment on an unlinked scheduled Service Job, preserving the verified record. Targeted Worker portal displayed the new title and RPC returned its ID. Second suite run: 12/12 checks PASS, including the customer internal-note Data API regression, role scope, finance denial, worker portal, revoke, and shared-device logout.
+- reused_evidence: IMP-171 Data API/security boundary and existing QA persona credentials.
+- checks: UAT-TECHNICAL:NEW PASS (12/12 on current QA); SEC:NEW PASS; UI:NEW PASS. `humanUat=NOT_RUN`; recovery email delivery, broad field-level payload audit, and full human journeys are not proven. The suite's current `uncovered` array omits broad field-level audit prematurely and must not be treated as a complete gap inventory.
+- result: R12-03 remains PARTIAL despite all technical suite checks passing.
+- blocker: Human UAT, recovery-email delivery, full-system/field-level gate; new Worker fixture currently lives only in QA and is not yet part of reproducible fixture source.
+- production_impact: NOT_TOUCHED.
+
+## IMP-173 — R12-03 portal price-override metadata boundary (2026-09-21)
+
+- scope: QA Data API access to quotation/Sales Order line metadata, customer quotation page/PDF, and customer order detail; no Production access.
+- gap_ids: `NEW_GAP-20260921-05` CONFIRMED then FIXED_IN_SOURCE_AND_QA (P0, internal price-override metadata disclosure); R12-03 remains PARTIAL.
+- contract_refs: Customer portal customer-safe payload, manual price reason/internal metadata boundary, R12-03 SEC and operational UAT gate.
+- source_evidence: A metadata-driven QA probe of 47 sensitive-named public fields found portal Finance, Receiver, and other-customer roles could read non-null `override_reason` from both `quotation_lines` and `sales_order_lines`. Those rows also carried `override_by` and pricing rule metadata. `supabase/migrations/20260922000700_r12_portal_line_projection.sql` now limits base-line SELECT to internal `quotation.read`/`orders.read` permission and grants a membership-checked `customer_safe_quotation_lines` RPC returning only six customer-safe fields. `src/app/customer/quotations/[id]/page.tsx` and `src/app/api/quotation-revisions/[id]/pdf/route.ts` use that projection instead of the base table.
+- user_impact: A portal user could query internal manual-price reasoning and related pricing metadata for its own commercial documents through PostgREST.
+- changed_paths: `supabase/migrations/20260922000700_r12_portal_line_projection.sql`, `src/app/customer/quotations/[id]/page.tsx`, `src/app/api/quotation-revisions/[id]/pdf/route.ts`, `scripts/qa/uat.mjs`, `implementation.md`.
+- new_evidence: DDL applied transactionally to QA ref `ffrwiglcrlumfvhubaxg`. Owner retained non-null override positive controls in both line tables; all three portal roles then received 0 direct rows, an own-customer RPC array with only `id`, material, quantity, UOM, unit price, and total, and 42501 for cross-customer RPC. `anon` has no RPC execute grant. Optimized build/TypeScript PASS. Owner and three portal roles rendered their own quotation detail with a line and downloaded valid `%PDF-` files; portal cross-customer PDFs returned 404. Finance, Receiver, and other-customer order-detail HTML showed their own order and did not contain an actual override reason; cross-customer HTML showed neither the other order number nor its reason. Existing technical UAT ran 13/13 PASS, including the new regression check; human UAT remains NOT_RUN.
+- reused_evidence: IMP-171/172 portal role and Data API boundary; unaffected fields from the 47-field QA probe were not rerun individually after only the two line policies changed.
+- checks: SEC:NEW PASS for direct line denial/safe RPC/cross-customer/anon grant; UI:NEW PASS for quote/order detail; PDF:NEW PASS; BUILD:NEW PASS; UAT-TECHNICAL:NEW PASS (13/13). This named-field scan is not a semantic audit of every payload field.
+- result: P0 source and QA boundary fixed; R12-03/full release gate remains PARTIAL.
+- blocker: Production remains unmodified; human UAT, recovery-email delivery, complete semantic payload review and release evidence remain.
+- production_impact: NOT_TOUCHED.
+
+## IMP-174 — R12-03 customer portal RPC semantic payload sample (2026-09-21)
+
+- scope: QA-only `customer_portal_snapshot` and `customer_portal_order` response shape for Finance, Receiver, and other-customer personas.
+- gap_ids: R12-03 customer-safe payload evidence improved; full field-level audit remains PARTIAL.
+- changed_paths: `implementation.md` only.
+- new_evidence: Each persona received its own snapshot and order, while the other customer's order RPC returned 42501. Recursive response-key inspection found no `internal`, `cost`, `margin`, `payroll`, `supplier`, `override`, pricing-rule/source, salary, wage, or commission keys; the QA internal sentinel was absent. Receiver had `can_view_debt=false` and `can_view_finance=false`; Finance and other-customer finance contacts retained their permitted financial context.
+- reused_evidence: IMP-171 base customer boundary, IMP-173 line projection, and existing QA portal persona fixtures.
+- checks: SEC:NEW PASS for these two RPCs and three personas; no all-endpoint or Production claim.
+- result: Sampled customer portal RPC semantic boundary passes; R12-03 remains PARTIAL.
+- blocker: Remaining portal/API payload surfaces, human UAT, recovery-email delivery, release/Production gates.
+- production_impact: NOT_TOUCHED.
+
+## IMP-175 — R12-03 QA Storage evidence upload/signing (2026-09-21)
+
+- scope: QA-only private `portal-evidence` bucket, Worker `WORK_RESULT` and Finance Contact `PAYMENT_NOTICE` evidence; no Production access or real customer file.
+- gap_ids: R12-03 Storage upload/signing evidence improved; signed-URL expiry and human offline retry remain PARTIAL/NOT_RUN.
+- changed_paths: `scripts/qa/storage.mjs`, `implementation.md`; QA-only synthetic `portal_evidence_objects` and Storage objects.
+- new_evidence: A 68-byte synthetic PNG uploaded/finalized for Worker and Finance Contact. Worker retry with the same operation ID returned the same evidence ID; signed endpoint returned 307, downloaded bytes matched SHA-256, and Finance could not sign Worker evidence (403). Finance Contact could sign its own Payment Notice evidence; Receiver and other-customer upload attempts were rejected (400) and signing was denied (403). Both evidence metadata rows were `READY`, declared/final sizes matched, checksum format was valid, and private Storage objects existed. The existing targeted `scripts/qa/storage.mjs` gained an explicit QA guard, no-git report mode, current Worker fixture, and a bounded mode that records expiry as NOT_RUN rather than waiting 70 seconds. That suite then reported PASS for PNG/JPEG/PDF upload and idempotent retry, private signed read, public-read denial, membership revoke, Worker evidence boundary, and rejection of SVG, forged JPEG, and oversized PNG; overall status correctly remained PARTIAL.
+- reused_evidence: IMP-172 current QA Worker assignment and IMP-171 portal membership/security boundary.
+- checks: EXT:NEW PARTIAL (signed URL creation/download PASS; 60-second expiry NOT_RUN); IDEM:NEW PASS; SEC:NEW PASS for tested role/public/revoke boundaries; MIME/SIZE:NEW PASS; human offline retry: NOT_RUN.
+- result: QA Storage upload/signing available-boundary checks pass, but R12-03 remains PARTIAL.
+- blocker: Signed URL expiry wait and device/network offline retry not executed; human UAT, recovery email, full-system/Production gates remain.
+- production_impact: NOT_TOUCHED.
+
+## IMP-176 — R12-03 short-TTL signed URL expiry probe (2026-09-21)
+
+- scope: QA-only Supabase Storage signed URL for existing Finance Contact Payment Notice evidence.
+- gap_ids: R12-03 signed-URL expiry evidence improved; application endpoint 60-second expiry and device offline retry remain PARTIAL/NOT_RUN.
+- changed_paths: `implementation.md` only; no QA data mutation.
+- new_evidence: A signed URL issued directly by the QA Storage client with TTL 3 seconds returned HTTP 200 immediately and HTTP 400 after a 5-second bounded wait. The URL/token was not printed or stored.
+- reused_evidence: IMP-175 evidence object integrity, role boundary, and application signed endpoint checks.
+- checks: EXT:NEW PASS for QA Storage provider short-TTL expiry; application 60-second URL expiry: NOT_RUN; device offline retry: NOT_RUN.
+- result: Provider expiry behavior demonstrated without a long wait; R12-03 remains PARTIAL.
+- blocker: Human offline/device UAT, endpoint-specific 60-second expiry rehearsal, recovery email and release gates.
+- production_impact: NOT_TOUCHED.
+
+## IMP-177 — R12-03 browser-simulated offline upload/retry (2026-09-21)
+
+- scope: QA Worker proof upload and Finance Contact Payment Notice forms under Playwright browser offline/online transitions; no Production access or real payment.
+- gap_ids: `NEW_GAP-20260921-06` FIXED (P2, raw English network error in portal offline UX); R12-03 human field-device UAT remains PARTIAL.
+- contract_refs: Portal safe-draft/offline retry UX, Payment Notice does not post AR, R12-03 operational UAT gate.
+- source_evidence: `src/components/portal/work-result-draft-form.tsx` and `src/components/portal/payment-notice-form.tsx` previously displayed the browser's raw `Failed to fetch` message. Both now show Vietnamese retry guidance on network failure without changing operation-ID handling or local draft contents.
+- changed_paths: `src/components/portal/work-result-draft-form.tsx`, `src/components/portal/payment-notice-form.tsx`, `implementation.md`; QA-only Worker fixture transitioned from CLAIMED to IN_PROGRESS and synthetic evidence/Payment Notice rows were added.
+- new_evidence: On QA, Worker browser offline upload failed while preserving the serialized work draft/operation ID and selected file; online retry created exactly one additional `READY` evidence object, with the work item still IN_PROGRESS and no result submitted. After the UI text change, Worker and Finance browser offline submissions showed Vietnamese connection/retry guidance; Worker draft remained identical, and Finance amount/file remained in the form. Finance online retry created exactly one synthetic `SUBMITTED` Payment Notice (`HXQA-OFFLINE-26909aaf`); customer portal outstanding debt before/after was identical. Optimized Next build and TypeScript PASS.
+- reused_evidence: IMP-175 Storage integrity/idempotency and IMP-176 short-TTL provider expiry.
+- checks: UI:NEW PASS for browser-simulated offline message and retry; IDEM:NEW PASS for the observed single evidence/notice outcome; FIN:NEW PASS for unchanged AR; BUILD:NEW PASS. Human offline retry on a physical device: NOT_RUN.
+- result: QA browser offline/retry path and localized error UX pass; R12-03 remains PARTIAL.
+- blocker: Physical-device/human field UAT, endpoint-specific 60-second expiry, recovery email, and release gates.
+- production_impact: NOT_TOUCHED.
+
+### IMP-178 — QA recovery-email delivery boundary
+- scope: R12-03 recovery-email delivery evidence.
+- gap_ids: R12-03.
+- changed_paths: implementation.md only.
+- new_evidence: QA guard passed; owner, sales, worker, finance, receiver, and other_customer QA identities all use the reserved `example.test` domain. No recovery email was requested or sent. These identities cannot establish delivery to an Owner-controlled inbox.
+- reused_evidence: IMP-177 technical UAT and QA offline/retry evidence; no related input changed.
+- checks: DOC:NEW PASS (recipient-domain inspection only); EXT:BLOCKED (real inbox delivery not exercised).
+- result: PARTIAL. Recovery-email delivery remains a human/external gate, not a passing QA check.
+- blocker: an explicitly controlled non-Production recipient and observable mail delivery are required. Do not substitute an API acceptance response for delivered-mail evidence.
+- production_impact: NOT_TOUCHED.
+
+### IMP-179 — QA recovery-email delivery observed
+- scope: R12-03 recovery-email delivery evidence, superseding the delivery blocker in IMP-178.
+- gap_ids: R12-03.
+- changed_paths: implementation.md only; one QA Auth fixture was created.
+- new_evidence: QA guard passed; a new confirmed QA Auth user with a unique plus-address alias of the connected Owner-controlled Gmail inbox was created. Supabase Auth accepted one password-recovery request for that exact alias. The connected Gmail inbox then returned message `1a0c3f5f17d574b0` addressed to the alias, from `noreply@mail.app.supabase.io`, subject `Reset your password`, timestamp 2026-09-21T12:34:29Z. No recovery link was opened, no password was changed, and no customer address was used.
+- reused_evidence: IMP-177 technical UAT and QA offline/retry evidence; no related source input changed.
+- checks: EXT:NEW PASS (QA recovery email observed in recipient inbox); recovery-link redemption: NOT_RUN; full human journey: NOT_RUN.
+- result: PARTIAL. Email delivery gate is satisfied on QA, but R12-03 still requires the remaining human/device and release-readiness evidence.
+- blocker: physical-device human UAT and separately authorized release gates remain.
+- production_impact: NOT_TOUCHED.
+
+### IMP-180 — QA recovery link redeemed end to end
+- scope: R12-03 password-recovery technical journey for the QA-only Auth fixture from IMP-179.
+- gap_ids: R12-03.
+- changed_paths: implementation.md only; QA Auth fixture password changed to a generated one-time random value.
+- new_evidence: the delivered message's recovery link targeted `ffrwiglcrlumfvhubaxg.supabase.co/auth/v1/verify` with `type=recovery` and redirect `http://localhost:3000`. QA Auth returned HTTP 303 to localhost with a recovery session; `setSession` succeeded, `updateUser` changed the fixture password, and sign-in with the new password succeeded. The token and password were not logged. An initial local stdin attempt failed before any QA Auth request; the successful no-echo retry consumed the link once.
+- reused_evidence: IMP-179 recipient-inbox delivery evidence.
+- checks: EXT:NEW PASS (mailbox delivery, recovery link, password update, subsequent login); physical-device human UAT: NOT_RUN.
+- result: PARTIAL. The QA recovery journey is technically complete, but R12-03 and later release gates still require independent human/device evidence and authorization.
+- blocker: physical-device human UAT and separately authorized release gates remain.
+- production_impact: NOT_TOUCHED.
+
+### IMP-181 — QA recovery request UI observed
+- scope: R12-03 local QA recovery-request screen.
+- gap_ids: R12-03.
+- changed_paths: implementation.md only.
+- new_evidence: QA-guarded local Next server opened `/login`, whose `Quên mật khẩu?` link navigated to `/recovery?surface=admin`. Submitting the synthetic `hxqa-other_customer@example.test` fixture displayed the neutral Vietnamese confirmation `Nếu tài khoản hợp lệ, hướng dẫn khôi phục sẽ được gửi.` The browser tab was closed and the local QA server stopped. This UI check did not use or transmit an Owner/customer real email address or open a recovery token in the browser.
+- reused_evidence: IMP-179 mailbox delivery and IMP-180 QA Auth token redemption/password-update evidence.
+- checks: UI:NEW PASS (request-form navigation and neutral response); UI link-redemption journey: NOT_RUN; physical-device human UAT: NOT_RUN.
+- result: PARTIAL. The request screen works for a synthetic QA fixture; remaining UI/device and release gates are not inferred from this check.
+- blocker: physical-device human UAT and separately authorized release gates remain.
+- production_impact: NOT_TOUCHED.
+
+### IMP-182 — QA Storage signed-URL endpoint expiry
+- scope: R12-03 Storage upload/signing targeted check at the endpoint's full expiry interval.
+- gap_ids: R12-03.
+- changed_paths: implementation.md only; QA Storage evidence fixtures created by the existing guarded check.
+- new_evidence: `HX_QA_NO_ARTIFACT=1 node --env-file=.env.qa.local scripts/qa/storage.mjs` returned `status: PASS` and `signedUrlExpiry: PASS` against the guarded local QA app. PNG, JPEG, PDF and Worker evidence uploads passed; SVG, forged JPEG and oversized PNG were rejected as expected. The first invocation failed with `fetch failed` because the local app server was stopped; after starting the guarded QA server, the rerun passed. The server was stopped afterward.
+- reused_evidence: IMP-175 upload/signing checks, IMP-176 short-TTL provider check, IMP-177 browser offline/retry simulation; no relevant source input changed.
+- checks: EXT:NEW PASS (endpoint signed-URL expiry after full TTL); Storage upload/signing: RERUN PASS; humanOfflineRetry: NOT_RUN.
+- result: PARTIAL. Storage technical checks now include exact endpoint expiry, but physical-device human offline/retry remains outside this check.
+- blocker: physical-device human UAT and separately authorized release gates remain.
+- production_impact: NOT_TOUCHED.
+
+### IMP-183 - UAT coverage declaration corrected
+- scope: R12-03 technical UAT reporting; no application behavior changed.
+- gap_ids: R12-03.
+- changed_paths: scripts/qa/uat.mjs, implementation.md.
+- new_evidence: QA read-only catalog inspection confirmed the Worker UAT ID is a `work_items` row linked to a scale `service_jobs` row and `work_item_assignments`; this fixture is not reproducibly seeded by the current UAT script. The UAT report now explicitly lists `field-level-payload-audit` and `worker-fixture-seeding` as uncovered, alongside recovery-email delivery and full human journeys. The recovery-email delivery and redemption were demonstrated separately in IMP-179/IMP-180, not by this UAT script.
+- reused_evidence: IMP-174 limited portal payload/field audit, IMP-180 QA recovery, IMP-182 Storage expiry; these do not prove the new uncovered items.
+- checks: DB:NEW PASS (read-only fixture/schema inspection); UAT rerun: NOT_RUN; broad field-level audit: NOT_RUN.
+- result: PARTIAL. Coverage is reported honestly; no new audit or fixture seed is claimed.
+- blocker: clean-rehearsal fixture setup, broad field-level payload audit, and physical-device human UAT remain.
+- production_impact: NOT_TOUCHED.
+
+### IMP-184 - QA portal field audit and Worker fixture implementation
+- scope: R12-03 customer-portal field audit and reproducible Worker UAT fixture.
+- gap_ids: R12-03.
+- changed_paths: scripts/qa/portal-field-audit.mjs, scripts/qa/ensure-worker-uat.mjs, scripts/qa/uat.mjs, implementation.md.
+- new_evidence: QA pre-edit read-only audit probed 52 named restricted columns across three portal personas (156 Data API probes). No restricted column returned a row; 5 expense/expense_read statement timeouts were rechecked against a real QA expense ID and returned 0 rows. Own customer snapshot/order/quotation-line RPCs showed no forbidden keys; quotation lines contained only six customer-safe fields; cross-customer order and quotation-line RPCs returned 42501. A QA-only fixture helper now reuses an active assigned Work Item or creates a new Service Job, Work Item, and append-only assignment from the Worker's active branch and an active Customer/Site.
+- reused_evidence: IMP-173 and IMP-174 portal boundary checks, IMP-179/IMP-180 recovery evidence, IMP-182 Storage expiry.
+- checks: SEC:NEW PASS (bounded QA sample and RPC observations before edit); UAT seed after edit: NOT_RUN; standalone audit script after edit: NOT_RUN; full human UAT: NOT_RUN.
+- result: PARTIAL. The new scripts are implemented but not yet behavior-validated; the security result covers named fields and sampled QA data, not every future value or endpoint.
+- blocker: focused execution of new QA scripts and physical-device human UAT remain; provider/release human gates are unchanged.
+- production_impact: NOT_TOUCHED.
+
+### IMP-185 - QA scripts validated and Reports customer-search latency fixed
+- scope: R12-03 technical closure for IMP-184 and Reports customer-search performance.
+- gap_ids: R12-03; Reports customer-search performance observation from IMP-170.
+- changed_paths: src/app/api/reports/customers/route.ts, src/components/report-customer-filter.tsx, src/app/admin/reports/page.tsx, scripts/qa/portal-field-audit.mjs, implementation.md.
+- implementation: Report customer search now calls a permission-checked, branch-scoped endpoint returning at most 25 active customers in deterministic name/ID order. Searching preserves the selected customer and date filters without rerunning the report. Late responses from older search terms are ignored. The field-audit runner explicitly records primary-key sample fallback for known statement-timeout cases, including sales_order_lines.
+- new_evidence: Worker fixture helper returned the same fixture ID across two calls and worker_portal_snapshot selected that fixture. Technical UAT passed 13/13. Standalone portal audit passed its declared QA sample scope: 52 named columns, 156 role/column probes, 138 no-row responses, 18 denied responses, 9 primary-key fallbacks, no exposure or unresolved result; own/cross-customer RPC checks passed. Wide-query timeouts are not represented as successful full-table scans.
+- performance_evidence: 40 QA customer-search endpoint samples measured p95 1023 ms and p99 1176 ms. Thirty QA receivables report navigations on the final optimized build measured p95 881 ms and p99 1045 ms. These are observations, not a duplicated performance contract or whole-system release certification; Spec.md remains the budget authority.
+- ui_evidence: customer beyond the first 200 was found; searching made no report-page request; an empty subsequent search preserved the selected customer; late old response was ignored; running the report and CSV export preserved the customer/date filters. Portal lookup was denied with HTTP 403; payables lookup was denied with HTTP 403.
+- checks: BUILD/TypeScript:NEW PASS; targeted ESLint:NEW PASS; UAT:RERUN 13/13 PASS; SEC:NEW PASS in declared QA sample scope; PERF:NEW measurements above; UI:NEW PASS; Storage upload/signing:RERUN PASS, invalid files rejected as expected.
+- reused_evidence: IMP-182 signed-URL expiry; IMP-177 offline/retry browser simulation. Recovery was not exercised in this batch, per Owner instruction.
+- result: the new QA scripts are now executed and the measured Reports search regression is fixed. R12-03 overall remains PARTIAL for physical-device human UAT and the remaining release evidence. R11 provider decisions and Production authorization are not inferred from these results.
+- blocker: physical-device human UAT, provider decisions/sandbox access, managed recovery and release/Owner gates remain as previously recorded.
+- production_impact: NOT_TOUCHED; no deployment, reset-password action, commit, or push in this batch.
+
+### IMP-186 - Conditional Production authorization and read-only inventory attempt (2026-09-22)
+- scope: R12-01/R12-06 authorization delta and browser-only Production inspection.
+- gap_ids: R12-01, R12-04, R12-05, R12-06.
+- changed_paths: tasks.md; implementation.md.
+- new evidence: Owner explicitly confirmed both Production read-only inventory and Production deployment/cutover after required gates pass. Supabase browser showed HienXaERPv2, project nbwynrwkdbtfsitafsxa, main PRODUCTION, organization FREE; overview displayed Unhealthy and No backups. These are dashboard observations, not a verified database-health diagnosis or proof that all backup methods are absent.
+- checks: Production inventory INCOMPLETE. Prepared catalog-only SELECT within BEGIN READ ONLY, local 8-second statement timeout, ROLLBACK. Run was attempted but browser control was interrupted by concurrent user activity; execution/result not confirmed. Do not infer empty schema or NO_LEGACY_DATA_TO_MIGRATE from transient Table Editor state.
+- reused evidence: IMP-185 QA evidence retained without rerun; no related application/schema inputs changed.
+- result: conditional authorization recorded; R12-06 remains BLOCKED_BY_GATES and R12-08 remains BLOCKED. Exact candidate approval and human/device/managed-recovery gates are not waived.
+- blocker: Production catalog result unavailable during browser interruption; remaining release gates unchanged. Historical statements that Production authorization was absent are superseded only as to conditional authorization, not readiness or acceptance.
+- production impact: READ_ONLY_INSPECTION_ATTEMPTED; no application DML, DDL, migration, deployment, cutover, credential reset or customer messaging. SQL editor query draft created by dashboard; no explicit save performed.
+
+### IMP-187 - Production inventory and QA ledger gap closure (2026-09-22)
+- scope: R12-01 Production read-only classification; R12-02 QA migration ledger; release-package synchronization.
+- gap_ids: NEW_GAP-20260922-01 FIXED (P1, QA migration ledger missing two already-applied portal-security versions); remaining release gates unchanged.
+- contract_refs: SPEC-MIG-001..005; PLAN-055; R12-01..06.
+- changed_paths: tasks.md; implementation.md; RELEASE_APPROVAL.md. QA-only schema_migrations metadata repaired through the official CLI; no application code/schema edits.
+- new evidence: Production browser project nbwynrwkdbtfsitafsxa/main PRODUCTION, successful catalog query with transaction_read_only=on. Catalog has public 82 tables/25 views, private 0 tables/0 views. Exact count query returned 87 rows covering all public tables, Auth users/identities, Storage buckets/objects and migration ledger, sorted by count descending. Nonzero counts: permissions 62; role_permissions 62; schema_migrations 9; buckets 3; identities 1; users 1; audit_events 1; branches 1; employee_branch_access 1; employees 1; roles 1. Following rows start at zero; counts cannot be negative. Therefore 75 public tables and Storage objects are empty. No PII or business-record contents were retrieved.
+- classification: NO_LEGACY_DATA_TO_MIGRATE for business data in the named project at inspection time. KEEP_DATA for identity/access, branch, audit, Storage bucket configuration and migration history. No claim about external archives or other projects. Preserve these datasets and use an incremental upgrade; do not reset the baseline.
+- migration evidence: Production ledger versions match the first nine local migrations through 20260914060713. Local source has 49 versions. QA initially had 47; live customers_select/quotation_lines_select/sales_order_lines_select policies and both portal-safe functions/grants were inspected and matched the semantics of the missing migrations. Official CLI repair for 20260922000600 and 20260922000700 exited 0. Fresh exact-set assertion returned QA_MIGRATION_LEDGER PASS, 49 versions.
+- checks: DB:NEW PASS read-only inventory and QA ledger assertion. Clean/upgrade rehearsal of all current 49 migrations NOT_RUN; historical 41-migration clean rehearsal is not a current full-candidate PASS. No full regression rerun for metadata-only repair.
+- reused evidence: IMP-185 scoped security/UAT/Storage/performance results retained; application/schema behavior was not modified by ledger repair.
+- result: R12-01 scoped inventory PASS; QA ledger defect FIXED. R12-02 full candidate, R12-03 full expanded verification, R12-04 managed recovery, R12-05 exact immutable candidate/acceptance and R12-06 gate remain incomplete. No full-release PASS.
+- blocker: managed backup detail UI could not be read reliably; observed No backups remains only a dashboard observation. Required physical-device/human UAT, provider decisions, full-scale/candidate verification and operational recovery evidence cannot be inferred from permissions or scoped checks.
+- production impact: READ_ONLY_INSPECTED; no Production application/schema/config mutation, deployment, cutover, reset, real invoice or messaging. SQL editor draft changes are not application DML and were not explicitly saved. The successful inventory supersedes IMP-186's unavailable query result, not the remaining release gates.
+
+### IMP-188 - Current migration clean/upgrade rehearsal and scale capacity (2026-09-22)
+- scope: R12-02 clean/current migration sequence and nine-to-49 source-baseline upgrade; R12-03 QA scale capacity; local candidate evidence.
+- gap_ids: current 49-migration application rehearsal evidence gap CLOSED; full managed/release boundaries remain open.
+- changed_paths: scripts/qa/release-rehearsal.mjs; tasks.md; implementation.md; RELEASE_APPROVAL.md; artifacts/qa/r12-20260922/.
+- new evidence: guarded QA script created two uniquely named isolated databases, used minimal Auth/Storage SQL fixtures, applied the exact current migration files, and removed both databases. CLEAN_49 PASS; UPGRADE_9_TO_49 PASS; BOOTSTRAP_PRESERVED PASS. Synthetic Owner identity, branch, employee, role, active access, audit and bucket configuration matched before/after; all 62 prior role permissions remained and roles.manage returned true.
+- catalog evidence: clean and upgrade catalogs matched: 1,448 columns, 905 constraints, 280 indexes, 27 views, 107 policies (including fixture Storage policies), 157 non-extension application functions, 135 relations with grants/RLS/options and 39 triggers. Catalog fingerprint ff58dba074bf19b9d1c340a14b9b4ffe66d0311c17a796ba6d6f53340be0e82f. Ordered migration contents fingerprint 5355cde9dca41bffb2bb3633134f8a846793eb9099b3343bab80fb4bce42b4dc.
+- checks: MIG:NEW PASS, script exit 0; QA_SCALE_INVENTORY:NEW PASS read-only counts, not performance certification. QA database 171,076,755 bytes; protected maximum 400 MiB. Observed SO 20,102; lines 100,502; deliveries 30,150; expenses 20,100; payments 200; earnings 200; messages 0. Expanded-load coverage remains NOT_RUN; do not increase the guard without an appropriate environment decision.
+- reused evidence: IMP-187 QA ledger 49/49 and Production read-only inventory; IMP-185 scoped application/security/UAT/Storage/performance checks. Application source was not changed by this batch.
+- result: R12-02 current application-schema rehearsal PASS. This does not prove Production catalog parity, managed Auth/Storage runtime recovery, full expanded performance, human UAT, immutable Git candidate or Owner release acceptance. R12-06 remains BLOCKED_BY_GATES.
+- blocker: current guarded QA capacity is unsuitable for blindly loading the full expanded dataset; managed recovery environment and physical-device/human/provider evidence remain unavailable. Exact immutable release commit/remote and candidate acceptance are not recorded.
+- production impact: NOT_MUTATED. No credential reset, deployment, cutover, real invoice issue or customer messaging.
+
+### IMP-189 - Production baseline comparison and Owner device-UAT deferral (2026-09-22)
+- scope: targeted R12 Production structural baseline verification; managed-backup availability; latest Owner instruction.
+- gap_ids: Production baseline structural uncertainty narrowed; no confirmed application logic defect from the function checksum differences. Device-UAT ownership updated, not falsely passed.
+- changed_paths: tasks.md; implementation.md; RELEASE_APPROVAL.md; artifacts/qa/r12-20260922/baseline-nine-schema.json; artifacts/qa/r12-20260922/baseline-functions.json; artifacts/qa/r12-20260922/schema-fingerprint.sql; artifacts/qa/r12-20260922/production-comparison.json.
+- new evidence: isolated QA baseline of the first nine migrations was built for the comparison and removed. Browser-only Production queries used BEGIN READ ONLY, local statement timeout and ROLLBACK. Exact ordered catalog fingerprints match for 1,248 columns, 763 constraints, 214 indexes, 87 policies, 107 RLS/relation-option entries, 39 ordinary triggers and 25 views.
+- function evidence: initial aggregate count was 112 versus baseline 111. The additional public.rls_auto_enable() returns event_trigger; enabled ensure_rls uses ddl_command_end with CREATE TABLE/CREATE TABLE AS/SELECT INTO tags. Supabase's official event-trigger documentation describes this auto-RLS pattern. No trigger mutation. Of the remaining 111 application function definitions, 104 exact MD5 values matched. The seven differences were private.current_employee_id, private.has_any_permission, private.has_branch_access, private.has_customer_membership, private.has_permission, public.assign_employee_role and public.register_invited_employee. All seven passed whitespace-normalized definition comparison and independent exact quoted-literal sequence comparison. No logic difference was demonstrated; this normalization is not a formal semantic-equivalence proof.
+- checks: DB:NEW PASS for the stated structural/normalized-definition comparison; grants, default privileges, Auth/Storage managed schema and configuration are not covered. Temporary baseline databases removed. UI:NEW CONFIRMED Production Scheduled backups explicitly reports Free Plan does not include project backups. No paid plan or config change.
+- Owner decision: physical-device UAT OWNER_DEFERRED, assigned to Owner's own checking, no longer an agent technical blocker. Do not call it PASS or infer exact-candidate release acceptance.
+- reused evidence: IMP-188 49-migration clean and nine-to-49 upgrade rehearsal; IMP-187 49/49 QA ledger and Production data inventory; IMP-185 scoped checks remain valid because application/schema inputs did not change.
+- result: structural baseline evidence advanced; R12-06 remains BLOCKED_BY_GATES for outstanding technical/full-scale/recovery/candidate boundaries, not physical-device UAT. Historical claims that device UAT blocks the agent scope are superseded.
+- blocker: available QA safety capacity versus required expanded dataset; Free-plan managed backup capability; immutable release commit/remote verification and exact-candidate acceptance not recorded. No waiver of these boundaries inferred.
+- production impact: READ_ONLY_INSPECTED, NOT_MUTATED; no deployment, migration, DML, credential reset, cutover, invoice issuance or customer message.
+
+### IMP-190 - Owner cutover override request and mismatched database target (2026-09-22)
+- scope: read-only immediate-cutover preflight after explicit Owner instruction. No false PASS recorded for waived/unrun checks.
+- gap_ids: NEW_GAP-20260922-02 CONFIRMED, release-blocking environment target mismatch; Production runtime approval flag also missing for current source.
+- changed_paths: tasks.md; implementation.md; RELEASE_APPROVAL.md. No application code or remote configuration changed.
+- source_evidence: .vercel/project.json identifies hien-xa-erp-v2/prj_7cpdvLr47L26ICquB2ah4n7ceB6n/team_vsD8hUJEjtJfZm8zthHCcPS4. Vercel CLI 59.25.0 whoami and project inspect succeeded as mutaquaticstudio. Production environment pull stored in restricted /tmp/hienxa-cutover-20260922/production.env, outside repository; secret values unavailable and represented by placeholders. Only URL origin and variable presence were reported, never credentials.
+- new evidence: actual Production NEXT_PUBLIC_SUPABASE_URL origin is https://vknnzzecimfpnrsqbnuu.supabase.co, different from the authorized/read-only inspected nbwynrwkdbtfsitafsxa target. HX_CLOUD_RUNTIME_APPROVED is absent. src/lib/supabase/config.ts rejects cloud runtime without that flag. Vercel current Ready deployment is hien-xa-erp-v2-fasz2zgy3-noxelis.vercel.app, commit 2a81dc87e2ad0de3ff3349fb0e894115e333c142. Dashboard attached domains include hien-xa-erp-v2.vercel.app and www.hienxavlxd.com.
+- tooling evidence: connector get_project schema mismatch and list_deployments 403; existing CLI session read access succeeded. Supabase CLI projects list reports missing management access token. Vercel dashboard shows team Overdue/payment-failed notice; no payment, new subscription or paid feature enabled. CLI command help was read, but deploy/promote was not invoked.
+- checks: ENV_TARGET:NEW FAIL; VERCEL_PROJECT_IDENTITY:NEW PASS; cloud-runtime flag/configuration gate BLOCKED. No build, migration, deployment or post-cutover verification claimed.
+- result: R12-06 BLOCKED_ENV_TARGET_MISMATCH. Owner's request to cut over does not resolve which database is intended. Production source/schema at vknnzzecimfpnrsqbnuu has not been inventoried; nbwynrwkdbtfsitafsxa evidence cannot be transferred to it.
+- reused evidence: IMP-187..189 only for their named Supabase targets; no invalidation of unrelated QA application evidence.
+- blocker: intended Production database needs explicit identification. Do not silently rewire Vercel, replay migrations on another project, use QA secrets, reset credentials or assign domains while this mismatch is unresolved.
+- production impact: READ_ONLY_PREFLIGHT_ONLY; no mutation, invoice, customer message or cutover. Owner device UAT remains OWNER_DEFERRED, not PASS.
+
+### IMP-191 - Owner target decision, release-state sync and upload-scope check (2026-09-22)
+- scope: R12-05/R12-06 operational readiness; no application logic or database change.
+- gap_ids: NEW_GAP-20260922-02 target ambiguity RESOLVED, actual hosting mismatch OPEN; NEW_GAP-20260922-03 PARTIAL (deployment upload scope).
+- changed_paths: .vercelignore; tasks.md; implementation.md; RELEASE_APPROVAL.md.
+- Owner decision: explicit switch to nbwynrwkdbtfsitafsxa after immediate-cutover override; retain old vknnzzecimfpnrsqbnuu and deployment for rollback. Physical-device UAT remains OWNER_DEFERRED. No password reset, paid upgrade or fabricated check PASS.
+- new evidence: Vercel CLI dry-run succeeded before and after upload exclusions, with no upload/deployment. Original package: 324 entries / 3,727,273 bytes, including internal documents, QA artifacts and incremental compiler state. Revised package: 273 entries / 2,368,447 bytes; ignored list includes environment files, internal Markdown, artifacts/qa and QA scripts. Zero-byte directory entries remain and are not evidence of leaked file content.
+- checks: DOC state corrected for explicit target and override; VERCEL_DRY_RUN:NEW exit 0; strict root-name assertion:FAIL because empty directory entries remain. Failure inspection also found the unanchored qa/ exclusion matches src/app/api/qa/environment, an unintended source-path exclusion. Upload configuration is therefore NOT_VALIDATED_FOR_RELEASE; scope the exclusions to root directories before declaring packaging complete. No build or full regression rerun.
+- configuration evidence: src/lib/auth/actions.ts uses NEXT_PUBLIC_APP_URL, not APP_BASE_URL, for recovery redirects. The inspected Production env list lacks NEXT_PUBLIC_APP_URL. Configure the approved public origin before release; no recovery email or password action was attempted.
+- browser evidence: recovered the correct Chrome window through the Window menu and observed existing API-key controls for nbwynrwkdbtfsitafsxa. Secret-key retrieval was interrupted by concurrent browser activity; no key rotation or remote write occurred. Browser availability remains intermittent, not proof of a Supabase outage.
+- reused evidence: IMP-185 application checks; IMP-187 target inventory; IMP-188 current migration rehearsal; IMP-189 structural comparison. None proves a completed Production migration or cutover.
+- result: PARTIAL. Documentation decision drift resolved; upload-scope correction requires another change. Exact candidate, credentials, current backup, 40 pending target migrations, staged deployment, promotion and post-cutover reconciliation remain incomplete.
+- production impact: NOT_MUTATED; no deployment, migration, DML, configuration write, domain change, real invoice, customer message, credential reset, commit or push.
+
+### IMP-192 - Root-scoped deployment exclusions corrected (2026-09-22)
+- scope: authorized correction of IMP-191 upload configuration; R12-05 packaging only.
+- gap_ids: NEW_GAP-20260922-03 FIXED at the CLI upload-selection boundary.
+- changed_paths: .vercelignore; implementation.md; RELEASE_APPROVAL.md.
+- implementation: anchored directory exclusions at the repository root, including /qa/ and /scripts/qa/, so they do not match nested application routes. Environment-file exclusions remain in place.
+- new evidence: Vercel CLI 59.25.0 deploy --dry --json exited 0. Focused assertion exited 0: 273 entries / 2,369,019 bytes; all 195 source entries retained; no src path in the ignored list; required runtime/build inputs present; environment files, internal Markdown, compiler state and QA evidence excluded. Remaining artifacts/qa/tmp directory entries contain zero bytes and are not uploaded file contents.
+- checks: VERCEL_UPLOAD_SCOPE:RERUN PASS; upload/deploy NOT_RUN; application build/full regression NOT_RUN for this packaging-only correction.
+- reused evidence: IMP-191 target/authorization decisions and configuration findings; IMP-185 application checks; IMP-187..189 scoped inventory/rehearsal/comparison. Packaging evidence is not a Production readiness or acceptance result.
+- result: unintended source-path exclusion and packaging gap closed. The operational release blockers recorded in IMP-191 remain open.
+- blocker: target secret credentials/current backup, pending incremental migrations, exact candidate deployment, promotion and post-cutover reconciliation are not completed by this check.
+- production impact: NOT_MUTATED; no remote configuration change, deployment, migration, DML, domain change, credential reset, real invoice or customer message.
+
+### IMP-193 - Target credentials recovered and staged Vercel candidate READY (2026-09-22)
+- scope: R12-05/R12-06 candidate preparation after Owner target selection and cutover override.
+- gap_ids: NEW_GAP-20260922-02 PARTIAL: candidate uses selected target; existing live deployment/persistent project environment are not switched.
+- changed_paths: tasks.md; implementation.md; RELEASE_APPROVAL.md. Protected local target.env outside repository; no application-source edit.
+- credentials: existing publishable and secret API keys retrieved through authenticated Supabase browser for nbwynrwkdbtfsitafsxa; no connector, reset or rotation. Restricted temporary directory mode 700 and credentials file mode 600. Auth settings returned 200; Auth Admin users read returned 200 without logging user data. An initial service-key branches check returned 403/42501 permission denied for table branches. This is not invalid credentials or a demonstrated application defect: service key is used for Auth Admin invitation, not application branch reads. No grants were expanded.
+- candidate: Vercel CLI 59.25.0 deploy --prod --skip-domain completed exit 0. Deployment dpl_5SdLVt665z2A1kg1zaa8xZe2dsbf, URL https://hien-xa-erp-v2-qoklueiyg-noxelis.vercel.app, READY. Runtime/build overrides set exact target URL/keys, HX_CLOUD_RUNTIME_APPROVED=true, HX_EINVOICE_ENABLED=false and NEXT_PUBLIC_APP_URL=https://www.hienxavlxd.com. Persistent project environment was not rewritten. Vercel CLI reports a generated project alias; no custom domain promoted.
+- checks: remote Next compilation PASS, TypeScript PASS, 70 static-page generation PASS. Candidate public requests encountered Vercel SSO (302), not application test results. Authenticated Vercel CLI requests then returned health 200/status ok, QA environment 404, access context 401/UNAUTHENTICATED. These are scoped unauthenticated application-boundary checks, not database-backed business acceptance.
+- live boundary: inspecting www.hienxavlxd.com resolved old deployment dpl_aT6fdZ6VHqpzf6thNqZiHhDKccco (hien-xa-erp-v2-fasz2zgy3-noxelis.vercel.app), READY. Old database unchanged. Target database still requires its pending incremental upgrade before authenticated candidate verification/promotion.
+- reused evidence: IMP-192 upload scope; IMP-185 QA application checks; IMP-187..189 named-target inventory and schema rehearsal. No claim that historical scoped checks cover the new hosted candidate end-to-end.
+- result: PARTIAL. Credential acquisition and staged build blockers cleared; current backup, target migration, persistent hosting configuration, authenticated candidate verification, custom-domain promotion and post-cutover reconciliation remain.
+- production impact: CANDIDATE_DEPLOYED_WITHOUT_CUSTOM_DOMAIN_PROMOTION. No database DDL/DML, reset, invoice issue or customer message. No paid upgrade enabled; Vercel reports standard build-resource usage, not zero hosting cost. No commit or push.
+
+### IMP-194 - Pre-upgrade Production data snapshot exported and validated (2026-09-22)
+- scope: R12-04/R12-06 preservation evidence for nbwynrwkdbtfsitafsxa, before incremental upgrade.
+- changed_paths: implementation.md; RELEASE_APPROVAL.md; private backup files outside repository at /Users/nox/.codex/backups/hienxa/20260922/.
+- new evidence: browser SQL Editor executed one REPEATABLE READ, READ ONLY transaction with a 20-second statement timeout, ending in ROLLBACK. Snapshot export contains 234 records: data for 118 public/private/auth/storage/ledger tables, 112 non-extension application function definitions/ACL/owner entries, and four metadata records for relations/RLS/ACL, policies, default ACL and snapshot context. Per-table reads capped at 1001 rows; parser asserts every exported table has at most 1000, so no data table hit the cap.
+- preservation evidence: snapshot time 2026-09-22T06:32:15.679806+00:00. All 82 public tables present; 75 are empty. auth.users, auth.identities, branches, employees, roles and employee_branch_access each contain one row. Storage objects empty. Migration ledger exactly matches the first nine of the 49 captured source migration files; 40 remain pending. No record contents, credential values or password hashes logged.
+- artifact: production-before-upgrade.csv stored with mode 600 under private backup directory; downloaded copy moved out of Downloads. Source migration copies are also retained privately. SHA-256 of exported UTF-8 CSV content: 98fd4eebcf99db2b95c1d020fb4dbef9aac51fdfeca123c64cc0c7f391f1e4bd. snapshot-validation.json records checks and limitations.
+- checks: DATA_SNAPSHOT:NEW PASS, local parser/assertion exit 0; zero truncated tables; READ_ONLY confirmed from transaction metadata. This does not claim a full pg_dump schema archive, managed Auth/Storage runtime recovery or a tested restore of the current Production snapshot.
+- reused evidence: IMP-188 current source clean/upgrade rehearsal; IMP-189 structural baseline comparison; IMP-193 staged candidate build and scoped HTTP checks. No application source, schema or credentials changed.
+- result: pre-upgrade data preservation artifact obtained. Complete recovery assurance and safe incremental application/ledger update remain pending; no migration or cutover yet.
+- production impact: READ_ONLY_DATA_SNAPSHOT; existing staged deployment unchanged; no database DDL/DML, domain promotion, reset-password action, invoice issuance or customer messaging.
+
+### IMP-195 - Atomic cutover rehearsal helper failed before approval (2026-09-22)
+- scope: additional R12-06 atomic upgrade/failure-recovery rehearsal, isolated QA only.
+- changed_paths: scripts/qa/cutover-rehearsal.mjs; implementation.md; RELEASE_APPROVAL.md.
+- source evidence: current 49 migration files still have fingerprint 5355cde9dca41bffb2bb3633134f8a846793eb9099b3343bab80fb4bce42b4dc. No transaction-control statements found in the 40 pending files by the scoped preparation check.
+- implementation: helper prepares a single-transaction bundle with exact ledger guards, baseline data-count checks, bootstrap preservation comparisons, RLS/anon-read assertions and migration ledger writes. It connects only through the QA guard to a uniquely named isolated database; it does not connect to Production.
+- checks: ATOMIC_REHEARSAL:NEW FAIL, exit 1, syntax error at or near dollar sign; no named rehearsal check passed. Helper cleanup reported REMOVED. The helper's deliberate-failure SQL uses a JavaScript replacement string containing double-dollar delimiters; replacement-string dollar escaping changes the intended PostgreSQL delimiter. This helper defect must be corrected before the generated bundle can be considered valid.
+- result: helper implemented but NOT_VALIDATED. No approved upgrade bundle was produced by this failed invocation. IMP-188's earlier per-migration rehearsal remains scoped valid; it does not establish atomic-bundle correctness.
+- blocker: correct the newly introduced deliberate-failure probe construction and rerun the focused isolated rehearsal before using the bundle.
+- production impact: NOT_TOUCHED in this batch; existing staged candidate remains unpromoted, target database unchanged. No password reset, real invoice, customer message, commit or push.
+
+### IMP-196 - Atomic cutover rehearsal corrected and passed (2026-09-22)
+- scope: Owner-confirmed correction of IMP-195 helper and focused isolated-QA rerun.
+- changed_paths: scripts/qa/cutover-rehearsal.mjs; implementation.md; RELEASE_APPROVAL.md.
+- implementation: the deliberate-failure probe now uses a replacement callback, preserving PostgreSQL double-dollar delimiters instead of interpreting them as JavaScript replacement-string escapes.
+- checks: node --env-file=.env.qa.local scripts/qa/cutover-rehearsal.mjs exited 0. FAILURE_BEFORE_COMMIT_ROLLS_BACK PASS; ATOMIC_UPGRADE_AND_PRESERVATION PASS; REPLAY_REJECTED PASS. Temporary isolated QA database cleanup REMOVED.
+- evidence: source migration fingerprint 5355cde9dca41bffb2bb3633134f8a846793eb9099b3343bab80fb4bce42b4dc unchanged. Generated /tmp/hienxa-cutover-20260922/production-upgrade-9-to-49.sql is 521115 bytes, SHA-256 f0c8e20717b150bdf9556a5ea8a3bb3c4d1a079348900c5b3a6c88c6898dbba7. The bundle checks exact baseline ledger and inventory, preserves bootstrap/access/audit/bucket data, retains prior permission records, checks RLS/anonymous read boundaries, and commits schema and ledger together.
+- reused evidence: IMP-194 private Production data snapshot; IMP-193 staged candidate; IMP-192 upload scope. No application-source change or unrelated regression rerun.
+- result: IMP-195 helper defect FIXED; atomic bundle validated at synthetic isolated-QA boundary. This is not a restore test of actual Production identities or managed Auth/Storage runtime recovery, and does not mean the bundle has run on Production.
+- remaining: Production execution/reconciliation, persistent hosting configuration, authenticated candidate checks and custom-domain promotion remain incomplete.
+- production impact: NOT_TOUCHED in this batch; no Production migration, DML, domain promotion, password reset, invoice issue or customer messaging.
+
+### IMP-197 - Upgrade bundle identity and Auth redirect preflight (2026-09-22)
+- scope: R12-06 preparation to execute the approved atomic upgrade through the logged-in Supabase browser.
+- changed_paths: implementation.md; RELEASE_APPROVAL.md. A plaintext copy of the validated SQL was prepared outside the repository for native UI transfer; no SQL source changed.
+- evidence: SHA-256 of production-upgrade-9-to-49.sql still equals f0c8e20717b150bdf9556a5ea8a3bb3c4d1a079348900c5b3a6c88c6898dbba7. Existing IMP-196 rehearsal evidence remains applicable to that exact bundle.
+- new gap: NEW_GAP-20260922-04 CONFIRMED, release configuration mismatch. Browser URL Configuration for nbwynrwkdbtfsitafsxa showed Site URL https://hienxa-erp-v2.vercel.app and No Redirect URLs. The candidate's NEXT_PUBLIC_APP_URL is https://www.hienxavlxd.com. Align Auth redirect configuration before invitation/recovery journeys or cutover; no email or password action was attempted.
+- execution evidence: Chrome interactions were interrupted by user activity before the upgrade was pasted/run. The dedicated Supabase window later disappeared from the native Window menu. The validated SQL file was opened in TextEdit and copied, but no SQL Editor Run action was issued for this bundle. Do not infer migration execution from prepared clipboard content.
+- checks: BUNDLE_IDENTITY:NEW PASS; AUTH_REDIRECT_PREFLIGHT:NEW mismatch observed; PRODUCTION_UPGRADE:NOT_RUN.
+- reused evidence: IMP-196 atomic QA rehearsal; IMP-194 snapshot; IMP-193 staged candidate. No unrelated reruns.
+- result: operational work incomplete. Resume against a verified Supabase SQL Editor target before sending any mutation; then reconcile database and candidate before domain promotion.
+- production impact: READ_ONLY_UI_INSPECTION; no database DDL/DML, hosting config write, domain promotion, credential reset, invoice issuance or customer messaging in this batch.
+
+### IMP-198 - Production atomic schema upgrade committed and reconciled (2026-09-22)
+- scope: authorized R12-06 incremental upgrade of nbwynrwkdbtfsitafsxa only, through logged-in Supabase browser.
+- changed_paths: tasks.md; implementation.md; RELEASE_APPROVAL.md. Selected Production schema and migration ledger changed; old vknnzzecimfpnrsqbnuu untouched.
+- execution: SQL Editor URL/project matched the selected target. Exact IMP-196 bundle SHA-256 f0c8e20717b150bdf9556a5ea8a3bb3c4d1a079348900c5b3a6c88c6898dbba7 was copied through native TextEdit/clipboard. Editor beginning showed target/source fingerprint/BEGIN and ending showed commit marker/final query. Run submitted once; generic destructive-operation warning acknowledged for the authorized migration. Result: HX_ATOMIC_UPGRADE_COMMITTED, migration_count 49.
+- guarantees exercised: exact first-nine ledger and baseline inventory checked before changes. All 40 pending migration bodies and ledger entries ran in one transaction. Complete preserved Owner/access/audit/Auth identity/bucket rows compared before commit; prior permission rows retained; public RLS and anonymous-read guards passed. These checks would have aborted the transaction on failure.
+- checks: separate BEGIN READ ONLY query after commit returned migrations 49; Auth users 1; Auth identities 1; active employees 1; active branch access 1; Storage buckets 3; Storage objects 0; public tables missing RLS 0; anon table SELECT grants 0; owner roles.manage true. Query ended ROLLBACK. No record contents or passwords logged.
+- reused evidence: IMP-196 isolated-QA atomic rollback/upgrade/replay checks; IMP-194 private snapshot; IMP-193 staged candidate. No unrelated rebuild or full regression.
+- result: database upgrade COMPLETE at the declared schema/preservation boundary. This does not prove authenticated hosted business journeys, managed-service recovery, full-scale performance or completed cutover.
+- remaining: NEW_GAP-20260922-04 Auth redirect alignment; persistent Vercel environment; authenticated candidate checks; custom-domain promotion and post-cutover reconciliation.
+- production impact: SELECTED_DATABASE_SCHEMA_AND_LEDGER_UPGRADED. Existing Owner/access/Auth/bucket data preserved. No business fixture seeded, credential reset, real invoice, customer message or custom-domain promotion. Old database/deployment retained. The Supabase page reported unavailable in IMP-197 was subsequently found as a tab in the main Chrome window; this execution is now confirmed.
+
+## IMP-199 — 2026-09-22 — R12-06 app subdomain production cutover delta
+
+- scope: Owner-authorized ERP hostname cutover to `https://app.hienxavlxd.com`; Wix marketing site at `www.hienxavlxd.com` unchanged.
+- changed_paths: none in application source or schema; external Wix DNS, Vercel project/Production environment/deployment, Supabase Auth URL configuration.
+- DNS: Wix CNAME `app` -> `1d0f6bd4a661165a.vercel-dns-017.com`; Vercel domain verification `configured_correctly` for `hien-xa-erp-v2`.
+- Auth: Production Supabase `nbwynrwkdbtfsitafsxa` Site URL `https://app.hienxavlxd.com`; exact recovery callback `https://app.hienxavlxd.com/recovery/confirm` allowed. Existing `https://hien-xa-erp-v2.vercel.app/recovery/confirm` retained as rollback callback; Wix `www` callback removed.
+- runtime: Vercel Production `NEXT_PUBLIC_APP_URL` and `APP_BASE_URL` set to `https://app.hienxavlxd.com`; Supabase target remains `nbwynrwkdbtfsitafsxa`; synthetic auth disabled; unused old `SUPABASE_DB_URL` removed. New immutable deployment `dpl_C3uDMCYN3jyeHHaQiybNR6UJpovu` promoted to Production.
+- new evidence: Vercel build/TypeScript/70 static pages PASS; `/api/health` 200 on candidate; live HTTPS login, Owner AccessContext/dashboard, and Purchase Orders list PASS at `app.hienxavlxd.com`; Vercel inspect maps `app` to the promoted deployment; `www` still serves Wix.
+- reused evidence: IMP-198 target schema migration ledger 49, RLS/anon grants and Owner role reconciliation; previous candidate business-route checks.
+- checks: DNS NEW PASS; Vercel deploy NEW PASS; Auth/UI NEW PASS; Production full-system/UAT/PERF NOT RUN.
+- result: app subdomain LIVE; no real invoice issue, customer messaging, password reset, or Production DML performed by this cutover.
+- blocker: managed point-in-time backup unavailable on current free plan; physical-device UAT remains Owner-deferred; full release acceptance remains Owner-owned. Previous deployment remains available, but rollback requires explicit data/URL reconciliation after any new Production writes.
+- production impact: Vercel deployment and domain routing, Wix `app` DNS, Supabase Auth redirect settings only.
+
+## IMP-200 — 2026-09-22 — QA synthetic commercial smoke delta
+
+- scope: targeted QA-only synthetic data and business-command check; no Production write.
+- gap_ids: none closed by this check alone.
+- changed_paths: `implementation.md` only; QA fixture records tagged `HXQA-SMK-MUCEH19L` in Supabase project `ffrwiglcrlumfvhubaxg`.
+- new evidence: QA guard and capacity PASS (163 MB below 400 MB ceiling); six-role QA seed exists; QA Owner login PASS. Created one synthetic customer, site and two-line draft order. Owner and same-branch Sales read PASS; unrelated customer read denied.
+- command evidence: `create_sales_order_draft` via authenticated QA Owner created a separate two-line draft totaling 990,000 VND; same-operation retry returned the same order ID, changed-payload retry failed, Sales read PASS, unrelated customer denied. Order ID `a5064bf9-1003-463b-ab2e-68b7940da9a7`.
+- checks: DB/API/SEC/IDEM targeted NEW PASS; current-build browser journey, complete multi-role UAT, Production write journeys, full PERF, and full-system release gate NOT RUN.
+- result: targeted QA synthetic smoke PASS; document-wide completion remains NOT ASSERTED.
+- blocker: QA Preview available at this checkpoint is an older build and was not treated as evidence for the current UI. Owner physical-device UAT and managed backup/recovery limitations remain as previously recorded.
+- production impact: NOT_TOUCHED.

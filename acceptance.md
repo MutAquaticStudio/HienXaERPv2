@@ -587,3 +587,24 @@ Kết thúc đúng phạm vi đã mở, ghi LOG + DoD theo ACC-070, cập nhật
 Bản tài liệu này chưa chạy bất kỳ ca ứng dụng nào. Có file kiểm tra, tên task hoặc checklist không đồng nghĩa có bằng chứng hệ thống đúng.
 
 # KẾT THÚC acceptance.md
+
+## QA RUN STATUS — 2026-09-14
+
+Owner approved implementation of the scoped QA plan. See qa/UAT.md for execution and human-observation steps; Spec.md remains the only performance-budget source.
+
+| Case | Current evidence status |
+|---|---|
+| ACC-CASE-03/04 | Historical hosted checks: 10 PASS; worker UI check FAIL in latest run; current changes NOT_RUN; human UAT NOT_RUN |
+| ACC-CASE-21/22 | Historical hosted Storage PASS (2026-09-14T09-48-56-971Z); human journeys NOT_RUN |
+| ACC-CASE-26/27 | BLOCKED/NOT_RUN; invoice provider excluded by owner |
+| ACC-CASE-28 | Cloud benchmark INTERRUPTED/FAIL; full representative performance NOT_ESTABLISHED |
+| ACC-CASE-29 | BLOCKED_BY_OWNER_DECISION |
+| ACC-CASE-30 | NOT_ESTABLISHED; no full-system PASS or release-readiness claim |
+
+Environment blocker: Supabase Dashboard rejects another Free project while HienXaERPv2 and nox-os-preview are active. Production was not used for QA. No human observation or signed URL test has been inferred from local tests.
+
+### Preview handoff — 2026-09-14
+
+Candidate: dpl_D15SjQJxkaLk6W8AbNawTViNHBCe (Vercel Preview, READY).
+URL: https://hien-xa-erp-v2-f8lp5epg1-noxelis.vercel.app
+QA migration applied. Remote build/TypeScript PASS; worker fix, access management and catalog behavioral acceptance NOT_RUN on this candidate. Historical UAT failure is retained pending rerun. Production unchanged; no full-system PASS claim.

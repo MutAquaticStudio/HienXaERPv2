@@ -21,6 +21,11 @@ type AccessRow = {
   roles: { name: string; role_permissions: { permission_code: string }[] } | { name: string; role_permissions: { permission_code: string }[] }[] | null;
 };
 
+type ExplicitPermissionRow = {
+  branch_id: string;
+  permission_code: string;
+};
+
 function one<T>(relation: T | T[] | null): T | null {
   return Array.isArray(relation) ? relation[0] ?? null : relation;
 }
@@ -44,6 +49,16 @@ async function resolveInternalAccessUncached() {
     .eq("active", true);
   if (accessError) throw new AppError({ code: "DEPENDENCY_UNAVAILABLE", message: "Không thể kiểm tra quyền truy cập.", status: 503 });
 
+  const { data: explicitRows, error: explicitError } = await supabase
+    .from("employee_permission_grants")
+    .select("branch_id, permission_code")
+    .eq("employee_id", employee.id);
+  if (explicitError) throw new AppError({ code: "DEPENDENCY_UNAVAILABLE", message: "Không thể kiểm tra quyền tường minh.", status: 503 });
+  const explicitByBranch = new Map<string, string[]>();
+  for (const row of (explicitRows ?? []) as ExplicitPermissionRow[]) {
+    explicitByBranch.set(row.branch_id, [...(explicitByBranch.get(row.branch_id) ?? []), row.permission_code]);
+  }
+
   const assignments = (accessRows as unknown as AccessRow[]).map<InternalAssignment>((row) => {
     const branch = one(row.branches);
     const role = one(row.roles);
@@ -52,7 +67,10 @@ async function resolveInternalAccessUncached() {
       branchName: branch?.name ?? "Chi nhánh",
       roleId: row.role_id,
       roleName: role?.name ?? "Vai trò",
-      permissions: role?.role_permissions.map((permission) => permission.permission_code) ?? [],
+      permissions: [...new Set([
+        ...(role?.role_permissions.map((permission) => permission.permission_code) ?? []),
+        ...(explicitByBranch.get(row.branch_id) ?? []),
+      ])],
       active: row.active,
     };
   });
@@ -92,18 +110,23 @@ export async function requireCustomerAccess(allowedRoles?: readonly CustomerMemb
 
   const { data, error } = await supabase
     .from("customer_portal_memberships")
-    .select("customer_id, membership_role, active, customers(display_name)")
+    .select("customer_id, membership_role, active")
     .eq("auth_user_id", authData.user.id)
     .eq("active", true);
   if (error || !data?.length) throw new AppError({ code: "FORBIDDEN", message: "Không có quyền cổng khách hàng.", status: 403 });
 
   const memberships = data.map((row) => ({
     customerId: row.customer_id,
-    customerName: (row.customers as { display_name?: string } | null)?.display_name ?? "Khách hàng",
+    customerName: "",
     role: row.membership_role as CustomerMembership["role"],
     active: row.active,
   }));
   const cookieStore = await cookies();
   const requestedCustomerId = cookieStore.get("hx_customer_id")?.value ?? memberships[0].customerId;
-  return selectCustomerMembership(memberships, requestedCustomerId, allowedRoles);
+  const membership = selectCustomerMembership(memberships, requestedCustomerId, allowedRoles);
+  const { data: customerName, error: nameError } = await supabase.rpc("customer_portal_display_name", { target_customer_id: membership.customerId });
+  if (nameError || typeof customerName !== "string" || !customerName.trim()) {
+    throw new AppError({ code: "FORBIDDEN", message: "Không có hồ sơ khách hàng hợp lệ.", status: 403 });
+  }
+  return { ...membership, customerName };
 }

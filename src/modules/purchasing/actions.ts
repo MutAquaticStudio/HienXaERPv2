@@ -11,74 +11,236 @@ import { resolvePrice, type PriceRule } from "@/modules/pricing/resolve-price";
 
 export type PurchaseActionState = { message: string; success?: boolean; supplierId?: string } | undefined;
 const positive = z.string().trim().refine((value) => { try { return new Decimal(value).isPositive(); } catch { return false; } });
-const createSchema = z.object({
-  mode: z.enum(["WAREHOUSE", "LINKED_DIRECT"]).optional(), supplierId: z.uuid(), warehouseId: z.string().optional(),
-  customerId: z.string().optional(), siteId: z.string().optional(), materialId: z.string().optional(),
-  orderedUomId: z.string().optional(), quantity: positive, expectedAt: z.string().optional(),
-  terms: z.string().trim().max(1000).optional(), manualCostVnd: z.string().trim().optional(),
-  manualCostReason: z.string().trim().optional(), salesLineId: z.string().optional(), operationId: z.uuid(),
-});
+const documentLineSchema = z.object({ materialId: z.uuid(), orderedUomId: z.uuid(), quantity: positive,
+  manualCostVnd: z.string().trim().optional(), manualCostReason: z.string().trim().max(500).optional(),
+  sourceLineId: z.uuid().optional(), salesLineId: z.uuid().optional() });
+const documentSchema = z.object({ mode: z.enum(["WAREHOUSE", "LINKED_DIRECT"]), supplierId: z.uuid(),
+  warehouseId: z.uuid().optional(), customerId: z.uuid().optional(), siteId: z.uuid().optional(),
+  salesOrderId: z.uuid().optional(), documentId: z.uuid().optional(), expectedVersion: z.number().int().positive().optional(),
+  expectedAt: z.string().optional(), terms: z.string().trim().max(1000).optional(), operationId: z.uuid(),
+  lines: z.array(documentLineSchema).min(1).max(50) });
+const costPreviewLineSchema = z.object({ materialId: z.uuid(), orderedUomId: z.uuid(), quantity: z.string(),
+  unitCostVnd: z.string(), priceSourceType: z.string(), lineTotalVnd: z.string(),
+  purchasePriceRuleId: z.uuid().nullable(), purchasePriceRuleVersion: z.number().int().nullable(), overrideReason: z.string().nullable() });
+export type CostPreviewLine = z.infer<typeof costPreviewLineSchema>;
+export type CostPreviewResult = { success: boolean; message: string; lines?: CostPreviewLine[]; totalVnd?: string };
+
+function documentInput(formData: FormData) {
+  const materialIds = formData.getAll("materialId");
+  const uomIds = formData.getAll("orderedUomId");
+  const quantities = formData.getAll("quantity");
+  const costs = formData.getAll("manualCostVnd");
+  const reasons = formData.getAll("manualCostReason");
+  const sourceIds = formData.getAll("sourceLineId");
+  const salesIds = formData.getAll("salesLineId");
+  if (!materialIds.length || materialIds.length > 50 || materialIds.length !== uomIds.length || materialIds.length !== quantities.length ||
+    (costs.length && costs.length !== materialIds.length) || (reasons.length && reasons.length !== materialIds.length) ||
+    (sourceIds.length && sourceIds.length !== materialIds.length) || (salesIds.length && salesIds.length !== materialIds.length)) return null;
+  const parsed = documentSchema.safeParse({ mode: formData.get("mode"), supplierId: formData.get("supplierId"),
+    warehouseId: formData.get("warehouseId") || undefined, customerId: formData.get("customerId") || undefined,
+    siteId: formData.get("siteId") || undefined, salesOrderId: formData.get("salesOrderId") || undefined,
+    documentId: formData.get("documentId") || undefined,
+    expectedVersion: formData.get("expectedVersion") ? Number(formData.get("expectedVersion")) : undefined,
+    expectedAt: formData.get("expectedAt"), terms: formData.get("terms"), operationId: formData.get("operationId"),
+    lines: materialIds.map((materialId, index) => ({ materialId, orderedUomId: uomIds[index], quantity: quantities[index],
+      manualCostVnd: costs[index] ?? "", manualCostReason: reasons[index] ?? "",
+      sourceLineId: sourceIds[index] || undefined, salesLineId: salesIds[index] || undefined })) });
+  return parsed.success ? parsed.data : null;
+}
 
 function toIso(value?: string) {
   if (!value) return null;
-  const date = new Date(value);
+  const localDateTime = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/.test(value);
+  const date = new Date(localDateTime ? `${value.length === 16 ? `${value}:00` : value}+07:00` : value);
   if (Number.isNaN(date.getTime())) throw new AppError({ code: "VALIDATION_FAILED", message: "Ngày dự kiến không hợp lệ.", status: 422 });
   return date.toISOString();
 }
 
 function errorMessage(message: string) {
   if (message.includes("operation_payload_conflict")) return "Mã thao tác đã được dùng với dữ liệu khác. Hãy tải lại màn hình.";
+  if (message.includes("supplier_code_exists")) return "Mã nhà cung cấp đã tồn tại. Hãy chọn nhà cung cấp hiện có hoặc dùng mã khác.";
   if (message.includes("supply_allocation_exceeds_need")) return "Số lượng phân nguồn vượt phần dòng bán còn thiếu.";
   if (message.includes("price_snapshot")) return "Giá mua đã thay đổi hoặc không còn hiệu lực.";
+  if (message.includes("draft_version_conflict")) return "Bản nháp đã được người khác sửa. Hãy tải lại.";
   if (message.includes("version_conflict")) return "Allocation đã được người khác cập nhật. Hãy tải lại.";
+  if (message.includes("manual_purchase_price_change_requires_permission")) return "Giá mua thủ công đã duyệt chỉ được giữ nguyên; cần quyền quản lý giá để thay đổi.";
+  if (message.includes("purchase_order_not_editable")) return "Đơn mua không còn là bản nháp có thể sửa.";
   return "Không thể lưu nghiệp vụ mua hàng. Không có thay đổi nào được xác nhận.";
 }
 
-async function conversionFor(materialId: string, orderedUomId: string, baseUomId: string) {
-  if (orderedUomId === baseUomId) return { numerator: "1", denominator: "1", roundingMode: "HALF_UP" };
+type OriginalPurchaseLine = { id: string; linked_sales_order_line_id: string | null; material_id: string;
+  ordered_uom_id: string; conversion_numerator: string; conversion_denominator: string; rounding_mode: string;
+  unit_cost_vnd: string | null; purchase_price_rule_id: string | null; purchase_price_rule_version: number | null;
+  price_source_type: string | null; override_reason: string | null };
+
+async function loadEditableDraft(documentId: string, branchId: string) {
   const supabase = await createServerSupabase();
-  const now = new Date().toISOString();
-  const { data, error } = await supabase.from("material_uom_conversions").select("numerator, denominator, rounding_mode")
-    .eq("material_id", materialId).eq("from_uom_id", orderedUomId).eq("to_uom_id", baseUomId)
-    .eq("active", true).eq("settlement_allowed", true).lte("effective_from", now)
-    .or(`effective_to.is.null,effective_to.gt.${now}`).order("effective_from", { ascending: false }).limit(1).maybeSingle();
-  if (error || !data) throw new AppError({ code: "VALIDATION_FAILED", message: "Không có quy đổi mua hàng hợp lệ.", status: 422 });
-  return { numerator: data.numerator.toString(), denominator: data.denominator.toString(), roundingMode: data.rounding_mode as "HALF_UP" | "DOWN" };
+  const [orderResult, lineResult] = await Promise.all([
+    supabase.from("purchase_orders").select("id, branch_id, supplier_id, warehouse_id, destination_type, source_sales_order_id, state, draft_version")
+      .eq("id", documentId).eq("branch_id", branchId).maybeSingle(),
+    supabase.from("purchase_order_line_read").select("id, linked_sales_order_line_id, material_id, ordered_uom_id, conversion_numerator, conversion_denominator, rounding_mode, unit_cost_vnd, purchase_price_rule_id, purchase_price_rule_version, price_source_type, override_reason")
+      .eq("purchase_order_id", documentId),
+  ]);
+  if (orderResult.error || lineResult.error || !orderResult.data || orderResult.data.state !== "DRAFT")
+    throw new AppError({ code: "VALIDATION_FAILED", message: "Đơn mua không còn là bản nháp có thể sửa.", status: 422 });
+  return { order: orderResult.data, originals: new Map((lineResult.data ?? []).map((line) => [line.id, line as OriginalPurchaseLine])) };
 }
 
-async function buildPurchaseLine(input: z.infer<typeof createSchema>, access: Awaited<ReturnType<typeof requireInternalPermission>>, forced?: { materialId: string; orderedUomId: string; numerator: string; denominator: string; roundingMode: string }) {
-  const materialId = forced?.materialId ?? z.uuid().parse(input.materialId);
-  const orderedUomId = forced?.orderedUomId ?? z.uuid().parse(input.orderedUomId);
+async function buildWarehouseLines(input: z.infer<typeof documentSchema>, branchId: string, canManagePrice: boolean,
+  originals?: Map<string, OriginalPurchaseLine>) {
   const supabase = await createServerSupabase();
-  const { data: material } = await supabase.from("materials").select("id, base_uom_id").eq("id", materialId).eq("active", true).eq("purchase_enabled", true).maybeSingle();
-  if (!material) throw new AppError({ code: "VALIDATION_FAILED", message: "Vật tư không còn cho phép mua.", status: 422 });
-  const conversion = forced ? { numerator: forced.numerator, denominator: forced.denominator, roundingMode: forced.roundingMode } : await conversionFor(materialId, orderedUomId, material.base_uom_id);
-  if (input.manualCostVnd) {
-    if (!access.permissions.has("purchasing.price.manage") || !/^\d+$/.test(input.manualCostVnd) || BigInt(input.manualCostVnd) <= 0n || (input.manualCostReason?.trim().length ?? 0) < 3) {
-      throw new AppError({ code: "VALIDATION_FAILED", message: "Giá mua thủ công cần quyền và lý do.", status: 422 });
-    }
-    return { material_id: materialId, ordered_uom_id: orderedUomId, quantity: input.quantity, conversion_numerator: conversion.numerator, conversion_denominator: conversion.denominator, rounding_mode: conversion.roundingMode, unit_cost_vnd: input.manualCostVnd, purchase_price_rule_id: null, purchase_price_rule_version: null, price_source_type: "MANUAL_APPROVED", override_reason: input.manualCostReason };
+  const materialIds = [...new Set(input.lines.map((line) => line.materialId))];
+  const uomIds = [...new Set(input.lines.map((line) => line.orderedUomId))];
+  const now = new Date().toISOString();
+  const [supplierResult, materialResult, conversionResult, priceResult] = await Promise.all([
+    supabase.from("suppliers").select("id").eq("id", input.supplierId).eq("branch_id", branchId).eq("active", true).maybeSingle(),
+    supabase.from("materials").select("id, base_uom_id").in("id", materialIds).eq("active", true).eq("purchase_enabled", true),
+    supabase.from("material_uom_conversions").select("material_id, from_uom_id, to_uom_id, numerator, denominator, rounding_mode, effective_from")
+      .in("material_id", materialIds).in("from_uom_id", uomIds).eq("active", true).eq("settlement_allowed", true)
+      .lte("effective_from", now).or(`effective_to.is.null,effective_to.gt.${now}`).order("effective_from", { ascending: false }),
+    supabase.from("purchase_price_rules").select("id, material_id, purchase_uom_id, unit_cost_vnd, version, source_type")
+      .eq("branch_id", branchId).eq("supplier_id", input.supplierId).in("material_id", materialIds).in("purchase_uom_id", uomIds)
+      .eq("active", true).lte("effective_from", now).or(`effective_to.is.null,effective_to.gt.${now}`).order("version", { ascending: false }),
+  ]);
+  if (supplierResult.error || materialResult.error || conversionResult.error || priceResult.error ||
+    (!originals && !supplierResult.data) || materialResult.data?.length !== materialIds.length) {
+    throw new AppError({ code: "VALIDATION_FAILED", message: "Nhà cung cấp, vật tư hoặc bảng giá không còn hợp lệ.", status: 422 });
   }
-  const now = new Date().toISOString();
-  const { data: rules, error } = await supabase.from("purchase_price_rules").select("id, unit_cost_vnd, version, source_type")
-    .eq("branch_id", access.branchId).eq("supplier_id", input.supplierId).eq("material_id", materialId)
-    .eq("purchase_uom_id", orderedUomId).eq("active", true).lte("effective_from", now)
-    .or(`effective_to.is.null,effective_to.gt.${now}`).order("version", { ascending: false }).limit(1);
-  const rule = rules?.[0];
-  if (error || !rule) throw new AppError({ code: "VALIDATION_FAILED", message: "Không có giá mua hiệu lực; cần nhập giá thủ công có quyền.", status: 422 });
-  return { material_id: materialId, ordered_uom_id: orderedUomId, quantity: input.quantity, conversion_numerator: conversion.numerator, conversion_denominator: conversion.denominator, rounding_mode: conversion.roundingMode, unit_cost_vnd: rule.unit_cost_vnd.toString(), purchase_price_rule_id: rule.id, purchase_price_rule_version: rule.version, price_source_type: rule.source_type };
+  const materials = new Map(materialResult.data.map((row) => [row.id, row]));
+  const lines = input.lines.map((entry, index) => {
+    const material = materials.get(entry.materialId)!;
+    const conversion = entry.orderedUomId === material.base_uom_id ? null : conversionResult.data?.find((row) =>
+      row.material_id === entry.materialId && row.from_uom_id === entry.orderedUomId && row.to_uom_id === material.base_uom_id);
+    if (entry.orderedUomId !== material.base_uom_id && !conversion) throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: không có quy đổi mua hợp lệ.`, status: 422 });
+    const manual = entry.manualCostVnd?.trim() ?? "";
+    const reason = entry.manualCostReason?.trim() ?? "";
+    const original = entry.sourceLineId ? originals?.get(entry.sourceLineId) : undefined;
+    if (entry.sourceLineId && !original) throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: dòng nguồn không thuộc bản nháp.`, status: 422 });
+    if (original?.price_source_type === "MANUAL_APPROVED" && !canManagePrice) {
+      if (original.material_id !== entry.materialId || original.ordered_uom_id !== entry.orderedUomId ||
+        (manual && manual !== original.unit_cost_vnd) || reason || !original.unit_cost_vnd ||
+        original.linked_sales_order_line_id !== (entry.salesLineId ?? null)) {
+        throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: không thể thay đổi giá mua thủ công đã duyệt.`, status: 422 });
+      }
+      return { source_line_id: entry.sourceLineId, linked_sales_order_line_id: entry.salesLineId ?? null,
+        material_id: entry.materialId, ordered_uom_id: entry.orderedUomId, quantity: entry.quantity,
+        conversion_numerator: original.conversion_numerator, conversion_denominator: original.conversion_denominator,
+        rounding_mode: original.rounding_mode, unit_cost_vnd: original.unit_cost_vnd,
+        purchase_price_rule_id: null, purchase_price_rule_version: null, price_source_type: "MANUAL_APPROVED", override_reason: null };
+    }
+    if (manual && (!canManagePrice || !/^[1-9]\d*$/.test(manual) || manual.length > 19 || BigInt(manual) > 9223372036854775807n || reason.length < 3)) {
+      throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: giá mua thủ công cần quyền và lý do.`, status: 422 });
+    }
+    if (!manual && reason) throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: lý do giá thủ công thiếu đơn giá.`, status: 422 });
+    const rule = manual ? null : priceResult.data?.find((row) => row.material_id === entry.materialId && row.purchase_uom_id === entry.orderedUomId);
+    if (!manual && !rule) throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: không có giá mua hiệu lực.`, status: 422 });
+    return { source_line_id: entry.sourceLineId ?? null, linked_sales_order_line_id: entry.salesLineId ?? null,
+      material_id: entry.materialId, ordered_uom_id: entry.orderedUomId, quantity: entry.quantity,
+      conversion_numerator: conversion?.numerator.toString() ?? "1", conversion_denominator: conversion?.denominator.toString() ?? "1",
+      rounding_mode: conversion?.rounding_mode ?? "HALF_UP", unit_cost_vnd: manual || rule!.unit_cost_vnd.toString(),
+      purchase_price_rule_id: rule?.id ?? null, purchase_price_rule_version: rule?.version ?? null,
+      price_source_type: manual ? "MANUAL_APPROVED" : rule!.source_type, override_reason: manual ? reason : null };
+  });
+  const previews: CostPreviewLine[] = lines.map((line, index) => {
+    const amount = new Decimal(line.quantity).mul(line.unit_cost_vnd).toDecimalPlaces(0, Decimal.ROUND_HALF_UP);
+    if (!amount.isFinite() || amount.lte(0) || amount.gt("9223372036854775807")) throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: thành tiền không hợp lệ.`, status: 422 });
+    return { materialId: input.lines[index].materialId, orderedUomId: input.lines[index].orderedUomId, quantity: input.lines[index].quantity,
+      unitCostVnd: line.unit_cost_vnd, priceSourceType: line.price_source_type, lineTotalVnd: amount.toFixed(0),
+      purchasePriceRuleId: line.purchase_price_rule_id, purchasePriceRuleVersion: line.purchase_price_rule_version, overrideReason: line.override_reason };
+  });
+  const total = previews.reduce((sum, line) => sum + BigInt(line.lineTotalVnd), 0n);
+  if (total > 9223372036854775807n) throw new AppError({ code: "VALIDATION_FAILED", message: "Tổng đơn mua vượt giới hạn.", status: 422 });
+  return { lines, previews, totalVnd: total.toString() };
 }
 
-async function buildSalesLine(customerId: string, purchaseLine: Record<string, unknown>, branchId: string) {
+export async function previewWarehousePurchaseAction(input: unknown): Promise<CostPreviewResult> {
+  const parsed = documentSchema.safeParse(input);
+  if (!parsed.success) return { success: false, message: "Chọn nhà cung cấp và nhập đủ các dòng mua trước khi xem giá." };
+  const access = await requireInternalPermission("purchasing.create");
+  if (!access.permissions.has("purchasing.price.read")) return { success: false, message: "Không có quyền xem giá mua." };
+  try {
+    const draft = parsed.data.documentId ? await loadEditableDraft(parsed.data.documentId, access.branchId) : null;
+    if (draft && draft.order.draft_version !== parsed.data.expectedVersion) return { success: false, message: errorMessage("draft_version_conflict") };
+    const result = await buildWarehouseLines(parsed.data, access.branchId, access.permissions.has("purchasing.price.manage"), draft?.originals);
+    return { success: true, message: "Giá mua đã được xem trước. Kiểm tra từng dòng trước khi lưu.", lines: result.previews, totalVnd: result.totalVnd };
+  } catch (error) { return { success: false, message: error instanceof AppError ? error.message : "Không thể xem trước giá mua." }; }
+}
+
+async function saveWarehouseDocument(mode: "create" | "edit", formData: FormData): Promise<PurchaseActionState> {
+  const input = documentInput(formData);
+  if (!input) return { message: "Đơn mua cần từ 1 đến 50 dòng hợp lệ." };
+  const access = await requireInternalPermission("purchasing.create");
   const supabase = await createServerSupabase();
-  const materialId = purchaseLine.material_id as string;
-  const orderedUomId = purchaseLine.ordered_uom_id as string;
+  try {
+    if (mode === "edit" && (!input.documentId || !input.expectedVersion)) return { message: "Bản nháp đơn mua không hợp lệ." };
+    const draft = mode === "edit" ? await loadEditableDraft(input.documentId!, access.branchId) : null;
+    if (draft) {
+      const expectedMode = draft.order.destination_type === "WAREHOUSE" ? "WAREHOUSE" : "LINKED_DIRECT";
+      if (draft.order.supplier_id !== input.supplierId || expectedMode !== input.mode ||
+        (input.mode === "WAREHOUSE" && draft.order.warehouse_id !== input.warehouseId) ||
+        (input.mode === "LINKED_DIRECT" && draft.order.source_sales_order_id !== input.salesOrderId))
+        return { message: "Điểm đến hoặc nguồn của PO đã thay đổi. Hãy tải lại." };
+      if (draft.order.draft_version !== input.expectedVersion) return { message: errorMessage("draft_version_conflict") };
+    } else if (input.mode === "WAREHOUSE" ? !input.warehouseId || input.lines.some((line) => line.salesLineId) :
+      !input.salesOrderId && (!input.customerId || !input.siteId || !access.permissions.has("orders.create"))) {
+      return { message: "Điểm đến hoặc quyền tạo đơn mua chưa hợp lệ." };
+    }
+    if (input.mode === "LINKED_DIRECT" && input.salesOrderId && input.lines.some((line) => !line.salesLineId))
+      return { message: "Mỗi dòng mua giao thẳng cần gắn dòng đơn bán cụ thể." };
+    const result = await buildWarehouseLines(input, access.branchId, access.permissions.has("purchasing.price.manage"), draft?.originals);
+    if (access.permissions.has("purchasing.price.read")) {
+      let expected: CostPreviewLine[];
+      try { expected = z.array(costPreviewLineSchema).length(result.previews.length).parse(JSON.parse(String(formData.get("costPreview") ?? ""))); }
+      catch { return { message: "Cần xem trước giá của mọi dòng trước khi lưu." }; }
+      if (!result.previews.every((line, index) => Object.keys(line).every((key) => line[key as keyof CostPreviewLine] === expected[index][key as keyof CostPreviewLine]))) {
+        return { message: "Giá mua hoặc dòng hàng đã thay đổi. Vui lòng xem trước lại." };
+      }
+    }
+    const expectedAt = toIso(input.expectedAt);
+    let rpcResult;
+    if (draft) {
+      rpcResult = await supabase.rpc("update_purchase_order_draft", { target_purchase_order_id: input.documentId!,
+        expected_version: input.expectedVersion!, expected_at: expectedAt, commercial_terms: input.terms || null,
+        purchase_lines: result.lines, operation_id: input.operationId });
+    } else if (input.mode === "WAREHOUSE") {
+      rpcResult = await supabase.rpc("create_purchase_order_draft", { target_branch_id: access.branchId, target_supplier_id: input.supplierId,
+        target_warehouse_id: input.warehouseId!, expected_at: expectedAt, commercial_terms: input.terms || null,
+        purchase_lines: result.lines, operation_id: input.operationId });
+    } else if (input.salesOrderId) {
+      rpcResult = await supabase.rpc("create_direct_purchase_from_sales_order", { target_sales_order_id: input.salesOrderId,
+        target_supplier_id: input.supplierId, purchase_lines: result.lines, expected_at: expectedAt, operation_id: input.operationId });
+    } else {
+      const salesLines = await buildSalesLines(input.customerId!, result.lines, access.branchId);
+      rpcResult = await supabase.rpc("create_linked_direct_drafts", { target_branch_id: access.branchId,
+        target_supplier_id: input.supplierId, target_customer_id: input.customerId!, target_site_id: input.siteId!,
+        purchase_line: result.lines, sales_line: salesLines, expected_at: expectedAt,
+        commercial_terms: input.terms || null, operation_id: input.operationId });
+    }
+    if (rpcResult.error || !rpcResult.data) return { message: errorMessage(rpcResult.error?.message ?? "unknown") };
+    revalidatePath("/admin/purchase-orders");
+    revalidatePath(`/admin/purchase-orders/${rpcResult.data}`);
+    redirect(`/admin/purchase-orders/${rpcResult.data}?notice=${mode === "edit" ? "updated" : "created"}`);
+  } catch (error) {
+    unstable_rethrow(error);
+    return { message: error instanceof AppError ? error.message : "Không thể chuẩn bị đơn mua." };
+  }
+}
+
+export async function updatePurchaseOrderDraftAction(_: PurchaseActionState, formData: FormData) { return saveWarehouseDocument("edit", formData); }
+
+async function buildSalesLines(customerId: string, purchaseLines: { material_id: string; ordered_uom_id: string;
+  quantity: string; conversion_numerator: string; conversion_denominator: string; rounding_mode: string }[], branchId: string) {
+  const supabase = await createServerSupabase();
+  const materialIds = [...new Set(purchaseLines.map((line) => line.material_id))];
+  const uomIds = [...new Set(purchaseLines.map((line) => line.ordered_uom_id))];
   const [customerResult, materialResult, ruleResult] = await Promise.all([
     supabase.from("customers").select("tier_code").eq("id", customerId).eq("branch_id", branchId).eq("active", true).maybeSingle(),
-    supabase.from("materials").select("group_id, base_uom_id").eq("id", materialId).maybeSingle(),
-    supabase.from("pricing_rules").select("id, branch_id, scope_type, customer_id, material_id, material_group_id, customer_tier_code, price_uom_id, unit_price_vnd, version, source_type, effective_from, effective_to, active").eq("branch_id", branchId).eq("price_uom_id", orderedUomId).eq("active", true),
+    supabase.from("materials").select("id, group_id, base_uom_id").in("id", materialIds),
+    supabase.from("pricing_rules").select("id, branch_id, scope_type, customer_id, material_id, material_group_id, customer_tier_code, price_uom_id, unit_price_vnd, version, source_type, effective_from, effective_to, active")
+      .eq("branch_id", branchId).in("price_uom_id", uomIds).eq("active", true),
   ]);
-  if (!customerResult.data || !materialResult.data || ruleResult.error) throw new AppError({ code: "VALIDATION_FAILED", message: "Không thể resolve giá bán cho draft liên kết.", status: 422 });
+  if (!customerResult.data || materialResult.error || !materialResult.data || materialResult.data.length !== materialIds.length || ruleResult.error)
+    throw new AppError({ code: "VALIDATION_FAILED", message: "Không thể resolve giá bán cho draft liên kết.", status: 422 });
   const rules: PriceRule[] = (ruleResult.data ?? []).map((row) => ({
     id: row.id, branchId: row.branch_id, scope: row.scope_type as PriceRule["scope"],
     customerId: row.customer_id ?? undefined, materialId: row.material_id ?? undefined, materialGroupId: row.material_group_id ?? undefined,
@@ -86,48 +248,22 @@ async function buildSalesLine(customerId: string, purchaseLine: Record<string, u
     unitPriceVnd: row.unit_price_vnd.toString(), version: row.version, sourceType: row.source_type as PriceRule["sourceType"],
     effectiveFrom: row.effective_from, effectiveTo: row.effective_to ?? undefined, active: row.active,
   }));
-  const selected = resolvePrice({ branchId, customerId, customerTierCode: customerResult.data.tier_code ?? undefined, materialId, materialGroupId: materialResult.data.group_id, priceUomId: orderedUomId, at: new Date(), rules });
-  return { material_id: materialId, ordered_uom_id: orderedUomId, quantity: purchaseLine.quantity, conversion_numerator: purchaseLine.conversion_numerator, conversion_denominator: purchaseLine.conversion_denominator, rounding_mode: purchaseLine.rounding_mode, unit_price_vnd: selected.unitPriceVnd, pricing_rule_id: selected.id, pricing_rule_version: selected.version, price_source_type: selected.sourceType };
+  const materials = new Map(materialResult.data.map((row) => [row.id, row]));
+  const customerTierCode = customerResult.data.tier_code ?? undefined;
+  const at = new Date();
+  return purchaseLines.map((line) => {
+    const selected = resolvePrice({ branchId, customerId, customerTierCode,
+      materialId: line.material_id, materialGroupId: materials.get(line.material_id)!.group_id,
+      priceUomId: line.ordered_uom_id, at, rules });
+    return { material_id: line.material_id, ordered_uom_id: line.ordered_uom_id, quantity: line.quantity,
+      conversion_numerator: line.conversion_numerator, conversion_denominator: line.conversion_denominator,
+      rounding_mode: line.rounding_mode, unit_price_vnd: selected.unitPriceVnd, pricing_rule_id: selected.id,
+      pricing_rule_version: selected.version, price_source_type: selected.sourceType };
+  });
 }
 
 export async function createPurchaseOrderAction(_: PurchaseActionState, formData: FormData): Promise<PurchaseActionState> {
-  const parsed = createSchema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return { message: "Thông tin đơn mua chưa hợp lệ." };
-  const access = await requireInternalPermission("purchasing.create");
-  const supabase = await createServerSupabase();
-  try {
-    const expectedAt = toIso(parsed.data.expectedAt);
-    if (parsed.data.salesLineId) {
-      const salesLineId = z.uuid().parse(parsed.data.salesLineId);
-      const { data: saleLine } = await supabase.from("sales_order_lines").select("id, sales_order_id, material_id, ordered_uom_id, conversion_numerator, conversion_denominator, rounding_mode").eq("id", salesLineId).maybeSingle();
-      if (!saleLine) throw new AppError({ code: "VALIDATION_FAILED", message: "Dòng đơn bán không còn khả dụng.", status: 422 });
-      const { data: order } = await supabase.from("sales_orders").select("branch_id").eq("id", saleLine.sales_order_id).eq("branch_id", access.branchId).maybeSingle();
-      if (!order) throw new AppError({ code: "FORBIDDEN", message: "Dòng đơn bán ngoài chi nhánh.", status: 403 });
-      const line = await buildPurchaseLine(parsed.data, access, { materialId: saleLine.material_id, orderedUomId: saleLine.ordered_uom_id, numerator: saleLine.conversion_numerator.toString(), denominator: saleLine.conversion_denominator.toString(), roundingMode: saleLine.rounding_mode });
-      const { data, error } = await supabase.rpc("create_direct_purchase_from_sales_line", { source_sales_order_line_id: salesLineId, target_supplier_id: parsed.data.supplierId, requested_quantity: parsed.data.quantity, purchase_line: line, expected_at: expectedAt, operation_id: parsed.data.operationId });
-      if (error || !data) return { message: errorMessage(error?.message ?? "unknown") };
-      revalidatePath("/admin/orders");
-      redirect(`/admin/purchase-orders/${data}?notice=created-direct`);
-    }
-    const line = await buildPurchaseLine(parsed.data, access);
-    if (parsed.data.mode === "LINKED_DIRECT") {
-      const customerId = z.uuid().parse(parsed.data.customerId);
-      const siteId = z.uuid().parse(parsed.data.siteId);
-      const salesLine = await buildSalesLine(customerId, line, access.branchId);
-      const { data, error } = await supabase.rpc("create_linked_direct_drafts", { target_branch_id: access.branchId, target_supplier_id: parsed.data.supplierId, target_customer_id: customerId, target_site_id: siteId, purchase_line: line, sales_line: salesLine, expected_at: expectedAt, commercial_terms: parsed.data.terms || null, operation_id: parsed.data.operationId });
-      if (error || !data) return { message: errorMessage(error?.message ?? "unknown") };
-      revalidatePath("/admin/orders");
-      redirect(`/admin/purchase-orders/${data}?notice=created-linked`);
-    }
-    const warehouseId = z.uuid().parse(parsed.data.warehouseId);
-    const { data, error } = await supabase.rpc("create_purchase_order_draft", { target_branch_id: access.branchId, target_supplier_id: parsed.data.supplierId, target_warehouse_id: warehouseId, expected_at: expectedAt, commercial_terms: parsed.data.terms || null, purchase_lines: [line], operation_id: parsed.data.operationId });
-    if (error || !data) return { message: errorMessage(error?.message ?? "unknown") };
-    redirect(`/admin/purchase-orders/${data}?notice=created`);
-  } catch (error) {
-    unstable_rethrow(error);
-    if (error instanceof AppError) return { message: error.message };
-    return { message: "Thông tin liên kết chưa hợp lệ." };
-  }
+  return saveWarehouseDocument("create", formData);
 }
 
 export async function confirmPurchaseOrderAction(formData: FormData) {

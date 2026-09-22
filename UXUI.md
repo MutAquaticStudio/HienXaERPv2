@@ -1,7 +1,7 @@
 # UXUI.md — HIỀN XA ERP V2
 
-> **Bộ tài liệu:** `HX-V2-DOCSET-4.2`  
-> **Giao thức đồng bộ:** `SYNC-4.2`  
+> **Bộ tài liệu:** `HX-V2-DOCSET-4.4`  
+> **Giao thức đồng bộ:** `SYNC-4.4`  
 > **File sở hữu:** Hệ thống thiết kế, bố cục, tương tác, responsive, accessibility và hành vi giao diện  
 > **Mục đích:** Mô tả chi tiết hệ thống phải trông và vận hành như thế nào ở tầng giao diện.
 
@@ -1697,5 +1697,177 @@ Sau khi bấm:
 - nếu lỗi chắc chắn trước khi gửi: giữ draft và lỗi có thể sửa.
 
 Không bắt người dùng hiểu outbox/job. UI chỉ hiển thị trạng thái nghiệp vụ và hành động an toàn.
+
+
+# UX-930 — Recovery UX Contract
+
+## UX-REC-001 — Audit before UX implementation
+
+Trước khi sửa UI, GA phải xác minh source hiện tại so với các UX requirement dưới đây. Không coi route tồn tại là flow hoàn tất.
+
+## UX-REC-002 — Sales/Quotation line editor
+
+Create/Edit DRAFT có layout:
+
+```text
+Khách hàng [chọn] [+ Thêm nhanh]
+Công trình  [chọn] [+ Thêm nhanh]
+
+DÒNG HÀNG
+| Vật tư | UOM | Số lượng | Đơn giá | Nguồn giá | Thành tiền | Xóa |
+| ...     | ... | ...      | ...     | ...       | ...        |     |
+
+[+ Thêm dòng]
+
+Tạm tính
+Tổng
+Điều khoản / ngày giao
+[ Lưu nháp ]
+```
+
+- không wizard;
+- thêm/xóa line không mất các line khác;
+- price hiển thị trước Save;
+- manual price chỉ xuất hiện đúng quyền;
+- missing price có message/action rõ.
+
+## UX-REC-003 — Draft workspace
+
+Quote/SO/PO DRAFT detail có primary action `Sửa`.
+Edit quay lại cùng document, không clone revision vô nghĩa.
+SENT/CONFIRMED chuyển sang immutable presentation + revision/adjustment/cancel actions.
+
+## UX-REC-004 — Master data
+
+Mỗi master-data list có:
+- search;
+- create CTA;
+- detail/edit;
+- active/inactive;
+- permission-aware fields.
+
+Settings chỉ là hub dẫn tới forms cụ thể; không rules builder.
+
+## UX-REC-005 — Customer 360
+
+Header:
+- customer identity;
+- status;
+- debt summary theo quyền.
+
+Actions:
+- Tạo đơn;
+- Tạo báo giá;
+- Ghi nhận thu tiền.
+
+Sections:
+- Sites;
+- Pricing;
+- Quotes;
+- Orders;
+- Deliveries;
+- Receivables;
+- Payments/Documents.
+
+Từ Site → Tạo đơn phải prefill Customer + Site.
+
+## UX-REC-006 — Supplier 360
+
+Sections:
+- profile/contact;
+- PO;
+- receipts/direct fulfillment;
+- AP;
+- payments.
+
+CTA `Tạo đơn mua`.
+
+## UX-REC-007 — Core lists
+
+List phải có filter/search phía trên, bounded result và pagination/cursor phía dưới.
+Filters lưu trong URL và Back giữ context.
+Mobile đổi table thành card/list khi cần.
+
+## UX-REC-008 — Dashboard completion
+
+Ngoài KPI:
+- chi phí theo nhóm;
+- commission summary;
+- debt/payable drill-down;
+- filter preserved khi mở detail/drawer.
+
+Không hiển thị số giả khi metric không READY.
+
+## UX-REC-009 — Admin identity
+
+Topbar/sidebar dùng actor + branch thực từ server context.
+Không hard-code tên nhân viên, khách, branch hoặc company demo.
+Organization label dùng config thực.
+
+## UX-REC-010 — Finance pending work
+
+PaymentNotice phải discoverable từ:
+- Finance navigation hoặc
+- `Cần xử lý` queue.
+
+Review không tự tạo Payment.
+
+## UX-REC-011 — Customer order
+
+Order detail portal hiển thị:
+- order state;
+- delivery timeline;
+- debt/payment state customer-safe;
+- relevant documents.
+
+Không leak supplier/cost/margin.
+
+## UX-REC-012 — Access management
+
+Owner/admin có UI để:
+- assign/change role;
+- assign/change branch access;
+- revoke/reactivate;
+- inspect/manage explicit permissions.
+
+Action nguy hiểm yêu cầu reason/audit khi Spec yêu cầu.
+
+## UX-REC-013 — Settings / Reports / Audit
+
+Settings:
+- master/config links;
+- không generic config DSL.
+
+Reports:
+- selector;
+- shared filters;
+- summary + table/chart;
+- export khi contract có.
+
+Audit:
+- actor;
+- entity;
+- action;
+- time filters;
+- human-readable summary trước raw detail.
+
+## UX-REC-014 — Low stock
+
+Inventory UI:
+- threshold state;
+- low-stock badge/queue;
+- link thẳng material/warehouse;
+- action `Tạo nháp đơn mua`.
+
+Không auto-order.
+
+## UX-REC-015 — Print/export
+
+Source pages có action rõ:
+- Báo giá → PDF;
+- Delivery → Phiếu giao;
+- Payment/Cashbook → Phiếu thu/chi;
+- Customer/AR → Đối chiếu công nợ.
+
 
 # KẾT THÚC UXUI.md

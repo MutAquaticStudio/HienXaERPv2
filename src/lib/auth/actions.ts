@@ -1,5 +1,7 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+import { portalRpc } from "@/modules/portal/server";
 import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { requireInternalPermission } from "@/lib/access/context";
@@ -94,6 +96,7 @@ export async function assignRoleAction(_: AuthFormState, formData: FormData): Pr
     operation_id: randomUUID(),
   });
   if (error) return { message: "Không thể cập nhật vai trò. Không có thay đổi nào được xác nhận." };
+  revalidatePath("/admin/access");
   return { success: true, message: "Đã cập nhật vai trò và ghi audit." };
 }
 
@@ -132,5 +135,62 @@ export async function inviteEmployeeAction(_: AuthFormState, formData: FormData)
     operation_id: randomUUID(),
   });
   if (registerError) return { message: "Lời mời có thể đã gửi nhưng hồ sơ chưa liên kết. Không gửi lại; hãy đối chiếu Auth provider." };
+  revalidatePath("/admin/access");
   return { success: true, message: "Đã gửi lời mời và tạo hồ sơ nhân viên." };
+}
+
+export async function revokeAccessAction(_: AuthFormState, form: FormData): Promise<AuthFormState> {
+ const parsed=z.object({accessId:z.uuid(),reason:z.string().trim().min(3).max(500),confirmed:z.literal('on')}).safeParse(Object.fromEntries(form));
+ if(!parsed.success) return {message:'Nhập lý do và xác nhận thu hồi quyền.'};
+ await requireInternalPermission('roles.manage');
+ try {await portalRpc(await createServerSupabase(),'revoke_employee_access',{target_access_id:parsed.data.accessId,change_reason:parsed.data.reason,operation_id:randomUUID()});}
+ catch {return {message:'Không thể thu hồi. Không được tự thu hồi quyền hoặc thao tác ngoài phạm vi.'};}
+ revalidatePath('/admin/access');
+ return {success:true,message:'Đã thu hồi quyền tại chi nhánh và ghi audit.'};
+}
+
+export async function reactivateAccessAction(_: AuthFormState, form: FormData): Promise<AuthFormState> {
+  const parsed = z.object({ accessId: z.uuid(), reason: z.string().trim().min(3).max(500), confirmed: z.literal("on") }).safeParse(Object.fromEntries(form));
+  if (!parsed.success) return { message: "Nhập lý do và xác nhận kích hoạt lại quyền." };
+  await requireInternalPermission("roles.manage");
+  try {
+    await portalRpc(await createServerSupabase(), "reactivate_employee_access", {
+      target_access_id: parsed.data.accessId,
+      change_reason: parsed.data.reason,
+      operation_id: randomUUID(),
+    });
+  } catch {
+    return { message: "Không thể kích hoạt lại. Kiểm tra phạm vi, vai trò và quyền hiện tại." };
+  }
+  revalidatePath("/admin/access");
+  return { success: true, message: "Đã kích hoạt lại quyền tại chi nhánh và ghi audit." };
+}
+
+export async function setExplicitPermissionsAction(_: AuthFormState, form: FormData): Promise<AuthFormState> {
+  const parsed = z.object({
+    employeeId: z.uuid(),
+    branchId: z.uuid(),
+    permissionCodes: z.array(z.string().regex(/^[a-z][a-z0-9_.]{2,79}$/)).max(100),
+    reason: z.string().trim().min(3).max(500),
+  }).safeParse({
+    employeeId: form.get("employeeId"),
+    branchId: form.get("branchId"),
+    permissionCodes: form.getAll("permissionCode"),
+    reason: form.get("reason"),
+  });
+  if (!parsed.success) return { message: "Danh sách quyền hoặc lý do chưa hợp lệ." };
+  await requireInternalPermission("roles.manage");
+  try {
+    await portalRpc(await createServerSupabase(), "set_employee_explicit_permissions", {
+      target_employee_id: parsed.data.employeeId,
+      target_branch_id: parsed.data.branchId,
+      permission_codes: [...new Set(parsed.data.permissionCodes)],
+      change_reason: parsed.data.reason,
+      operation_id: randomUUID(),
+    });
+  } catch {
+    return { message: "Không thể cập nhật quyền tường minh. Không được cấp vượt phạm vi của bạn." };
+  }
+  revalidatePath("/admin/access");
+  return { success: true, message: "Đã cập nhật quyền tường minh và ghi audit." };
 }

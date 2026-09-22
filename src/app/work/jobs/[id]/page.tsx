@@ -2,6 +2,8 @@ import { ClaimJobButton } from "@/components/portal/claim-job-button";
 import styles from "@/components/portal/portal.module.css";
 import { StartJobButton } from "@/components/portal/start-job-button";
 import { WorkResultDraftForm } from "@/components/portal/work-result-draft-form";
+import { ForegroundGpsControl } from "@/components/routing/foreground-gps-control";
+import { createServerSupabase } from "@/lib/supabase/server";
 import { getWorkerPortalJob } from "@/modules/portal/actions";
 
 function showDate(value?: string) {
@@ -13,6 +15,10 @@ function showDate(value?: string) {
 export default async function WorkJobPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const job = await getWorkerPortalJob(id);
+  const supabase = await createServerSupabase();
+  const { data: gpsAssignments, error: gpsError } = await supabase.rpc("my_active_gps_assignment", { target_work_item_id: id });
+  if (gpsError) throw gpsError;
+  const gpsAssignment = gpsAssignments?.[0];
   const available = job.state === "AVAILABLE";
   const claimed = job.state === "CLAIMED";
   const canSubmitResult = ["IN_PROGRESS", "BLOCKED"].includes(job.state);
@@ -55,6 +61,7 @@ export default async function WorkJobPage({ params }: { params: Promise<{ id: st
           </section>
         )}
       </div>
+      {gpsAssignment && <ForegroundGpsControl deliveryId={gpsAssignment.delivery_id} assignmentVersion={gpsAssignment.assignment_version} />}
     </div>
   );
 }
