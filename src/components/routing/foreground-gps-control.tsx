@@ -7,6 +7,7 @@ type Props = { deliveryId: string; assignmentVersion: number };
 export function ForegroundGpsControl({ deliveryId, assignmentVersion }: Props) {
   const [state, setState] = useState<"idle" | "starting" | "active" | "stopping" | "error">("idle");
   const [message, setMessage] = useState("GPS chỉ chạy khi trang này đang mở ở foreground.");
+  const [hasSession, setHasSession] = useState(false);
   const sessionId = useRef<string | null>(null);
   const watchId = useRef<number | null>(null);
   const sequence = useRef(0);
@@ -16,7 +17,7 @@ export function ForegroundGpsControl({ deliveryId, assignmentVersion }: Props) {
     if (watchId.current !== null) navigator.geolocation.clearWatch(watchId.current);
     watchId.current = null;
     const activeSession = sessionId.current;
-    if (!activeSession) { setState(finalState); setMessage(reason); return; }
+    if (!activeSession) { setHasSession(false); setState(finalState); setMessage(reason); return; }
     setState("stopping");
     setMessage("Đang dừng phiên GPS...");
     try {
@@ -28,6 +29,7 @@ export function ForegroundGpsControl({ deliveryId, assignmentVersion }: Props) {
       });
       if (!response.ok) throw new Error("gps_stop_unconfirmed");
       sessionId.current = null;
+      setHasSession(false);
       setState(finalState);
       setMessage(reason);
     } catch {
@@ -75,6 +77,7 @@ export function ForegroundGpsControl({ deliveryId, assignmentVersion }: Props) {
     const body = await response.json().catch(() => null) as { sessionId?: string; error?: string } | null;
     if (!response.ok || !body?.sessionId) { setState("error"); setMessage(body?.error ?? "Không thể bật GPS."); return; }
     sessionId.current = body.sessionId;
+    setHasSession(true);
     sequence.current = 0;
     watchId.current = navigator.geolocation.watchPosition((position) => {
       if (document.visibilityState !== "visible" || !sessionId.current) return;
@@ -118,7 +121,7 @@ export function ForegroundGpsControl({ deliveryId, assignmentVersion }: Props) {
         <strong>Chia sẻ vị trí chuyến giao</strong>
         <p className="muted" role="status">{message}</p>
       </div>
-      {state === "active" || state === "stopping" || (state === "error" && sessionId.current) ? (
+      {state === "active" || state === "stopping" || (state === "error" && hasSession) ? (
         <button className="button button-secondary" type="button" disabled={state === "stopping"} onClick={() => void stop()}>{state === "error" ? "Thử dừng GPS" : "Dừng GPS"}</button>
       ) : (
         <button className="button button-primary" type="button" disabled={state === "starting"} onClick={() => void start()}>{state === "starting" ? "Đang bật..." : "Bật GPS foreground"}</button>

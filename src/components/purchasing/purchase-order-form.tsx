@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useRef, useState } from "react";
+import { useActionState, useMemo, useRef, useState } from "react";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createPurchaseOrderAction, previewWarehousePurchaseAction, updatePurchaseOrderDraftAction, type CostPreviewResult } from "@/modules/purchasing/actions";
 import type { PurchaseFormOptions, SalesLineContext, SalesOrderPurchaseLine } from "@/modules/purchasing/form-options";
@@ -39,7 +39,9 @@ export function PurchaseOrderForm({ options, operationId, salesLine, sourceLines
     quantity: selectedSource?.remainingOrderedQuantity ?? "", manualCostVnd: "", manualCostReason: "" }]);
   const nextLineKey = useRef(existing?.lines.length ?? 1);
   const priceRevision = useRef(0);
-  const [preview, setPreview] = useState<CostPreviewResult | null>(null);
+  const [previewRecord, setPreviewRecord] = useState<{ state: typeof state; value: CostPreviewResult } | null>(null);
+  const preview = previewRecord?.state === state ? previewRecord?.value ?? null : null;
+  function setPreview(next: CostPreviewResult | null) { setPreviewRecord(next ? { state, value: next } : null); }
   const [previewPending, setPreviewPending] = useState(false);
   const sites = useMemo(() => options.customers.find((row) => row.id === customerId)?.sites ?? [], [customerId, options.customers]);
   const sourceMode = !!salesLine || existing?.destinationType === "CUSTOMER_SITE";
@@ -47,7 +49,6 @@ export function PurchaseOrderForm({ options, operationId, salesLine, sourceLines
   const warehouseMode = mode === "WAREHOUSE";
   const emptyLines = !supplierId || !options.materials.length || lines.some((line) => !line.materialId || !line.uomId || !line.quantity || (sourceMode && !line.salesLineId));
   const disabled = !options.suppliers.length || emptyLines || (warehouseMode ? !warehouseId : sourceMode ? !availableSourceLines.length : !canCreateSales || !sites.length);
-  useEffect(() => { if (state?.message) { priceRevision.current += 1; setPreview(null); } }, [state]);
   function invalidatePrice() { priceRevision.current += 1; setPreview(null); }
   function updateLine(key: number, change: Partial<(typeof lines)[number]>) {
     invalidatePrice();

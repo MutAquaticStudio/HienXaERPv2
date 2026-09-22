@@ -77,12 +77,13 @@ export function CommercialDocumentForm({ kind, options, operationId, canManagePr
   const [quickMode, setQuickMode] = useState<"customer" | "site" | null>(null);
   const nextLineKey = useRef(existing?.lines.length ?? 1);
   const priceRevision = useRef(0);
-  const [preview, setPreview] = useState<PricePreviewResult | null>(null);
+  const [previewRecord, setPreviewRecord] = useState<{ state: typeof state; value: PricePreviewResult } | null>(null);
+  const preview = previewRecord?.state === state ? previewRecord?.value ?? null : null;
+  function setPreview(next: PricePreviewResult | null) { setPreviewRecord(next ? { state, value: next } : null); }
   const [previewPending, setPreviewPending] = useState(false);
   const [lines, setLines] = useState(existing ? existing.lines.map((line, key) => ({ ...line, key })) : [{ key: 0, sourceLineId: "", materialId: options.materials[0]?.id ?? "", uomId: options.materials[0]?.uoms[0]?.id ?? "", quantity: "", manualPriceVnd: "", manualReason: "" }]);
   const sites = useMemo(() => customerOptions.find((item) => item.id === customerId)?.sites ?? [], [customerId, customerOptions]);
   const empty = !customerOptions.length || !options.materials.length || !siteId || lines.some((line) => !line.materialId || !line.uomId || !line.quantity);
-  useEffect(() => { if (state?.message) { priceRevision.current += 1; setPreview(null); } }, [state]);
   function invalidatePrice() { priceRevision.current += 1; setPreview(null); }
   async function searchCustomers() {
     const revision = ++customerSearchRevision.current;

@@ -1,7 +1,7 @@
 "use client";
 
 import { createBrowserClient } from "@supabase/ssr";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createConversationAction, sendMessageAction, type MessageActionState } from "@/modules/messaging/actions";
 
@@ -25,11 +25,13 @@ export function MessageRefreshSignal({ conversationId }: { conversationId: strin
 
 export function NewConversationForm({ options }: { options: Array<{ auth_user_id: string; participant_kind: string; display_name: string; customer_id: string | null }> }) {
   const [state, action, pending] = useActionState(createConversationAction, initialState);
-  const [operationId, setOperationId] = useState("");
-  useEffect(() => setOperationId(crypto.randomUUID()), []);
+  const operationId = useRef<string | null>(null);
   return (
-    <form action={action} className="form-stack">
-      <input type="hidden" name="operation_id" value={operationId} />
+    <form action={action} className="form-stack" onSubmit={(event) => {
+      operationId.current ??= crypto.randomUUID();
+      (event.currentTarget.elements.namedItem("operation_id") as HTMLInputElement).value = operationId.current;
+    }}>
+      <input type="hidden" name="operation_id" defaultValue="" />
       <label className="field"><span>Tiêu đề</span><input name="subject" minLength={3} maxLength={160} required placeholder="Ví dụ: Trao đổi lịch giao" /></label>
       <label className="field"><span>Người nhận</span>
         <select name="participant_id" required onChange={(event) => {
@@ -46,7 +48,7 @@ export function NewConversationForm({ options }: { options: Array<{ auth_user_id
       </label>
       <input type="hidden" name="audience" defaultValue="INTERNAL" />
       <input type="hidden" name="customer_id" defaultValue="" />
-      <button className="button button-primary" type="submit" disabled={pending || !operationId || state.status === "success"}>{pending ? "Đang tạo..." : "Tạo hội thoại"}</button>
+      <button className="button button-primary" type="submit" disabled={pending || state.status === "success"}>{pending ? "Đang tạo..." : "Tạo hội thoại"}</button>
       {state.message && <p role="status" className={state.status === "error" ? "error-message" : "muted"}>{state.message}{state.conversationId ? <a className="code-link" href={`/admin/messages?conversation=${state.conversationId}`}> Mở hội thoại</a> : null}</p>}
     </form>
   );
@@ -54,15 +56,22 @@ export function NewConversationForm({ options }: { options: Array<{ auth_user_id
 
 export function SendMessageForm({ conversationId, surface }: { conversationId: string; surface: "admin" | "work" | "customer" }) {
   const [state, action, pending] = useActionState(sendMessageAction, initialState);
-  const [operationId, setOperationId] = useState("");
-  useEffect(() => setOperationId(crypto.randomUUID()), [state.messageId]);
+  const operationId = useRef<string | null>(null);
+  const lastMessageId = useRef<string | undefined>(undefined);
   return (
-    <form action={action} className="form-stack" key={operationId}>
+    <form action={action} className="form-stack" key={state.messageId ?? "draft"} onSubmit={(event) => {
+      if (state.messageId && state.messageId !== lastMessageId.current) {
+        operationId.current = null;
+        lastMessageId.current = state.messageId;
+      }
+      operationId.current ??= crypto.randomUUID();
+      (event.currentTarget.elements.namedItem("operation_id") as HTMLInputElement).value = operationId.current;
+    }}>
       <input type="hidden" name="conversation_id" value={conversationId} />
       <input type="hidden" name="surface" value={surface} />
-      <input type="hidden" name="operation_id" value={operationId} />
+      <input type="hidden" name="operation_id" defaultValue="" />
       <label className="field"><span>Nội dung</span><textarea name="body" maxLength={4000} rows={3} required placeholder="Nhập tin nhắn. Tin nhắn không tự thay đổi đơn hàng hoặc thanh toán." /></label>
-      <button className="button button-primary" type="submit" disabled={pending || !operationId}>{pending ? "Đang gửi..." : "Gửi tin nhắn"}</button>
+      <button className="button button-primary" type="submit" disabled={pending}>{pending ? "Đang gửi..." : "Gửi tin nhắn"}</button>
       {state.message && <p role="status" className={state.status === "error" ? "error-message" : "muted"}>{state.message}</p>}
     </form>
   );
