@@ -30,7 +30,7 @@ const navigation = {
     { href: "/admin/suppliers", label: "Nhà cung cấp", icon: Factory, permission: "suppliers.read" },
     { href: "/admin/products", label: "Vật tư", icon: Boxes, permission: "catalog.read" },
     { href: "/admin/access", label: "Nhân viên & quyền", icon: ShieldCheck, permission: "roles.manage" },
-    { href: "/admin/reports", label: "Báo cáo", icon: BarChart3, permission: "dashboard.read" },
+    { href: "/admin/reports", label: "Báo cáo", icon: BarChart3, permissionsAny: ["finance.ar.read", "finance.ap.read", "finance.expense.read"] },
     { href: "/admin/audit", label: "Nhật ký", icon: ScrollText, permission: "roles.manage" },
     { href: "/admin/messages", label: "Tin nhắn", icon: MessageSquare },
     { href: "/admin/settings", label: "Cài đặt", icon: Settings2, permissionsAny: ["customers.manage", "suppliers.manage", "catalog.manage", "roles.manage", "pricing.read"] },
