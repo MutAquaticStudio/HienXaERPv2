@@ -46,6 +46,7 @@ export type CustomerDelivery = {
   id: string;
   number?: string;
   state?: string;
+  result?: string;
   scheduled_at?: string;
   delivered_at?: string;
   site_name?: string;
@@ -55,14 +56,44 @@ export type CustomerDelivery = {
   receiving_window?: string;
 };
 
+export type CustomerPayment = {
+  id: string;
+  number: string;
+  amount_vnd: string;
+  allocated_amount_vnd: string;
+  order_allocated_amount_vnd: string;
+  effective_at: string;
+  state: string;
+  reconciliation_state: string;
+};
+
+export type CustomerDocument = {
+  id: string;
+  kind: "QUOTATION" | "DELIVERY" | "PAYMENT";
+  title: string;
+  state?: string;
+  issued_at?: string;
+  href?: string;
+};
+
 export type CustomerOrder = {
   id: string;
   number?: string;
   state?: string;
+  fulfillment_state?: string;
+  payment_state?: string;
   ordered_at?: string;
   requested_delivery_date?: string;
   total_amount_vnd?: string;
   deliveries: CustomerDelivery[];
+  can_view_finance?: boolean;
+  debt?: null | {
+    original_amount_vnd: string | number;
+    outstanding_amount_vnd: string | number;
+    items: CustomerDebtItem[];
+  };
+  payments?: CustomerPayment[];
+  documents?: CustomerDocument[];
 };
 
 export type CustomerDebtItem = {

@@ -54,7 +54,9 @@ export function PaymentNoticeForm({ customerId }: { customerId: string }) {
       router.refresh();
     } catch (submitError) {
       setError(true);
-      setMessage(submitError instanceof Error ? submitError.message : "Gửi thông báo thất bại");
+      setMessage(submitError instanceof TypeError || !navigator.onLine
+        ? "Mất kết nối. Thông tin và chứng từ vẫn trên biểu mẫu; hãy kết nối lại rồi gửi lần nữa."
+        : submitError instanceof Error ? submitError.message : "Gửi thông báo thất bại");
     } finally {
       setBusy(false);
     }

@@ -1,7 +1,10 @@
+import Link from "next/link";
 import { randomUUID } from "node:crypto";
 import { ActionNotice } from "@/components/sales/action-notice";
+import { ListPager } from "@/components/ui/list-pager";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { requireInternalPermission } from "@/lib/access/context";
+import { CORE_LIST_PAGE_SIZE, ilikePattern, parseCoreListQuery } from "@/lib/core-list";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { approveExpenseAction, createExpenseAction, createExpenseCategoryAction } from "@/modules/finance/actions";
@@ -10,20 +13,38 @@ type Expense = { id: string; expense_number: string; category_name: string; supp
 function localNow() { return new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date()).replace(" ", "T"); }
 function localDate() { return localNow().slice(0, 10); }
 
-export default async function ExpensesPage({ searchParams }: { searchParams: Promise<{ notice?: string; error?: string; focus?: string }> }) {
+export default async function ExpensesPage({ searchParams }: { searchParams: Promise<{ notice?: string; error?: string; focus?: string; q?: string; state?: string; page?: string }> }) {
   const access = await requireInternalPermission("finance.expense.read");
   const query = await searchParams;
-  const supabase = await createServerSupabase();
-  const [{ data }, { data: categories }, { data: suppliers }, { data: orders }] = await Promise.all([
-    supabase.from("expense_read").select("id, expense_number, category_name, supplier_name, amount_vnd, effective_at, due_date, description, activity_kind, approval_state, version").eq("branch_id", access.branchId).order("effective_at", { ascending: false }),
-    supabase.from("expense_categories").select("id, code, name").eq("branch_id", access.branchId).eq("active", true).order("name"),
-    supabase.from("suppliers").select("id, code, name").eq("branch_id", access.branchId).eq("active", true).order("name"),
-    supabase.from("sales_order_read").select("id, order_number, customer_name_snapshot, site_name_snapshot").eq("branch_id", access.branchId).order("created_at", { ascending: false }).limit(50),
-  ]);
-  const rows = (data ?? []) as Expense[];
+  const list = parseCoreListQuery(query);
+  const state = list.state === "DRAFT" || list.state === "APPROVED" ? list.state : "";
+  const focusId = /^[0-9a-f-]{36}$/i.test(query.focus ?? "") ? query.focus : undefined;
   const canManage = access.permissions.has("finance.expense.manage");
+  const supabase = await createServerSupabase();
+  const fields = "id, expense_number, category_name, supplier_name, amount_vnd, effective_at, due_date, description, activity_kind, approval_state, version";
+  let request = supabase.from("expense_read").select(fields).eq("branch_id", access.branchId);
+  if (list.q) request = request.or(`expense_number.ilike.${ilikePattern(list.q)},category_name.ilike.${ilikePattern(list.q)},supplier_name.ilike.${ilikePattern(list.q)},description.ilike.${ilikePattern(list.q)}`);
+  if (state) request = request.eq("approval_state", state);
+  const [pageResult, categoryResult, supplierResult, orderResult, focusedResult] = await Promise.all([
+    request.order("effective_at", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1),
+    canManage ? supabase.from("expense_categories").select("id, code, name").eq("branch_id", access.branchId).eq("active", true).order("name") : Promise.resolve({ data: [] }),
+    canManage ? supabase.from("suppliers").select("id, code, name").eq("branch_id", access.branchId).eq("active", true).order("name") : Promise.resolve({ data: [] }),
+    canManage ? supabase.from("sales_order_read").select("id, order_number, customer_name_snapshot, site_name_snapshot").eq("branch_id", access.branchId).order("created_at", { ascending: false }).limit(50) : Promise.resolve({ data: [] }),
+    focusId ? supabase.from("expense_read").select(fields).eq("branch_id", access.branchId).eq("id", focusId).maybeSingle() : Promise.resolve({ data: null }),
+  ]);
+  if (pageResult.error) throw new Error("Không thể tải chi phí.");
+  const pageRows = (pageResult.data ?? []) as Expense[];
+  const hasNext = pageRows.length > CORE_LIST_PAGE_SIZE;
+  const visibleRows = pageRows.slice(0, CORE_LIST_PAGE_SIZE);
+  const focused = focusedResult.data as Expense | null;
+  const pinned = focused && !visibleRows.some((item) => item.id === focused.id) ? focused : null;
+  const rows = pinned ? [pinned, ...visibleRows] : visibleRows;
+  const categories = categoryResult.data;
+  const suppliers = supplierResult.data;
+  const orders = orderResult.data;
   return <><header className="page-heading"><div><p className="eyebrow">Operating expense</p><h1>Chi phí vận hành</h1><p className="lede">Chi phí chỉ vào báo cáo sau duyệt; payment sau đó chỉ giảm AP và tiền.</p></div></header><ActionNotice notice={query.notice} error={query.error} />
     {canManage && <div className="two-column"><details className="card card-pad quick-create"><summary>Tạo nhóm chi phí</summary><form className="command-panel" action={createExpenseCategoryAction}><input type="hidden" name="operationId" value={randomUUID()} /><div className="field"><label>Mã nhóm</label><input name="code" required /></div><div className="field"><label>Tên nhóm</label><input name="name" required /></div><button className="button button-secondary" type="submit">Tạo nhóm</button></form></details><details className="card card-pad quick-create" open><summary>Ghi chi phí chờ duyệt</summary><form className="command-panel" action={createExpenseAction}><input type="hidden" name="operationId" value={randomUUID()} /><div className="field"><label>Nhóm</label><select name="categoryId" required><option value="">Chọn nhóm</option>{(categories ?? []).map((item) => <option key={item.id} value={item.id}>{item.code} · {item.name}</option>)}</select></div><div className="field"><label>Nhà cung cấp</label><select name="supplierId" required><option value="">Chọn NCC</option>{(suppliers ?? []).map((item) => <option key={item.id} value={item.id}>{item.code} · {item.name}</option>)}</select></div><div className="field"><label>Số tiền</label><input name="amount" inputMode="numeric" required /></div><div className="field"><label>Ngày phát sinh</label><input name="effectiveAt" type="datetime-local" defaultValue={localNow()} required /></div><div className="field"><label>Hạn trả</label><input name="dueDate" type="date" defaultValue={localDate()} required /></div><div className="field"><label>Loại hoạt động</label><select name="activityKind"><option value="OPERATIONS">Vận hành</option><option value="SALES">Bán hàng</option><option value="DELIVERY">Giao hàng</option><option value="SERVICE">Dịch vụ</option><option value="ADMIN">Hành chính</option></select></div><div className="field"><label>Đơn bán liên quan</label><select name="salesOrderId"><option value="">Chi phí chung chưa phân bổ</option>{(orders ?? []).map((item) => <option key={item.id} value={item.id}>{item.order_number} · {item.customer_name_snapshot} / {item.site_name_snapshot}</option>)}</select></div><div className="field"><label>Mô tả</label><textarea name="description" minLength={3} required /></div><div className="field"><label>Evidence ID đã xác minh</label><input name="evidenceId" /></div><button className="button button-primary" type="submit" disabled={!categories?.length || !suppliers?.length}>Tạo chi phí nháp</button></form></details></div>}
-    <section className="card"><div className="section-head"><h2>{rows.length} khoản chi phí</h2><span className="scope-chip">Approved mới vào Opex</span></div><div className="table-wrap"><table><thead><tr><th>Mã</th><th>Ngày</th><th>Nhóm / mô tả</th><th>NCC</th><th>Phạm vi</th><th>Số tiền</th><th>Trạng thái</th><th></th></tr></thead><tbody>{rows.map((item) => <tr className={query.focus === item.id ? "row-focus" : undefined} key={item.id}><td className="mono">{item.expense_number}</td><td>{new Intl.DateTimeFormat("vi-VN").format(new Date(item.effective_at))}</td><td>{item.category_name}<small className="table-subline">{item.description}</small></td><td>{item.supplier_name}</td><td>{item.activity_kind}</td><td className="mono">{formatVnd(vnd(String(item.amount_vnd)))}</td><td><StatusBadge tone={item.approval_state === "APPROVED" ? "success" : "warning"}>{item.approval_state === "APPROVED" ? "Đã duyệt" : "Chờ duyệt"}</StatusBadge></td><td>{item.approval_state === "DRAFT" && canManage && <form action={approveExpenseAction}><input type="hidden" name="expenseId" value={item.id} /><input type="hidden" name="version" value={item.version} /><input type="hidden" name="operationId" value={randomUUID()} /><button className="button button-secondary" type="submit">Duyệt và tạo AP</button></form>}</td></tr>)}</tbody></table>{!rows.length && <p className="empty-inline">Chưa có chi phí.</p>}</div></section>
+    <form className="filter-bar"><label>Tìm kiếm<input name="q" defaultValue={list.q} placeholder="Mã, nhóm, NCC, mô tả" /></label><label>Trạng thái<select name="state" defaultValue={state}><option value="">Tất cả</option><option value="DRAFT">Chờ duyệt</option><option value="APPROVED">Đã duyệt</option></select></label><button className="button button-secondary" type="submit">Áp dụng</button>{(list.q || state) && <Link className="code-link" href="/admin/expenses">Xóa lọc</Link>}</form>
+    <section className="card"><div className="section-head"><h2>{visibleRows.length} khoản chi phí trên trang này{pinned ? " + 1 khoản được ghim" : ""}</h2><span className="scope-chip">Approved mới vào Opex</span></div><div className="table-wrap"><table><thead><tr><th>Mã</th><th>Ngày</th><th>Nhóm / mô tả</th><th>NCC</th><th>Phạm vi</th><th>Số tiền</th><th>Trạng thái</th><th></th></tr></thead><tbody>{rows.map((item) => <tr className={focusId === item.id ? "row-focus" : undefined} key={item.id}><td className="mono">{item.expense_number}{focusId === item.id && <small className="table-subline">Được ghim</small>}</td><td>{new Intl.DateTimeFormat("vi-VN").format(new Date(item.effective_at))}</td><td>{item.category_name}<small className="table-subline">{item.description}</small></td><td>{item.supplier_name}</td><td>{item.activity_kind}</td><td className="mono">{formatVnd(vnd(String(item.amount_vnd)))}</td><td><StatusBadge tone={item.approval_state === "APPROVED" ? "success" : "warning"}>{item.approval_state === "APPROVED" ? "Đã duyệt" : "Chờ duyệt"}</StatusBadge></td><td>{item.approval_state === "DRAFT" && canManage && <form action={approveExpenseAction}><input type="hidden" name="expenseId" value={item.id} /><input type="hidden" name="version" value={item.version} /><input type="hidden" name="operationId" value={randomUUID()} /><button className="button button-secondary" type="submit">Duyệt và tạo AP</button></form>}</td></tr>)}</tbody></table>{!rows.length && <p className="empty-inline">Chưa có chi phí.</p>}</div><ListPager page={list.page} hasNext={hasNext} params={{ q: list.q, state }} /></section>
   </>;
 }

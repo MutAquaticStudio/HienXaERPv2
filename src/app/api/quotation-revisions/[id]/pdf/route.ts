@@ -5,8 +5,7 @@ import { PDFDocument, rgb } from "pdf-lib";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 type Revision = { id: string; quotation_id: string; revision_number: number; state: string; customer_name_snapshot: string; site_name_snapshot: string; delivery_address_snapshot: string; commercial_terms: string | null; total_vnd: string; expires_at: string | null };
-type Line = { material_name_snapshot: string; quantity: string; unit_price_vnd: string; line_total_vnd: string; units_of_measure: { symbol: string } | { symbol: string }[] | null };
-function one<T>(value: T | T[] | null) { return Array.isArray(value) ? value[0] ?? null : value; }
+type Line = { material_name_snapshot: string; quantity: string; unit_price_vnd: string; line_total_vnd: string; uom_symbol: string | null };
 const money = (value: string) => `${new Intl.NumberFormat("vi-VN").format(BigInt(value))} VND`;
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -19,18 +18,18 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   const revision = revisionData as Revision;
   const [quoteResult, lineResult] = await Promise.all([
     supabase.from("quotations").select("quotation_number").eq("id", revision.quotation_id).maybeSingle(),
-    supabase.from("quotation_lines").select("material_name_snapshot, quantity, unit_price_vnd, line_total_vnd, units_of_measure:ordered_uom_id(symbol)").eq("revision_id", id).order("line_number"),
+    supabase.rpc("customer_safe_quotation_lines", { target_revision_id: id }),
   ]);
   if (!quoteResult.data || lineResult.error) return new Response("Không thể tạo PDF.", { status: 404 });
   const lines = (lineResult.data ?? []) as unknown as Line[];
   const document = await PDFDocument.create();
   document.registerFontkit(fontkit);
-  const fontBytes = await readFile(path.join(process.cwd(), "node_modules/@fontsource/noto-sans/files/noto-sans-vietnamese-400-normal.woff2"));
+  const fontBytes = await readFile(path.join(process.cwd(), "public/fonts/NotoSansVietnamese-Regular.ttf"));
   const font = await document.embedFont(fontBytes);
   let page = document.addPage([595, 842]);
   let y = 790;
   const draw = (text: string, size = 10, x = 48) => { page.drawText(text, { x, y, size, font, color: rgb(0.08, 0.15, 0.24) }); y -= size + 9; };
-  draw("CÔNG TY TNHH HIỀN XẠ", 11);
+  draw("CÔNG TY TNHH HIỀN XA", 11);
   draw("BÁO GIÁ", 24);
   draw(`${quoteResult.data.quotation_number} · Revision ${revision.revision_number} · ${revision.state}`, 11);
   y -= 10;
@@ -43,7 +42,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   for (const line of lines) {
     if (y < 90) { page = document.addPage([595, 842]); y = 790; }
     draw(line.material_name_snapshot, 11);
-    draw(`${line.quantity} ${one(line.units_of_measure)?.symbol ?? ""} · ${money(line.unit_price_vnd)} · ${money(line.line_total_vnd)}`, 9, 62);
+    draw(`${line.quantity} ${line.uom_symbol ?? ""} · ${money(line.unit_price_vnd)} · ${money(line.line_total_vnd)}`, 9, 62);
   }
   y -= 12;
   draw(`TỔNG CỘNG: ${money(revision.total_vnd)}`, 14);

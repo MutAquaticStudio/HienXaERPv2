@@ -1,7 +1,7 @@
 # Spec.md — HIỀN XA ERP V2
 
-> **Bộ tài liệu:** `HX-V2-DOCSET-4.2`  
-> **Giao thức đồng bộ:** `SYNC-4.2`  
+> **Bộ tài liệu:** `HX-V2-DOCSET-4.4`  
+> **Giao thức đồng bộ:** `SYNC-4.4`  
 > **File sở hữu:** Yêu cầu sản phẩm, nghiệp vụ, dữ liệu, bảo mật, hiệu năng và tiêu chí nghiệm thu  
 > **Mục đích:** Mô tả chính xác hệ thống phải làm gì và những điều tuyệt đối không được sai.
 
@@ -102,7 +102,15 @@ Không bỏ các chức năng đã chốt. Xây và nghiệm thu theo lát cắt
 
 Một repository hiện hữu; một ứng dụng Next.js + TypeScript trên một Vercel project; **một Supabase Cloud Production**. Không tạo Cloud staging/preview/database nhánh. Kiểm thử dùng PostgreSQL/Supabase cục bộ cô lập. Giữ dữ liệu thật, Auth và Storage; làm lại mã ứng dụng trên `main`, V1 chỉ tra cứu ở archive.
 
-Giữ năm file điều hành triển khai: `Spec.md`, `UXUI.md`, `plan.md`, `tasks.md`, `implementation.md`; bổ sung **một file `acceptance.md` chỉ dành cho nghiệm thu theo yêu cầu**. Bộ bàn giao có đúng sáu file Markdown này. Tệp cấu hình, test, script và mã nguồn không bị cấm bởi giới hạn tài liệu. Không tạo thêm Master/ADR/QA-handoff Markdown; log và kết quả nghiệm thu vẫn ghi trong `implementation.md`. `acceptance.md` không phải Spec thứ hai và không được tự động nạp trong BUILD_ONLY.
+Bộ canonical từ DOCSET 4.4 có đúng **năm file**:
+
+- `Spec.md` — product/business/data/security/performance/acceptance contract;
+- `UXUI.md` — interaction/layout/navigation contract;
+- `plan.md` — execution order, audit/check/token strategy;
+- `tasks.md` — current work only;
+- `implementation.md` — observed reality/evidence/gap status.
+
+Không dùng `acceptance.md` riêng trong DOCSET 4.4; acceptance behavior bắt buộc nằm trong `Spec.md`, còn UX acceptance nằm trong `UXUI.md`. Không tạo Master/ADR/QA-handoff Markdown mới.
 
 ## SPEC-PRODUCT-005 — Các quyết định còn cần chủ xác nhận
 
@@ -2366,6 +2374,190 @@ PHASE_IMPLEMENTED chỉ là bàn giao kỹ thuật. Chưa QA/duyệt thì không
 Trong BUILD_ONLY không đọc `acceptance.md` mặc định, không biến các ca trong đó thành checklist của backlog triển khai và không khôi phục DoD lặp đã bỏ. Kiểm kỹ thuật trực tiếp tiền/kho/quyền theo plan vẫn giữ. Chỉ khi chủ yêu cầu nghiệm thu/QA mới mở đúng phạm vi; chủ tự thử giao diện không được dùng thay bằng chứng kỹ thuật tiền/kho/quyền.
 
 Trạng thái nghiệm thu và phạm vi đang mở thuộc tasks; log và bằng chứng thuộc implementation. `PHASE_IMPLEMENTED` khác `ACCEPTED`, và cả hai không tự cấp phép deploy, thay dữ liệu Production hoặc phát hành hóa đơn thật.
+
+
+
+# SPEC-505 — Mandatory Recovery Audit trước implementation tiếp theo
+
+## SPEC-GAP-001 — Audit trước khi sửa source
+
+HEAD hiện tại đã có implementation R1–R9 nhưng chưa được coi là hoàn tất contract chỉ dựa trên commit message hay phase checkpoint.
+
+Trước mọi source write sau khi nạp DOCSET 4.4, Codex phải chạy `GA-01..GA-06` trong `tasks.md` ở chế độ **READ-ONLY**.
+
+Audit phải đối chiếu:
+
+```text
+Spec + UXUI
+→ route/navigation
+→ page/form
+→ command/RPC
+→ migration/schema
+→ current task/implementation state
+```
+
+Audit chỉ `GA_COMPLETE` khi toàn bộ gap seed ở SPEC-GAP-002 có verdict:
+`CONFIRMED / PARTIAL / DISPROVED / BLOCKED`.
+
+`UNKNOWN` ở bất kỳ known gap nào → chưa được implement.
+
+## SPEC-GAP-002 — Known gaps bắt buộc phải kiểm lại
+
+1. Execution state/document drift so với HEAD.
+2. Master-data CRUD/configuration coverage.
+3. Quote/SO multi-line create.
+4. Quote/SO/PO DRAFT edit.
+5. Quick Customer/Site create trong Sales.
+6. Price preview + authorized `MANUAL_APPROVED` override.
+7. PO multi-line receive/direct fulfillment.
+8. Delivery multi-line result/verify/return.
+9. Customer 360/contextual actions.
+10. Core list search/filter/server pagination.
+11. Dashboard expense + commission + contextual drill-down.
+12. Real actor/branch/org identity trong admin shell.
+13. PaymentNotice discoverability.
+14. Customer order debt/payment/documents.
+15. Access management: role/branch/revoke/reactivate/permissions.
+16. Settings/master-data entry surface.
+17. Reports surface.
+18. Audit-log surface.
+19. Low-stock threshold + in-app alert.
+20. Print/export: delivery note, receipt/payment voucher, debt reconciliation statement.
+21. R10 Routing/GPS/Messaging.
+22. R11 Electronic Invoice.
+23. R12 Release/Migration/QA/Cutover scope.
+
+Audit được phép thêm `NEW_GAP-*`.
+
+## SPEC-GAP-003 — Severity
+
+- **P0**: chặn core business flow hoặc có thể làm sai money/inventory/authorization/source-of-truth.
+- **P1**: flow chạy nhưng không đạt contract UX/performance/operability quan trọng.
+- **P2**: polish không chặn công việc.
+
+Không nâng severity chỉ vì code style.
+
+## SPEC-GAP-004 — Gate trước R10
+
+R10 chỉ được mở khi:
+- P0 từ R3–R9 = 0 open;
+- P1 core contract = FIXED hoặc Owner-deferred;
+- `tasks.md` và `implementation.md` đồng bộ HEAD;
+- Sales → Sourcing → Delivery → AR/Payment có UI thao tác hoàn chỉnh;
+- core lists không fetch toàn bảng không giới hạn;
+- shell không hard-code identity/branch sample.
+
+---
+
+# SPEC-506 — Recovery Functional Requirements
+
+## SPEC-REC-001 — Master data phải tự vận hành được
+
+Actor có quyền phải create/edit/deactivate được tối thiểu:
+- Customer;
+- Site;
+- Supplier;
+- Material;
+- UOM;
+- material conversion;
+- Warehouse;
+- Vehicle;
+- Machine;
+- Branch;
+- pricing/config cần cho transaction.
+
+Không cần generic settings engine.
+
+## SPEC-REC-002 — Quote/SO/PO nhiều dòng
+
+Một chứng từ DRAFT hỗ trợ nhiều lines.
+
+Mỗi line:
+- material;
+- UOM;
+- quantity;
+- resolved price/cost;
+- source;
+- line total.
+
+Document hiển thị total exact.
+
+Không dùng `lines[0]` như business contract khi schema cho nhiều lines.
+
+## SPEC-REC-003 — DRAFT editable
+
+DRAFT:
+- add line;
+- remove line;
+- edit quantity/UOM;
+- edit terms/date;
+- price override theo quyền.
+
+SENT quotation và CONFIRMED order/PO không sửa lịch sử; dùng revision/adjustment/cancel đúng contract.
+
+## SPEC-REC-004 — Price preview
+
+Trước Save, Sales user thấy:
+- unit price;
+- source;
+- line total;
+- document total.
+
+Nếu không có pricing rule:
+- không mặc định 0;
+- actor có quyền được nhập manual price + reason;
+- snapshot source = `MANUAL_APPROVED`;
+- actor không có quyền không nhận cost/internal pricing data.
+
+## SPEC-REC-005 — Quick Customer/Site
+
+Từ create Quote/SO:
+- create Customer;
+- create Site;
+- quay lại form;
+- giữ draft input;
+- auto-select entity mới khi an toàn.
+
+## SPEC-REC-006 — Bounded core lists
+
+Orders/Quotes/PO/Customers/Suppliers/Deliveries/AR/AP/ServiceJob:
+- server-side search;
+- relevant filters;
+- server-side bounded page/cursor;
+- deterministic sort;
+- URL state.
+
+Không fetch toàn branch dataset rồi render toàn bộ.
+
+## SPEC-REC-007 — Operational workspaces
+
+Customer workspace phải nối:
+Sites → Prices → Quotes → Orders → Deliveries → AR → Payments/Documents.
+
+Supplier workspace phải nối:
+PO → Receipt/Direct Fulfillment → AP → Payment.
+
+CTA contextual theo permission.
+
+## SPEC-REC-008 — System operations surfaces
+
+Phải có điểm vào permission-aware cho:
+- Settings;
+- Reports;
+- Audit log;
+- PaymentNotice queue;
+- Low-stock alerts.
+
+Không tạo generic builders.
+
+## SPEC-REC-009 — Print/export
+
+Ngoài quotation PDF:
+- delivery note;
+- receipt/payment voucher;
+- debt reconciliation statement.
+
+Các file dùng source/snapshot có trace, không tự gọi tax invoice.
 
 
 # SPEC-510 — Ranh giới kiến trúc chống xây thừa

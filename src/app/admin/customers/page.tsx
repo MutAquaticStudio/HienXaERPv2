@@ -1,19 +1,29 @@
+import Link from "next/link";
+import { ListPager } from "@/components/ui/list-pager";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { requireInternalPermission } from "@/lib/access/context";
+import { parseCoreListQuery, ilikePattern } from "@/lib/core-list";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createServerSupabase } from "@/lib/supabase/server";
-import Link from "next/link";
 
 type CustomerRow = { id: string; code: string; display_name: string; phone: string | null; tier_code: string | null; active: boolean; credit_limit_vnd?: string | number | null };
+type Query = { q?: string; state?: string; page?: string };
 
-export default async function CustomersPage() {
+export default async function CustomersPage({ searchParams }: { searchParams: Promise<Query> }) {
   const access = await requireInternalPermission("customers.read");
+  const query = await searchParams;
+  const list = parseCoreListQuery(query);
   const canReadFinance = access.permissions.has("finance.ar.read");
   const supabase = await createServerSupabase();
   const fields = canReadFinance ? "id, code, display_name, phone, tier_code, active, credit_limit_vnd" : "id, code, display_name, phone, tier_code, active";
-  const { data, error } = await supabase.from("customers").select(fields).eq("branch_id", access.branchId).order("display_name");
+  let request = supabase.from("customers").select(fields, { count: "exact" }).eq("branch_id", access.branchId);
+  if (list.q) request = request.or(`code.ilike.${ilikePattern(list.q)},display_name.ilike.${ilikePattern(list.q)},phone.ilike.${ilikePattern(list.q)}`);
+  if (list.state === "ACTIVE") request = request.eq("active", true);
+  if (list.state === "INACTIVE") request = request.eq("active", false);
+  const { data, error, count } = await request.order("display_name").order("id").range(list.from, list.to);
   if (error) throw new Error("Không thể tải danh sách khách hàng.");
   const customers = data as unknown as CustomerRow[];
-
-  return <><header className="page-heading"><div><p className="eyebrow">Quan hệ khách hàng</p><h1>Khách hàng</h1><p className="lede">Hồ sơ và phạm vi tài chính được trả về đúng quyền tại {access.branchName}.</p></div></header><section className="card"><div className="section-head"><h2>{customers.length} khách hàng</h2></div><div className="table-wrap"><table><thead><tr><th>Mã</th><th>Tên khách hàng</th><th>Điện thoại</th><th>Nhóm giá</th>{canReadFinance && <th>Hạn mức</th>}<th>Trạng thái</th></tr></thead><tbody>{customers.map((customer) => <tr key={customer.id}><td><Link className="mono" href={`/admin/customers/${customer.id}`}>{customer.code}</Link></td><td>{customer.display_name}</td><td>{customer.phone ?? "Chưa có"}</td><td>{customer.tier_code ?? "Mặc định"}</td>{canReadFinance && <td className="mono">{customer.credit_limit_vnd == null ? "Chưa duyệt" : formatVnd(vnd(customer.credit_limit_vnd.toString()))}</td>}<td><StatusBadge tone={customer.active ? "success" : "danger"}>{customer.active ? "Đang hoạt động" : "Ngừng giao dịch"}</StatusBadge></td></tr>)}</tbody></table></div></section></>;
+  return <><header className="page-heading"><div><p className="eyebrow">Quan hệ khách hàng</p><h1>Khách hàng</h1><Link className="button button-secondary" href="/admin/catalog?kind=customers">Quản lý danh mục</Link><p className="lede">Hồ sơ và phạm vi tài chính được trả về đúng quyền tại {access.branchName}.</p></div></header>
+    <form className="filter-bar"><label>Tìm kiếm<input name="q" defaultValue={list.q} placeholder="Mã, tên, điện thoại" /></label><label>Trạng thái<select name="state" defaultValue={list.state}><option value="">Tất cả</option><option value="ACTIVE">Đang hoạt động</option><option value="INACTIVE">Ngừng giao dịch</option></select></label><button className="button button-secondary" type="submit">Áp dụng</button>{(list.q || list.state) && <Link className="code-link" href="/admin/customers">Xóa lọc</Link>}</form>
+    <section className="card"><div className="section-head"><h2>{count ?? 0} khách hàng</h2><span className="scope-chip">25 / trang</span></div><div className="table-wrap"><table><thead><tr><th>Mã</th><th>Tên khách hàng</th><th>Điện thoại</th><th>Nhóm giá</th>{canReadFinance && <th>Hạn mức</th>}<th>Trạng thái</th></tr></thead><tbody>{customers.map((customer) => <tr key={customer.id}><td><Link className="mono code-link" href={`/admin/customers/${customer.id}`}>{customer.code}</Link></td><td>{customer.display_name}</td><td>{customer.phone ?? "Chưa có"}</td><td>{customer.tier_code ?? "Mặc định"}</td>{canReadFinance && <td className="mono">{customer.credit_limit_vnd == null ? "Chưa duyệt" : formatVnd(vnd(customer.credit_limit_vnd.toString()))}</td>}<td><StatusBadge tone={customer.active ? "success" : "danger"}>{customer.active ? "Đang hoạt động" : "Ngừng giao dịch"}</StatusBadge></td></tr>)}</tbody></table>{!customers.length && <p className="empty-inline">Không có khách hàng phù hợp.</p>}</div><ListPager page={list.page} total={count ?? 0} params={{ q: list.q, state: list.state }} /></section></>;
 }

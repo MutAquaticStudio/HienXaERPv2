@@ -7,8 +7,50 @@ import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 
-const positive = z.string().trim().refine((value) => { try { return new Decimal(value).isPositive(); } catch { return false; } });
-const nonNegative = z.string().trim().refine((value) => { try { return !new Decimal(value).isNegative(); } catch { return false; } });
+const positive = z.string().trim().refine((value) => { try { const quantity = new Decimal(value); return quantity.isFinite() && quantity.isPositive() && quantity.decimalPlaces() <= 6; } catch { return false; } });
+const nonNegative = z.string().trim().refine((value) => { try { const quantity = new Decimal(value); return quantity.isFinite() && !quantity.isNegative() && quantity.decimalPlaces() <= 6; } catch { return false; } });
+
+function quantityLines(formData: FormData, idName: string, quantityName: string, idKey: string, quantityKey: string, allowBlank: boolean, schema: z.ZodType<string>) {
+  const ids = formData.getAll(idName);
+  const quantities = formData.getAll(quantityName);
+  if (!ids.length || ids.length > 50 || ids.length !== quantities.length) return null;
+  const seen = new Set<string>();
+  const lines: Record<string, string>[] = [];
+  for (let index = 0; index < ids.length; index += 1) {
+    const id = ids[index];
+    const raw = quantities[index];
+    if (typeof id !== "string" || typeof raw !== "string") return null;
+    const parsedId = z.uuid().safeParse(id);
+    if (!parsedId.success || seen.has(parsedId.data)) return null;
+    seen.add(parsedId.data);
+    if (allowBlank && !raw.trim()) continue;
+    const parsedQuantity = schema.safeParse(raw);
+    if (!parsedQuantity.success) return null;
+    lines.push({ [idKey]: parsedId.data, [quantityKey]: parsedQuantity.data });
+  }
+  return lines.length ? lines : null;
+}
+
+function verificationLines(formData: FormData) {
+  const ids = formData.getAll("deliveryLineId");
+  const accepted = formData.getAll("acceptedQuantity");
+  const billable = formData.getAll("billableQuantity");
+  const reasons = formData.getAll("billingVarianceReason");
+  if (!ids.length || ids.length > 50 || [accepted, billable, reasons].some((values) => values.length !== ids.length)) return null;
+  const seen = new Set<string>();
+  const lines: { delivery_line_id: string; accepted_base_quantity: string; billable_base_quantity: string; billing_variance_reason: string }[] = [];
+  for (let index = 0; index < ids.length; index += 1) {
+    const id = ids[index];
+    const reason = reasons[index];
+    const parsedId = typeof id === "string" ? z.uuid().safeParse(id) : null;
+    const parsedAccepted = typeof accepted[index] === "string" ? nonNegative.safeParse(accepted[index]) : null;
+    const parsedBillable = typeof billable[index] === "string" ? nonNegative.safeParse(billable[index]) : null;
+    if (!parsedId?.success || !parsedAccepted?.success || !parsedBillable?.success || seen.has(parsedId.data) || typeof reason !== "string" || reason.trim().length > 500) return null;
+    seen.add(parsedId.data);
+    lines.push({ delivery_line_id: parsedId.data, accepted_base_quantity: parsedAccepted.data, billable_base_quantity: parsedBillable.data, billing_variance_reason: reason.trim() });
+  }
+  return lines;
+}
 
 function message(value?: string) {
   if (value?.includes("operation_payload_conflict")) return "Mã thao tác đã được dùng với dữ liệu khác. Hãy tải lại.";
@@ -20,12 +62,14 @@ function message(value?: string) {
 }
 
 export async function createDeliveryAction(formData: FormData) {
-  const parsed = z.object({ allocationId: z.uuid(), quantity: positive, scheduledAt: z.string().optional(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
-  if (!parsed.success) redirect("/admin/orders?error=invalid-delivery");
+  const parsed = z.object({ salesOrderId: z.uuid(), scheduledAt: z.string().optional(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  const lines = quantityLines(formData, "allocationId", "quantity", "supply_allocation_id", "planned_base_quantity", true, positive);
+  if (!parsed.success || !lines) redirect("/admin/orders?error=invalid-delivery");
   await requireInternalPermission("delivery.create");
   const supabase = await createServerSupabase();
-  const scheduledAt = parsed.data.scheduledAt ? new Date(parsed.data.scheduledAt).toISOString() : null;
-  const { data, error } = await supabase.rpc("create_delivery_from_allocation", { target_supply_allocation_id: parsed.data.allocationId, planned_base_quantity: parsed.data.quantity, scheduled_at: scheduledAt, operation_id: parsed.data.operationId });
+  const scheduledDate = parsed.data.scheduledAt ? new Date(parsed.data.scheduledAt) : null;
+  if (scheduledDate && Number.isNaN(scheduledDate.getTime())) redirect("/admin/orders?error=invalid-delivery");
+  const { data, error } = await supabase.rpc("create_delivery_from_allocations", { target_sales_order_id: parsed.data.salesOrderId, planned_lines: lines, scheduled_at: scheduledDate?.toISOString() ?? null, operation_id: parsed.data.operationId });
   if (error || !data) redirect(`/admin/orders?error=${encodeURIComponent(message(error?.message))}`);
   revalidatePath("/admin/deliveries");
   redirect(`/admin/deliveries/${data}?notice=created`);
@@ -75,14 +119,15 @@ export async function markDeliveryArrivedAction(formData: FormData) {
 }
 
 export async function submitDeliveryResultAction(formData: FormData) {
-  const parsed = z.object({ deliveryId: z.uuid(), deliveryLineId: z.uuid(), resultKind: z.enum(["FULL", "PARTIAL", "FAILED"]), actualQuantity: nonNegative, receiverName: z.string().trim().max(120).optional(), note: z.string().trim().max(500).optional(), missingArrivalReason: z.string().trim().max(500).optional(), evidenceId: z.union([z.uuid(), z.literal("")]).optional(), version: z.coerce.number().int().positive(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
-  if (!parsed.success) redirect("/admin/deliveries?error=invalid-result");
+  const parsed = z.object({ deliveryId: z.uuid(), resultKind: z.enum(["FULL", "PARTIAL", "FAILED"]), receiverName: z.string().trim().max(120).optional(), note: z.string().trim().max(500).optional(), missingArrivalReason: z.string().trim().max(500).optional(), evidenceId: z.union([z.uuid(), z.literal("")]).optional(), version: z.coerce.number().int().positive(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  const lines = quantityLines(formData, "deliveryLineId", "actualQuantity", "delivery_line_id", "actual_base_quantity", false, nonNegative);
+  if (!parsed.success || !lines) redirect("/admin/deliveries?error=invalid-result");
   await requireInternalPermission("delivery.submit");
   const supabase = await createServerSupabase();
   const { error } = await supabase.rpc("submit_delivery_result", {
     target_delivery_id: parsed.data.deliveryId,
     result_kind: parsed.data.resultKind,
-    result_lines: [{ delivery_line_id: parsed.data.deliveryLineId, actual_base_quantity: parsed.data.actualQuantity }],
+    result_lines: lines,
     receiver_name: parsed.data.receiverName || "",
     note: parsed.data.note || "",
     missing_arrival_reason: parsed.data.missingArrivalReason || "",
@@ -139,13 +184,14 @@ export async function uploadDeliveryEvidenceAction(formData: FormData) {
 }
 
 export async function verifyDeliveryAction(formData: FormData) {
-  const parsed = z.object({ deliveryId: z.uuid(), deliveryResultId: z.uuid(), deliveryLineId: z.uuid(), acceptedQuantity: nonNegative, billableQuantity: nonNegative, billingVarianceReason: z.string().trim().max(500).optional(), version: z.coerce.number().int().positive(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
-  if (!parsed.success) redirect("/admin/deliveries?error=invalid-verification");
+  const parsed = z.object({ deliveryId: z.uuid(), deliveryResultId: z.uuid(), version: z.coerce.number().int().positive(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  const lines = verificationLines(formData);
+  if (!parsed.success || !lines) redirect("/admin/deliveries?error=invalid-verification");
   await requireInternalPermission("delivery.verify");
   const supabase = await createServerSupabase();
   const { error } = await supabase.rpc("verify_delivery", {
     target_delivery_result_id: parsed.data.deliveryResultId,
-    verification_lines: [{ delivery_line_id: parsed.data.deliveryLineId, accepted_base_quantity: parsed.data.acceptedQuantity, billable_base_quantity: parsed.data.billableQuantity, billing_variance_reason: parsed.data.billingVarianceReason || "" }],
+    verification_lines: lines,
     expected_delivery_version: parsed.data.version,
     operation_id: parsed.data.operationId,
   });

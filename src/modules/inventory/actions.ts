@@ -8,8 +8,29 @@ import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 const positive = z.string().trim().refine((value) => {
-  try { return new Decimal(value).isPositive(); } catch { return false; }
+  try { const quantity = new Decimal(value); return quantity.isFinite() && quantity.isPositive(); } catch { return false; }
 });
+
+function operationLines(formData: FormData, quantityKey: "received_quantity" | "supplier_quantity") {
+  const ids = formData.getAll("purchaseOrderLineId");
+  const quantities = formData.getAll("quantity");
+  if (!ids.length || ids.length > 50 || ids.length !== quantities.length) return null;
+  const seen = new Set<string>();
+  const lines: { purchase_order_line_id: string; received_quantity?: string; supplier_quantity?: string }[] = [];
+  for (let index = 0; index < ids.length; index += 1) {
+    const id = ids[index];
+    const rawQuantity = quantities[index];
+    if (typeof id !== "string" || typeof rawQuantity !== "string") return null;
+    const parsedId = z.uuid().safeParse(id);
+    if (!parsedId.success || seen.has(parsedId.data)) return null;
+    seen.add(parsedId.data);
+    if (!rawQuantity.trim()) continue;
+    const parsedQuantity = positive.safeParse(rawQuantity);
+    if (!parsedQuantity.success) return null;
+    lines.push({ purchase_order_line_id: parsedId.data, [quantityKey]: parsedQuantity.data });
+  }
+  return lines.length ? lines : null;
+}
 
 function message(value?: string) {
   if (value?.includes("operation_payload_conflict")) return "Mã thao tác đã được dùng với dữ liệu khác. Hãy tải lại.";
@@ -20,13 +41,14 @@ function message(value?: string) {
 }
 
 export async function receivePurchaseOrderAction(formData: FormData) {
-  const parsed = z.object({ purchaseOrderId: z.uuid(), purchaseOrderLineId: z.uuid(), quantity: positive, receivedAt: z.iso.datetime(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
-  if (!parsed.success) redirect("/admin/purchase-orders?error=invalid-receipt");
+  const parsed = z.object({ purchaseOrderId: z.uuid(), receivedAt: z.iso.datetime(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  const lines = operationLines(formData, "received_quantity");
+  if (!parsed.success || !lines) redirect("/admin/purchase-orders?error=invalid-receipt");
   await requireInternalPermission("inventory.receive");
   const supabase = await createServerSupabase();
   const { data, error } = await supabase.rpc("receive_purchase_order", {
     target_purchase_order_id: parsed.data.purchaseOrderId,
-    receipt_lines: [{ purchase_order_line_id: parsed.data.purchaseOrderLineId, received_quantity: parsed.data.quantity }],
+    receipt_lines: lines,
     target_evidence_id: null,
     received_at: parsed.data.receivedAt,
     operation_id: parsed.data.operationId,
@@ -39,13 +61,14 @@ export async function receivePurchaseOrderAction(formData: FormData) {
 }
 
 export async function verifySupplierFulfillmentAction(formData: FormData) {
-  const parsed = z.object({ purchaseOrderId: z.uuid(), purchaseOrderLineId: z.uuid(), quantity: positive, supplierReference: z.string().trim().max(120).optional(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
-  if (!parsed.success) redirect("/admin/purchase-orders?error=invalid-fulfillment");
+  const parsed = z.object({ purchaseOrderId: z.uuid(), supplierReference: z.string().trim().max(120).optional(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  const lines = operationLines(formData, "supplier_quantity");
+  if (!parsed.success || !lines) redirect("/admin/purchase-orders?error=invalid-fulfillment");
   await requireInternalPermission("inventory.receive");
   const supabase = await createServerSupabase();
   const { data, error } = await supabase.rpc("verify_supplier_fulfillment", {
     target_purchase_order_id: parsed.data.purchaseOrderId,
-    fulfillment_lines: [{ purchase_order_line_id: parsed.data.purchaseOrderLineId, supplier_quantity: parsed.data.quantity }],
+    fulfillment_lines: lines,
     target_evidence_id: null,
     supplier_reference: parsed.data.supplierReference || null,
     operation_id: parsed.data.operationId,

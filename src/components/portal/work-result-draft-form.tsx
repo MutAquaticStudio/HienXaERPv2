@@ -66,7 +66,9 @@ export function WorkResultDraftForm({
       setMessage("Minh chứng đã tải xong. Bạn có thể gửi kết quả độc lập.");
     } catch (uploadError) {
       setError(true);
-      setMessage(uploadError instanceof Error ? uploadError.message : "Tải minh chứng thất bại");
+      setMessage(uploadError instanceof TypeError || !navigator.onLine
+        ? "Mất kết nối. Bản nháp và tệp vẫn được giữ; hãy kết nối lại rồi tải minh chứng lần nữa."
+        : uploadError instanceof Error ? uploadError.message : "Tải minh chứng thất bại");
     } finally {
       setUploading(false);
     }

@@ -22,7 +22,11 @@ export type SalesLineContext = {
   materialName: string;
   orderedUomSymbol: string;
   remainingOrderedQuantity: string;
+  availableLines: SalesOrderPurchaseLine[];
 };
+
+export type SalesOrderPurchaseLine = { id: string; materialId: string; materialName: string;
+  uomId: string; uomSymbol: string; remainingOrderedQuantity: string };
 
 export async function loadPurchaseFormOptions(branchId: string): Promise<PurchaseFormOptions> {
   const supabase = await createServerSupabase();
@@ -53,19 +57,42 @@ export async function loadPurchaseFormOptions(branchId: string): Promise<Purchas
   };
 }
 
+export async function loadSalesOrderPurchaseLines(salesOrderId: string, branchId: string): Promise<SalesOrderPurchaseLine[]> {
+  const supabase = await createServerSupabase();
+  const { data: order } = await supabase.from("sales_orders").select("id").eq("id", salesOrderId).eq("branch_id", branchId).maybeSingle();
+  if (!order) return [];
+  const [lineResult, supplyResult] = await Promise.all([
+    supabase.from("sales_order_lines").select("id, material_id, material_name_snapshot, ordered_uom_id, conversion_numerator, conversion_denominator, units_of_measure:ordered_uom_id(symbol)")
+      .eq("sales_order_id", salesOrderId).order("line_number"),
+    supabase.from("sales_line_supply_read").select("sales_order_line_id, remaining_base_quantity")
+      .eq("sales_order_id", salesOrderId).eq("branch_id", branchId),
+  ]);
+  if (lineResult.error || supplyResult.error) return [];
+  const remaining = new Map((supplyResult.data ?? []).map((row) => [row.sales_order_line_id, row.remaining_base_quantity]));
+  return (lineResult.data ?? []).map((line) => {
+    const uomRelation = line.units_of_measure;
+    const uom = (Array.isArray(uomRelation) ? uomRelation[0] : uomRelation) as { symbol: string } | null;
+    const factor = new Decimal(line.conversion_numerator).div(line.conversion_denominator);
+    return { id: line.id, materialId: line.material_id, materialName: line.material_name_snapshot,
+      uomId: line.ordered_uom_id, uomSymbol: uom?.symbol ?? "đơn vị",
+      remainingOrderedQuantity: new Decimal(remaining.get(line.id) ?? 0).div(factor).toDecimalPlaces(6).toString() };
+  });
+}
+
 export async function loadSalesLineContext(salesLineId: string, branchId: string): Promise<SalesLineContext | null> {
   const supabase = await createServerSupabase();
-  const [lineResult, supplyResult] = await Promise.all([
-    supabase.from("sales_order_lines").select("id, sales_order_id, material_name_snapshot, quantity, conversion_numerator, conversion_denominator, units_of_measure:ordered_uom_id(symbol), sales_orders!inner(order_number, branch_id, customer_name_snapshot, site_name_snapshot)").eq("id", salesLineId).maybeSingle(),
-    supabase.from("sales_line_supply_read").select("remaining_base_quantity").eq("sales_order_line_id", salesLineId).maybeSingle(),
-  ]);
-  if (!lineResult.data || lineResult.error || !supplyResult.data) return null;
+  const lineResult = await supabase.from("sales_order_lines")
+    .select("id, sales_order_id, material_name_snapshot, units_of_measure:ordered_uom_id(symbol), sales_orders!inner(order_number, branch_id, customer_name_snapshot, site_name_snapshot)")
+    .eq("id", salesLineId).maybeSingle();
+  if (!lineResult.data || lineResult.error) return null;
   const orderRelation = lineResult.data.sales_orders;
   const order = (Array.isArray(orderRelation) ? orderRelation[0] : orderRelation) as { order_number: string; branch_id: string; customer_name_snapshot: string; site_name_snapshot: string } | null;
   const uomRelation = lineResult.data.units_of_measure;
   const uom = (Array.isArray(uomRelation) ? uomRelation[0] : uomRelation) as { symbol: string } | null;
   if (!order || order.branch_id !== branchId) return null;
-  const factor = new Decimal(lineResult.data.conversion_numerator).div(lineResult.data.conversion_denominator);
+  const availableLines = await loadSalesOrderPurchaseLines(lineResult.data.sales_order_id, branchId);
+  const selected = availableLines.find((line) => line.id === salesLineId);
+  if (!selected) return null;
   return {
     id: lineResult.data.id,
     orderId: lineResult.data.sales_order_id,
@@ -74,6 +101,7 @@ export async function loadSalesLineContext(salesLineId: string, branchId: string
     siteName: order.site_name_snapshot,
     materialName: lineResult.data.material_name_snapshot,
     orderedUomSymbol: uom?.symbol ?? "đơn vị",
-    remainingOrderedQuantity: new Decimal(supplyResult.data.remaining_base_quantity).div(factor).toDecimalPlaces(6).toString(),
+    remainingOrderedQuantity: selected.remainingOrderedQuantity,
+    availableLines,
   };
 }

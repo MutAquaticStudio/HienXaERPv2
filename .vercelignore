@@ -1,0 +1,18 @@
+# Keep local credentials, QA evidence and internal documents off hosting uploads.
+.env*
+/.git/
+/.next/
+/.vercel/
+/node_modules/
+/.pnpm-store/
+/artifacts/
+/qa/
+/scripts/qa/
+/tmp/
+/supabase/.temp/
+/supabase/.branches/
+/playwright-report/
+/test-results/
+*.tsbuildinfo
+/*.md
+.DS_Store
