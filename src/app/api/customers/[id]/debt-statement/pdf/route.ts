@@ -18,17 +18,23 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const cutoff = new Date().toISOString();
   const customerResult = await supabase.from("customers").select("id, branch_id, display_name").eq("id", id).maybeSingle();
   if (!customerResult.data) return new Response("Không tìm thấy khách hàng.", { status: 404 });
-  const { data, error } = await supabase.rpc("finance_obligation_snapshot", {
-    target_branch_id: customerResult.data.branch_id,
-    target_side: "AR",
-    as_of: `${asOf}T23:59:59.999+07:00`,
-    knowledge_cutoff: cutoff,
-    target_customer_id: id,
-    target_site_id: null,
-    target_sales_employee_id: null,
-  }).order("due_date").order("obligation_id").limit(500);
-  if (error) return new Response("Không thể tạo bảng đối chiếu.", { status: 403 });
-  const obligations = (data ?? []) as Obligation[];
+  const obligations: Obligation[] = [];
+  const pageSize = 500;
+  for (let offset = 0; ; offset += pageSize) {
+    const { data, error } = await supabase.rpc("finance_obligation_snapshot", {
+      target_branch_id: customerResult.data.branch_id,
+      target_side: "AR",
+      as_of: `${asOf}T23:59:59.999+07:00`,
+      knowledge_cutoff: cutoff,
+      target_customer_id: id,
+      target_site_id: null,
+      target_sales_employee_id: null,
+    }).gt("outstanding_amount_vnd", 0).order("due_date").order("obligation_id").range(offset, offset + pageSize - 1);
+    if (error) return new Response("Không thể tạo bảng đối chiếu.", { status: 403 });
+    const page = (data ?? []) as Obligation[];
+    obligations.push(...page);
+    if (page.length < pageSize) break;
+  }
   const total = obligations.reduce((sum, row) => sum + BigInt(row.outstanding_amount_vnd), 0n);
   const bytes = await createStandardPdf({
     title: "BẢNG ĐỐI CHIẾU CÔNG NỢ",

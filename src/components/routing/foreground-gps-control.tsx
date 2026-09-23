@@ -74,11 +74,11 @@ export function ForegroundGpsControl({ deliveryId, assignmentVersion }: Props) {
       setMessage("Không thể kết nối để bật GPS. Kiểm tra mạng rồi thử lại.");
       return;
     }
-    const body = await response.json().catch(() => null) as { sessionId?: string; error?: string } | null;
-    if (!response.ok || !body?.sessionId) { setState("error"); setMessage(body?.error ?? "Không thể bật GPS."); return; }
+    const body = await response.json().catch(() => null) as { sessionId?: string; lastSequence?: number; error?: string } | null;
+    if (!response.ok || !body?.sessionId || !Number.isSafeInteger(body.lastSequence) || body.lastSequence! < 0) { setState("error"); setMessage(body?.error ?? "Không thể đồng bộ phiên GPS."); return; }
     sessionId.current = body.sessionId;
     setHasSession(true);
-    sequence.current = 0;
+    sequence.current = body.lastSequence!;
     watchId.current = navigator.geolocation.watchPosition((position) => {
       if (document.visibilityState !== "visible" || !sessionId.current) return;
       sequence.current += 1;

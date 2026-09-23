@@ -61,6 +61,7 @@ export type CustomerPayment = {
   number: string;
   amount_vnd: string;
   allocated_amount_vnd: string;
+  order_allocated_amount_vnd: string;
   effective_at: string;
   state: string;
   reconciliation_state: string;

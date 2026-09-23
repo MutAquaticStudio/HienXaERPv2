@@ -13,5 +13,10 @@ export async function POST(request: Request) {
     operation_id: body.operationId,
   });
   if (error) return NextResponse.json({ error: error.message }, { status: error.code === "42501" ? 403 : 409 });
-  return NextResponse.json({ sessionId: data });
+  const progress = await supabase.from("gps_tracking_sessions").select("last_sequence").eq("id", data).maybeSingle();
+  const lastSequence = Number(progress.data?.last_sequence);
+  if (progress.error || !progress.data || !Number.isSafeInteger(lastSequence) || lastSequence < 0) {
+    return NextResponse.json({ error: "Không thể đồng bộ thứ tự vị trí của phiên GPS." }, { status: 409 });
+  }
+  return NextResponse.json({ sessionId: data, lastSequence });
 }

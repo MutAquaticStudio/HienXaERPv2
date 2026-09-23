@@ -5,12 +5,15 @@ import { ForegroundGpsControl } from "./foreground-gps-control";
 describe("foreground GPS failure handling", () => {
   const originalGeolocation = Object.getOwnPropertyDescriptor(navigator, "geolocation");
   const originalRandomUUID = Object.getOwnPropertyDescriptor(globalThis.crypto, "randomUUID");
+  let locationSuccess: PositionCallback | undefined;
   let locationError: PositionErrorCallback | undefined;
   let watchPosition: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
+    locationSuccess = undefined;
     locationError = undefined;
-    watchPosition = vi.fn((_success: PositionCallback, onError: PositionErrorCallback) => {
+    watchPosition = vi.fn((onSuccess: PositionCallback, onError: PositionErrorCallback) => {
+      locationSuccess = onSuccess;
       locationError = onError;
       return 7;
     });
@@ -35,7 +38,7 @@ describe("foreground GPS failure handling", () => {
 
   it("retains the permission-denied explanation after server stop succeeds", async () => {
     const request = vi.fn()
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ sessionId: "gps-session" }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ sessionId: "gps-session", lastSequence: 0 }) })
       .mockResolvedValueOnce({ ok: true });
     vi.stubGlobal("fetch", request);
     render(<ForegroundGpsControl deliveryId="delivery" assignmentVersion={1} />);
@@ -51,7 +54,7 @@ describe("foreground GPS failure handling", () => {
 
   it("does not claim a server stop on failure and permits retry", async () => {
     const request = vi.fn()
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ sessionId: "gps-session" }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ sessionId: "gps-session", lastSequence: 0 }) })
       .mockResolvedValueOnce({ ok: false })
       .mockResolvedValueOnce({ ok: true });
     vi.stubGlobal("fetch", request);
@@ -72,5 +75,24 @@ describe("foreground GPS failure handling", () => {
     fireEvent.click(screen.getByRole("button", { name: "Bật GPS foreground" }));
     await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Không thể kết nối để bật GPS."));
     expect(screen.getByRole("button", { name: "Bật GPS foreground" })).toBeEnabled();
+  });
+
+  it("continues the sequence of an active session after reconnecting", async () => {
+    const request = vi.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ sessionId: "gps-session", lastSequence: 7 }) })
+      .mockResolvedValue({ ok: true });
+    vi.stubGlobal("fetch", request);
+    render(<ForegroundGpsControl deliveryId="delivery" assignmentVersion={1} />);
+    fireEvent.click(screen.getByRole("button", { name: "Bật GPS foreground" }));
+    await waitFor(() => expect(watchPosition).toHaveBeenCalledOnce());
+    await act(async () => {
+      locationSuccess?.({
+        timestamp: Date.now(),
+        coords: { latitude: 10, longitude: 106, accuracy: 10, speed: null, heading: null },
+      } as GeolocationPosition);
+    });
+    await waitFor(() => expect(request).toHaveBeenCalledWith("/api/gps/session/ping", expect.objectContaining({
+      body: expect.stringContaining('"sequence":8'),
+    })));
   });
 });

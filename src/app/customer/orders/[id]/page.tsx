@@ -43,7 +43,7 @@ export default async function CustomerOrderPage({ params }: { params: Promise<{ 
         </section>
         <section className={styles.card}>
           <h2>Thanh toán liên quan</h2>
-          {payments.length ? payments.map((payment) => <article className={styles.kv} key={payment.id}><span>{payment.number}<br /><small>{new Date(payment.effective_at).toLocaleDateString("vi-VN")} · {payment.reconciliation_state}</small></span><strong>{money(payment.amount_vnd)}</strong></article>) : <p className={styles.empty}>Chưa có thanh toán được phân bổ cho đơn này.</p>}
+          {payments.length ? payments.map((payment) => <article className={styles.kv} key={payment.id}><span>{payment.number}<br /><small>{new Date(payment.effective_at).toLocaleDateString("vi-VN")} · {payment.reconciliation_state} · Phân bổ cho đơn</small></span><strong>{money(payment.order_allocated_amount_vnd)}</strong></article>) : <p className={styles.empty}>Chưa có thanh toán được phân bổ cho đơn này.</p>}
         </section>
       </div> : null}
       <section className={styles.card}>
