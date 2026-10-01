@@ -26,14 +26,19 @@ export default async function CompensationPage({ searchParams }: { searchParams:
   const access = await requireInternalPermission("compensation.read");
   const query = await searchParams;
   const supabase = await createServerSupabase();
-  const [{ data }, { data: rules }, { data: bases }, { data: workers }, { data: accounts }] = await Promise.all([
+  const results = await Promise.all([
     supabase.from("earning_event_read").select("*").eq("branch_id", access.branchId).order("created_at", { ascending: false }),
     supabase.from("compensation_rules").select("id, code, name, version, earning_type, calculation_kind").eq("branch_id", access.branchId).order("created_at", { ascending: false }),
     supabase.from("compensation_manual_bases").select("id, employee_id, basis_type, basis_quantity, period_start, period_end, description").eq("branch_id", access.branchId).order("recorded_at", { ascending: false }),
     supabase.from("workforce_read").select("id, code, display_name").eq("branch_id", access.branchId).eq("active", true).order("display_name"),
     supabase.from("finance_accounts").select("id, code, name").eq("branch_id", access.branchId).eq("active", true).order("name"),
   ]);
+  if (results.some((result) => result.error)) {
+    throw new Error("Không tải được dữ liệu thu nhập. Vui lòng thử lại hoặc liên hệ quản trị viên.");
+  }
+  const [{ data }, { data: rules }, { data: bases }, { data: workers }, { data: accounts }] = results;
   const rows = (data ?? []) as Earning[];
+  const workerOptions = [...new Map((workers ?? []).map((worker) => [worker.id, worker] as const)).values()];
   const canManage = access.permissions.has("compensation.manage");
   const canApprove = access.permissions.has("compensation.approve");
   const canPay = access.permissions.has("finance.payment.post");
@@ -46,7 +51,7 @@ export default async function CompensationPage({ searchParams }: { searchParams:
           <input type="hidden" name="operationId" value={randomUUID()} />
           <div className="field"><label>Mã rule</label><input name="code" required /></div>
           <div className="field"><label>Tên rule</label><input name="name" required /></div>
-          <div className="field"><label>Nhân viên áp dụng</label><select name="employeeId"><option value="">Toàn chi nhánh</option>{(workers ?? []).map((item) => <option key={item.id} value={item.id}>{item.code} · {item.display_name}</option>)}</select></div>
+          <div className="field"><label>Nhân viên áp dụng</label><select name="employeeId"><option value="">Toàn chi nhánh</option>{workerOptions.map((item) => <option key={item.id} value={item.id}>{item.code} · {item.display_name}</option>)}</select></div>
           <div className="field"><label>Basis</label><select name="earningType">{earningTypes.map((item) => <option key={item}>{item}</option>)}</select></div>
           <div className="field"><label>Calculator</label><select name="calculationKind"><option value="FIXED_PER_BASIS">VND mỗi đơn vị basis</option><option value="PERCENT_BPS">Basis points lợi nhuận</option></select></div>
           <div className="field"><label>Rate VND hoặc bps</label><input name="rate" inputMode="decimal" required /></div>
@@ -59,7 +64,7 @@ export default async function CompensationPage({ searchParams }: { searchParams:
       <details className="card card-pad quick-create"><summary>Ghi basis thủ công</summary>
         <form className="command-panel" action={recordCompensationBasisAction}>
           <input type="hidden" name="operationId" value={randomUUID()} />
-          <div className="field"><label>Nhân viên</label><select name="employeeId" required><option value="">Chọn người</option>{(workers ?? []).map((item) => <option key={item.id} value={item.id}>{item.display_name}</option>)}</select></div>
+          <div className="field"><label>Nhân viên</label><select name="employeeId" required><option value="">Chọn người</option>{workerOptions.map((item) => <option key={item.id} value={item.id}>{item.display_name}</option>)}</select></div>
           <div className="field"><label>Loại basis</label><select name="basisType"><option>FIXED_MONTHLY</option><option>PER_SHIFT</option><option>PER_DAY</option><option>BONUS</option><option>ADJUSTMENT</option></select></div>
           <div className="field"><label>Số lượng basis</label><input name="basisQuantity" defaultValue="1" inputMode="decimal" required /></div>
           <div className="field"><label>Từ ngày</label><input type="date" name="periodStart" defaultValue={currentDate()} required /></div>

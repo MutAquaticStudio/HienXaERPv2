@@ -41,7 +41,7 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 function searchToken(value: string | undefined, maxLength: number) {
-  return value?.trim().replace(/[%_]/g, "").slice(0, maxLength) || "";
+  return value?.trim().replace(/%/g, "").slice(0, maxLength) || "";
 }
 
 async function resolveActorIds(branchId: string, actor: string) {

@@ -28,9 +28,7 @@ export async function ensureWorkerUat(sql) {
         and w.title=${title}
         and w.work_number like ${'HXQA-UAT-WORK-%'}
         and w.execution_state='IN_PROGRESS'
-        and w.scheduled_end>now()
-        and (w.lease_expires_at is null or w.lease_expires_at>now())
-      order by w.created_at desc
+      order by w.work_number
       limit 1
     `;
     if (existing) return existing;

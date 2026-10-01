@@ -10,7 +10,7 @@ export default async function CatalogPage({searchParams}:{searchParams:Promise<{
  if(!kind) return <p>Không có quyền quản lý danh mục.</p>;
  const config=catalogs[kind]; const supabase=await createServerSupabase();
  const visibleFields=config.fields.filter(f=>!f.permission||access.permissions.has(f.permission));
- const columns=['id',...visibleFields.map(f=>f.key)].join(',');
+ const columns=['id',...visibleFields.filter(f=>kind!=='customers'||!['credit_limit_vnd','internal_note'].includes(f.key)).map(f=>f.key)].join(',');
  let query=supabase.from(config.table as 'materials').select(kind==='sites'?`${columns},customers!inner(branch_id)`:columns).limit(200);
  if(['customers','suppliers','warehouses','vehicles','machines'].includes(kind)) query=query.eq('branch_id',access.branchId);
  if(kind==='sites') query=query.eq('customers.branch_id',access.branchId);
@@ -18,7 +18,8 @@ export default async function CatalogPage({searchParams}:{searchParams:Promise<{
  if(params.id) query=query.eq('id',params.id);
  else if(params.q){const key=config.fields.some(f=>f.key==='name')?'name':kind==='customers'?'display_name':'id'; if(key!=='id') query=query.ilike(key,`%${params.q.replace(/[%_]/g,'')}%`);}
  const {data,error}=await query.order('id'); if(error) throw new Error('Không tải được danh mục.');
- const rows=data as unknown as Record<string,unknown>[];
+ let rows=data as unknown as Record<string,unknown>[];
+ if(kind==='customers'&&rows.length){const privateResult=await supabase.rpc('customer_private_fields',{target_customer_ids:rows.map(row=>String(row.id))});if(privateResult.error)throw new Error('Không tải được thông tin riêng tư khách hàng.');const privateById=new Map<string,{credit_limit_vnd:string|number|null;internal_note:string|null}>((privateResult.data??[]).map((field:{customer_id:string;credit_limit_vnd:string|number|null;internal_note:string|null})=>[field.customer_id,{credit_limit_vnd:field.credit_limit_vnd,internal_note:field.internal_note}] as const));rows=rows.map(row=>{const privateFields=privateById.get(String(row.id));return privateFields?{...row,...privateFields}:row;});}
  const options:Options={};
  for(const optionKind of new Set(visibleFields.flatMap(f=>f.options?[f.options]:[]))){
   if(optionKind==='salesOwners'){

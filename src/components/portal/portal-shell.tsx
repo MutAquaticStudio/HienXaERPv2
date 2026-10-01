@@ -37,14 +37,16 @@ const customerLinks = [
 
 export function PortalShell({
   audience,
+  canViewDebt,
   children,
 }: {
   audience: "worker" | "customer";
+  canViewDebt?: boolean;
   children: ReactNode;
 }) {
   const pathname = usePathname();
   if (pathname.endsWith("/login")) return children;
-  const links = audience === "worker" ? workerLinks : customerLinks;
+  const links = audience === "worker" ? workerLinks : customerLinks.filter((link) => canViewDebt || link.href !== "/customer/debts");
   const root = audience === "worker" ? "/work" : "/customer";
   const scope = audience === "worker" ? "Cổng nhân sự" : "Cổng khách hàng";
 

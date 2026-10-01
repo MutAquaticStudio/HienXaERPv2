@@ -1302,3 +1302,332 @@ New evidence: QA Sales can read material and SO lines but Supplier list is empty
 - result: targeted QA synthetic smoke PASS; document-wide completion remains NOT ASSERTED.
 - blocker: QA Preview available at this checkpoint is an older build and was not treated as evidence for the current UI. Owner physical-device UAT and managed backup/recovery limitations remain as previously recorded.
 - production impact: NOT_TOUCHED.
+
+## IMP-201 — 2026-09-27 — Post-acceptance finance, portal and performance defect fixes
+
+- scope: Confirmed defects found during scoped acceptance/audit; source changes and QA schema checks only. No Production deployment or data mutation.
+- gap_ids: NEW_GAP-20260927-01 cashbook totals from first 100 payments FIXED; NEW_GAP-20260927-02 AR/AP report and CSV first-100 truncation FIXED; NEW_GAP-20260927-03 payment allocation selector first-100 cap FIXED; NEW_GAP-20260927-04 Receiver debt navigation FIXED; NEW_GAP-20260927-05 Dashboard/Dispatch latency on QA-scale data FIXED at local optimized-build boundary; NEW_GAP-20260927-06 stale UAT checks FIXED.
+- changed_paths: `src/app/admin/cashbook/page.tsx`; `src/app/admin/reports/page.tsx`; `src/modules/reports/server.ts`; `src/app/api/reports/export/route.ts`; `src/components/report-export-button.tsx`; `src/app/api/finance/obligations/route.ts`; `src/modules/finance/payment-form.tsx`; `src/app/admin/receivables/page.tsx`; `src/app/admin/payables/page.tsx`; `src/app/admin/page.tsx`; `src/app/admin/dispatch/page.tsx`; `src/app/customer/layout.tsx`; `src/components/portal/portal-shell.tsx`; `scripts/qa/uat.mjs`; QA migrations `20260927000100` through `20260927000600`; `acceptance.md`; `implementation.md`.
+- QA schema evidence: All six new migrations applied to `ffrwiglcrlumfvhubaxg`; no migration sent to Production. Cashbook summary on branch A matched an independent full-scope query across 111 payments: net 2,700,000 VND and unmatched count 109. Sales direct-RPC access now fails with 42501. First and second cashbook/report pages each displayed 25 distinct rows.
+- report evidence: AR export completed with 5,058 distinct rows; sum 5,046,476,000 VND matched the finance dashboard snapshot at the same knowledge cutoff. AP export completed with 5,068 distinct rows; sum 2,524,435,924 VND also matched its snapshot. Small customer-filtered AR export returned CSV directly with 15 rows. Large exports returned a durable job ID/status; a job paused after 1,000 rows continued under a new Owner session to 5,068 rows with the same dedupe ID. UI interruption/reload resumed and downloaded 5,058 rows; failed-network text is user-safe Vietnamese. Sales could not read an Owner job or start an AR export.
+- allocation and portal evidence: QA AP supplier with 5,050 open obligations loaded pages 1 and 2; two allocations on different pages remained distinct in one payment draft without posting money. Sales received 403 from the new obligation selector. Receiver showed no debt navigation; Finance contact retained it. Dispatch RPC results matched the prior view for all four buckets; Sales received 42501 for dispatch access.
+- server validation evidence: QA `post_payment` and `private.allocate_payment_lines` function definitions confirm permission, active branch/party/account, duplicate obligation ID, per-obligation branch/party, locked outstanding balance and payment-available checks. No real or synthetic payment was posted during this recheck.
+- checks: changed-path ESLint PASS; TypeScript PASS; optimized Next build PASS; technical six-role UAT 13/13 PASS on local optimized build bound to QA, overall UAT PARTIAL because human journeys remain NOT_RUN. Representative local optimized-build browser navigation, 100 samples per route/concurrency: Dashboard p95 2.08s at c1, 2.40s at c5, 4.70s at c10; Dispatch p95 0.76s at c1, 0.82s at c5, 1.25s at c10. Dashboard c10 p99 5.12s; Dispatch c10 p99 1.45s. This is not a hosted-cloud benchmark or Owner device UAT.
+- result: Scoped confirmed source defects corrected and QA-verified. ACC-CASE-28 cloud evidence, Owner physical-device UAT, provider gates and full release acceptance remain separate; do not infer their PASS from this batch. Current source is not deployed to Production by this batch.
+- production impact: NOT_TOUCHED. QA only contains migration changes and synthetic export-job evidence rows; no QA payment was posted by these checks.
+
+## Production UAT repair closure - 2026-09-28
+
+- Scope: five reported Production UAT defect groups (UAT-REPAIR-01 through UAT-REPAIR-05); technical regression PASS.
+- Production deployment: dpl_4jRfL6XsxcrwMpV98AeigTfFJ8hS; https://hien-xa-erp-v2-nu.vercel.app. Production migration head: 20260927205002; ten missing/new migrations applied in one guarded transaction.
+- Changed paths: purchasing form/actions/new page; pricing editor; compensation, audit, orders and quotation pages; quotation PDF route; core business-time/quantity helpers; earning read-boundary migration; focused regression tests and isolated DB portal expectation.
+- Repairs: restored affected P0 routes; guarded earnings helper with explicit error handling; retained failed PO form input; linked-SO sales preview/manual override with save-time price validation; explicit business timezone; reusable pricing form; readable audit labels and exact quantity formatting.
+- NEW checks PASS: 38 unique unit tests across batch, typecheck, full lint, local/Preview/Production builds, isolated R2-R9 DB checks, QA earning visibility and deny checks, targeted Production UI regression.
+- New evidence: artifacts/qa/uat-repairs-20260928/manifest.json. Reused batch evidence: artifacts/qa/2026-09-27T20-58-00-637Z-uat-repair-db/manifest.json. No unrelated historic checks promoted to PASS.
+- Production UAT evidence: PO-2026-000003 and SO-2026-000003 remain DRAFT (260000/410000 VND); two UAT-only customer price rules created consecutively. Actual downloaded quotation PDF matches detail time and quantity display.
+- Result: reported repair scope COMPLETE. Blocker: NONE for these five groups. Production impact: authorized migration/deployment and synthetic UAT drafts/rules; no money/inventory movement, real invoice issue or messaging.
+- Owner acceptance, real-device UAT and unrelated release gates are unchanged.
+
+## IMP-202 - 2026-09-30 - Net AR credit exposure repair
+
+- scope: P1 false credit-limit block from counting settled receivables; SPEC-CRE-001 and SPEC-CRE-002.
+- gap_ids: Owner UAT report-160 credit exposure FIXED at QA boundary; unrelated warehouse fulfillment, return, and draft-terms gaps remain OPEN.
+- changed_paths: `supabase/migrations/20260930000100_credit_exposure_net_allocations.sql`; `implementation.md`; `artifacts/qa/owner-uat-20260928/report-187-credit-exposure-fix.md`.
+- implementation: `customer_credit_exposure` now nets payment allocations per AR obligation before summing unpaid AR. Sales-order and local-fixture reservation overdue checks use `private.current_receivable_outstanding` rather than original AR plus adjustments.
+- new evidence: QA guard selected `ffrwiglcrlumfvhubaxg`; migration list showed only `20260930000100` pending and `qa:migrate` applied only that migration. On the existing QA customer, receivable changed from 470000 to 350000 VND, exposure from 983000 to 863000 VND, and available from 17000 to 137000 VND; the settled 120000 VND AR no longer counts. Owner UI created SO-2026-000032 for 100000 VND, confirmed it within the corrected available limit, then cancelled it. DB confirmed the 100000 VND commitment fully released and exposure returned to 863000 VND.
+- reused evidence: report-160 settled-AR false block; no unrelated full-system UAT rerun.
+- checks: QA guard NEW PASS; QA migration NEW PASS; targeted QA DB before/after NEW PASS; Owner create/confirm/cancel and commitment-release NEW PASS. Overdue paid-AR edge and Production build/deployment NOT_RUN.
+- result: credit-exposure defect FIXED and targeted QA retest PASS. Do not infer Production fix or full release acceptance.
+- blocker: Production migration/deployment remain separate authorized work; other P1 gaps remain open.
+- production impact: NOT_TOUCHED.
+
+## IMP-203 - 2026-09-30 - Commercial DRAFT terms form stabilization
+
+- scope: Owner UAT report-186 intermittent terms concatenation on Sales DRAFT edit; shared Sales/Quote form.
+- gap_ids: report-186 targeted local-QA retest PASS; warehouse fulfillment and return remain OPEN.
+- changed_paths: `src/components/sales/commercial-document-form.tsx`; `implementation.md`; `artifacts/qa/owner-uat-20260928/report-188-draft-terms-retest.md`.
+- implementation: terms textarea now uses component state and `onChange` instead of uncontrolled `defaultValue`, preserving the intended replace value through preview/form re-renders. RPC already used replacement assignment and was not changed.
+- evidence: before change, one Owner edit had persisted new+old terms; a later hydrated-form diagnostic submitted and stored only the new value, so hydration/rerender timing was suspected but not definitively isolated. After change, three immediate SO-2026-000031 edit/preview/save cycles persisted exactly the last value in QA DB with draft_version 6, no concatenation. A DRAFT quote edit on QT-2026-000004 displayed the exact replacement terms after save without altering its 1100000 VND total.
+- checks: focused UI/DB Owner Sales DRAFT NEW PASS; focused UI Quote DRAFT NEW PASS; ESLint changed component NEW PASS. Full system UAT and Production deployment NOT_RUN.
+- result: targeted local-QA behavior PASS; intermittent pre-change root mechanism remains an inference, and Production remains on its current deployment.
+- production impact: NOT_TOUCHED.
+
+## IMP-204 - 2026-09-30 - Owner warehouse-source entry point
+
+- scope: P1 Owner UAT report-184 warehouse fulfillment entry point for a CONFIRMED multi-line SO; SPEC-SRC-001/002 and SPEC-OPS-001/003/004.
+- gap_ids: report-184 entry point FIXED at local QA; NEW_GAP-20260930-01 planned-delivery cancellation/reservation release OPEN; warehouse-source quantity input formatting P2 OPEN.
+- changed_paths: `src/app/admin/orders/[id]/page.tsx`; `src/modules/delivery/actions.ts`; `implementation.md`; `artifacts/qa/owner-uat-20260928/report-189-warehouse-source-retest.md`.
+- implementation: confirmed SO detail now exposes per-line active-warehouse selection and remaining base quantity. Server Action validates order/line scope and calls existing idempotent `upsert_supply_allocation` as WAREHOUSE. Existing multi-line delivery command reserves inventory atomically; no separate reservation call was added.
+- new evidence: Owner selected Kho nghiệm thu QA for SO-2026-000030 lines at 1 and 10 base. QA DB showed two WAREHOUSE allocations and zero reservations before delivery. Owner created DL-2026-000011 from both allocations; QA DB showed two PLANNED lines and ACTIVE reservations totaling 11 base, on-hand 125, available 114, inventory movement count 0 and related AR count 0.
+- checks: changed-file ESLint NEW PASS; TypeScript NEW PASS; Owner UI allocation and multi-line delivery NEW PASS; targeted QA DB source/reservation/ledger/AR checks NEW PASS. Full Delivery handoff/result/return, Production deployment and full-system UAT NOT_RUN.
+- remaining: DL-2026-000011 persists as a synthetic PLANNED QA fixture. No public cancel-delivery command or UI was found; existing release-reservation command excludes delivery-linked reservations, and the Sales Order trigger blocks cancellation once any delivery exists. Do not delete ledger/fixture rows directly to clean QA. The new quantity input renders trailing decimal zeros, which needs a separate UX correction.
+- production impact: NOT_TOUCHED.
+
+### IMP-205 — Supplier-direct customer return cost basis (2026-09-30)
+- Scope/gap: P1 ReturnCase to warehouse for `SUPPLIER_DIRECT`; case `9269ba5d-5901-46fa-a636-e533a11e9fb7`.
+- Changed path: `supabase/migrations/20260930023428_return_case_supplier_direct_cost.sql`.
+- Evidence: `artifacts/qa/owner-uat-20260928/report-190-direct-return-cost-retest.md`; source cost is supplier fulfillment line 220000 VND / 2 base, not fulfillment total 320000 VND / 2.
+- Checks: QA guard PASS; QA migration PASS; Owner UI resolution PASS; QA DB movement `+1/+110000`, cost reversal `-110000`, one resolve receipt PASS. Existing permission and idempotency paths unchanged, not rerun here.
+- Result: targeted QA PASS; Production NOT_TOUCHED. Other P1 planned-delivery cancellation remains OPEN.
+
+### IMP-206 — Planned delivery cancellation and reservation release (2026-09-30)
+- Scope/gap: NEW_GAP-20260930-01, PLANNED delivery with linked ACTIVE stock holds had no safe cancellation path.
+- Changed paths: `supabase/migrations/20260930024101_cancel_planned_delivery_release_reservations.sql`, `src/modules/delivery/cancel-planned-action.ts`, `src/app/admin/deliveries/[id]/cancel/page.tsx`, `src/app/admin/deliveries/page.tsx`.
+- Evidence: `artifacts/qa/owner-uat-20260928/report-191-planned-delivery-cancel-retest.md`. Owner UI canceled DL-2026-000011; created DL-2026-000012 from the same allocations and canceled it; both histories retained, four holds RELEASED, stock on-hand 126/reserved 0.
+- Checks: QA guard/migration PASS; focused ESLint PASS; tsc PASS; Owner UI + QA DB PASS; anon EXECUTE false. Stale-version and denied-role invocations not run.
+- Result: targeted QA PASS; Production NOT_TOUCHED. Existing SO cancellation guard was not changed.
+
+### IMP-207 — Finance redirect preserves supplier context (2026-09-30)
+- Scope/gap: P2 payables `?supplier=<id>?notice=...` malformed redirect after payment.
+- Changed path: `src/modules/finance/actions.ts`.
+- Evidence: `artifacts/qa/owner-uat-20260928/report-192-payables-redirect-retest.md`.
+- Checks: focused ESLint PASS; tsc PASS; invalid-payment redirect kept supplier PASS; 1 VND QA disbursement success redirect kept supplier/notice/payment PASS; reversal via UI PASS; supplier AP outstanding returned to 2,877,269 VND.
+- Result: targeted QA PASS; Production NOT_TOUCHED.
+
+### IMP-208 — Audit notice/quotation transitions (2026-09-30)
+- Scope/gap: P2 missing audit events for payment notice rejection and quotation send/accept; Audit Log full entity filters stripped `_`.
+- Changed paths: `supabase/migrations/20260930025839_audit_notice_quote_transitions.sql`, `src/app/admin/audit/page.tsx`, `src/modules/audit/server.ts`.
+- Evidence: `artifacts/qa/owner-uat-20260928/report-193-notice-quote-audit-retest.md`.
+- Checks: QA guard/migration PASS; focused ESLint PASS; tsc PASS; Owner UI + QA DB send/accept and notice review/rejection PASS; Audit Log UI full entity filters and Vietnamese summaries PASS.
+- Result: targeted QA PASS for new events; old events not backfilled; Production NOT_TOUCHED.
+
+### IMP-209 — QA PDF appearance and long-terms boundary (2026-09-30)
+
+- Scope: targeted QA retest of Delivery Note, Quotation PDF, Receipt/Payment Voucher, Debt Statement, and Customer 360 debt-statement link after localization/print changes.
+- Changed paths in this batch: `src/app/api/deliveries/[id]/note/pdf/route.ts`, `src/app/api/quotation-revisions/[id]/pdf/route.ts`, `src/app/api/payments/[id]/voucher/pdf/route.ts`, `src/app/api/customers/[id]/debt-statement/pdf/route.ts`, `src/app/admin/customers/[id]/page.tsx`, `artifacts/qa/owner-uat-20260928/report-194-pdf-visual-retest.md`.
+- New evidence: five representative PDFs render in Vietnamese without visible clipping; Customer 360 link returns a valid PDF. Long-terms QA draft `QT-2026-000014` proves 2119 UI characters become 1000 stored `commercial_terms`, then PDF omits part of the stored terms. See `report-194-pdf-visual-retest.md`.
+- Reused evidence: prior focused ESLint and TypeScript PASS for the five application files; prior ordinary-document PDF render samples.
+- Checks/result: targeted HTTP/PDF/render/link PASS for representative documents; long-terms completeness FAIL. No full-suite check. No claim of Production verification.
+- Blocker: intended commercial-terms length contract needs Owner decision before a further code change. Production impact: NOT_TOUCHED.
+
+### IMP-210 — targeted QA Storage retest (2026-09-30)
+
+- Scope: QA Storage upload/type/size, worker evidence and signed URL expiry; no application or schema edits in this batch.
+- Changed paths: `artifacts/qa/2026-09-30T03-26-12-205Z-storage/manifest.json`, `artifacts/qa/2026-09-30T03-26-12-205Z-storage/sha256.txt`, `artifacts/qa/owner-uat-20260928/report-195-storage-targeted-retest.md`.
+- New evidence: `qa:guard` PASS for QA ref `ffrwiglcrlumfvhubaxg`; `qa:storage` manifest PASS for allowed PNG/JPG/PDF, expected rejection of SVG/fake JPG/oversized PNG, worker evidence and signed URL expiry. See `report-195-storage-targeted-retest.md`.
+- Reused evidence: none for this run; generated manifest is the source of check details.
+- Checks/result: technical Storage PASS; human offline retry NOT_RUN, Production NOT_TOUCHED. No full suite and no claim of physical-device UAT.
+- Blocker: human offline/device retry remains outside this automated retest; local application build is `local-unpinned`.
+
+### IMP-211 — QA Worker finance-PDF denial and cancel negative checks (2026-09-30)
+
+- Scope: targeted QA security/optimistic-lock checks; no application or schema edits.
+- Changed path: `artifacts/qa/owner-uat-20260928/report-196-pdf-worker-and-cancel-boundaries.md`.
+- New evidence: authenticated QA Worker receives 404 for an existing Customer debt-statement PDF which Owner receives as HTTP 200/PDF; Worker `cancel_planned_delivery` call rejects with `42501 forbidden`; Owner stale-version call rejects with `40001 delivery_cancel_version_conflict`. The QA delivery remains `PLANNED` version 1. See report-196.
+- Reused evidence: IMP-206 positive Owner cancellation/release and report-191; IMP-209 Customer 360 Owner PDF link and report-194.
+- Checks/result: focused SEC/IDEM boundary checks PASS on QA; role-matrix and Production checks NOT_RUN. No full suite.
+- Blocker: none for these narrow checks. Production impact: NOT_TOUCHED.
+
+### IMP-212 — Service Job cancellation gap confirmed (2026-09-30)
+
+- Scope: read-only QA route and DB-catalog investigation of Service Job cancellation.
+- Changed path: `artifacts/qa/owner-uat-20260928/report-197-service-cancel-gap.md`; no application, schema or QA data change.
+- New evidence: QA `SCHEDULED` unpublished service fixture has no cancel CTA; list offers `Đã hủy` filter; no public cancel Service Job/WorkItem RPC exists. See report-197.
+- Reused evidence: existing synthetic fixture and QA authenticated Owner browser session.
+- Checks/result: targeted UI/catalog audit PARTIAL; no mutation or full regression.
+- Blocker: cancellation semantics for published/active/verified jobs need contract confirmation before backend/UI work. Production impact: NOT_TOUCHED.
+
+### IMP-213 — purchase evidence gap confirmed (2026-09-30)
+
+- Scope: read-only QA audit of PO, source-linked receipt/direct fulfillment, purchase invoice registry and AP detail.
+- Changed path: `artifacts/qa/owner-uat-20260928/report-198-purchase-evidence-gap.md`; no application, schema or QA data change.
+- New evidence: inspected PO/AP source links work; 10 QA purchase registry rows are all `PENDING_DOCUMENT` with no evidence; zero receipt/fulfillment rows carry evidence. PO forms observed lack evidence control although receipt and fulfillment RPCs accept `target_evidence_id`. See report-198.
+- Reused evidence: QA Storage automated PASS in report-195 establishes the upload primitive, not purchase-document linkage or legal validity.
+- Checks/result: targeted UI and DB-catalog audit; purchase evidence workflow PARTIAL; real supplier-document gate BLOCKED. No full regression.
+- Blocker: no real legal supplier documents in synthetic QA data; post-hoc attachment transition needs contract before implementation. Production impact: NOT_TOUCHED.
+
+### IMP-214 — purchase source-time evidence upload (2026-09-30)
+
+- Scope: warehouse PO receipt and supplier-direct fulfillment evidence upload/link/read at the existing backend seam; no schema or business amount change.
+- Changed paths: `src/app/admin/purchase-orders/[id]/page.tsx`, `src/modules/inventory/actions.ts`, `src/components/purchasing/purchase-evidence-upload.tsx`, `src/app/api/purchasing/evidence/upload/route.ts`, `src/app/api/purchasing/evidence/[id]/signed/route.ts`, `artifacts/qa/owner-uat-20260928/report-199-purchase-evidence-qa-retest.md`.
+- New evidence: UI-created QA direct fulfillment and warehouse receipt each link VERIFIED inventory evidence and create exactly one AP obligation; warehouse flow has one stock movement. Owner can use signed links; Worker denied; invalid file denied; same-operation retry yields one row/object. See report-199.
+- Reused evidence: IMP-213 gap analysis; existing RPC validation of branch and VERIFIED evidence; QA guard for ref `ffrwiglcrlumfvhubaxg`.
+- Checks/result: focused ESLint/TypeScript PASS, direct and warehouse QA technical flows PASS, targeted SEC/IDEM checks PASS. No full regression.
+- Open blocker: route/UI currently advertise 10 MB although Vercel Function body limit is 4.5 MB; Owner decision requested for direct Supabase upload versus 4 MB cap. Real supplier legal documents unavailable. Production impact: NOT_TOUCHED.
+
+### IMP-215 — scheduled unpublished Service Job cancellation (2026-09-30)
+
+- Scope: versioned, reason-audited cancellation limited to `SCHEDULED` jobs with no WorkItem/verification; no retroactive editing of performed service.
+- Changed paths: `supabase/migrations/20260930050137_cancel_scheduled_service_job.sql`, `src/modules/workforce/actions.ts`, `src/app/admin/service-jobs/[id]/page.tsx`, `artifacts/qa/owner-uat-20260928/report-200-service-cancel-qa-retest.md`.
+- New evidence: Owner QA UI transitioned synthetic job v1 to CANCELLED v2 with command receipt and audit reason; Worker, stale-version and published-job calls rejected; same-operation replay returned original ID; list filter finds cancellation. See report-200.
+- Reused evidence: report-197 confirmed missing cancellation path; existing service state check includes CANCELLED and publish command locks SCHEDULED source.
+- Checks/result: QA guard/migration PASS, focused ESLint/TypeScript PASS, targeted UI/SEC/IDEM checks PASS. No full suite.
+- Blocker: detail badge and audit sentence retain English `CANCELLED`/`cancel`; localization decision requested. Later-state cancellation remains outside this bounded command. Production impact: NOT_TOUCHED.
+
+## IMP-216 | QA targeted follow-up | 2026-09-30
+
+- scope: purchase evidence offline retry; hosted candidate fingerprint; QA backup capability; QA rollback/CPU investigation.
+- gap_ids: purchase upload hosted size mismatch OPEN; `NEW_GAP-QA-CPU-01` INVESTIGATING.
+- changed_paths: `artifacts/qa/owner-uat-20260928/report-202-storage-offline-retry.md`; `report-203-hosted-candidate-fingerprint.md`; `report-204-qa-backup-capability.md`; `report-205-qa-rollback-flood.md`. No application source or schema change in this batch.
+- new_evidence: QA local Owner browser offline upload failed visibly, retry returned 200; one VERIFIED evidence row and one Storage object. Two visible Vercel Hiền Xa projects' latest deployments were 2026-09-23 commit `25fb537`, not the local-unpinned QA fixes. Supabase QA Free has no project backups. QA dashboard reported high CPU; sampled 947-1427 rollbacks/sec; PostgreSQL logs repeated `approve_stock_count` SQLSTATE 40001. Available Gateway pathname filter did not show that RPC; stock-count UI code had only manual forms, and no obvious local QA stock-count script was running.
+- reused_evidence: IMP-210 Storage automated checks; IMP-214 purchase evidence small-file source-time linkage; IMP-215 Service Job cancellation.
+- checks: `UI:NEW PASS` offline retry on QA local; `DB:NEW PASS` one VERIFIED evidence/object; `PERF:NOT_RUN` hosted candidate mismatch and QA load; `MIG:BLOCKED` managed backup unavailable on QA Free. No full regression run.
+- result: PARTIAL. Offline retry closed for the local QA path only. Hosted 10 MB upload, representative p95/p99, managed restore, and source attribution for QA rollback flood remain open.
+- blocker: decisions on quotation terms, hosted upload strategy, Service Job wording; external QA load source; hosted candidate; managed recovery capability; provider/Owner gates as previously recorded.
+- production_impact: NOT_TOUCHED.
+
+## IMP-217 | Independent audit remediation | 2026-09-30
+
+- scope: five findings from the independent acceptance audit; application, QA harness, migration-history recording and acceptance coverage only.
+- gap_ids: delivery-business-time; qa-migration-ledger-drift; dashboard-customer-option-cap; uat-stale-grant-and-browser-cleanup; acceptance-docset-drift.
+- changed_paths: src/lib/core/business-time.ts; src/lib/core/business-time.test.ts; src/modules/delivery/actions.ts; src/app/admin/deliveries/[id]/page.tsx; src/app/admin/page.tsx; scripts/qa/uat.mjs; supabase/migrations/20260930101520_custom_rpc_conflicts.sql; acceptance.md; implementation.md.
+- new_evidence: implementation changes only, NOT execution evidence. Delivery normalizes Vietnam datetime-local inputs to UTC and displays timestamps in the business timezone; invalid calendar/time inputs are rejected and regression assertions were added. Dashboard customer search is server-side, bounded, deterministically sorted, preserves the selected customer independently of the option limit and stores search/filter state in the URL. QA revoke resolves the current active grant by persona/branch, conditionally restores that same grant without overwriting concurrent access changes, and closes its browser even if restoration fails.
+- migration_delta: added the exact version/name and recorded SQL for 20260930101520_custom_rpc_conflicts from the audit's QA ledger evidence. Existing migrations were not rewritten. No SQL was executed and no managed migration ledger was repaired. Clean-schema replay and a fresh read-only ledger comparison remain NOT_RUN.
+- doc_delta: acceptance metadata now references HX-V2-DOCSET-4.4/SYNC-4.4; ACC-085 maps all 23 SPEC-GAP-002 entries and recovery requirements onto the existing 30 case groups, with explicit delta checks. ACC-CASE-29 distinguishes actual legacy migration from NO_LEGACY_DATA_TO_MIGRATE. Spec.md, UXUI.md and plan.md are unchanged; no performance budget was copied.
+- reused_evidence: NGHIEM_THU_HIEN_XA.md and /Users/nox/.codex/tmp/hienxa-independent-acceptance-20260930/evidence/qa-extra-migration.json are reused only to identify the prior defects and recorded QA SQL, not to prove the changed candidate passes. Checks touching the changed time handling, Dashboard filter, revoke harness, migration set or acceptance mapping require new evidence; unrelated evidence is not globally invalidated.
+- checks: UNIT/UI/DOC/DB/SEC/MIG/build/typecheck = NOT_RUN after this patch. No smoke-test layer, full regression, QA data mutation or cleanup was run.
+- result: IMPLEMENTED_UNVERIFIED; all five findings have a proposed remediation in the working tree, but are not closed as PASS without focused verification.
+- blocker: focused verification and isolated schema rehearsal are pending separate authorization; external/provider/managed-recovery/real-device gates remain separate and are not upgraded by this patch.
+- production_impact: NOT_TOUCHED. No Production data/config mutation, migration, deploy, commit, push or merge.
+
+## IMP-218 | Focused verification of five remediation changes | 2026-09-30
+
+- scope: IMP-217 application-time, Dashboard customer options, QA grant revoke/cleanup, migration recording and acceptance references; isolated source snapshot, localhost production-mode build, Supabase QA ffrwiglcrlumfvhubaxg.
+- candidate: source fingerprint 8473bf027ebe6512f2ccef1678a16dde2a03852809872e75bc4eac1751660dca; build 19hvlMR6neCqCrwIOKGZb. Baseline commit is only prior-audit metadata, not a fresh Git/remote assertion.
+- checks: UNIT:NEW PASS 13 cases in UTC and 13 in business timezone; QA harness:NEW PASS 4 cases with fresh schema/seed replay; focused lint/typecheck/build:NEW PASS; MIG ledger:NEW PASS 66/66 and exact recorded SQL checksum; UI Dashboard:NEW PASS customer rank 3118, selected/search retention and bounded options; UI Delivery:NEW PASS 08:30 VN -> 01:30Z -> reload 08:30, two lines, PLANNED; SEC/UAT revoke:NEW PASS real next-request denial plus exact restore and 3 cleanup/precondition fault cases.
+- DOC:NEW FAIL missing PLAN-R0 and PLAN-180 in acceptance.md against plan.md 4.4. Metadata/case/gap-row coverage passed separately; acceptance result remains PARTIAL.
+- new_gap: adjacent P2 SO requested-delivery display uses server timezone at src/app/admin/orders/[id]/page.tsx:47. QA DB 2026-11-03T05:00Z displayed 05:00 on UTC rather than business 12:00. Not repaired in this verification-only run.
+- preserved_failures: pnpm snapshot dependency hook/unsafe modules rejection; build env-file worker flag; Owner context probes before protected page readiness; consumed/DRAFT fixture failures. These remain in raw logs and are not converted to PASS.
+- evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-targeted-20260930-8473bf02; NGHIEM_THU_HIEN_XA.md follow-up section. Prior old audit results only provide baseline/root-cause evidence, not validation of this candidate.
+- result: four original findings verified PASS; acceptance PARTIAL with reference check FAIL; additional SO display finding OPEN. Full-system/release gate not assessed.
+- QA mutations: synthetic SO-2026-000028 confirmed through UI; DL-2026-000016 created through UI and left PLANNED, no dispatch/verify/payment/invoice/message. Sales grant restored exactly; owned browser/server closed; no cleanup/seed reset.
+- blocker: repair two acceptance references and adjacent SO rendering; full human/external/performance/recovery gates remain separate.
+- production_impact: NOT_TOUCHED. No managed schema change, git mutation, deploy, cutover or Owner acceptance.
+
+
+## IMP-219 — Remaining reference and SO date display fixes | 2026-10-01
+
+- scope: ACC-CASE-01/30 source references and Sales Order requested delivery date rendering.
+- gap_ids: dangling PLAN-R0/PLAN-180 references; observed SO detail timezone defect (P2).
+- changed_paths: acceptance.md; src/app/admin/orders/[id]/page.tsx; implementation.md; NGHIEM_THU_HIEN_XA.md.
+- delta: ACC-CASE-01 retains canonical Spec requirements and references PLAN-040 for its check strategy; no equivalent R0 phase rule is invented. ACC-CASE-30 references PLAN-055 for R12 authorization boundaries and PLAN-070 for completion/human gates. SO detail uses existing formatBusinessDateTime (Asia/Ho_Chi_Minh), leaving stored UTC and business rules unchanged.
+- new_evidence: implementation changes only; no new execution evidence.
+- reused_evidence: prior targeted run 8473bf027ebe6512f2ccef1678a16dde2a03852809872e75bc4eac1751660dca establishes the two missing IDs and UTC SO display defect; it does not validate the changed candidate.
+- checks: DOC:NOT_RUN; UI:NOT_RUN; lint/typecheck/build:NOT_RUN. No automatic promotion of prior REFERENCE_CHECK=FAIL or acceptance PARTIAL to PASS.
+- result: fixes implemented; verification pending.
+- blocker: fresh targeted verification is not authorized in this turn.
+- production_impact: NOT_TOUCHED; no schema, migration, DB, commit, push or deployment operation.
+
+
+## IMP-220 — Reference and SO workflow verification | 2026-10-01
+
+- scope: corrected plan refs, complete acceptance ID/log-anchor check, SO timezone/read navigation/list interactions and one synthetic draft create/edit workflow.
+- candidate: a95d8eb850aa07b55e769935b7c211b6855b2410dc9afe21fbf8b855db93adc6; build MtxgAPy1CsjrNPuY345oH; local app http://127.0.0.1:4024; separate Supabase QA ffrwiglcrlumfvhubaxg; server UTC / browser Asia/Saigon.
+- changed_paths: NGHIEM_THU_HIEN_XA.md; implementation.md (verification deltas only); evidence /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-so-ref-20261001-a95d8eb8. No application source/test/config edits.
+- new_evidence: DOC plan refs PASS; full 141-ID reference check FAIL (missing implementation log section); implementation-heading check FAIL; 14/15 focused UI PASS with mobile overflow FAIL; QA persisted edited-draft DB PASS; guard/build/affected lint NEW PASS.
+- reused_evidence: unchanged formatter UNIT UTC/VN and unrelated schema/security checks from prior targeted candidate 8473bf02; no new full-suite or release claim.
+- findings: DOC-LOG-ANCHOR-01 P2 CONFIRMED_PREEXISTING (acceptance references a missing canonical log section); SO-MOBILE-OVERFLOW-01 P2 CONFIRMED (SO detail page line 48, viewport 390/document 798, UX-800.1). Neither fixed in this verification-only turn.
+- runner_failures: invalid total_vnd base-table query, ambiguous subtotal/total selector, and wrong parent selector retained as runner/setup failures, not application defects; all before draft Save. Final scoped draft checks PASS.
+- qa_delta: UI-created and UI-edited SO-2026-000033 / 644cf877-d971-463a-aa45-dfad12aeae54; final DRAFT/NOT_STARTED/NOT_DUE, 22000, 2026-11-07T03:15Z; double-click created one draft. No confirmation/payment/dispatch/invoice/message.
+- result: original fixes VERIFIED; focused scope NOT_ACCEPTED because of two remaining findings. Global ERP, Production, real-device UAT and release gate remain outside this run.
+- blocker: remaining mobile and documentation defects need separately authorized remediation. Production/hosted and other workflows NOT_RUN.
+- production_impact: NOT_TOUCHED; no schema/migration/grant/role change, Git, PR, push or deploy. Owned server 4024 and browser/DB resources closed.
+
+
+
+## IMP-ACCEPT-001 — Acceptance evidence index
+
+This section is the stable log destination referenced by acceptance.md. Executed results remain tied to their recorded candidate and environment; this index does not approve release or substitute for Owner UAT.
+
+| Run | Scope | Candidate | Executed result | Evidence |
+|---|---|---|---|---|
+| IMP-220 | References and focused SO workflows | a95d8eb850aa07b55e769935b7c211b6855b2410dc9afe21fbf8b855db93adc6 | 14/15 focused UI PASS; mobile overflow FAIL; full DOC references FAIL on the missing log section in that snapshot | [Run manifest](/Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-so-ref-20261001-a95d8eb8/verification-summary.json) |
+
+- Latest executed run: IMP-220, local QA build with Supabase QA ffrwiglcrlumfvhubaxg.
+- Original artifacts and failed runner attempts are preserved in the linked run; no result is retrospectively changed to PASS.
+- Remediation checkpoint: IMP-221 below. Post-fix DOC/UI checks are NOT_RUN; the former run cannot verify the changed SO layout.
+- Production and hosted Preview verification, real-device UAT and release approval are not established by this index.
+
+### Latest executed verification update | 2026-10-01
+
+The historical IMP-220 entry above is retained. Its latest-run note is superseded by IMP-222: DOC references/headings PASS (141/141), SO responsive/read-only UI PASS (13 scoped cases after preserving and classifying two runner false positives), fingerprint `28ff806cfecd593c7cc885885e6580b13e507f2bfb804840619dc53f0f839c89`.
+
+Evidence: [IMP-222 verification manifest](/Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-so-responsive-20261001-28ff806c/verification-summary.json). Production and Owner acceptance are not covered by this scoped result.
+
+## IMP-221 — Acceptance log anchor and SO mobile remediation | 2026-10-01
+
+- scope: DOC-LOG-ANCHOR-01 and SO-MOBILE-OVERFLOW-01 from IMP-220.
+- gap_ids: DOC-LOG-ANCHOR-01 (P2); SO-MOBILE-OVERFLOW-01 (P2).
+- changed_paths: src/app/admin/orders/[id]/page.tsx; src/app/admin/orders/[id]/order-detail.module.css; implementation.md; NGHIEM_THU_HIEN_XA.md.
+- delta: provides a real IMP-ACCEPT-001 evidence index without changing acceptance requirements or historical verdicts. SO uses a local CSS Module to constrain grid-child minimum widths and turn the existing line table into labeled cards below the established mobile breakpoint. Explicit table/row/cell semantics and column headers are retained; supply actions are not duplicated or removed.
+- new_evidence: implementation changes only; no new executable verification.
+- reused_evidence: IMP-220 reproductions identify the actual missing section and 390px/798px overflow. Unchanged business-time, financial calculation, form/RPC and permission inputs remain available for scoped evidence reuse; prior SO layout/UI evidence does not validate the new layout.
+- checks: DOC:NOT_RUN; UI:NOT_RUN; lint/typecheck/build:NOT_RUN. No full-suite run or automatic PASS.
+- result: both fixes implemented; post-fix verification pending.
+- blocker: fresh targeted DOC and SO mobile/desktop checks require authorization.
+- production_impact: NOT_TOUCHED; no business requirement, schema, migration, DB, role/grant, commit, push or deployment change.
+
+## IMP-222 - DOC and SO responsive verification | 2026-10-01
+
+- scope: acceptance ID/heading/metadata validation; isolated QA SO DRAFT + CONFIRMED responsive detail, read-only navigation, datetime/line totals/reload.
+- gap_ids: missing IMP-ACCEPT-001 and UX-800.1 SO 390px overflow FIX_VERIFIED. OBS-SO-001 non-blocking raw decimal display; not a confirmed business-contract defect.
+- tested_fingerprint: `28ff806cfecd593c7cc885885e6580b13e507f2bfb804840619dc53f0f839c89`; 322 input files; build `k9s8pRgGHa4wWbtigzhR-`. Baseline commit metadata reused, not a fresh Git/remote assertion.
+- changed_paths: implementation.md and NGHIEM_THU_HIEN_XA.md evidence deltas only; no application/schema/config/test-source change.
+- new_evidence: [verification-summary.json](/Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-so-responsive-20261001-28ff806c/verification-summary.json), [detailed report](/Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-so-responsive-20261001-28ff806c/NGHIEM_THU_DOC_SO.md), screenshots/command logs in that evidence bundle.
+- reused_evidence: IMP-220 only for unchanged DRAFT-create/edit, list and anonymous-boundary inputs; its prior DOC/mobile failures are preserved.
+- checks: DOC NEW PASS 141/141 with actual PLAN/IMP headings and docset markers; UI NEW PASS 13 scoped cases; focused ESLint/typecheck/build NEW PASS exit 0.
+- check_history: initial UI command exit 1 (11 PASS, 2 CTA-bound false positives); diagnostic had duplicate-link-name selector failures; focused per-line access/reload PASS 2/2. Original failures retained in artifacts, not hidden or fixed by source mutation.
+- result: PASS_TARGETED_SCOPE; both just-remediated findings verified. Not full ERP/Owner acceptance or Production release gate.
+- blocker: NONE for this scope. Hosted Production, real-device, full financial/security/provider/recovery gates NOT_RUN this turn.
+- production_impact: NOT_TOUCHED; business writes=0; owned local server/browser/DB session closed.
+
+
+## IMP-223 - Authorized Production deployment | 2026-10-01
+
+- scope: latest Owner instruction "ok deploy production nhé"; deploy previously checked candidate source to existing hienxa/hien-xa-erp-v2.
+- source_reference: IMP-222 QA input fingerprint `28ff806cfecd593c7cc885885e6580b13e507f2bfb804840619dc53f0f839c89`, stamped as deployment metadata `hxSourceFingerprint`. This is snapshot identity, not a Git commit or full Production acceptance.
+- deployment: `dpl_FN2DioAPhpj3SLkdWsv53J3RSDAz`; target Production; READY; CLI exit 0; Vercel cloud build completed in 34s.
+- production_url: https://hien-xa-erp-v2-nu.vercel.app
+- immutable_deployment_url: https://hien-xa-erp-v2-kk3khw1yc-hienxa.vercel.app
+- prior_ready_production: https://hien-xa-erp-v2-2rnzgsn67-hienxa.vercel.app (captured rollback reference; no rollback performed).
+- environment: existing Vercel Production variables; Supabase nbwynrwkdbtfsitafsxa; QA runtime disabled; QA env keys absent. Private downloaded environment file removed; not uploaded or archived.
+- changed_paths: implementation.md / NGHIEM_THU_HIEN_XA.md log deltas only in workspace; previously checked source shipped through isolated deployment copy.
+- new_evidence: [deployment record](/Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-production-20261001-FN2DioAP/deployment-record.json), [deployment output](/Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-production-20261001-FN2DioAP/deploy.stdout), [build/deploy log](/Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-production-20261001-FN2DioAP/deploy.log).
+- reused_evidence: IMP-222 DOC/SO targeted QA result only; not reclassified as Production functional PASS.
+- checks: remote build/deploy NEW READY, exit 0. Post-deployment app/login/SO/business/RLS checks NOT_RUN; Owner UAT and release gate not inferred.
+- configuration: no Vercel environment/domain/protection mutation beyond normal Production alias assignment; output still reports vercel_authentication protection; public Production-alias accessibility NOT_TESTED.
+- result: DEPLOYMENT_COMPLETE; GitHub NOT_PUSHED / no PR / no commit requested in this turn.
+- blocker: NONE for requested deployment.
+- production_impact: application deployment and standard Production alias promotion authorized/completed; database/schema/migration/seed/business DML NOT_TOUCHED.
+
+## IMP-224 - Production Owner login and SO read-only verification | 2026-10-01
+
+- scope: Owner-approved post-deploy verification of login and SO read flows on Production; no business submit/source fix.
+- target: https://hien-xa-erp-v2-nu.vercel.app; Vercel alias resolves to `dpl_FN2DioAPhpj3SLkdWsv53J3RSDAz`, Production READY.
+- source_reference: IMP-222 QA input fingerprint `28ff806cfecd593c7cc885885e6580b13e507f2bfb804840619dc53f0f839c89`; deployment IMP-223. Not a refreshed Git/remote assertion.
+- changed_paths: implementation.md and NGHIEM_THU_HIEN_XA.md evidence deltas only; application/schema/config/test source unchanged.
+- new_evidence: [Production report](/Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-production-so-20261001-FN2DioAP/NGHIEM_THU_PRODUCTION_SO.md), [UI matrix](/Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-production-so-20261001-FN2DioAP/production-ui.json), [summary](/Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-production-so-20261001-FN2DioAP/verification-summary.json), screenshots in same artifact bundle.
+- checks: UI NEW PASS for 15 focused checks; one initial SO3 selector timeout raw FAIL retained, exact page subsequently rendered without retry/navigation; root cause NOT_ESTABLISHED, warning preserved. Console zero captured error/warn. Public login and health NEW HTTP 200; Vercel alias NEW MATCH.
+- operational_ux: 390px overflow fix VERIFIED on Production SO4, native table at 1440px; line totals/list/detail/reload/edit-prefill/Back/GET filters/empty state correct on four existing UAT DRAFTs.
+- gap_delta: no new persistent functional defect reproduced in scope; OBS-SO-001 raw-decimal display also observed on Production (P3, non-blocking presentation).
+- limits: CONFIRMED/Delivery navigation, non-null scheduled time, representative pagination NOT_RUN (fixtures absent). Other roles/security/write/finance/inventory/provider/recovery/PERF/full ERP acceptance OUT_OF_SCOPE.
+- result: PASS_SCOPED_FUNCTIONAL_WITH_WARNING; full SO/full ERP release acceptance remains unproven.
+- production_impact: READ_ONLY_BUSINESS; no migration/seed/SQL DML/create/save/confirm/cancel. Necessary authorized Owner authentication only; no credential/JWT/browser storage state archived.
+- cleanup: temporary viewport reset; Owner tab left open at SO list; no logout of other sessions.
+
+
+### IMP-225 | SO notes: exact quantity display and focused QA evidence (2026-10-01)
+
+scope=SO remaining-quantity display + readiness-timeout diagnosis + CONFIRMED SO/Delivery/time read coverage
+gap_ids=OBS-SO-001; missing CONFIRMED/Delivery read fixtures in Production audit (closed on QA only); historical readiness warning (not declared fixed on Production)
+changed_paths=src/app/admin/orders/[id]/page.tsx (prior local display-only patch), implementation.md, NGHIEM_THU_HIEN_XA.md
+new_evidence=/Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-so-notes-20261001-1b4f4572/verification-summary.json; qa-ui.json; fixture-before.json; fixture-after.json; confirmed-so-mobile.png; related-delivery.png
+reused_evidence=IMP-222 unchanged canonical reference evidence and unaffected checks on frozen baseline; prior Production failure retained as warning
+checks=NEW QA_GUARD:PASS; BUILD:PASS exit 0; UI:17 PASS / 0 functional FAIL; DB_READ_BEFORE_AFTER:PASS exit 0, unchanged fixture; deliberate absent-heading timeout control EXPECTED_TIMEOUT after 3052 ms despite timeoutMs=20000
+result=shortage display VERIFIED_ON_QA_NOT_DEPLOYED; CONFIRMED/Delivery/VN time/reload/backlink coverage CLOSED_ON_QA; tool timeout-option discrepancy reproduced, no QA application timeout reproduced
+blocker=exact historical Production timeout root remains NOT_ESTABLISHED; Production CONFIRMED/Delivery verification NOT_RUN; no full-system or release acceptance inferred
+candidate=1b4f4572b2c17ebd67316fa2c12469ec32dc4a115f94fc15516f8ab06c45097f; build=1Ux4JwWkAQp-j5UghaF8R; scope is frozen IMP-222 snapshot plus exact current SO display patch, not the entire current worktree
+production_impact=NOT_TOUCHED; business_submissions=0; deploy=NOT_RUN; no schema, Spec, UXUI or plan changes
+
+
+### IMP-226 | Main auth integration and scoped release verification (2026-10-01)
+
+scope=preserve main internal auth routing + retain local recovery surface; publish current validated audit/SO candidate
+changed_paths=src/lib/auth/actions.ts; implementation.md; NGHIEM_THU_HIEN_XA.md
+new_evidence=/Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-auth-release-20261001-79390112/verification-summary.json; auth-focused.json; auth-ui.json; denial-server-evidence.json
+reused_evidence=IMP-225 unchanged SO/Delivery/display/time/reload evidence; auth entry freshly tested
+checks=NEW AUTH_HARNESS:23 PASS exit 0; ACCESS_POLICY:3 PASS exit 0 (initial snapshot config/alias failure exit 1 preserved); LINT:PASS exit 0; TYPECHECK:PASS exit 0; BUILD:PASS exit 0; UI:6 PASS / 0 FAIL; QA_GUARD:PASS; DB_READ_BEFORE_AFTER:PASS unchanged
+result=integrated main / role-aware routing; recovery surface preserved; customer destination unchanged; Worker direct admin denied server-side
+blocker=NONE for authorized PR/deployment; historical Production timeout/full-system acceptance remain outside this check
+candidate=79390112fc6b5cb8b915e3d1572be5bbaf45a6eec94ea9c0d28db770ddab8694; build=YkF9hgVtlLlsBS3T9yggS
+production_impact=NO_DATA_WRITES; no schema, migration, role/RLS, password or config mutation; Production deploy separately authorized and pending

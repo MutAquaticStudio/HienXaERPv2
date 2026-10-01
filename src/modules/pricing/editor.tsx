@@ -11,7 +11,7 @@ export function PricingRuleEditor({ rule, options }: { rule?: PriceRule; options
   const [scope, setScope] = useState("DEFAULT");
   const id = useId();
   const customerScope = scope === "CUSTOMER_MATERIAL" || scope === "CUSTOMER_GROUP";
-  return <form action={action} className="card card-pad">
+  return <form action={action} className="card card-pad" onReset={() => setScope("DEFAULT")}>
     {rule && <><input type="hidden" name="supersedesId" value={rule.id} /><input type="hidden" name="expectedVersion" value={rule.version} /></>}
     {!rule && <div className="field"><label htmlFor={`${id}-scope`}>Phạm vi *</label><select id={`${id}-scope`} name="scopeType" value={scope} onChange={(event) => setScope(event.target.value)}><option value="DEFAULT">Giá mặc định theo vật tư</option><option value="CUSTOMER_MATERIAL">Khách hàng + vật tư</option><option value="CUSTOMER_GROUP">Khách hàng + nhóm vật tư</option><option value="CUSTOMER_TIER">Nhóm giá khách + vật tư</option></select></div>}
     <div className="form-grid">
@@ -29,6 +29,6 @@ export function PricingRuleEditor({ rule, options }: { rule?: PriceRule; options
     </div>
     {rule && <p className="muted">Không sửa giá cũ: tạo phiên bản mới hoặc ngừng sử dụng. Chứng từ đã chốt giữ snapshot.</p>}
     {state && <p role="status" className="form-message">{state.message}</p>}
-    <div className="form-actions"><button className="button button-primary" type="submit" name="mode" value={rule ? "replace" : "create"} disabled={pending || state?.success}>{pending ? "Đang lưu..." : rule ? "Tạo phiên bản mới" : "Tạo chính sách giá"}</button>{rule && <button className="button button-secondary" type="submit" name="mode" value="deactivate" formNoValidate disabled={pending || state?.success}>Ngừng sử dụng</button>}</div>
+    <div className="form-actions"><button className="button button-primary" type="submit" name="mode" value={rule ? "replace" : "create"} disabled={pending || (!!rule && state?.success)}>{pending ? "Đang lưu..." : rule ? "Tạo phiên bản mới" : "Tạo chính sách giá"}</button>{rule && <button className="button button-secondary" type="submit" name="mode" value="deactivate" formNoValidate disabled={pending || state?.success}>Ngừng sử dụng</button>}</div>
   </form>;
 }

@@ -13,6 +13,7 @@ export type PurchaseActionState = { message: string; success?: boolean; supplier
 const positive = z.string().trim().refine((value) => { try { return new Decimal(value).isPositive(); } catch { return false; } });
 const documentLineSchema = z.object({ materialId: z.uuid(), orderedUomId: z.uuid(), quantity: positive,
   manualCostVnd: z.string().trim().optional(), manualCostReason: z.string().trim().max(500).optional(),
+  manualSalesPriceVnd: z.string().trim().optional(), manualSalesReason: z.string().trim().max(500).optional(),
   sourceLineId: z.uuid().optional(), salesLineId: z.uuid().optional() });
 const documentSchema = z.object({ mode: z.enum(["WAREHOUSE", "LINKED_DIRECT"]), supplierId: z.uuid(),
   warehouseId: z.uuid().optional(), customerId: z.uuid().optional(), siteId: z.uuid().optional(),
@@ -23,7 +24,11 @@ const costPreviewLineSchema = z.object({ materialId: z.uuid(), orderedUomId: z.u
   unitCostVnd: z.string(), priceSourceType: z.string(), lineTotalVnd: z.string(),
   purchasePriceRuleId: z.uuid().nullable(), purchasePriceRuleVersion: z.number().int().nullable(), overrideReason: z.string().nullable() });
 export type CostPreviewLine = z.infer<typeof costPreviewLineSchema>;
-export type CostPreviewResult = { success: boolean; message: string; lines?: CostPreviewLine[]; totalVnd?: string };
+const salesPreviewLineSchema = z.object({ materialId: z.uuid(), orderedUomId: z.uuid(), quantity: z.string(),
+  unitPriceVnd: z.string(), priceSourceType: z.string(), lineTotalVnd: z.string(),
+  pricingRuleId: z.uuid().nullable(), pricingRuleVersion: z.number().nullable(), overrideReason: z.string().nullable() });
+export type SalesPurchasePreview = { lines: z.infer<typeof salesPreviewLineSchema>[]; totalVnd: string };
+export type CostPreviewResult = { success: boolean; message: string; lines?: CostPreviewLine[]; totalVnd?: string; sales?: SalesPurchasePreview };
 
 function documentInput(formData: FormData) {
   const materialIds = formData.getAll("materialId");
@@ -33,6 +38,8 @@ function documentInput(formData: FormData) {
   const reasons = formData.getAll("manualCostReason");
   const sourceIds = formData.getAll("sourceLineId");
   const salesIds = formData.getAll("salesLineId");
+  const salesPrices = formData.getAll("manualSalesPriceVnd");
+  const salesReasons = formData.getAll("manualSalesReason");
   if (!materialIds.length || materialIds.length > 50 || materialIds.length !== uomIds.length || materialIds.length !== quantities.length ||
     (costs.length && costs.length !== materialIds.length) || (reasons.length && reasons.length !== materialIds.length) ||
     (sourceIds.length && sourceIds.length !== materialIds.length) || (salesIds.length && salesIds.length !== materialIds.length)) return null;
@@ -44,6 +51,7 @@ function documentInput(formData: FormData) {
     expectedAt: formData.get("expectedAt"), terms: formData.get("terms"), operationId: formData.get("operationId"),
     lines: materialIds.map((materialId, index) => ({ materialId, orderedUomId: uomIds[index], quantity: quantities[index],
       manualCostVnd: costs[index] ?? "", manualCostReason: reasons[index] ?? "",
+      manualSalesPriceVnd: salesPrices[index] ?? "", manualSalesReason: salesReasons[index] ?? "",
       sourceLineId: sourceIds[index] || undefined, salesLineId: salesIds[index] || undefined })) });
   return parsed.success ? parsed.data : null;
 }
@@ -157,12 +165,17 @@ export async function previewWarehousePurchaseAction(input: unknown): Promise<Co
   const parsed = documentSchema.safeParse(input);
   if (!parsed.success) return { success: false, message: "Chọn nhà cung cấp và nhập đủ các dòng mua trước khi xem giá." };
   const access = await requireInternalPermission("purchasing.create");
-  if (!access.permissions.has("purchasing.price.read")) return { success: false, message: "Không có quyền xem giá mua." };
+  const canReadCost = access.permissions.has("purchasing.price.read");
+  const createsSales = parsed.data.mode === "LINKED_DIRECT" && !parsed.data.salesOrderId && !parsed.data.documentId;
+  if (createsSales && !access.permissions.has("orders.create")) return { success: false, message: "Không có quyền tạo đơn bán liên kết." };
+  if (!canReadCost && !createsSales) return { success: false, message: "Không có quyền xem giá mua." };
   try {
     const draft = parsed.data.documentId ? await loadEditableDraft(parsed.data.documentId, access.branchId) : null;
     if (draft && draft.order.draft_version !== parsed.data.expectedVersion) return { success: false, message: errorMessage("draft_version_conflict") };
     const result = await buildWarehouseLines(parsed.data, access.branchId, access.permissions.has("purchasing.price.manage"), draft?.originals);
-    return { success: true, message: "Giá mua đã được xem trước. Kiểm tra từng dòng trước khi lưu.", lines: result.previews, totalVnd: result.totalVnd };
+    const sales = createsSales ? salesPreview(await buildSalesLines(parsed.data.customerId ?? "", result.lines, access.branchId, parsed.data.lines, access.permissions.has("pricing.manage"))) : undefined;
+    return { success: true, message: "Giá đã được xem trước. Kiểm tra từng dòng trước khi lưu.",
+      ...(canReadCost ? { lines: result.previews, totalVnd: result.totalVnd } : {}), sales };
   } catch (error) { return { success: false, message: error instanceof AppError ? error.message : "Không thể xem trước giá mua." }; }
 }
 
@@ -210,7 +223,14 @@ async function saveWarehouseDocument(mode: "create" | "edit", formData: FormData
       rpcResult = await supabase.rpc("create_direct_purchase_from_sales_order", { target_sales_order_id: input.salesOrderId,
         target_supplier_id: input.supplierId, purchase_lines: result.lines, expected_at: expectedAt, operation_id: input.operationId });
     } else {
-      const salesLines = await buildSalesLines(input.customerId!, result.lines, access.branchId);
+      const salesLines = await buildSalesLines(input.customerId!, result.lines, access.branchId, input.lines, access.permissions.has("pricing.manage"));
+      const actualSales = salesPreview(salesLines);
+      let expectedSales: z.infer<typeof salesPreviewLineSchema>[];
+      try { expectedSales = z.array(salesPreviewLineSchema).length(actualSales.lines.length).parse(JSON.parse(String(formData.get("salesPreview") ?? ""))); }
+      catch { return { message: "Cần xem trước giá bán của mọi dòng trước khi tạo SO liên kết." }; }
+      if (!actualSales.lines.every((line, index) => Object.keys(line).every((key) => line[key as keyof typeof line] === expectedSales[index][key as keyof typeof line]))) {
+        return { message: "Giá bán hoặc dòng hàng đã thay đổi. Vui lòng xem trước lại." };
+      }
       rpcResult = await supabase.rpc("create_linked_direct_drafts", { target_branch_id: access.branchId,
         target_supplier_id: input.supplierId, target_customer_id: input.customerId!, target_site_id: input.siteId!,
         purchase_line: result.lines, sales_line: salesLines, expected_at: expectedAt,
@@ -229,7 +249,8 @@ async function saveWarehouseDocument(mode: "create" | "edit", formData: FormData
 export async function updatePurchaseOrderDraftAction(_: PurchaseActionState, formData: FormData) { return saveWarehouseDocument("edit", formData); }
 
 async function buildSalesLines(customerId: string, purchaseLines: { material_id: string; ordered_uom_id: string;
-  quantity: string; conversion_numerator: string; conversion_denominator: string; rounding_mode: string }[], branchId: string) {
+  quantity: string; conversion_numerator: string; conversion_denominator: string; rounding_mode: string }[], branchId: string,
+  inputs: z.infer<typeof documentLineSchema>[], canManagePrice: boolean) {
   const supabase = await createServerSupabase();
   const materialIds = [...new Set(purchaseLines.map((line) => line.material_id))];
   const uomIds = [...new Set(purchaseLines.map((line) => line.ordered_uom_id))];
@@ -239,7 +260,7 @@ async function buildSalesLines(customerId: string, purchaseLines: { material_id:
     supabase.from("pricing_rules").select("id, branch_id, scope_type, customer_id, material_id, material_group_id, customer_tier_code, price_uom_id, unit_price_vnd, version, source_type, effective_from, effective_to, active")
       .eq("branch_id", branchId).in("price_uom_id", uomIds).eq("active", true),
   ]);
-  if (!customerResult.data || materialResult.error || !materialResult.data || materialResult.data.length !== materialIds.length || ruleResult.error)
+  if (customerResult.error || !customerResult.data || materialResult.error || !materialResult.data || materialResult.data.length !== materialIds.length || ruleResult.error)
     throw new AppError({ code: "VALIDATION_FAILED", message: "Không thể resolve giá bán cho draft liên kết.", status: 422 });
   const rules: PriceRule[] = (ruleResult.data ?? []).map((row) => ({
     id: row.id, branchId: row.branch_id, scope: row.scope_type as PriceRule["scope"],
@@ -251,15 +272,35 @@ async function buildSalesLines(customerId: string, purchaseLines: { material_id:
   const materials = new Map(materialResult.data.map((row) => [row.id, row]));
   const customerTierCode = customerResult.data.tier_code ?? undefined;
   const at = new Date();
-  return purchaseLines.map((line) => {
-    const selected = resolvePrice({ branchId, customerId, customerTierCode,
+  return purchaseLines.map((line, index) => {
+    const manual = inputs[index].manualSalesPriceVnd?.trim() ?? "";
+    const reason = inputs[index].manualSalesReason?.trim() ?? "";
+    if (manual && (!canManagePrice || !/^[1-9]\d*$/.test(manual) || manual.length > 19 || BigInt(manual) > 9223372036854775807n || reason.length < 3)) {
+      throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: giá bán thủ công cần quyền quản lý giá và lý do.`, status: 422 });
+    }
+    if (!manual && reason) throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: cần nhập giá bán khi ghi lý do.`, status: 422 });
+    const selected = manual ? null : resolvePrice({ branchId, customerId, customerTierCode,
       materialId: line.material_id, materialGroupId: materials.get(line.material_id)!.group_id,
       priceUomId: line.ordered_uom_id, at, rules });
     return { material_id: line.material_id, ordered_uom_id: line.ordered_uom_id, quantity: line.quantity,
       conversion_numerator: line.conversion_numerator, conversion_denominator: line.conversion_denominator,
-      rounding_mode: line.rounding_mode, unit_price_vnd: selected.unitPriceVnd, pricing_rule_id: selected.id,
-      pricing_rule_version: selected.version, price_source_type: selected.sourceType };
+      rounding_mode: line.rounding_mode, unit_price_vnd: manual || selected!.unitPriceVnd, pricing_rule_id: selected?.id ?? null,
+      pricing_rule_version: selected?.version ?? null, price_source_type: manual ? "MANUAL_APPROVED" : selected!.sourceType,
+      override_reason: manual ? reason : null };
   });
+}
+
+function salesPreview(lines: Awaited<ReturnType<typeof buildSalesLines>>): SalesPurchasePreview {
+  const previews = lines.map((line) => {
+    const amount = new Decimal(line.quantity).mul(line.unit_price_vnd).toDecimalPlaces(0, Decimal.ROUND_HALF_UP);
+    if (!amount.isFinite() || amount.lte(0) || amount.gt("9223372036854775807")) throw new AppError({ code: "VALIDATION_FAILED", message: "Thành tiền bán không hợp lệ.", status: 422 });
+    return { materialId: line.material_id, orderedUomId: line.ordered_uom_id, quantity: line.quantity,
+      unitPriceVnd: line.unit_price_vnd, priceSourceType: line.price_source_type, lineTotalVnd: amount.toFixed(0),
+      pricingRuleId: line.pricing_rule_id, pricingRuleVersion: line.pricing_rule_version, overrideReason: line.override_reason };
+  });
+  const total = previews.reduce((sum, line) => sum + BigInt(line.lineTotalVnd), 0n);
+  if (total > 9223372036854775807n) throw new AppError({ code: "VALIDATION_FAILED", message: "Tổng đơn bán vượt giới hạn.", status: 422 });
+  return { lines: previews, totalVnd: total.toString() };
 }
 
 export async function createPurchaseOrderAction(_: PurchaseActionState, formData: FormData): Promise<PurchaseActionState> {
