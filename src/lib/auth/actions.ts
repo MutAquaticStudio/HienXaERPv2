@@ -48,7 +48,9 @@ export async function recoveryAction(_: AuthFormState, formData: FormData): Prom
   try {
     const supabase = await createServerSupabase();
     const origin = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-    await supabase.auth.resetPasswordForEmail(parsed.data.email, { redirectTo: `${origin}/recovery/confirm` });
+    const redirectTo = new URL("/recovery/confirm", origin);
+    redirectTo.searchParams.set("surface", parsed.data.surface);
+    await supabase.auth.resetPasswordForEmail(parsed.data.email, { redirectTo: redirectTo.toString() });
   } catch {
     return { message: "Không thể gửi yêu cầu lúc này. Vui lòng thử lại sau." };
   }

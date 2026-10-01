@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useRef, useState } from "react";
+import { startTransition, useActionState, useMemo, useRef, useState } from "react";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createPurchaseOrderAction, previewWarehousePurchaseAction, updatePurchaseOrderDraftAction, type CostPreviewResult } from "@/modules/purchasing/actions";
 import type { PurchaseFormOptions, SalesLineContext, SalesOrderPurchaseLine } from "@/modules/purchasing/form-options";
@@ -18,10 +18,10 @@ function localDateTime(value: string | null) {
   return new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(value)).replace(" ", "T");
 }
 
-export function PurchaseOrderForm({ options, operationId, salesLine, sourceLines, canCreateSales, canManagePrice, canReadPrice, existing, initialSupplierId, initialWarehouseId, initialMaterialId }: {
+export function PurchaseOrderForm({ options, operationId, salesLine, sourceLines, canCreateSales, canManagePrice, canReadPrice, canManageSalesPrice = false, existing, initialSupplierId, initialWarehouseId, initialMaterialId }: {
   options: PurchaseFormOptions; operationId: string; salesLine?: SalesLineContext | null;
   sourceLines?: SalesOrderPurchaseLine[];
-  canCreateSales: boolean; canManagePrice: boolean; canReadPrice: boolean; existing?: ExistingPurchaseDraft;
+  canCreateSales: boolean; canManagePrice: boolean; canReadPrice: boolean; canManageSalesPrice?: boolean; existing?: ExistingPurchaseDraft;
   initialSupplierId?: string; initialWarehouseId?: string; initialMaterialId?: string;
 }) {
   const [state, action, pending] = useActionState(existing ? updatePurchaseOrderDraftAction : createPurchaseOrderAction, undefined);
@@ -33,10 +33,10 @@ export function PurchaseOrderForm({ options, operationId, salesLine, sourceLines
   const [warehouseId, setWarehouseId] = useState(existing?.warehouseId ?? initialWarehouse?.id ?? "");
   const [customerId, setCustomerId] = useState(options.customers[0]?.id ?? "");
   const selectedSource = salesLine?.availableLines.find((line) => line.id === salesLine.id);
-  const [lines, setLines] = useState(existing ? existing.lines.map((line, key) => ({ ...line, key })) : [{ key: 0,
+  const [lines, setLines] = useState(existing ? existing.lines.map((line, key) => ({ ...line, key, manualSalesPriceVnd: "", manualSalesReason: "" })) : [{ key: 0,
     sourceLineId: "", salesLineId: selectedSource?.id ?? "", materialId: selectedSource?.materialId ?? initialMaterial?.id ?? "",
     uomId: selectedSource?.uomId ?? initialMaterial?.uoms[0]?.id ?? "",
-    quantity: selectedSource?.remainingOrderedQuantity ?? "", manualCostVnd: "", manualCostReason: "" }]);
+    quantity: selectedSource?.remainingOrderedQuantity ?? "", manualCostVnd: "", manualCostReason: "", manualSalesPriceVnd: "", manualSalesReason: "" }]);
   const nextLineKey = useRef(existing?.lines.length ?? 1);
   const priceRevision = useRef(0);
   const [previewRecord, setPreviewRecord] = useState<{ state: typeof state; value: CostPreviewResult } | null>(null);
@@ -47,6 +47,7 @@ export function PurchaseOrderForm({ options, operationId, salesLine, sourceLines
   const sourceMode = !!salesLine || existing?.destinationType === "CUSTOMER_SITE";
   const availableSourceLines = sourceLines ?? salesLine?.availableLines ?? [];
   const warehouseMode = mode === "WAREHOUSE";
+  const createsSales = !warehouseMode && !sourceMode;
   const emptyLines = !supplierId || !options.materials.length || lines.some((line) => !line.materialId || !line.uomId || !line.quantity || (sourceMode && !line.salesLineId));
   const disabled = !options.suppliers.length || emptyLines || (warehouseMode ? !warehouseId : sourceMode ? !availableSourceLines.length : !canCreateSales || !sites.length);
   function invalidatePrice() { priceRevision.current += 1; setPreview(null); }
@@ -62,7 +63,7 @@ export function PurchaseOrderForm({ options, operationId, salesLine, sourceLines
     invalidatePrice();
     setLines((current) => [...current, { key: nextLineKey.current++, sourceLineId: "", salesLineId: source?.id ?? "",
       materialId: source?.materialId ?? material.id, uomId: source?.uomId ?? material.uoms[0]?.id ?? "",
-      quantity: source?.remainingOrderedQuantity ?? "", manualCostVnd: "", manualCostReason: "" }]);
+      quantity: source?.remainingOrderedQuantity ?? "", manualCostVnd: "", manualCostReason: "", manualSalesPriceVnd: "", manualSalesReason: "" }]);
   }
   async function loadPreview() {
     if (emptyLines) { setPreview({ success: false, message: "Nhập đủ các dòng mua trước khi xem giá." }); return; }
@@ -75,23 +76,30 @@ export function PurchaseOrderForm({ options, operationId, salesLine, sourceLines
         documentId: existing?.id, expectedVersion: existing?.version, expectedAt: "", terms: "", operationId,
         lines: lines.map((line) => ({ materialId: line.materialId, orderedUomId: line.uomId, quantity: line.quantity,
           manualCostVnd: line.manualCostVnd, manualCostReason: line.manualCostReason,
+          manualSalesPriceVnd: line.manualSalesPriceVnd, manualSalesReason: line.manualSalesReason,
           sourceLineId: line.sourceLineId || undefined, salesLineId: line.salesLineId || undefined })) });
       if (revision === priceRevision.current) setPreview(result);
     } catch { if (revision === priceRevision.current) setPreview({ success: false, message: "Không thể xem trước giá mua." }); }
     finally { setPreviewPending(false); }
   }
-  return <form className="card card-pad" action={action}>
+  return <form className="card card-pad" onSubmit={(event) => {
+    event.preventDefault();
+    if (pending) return;
+    const data = new FormData(event.currentTarget);
+    startTransition(() => action(data));
+  }}>
     <input type="hidden" name="operationId" value={operationId} />
     <input type="hidden" name="mode" value={mode} />
     {existing && <><input type="hidden" name="documentId" value={existing.id} /><input type="hidden" name="expectedVersion" value={existing.version} /><input type="hidden" name="supplierId" value={existing.supplierId} />{warehouseMode && <input type="hidden" name="warehouseId" value={existing.warehouseId ?? ""} />}</>}
     {(salesLine?.orderId || existing?.sourceSalesOrderId) && <input type="hidden" name="salesOrderId" value={salesLine?.orderId ?? existing?.sourceSalesOrderId ?? ""} />}
+    <input type="hidden" name="salesPreview" value={preview?.success && preview.sales ? JSON.stringify(preview.sales.lines) : ""} />
     <input type="hidden" name="costPreview" value={preview?.success ? JSON.stringify(preview.lines) : ""} />
     {!existing && !salesLine && <div className="field mode-field"><label htmlFor="mode">Giao đến</label><select id="mode" value={mode} onChange={(event) => { setMode(event.target.value as typeof mode); invalidatePrice(); }}><option value="WAREHOUSE">Kho Hiền Xa</option><option value="LINKED_DIRECT" disabled={!canCreateSales}>Giao thẳng khách · tạo draft bán liên kết</option></select></div>}
     {salesLine && <section className="context-strip"><strong>{salesLine.orderNumber} · {salesLine.materialName}</strong><span>{salesLine.customerName} · {salesLine.siteName}</span><span>Còn thiếu nguồn: {salesLine.remainingOrderedQuantity} {salesLine.orderedUomSymbol}</span></section>}
     <div className="form-grid">
       <div className="field"><label htmlFor="supplierId">Nhà cung cấp</label><select id="supplierId" name="supplierId" value={supplierId} disabled={!!existing} onChange={(event) => { setSupplierId(event.target.value); invalidatePrice(); }} required>{options.suppliers.map((supplier) => <option value={supplier.id} key={supplier.id}>{supplier.name}</option>)}</select></div>
       {warehouseMode && <div className="field"><label htmlFor="warehouseId">Kho nhận</label><select id="warehouseId" name="warehouseId" value={warehouseId} disabled={!!existing} onChange={(event) => setWarehouseId(event.target.value)} required>{options.warehouses.map((warehouse) => <option value={warehouse.id} key={warehouse.id}>{warehouse.name}</option>)}</select></div>}
-      {!warehouseMode && !sourceMode && <><div className="field"><label htmlFor="customerId">Khách hàng</label><select id="customerId" name="customerId" value={customerId} onChange={(event) => setCustomerId(event.target.value)} required>{options.customers.map((customer) => <option value={customer.id} key={customer.id}>{customer.name}</option>)}</select></div><div className="field"><label htmlFor="siteId">Công trình</label><select id="siteId" name="siteId" key={customerId} required>{sites.map((site) => <option value={site.id} key={site.id}>{site.name} · {site.address}</option>)}</select></div></>}
+      {!warehouseMode && !sourceMode && <><div className="field"><label htmlFor="customerId">Khách hàng</label><select id="customerId" name="customerId" value={customerId} onChange={(event) => { setCustomerId(event.target.value); invalidatePrice(); }} required>{options.customers.map((customer) => <option value={customer.id} key={customer.id}>{customer.name}</option>)}</select></div><div className="field"><label htmlFor="siteId">Công trình</label><select id="siteId" name="siteId" key={customerId} onChange={invalidatePrice} required>{sites.map((site) => <option value={site.id} key={site.id}>{site.name} · {site.address}</option>)}</select></div></>}
       <div className="field"><label htmlFor="expectedAt">Ngày dự kiến</label><input id="expectedAt" name="expectedAt" type="datetime-local" defaultValue={localDateTime(existing?.expectedAt ?? null)} /></div>
       <div className="field field-full"><label htmlFor="terms">Điều khoản mua</label><textarea id="terms" name="terms" maxLength={1000} defaultValue={existing?.terms ?? ""} /></div>
     </div>
@@ -101,13 +109,15 @@ export function PurchaseOrderForm({ options, operationId, salesLine, sourceLines
         {sourceMode ? <><div className="field"><label htmlFor={`purchase-source-${line.key}`}>Dòng đơn bán *</label><select id={`purchase-source-${line.key}`} name={line.sourceLineId ? undefined : "salesLineId"} value={line.salesLineId} disabled={!!line.sourceLineId} onChange={(event) => { const selected = availableSourceLines.find((item) => item.id === event.target.value); if (selected) updateLine(line.key, { salesLineId: selected.id, materialId: selected.materialId, uomId: selected.uomId, quantity: selected.remainingOrderedQuantity }); }} required>{availableSourceLines.map((item) => <option key={item.id} value={item.id} disabled={item.id !== line.salesLineId && (Number(item.remainingOrderedQuantity) <= 0 || lines.some((entry) => entry.salesLineId === item.id))}>{item.materialName} · còn {item.remainingOrderedQuantity} {item.uomSymbol}</option>)}</select>{line.sourceLineId && <input type="hidden" name="salesLineId" value={line.salesLineId} />}</div><div className="field"><span>Vật tư nguồn</span><strong>{availableSourceLines.find((item) => item.id === line.salesLineId)?.materialName ?? "Dòng không còn khả dụng"}</strong><input type="hidden" name="materialId" value={line.materialId} /></div></> : <><input type="hidden" name="salesLineId" value="" /><div className="field"><label htmlFor={`purchase-material-${line.key}`}>Vật tư *</label><select id={`purchase-material-${line.key}`} name="materialId" value={line.materialId} onChange={(event) => { const selected = options.materials.find((item) => item.id === event.target.value); updateLine(line.key, { materialId: event.target.value, uomId: selected?.uoms[0]?.id ?? "" }); }} required>{options.materials.map((material) => <option key={material.id} value={material.id}>{material.name}</option>)}</select></div></>}
         <div className="field"><label htmlFor={`purchase-uom-${line.key}`}>Đơn vị mua *</label><select id={`purchase-uom-${line.key}`} name={line.manualCostVnd && !canManagePrice ? undefined : "orderedUomId"} value={line.uomId} disabled={!!line.manualCostVnd && !canManagePrice} onChange={(event) => updateLine(line.key, { uomId: event.target.value })} required>{lineUoms.map((uom) => <option key={uom.id} value={uom.id}>{uom.symbol}</option>)}</select>{line.manualCostVnd && !canManagePrice && <input type="hidden" name="orderedUomId" value={line.uomId} />}</div>
         <div className="field"><label htmlFor={`purchase-qty-${line.key}`}>Số lượng *</label><input id={`purchase-qty-${line.key}`} name="quantity" inputMode="decimal" value={line.quantity} onChange={(event) => updateLine(line.key, { quantity: event.target.value })} required /></div>
+        {createsSales && canManageSalesPrice && <><div className="field"><label htmlFor={`sales-price-${line.key}`}>Giá bán thủ công (VND)</label><input id={`sales-price-${line.key}`} name="manualSalesPriceVnd" inputMode="numeric" value={line.manualSalesPriceVnd} onChange={(event) => updateLine(line.key, { manualSalesPriceVnd: event.target.value })} /></div><div className="field"><label htmlFor={`sales-reason-${line.key}`}>Lý do giá bán thủ công</label><input id={`sales-reason-${line.key}`} name="manualSalesReason" maxLength={500} value={line.manualSalesReason} onChange={(event) => updateLine(line.key, { manualSalesReason: event.target.value })} /></div></>}
         {canManagePrice ? <><div className="field"><label htmlFor={`purchase-cost-${line.key}`}>Giá mua thủ công (VND)</label><input id={`purchase-cost-${line.key}`} name="manualCostVnd" inputMode="numeric" value={line.manualCostVnd} onChange={(event) => updateLine(line.key, { manualCostVnd: event.target.value })} /></div><div className="field"><label htmlFor={`purchase-reason-${line.key}`}>Lý do giá thủ công</label><input id={`purchase-reason-${line.key}`} name="manualCostReason" maxLength={500} value={line.manualCostReason} onChange={(event) => updateLine(line.key, { manualCostReason: event.target.value })} /></div></> : <><input type="hidden" name="manualCostVnd" value={line.manualCostVnd} /><input type="hidden" name="manualCostReason" value="" />{line.manualCostVnd && <p className="muted">Giá mua thủ công đã duyệt: {formatVnd(vnd(line.manualCostVnd))}. Chỉ người quản lý giá được đổi.</p>}</>}
-      </div>{canReadPrice && (preview?.success && preview.lines?.[index] ? <div className="commercial-price-strip"><span>Giá mua: <strong>{formatVnd(vnd(preview.lines[index].unitCostVnd))}</strong></span><span>Nguồn: <strong>{preview.lines[index].priceSourceType}</strong></span><span>Thành tiền: <strong>{formatVnd(vnd(preview.lines[index].lineTotalVnd))}</strong></span></div> : <p className="muted">Chưa xem trước giá dòng này.</p>)}</div>;
+      </div>{canReadPrice && (preview?.success && preview.lines?.[index] ? <div className="commercial-price-strip"><span>Giá mua: <strong>{formatVnd(vnd(preview.lines[index].unitCostVnd))}</strong></span><span>Nguồn: <strong>{preview.lines[index].priceSourceType}</strong></span><span>Thành tiền: <strong>{formatVnd(vnd(preview.lines[index].lineTotalVnd))}</strong></span></div> : <p className="muted">Chưa xem trước giá dòng này.</p>)}{createsSales && preview?.success && preview.sales?.lines[index] && <div className="commercial-price-strip"><span>Giá bán khách: <strong>{formatVnd(vnd(preview.sales.lines[index].unitPriceVnd))}</strong></span><span>Nguồn: <strong>{preview.sales.lines[index].priceSourceType}</strong></span><span>Thành tiền bán: <strong>{formatVnd(vnd(preview.sales.lines[index].lineTotalVnd))}</strong></span></div>}</div>;
     })}</div><button className="button button-secondary" type="button" onClick={addLine} disabled={lines.length >= 50 || !options.materials.length || (sourceMode && !availableSourceLines.some((item) => Number(item.remainingOrderedQuantity) > 0 && !lines.some((line) => line.salesLineId === item.id)))}>+ Thêm dòng</button>
-    {canReadPrice ? <div className="commercial-preview"><button className="button button-secondary" type="button" onClick={loadPreview} disabled={pending || previewPending || disabled}>{previewPending ? "Đang tính giá..." : "Tính giá mua và xem trước"}</button>{preview?.success && preview.totalVnd && <div className="commercial-preview-total"><span>Tạm tính <strong>{formatVnd(vnd(preview.totalVnd))}</strong></span><span>Tổng <strong>{formatVnd(vnd(preview.totalVnd))}</strong></span></div>}</div> : <p className="muted">Giá mua được giữ ẩn theo quyền. Hệ thống vẫn kiểm tra giá khi lưu.</p>}
+    {(canReadPrice || createsSales) ? <div className="commercial-preview"><button className="button button-secondary" type="button" onClick={loadPreview} disabled={pending || previewPending || disabled}>{previewPending ? "Đang tính giá..." : createsSales ? "Xem trước giá mua và giá bán" : "Tính giá mua và xem trước"}</button>{preview?.success && preview.totalVnd && <div className="commercial-preview-total"><span>Tạm tính <strong>{formatVnd(vnd(preview.totalVnd))}</strong></span><span>Tổng <strong>{formatVnd(vnd(preview.totalVnd))}</strong></span></div>}</div> : <p className="muted">Giá mua được giữ ẩn theo quyền. Hệ thống vẫn kiểm tra giá khi lưu.</p>}
+    {createsSales && preview?.success && preview.sales && <div className="commercial-preview-total"><span>Tổng giá bán khách <strong>{formatVnd(vnd(preview.sales.totalVnd))}</strong></span></div>}
     {preview?.message && <p role="status" className={`form-message${preview.success ? " success" : ""}`}>{preview.message}</p>}
     {mode === "LINKED_DIRECT" && !salesLine && <p className="mock-banner">Lưu một thao tác sẽ tạo hai bản nháp liên kết. Giá mua thuộc PO; giá bán được resolve và chỉ lưu ở SO.</p>}
     {state?.message && <p className={`form-message${state.success ? " success" : ""}`} role="status">{state.message}</p>}
-    <div className="form-actions"><button className="button button-primary" disabled={pending || disabled || (canReadPrice && !preview?.success)} type="submit">{pending ? "Đang lưu..." : existing ? "Lưu thay đổi PO nháp" : salesLine ? "Lưu PO giao thẳng" : mode === "LINKED_DIRECT" ? "Lưu đơn mua và bản nháp bán" : "Lưu nháp đơn mua"}</button></div>
+    <div className="form-actions"><button className="button button-primary" disabled={pending || disabled || ((canReadPrice || createsSales) && !preview?.success) || (createsSales && !preview?.sales)} type="submit">{pending ? "Đang lưu..." : existing ? "Lưu thay đổi PO nháp" : salesLine ? "Lưu PO giao thẳng" : mode === "LINKED_DIRECT" ? "Lưu đơn mua và bản nháp bán" : "Lưu nháp đơn mua"}</button></div>
   </form>;
 }

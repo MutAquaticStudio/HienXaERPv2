@@ -4,6 +4,13 @@ import { AppError } from "./errors";
 export type QuantityUnit = "kg" | "ton" | "bag";
 export type Quantity = Readonly<{ value: string; unit: QuantityUnit }>;
 
+// Display the stored quantity exactly, without database scale padding or rounding.
+export function formatQuantity(value: string) {
+  const [integer, fraction] = new Decimal(value).toFixed().split(".");
+  const whole = new Intl.NumberFormat("vi-VN").format(BigInt(integer));
+  return fraction ? `${whole},${fraction}` : whole;
+}
+
 export function quantity(value: string, unit: QuantityUnit): Quantity {
   const decimal = new Decimal(value);
   if (!decimal.isFinite() || decimal.isNegative()) {

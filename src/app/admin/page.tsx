@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import { Suspense, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import { DashboardDetails, type DashboardDetail } from "@/components/dashboard/dashboard-details";
 import { requireInternalPermission } from "@/lib/access/context";
@@ -15,6 +15,9 @@ type Snapshot = {
 };
 type Receivable = { obligation_id: string; party_name: string; site_name: string | null; outstanding_amount_vnd: string; due_date: string };
 type Payable = { obligation_id: string; party_name: string; outstanding_amount_vnd: string; due_date: string };
+type DashboardQuery = { from?: string; to?: string; customer?: string; customerSearch?: string; site?: string; sales?: string; activity?: string };
+type DashboardAccess = Awaited<ReturnType<typeof requireInternalPermission>>;
+type DashboardArgs = { target_branch_id: string; from_inclusive: string; to_exclusive: string; knowledge_cutoff: string; target_customer_id: string | null; target_site_id: string | null; target_sales_employee_id: string | null; target_activity_kind: string | null };
 
 function localParts(date = new Date()) {
   const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(date);
@@ -52,7 +55,49 @@ function Kpi({ label, metric, children }: { label: string; metric: Metric; child
   return <article className="card metric-card"><span className="metric-label">{label}</span><strong className="metric-value">{children ?? moneyMetric(metric)}</strong>{qualityText(metric.quality) && <span className="metric-note">{qualityText(metric.quality)}</span>}</article>;
 }
 
-export default async function AdminDashboard({ searchParams }: { searchParams: Promise<{ from?: string; to?: string; customer?: string; site?: string; sales?: string; activity?: string }> }) {
+async function LowStockAlert({ access }: { access: DashboardAccess }) {
+  if (!access.permissions.has("inventory.read")) return null;
+  const supabase = await createServerSupabase();
+  const { count } = await supabase.from("low_stock_alert_read").select("threshold_id", { count: "exact", head: true }).eq("branch_id", access.branchId);
+  return Number(count ?? 0) > 0 ? <Link className="quality-callout" href="/admin/inventory#low-stock-alerts">Có {count} cảnh báo tồn kho dưới ngưỡng. Mở danh sách và tạo nháp PO khi cần.</Link> : null;
+}
+
+async function DashboardFilters({ access, query, from, to }: { access: DashboardAccess; query: DashboardQuery; from: string; to: string }) {
+  const supabase = await createServerSupabase();
+  const customerSearch = query.customerSearch?.trim().slice(0, 120) ?? "";
+  let customerRequest = supabase.from("customers").select("id, display_name").eq("branch_id", access.branchId).eq("active", true);
+  if (customerSearch) customerRequest = customerRequest.ilike("display_name", `%${customerSearch.replace(/[\\%_]/g, "\\$&")}%`);
+  const [customerResult, selectedCustomerResult, siteResult, salesResult] = await Promise.all([
+    customerRequest.order("display_name").order("id").limit(200),
+    query.customer ? supabase.from("customers").select("id, display_name").eq("branch_id", access.branchId).eq("active", true).eq("id", query.customer).maybeSingle() : Promise.resolve({ data: null, error: null }),
+    supabase.rpc("dashboard_site_options", { target_branch_id: access.branchId }),
+    supabase.from("employees").select("id, display_name").eq("active", true).order("display_name").limit(200),
+  ]);
+  const customers = [...(customerResult.data ?? [])];
+  const selectedCustomer = selectedCustomerResult.data;
+  if (selectedCustomer && !customers.some((item) => item.id === selectedCustomer.id)) customers.unshift(selectedCustomer);
+  const siteOptions = (siteResult.data ?? []) as Array<{ id: string; customer_id: string; name: string }>;
+  return <form className="filter-bar" method="get"><label>Từ ngày<input type="date" name="from" defaultValue={from} /></label><label>Đến trước ngày<input type="date" name="to" defaultValue={to} /></label><label>Tìm khách hàng<input type="search" name="customerSearch" defaultValue={customerSearch} maxLength={120} placeholder="Nhập tên khách rồi bấm Tìm khách" /></label><button className="button button-secondary" type="submit">Tìm khách</button><label>Khách hàng<select name="customer" defaultValue={query.customer ?? ""}><option value="">Tất cả</option>{customers.map((item) => <option key={item.id} value={item.id}>{item.display_name}</option>)}</select></label><label>Công trình<select name="site" defaultValue={query.site ?? ""}><option value="">Tất cả</option>{siteOptions.filter((item) => !query.customer || item.customer_id === query.customer).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label><label>Sales<select name="sales" defaultValue={query.sales ?? ""}><option value="">Tất cả</option>{(salesResult.data ?? []).map((item) => <option key={item.id} value={item.id}>{item.display_name}</option>)}</select></label><label>Hoạt động<select name="activity" defaultValue={query.activity ?? ""}><option value="">Tất cả</option><option value="DELIVERY">Giao hàng</option><option value="SALES">Bán hàng</option><option value="SERVICE">Dịch vụ</option><option value="ADMIN">Hành chính</option></select></label><button className="button button-primary" type="submit">Làm mới</button>{(customerResult.error || selectedCustomerResult.error) && <p role="status">Không thể tải danh sách khách hàng. Hãy thử lại.</p>}{!customerResult.error && customerSearch && customerResult.data?.length === 0 && <p role="status">Không tìm thấy khách phù hợp; khách đang chọn vẫn được giữ.</p>}{customerResult.data?.length === 200 && <p className="muted">Danh sách có giới hạn; hãy nhập tên cụ thể hơn để tìm khách chưa hiển thị.</p>}</form>;
+}
+
+async function DashboardSecondary({ access, query, to, dashboardArgs, snapshot }: { access: DashboardAccess; query: DashboardQuery; to: string; dashboardArgs: DashboardArgs; snapshot: Snapshot }) {
+  const supabase = await createServerSupabase();
+  const [dashboardDetailResult, receivableResult, payableResult] = await Promise.all([
+    supabase.rpc("finance_dashboard_detail", dashboardArgs),
+    access.permissions.has("finance.ar.read") ? supabase.rpc("finance_obligation_snapshot", { target_branch_id: access.branchId, target_side: "AR", as_of: instant(to), knowledge_cutoff: dashboardArgs.knowledge_cutoff, target_customer_id: query.customer || null, target_site_id: query.site || null, target_sales_employee_id: query.sales || null }).gt("outstanding_amount_vnd", 0).order("outstanding_amount_vnd", { ascending: false }).limit(6) : Promise.resolve({ data: [] }),
+    access.permissions.has("finance.ap.read") ? supabase.rpc("finance_obligation_snapshot", { target_branch_id: access.branchId, target_side: "AP", as_of: instant(to), knowledge_cutoff: dashboardArgs.knowledge_cutoff, target_customer_id: query.customer || null, target_site_id: query.site || null, target_sales_employee_id: query.sales || null }).gt("outstanding_amount_vnd", 0).order("outstanding_amount_vnd", { ascending: false }).limit(6) : Promise.resolve({ data: [] }),
+  ]);
+  const receivables = (receivableResult.data ?? []) as Receivable[];
+  const payables = (payableResult.data ?? []) as Payable[];
+  return <>
+    <DashboardDetails detail={(dashboardDetailResult.data as DashboardDetail | null) ?? null} expenseMetric={snapshot.operating_expense} commissionMetric={snapshot.commission_payable} />
+    <section className="metric-grid obligations-grid"><Kpi label="Khách hàng phải thu" metric={snapshot.receivable} /><Kpi label="Nhà cung cấp phải trả" metric={snapshot.payable} /><Kpi label="Lương phải chi" metric={snapshot.salary_payable} /><Kpi label="Hoa hồng phải chi" metric={snapshot.commission_payable} /></section>
+    <div className="two-column"><section className="card"><div className="section-head"><h2>Khách / công trình đang nợ</h2>{access.permissions.has("finance.ar.read") && <Link className="code-link" href={listHref("/admin/dashboard/obligations", { side: "AR", customer: query.customer, site: query.site, sales: query.sales, to })}>Tất cả</Link>}</div><ul className="rank-list">{receivables.map((item) => <li key={item.obligation_id}><Link href={`/admin/receivables/${item.obligation_id}`}><span><strong>{item.party_name}</strong><small>{item.site_name ?? "Chưa gắn công trình"} · hạn {vietnameseDate.format(new Date(item.due_date))}</small></span><b>{formatVnd(vnd(String(item.outstanding_amount_vnd)))}</b></Link></li>)}</ul>{!receivables.length && <p className="empty-inline">Không có khoản mở hoặc không có quyền xem.</p>}<p className="card-scope-note">Cùng cutoff và bộ lọc với snapshot phía trên.</p></section>
+      <section className="card"><div className="section-head"><h2>NCC đang phải trả</h2>{query.customer || query.site || query.sales ? <span className="scope-chip">Không áp dụng theo dimension</span> : access.permissions.has("finance.ap.read") && <Link className="code-link" href={listHref("/admin/dashboard/obligations", { side: "AP", to })}>Tất cả</Link>}</div>{query.customer || query.site || query.sales ? <p className="quality-callout">Danh sách AP không áp bộ lọc khách/công trình/sales nếu nguồn không có dimension chính xác.</p> : <ul className="rank-list">{payables.map((item) => <li key={item.obligation_id}><Link href={`/admin/payables/${item.obligation_id}`}><span><strong>{item.party_name}</strong><small>Hạn {vietnameseDate.format(new Date(item.due_date))}</small></span><b>{formatVnd(vnd(String(item.outstanding_amount_vnd)))}</b></Link></li>)}</ul>} {!payables.length && !query.customer && !query.site && !query.sales && <p className="empty-inline">Không có khoản mở hoặc không có quyền xem.</p>}<p className="card-scope-note">Cùng cutoff với snapshot phía trên.</p></section></div>
+  </>;
+}
+
+export default async function AdminDashboard({ searchParams }: { searchParams: Promise<DashboardQuery> }) {
   const access = await requireInternalPermission("dashboard.read");
   const query = await searchParams;
   const defaults = monthRange();
@@ -70,16 +115,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
     target_sales_employee_id: query.sales || null,
     target_activity_kind: query.activity || null,
   };
-  const [snapshotResult, dashboardDetailResult, customerResult, siteResult, salesResult, receivableResult, payableResult, lowStockResult] = await Promise.all([
-    supabase.rpc("finance_dashboard_snapshot", dashboardArgs),
-    supabase.rpc("finance_dashboard_detail", dashboardArgs),
-    supabase.from("customers").select("id, display_name").eq("branch_id", access.branchId).eq("active", true).order("display_name").limit(200),
-    supabase.from("customer_sites").select("id, customer_id, name, customers!inner(branch_id)").eq("customers.branch_id", access.branchId).eq("active", true).order("name").limit(300),
-    supabase.from("employees").select("id, display_name").eq("active", true).order("display_name").limit(200),
-    access.permissions.has("finance.ar.read") ? supabase.rpc("finance_obligation_snapshot", { target_branch_id: access.branchId, target_side: "AR", as_of: instant(to), knowledge_cutoff: cutoff, target_customer_id: query.customer || null, target_site_id: query.site || null, target_sales_employee_id: query.sales || null }).gt("outstanding_amount_vnd", 0).order("outstanding_amount_vnd", { ascending: false }).limit(6) : Promise.resolve({ data: [] }),
-    access.permissions.has("finance.ap.read") ? supabase.rpc("finance_obligation_snapshot", { target_branch_id: access.branchId, target_side: "AP", as_of: instant(to), knowledge_cutoff: cutoff, target_customer_id: query.customer || null, target_site_id: query.site || null, target_sales_employee_id: query.sales || null }).gt("outstanding_amount_vnd", 0).order("outstanding_amount_vnd", { ascending: false }).limit(6) : Promise.resolve({ data: [] }),
-    access.permissions.has("inventory.read") ? supabase.from("low_stock_alert_read").select("threshold_id", { count: "exact", head: true }).eq("branch_id", access.branchId) : Promise.resolve({ count: 0 }),
-  ]);
+  const snapshotResult = await supabase.rpc("finance_dashboard_snapshot", dashboardArgs);
   const fallback: Snapshot = {
     scope: { from: instant(from), to: instant(to), as_of: new Date().toISOString(), branch_id: access.branchId },
     revenue: { quality: "UNAVAILABLE" }, direct_cost: { quality: "UNAVAILABLE" }, gross_profit: { quality: "UNAVAILABLE" },
@@ -87,8 +123,6 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
     receivable: { quality: "UNAVAILABLE" }, payable: { quality: "UNAVAILABLE" }, salary_payable: { quality: "INCOMPLETE" }, commission_payable: { quality: "INCOMPLETE" },
   };
   const snapshot = (snapshotResult.data ?? fallback) as Snapshot;
-  const receivables = (receivableResult.data ?? []) as Receivable[];
-  const payables = (payableResult.data ?? []) as Payable[];
   const profitBars = [
     { label: "Doanh thu", metric: snapshot.revenue },
     { label: "LN gộp quản trị", metric: snapshot.gross_profit },
@@ -101,14 +135,11 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
   }, 1n);
 
   return <><header className="page-heading"><div><p className="eyebrow">Finance command center</p><h1>Tổng quan theo nguồn đã ghi nhận</h1><p className="lede">Kỳ phát sinh và số dư tại thời điểm được tách rõ; payment không được tính lại thành revenue.</p></div>{access.permissions.has("finance.ar.read") && <Link className="button button-secondary" href="/admin/cashbook">Mở sổ tiền</Link>}</header>
-    {Number(lowStockResult.count ?? 0) > 0 && <Link className="quality-callout" href="/admin/inventory#low-stock-alerts">Có {lowStockResult.count} cảnh báo tồn kho dưới ngưỡng. Mở danh sách và tạo nháp PO khi cần.</Link>}
-    <form className="filter-bar"><label>Từ ngày<input type="date" name="from" defaultValue={from} /></label><label>Đến trước ngày<input type="date" name="to" defaultValue={to} /></label><label>Khách hàng<select name="customer" defaultValue={query.customer ?? ""}><option value="">Tất cả</option>{(customerResult.data ?? []).map((item) => <option key={item.id} value={item.id}>{item.display_name}</option>)}</select></label><label>Công trình<select name="site" defaultValue={query.site ?? ""}><option value="">Tất cả</option>{(siteResult.data ?? []).filter((item) => !query.customer || item.customer_id === query.customer).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label><label>Sales<select name="sales" defaultValue={query.sales ?? ""}><option value="">Tất cả</option>{(salesResult.data ?? []).map((item) => <option key={item.id} value={item.id}>{item.display_name}</option>)}</select></label><label>Hoạt động<select name="activity" defaultValue={query.activity ?? ""}><option value="">Tất cả</option><option value="DELIVERY">Giao hàng</option><option value="SALES">Bán hàng</option><option value="SERVICE">Dịch vụ</option><option value="ADMIN">Hành chính</option></select></label><button className="button button-primary" type="submit">Làm mới</button></form>
+    <Suspense fallback={null}><LowStockAlert access={access} /></Suspense>
+    <Suspense fallback={<section className="card card-pad"><p className="muted">Đang tải bộ lọc...</p></section>}><DashboardFilters access={access} query={query} from={from} to={to} /></Suspense>
     <p className="report-cutoff">Kỳ {vietnameseDate.format(new Date(instant(from)))} đến trước {vietnameseDate.format(new Date(instant(to)))} · số dư tính đến {vietnameseDateTime.format(new Date(snapshot.scope.as_of))}</p>
     <section className="metric-grid finance-metrics"><Kpi label="Doanh thu" metric={snapshot.revenue} /><Kpi label="Lợi nhuận gộp quản trị" metric={snapshot.gross_profit} /><Kpi label="Chi phí vận hành" metric={snapshot.operating_expense} /><Kpi label="Lợi nhuận hoạt động" metric={snapshot.operating_profit} /><Kpi label="Biên lợi nhuận" metric={snapshot.operating_margin_bps}>{snapshot.operating_margin_bps.quality === "READY" && snapshot.operating_margin_bps.value != null ? `${(Number(snapshot.operating_margin_bps.value) / 100).toLocaleString("vi-VN")}%` : "—"}</Kpi></section>
     <section className="card card-pad result-chart"><div className="section-head flush"><h2>Biểu đồ kết quả kinh doanh</h2><span className="scope-chip">Cùng snapshot</span></div>{profitBars.map((item) => { const value = BigInt(String(item.metric.value_vnd)); const absolute = value < 0n ? -value : value; const width = Number((absolute * 100n) / maxBar); return <div className="bar-row" key={item.label}><span>{item.label}</span><div className="bar-track"><i style={{ "--bar-width": `${Math.max(width, 2)}%` } as CSSProperties} /></div><strong>{moneyMetric(item.metric)}</strong></div>; })}{!profitBars.length && <p className="empty-inline">Chưa có metric READY để vẽ; xem lý do tại các KPI.</p>}</section>
-    <DashboardDetails detail={(dashboardDetailResult.data as DashboardDetail | null) ?? null} expenseMetric={snapshot.operating_expense} commissionMetric={snapshot.commission_payable} />
-    <section className="metric-grid obligations-grid"><Kpi label="Khách hàng phải thu" metric={snapshot.receivable} /><Kpi label="Nhà cung cấp phải trả" metric={snapshot.payable} /><Kpi label="Lương phải chi" metric={snapshot.salary_payable} /><Kpi label="Hoa hồng phải chi" metric={snapshot.commission_payable} /></section>
-    <div className="two-column"><section className="card"><div className="section-head"><h2>Khách / công trình đang nợ</h2>{access.permissions.has("finance.ar.read") && <Link className="code-link" href={listHref("/admin/dashboard/obligations", { side: "AR", customer: query.customer, site: query.site, sales: query.sales, to })}>Tất cả</Link>}</div><ul className="rank-list">{receivables.map((item) => <li key={item.obligation_id}><Link href={`/admin/receivables/${item.obligation_id}`}><span><strong>{item.party_name}</strong><small>{item.site_name ?? "Chưa gắn công trình"} · hạn {vietnameseDate.format(new Date(item.due_date))}</small></span><b>{formatVnd(vnd(String(item.outstanding_amount_vnd)))}</b></Link></li>)}</ul>{!receivables.length && <p className="empty-inline">Không có khoản mở hoặc không có quyền xem.</p>}<p className="card-scope-note">Cùng cutoff và bộ lọc với snapshot phía trên.</p></section>
-      <section className="card"><div className="section-head"><h2>NCC đang phải trả</h2>{query.customer || query.site || query.sales ? <span className="scope-chip">Không áp dụng theo dimension</span> : access.permissions.has("finance.ap.read") && <Link className="code-link" href={listHref("/admin/dashboard/obligations", { side: "AP", to })}>Tất cả</Link>}</div>{query.customer || query.site || query.sales ? <p className="quality-callout">Danh sách AP không áp bộ lọc khách/công trình/sales nếu nguồn không có dimension chính xác.</p> : <ul className="rank-list">{payables.map((item) => <li key={item.obligation_id}><Link href={`/admin/payables/${item.obligation_id}`}><span><strong>{item.party_name}</strong><small>Hạn {vietnameseDate.format(new Date(item.due_date))}</small></span><b>{formatVnd(vnd(String(item.outstanding_amount_vnd)))}</b></Link></li>)}</ul>} {!payables.length && !query.customer && !query.site && !query.sales && <p className="empty-inline">Không có khoản mở hoặc không có quyền xem.</p>}<p className="card-scope-note">Cùng cutoff với snapshot phía trên.</p></section></div>
+    <Suspense fallback={<section className="card card-pad"><p className="muted">Đang tải phân tích và công nợ chi tiết...</p></section>}><DashboardSecondary access={access} query={query} to={to} dashboardArgs={dashboardArgs} snapshot={snapshot} /></Suspense>
   </>;
 }

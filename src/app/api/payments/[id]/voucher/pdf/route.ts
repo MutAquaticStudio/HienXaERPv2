@@ -4,6 +4,8 @@ import { createStandardPdf, pdfResponse } from "@/lib/pdf/standard-document";
 type Payment = { id: string; payment_number: string; direction: "RECEIPT" | "DISBURSEMENT"; counterparty_name: string; account_code: string; amount_vnd: string; allocated_amount_vnd: string; advance_amount_vnd: string; unallocated_amount_vnd: string; effective_at: string; posting_state: string; reconciliation_state: string; reversal_of_payment_id: string | null };
 type Allocation = { id: string; receivable_obligation_id: string | null; payable_obligation_id: string | null; amount_delta_vnd: string; allocated_at: string };
 const money = (value: string) => `${new Intl.NumberFormat("vi-VN").format(BigInt(value))} VND`;
+const postingLabel = (value: string) => ({ POSTED: "Đã ghi sổ", REVERSED: "Đã đảo" } as Record<string, string>)[value] ?? value;
+const reconciliationLabel = (value: string) => ({ MATCHED: "Đã đối soát", PARTIAL: "Đối soát một phần", UNMATCHED: "Chưa đối soát" } as Record<string, string>)[value] ?? value;
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -22,19 +24,19 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   const bytes = await createStandardPdf({
     title,
     reference: payment.payment_number,
-    subtitle: `${payment.posting_state} / ${payment.reconciliation_state}`,
+    subtitle: `${postingLabel(payment.posting_state)} / ${reconciliationLabel(payment.reconciliation_state)}`,
     fields: [
       { label: "Đối tác", value: payment.counterparty_name },
       { label: "Tài khoản", value: payment.account_code },
       { label: "Ngày hiệu lực", value: new Intl.DateTimeFormat("vi-VN", { dateStyle: "medium", timeStyle: "short" }).format(new Date(payment.effective_at)) },
-      { label: "Trạng thái", value: `${payment.posting_state}${payment.reversal_of_payment_id ? " - giao dịch đảo" : ""}` },
+      { label: "Trạng thái", value: `${postingLabel(payment.posting_state)}${payment.reversal_of_payment_id ? " - giao dịch đảo" : ""}` },
     ],
     columns: [
       { label: "Nguồn phân bổ", key: "source", width: 236 },
       { label: "Thời điểm", key: "time", width: 150 },
       { label: "Số tiền", key: "amount", width: 125, align: "right" },
     ],
-    rows: allocations.map((allocation) => ({ source: allocation.receivable_obligation_id ? `AR ${allocation.receivable_obligation_id}` : allocation.payable_obligation_id ? `AP ${allocation.payable_obligation_id}` : "Chưa gắn nghĩa vụ", time: new Intl.DateTimeFormat("vi-VN", { dateStyle: "short", timeStyle: "short" }).format(new Date(allocation.allocated_at)), amount: money(allocation.amount_delta_vnd) })),
+    rows: allocations.map((allocation) => ({ source: allocation.receivable_obligation_id ? `Phải thu ${allocation.receivable_obligation_id}` : allocation.payable_obligation_id ? `Phải trả ${allocation.payable_obligation_id}` : "Chưa gắn nghĩa vụ", time: new Intl.DateTimeFormat("vi-VN", { dateStyle: "short", timeStyle: "short" }).format(new Date(allocation.allocated_at)), amount: money(allocation.amount_delta_vnd) })),
     totals: [
       { label: "Tổng giao dịch", value: money(payment.amount_vnd) },
       { label: "Đã phân bổ", value: money(payment.allocated_amount_vnd) },

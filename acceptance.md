@@ -1,7 +1,7 @@
 # acceptance.md — Nghiệm thu Hiền Xa ERP V2 theo yêu cầu
 
-> **Bộ tài liệu:** `HX-V2-DOCSET-4.2`  
-> **Giao thức đồng bộ:** `SYNC-4.2`  
+> **Bộ tài liệu:** `HX-V2-DOCSET-4.4`
+> **Giao thức đồng bộ:** `SYNC-4.4`
 > Sở hữu: cách chọn ca, dữ liệu thử, bước kiểm tra và cách ghi bằng chứng nghiệm thu.  
 > **Không nạp mặc định trong BUILD_ONLY. Không có smoke test. Không tái tạo 678 DoD từng task.**
 
@@ -156,6 +156,38 @@ Spec/UXUI thay đổi → sửa đúng ca liên quan và reference; không đọ
 
 Danh mục là bản hướng dẫn kiểm, không có trạng thái mặc định PASS, không chép ba DoD của mỗi task và không mở rộng thành 678 checkbox. Giữ mã ca ổn định; chỉ thêm ca khi yêu cầu/rủi ro thật chưa được bao phủ và phạm vi nghiệm thu cần nó.
 
+# ACC-085 — Coverage delta cho docset 4.4
+
+Giữ 30 nhóm ca hiện có; bảng này bổ sung điều kiện từ `SPEC-GAP-002`, `SPEC-REC-001` đến `SPEC-REC-009` và `UX-930`. Số gap là thứ tự trong `SPEC-GAP-002`, không phải requirement ID mới. Mapping không phải bằng chứng PASS; điều kiện chưa có bằng chứng đúng candidate phải ghi `NOT_RUN`, `BLOCKED` hoặc `FAIL` theo thực tế.
+
+| Known gap | Contract refs | Nhóm ca | Delta phải kiểm bằng thao tác và dữ liệu lưu |
+|---|---|---|---|
+| 1. Execution/document drift | SPEC-GAP-001; SPEC-GAP-002 | ACC-CASE-01; ACC-CASE-30 | Khóa source/tree, migration ledger, config và fixture; tách kết quả từng build/môi trường. |
+| 2. Master-data CRUD | SPEC-REC-001; UX-REC-004 | ACC-CASE-02; ACC-CASE-05; ACC-CASE-08; ACC-CASE-09 | Theo quyền, create/edit/deactivate Customer, Site, Supplier, Material, UOM, conversion, Warehouse, Vehicle, Machine, Branch và pricing/config cần thật; reload đối chiếu dữ liệu và giữ tham chiếu lịch sử. |
+| 3. Quote/SO multi-line | SPEC-REC-002; UX-REC-002 | ACC-CASE-07; ACC-CASE-08 | Thêm/xóa dòng, UOM, lượng, giá, nguồn, line/document total; lưu và tải lại nhiều dòng, không mất dòng khác. |
+| 4. Quote/SO/PO draft edit | SPEC-REC-003; UX-REC-003 | ACC-CASE-07; ACC-CASE-08; ACC-CASE-09 | Sửa đúng DRAFT: dòng, lượng/UOM, terms/date và override có quyền; SENT/CONFIRMED không sửa lịch sử, dùng action đúng contract. |
+| 5. Quick Customer/Site | SPEC-REC-005; UX-REC-002 | ACC-CASE-08 | Tạo cả Customer và Site ngay trong Quote/SO; giữ input hiện có, quay lại và chọn entity mới đúng ID. |
+| 6. Price preview/manual | SPEC-REC-004; UX-REC-002 | ACC-CASE-05; ACC-CASE-07; ACC-CASE-08 | Thấy giá/nguồn/tổng trước Save; thiếu rule không mặc định 0; manual + reason thành MANUAL_APPROVED; actor thiếu quyền không nhận cost. |
+| 7. PO per-line operations | SPEC-REC-002; SPEC-REC-007; UX-REC-006 | ACC-CASE-09; ACC-CASE-10; ACC-CASE-12 | PO nhiều dòng; nhận kho/giao thẳng chọn line cụ thể, thử lần lượt hai dòng; Supplier workspace nối receipts/direct fulfillment/AP/payment. |
+| 8. Delivery multi-line | SPEC-REC-002; SPEC-OPS-001 | ACC-CASE-11; ACC-CASE-12; ACC-CASE-13 | Actual/accepted/billable/return theo từng dòng; kho, AR/AP theo đúng nguồn; lịch giờ nghiệp vụ lưu instant đúng và hiển thị đúng sau reload. |
+| 9. Customer 360 | SPEC-REC-007; UX-REC-005 | ACC-CASE-08; ACC-CASE-17; ACC-CASE-22 | Profile/Sites/Pricing/Quotes/Orders/Deliveries/AR/Payments/Documents; CTA theo quyền; từ Site tạo SO prefill Customer/Site. |
+| 10. Bounded core lists | SPEC-REC-006; UX-REC-007 | ACC-CASE-02; ACC-CASE-28 | Orders/Quotes/PO/Customers/Suppliers/Deliveries/AR/AP/ServiceJob: search/filter phía server, bounded page/cursor, sort ổn định, URL và Back; không chỉ lọc tập đầu tiên ở client. |
+| 11. Dashboard completion | SPEC-REC-008; UX-REC-008 | ACC-CASE-16; ACC-CASE-17; ACC-CASE-20 | Expense breakdown, commission summary/detail, AR/AP drill-down giữ filter; tìm/chọn khách ngoài tập option ban đầu, reload không mất lựa chọn; không số giả khi quality khác READY. |
+| 12. Real shell identity | UX-REC-009 | ACC-CASE-03; ACC-CASE-04 | Actor/branch/org từ server context thật, đổi role/branch cho đúng; không demo identity trong UI Production. |
+| 13. PaymentNotice entry | SPEC-REC-008; UX-REC-010 | ACC-CASE-15; ACC-CASE-22 | Tìm được queue từ Finance/Cần xử lý; review không tự tạo Payment hoặc giảm debt. |
+| 14. Customer order detail | UX-REC-011; SPEC-CUSTPORTAL-001; SPEC-CUSTPORTAL-002 | ACC-CASE-04; ACC-CASE-22 | State, delivery timeline, debt/payment và documents customer-safe; đổi ID/file kiểm không lộ supplier/cost/margin/internal notes. |
+| 15. Access management | UX-REC-012 | ACC-CASE-03; ACC-CASE-04 | Assign/change role và branch access, revoke/reactivate, explicit permissions; reason/audit theo Spec; request kế tiếp bị chặn sau revoke. |
+| 16. Settings hub | SPEC-REC-001; SPEC-REC-008; UX-REC-013 | ACC-CASE-02; ACC-CASE-05 | Navigation theo quyền tới master/config cần thật, forms thực hiện được; không generic engine. |
+| 17. Reports | SPEC-REC-008; UX-REC-013 | ACC-CASE-16; ACC-CASE-17 | Selector, shared filters, summary/table/chart, export khi contract cần; số đối chiếu canonical sources cùng scope. |
+| 18. Audit log | SPEC-REC-008; UX-REC-013 | ACC-CASE-03; ACC-CASE-07; ACC-CASE-09; ACC-CASE-15; ACC-CASE-19 | Actor/entity/action/time filters, human-readable summary trước raw detail; action nhạy cảm truy vết đúng actor/source. |
+| 19. Low stock | SPEC-REC-008; SPEC-CONFIG-004; UX-REC-014 | ACC-CASE-14 | Threshold material + warehouse; available dưới ngưỡng tạo warning dẫn Inventory và draft PO, không tự đặt hàng. |
+| 20. Print/export | SPEC-REC-009 | ACC-CASE-07; ACC-CASE-11; ACC-CASE-15; ACC-CASE-17 | Quotation PDF, Delivery Note, Receipt/Payment Voucher và Debt Reconciliation; trace source/snapshot, access đúng và không gọi là hóa đơn thuế. |
+| 21. R10 | SPEC-GAP-002 | ACC-CASE-23; ACC-CASE-24; ACC-CASE-25; ACC-CASE-26 | Route provider/plan/apply, foreground GPS, messaging và navigation theo contract; sandbox thiếu vẫn BLOCKED, không gửi thật. |
+| 22. R11 | SPEC-GAP-002 | ACC-CASE-26; ACC-CASE-27 | Provider-neutral domain/coverage/eligibility/draft/approval/documents/UI riêng integration; issue không tạo AR/revenue mới, UNKNOWN reconcile trước retry cùng intent. |
+| 23. R12 | SPEC-GAP-002 | ACC-CASE-29; ACC-CASE-30 | Migration case thật, clean schema, reconcile, security/accessibility/performance, backup/recovery/write fence/approval package; release Production cần chỉ thị riêng. |
+
+Không nâng bằng chứng 4.2 thành PASS 4.4 chỉ vì sửa header. Chỉ `REUSED` khi input liên quan không đổi và bằng chứng cũ thực sự bao phủ điều kiện; phần delta còn thiếu giữ trạng thái riêng. Hiệu năng lấy ngưỡng duy nhất từ Spec.md, không sao chép budget vào bảng này. UAT thiết bị thật, provider sandbox, managed recovery và quyết định Owner không bị thay bằng kết quả unit/build.
+
 # ACC-100 — Danh mục hành trình và rủi ro
 
 Mỗi ca bên dưới có cách thử và kết quả cần đối chiếu. Đọc đúng ca đã chọn tại ACC-030. Không lặp những phần chuẩn bị chung ở ACC-040.
@@ -164,7 +196,7 @@ Mỗi ca bên dưới có cách thử và kết quả cần đối chiếu. Đ�
 
 **Phạm vi:** R0 · **Cách kiểm:** QA tài liệu/chỉ đọc.
 
-**Đọc nguồn:** SPEC-MIG-001; SPEC-MIG-004; SPEC-SEC-005; PLAN-R0.
+**Đọc nguồn:** SPEC-MIG-001; SPEC-MIG-004; SPEC-SEC-005; PLAN-040.
 
 **Chuẩn bị:** Hồ sơ R0 và nguồn đã được cho phép đọc; chưa có DB access phải ghi rõ.
 
@@ -558,9 +590,9 @@ Mỗi ca bên dưới có cách thử và kết quả cần đối chiếu. Đ�
 
 **Đọc nguồn:** SPEC-MIG-002; SPEC-MIG-004; SPEC-DATA-003; SPEC-OPS-002.
 
-**Chuẩn bị:** Mapping R0 được review; V1 copy hợp lệ, dataset checksum, V2 schema và kế hoạch chuyển dữ liệu.
+**Chuẩn bị:** Xác định migration case thật. Nếu có legacy dataset: mapping R0 được review, bản copy hợp lệ, dataset checksum, V2 schema và kế hoạch chuyển dữ liệu. Nếu legacy Production dataset không còn: ghi `NO_LEGACY_DATA_TO_MIGRATE`, không dựng migration giả; vẫn chuẩn bị clean-schema rehearsal, candidate và recovery/write-fence runbook.
 
-**Thử:** Dry-run chuyển dữ liệu, chạy lại có kiểm soát, đối chiếu ID/quantity/value/open AR/AP/payment/earning. Thử khôi phục hoặc phương án bù theo runbook; kiểm source duy nhất trước/sau.
+**Thử:** Với legacy case, dry-run chuyển dữ liệu, chạy lại có kiểm soát, đối chiếu ID/quantity/value/open AR/AP/payment/earning. Với cả hai case, rehearsal schema trên môi trường biệt lập, đối chiếu exact migration ledger/source/config, thử khôi phục hoặc phương án bù theo runbook; kiểm source duy nhất trước/sau. Managed backup/restore chưa khả dụng ghi BLOCKED riêng, không thay bằng clean-schema PASS.
 
 **Đối chiếu:** Không double import, không số dư đầu kỳ thành doanh thu. Không recalculate giá/lương/công nợ/hóa đơn đã chốt bằng policy mới. Dữ liệu thiếu không tự vứt; differences có giải thích và người duyệt.
 
@@ -570,7 +602,7 @@ Mỗi ca bên dưới có cách thử và kết quả cần đối chiếu. Đ�
 
 **Phạm vi:** R12 · **Cách kiểm:** Kiểm release có quyền riêng.
 
-**Đọc nguồn:** SPEC-430; SPEC-MIG-005; SPEC-SEC-005; PLAN-180.
+**Đọc nguồn:** SPEC-430; SPEC-MIG-005; SPEC-SEC-005; PLAN-055; PLAN-070.
 
 **Chuẩn bị:** Candidate/tree/schema/config và phạm vi phát hành đã chốt; nghiệm thu liên quan còn hiệu lực.
 
@@ -608,3 +640,22 @@ Environment blocker: Supabase Dashboard rejects another Free project while HienX
 Candidate: dpl_D15SjQJxkaLk6W8AbNawTViNHBCe (Vercel Preview, READY).
 URL: https://hien-xa-erp-v2-f8lp5epg1-noxelis.vercel.app
 QA migration applied. Remote build/TypeScript PASS; worker fix, access management and catalog behavioral acceptance NOT_RUN on this candidate. Historical UAT failure is retained pending rerun. Production unchanged; no full-system PASS claim.
+
+### Scoped defect recheck — 2026-09-27
+
+- Environment: local optimized Next build bound to separate QA project `ffrwiglcrlumfvhubaxg`; exact local build and six new QA migrations checked. Not a hosted Production or cloud-benchmark result.
+- ACC-CASE-03/04 technical boundary recheck: 13/13 PASS across six QA roles, including worker assigned-job UI, revocation and logout. Human device journeys NOT_RUN; historical hosted result above remains historical, not silently rewritten.
+- Finance defect recheck: full-scope Cashbook KPI matched 111 QA payments; direct Sales Cashbook RPC denied with 42501. AR/AP report exports contained 5,058/5,068 distinct lines; both line sums matched their snapshot totals at fixed cutoffs. Payment allocation retained selections across AP pages. Sales export/selector denied. Receiver debt navigation absent, Finance contact retained it.
+- ACC-CASE-28 scoped local measurement: 100 browser-navigation samples per route at concurrency 1/5/10 on the optimized local build; Dashboard p95 2.08s/2.40s/4.70s and Dispatch p95 0.76s/0.82s/1.25s, with no failed samples. Hosted cloud benchmark remains NOT_ESTABLISHED; this does not mark ACC-CASE-28 or ACC-CASE-30 PASS.
+- Owner review, physical-device UAT, invoice-provider sandbox, backup/recovery and release acceptance remain at their existing human/external gates. No Production deployment or mutation in this recheck.
+
+## Targeted Production UAT regression closure - 2026-09-28
+
+- UAT-REPAIR-01 P0 routes: PASS.
+- UAT-REPAIR-02 earnings access/error handling: PASS (QA positive/negative DB evidence plus Production page check).
+- UAT-REPAIR-03 failed PO form retention: PASS (focused React regression).
+- UAT-REPAIR-04 quote timezone and linked-SO sales preview: PASS (actual Production UI/PDF and saved draft).
+- UAT-REPAIR-05 repeated pricing creation, audit labels, SO date and PDF quantity: PASS.
+- Exact deployment: dpl_4jRfL6XsxcrwMpV98AeigTfFJ8hS. Migration head: 20260927205002.
+- Evidence and per-case boundaries: artifacts/qa/uat-repairs-20260928/manifest.json.
+- This closes only the five reported defect groups. It does not replace Owner acceptance, real-device UAT, or mark unrelated/unexecuted acceptance cases PASS.

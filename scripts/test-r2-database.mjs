@@ -163,7 +163,7 @@ try {
 
   await database.exec("select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000003', false);");
   const portalCustomers = await queryRows("select code from public.customers order by code");
-  assert.deepEqual(portalCustomers.map((row) => row.code), ["CUS_A"], "customer membership must not cross customer scope");
+  assert.deepEqual(portalCustomers.map((row) => row.code), [], "portal membership must not grant raw customer table access; portal reads use customer-safe RPCs");
 
   await database.exec(`
     reset role;

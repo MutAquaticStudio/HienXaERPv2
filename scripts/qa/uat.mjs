@@ -37,10 +37,13 @@ try {
     const owner = await login('owner');
     let names;
     try {
-      const baseline = await owner.from('customers').select('id,display_name,internal_note').in('id', [ownId, otherId]);
+      const baseline = await owner.from('customers').select('id,display_name').in('id', [ownId, otherId]);
       assert.equal(baseline.error, null);
       assert.equal(baseline.data.length, 2);
-      assert.ok(baseline.data.every(row => row.internal_note?.includes('HXQA-INTERNAL-SECRET')));
+      const privateFields = await owner.rpc('customer_private_fields', { target_customer_ids: [ownId, otherId] });
+      assert.equal(privateFields.error, null);
+      assert.equal(privateFields.data.length, 2);
+      assert.ok(privateFields.data.every(row => row.internal_note?.includes('HXQA-INTERNAL-SECRET')));
       names = new Map(baseline.data.map(row => [row.id, row.display_name]));
     } finally { await owner.auth.signOut(); }
     for (const role of ['finance', 'receiver', 'other_customer']) {
@@ -65,10 +68,14 @@ try {
     const revisions = await sql`select customer_id,current_revision_id from public.quotations where customer_id in (${customerA},${customerB}) and current_revision_id is not null order by created_at desc`;
     const revisionFor = (customerId) => revisions.find((row) => row.customer_id === customerId)?.current_revision_id;
     assert.ok(revisionFor(customerA) && revisionFor(customerB), 'QA customer quotations are required');
+    const [quoteFixture] = await sql`select id from public.quotation_lines where override_reason is not null limit 1`;
+    const [orderFixture] = await sql`select id from public.sales_order_lines where override_reason is not null limit 1`;
+    const fixtureIds = { quotation_lines: quoteFixture?.id, sales_order_lines: orderFixture?.id };
     const owner = await login('owner');
     try {
       for (const table of ['quotation_lines', 'sales_order_lines']) {
-        const positive = await owner.from(table).select('override_reason').not('override_reason', 'is', 'null').limit(1);
+        assert.ok(fixtureIds[table], `${table} needs an override fixture`);
+        const positive = await owner.from(table).select('override_reason').eq('id', fixtureIds[table]);
         assert.equal(positive.error, null);
         assert.equal(positive.data.length, 1, `${table} needs an override positive control`);
       }
@@ -79,7 +86,7 @@ try {
         const own = role === 'other_customer' ? customerB : customerA;
         const cross = role === 'other_customer' ? customerA : customerB;
         for (const table of ['quotation_lines', 'sales_order_lines']) {
-          const direct = await client.from(table).select('override_reason').not('override_reason', 'is', 'null').limit(1);
+          const direct = await client.from(table).select('override_reason').eq('id', fixtureIds[table]);
           assert.ok(direct.error || direct.data?.length === 0, `${role} must not read ${table} internals`);
         }
         const safe = await client.rpc('customer_safe_quotation_lines', { target_revision_id: revisionFor(own) });
@@ -102,16 +109,28 @@ try {
     } finally { await session.browser.close(); }
   });
   await check('worker-portal-assigned-job', async () => {
-    const fixture = await (await import('./ensure-worker-uat.mjs')).ensureWorkerUat(sql);
+    await (await import('./ensure-worker-uat.mjs')).ensureWorkerUat(sql);
     const client = await login('worker');
+    let current;
     try {
       const result = await client.rpc('worker_portal_snapshot');
       assert.equal(result.error, null);
-      assert.equal(result.data.current?.id, fixture.id);
-      assert.equal(result.data.current?.title, fixture.title);
+      current = result.data.current;
+      assert.ok(current?.id, 'worker must see assigned current work');
+      const [assignment] = await sql`
+        select w.title
+        from public.work_items w
+        join public.work_item_assignments a on a.work_item_id=w.id and a.superseded_at is null
+        join public.employees e on e.id=a.employee_id and e.active=true
+        join auth.users u on u.id=e.auth_user_id
+        join public.employee_branch_access ba on ba.employee_id=e.id and ba.branch_id=w.branch_id and ba.active=true
+        where w.id=${current.id} and u.email=${email('worker')}
+      `;
+      assert.ok(assignment, 'current work must be assigned to the active worker branch');
+      assert.equal(current.title, assignment.title);
     } finally { await client.auth.signOut(); }
     const session = await browserSession('worker');
-    try { await session.page.getByText(fixture.title, { exact: true }).first().waitFor(); }
+    try { await session.page.getByText(current.title, { exact: true }).first().waitFor(); }
     finally { await session.browser.close(); }
   });
   await check('sales-backend-finance-denial',async()=> {
@@ -124,14 +143,45 @@ try {
     } finally { await client.auth.signOut(); }
   });
   await check('revoke-blocks-next-request', async () => {
+    const grants = await sql`
+      select ba.id,ba.employee_id,ba.branch_id,ba.role_id,ba.active,ba.revoked_at
+      from public.employee_branch_access ba
+      join public.employees e on e.id=ba.employee_id and e.active=true
+      join auth.users u on u.id=e.auth_user_id
+      where u.email=${email('sales')} and ba.branch_id=${id('branch-A')}
+        and ba.active=true and ba.revoked_at is null
+    `;
+    assert.equal(grants.length, 1, 'expected one current active sales grant in QA branch A');
+    const grant = grants[0];
     const session = await browserSession('sales');
+    const revokedAt = new Date().toISOString();
     try {
-      await sql`update public.employee_branch_access set active=false,revoked_at=now() where id=${id('access-sales-A')}`;
+      const revoked = await sql`
+        update public.employee_branch_access set active=false,revoked_at=${revokedAt}
+        where id=${grant.id} and employee_id=${grant.employee_id} and branch_id=${grant.branch_id}
+          and role_id=${grant.role_id} and active=true and revoked_at is null
+        returning id
+      `;
+      assert.equal(revoked.length, 1, 'sales grant changed before revocation');
       const response = await session.context.request.get('/api/access/context');
       assert.ok([401,403].includes(response.status()), `unexpected status ${response.status()}`);
     } finally {
-      await sql`update public.employee_branch_access set active=true,revoked_at=null where id=${id('access-sales-A')}`;
-      await session.browser.close();
+      try {
+        const restored = await sql`
+          update public.employee_branch_access ba set active=${grant.active},revoked_at=${grant.revoked_at}
+          where ba.id=${grant.id} and ba.employee_id=${grant.employee_id} and ba.branch_id=${grant.branch_id}
+            and ba.role_id=${grant.role_id} and ba.active=false and ba.revoked_at=${revokedAt}
+            and not exists (
+              select 1 from public.employee_branch_access other
+              where other.employee_id=ba.employee_id and other.branch_id=ba.branch_id
+                and other.active=true and other.id<>ba.id
+            )
+          returning ba.id
+        `;
+        assert.equal(restored.length, 1, 'QA grant changed during UAT; concurrent access was not overwritten');
+      } finally {
+        await session.browser.close();
+      }
     }
   });
   await check('shared-device-logout-clears-storage', async () => {
