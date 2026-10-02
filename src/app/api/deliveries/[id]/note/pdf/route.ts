@@ -1,5 +1,7 @@
 import { createServerSupabase } from "@/lib/supabase/server";
 import { createStandardPdf, pdfResponse } from "@/lib/pdf/standard-document";
+import { formatQuantity } from "@/lib/core/quantity";
+import { deliveryStateLabel, sourceModeLabel } from "@/modules/delivery/presentation";
 
 type Delivery = { id: string; delivery_number: string; execution_state: string; result_kind: string | null; customer_name_snapshot: string; site_name_snapshot: string; delivery_address_snapshot: string; receiver_name_snapshot: string | null; receiver_phone_snapshot: string | null; scheduled_at: string | null; verified_at: string | null };
 type Line = { id: string; material_name_snapshot: string; source_mode: string; planned_base_quantity: string; actual_base_quantity: string; accepted_base_quantity: string; billable_base_quantity: string; base_uom_symbol: string };
@@ -20,7 +22,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   const bytes = await createStandardPdf({
     title: "PHIẾU GIAO HÀNG",
     reference: delivery.delivery_number,
-    subtitle: `${delivery.execution_state}${delivery.result_kind ? ` / ${delivery.result_kind}` : ""}`,
+    subtitle: `${deliveryStateLabel(delivery.execution_state)}${delivery.result_kind ? ` / ${deliveryStateLabel(delivery.result_kind)}` : ""}`,
     fields: [
       { label: "Khách hàng", value: delivery.customer_name_snapshot },
       { label: "Công trình", value: delivery.site_name_snapshot },
@@ -36,7 +38,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
       { label: "Thực tế", key: "actual", width: 83, align: "right" },
       { label: "Khách nhận", key: "accepted", width: 83, align: "right" },
     ],
-    rows: lines.map((line) => ({ material: line.material_name_snapshot, source: line.source_mode, planned: `${line.planned_base_quantity} ${line.base_uom_symbol}`, actual: `${line.actual_base_quantity} ${line.base_uom_symbol}`, accepted: `${line.accepted_base_quantity} ${line.base_uom_symbol}` })),
+    rows: lines.map((line) => ({ material: line.material_name_snapshot, source: sourceModeLabel(line.source_mode), planned: `${formatQuantity(line.planned_base_quantity)} ${line.base_uom_symbol}`, actual: `${formatQuantity(line.actual_base_quantity)} ${line.base_uom_symbol}`, accepted: `${formatQuantity(line.accepted_base_quantity)} ${line.base_uom_symbol}` })),
     trace: `Source delivery_id=${delivery.id}; generated_at=${generatedAt}; state=${delivery.execution_state}`,
     disclaimer: "Phiếu giao hàng - không phải hóa đơn thuế.",
   });

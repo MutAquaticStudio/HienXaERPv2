@@ -17,7 +17,7 @@ export default async function CustomerOrdersPage() {
             <h2>{order.number ?? "Đơn hàng"}</h2>
             <div className={styles.meta}>
               <span>{order.deliveries.length} lượt giao</span>
-              <span>{order.requested_delivery_date ?? "Chưa chốt ngày giao"}</span>
+              <span>{order.requested_delivery_date ? new Intl.DateTimeFormat("vi-VN", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Ho_Chi_Minh" }).format(new Date(order.requested_delivery_date)) : "Chưa chốt ngày giao"}</span>
             </div>
             <Link className={styles.buttonSecondary} href={"/customer/orders/" + order.id}>Xem timeline</Link>
           </article>

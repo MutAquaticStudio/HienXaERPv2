@@ -24,8 +24,6 @@ const recoverySchema = z.object({
   surface: z.enum(["admin", "work", "customer"]),
 });
 
-const destination = { admin: "/admin", work: "/work", customer: "/customer" } as const;
-
 export async function loginAction(_: AuthFormState, formData: FormData): Promise<AuthFormState> {
   const parsed = loginSchema.safeParse({
     email: formData.get("email"),
@@ -41,7 +39,7 @@ export async function loginAction(_: AuthFormState, formData: FormData): Promise
   } catch {
     return { message: "Dịch vụ đăng nhập chưa sẵn sàng. Vui lòng thử lại sau." };
   }
-  redirect(destination[parsed.data.surface]);
+  redirect(parsed.data.surface === "customer" ? "/customer" : "/");
 }
 
 export async function recoveryAction(_: AuthFormState, formData: FormData): Promise<AuthFormState> {
@@ -50,7 +48,9 @@ export async function recoveryAction(_: AuthFormState, formData: FormData): Prom
   try {
     const supabase = await createServerSupabase();
     const origin = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-    await supabase.auth.resetPasswordForEmail(parsed.data.email, { redirectTo: `${origin}/recovery/confirm` });
+    const redirectTo = new URL("/recovery/confirm", origin);
+    redirectTo.searchParams.set("surface", parsed.data.surface);
+    await supabase.auth.resetPasswordForEmail(parsed.data.email, { redirectTo: redirectTo.toString() });
   } catch {
     return { message: "Không thể gửi yêu cầu lúc này. Vui lòng thử lại sau." };
   }
@@ -73,7 +73,7 @@ export async function selectBranchAction(formData: FormData) {
   const { data: access } = await supabase.from("employee_branch_access").select("id").eq("employee_id", employee.id).eq("branch_id", parsed.data.branchId).eq("active", true).maybeSingle();
   if (!access) redirect("/select-branch");
   (await cookies()).set("hx_branch_id", parsed.data.branchId, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/" });
-  redirect(destination[parsed.data.surface]);
+  redirect("/");
 }
 
 const assignRoleSchema = z.object({

@@ -41,7 +41,7 @@ function message(value?: string) {
 }
 
 export async function receivePurchaseOrderAction(formData: FormData) {
-  const parsed = z.object({ purchaseOrderId: z.uuid(), receivedAt: z.iso.datetime(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ purchaseOrderId: z.uuid(), receivedAt: z.iso.datetime(), operationId: z.uuid(), evidenceId: z.union([z.uuid(), z.literal("")]).optional() }).safeParse(Object.fromEntries(formData));
   const lines = operationLines(formData, "received_quantity");
   if (!parsed.success || !lines) redirect("/admin/purchase-orders?error=invalid-receipt");
   await requireInternalPermission("inventory.receive");
@@ -49,7 +49,7 @@ export async function receivePurchaseOrderAction(formData: FormData) {
   const { data, error } = await supabase.rpc("receive_purchase_order", {
     target_purchase_order_id: parsed.data.purchaseOrderId,
     receipt_lines: lines,
-    target_evidence_id: null,
+    target_evidence_id: parsed.data.evidenceId || null,
     received_at: parsed.data.receivedAt,
     operation_id: parsed.data.operationId,
   });
@@ -61,7 +61,7 @@ export async function receivePurchaseOrderAction(formData: FormData) {
 }
 
 export async function verifySupplierFulfillmentAction(formData: FormData) {
-  const parsed = z.object({ purchaseOrderId: z.uuid(), supplierReference: z.string().trim().max(120).optional(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ purchaseOrderId: z.uuid(), supplierReference: z.string().trim().max(120).optional(), operationId: z.uuid(), evidenceId: z.union([z.uuid(), z.literal("")]).optional() }).safeParse(Object.fromEntries(formData));
   const lines = operationLines(formData, "supplier_quantity");
   if (!parsed.success || !lines) redirect("/admin/purchase-orders?error=invalid-fulfillment");
   await requireInternalPermission("inventory.receive");
@@ -69,7 +69,7 @@ export async function verifySupplierFulfillmentAction(formData: FormData) {
   const { data, error } = await supabase.rpc("verify_supplier_fulfillment", {
     target_purchase_order_id: parsed.data.purchaseOrderId,
     fulfillment_lines: lines,
-    target_evidence_id: null,
+    target_evidence_id: parsed.data.evidenceId || null,
     supplier_reference: parsed.data.supplierReference || null,
     operation_id: parsed.data.operationId,
   });

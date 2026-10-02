@@ -7,7 +7,7 @@ const paths = [
   { path:'/admin', selector:'.metric-value', name:'dashboard' },
   { path:'/admin/orders', selector:'tbody tr', name:'order-list' },
   { path:'/admin/customers', selector:'tbody tr', name:'customer-list' },
-  { path:`/admin/orders/${id('order-0-0')}`, selector:'tbody tr', name:'order-detail' },
+  { path:'/admin/orders/:visible-qa-order', selector:'tbody tr', name:'order-detail' },
 ];
 const samples = Number(process.env.HX_QA_SAMPLES ?? 100);
 if (!Number.isInteger(samples) || samples < 100 || samples > 1000) throw new Error('HX_QA_SAMPLES must be 100..1000');
@@ -29,16 +29,21 @@ try {
             while (next < samples) {
               const index = next++;
               await page.goto(scenario.name === 'order-list' ? '/admin/customers' : '/admin/orders');
-              const link = page.locator(`a[href="${scenario.path}"]`).first();
+              const link = scenario.name === 'order-detail'
+                ? page.locator('tbody a[href^="/admin/orders/"]').filter({ hasText:'HXQA-SCALE-' }).first()
+                : page.locator(`a[href="${scenario.path}"]`).first();
               await link.waitFor({ state:'visible' });
+              const targetPath = scenario.name === 'order-detail' ? await link.getAttribute('href') : scenario.path;
+              if (!targetPath) throw new Error('Visible QA order link is missing');
+              if (scenario.name === 'order-detail' && !entry.targetPath) entry.targetPath = targetPath;
               const resourceStart = await page.evaluate(() => performance.now());
               const start = performance.now();
               let ok = false, payloadBytes = 0, status = null;
               try {
                 await link.click();
-                await page.waitForURL(url => url.pathname === new URL(scenario.path,'http://qa').pathname);
+                await page.waitForURL(url => url.pathname === new URL(targetPath,'http://qa').pathname);
                 await page.locator(scenario.selector).first().waitFor({ state:'visible',timeout:30000 });
-                ok = new URL(page.url()).pathname === new URL(scenario.path,'http://qa').pathname;
+                ok = new URL(page.url()).pathname === new URL(targetPath,'http://qa').pathname;
                 payloadBytes = await page.evaluate(since => performance.getEntriesByType('resource').filter(entry=>entry.startTime>=since).reduce((sum,entry) => sum + (entry.transferSize || 0),0), resourceStart);
               } catch { /* Failed samples remain in distribution. */ }
               rows.push({ index, ms:performance.now()-start, ok, status, payloadBytes, cache:index < concurrency ? 'first-navigation-no-server-cache-reset' : 'warm' });

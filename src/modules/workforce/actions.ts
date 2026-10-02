@@ -44,6 +44,27 @@ export async function createServiceJobAction(formData: FormData) {
   redirect("/admin/service-jobs/" + data + "?notice=service-created");
 }
 
+export async function cancelScheduledServiceJobAction(formData: FormData) {
+  const parsed = z.object({
+    serviceJobId: z.uuid(), version: z.coerce.number().int().positive(),
+    reason: z.string().trim().min(3).max(500), operationId: z.uuid(),
+  }).safeParse(Object.fromEntries(formData));
+  const target = parsed.success ? "/admin/service-jobs/" + parsed.data.serviceJobId : "/admin/service-jobs";
+  if (!parsed.success) return fail(target, "invalid-service-cancel");
+  await requireInternalPermission("service.manage");
+  const supabase = await createServerSupabase();
+  const { error } = await supabase.rpc("cancel_scheduled_service_job", {
+    target_service_job_id: parsed.data.serviceJobId,
+    expected_version: parsed.data.version,
+    cancellation_reason: parsed.data.reason,
+    operation_id: parsed.data.operationId,
+  });
+  if (error) fail(target, error.message);
+  revalidatePath("/admin/service-jobs");
+  revalidatePath(target);
+  redirect(target + "?notice=service-cancelled");
+}
+
 export async function publishWorkItemAction(formData: FormData) {
   const parsed = z.object({
     serviceJobId: z.uuid(), assignmentMode: z.enum(["DIRECT", "POOL_CLAIM"]),

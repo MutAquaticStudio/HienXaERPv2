@@ -131,6 +131,7 @@ export type CustomerPortalSnapshot = {
     state?: string;
     current_revision_id: string;
     valid_until?: string;
+    can_respond?: boolean;
   };
   orders: CustomerOrder[];
   debt: null | {

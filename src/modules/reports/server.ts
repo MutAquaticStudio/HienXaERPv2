@@ -8,6 +8,8 @@ export type ReportFilters = {
   asOf: string;
   customerId?: string;
   activity?: string;
+  page?: number;
+  cutoff?: string;
 };
 export type ReportRow = { id: string; label: string; context: string; date: string; amountVnd: string; href?: string };
 export type ReportResult = {
@@ -18,6 +20,8 @@ export type ReportResult = {
   rows: ReportRow[];
   chart: Array<{ label: string; amountVnd: string }>;
   scopeText: string;
+  hasNext: boolean;
+  cutoff: string;
 };
 
 type Access = { branchId: string; permissions: ReadonlySet<string> };
@@ -35,11 +39,32 @@ export function availableReportKinds(permissions: ReadonlySet<string>) {
   return kinds;
 }
 
+export async function loadObligationRows(access: Access, filters: ReportFilters, cutoff: string, offset: number, limit: number) {
+  const side = filters.report === "receivables" ? "AR" : "AP";
+  const supabase = await createServerSupabase();
+  const { data, error } = await supabase.rpc("finance_obligation_snapshot", {
+    target_branch_id: access.branchId,
+    target_side: side,
+    as_of: endOfDay(filters.asOf),
+    knowledge_cutoff: cutoff,
+    target_customer_id: side === "AR" ? filters.customerId || null : null,
+    target_site_id: null,
+    target_sales_employee_id: null,
+  }).gt("outstanding_amount_vnd", 0).order("outstanding_amount_vnd", { ascending: false }).order("obligation_id").range(offset, offset + limit);
+  if (error) throw new Error("report_query_failed");
+  const obligations = (data ?? []) as Obligation[];
+  const base = side === "AR" ? "/admin/receivables" : "/admin/payables";
+  return {
+    rows: obligations.slice(0, limit).map((row) => ({ id: row.obligation_id, label: row.party_name, context: `${row.site_name ?? row.source_type} · ${row.source_type}`, date: row.due_date, amountVnd: String(row.outstanding_amount_vnd), href: `${base}/${row.obligation_id}` })),
+    hasNext: obligations.length > limit,
+  };
+}
+
 export async function loadFixedReport(access: Access, filters: ReportFilters): Promise<ReportResult> {
   const required = filters.report === "receivables" ? "finance.ar.read" : filters.report === "payables" ? "finance.ap.read" : "finance.expense.read";
   if (!access.permissions.has(required)) throw new Error("forbidden_report");
   const supabase = await createServerSupabase();
-  const cutoff = new Date().toISOString();
+  const cutoff = filters.cutoff ?? new Date().toISOString();
   const isExpense = filters.report === "expenses";
   const from = isExpense ? instant(filters.from) : "2000-01-01T00:00:00+07:00";
   const to = isExpense ? instant(filters.to) : endOfDay(filters.asOf);
@@ -73,35 +98,31 @@ export async function loadFixedReport(access: Access, filters: ReportFilters): P
       rows,
       chart: rows.slice(0, 8).map((row) => ({ label: row.label, amountVnd: row.amountVnd })),
       scopeText: `Kỳ ${filters.from} đến trước ${filters.to}`,
+      hasNext: false,
+      cutoff,
     };
   }
 
-  const side = filters.report === "receivables" ? "AR" : "AP";
-  const [snapshotResult, obligationResult] = await Promise.all([
+  const page = Math.max(1, Math.min(10000, Math.trunc(filters.page ?? 1)));
+  const [snapshotResult, obligationPage, chartPage] = await Promise.all([
     supabase.rpc("finance_dashboard_snapshot", dashboardArgs),
-    supabase.rpc("finance_obligation_snapshot", {
-      target_branch_id: access.branchId,
-      target_side: side,
-      as_of: endOfDay(filters.asOf),
-      knowledge_cutoff: cutoff,
-      target_customer_id: filters.report === "receivables" ? filters.customerId || null : null,
-      target_site_id: null,
-      target_sales_employee_id: null,
-    }).gt("outstanding_amount_vnd", 0).order("outstanding_amount_vnd", { ascending: false }).order("obligation_id").limit(100),
+    loadObligationRows(access, filters, cutoff, (page - 1) * 25, 25),
+    page === 1 ? Promise.resolve(null) : loadObligationRows(access, filters, cutoff, 0, 8),
   ]);
-  if (snapshotResult.error || obligationResult.error) throw new Error("report_query_failed");
+  if (snapshotResult.error) throw new Error("report_query_failed");
   const snapshot = snapshotResult.data as { receivable: { value_vnd: string | number | null; quality: string }; payable: { value_vnd: string | number | null; quality: string } };
   const metric = filters.report === "receivables" ? snapshot.receivable : snapshot.payable;
-  const obligations = (obligationResult.data ?? []) as Obligation[];
-  const base = filters.report === "receivables" ? "/admin/receivables" : "/admin/payables";
-  const rows = obligations.map((row) => ({ id: row.obligation_id, label: row.party_name, context: `${row.site_name ?? row.source_type} · ${row.source_type}`, date: row.due_date, amountVnd: row.outstanding_amount_vnd, href: `${base}/${row.obligation_id}` }));
+  const rows = metric.quality === "READY" ? obligationPage.rows : [];
+  const chartRows = metric.quality === "READY" ? (chartPage?.rows ?? rows) : [];
   return {
     title: filters.report === "receivables" ? "Phải thu còn mở" : "Phải trả còn mở",
     totalLabel: filters.report === "receivables" ? "Tổng phải thu" : "Tổng phải trả",
     totalVnd: metric.quality === "READY" && metric.value_vnd != null ? String(metric.value_vnd) : null,
     quality: metric.quality,
     rows,
-    chart: rows.slice(0, 8).map((row) => ({ label: row.label, amountVnd: row.amountVnd })),
+    chart: chartRows.slice(0, 8).map((row) => ({ label: row.label, amountVnd: row.amountVnd })),
     scopeText: `Số dư đến hết ${filters.asOf}`,
+    hasNext: metric.quality === "READY" && obligationPage.hasNext,
+    cutoff,
   };
 }

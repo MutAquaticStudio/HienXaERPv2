@@ -217,7 +217,8 @@ async function saveDocument(kind: "order" | "quote", mode: "create" | "edit", fo
       manualPriceVnd: manualPrices[index] ?? "", manualReason: manualReasons[index] ?? "", sourceLineId: sourceLineIds[index] ?? "" })),
     effectiveAt: formData.get("effectiveAt"), terms: formData.get("terms"), operationId: formData.get("operationId"),
   });
-  if (!parsed.success) return { message: "Thông tin chứng từ chưa hợp lệ." };
+  if (!parsed.success) return { message: parsed.error.issues.some((issue) => issue.path[0] === "terms")
+    ? "Điều khoản / ghi chú tối đa 1.000 ký tự." : "Thông tin chứng từ chưa hợp lệ." };
   const edit = mode === "edit" ? editSchema.safeParse({ documentId: formData.get("documentId"), expectedVersion: formData.get("expectedVersion") }) : null;
   if (edit && !edit.success) return { message: "Thông tin bản nháp cần sửa không hợp lệ." };
   let expected: PricePreviewLine[];

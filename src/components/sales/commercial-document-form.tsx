@@ -67,6 +67,7 @@ export function CommercialDocumentForm({ kind, options, operationId, canManagePr
   const initialSite = initialCustomer?.sites.find((item) => item.id === initialSiteId) ?? initialCustomer?.sites[0];
   const [customerId, setCustomerId] = useState(existing?.customerId ?? initialCustomer?.id ?? "");
   const [siteId, setSiteId] = useState(existing?.siteId ?? initialSite?.id ?? "");
+  const [terms, setTerms] = useState(existing?.terms ?? "");
   const [customerSearch, setCustomerSearch] = useState("");
   const [siteSearch, setSiteSearch] = useState("");
   const [customerLookupPending, setCustomerLookupPending] = useState(false);
@@ -150,7 +151,7 @@ export function CommercialDocumentForm({ kind, options, operationId, canManagePr
       <div className="field"><div className="field-label-row"><label htmlFor="siteId">Công trình / điểm giao</label>{!existing && canManageCustomers && <button type="button" className="quick-create-trigger" onClick={() => setQuickMode("site")} disabled={!customerId}>+ Thêm công trình</button>}</div>{!existing && <div className="field-label-row"><input aria-label="Tìm công trình" type="search" value={siteSearch} onChange={(event) => setSiteSearch(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); if (customerId) void searchSites(customerId, siteSearch); } }} placeholder="Mã, tên hoặc địa chỉ" disabled={!customerId} /><button className="button button-secondary" type="button" disabled={!customerId || siteLookupPending} onClick={() => void searchSites(customerId, siteSearch)}>{siteLookupPending ? "Đang tìm..." : "Tìm điểm"}</button></div>}<select id="siteId" name="siteId" value={siteId} disabled={!!existing} onChange={(event) => { setSiteId(event.target.value); invalidatePrice(); }} required><option value="">Chọn công trình...</option>{sites.map((site) => <option key={site.id} value={site.id}>{site.name} · {site.address}</option>)}</select></div>
       {lookupMessage && <p className="form-message field-full" role="status">{lookupMessage}</p>}
       <div className="field"><label htmlFor="effectiveAt">{kind === "order" ? "Ngày giao dự kiến" : "Hiệu lực đến"}</label><input id="effectiveAt" name="effectiveAt" type="datetime-local" defaultValue={localDateTime(existing?.effectiveAt ?? null)} required={kind === "quote"} /></div>
-      <div className="field field-full"><label htmlFor="terms">Điều khoản / ghi chú</label><textarea id="terms" name="terms" maxLength={1000} defaultValue={existing?.terms ?? ""} placeholder="Điều kiện giao, thanh toán hoặc lưu ý cho khách hàng" /></div>
+      <div className="field field-full"><label htmlFor="terms">Điều khoản / ghi chú</label><textarea id="terms" name="terms" maxLength={1000} aria-describedby="terms-hint" value={terms} onChange={(event) => setTerms(event.target.value)} placeholder="Điều kiện giao, thanh toán hoặc lưu ý cho khách hàng" /><small id="terms-hint" className="muted">Tối đa 1.000 ký tự · {terms.length}/1.000</small></div>
     </div>
     <div className="section-head flush"><h2>Dòng hàng</h2><span className="muted">{lines.length} / 50 dòng</span></div>
     <div className="commercial-line-stack">{lines.map((line, index) => {

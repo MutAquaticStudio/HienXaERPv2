@@ -1,0 +1,95 @@
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { AppShell } from "./app-shell";
+
+const location = vi.hoisted(() => ({ pathname: "/admin/orders/new" }));
+vi.mock("next/navigation", () => ({ usePathname: () => location.pathname }));
+
+const ownerPermissions = ["dashboard.read", "quotation.read", "orders.read", "purchasing.read", "inventory.read", "delivery.read", "service.read", "workforce.read", "compensation.read", "finance.ar.read", "finance.payment_notice.review", "finance.ap.read", "finance.expense.read", "customers.read", "suppliers.read", "catalog.read", "roles.manage", "customers.manage", "suppliers.manage", "catalog.manage", "pricing.read"];
+const shell = (permissions: readonly string[] = ownerPermissions) => <AppShell surface="admin" permissions={permissions} actorName="Chủ QA" branchName="Chi nhánh QA"><p>Nội dung</p></AppShell>;
+
+beforeEach(() => { location.pathname = "/admin/orders/new"; });
+afterEach(cleanup);
+
+describe("grouped operational navigation", () => {
+  it("opens the current business group and collapses unrelated groups", () => {
+    render(shell());
+    expect(screen.getByRole("button", { name: "Bán hàng" })).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("button", { name: "Tài chính" })).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByRole("link", { name: "Đơn bán" })).toHaveAttribute("aria-current", "page");
+    expect(screen.queryByRole("link", { name: "Phải trả" })).not.toBeInTheDocument();
+  });
+
+  it("keeps all existing destinations and exposes existing stock-count and purchase-document routes", () => {
+    const { container } = render(shell());
+    const hrefs = [...container.querySelectorAll("aside a")].map((link) => link.getAttribute("href"));
+    expect(new Set(hrefs).size).toBe(27);
+    expect(hrefs).toContain("/admin/stock-counts");
+    expect(hrefs).toContain("/admin/invoices/purchases");
+    expect(hrefs).toContain("/admin/access");
+    expect(hrefs).toContain("/admin/settings");
+  });
+
+  it("does not render unauthorized links or empty groups", () => {
+    const { container } = render(shell(["orders.read", "quotation.read", "customers.read"]));
+    expect(screen.getByRole("button", { name: "Bán hàng" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Tài chính" })).not.toBeInTheDocument();
+    expect(container.querySelector('a[href="/admin/access"]')).toBeNull();
+    expect(container.querySelector('a[href="/admin/payables"]')).toBeNull();
+    expect(container.querySelector('a[href="/admin/settings"]')).toBeNull();
+  });
+
+  it("renders a single permitted destination without an extra expansion step", () => {
+    location.pathname = "/admin/payables";
+    render(shell(["finance.ap.read"]));
+    expect(screen.getByRole("button", { name: "Tài chính" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Phải trả" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Chứng từ mua" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Hồ sơ hóa đơn bán" })).not.toBeInTheDocument();
+  });
+
+  it("allows collapse and reopens the current group on a subsequent route", () => {
+    const { rerender } = render(shell());
+    fireEvent.click(screen.getByRole("button", { name: "Bán hàng" }));
+    expect(screen.getByRole("button", { name: "Bán hàng" })).toHaveAttribute("aria-expanded", "false");
+    location.pathname = "/admin/quotations/new";
+    rerender(shell());
+    expect(screen.getByRole("button", { name: "Bán hàng" })).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("link", { name: "Báo giá" })).toHaveAttribute("aria-current", "page");
+  });
+
+  it("marks only the most specific permitted invoice destination active", () => {
+    location.pathname = "/admin/invoices/purchases";
+    const { container } = render(shell());
+    expect(screen.getByRole("link", { name: "Chứng từ mua" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "Hồ sơ hóa đơn bán" })).not.toHaveAttribute("aria-current");
+    expect(container.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
+  });
+
+  it("does not match a route with a similar but different path segment", () => {
+    location.pathname = "/admin/orders-other";
+    const { container } = render(shell());
+    expect(container.querySelector('[aria-current="page"]')).toBeNull();
+  });
+
+  it("supports keyboard closing of the mobile drawer", () => {
+    render(shell());
+    const opener = screen.getByRole("button", { name: "Mở menu" });
+    fireEvent.click(opener);
+    expect(opener).toHaveAttribute("aria-expanded", "true");
+    fireEvent.keyDown(screen.getByRole("complementary"), { key: "Escape" });
+    expect(opener).toHaveAttribute("aria-expanded", "false");
+    expect(opener).toHaveFocus();
+  });
+
+  it("keeps Vietnamese labels and the authenticated actor/branch intact", () => {
+    render(shell());
+    const sidebar = screen.getByRole("complementary");
+    expect(within(sidebar).getByRole("button", { name: "Vật tư & kho" })).toBeInTheDocument();
+    expect(within(sidebar).getByRole("button", { name: "Nhân công & dịch vụ" })).toBeInTheDocument();
+    expect(sidebar.textContent).not.toMatch(/\uFFFD|Ã[\u0080-\u00bf]|Â[\u0080-\u00bf]/u);
+    expect(screen.getByText("Chủ QA")).toBeInTheDocument();
+    expect(screen.getByText("Chi nhánh QA")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Đăng xuất" }).closest("form")).toHaveAttribute("method", "post");
+  });
+});

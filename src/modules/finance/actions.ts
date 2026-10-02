@@ -21,6 +21,12 @@ function destination(value: FormDataEntryValue | null, fallback: string) {
   return parsed.success ? parsed.data : fallback;
 }
 
+function withQuery(target: string, values: Record<string, string>) {
+  const url = new URL(target, "http://localhost");
+  for (const [key, value] of Object.entries(values)) url.searchParams.set(key, value);
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
 function message(value?: string) {
   if (value?.includes("operation_payload_conflict")) return "Mã thao tác đã được dùng với dữ liệu khác. Hãy tải lại.";
   if (value?.includes("exceeds_payment")) return "Tổng phân bổ và tiền ứng vượt số tiền của phiếu.";
@@ -67,13 +73,13 @@ export async function postPaymentAction(formData: FormData) {
     operationId: z.uuid(),
   }).safeParse(Object.fromEntries(formData));
   const target = destination(formData.get("redirectTo"), "/admin/cashbook");
-  if (!parsed.success) redirect(`${target}?error=invalid-payment`);
+  if (!parsed.success) redirect(withQuery(target, { error: "invalid-payment" }));
 
   let allocations: Array<{ obligation_id: string; amount_vnd: string }>;
   try {
     allocations = z.array(z.object({ obligation_id: z.uuid(), amount_vnd: money })).parse(JSON.parse(parsed.data.allocationsJson));
   } catch {
-    redirect(`${target}?error=invalid-allocations`);
+    redirect(withQuery(target, { error: "invalid-allocations" }));
   }
 
   const access = await requireInternalPermission("finance.payment.post");
@@ -92,12 +98,12 @@ export async function postPaymentAction(formData: FormData) {
     advance_amount_vnd: parsed.data.advanceAmount || "0",
     operation_id: parsed.data.operationId,
   });
-  if (error || !data) redirect(`${target}?error=${encodeURIComponent(message(error?.message))}`);
+  if (error || !data) redirect(withQuery(target, { error: message(error?.message) }));
   revalidatePath("/admin");
   revalidatePath("/admin/receivables");
   revalidatePath("/admin/payables");
   revalidatePath("/admin/cashbook");
-  redirect(`${target}?notice=payment-posted&payment=${data}`);
+  redirect(withQuery(target, { notice: "payment-posted", payment: String(data) }));
 }
 
 export async function reversePaymentAction(formData: FormData) {

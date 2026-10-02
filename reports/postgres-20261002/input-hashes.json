@@ -1,0 +1,12 @@
+{
+  "scope": "exact measured index candidate and evidence; not a whole Git tree fingerprint",
+  "sha256": {
+    "supabase/migrations/20261002071813_index_quotation_and_customer_credit_lookups.sql": "cca7f71910a12e7e00e7a6e6d3cbe5bd67bcbf898b051d4ee75094ee2ed845a1",
+    "scripts/sql/postgres-storage-audit.sql": "55778a31f4fe585e8a240162db16a9f3d2572b44823a7cdd082d5e13cce59185",
+    "/private/tmp/hx-postgres-profile-20261002/profile.mjs": "8da05ec87824728a7d5905ffde502b04ef33c73618af090520e5ba090ed85cef",
+    "reports/postgres-20261002/before.json": "34df4a9bbe38b5d0d7fc199b39b8712f8ba29fee93a111f623b509ef29c15dce",
+    "reports/postgres-20261002/after.json": "bb2b94ff85c97e76ff6513d5ae9f1a5349873943384898951c7dc40dc01c639e",
+    "reports/postgres-20261002/production-storage.json": "80970671b94865ab966f10c3018ca94ecf75e5a05e2a4bdb2c45c5c94427e05c",
+    "reports/postgres-20261002/production-storage-query.sql": "bd562adb1b6ce5e74a654d0a54abb2e7c23b53b7c6fe1377fb0392adc08ce9b1"
+  }
+}

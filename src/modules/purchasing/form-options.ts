@@ -1,6 +1,7 @@
 import "server-only";
 
 import Decimal from "decimal.js";
+import { z } from "zod";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 type CustomerRow = { id: string; display_name: string; customer_sites: { id: string; name: string; address_text: string }[] | { id: string; name: string; address_text: string } | null };
@@ -28,17 +29,39 @@ export type SalesLineContext = {
 export type SalesOrderPurchaseLine = { id: string; materialId: string; materialName: string;
   uomId: string; uomSymbol: string; remainingOrderedQuantity: string };
 
-export async function loadPurchaseFormOptions(branchId: string): Promise<PurchaseFormOptions> {
+export async function loadPurchaseSuppliers(branchId: string, query = "", selectedSupplierId?: string): Promise<PurchaseFormOptions["suppliers"]> {
   const supabase = await createServerSupabase();
-  const [supplierResult, warehouseResult, customerResult, materialResult, conversionResult, uomResult] = await Promise.all([
-    supabase.from("suppliers").select("id, name").eq("branch_id", branchId).eq("active", true).order("name"),
+  let request = supabase.from("suppliers").select("id, name").eq("branch_id", branchId).eq("active", true)
+    .order("name").order("id").limit(50);
+  const search = query.trim().slice(0, 120);
+  if (search) {
+    const pattern = JSON.stringify(`%${search.replace(/[\\%_]/g, "\\$&")}%`);
+    request = request.or(`name.ilike.${pattern},code.ilike.${pattern}`);
+  }
+  const [matches, selected] = await Promise.all([
+    request,
+    selectedSupplierId && z.uuid().safeParse(selectedSupplierId).success
+      ? supabase.from("suppliers").select("id, name").eq("branch_id", branchId).eq("active", true).eq("id", selectedSupplierId).maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
+  ]);
+  if (matches.error || selected.error) throw new Error("Không thể tải nhà cung cấp.");
+  const rows = matches.data ?? [];
+  const selectedSupplier = selected.data;
+  if (selectedSupplier && !rows.some((row) => row.id === selectedSupplier.id)) rows.unshift(selectedSupplier);
+  return rows;
+}
+
+export async function loadPurchaseFormOptions(branchId: string, selectedSupplierId?: string): Promise<PurchaseFormOptions> {
+  const supabase = await createServerSupabase();
+  const [suppliers, warehouseResult, customerResult, materialResult, conversionResult, uomResult] = await Promise.all([
+    loadPurchaseSuppliers(branchId, "", selectedSupplierId),
     supabase.from("warehouses").select("id, name").eq("branch_id", branchId).eq("active", true).order("name"),
     supabase.from("customers").select("id, display_name, customer_sites(id, name, address_text)").eq("branch_id", branchId).eq("active", true).order("display_name"),
     supabase.from("materials").select("id, name, base_uom_id").eq("active", true).eq("purchase_enabled", true).order("name"),
     supabase.from("material_uom_conversions").select("material_id, from_uom_id").eq("active", true).eq("settlement_allowed", true),
     supabase.from("units_of_measure").select("id, symbol").eq("active", true),
   ]);
-  if ([supplierResult, warehouseResult, customerResult, materialResult, conversionResult, uomResult].some((result) => result.error)) throw new Error("Không thể tải dữ liệu tạo đơn mua.");
+  if ([warehouseResult, customerResult, materialResult, conversionResult, uomResult].some((result) => result.error)) throw new Error("Không thể tải dữ liệu tạo đơn mua.");
   const symbols = new Map((uomResult.data ?? []).map((row) => [row.id, row.symbol]));
   const conversions = conversionResult.data ?? [];
   const customers = (customerResult.data as unknown as CustomerRow[]).map((customer) => {
@@ -50,7 +73,7 @@ export async function loadPurchaseFormOptions(branchId: string): Promise<Purchas
     return { id: material.id, name: material.name, uoms: [...ids].map((id) => ({ id, symbol: symbols.get(id) ?? "Đơn vị" })) };
   });
   return {
-    suppliers: (supplierResult.data ?? []).map((row) => ({ id: row.id, name: row.name })),
+    suppliers,
     warehouses: (warehouseResult.data ?? []).map((row) => ({ id: row.id, name: row.name })),
     customers,
     materials,

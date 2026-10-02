@@ -1,0 +1,89 @@
+.layout > * {
+  min-width: 0;
+}
+
+.layout :global(.detail-item) dd,
+.layout :global(.field) label {
+  overflow-wrap: anywhere;
+}
+
+.layout :global(.field),
+.layout :global(.field) input,
+.layout :global(.field) select,
+.layout :global(.field) textarea {
+  min-width: 0;
+}
+
+.layout :global(.button) {
+  max-width: 100%;
+  white-space: normal;
+}
+
+@media (max-width: 760px) {
+  .layout :global(.table-wrap) {
+    overflow-x: visible;
+  }
+
+  .layout table,
+  .layout tbody,
+  .layout tbody tr {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .layout table {
+    position: relative;
+  }
+
+  /* Keep column headers available to assistive technology. */
+  .layout thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .layout tbody tr {
+    margin-bottom: 14px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+  }
+
+  .layout td {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: 12px;
+    padding: 12px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .layout td:first-child {
+    border-top: 0;
+  }
+
+  .layout td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .layout td:last-child {
+    display: block;
+  }
+
+  .layout td:last-child::before {
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .layout :global(.source-history) p {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
