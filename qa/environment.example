@@ -1,0 +1,16 @@
+# Copy into ignored .env.qa.local and populate ONLY with QA project credentials.
+HX_QA_RUNTIME_APPROVED=true
+HX_QA_PROJECT_REF=
+HX_QA_REGION=ap-northeast-2
+HX_QA_MAX_DB_MB=400
+HX_QA_PASSWORD=
+HX_QA_APP_URL=http://localhost:3000
+HX_QA_BUILD_SHA=
+HX_CLOUD_RUNTIME_APPROVED=true
+HX_EINVOICE_ENABLED=false
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_SECRET_KEY=
+DATABASE_URL=
+HX_QA_CA_FILE=/Users/nox/Downloads/HienXaERP/qa/supabase-ca.crt

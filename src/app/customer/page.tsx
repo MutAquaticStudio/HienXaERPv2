@@ -13,6 +13,7 @@ const money = (value: string | number = 0) => new Intl.NumberFormat("vi-VN", {
 
 export default async function CustomerHomePage() {
   const snapshot = await getCustomerPortalSnapshot();
+  const canRespondToQuote = snapshot.quotation?.can_respond === true;
   return (
     <div className={styles.page}>
       <header className={styles.hero}>
@@ -27,9 +28,9 @@ export default async function CustomerHomePage() {
           <h2>{snapshot.quotation.number ?? "Báo giá hiện tại"}</h2>
           <p>Mọi hành động được khóa vào đúng revision đang là current.</p>
           <div className={styles.actions}>
-            <Link className={styles.button} href={"/customer/quotations/" + snapshot.quotation.id}>Xem và chấp nhận</Link>
+            <Link className={styles.button} href={"/customer/quotations/" + snapshot.quotation.id}>{canRespondToQuote ? "Xem và chấp nhận" : "Xem báo giá"}</Link>
           </div>
-          <form action={requestQuotationChangeAction} className={styles.form}>
+          {canRespondToQuote && <form action={requestQuotationChangeAction} className={styles.form}>
             <input name="revision_id" type="hidden" value={snapshot.quotation.current_revision_id} />
             <input name="operation_id" type="hidden" value={randomUUID()} />
             <div className={styles.field}>
@@ -37,7 +38,7 @@ export default async function CustomerHomePage() {
               <textarea id="quote-change-reason" maxLength={1000} minLength={10} name="reason" required />
             </div>
             <button className={styles.buttonSecondary} type="submit">Gửi yêu cầu theo revision này</button>
-          </form>
+          </form>}
         </section>
       ) : null}
 

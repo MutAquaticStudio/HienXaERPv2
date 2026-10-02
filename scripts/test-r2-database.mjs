@@ -163,7 +163,7 @@ try {
 
   await database.exec("select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000003', false);");
   const portalCustomers = await queryRows("select code from public.customers order by code");
-  assert.deepEqual(portalCustomers.map((row) => row.code), ["CUS_A"], "customer membership must not cross customer scope");
+  assert.deepEqual(portalCustomers.map((row) => row.code), [], "portal membership must not grant raw customer table access; portal reads use customer-safe RPCs");
 
   await database.exec(`
     reset role;
@@ -618,14 +618,26 @@ try {
     "reconciliation records matching state without posting money again",
   );
 
+  // Business dates are fixed fixtures, but verification facts use DB now().
+  // This totals check includes both timelines without changing either source.
+  const dashboardFixturePeriod = `
+    least('2026-09-01T00:00:00+07:00'::timestamptz, now() - interval '1 day'),
+    greatest('2026-10-01T00:00:00+07:00'::timestamptz, now() + interval '1 day')`;
   const dashboardStarted = performance.now();
   const [dashboard] = await queryRows(`select public.finance_dashboard_snapshot(
-    '20000000-0000-0000-0000-000000000001', '2026-09-01T00:00:00+07:00', '2026-10-01T00:00:00+07:00', now(),
+    '20000000-0000-0000-0000-000000000001', ${dashboardFixturePeriod}, now(),
     null, null, null, null) as snapshot`);
   const dashboardDurationMs = performance.now() - dashboardStarted;
   const dashboardPayloadBytes = Buffer.byteLength(JSON.stringify(dashboard.snapshot));
   assert.equal(dashboard.snapshot.revenue.value_vnd.toString(), revenueBeforePayment.toString(), "dashboard revenue remains sourced from verified business facts");
   assert.equal(dashboard.snapshot.operating_expense.value_vnd.toString(), "300000", "dashboard reads approved Opex once");
+
+  const [excludedDashboard] = await queryRows(`select public.finance_dashboard_snapshot(
+    '20000000-0000-0000-0000-000000000001',
+    (select min(recorded_at) - interval '2 days' from public.revenue_entries where branch_id = '20000000-0000-0000-0000-000000000001'),
+    (select min(recorded_at) - interval '1 day' from public.revenue_entries where branch_id = '20000000-0000-0000-0000-000000000001'),
+    now(), null, null, null, null) as snapshot`);
+  assert.equal(excludedDashboard.snapshot.revenue.value_vnd.toString(), "0", "dashboard excludes verified facts outside the selected reporting period");
 
   const [{ id: serviceSiteId }] = await queryRows(`select id from public.customer_sites
     where customer_id = '50000000-0000-0000-0000-000000000001' limit 1`);
@@ -711,10 +723,10 @@ try {
   assert.deepEqual([earningPaymentFacts.outstanding.toString(), earningPaymentFacts.employee_id, earningPaymentFacts.calculated.toString()], ["250000", "30000000-0000-0000-0000-000000000001", "450000"], "approved earning creates employee AP and payment only settles the allocated amount");
 
   const [serviceDashboard] = await queryRows(`select public.finance_dashboard_snapshot(
-    '20000000-0000-0000-0000-000000000001', '2026-09-01T00:00:00+07:00', '2026-10-01T00:00:00+07:00', now(),
+    '20000000-0000-0000-0000-000000000001', ${dashboardFixturePeriod}, now(),
     null, null, null, 'SERVICE') as snapshot`);
   const [peopleDashboard] = await queryRows(`select public.finance_dashboard_snapshot(
-    '20000000-0000-0000-0000-000000000001', '2026-09-01T00:00:00+07:00', '2026-10-01T00:00:00+07:00', now(),
+    '20000000-0000-0000-0000-000000000001', ${dashboardFixturePeriod}, now(),
     null, null, null, null) as snapshot`);
   assert.deepEqual([serviceDashboard.snapshot.revenue.value_vnd.toString(), peopleDashboard.snapshot.salary_payable.value_vnd.toString(), peopleDashboard.snapshot.commission_payable.value_vnd.toString()], ["800000", "250000", "0"], "dashboard reads verified service revenue and approved outstanding compensation without ad hoc commission");
   let resultMutationRejected = false;

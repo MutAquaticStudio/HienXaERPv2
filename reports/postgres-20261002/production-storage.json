@@ -1,0 +1,532 @@
+{
+  "project_ref": "nbwynrwkdbtfsitafsxa",
+  "dashboard_url": "https://supabase.com/dashboard/project/nbwynrwkdbtfsitafsxa/editor",
+  "access": "read-only metadata through authenticated dashboard",
+  "inventory": {
+    "tables": [
+      {
+        "schemaname": "auth",
+        "table_name": "users",
+        "index_bytes": 196608,
+        "table_bytes": 49152,
+        "total_bytes": 245760,
+        "last_autovacuum": "2026-09-27T20:29:18.356524+00:00",
+        "last_autoanalyze": "2026-09-23T11:54:27.863124+00:00",
+        "estimated_dead_rows": 17,
+        "estimated_live_rows": 3
+      },
+      {
+        "schemaname": "auth",
+        "table_name": "refresh_tokens",
+        "index_bytes": 114688,
+        "table_bytes": 49152,
+        "total_bytes": 163840,
+        "last_autovacuum": "2026-09-23T16:19:33.529233+00:00",
+        "last_autoanalyze": "2026-09-24T02:18:46.724776+00:00",
+        "estimated_dead_rows": 30,
+        "estimated_live_rows": 6
+      },
+      {
+        "schemaname": "auth",
+        "table_name": "sessions",
+        "index_bytes": 81920,
+        "table_bytes": 49152,
+        "total_bytes": 131072,
+        "last_autovacuum": "2026-10-01T16:54:33.918264+00:00",
+        "last_autoanalyze": "2026-10-01T19:01:36.886481+00:00",
+        "estimated_dead_rows": 22,
+        "estimated_live_rows": 6
+      },
+      {
+        "schemaname": "public",
+        "table_name": "sales_order_credit_overrides",
+        "index_bytes": 98304,
+        "table_bytes": 16384,
+        "total_bytes": 114688,
+        "last_autovacuum": null,
+        "last_autoanalyze": null,
+        "estimated_dead_rows": 0,
+        "estimated_live_rows": 3
+      },
+      {
+        "schemaname": "public",
+        "table_name": "audit_events",
+        "index_bytes": 49152,
+        "table_bytes": 49152,
+        "total_bytes": 98304,
+        "last_autovacuum": null,
+        "last_autoanalyze": null,
+        "estimated_dead_rows": 0,
+        "estimated_live_rows": 31
+      },
+      {
+        "schemaname": "public",
+        "table_name": "pricing_rules",
+        "index_bytes": 81920,
+        "table_bytes": 16384,
+        "total_bytes": 98304,
+        "last_autovacuum": null,
+        "last_autoanalyze": null,
+        "estimated_dead_rows": 0,
+        "estimated_live_rows": 4
+      },
+      {
+        "schemaname": "auth",
+        "table_name": "one_time_tokens",
+        "index_bytes": 81920,
+        "table_bytes": 8192,
+        "total_bytes": 90112,
+        "last_autovacuum": null,
+        "last_autoanalyze": null,
+        "estimated_dead_rows": 0,
+        "estimated_live_rows": 0
+      },
+      {
+        "schemaname": "auth",
+        "table_name": "scim_users",
+        "index_bytes": 81920,
+        "table_bytes": 8192,
+        "total_bytes": 90112,
+        "last_autovacuum": null,
+        "last_autoanalyze": null,
+        "estimated_dead_rows": 0,
+        "estimated_live_rows": 0
+      },
+      {
+        "schemaname": "public",
+        "table_name": "expenses",
+        "index_bytes": 73728,
+        "table_bytes": 16384,
+        "total_bytes": 90112,
+        "last_autovacuum": null,
+        "last_autoanalyze": null,
+        "estimated_dead_rows": 0,
+        "estimated_live_rows": 1
+      },
+      {
+        "schemaname": "auth",
+        "table_name": "identities",
+        "index_bytes": 65536,
+        "table_bytes": 16384,
+        "total_bytes": 81920,
+        "last_autovacuum": null,
+        "last_autoanalyze": null,
+        "estimated_dead_rows": 0,
+        "estimated_live_rows": 3
+      },
+      {
+        "schemaname": "auth",
+        "table_name": "mfa_amr_claims",
+        "index_bytes": 32768,
+        "table_bytes": 49152,
+        "total_bytes": 81920,
+        "last_autovacuum": "2026-10-02T03:40:49.039565+00:00",
+        "last_autoanalyze": "2026-10-02T03:52:49.072653+00:00",
+        "estimated_dead_rows": 0,
+        "estimated_live_rows": 6
+      },
+      {
+        "schemaname": "public",
+        "table_name": "sales_orders",
+        "index_bytes": 65536,
+        "table_bytes": 16384,
+        "total_bytes": 81920,
+        "last_autovacuum": null,
+        "last_autoanalyze": null,
+        "estimated_dead_rows": 6,
+        "estimated_live_rows": 4
+      },
+      {
+        "schemaname": "public",
+        "table_name": "inventory_movements",
+        "index_bytes": 65536,
+        "table_bytes": 8192,
+        "total_bytes": 73728,
+        "last_autovacuum": null,
+        "last_autoanalyze": null,
+        "estimated_dead_rows": 0,
+        "estimated_live_rows": 0
+      },
+      {
+        "schemaname": "storage",
+        "table_name": "migrations",
+        "index_bytes": 32768,
+        "table_bytes": 40960,
+        "total_bytes": 73728,
+        "last_autovacuum": null,
+        "last_autoanalyze": "2026-09-13T06:26:16.987385+00:00",
+        "estimated_dead_rows": 0,
+        "estimated_live_rows": 73
+      },
+      {
+        "schemaname": "storage",
+        "table_name": "objects",
+        "index_bytes": 65536,
+        "table_bytes": 8192,
+        "total_bytes": 73728,
+        "last_autovacuum": null,
+        "last_autoanalyze": null,
+        "estimated_dead_rows": 0,
+        "estimated_live_rows": 0
+      },
+      {
+        "schemaname": "public",
+        "table_name": "conversation_participants",
+        "index_bytes": 49152,
+        "table_bytes": 16384,
+        "total_bytes": 65536,
+        "last_autovacuum": null,
+        "last_autoanalyze": null,
+        "estimated_dead_rows": 2,
+        "estimated_live_rows": 2
+      },
+      {
+        "schemaname": "public",
+        "table_name": "conversations",
+        "index_bytes": 49152,
+        "table_bytes": 16384,
+        "total_bytes": 65536,
+        "last_autovacuum": null,
+        "last_autoanalyze": null,
+        "estimated_dead_rows": 2,
+        "estimated_live_rows": 1
+      },
+      {
+        "schemaname": "public",
+        "table_name": "credit_commitments",
+        "index_bytes": 49152,
+        "table_bytes": 16384,
+        "total_bytes": 65536,
+        "last_autovacuum": null,
+        "last_autoanalyze": null,
+        "estimated_dead_rows": 0,
+        "estimated_live_rows": 3
+      },
+      {
+        "schemaname": "public",
+        "table_name": "customer_sites",
+        "index_bytes": 49152,
+        "table_bytes": 16384,
+        "total_bytes": 65536,
+        "last_autovacuum": null,
+        "last_autoanalyze": null,
+        "estimated_dead_rows": 3,
+        "estimated_live_rows": 3
+      },
+      {
+        "schemaname": "public",
+        "table_name": "customers",
+        "index_bytes": 49152,
+        "table_bytes": 16384,
+        "total_bytes": 65536,
+        "last_autovacuum": null,
+        "last_autoanalyze": null,
+        "estimated_dead_rows": 2,
+        "estimated_live_rows": 2
+      },
+      {
+        "schemaname": "public",
+        "table_name": "deliveries",
+        "index_bytes": 57344,
+        "table_bytes": 8192,
+        "total_bytes": 65536,
+        "last_autovacuum": null,
+        "last_autoanalyze": null,
+        "estimated_dead_rows": 0,
+        "estimated_live_rows": 0
+      },
+      {
+        "schemaname": "public",
+        "table_name": "employees",
+        "index_bytes": 49152,
+        "table_bytes": 16384,
+        "total_bytes": 65536,
+        "last_autovacuum": null,
+        "last_autoanalyze": null,
+        "estimated_dead_rows": 1,
+        "estimated_live_rows": 3
+      },
+      {
+        "schemaname": "public",
+        "table_name": "messages",
+        "index_bytes": 49152,
+        "table_bytes": 16384,
+        "total_bytes": 65536,
+        "last_autovacuum": null,
+        "last_autoanalyze": null,
+        "estimated_dead_rows": 0,
+        "estimated_live_rows": 1
+      },
+      {
+        "schemaname": "public",
+        "table_name": "purchase_order_lines",
+        "index_bytes": 49152,
+        "table_bytes": 16384,
+        "total_bytes": 65536,
+        "last_autovacuum": null,
+        "last_autoanalyze": null,
+        "estimated_dead_rows": 8,
+        "estimated_live_rows": 6
+      },
+      {
+        "schemaname": "public",
+        "table_name": "purchase_orders",
+        "index_bytes": 49152,
+        "table_bytes": 16384,
+        "total_bytes": 65536,
+        "last_autovacuum": null,
+        "last_autoanalyze": null,
+        "estimated_dead_rows": 2,
+        "estimated_live_rows": 3
+      }
+    ],
+    "indexes": [
+      {
+        "index_name": "audit_events_branch_idx",
+        "schemaname": "public",
+        "table_name": "audit_events",
+        "index_bytes": 16384,
+        "primary_key": false,
+        "recorded_scans": 32,
+        "unique_constraint_index": false
+      },
+      {
+        "index_name": "audit_events_entity_idx",
+        "schemaname": "public",
+        "table_name": "audit_events",
+        "index_bytes": 16384,
+        "primary_key": false,
+        "recorded_scans": 0,
+        "unique_constraint_index": false
+      },
+      {
+        "index_name": "audit_events_pkey",
+        "schemaname": "public",
+        "table_name": "audit_events",
+        "index_bytes": 16384,
+        "primary_key": true,
+        "recorded_scans": 1,
+        "unique_constraint_index": true
+      },
+      {
+        "index_name": "branches_code_key",
+        "schemaname": "public",
+        "table_name": "branches",
+        "index_bytes": 16384,
+        "primary_key": false,
+        "recorded_scans": 4,
+        "unique_constraint_index": true
+      },
+      {
+        "index_name": "branches_pkey",
+        "schemaname": "public",
+        "table_name": "branches",
+        "index_bytes": 16384,
+        "primary_key": true,
+        "recorded_scans": 25291,
+        "unique_constraint_index": true
+      },
+      {
+        "index_name": "command_receipts_pkey",
+        "schemaname": "public",
+        "table_name": "command_receipts",
+        "index_bytes": 16384,
+        "primary_key": true,
+        "recorded_scans": 30,
+        "unique_constraint_index": true
+      },
+      {
+        "index_name": "conversation_participants_conversation_id_auth_user_id_key",
+        "schemaname": "public",
+        "table_name": "conversation_participants",
+        "index_bytes": 16384,
+        "primary_key": false,
+        "recorded_scans": 28,
+        "unique_constraint_index": true
+      },
+      {
+        "index_name": "conversation_participants_pkey",
+        "schemaname": "public",
+        "table_name": "conversation_participants",
+        "index_bytes": 16384,
+        "primary_key": true,
+        "recorded_scans": 0,
+        "unique_constraint_index": true
+      },
+      {
+        "index_name": "conversation_participants_user_idx",
+        "schemaname": "public",
+        "table_name": "conversation_participants",
+        "index_bytes": 16384,
+        "primary_key": false,
+        "recorded_scans": 6,
+        "unique_constraint_index": false
+      },
+      {
+        "index_name": "conversations_branch_updated_idx",
+        "schemaname": "public",
+        "table_name": "conversations",
+        "index_bytes": 16384,
+        "primary_key": false,
+        "recorded_scans": 35,
+        "unique_constraint_index": false
+      },
+      {
+        "index_name": "conversations_operation_id_key",
+        "schemaname": "public",
+        "table_name": "conversations",
+        "index_bytes": 16384,
+        "primary_key": false,
+        "recorded_scans": 0,
+        "unique_constraint_index": true
+      },
+      {
+        "index_name": "conversations_pkey",
+        "schemaname": "public",
+        "table_name": "conversations",
+        "index_bytes": 16384,
+        "primary_key": true,
+        "recorded_scans": 6,
+        "unique_constraint_index": true
+      },
+      {
+        "index_name": "credit_commitment_sales_order_unique",
+        "schemaname": "public",
+        "table_name": "credit_commitments",
+        "index_bytes": 16384,
+        "primary_key": false,
+        "recorded_scans": 2,
+        "unique_constraint_index": true
+      },
+      {
+        "index_name": "credit_commitments_pkey",
+        "schemaname": "public",
+        "table_name": "credit_commitments",
+        "index_bytes": 16384,
+        "primary_key": true,
+        "recorded_scans": 4,
+        "unique_constraint_index": true
+      },
+      {
+        "index_name": "credit_commitments_source_type_source_key_key",
+        "schemaname": "public",
+        "table_name": "credit_commitments",
+        "index_bytes": 16384,
+        "primary_key": false,
+        "recorded_scans": 0,
+        "unique_constraint_index": true
+      },
+      {
+        "index_name": "customer_sites_customer_id_code_key",
+        "schemaname": "public",
+        "table_name": "customer_sites",
+        "index_bytes": 16384,
+        "primary_key": false,
+        "recorded_scans": 0,
+        "unique_constraint_index": true
+      },
+      {
+        "index_name": "customer_sites_customer_name_id_idx",
+        "schemaname": "public",
+        "table_name": "customer_sites",
+        "index_bytes": 16384,
+        "primary_key": false,
+        "recorded_scans": 201,
+        "unique_constraint_index": false
+      },
+      {
+        "index_name": "customer_sites_pkey",
+        "schemaname": "public",
+        "table_name": "customer_sites",
+        "index_bytes": 16384,
+        "primary_key": true,
+        "recorded_scans": 20,
+        "unique_constraint_index": true
+      },
+      {
+        "index_name": "customers_branch_name_id_idx",
+        "schemaname": "public",
+        "table_name": "customers",
+        "index_bytes": 16384,
+        "primary_key": false,
+        "recorded_scans": 362,
+        "unique_constraint_index": false
+      },
+      {
+        "index_name": "customers_code_key",
+        "schemaname": "public",
+        "table_name": "customers",
+        "index_bytes": 16384,
+        "primary_key": false,
+        "recorded_scans": 0,
+        "unique_constraint_index": true
+      },
+      {
+        "index_name": "customers_pkey",
+        "schemaname": "public",
+        "table_name": "customers",
+        "index_bytes": 16384,
+        "primary_key": true,
+        "recorded_scans": 213,
+        "unique_constraint_index": true
+      },
+      {
+        "index_name": "employee_branch_access_branch_active_idx",
+        "schemaname": "public",
+        "table_name": "employee_branch_access",
+        "index_bytes": 16384,
+        "primary_key": false,
+        "recorded_scans": 20583,
+        "unique_constraint_index": false
+      },
+      {
+        "index_name": "employee_branch_access_pkey",
+        "schemaname": "public",
+        "table_name": "employee_branch_access",
+        "index_bytes": 16384,
+        "primary_key": true,
+        "recorded_scans": 2,
+        "unique_constraint_index": true
+      },
+      {
+        "index_name": "employee_branch_one_active_role",
+        "schemaname": "public",
+        "table_name": "employee_branch_access",
+        "index_bytes": 16384,
+        "primary_key": false,
+        "recorded_scans": 1521,
+        "unique_constraint_index": true
+      },
+      {
+        "index_name": "employee_permission_grants_branch_idx",
+        "schemaname": "public",
+        "table_name": "employee_permission_grants",
+        "index_bytes": 16384,
+        "primary_key": false,
+        "recorded_scans": 2657,
+        "unique_constraint_index": false
+      }
+    ],
+    "schemas": [
+      {
+        "schemaname": "auth",
+        "table_count": 27,
+        "total_relation_bytes": 1572864
+      },
+      {
+        "schemaname": "public",
+        "table_count": 99,
+        "total_relation_bytes": 4079616
+      },
+      {
+        "schemaname": "storage",
+        "table_count": 8,
+        "total_relation_bytes": 303104
+      }
+    ],
+    "captured_at": "2026-10-02T07:52:58.808482+00:00",
+    "database_size": "20 MB",
+    "database_bytes": 20933779,
+    "server_version": "17.6"
+  }
+}

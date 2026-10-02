@@ -1,0 +1,827 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: quotation_list changed results
++ actual - expected
+... Skipped lines
+
+  [
+    {
++     created_at: 2026-01-01T02:46:35.000Z,
+-     created_at: '2026-01-01T02:46:35.000Z',
+      customer_name_snapshot: 'Synthetic customer',
+      expires_at: null,
+      id: '58cc70a8-4c8a-c3d1-a0a6-8e57af091da3',
+      quotation_number: 'PG-PERF-Q-19991',
+      revision_number: 1,
+...
+    {
++     created_at: 2026-01-01T02:46:30.000Z,
+-     created_at: '2026-01-01T02:46:30.000Z',
+      customer_name_snapshot: 'Synthetic customer',
+      expires_at: null,
+      id: 'a147821b-d540-d4da-6b27-1baa44d82e0a',
+      quotation_number: 'PG-PERF-Q-19981',
+      revision_number: 1,
+...
+    {
++     created_at: 2026-01-01T02:46:25.000Z,
+-     created_at: '2026-01-01T02:46:25.000Z',
+      customer_name_snapshot: 'Synthetic customer',
+      expires_at: null,
+      id: '7a803cc6-4622-836d-86ed-519467179fe0',
+      quotation_number: 'PG-PERF-Q-19971',
+      revision_number: 1,
+...
+    {
++     created_at: 2026-01-01T02:46:20.000Z,
+-     created_at: '2026-01-01T02:46:20.000Z',
+      customer_name_snapshot: 'Synthetic customer',
+      expires_at: null,
+      id: '18d365e8-4913-d0ab-46ae-6161d7681b44',
+      quotation_number: 'PG-PERF-Q-19961',
+      revision_number: 1,
+...
+    {
++     created_at: 2026-01-01T02:46:15.000Z,
+-     created_at: '2026-01-01T02:46:15.000Z',
+      customer_name_snapshot: 'Synthetic customer',
+      expires_at: null,
+      id: '357c045c-975f-813b-cde5-c05432ff265f',
+      quotation_number: 'PG-PERF-Q-19951',
+      revision_number: 1,
+...
+    {
++     created_at: 2026-01-01T02:46:10.000Z,
+-     created_at: '2026-01-01T02:46:10.000Z',
+      customer_name_snapshot: 'Synthetic customer',
+      expires_at: null,
+      id: '6a172f48-449e-684a-990c-f2ab282894df',
+      quotation_number: 'PG-PERF-Q-19941',
+      revision_number: 1,
+...
+    {
++     created_at: 2026-01-01T02:46:05.000Z,
+-     created_at: '2026-01-01T02:46:05.000Z',
+      customer_name_snapshot: 'Synthetic customer',
+      expires_at: null,
+      id: '7fa002cc-d231-3e49-27d4-fca5d0e76aec',
+      quotation_number: 'PG-PERF-Q-19931',
+      revision_number: 1,
+...
+    {
++     created_at: 2026-01-01T02:46:00.000Z,
+-     created_at: '2026-01-01T02:46:00.000Z',
+      customer_name_snapshot: 'Synthetic customer',
+      expires_at: null,
+      id: 'fbca96f2-7352-6318-b0bb-692818ed9548',
+      quotation_number: 'PG-PERF-Q-19921',
+      revision_number: 1,
+...
+    {
++     created_at: 2026-01-01T02:45:55.000Z,
+-     created_at: '2026-01-01T02:45:55.000Z',
+      customer_name_snapshot: 'Synthetic customer',
+      expires_at: null,
+      id: '1f8a7421-a0d4-5b69-ddce-8a16dffbb8b6',
+      quotation_number: 'PG-PERF-Q-19911',
+      revision_number: 1,
+...
+    {
++     created_at: 2026-01-01T02:45:50.000Z,
+-     created_at: '2026-01-01T02:45:50.000Z',
+      customer_name_snapshot: 'Synthetic customer',
+      expires_at: null,
+      id: '7ed9bdd2-dec2-977e-45b9-74483831f2f8',
+      quotation_number: 'PG-PERF-Q-19901',
+      revision_number: 1,
+...
+    {
++     created_at: 2026-01-01T02:45:45.000Z,
+-     created_at: '2026-01-01T02:45:45.000Z',
+      customer_name_snapshot: 'Synthetic customer',
+      expires_at: null,
+      id: 'c25831f1-d44a-5148-b2c9-66240e013006',
+      quotation_number: 'PG-PERF-Q-19891',
+      revision_number: 1,
+...
+    {
++     created_at: 2026-01-01T02:45:40.000Z,
+-     created_at: '2026-01-01T02:45:40.000Z',
+      customer_name_snapshot: 'Synthetic customer',
+      expires_at: null,
+      id: '9c3a5eca-f6e3-0870-56f6-a9652280df58',
+      quotation_number: 'PG-PERF-Q-19881',
+      revision_number: 1,
+...
+    {
++     created_at: 2026-01-01T02:45:35.000Z,
+-     created_at: '2026-01-01T02:45:35.000Z',
+      customer_name_snapshot: 'Synthetic customer',
+      expires_at: null,
+      id: '0f94ce56-0e39-7257-08b9-67d39f2b28ff',
+      quotation_number: 'PG-PERF-Q-19871',
+      revision_number: 1,
+...
+    {
++     created_at: 2026-01-01T02:45:30.000Z,
+-     created_at: '2026-01-01T02:45:30.000Z',
+      customer_name_snapshot: 'Synthetic customer',
+      expires_at: null,
+      id: 'b89080b5-a027-bc5c-bc0f-3ddbc76ee3e4',
+      quotation_number: 'PG-PERF-Q-19861',
+      revision_number: 1,
+...
+    {
++     created_at: 2026-01-01T02:45:25.000Z,
+-     created_at: '2026-01-01T02:45:25.000Z',
+      customer_name_snapshot: 'Synthetic customer',
+      expires_at: null,
+      id: '103a56d1-f61a-1fc5-3149-cb00a02ceac0',
+      quotation_number: 'PG-PERF-Q-19851',
+      revision_number: 1,
+...
+    {
++     created_at: 2026-01-01T02:45:20.000Z,
+-     created_at: '2026-01-01T02:45:20.000Z',
+      customer_name_snapshot: 'Synthetic customer',
+      expires_at: null,
+      id: '827b4e77-d098-c646-54a0-f220dc624b75',
+      quotation_number: 'PG-PERF-Q-19841',
+      revision_number: 1,
+...
+    {
++     created_at: 2026-01-01T02:45:15.000Z,
+-     created_at: '2026-01-01T02:45:15.000Z',
+      customer_name_snapshot: 'Synthetic customer',
+      expires_at: null,
+      id: '094044d1-4b5a-e5ab-ca48-665d12a948d2',
+      quotation_number: 'PG-PERF-Q-19831',
+      revision_number: 1,
+...
+    {
++     created_at: 2026-01-01T02:45:10.000Z,
+-     created_at: '2026-01-01T02:45:10.000Z',
+      customer_name_snapshot: 'Synthetic customer',
+      expires_at: null,
+      id: '1914db4c-4bf4-9511-b752-b505cb502313',
+      quotation_number: 'PG-PERF-Q-19821',
+      revision_number: 1,
+...
+    {
++     created_at: 2026-01-01T02:45:05.000Z,
+-     created_at: '2026-01-01T02:45:05.000Z',
+      customer_name_snapshot: 'Synthetic customer',
+      expires_at: null,
+      id: '046d3fbe-2238-0c44-2d53-9ab76447167d',
+      quotation_number: 'PG-PERF-Q-19811',
+      revision_number: 1,
+...
+    {
++     created_at: 2026-01-01T02:45:00.000Z,
+-     created_at: '2026-01-01T02:45:00.000Z',
+      customer_name_snapshot: 'Synthetic customer',
+      expires_at: null,
+      id: 'a94d2c66-2b35-d7cf-0c93-44aa0c65ee2d',
+      quotation_number: 'PG-PERF-Q-19801',
+      revision_number: 1,
+...
+    {
++     created_at: 2026-01-01T02:44:55.000Z,
+-     created_at: '2026-01-01T02:44:55.000Z',
+      customer_name_snapshot: 'Synthetic customer',
+      expires_at: null,
+      id: '99c555e1-84c4-9d3d-93e7-7826e5132315',
+      quotation_number: 'PG-PERF-Q-19791',
+      revision_number: 1,
+...
+    {
++     created_at: 2026-01-01T02:44:50.000Z,
+-     created_at: '2026-01-01T02:44:50.000Z',
+      customer_name_snapshot: 'Synthetic customer',
+      expires_at: null,
+      id: '36dd0c54-e002-9a5f-5174-fcd8fec71656',
+      quotation_number: 'PG-PERF-Q-19781',
+      revision_number: 1,
+...
+    {
++     created_at: 2026-01-01T02:44:45.000Z,
+-     created_at: '2026-01-01T02:44:45.000Z',
+      customer_name_snapshot: 'Synthetic customer',
+      expires_at: null,
+      id: '99243fa6-6e9a-d151-eb15-951b9c499873',
+      quotation_number: 'PG-PERF-Q-19771',
+      revision_number: 1,
+...
+    {
++     created_at: 2026-01-01T02:44:40.000Z,
+-     created_at: '2026-01-01T02:44:40.000Z',
+      customer_name_snapshot: 'Synthetic customer',
+      expires_at: null,
+      id: '29e1a54b-9b3e-495d-3195-cecd67bf9dfe',
+      quotation_number: 'PG-PERF-Q-19761',
+      revision_number: 1,
+...
+    {
++     created_at: 2026-01-01T02:44:35.000Z,
+-     created_at: '2026-01-01T02:44:35.000Z',
+      customer_name_snapshot: 'Synthetic customer',
+      expires_at: null,
+      id: '7962c987-968e-3dd3-d0ce-694065ca2bbe',
+      quotation_number: 'PG-PERF-Q-19751',
+      revision_number: 1,
+...
+    {
++     created_at: 2026-01-01T02:44:30.000Z,
+-     created_at: '2026-01-01T02:44:30.000Z',
+      customer_name_snapshot: 'Synthetic customer',
+      expires_at: null,
+      id: 'ce8b8613-4584-c92e-756a-87594a0f57b3',
+      quotation_number: 'PG-PERF-Q-19741',
+      revision_number: 1,
+
+    at file:///private/tmp/hx-postgres-profile-20261002/profile.mjs:107:44 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: [
+    {
+      id: '58cc70a8-4c8a-c3d1-a0a6-8e57af091da3',
+      quotation_number: 'PG-PERF-Q-19991',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: 2026-01-01T02:46:35.000Z
+    },
+    {
+      id: 'a147821b-d540-d4da-6b27-1baa44d82e0a',
+      quotation_number: 'PG-PERF-Q-19981',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: 2026-01-01T02:46:30.000Z
+    },
+    {
+      id: '7a803cc6-4622-836d-86ed-519467179fe0',
+      quotation_number: 'PG-PERF-Q-19971',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: 2026-01-01T02:46:25.000Z
+    },
+    {
+      id: '18d365e8-4913-d0ab-46ae-6161d7681b44',
+      quotation_number: 'PG-PERF-Q-19961',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: 2026-01-01T02:46:20.000Z
+    },
+    {
+      id: '357c045c-975f-813b-cde5-c05432ff265f',
+      quotation_number: 'PG-PERF-Q-19951',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: 2026-01-01T02:46:15.000Z
+    },
+    {
+      id: '6a172f48-449e-684a-990c-f2ab282894df',
+      quotation_number: 'PG-PERF-Q-19941',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: 2026-01-01T02:46:10.000Z
+    },
+    {
+      id: '7fa002cc-d231-3e49-27d4-fca5d0e76aec',
+      quotation_number: 'PG-PERF-Q-19931',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: 2026-01-01T02:46:05.000Z
+    },
+    {
+      id: 'fbca96f2-7352-6318-b0bb-692818ed9548',
+      quotation_number: 'PG-PERF-Q-19921',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: 2026-01-01T02:46:00.000Z
+    },
+    {
+      id: '1f8a7421-a0d4-5b69-ddce-8a16dffbb8b6',
+      quotation_number: 'PG-PERF-Q-19911',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: 2026-01-01T02:45:55.000Z
+    },
+    {
+      id: '7ed9bdd2-dec2-977e-45b9-74483831f2f8',
+      quotation_number: 'PG-PERF-Q-19901',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: 2026-01-01T02:45:50.000Z
+    },
+    {
+      id: 'c25831f1-d44a-5148-b2c9-66240e013006',
+      quotation_number: 'PG-PERF-Q-19891',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: 2026-01-01T02:45:45.000Z
+    },
+    {
+      id: '9c3a5eca-f6e3-0870-56f6-a9652280df58',
+      quotation_number: 'PG-PERF-Q-19881',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: 2026-01-01T02:45:40.000Z
+    },
+    {
+      id: '0f94ce56-0e39-7257-08b9-67d39f2b28ff',
+      quotation_number: 'PG-PERF-Q-19871',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: 2026-01-01T02:45:35.000Z
+    },
+    {
+      id: 'b89080b5-a027-bc5c-bc0f-3ddbc76ee3e4',
+      quotation_number: 'PG-PERF-Q-19861',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: 2026-01-01T02:45:30.000Z
+    },
+    {
+      id: '103a56d1-f61a-1fc5-3149-cb00a02ceac0',
+      quotation_number: 'PG-PERF-Q-19851',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: 2026-01-01T02:45:25.000Z
+    },
+    {
+      id: '827b4e77-d098-c646-54a0-f220dc624b75',
+      quotation_number: 'PG-PERF-Q-19841',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: 2026-01-01T02:45:20.000Z
+    },
+    {
+      id: '094044d1-4b5a-e5ab-ca48-665d12a948d2',
+      quotation_number: 'PG-PERF-Q-19831',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: 2026-01-01T02:45:15.000Z
+    },
+    {
+      id: '1914db4c-4bf4-9511-b752-b505cb502313',
+      quotation_number: 'PG-PERF-Q-19821',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: 2026-01-01T02:45:10.000Z
+    },
+    {
+      id: '046d3fbe-2238-0c44-2d53-9ab76447167d',
+      quotation_number: 'PG-PERF-Q-19811',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: 2026-01-01T02:45:05.000Z
+    },
+    {
+      id: 'a94d2c66-2b35-d7cf-0c93-44aa0c65ee2d',
+      quotation_number: 'PG-PERF-Q-19801',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: 2026-01-01T02:45:00.000Z
+    },
+    {
+      id: '99c555e1-84c4-9d3d-93e7-7826e5132315',
+      quotation_number: 'PG-PERF-Q-19791',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: 2026-01-01T02:44:55.000Z
+    },
+    {
+      id: '36dd0c54-e002-9a5f-5174-fcd8fec71656',
+      quotation_number: 'PG-PERF-Q-19781',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: 2026-01-01T02:44:50.000Z
+    },
+    {
+      id: '99243fa6-6e9a-d151-eb15-951b9c499873',
+      quotation_number: 'PG-PERF-Q-19771',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: 2026-01-01T02:44:45.000Z
+    },
+    {
+      id: '29e1a54b-9b3e-495d-3195-cecd67bf9dfe',
+      quotation_number: 'PG-PERF-Q-19761',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: 2026-01-01T02:44:40.000Z
+    },
+    {
+      id: '7962c987-968e-3dd3-d0ce-694065ca2bbe',
+      quotation_number: 'PG-PERF-Q-19751',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: 2026-01-01T02:44:35.000Z
+    },
+    {
+      id: 'ce8b8613-4584-c92e-756a-87594a0f57b3',
+      quotation_number: 'PG-PERF-Q-19741',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: 2026-01-01T02:44:30.000Z
+    }
+  ],
+  expected: [
+    {
+      id: '58cc70a8-4c8a-c3d1-a0a6-8e57af091da3',
+      quotation_number: 'PG-PERF-Q-19991',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: '2026-01-01T02:46:35.000Z'
+    },
+    {
+      id: 'a147821b-d540-d4da-6b27-1baa44d82e0a',
+      quotation_number: 'PG-PERF-Q-19981',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: '2026-01-01T02:46:30.000Z'
+    },
+    {
+      id: '7a803cc6-4622-836d-86ed-519467179fe0',
+      quotation_number: 'PG-PERF-Q-19971',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: '2026-01-01T02:46:25.000Z'
+    },
+    {
+      id: '18d365e8-4913-d0ab-46ae-6161d7681b44',
+      quotation_number: 'PG-PERF-Q-19961',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: '2026-01-01T02:46:20.000Z'
+    },
+    {
+      id: '357c045c-975f-813b-cde5-c05432ff265f',
+      quotation_number: 'PG-PERF-Q-19951',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: '2026-01-01T02:46:15.000Z'
+    },
+    {
+      id: '6a172f48-449e-684a-990c-f2ab282894df',
+      quotation_number: 'PG-PERF-Q-19941',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: '2026-01-01T02:46:10.000Z'
+    },
+    {
+      id: '7fa002cc-d231-3e49-27d4-fca5d0e76aec',
+      quotation_number: 'PG-PERF-Q-19931',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: '2026-01-01T02:46:05.000Z'
+    },
+    {
+      id: 'fbca96f2-7352-6318-b0bb-692818ed9548',
+      quotation_number: 'PG-PERF-Q-19921',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: '2026-01-01T02:46:00.000Z'
+    },
+    {
+      id: '1f8a7421-a0d4-5b69-ddce-8a16dffbb8b6',
+      quotation_number: 'PG-PERF-Q-19911',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: '2026-01-01T02:45:55.000Z'
+    },
+    {
+      id: '7ed9bdd2-dec2-977e-45b9-74483831f2f8',
+      quotation_number: 'PG-PERF-Q-19901',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: '2026-01-01T02:45:50.000Z'
+    },
+    {
+      id: 'c25831f1-d44a-5148-b2c9-66240e013006',
+      quotation_number: 'PG-PERF-Q-19891',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: '2026-01-01T02:45:45.000Z'
+    },
+    {
+      id: '9c3a5eca-f6e3-0870-56f6-a9652280df58',
+      quotation_number: 'PG-PERF-Q-19881',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: '2026-01-01T02:45:40.000Z'
+    },
+    {
+      id: '0f94ce56-0e39-7257-08b9-67d39f2b28ff',
+      quotation_number: 'PG-PERF-Q-19871',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: '2026-01-01T02:45:35.000Z'
+    },
+    {
+      id: 'b89080b5-a027-bc5c-bc0f-3ddbc76ee3e4',
+      quotation_number: 'PG-PERF-Q-19861',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: '2026-01-01T02:45:30.000Z'
+    },
+    {
+      id: '103a56d1-f61a-1fc5-3149-cb00a02ceac0',
+      quotation_number: 'PG-PERF-Q-19851',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: '2026-01-01T02:45:25.000Z'
+    },
+    {
+      id: '827b4e77-d098-c646-54a0-f220dc624b75',
+      quotation_number: 'PG-PERF-Q-19841',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: '2026-01-01T02:45:20.000Z'
+    },
+    {
+      id: '094044d1-4b5a-e5ab-ca48-665d12a948d2',
+      quotation_number: 'PG-PERF-Q-19831',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: '2026-01-01T02:45:15.000Z'
+    },
+    {
+      id: '1914db4c-4bf4-9511-b752-b505cb502313',
+      quotation_number: 'PG-PERF-Q-19821',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: '2026-01-01T02:45:10.000Z'
+    },
+    {
+      id: '046d3fbe-2238-0c44-2d53-9ab76447167d',
+      quotation_number: 'PG-PERF-Q-19811',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: '2026-01-01T02:45:05.000Z'
+    },
+    {
+      id: 'a94d2c66-2b35-d7cf-0c93-44aa0c65ee2d',
+      quotation_number: 'PG-PERF-Q-19801',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: '2026-01-01T02:45:00.000Z'
+    },
+    {
+      id: '99c555e1-84c4-9d3d-93e7-7826e5132315',
+      quotation_number: 'PG-PERF-Q-19791',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: '2026-01-01T02:44:55.000Z'
+    },
+    {
+      id: '36dd0c54-e002-9a5f-5174-fcd8fec71656',
+      quotation_number: 'PG-PERF-Q-19781',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: '2026-01-01T02:44:50.000Z'
+    },
+    {
+      id: '99243fa6-6e9a-d151-eb15-951b9c499873',
+      quotation_number: 'PG-PERF-Q-19771',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: '2026-01-01T02:44:45.000Z'
+    },
+    {
+      id: '29e1a54b-9b3e-495d-3195-cecd67bf9dfe',
+      quotation_number: 'PG-PERF-Q-19761',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: '2026-01-01T02:44:40.000Z'
+    },
+    {
+      id: '7962c987-968e-3dd3-d0ce-694065ca2bbe',
+      quotation_number: 'PG-PERF-Q-19751',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: '2026-01-01T02:44:35.000Z'
+    },
+    {
+      id: 'ce8b8613-4584-c92e-756a-87594a0f57b3',
+      quotation_number: 'PG-PERF-Q-19741',
+      revision_number: 1,
+      state: 'DRAFT',
+      total_vnd: '120000',
+      customer_name_snapshot: 'Synthetic customer',
+      site_name_snapshot: 'Synthetic site',
+      expires_at: null,
+      created_at: '2026-01-01T02:44:30.000Z'
+    }
+  ],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

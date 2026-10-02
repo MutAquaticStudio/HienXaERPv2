@@ -32,9 +32,19 @@ export async function getWorkerPortalJob(id: string) {
 
 export async function getCustomerPortalSnapshot(customerId?: string) {
   const supabase = await portalClientOrRedirect("/customer/login");
-  return portalRpc<CustomerPortalSnapshot>(supabase, "customer_portal_snapshot", {
+  const snapshot = await portalRpc<CustomerPortalSnapshot>(supabase, "customer_portal_snapshot", {
     target_customer_id: customerId ?? null,
   });
+  if (snapshot.quotation) {
+    const { data, error } = await supabase.from("quotation_revisions")
+      .select("state, expires_at").eq("id", snapshot.quotation.current_revision_id).maybeSingle();
+    if (error) throw new Error("Không thể tải trạng thái báo giá hiện tại.");
+    snapshot.quotation = data ? {
+      ...snapshot.quotation, state: data.state, valid_until: data.expires_at ?? undefined,
+      can_respond: data.state === "SENT" && (!data.expires_at || new Date(data.expires_at).getTime() > Date.now()),
+    } : null;
+  }
+  return snapshot;
 }
 
 export async function getCustomerPortalOrder(id: string) {

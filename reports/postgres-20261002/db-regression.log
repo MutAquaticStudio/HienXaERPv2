@@ -1,0 +1,2 @@
+R7 dashboard local sample: 6.27 ms, 713 bytes.
+Isolated PostgreSQL checks passed: R2 access through R9 worker/customer portal and payment-notice invariants.

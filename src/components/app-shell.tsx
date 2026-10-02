@@ -1,39 +1,53 @@
 "use client";
 
-import { BarChart3, Boxes, ClipboardCheck, Factory, FileText, LayoutDashboard, LogOut, Menu, MessageSquare, PackageSearch, Route, ScrollText, Settings2, ShieldCheck, ShoppingCart, Truck, UserRound, UsersRound, WalletCards, Warehouse, X } from "lucide-react";
+import { BarChart3, Boxes, ChevronDown, ClipboardCheck, Factory, FileText, LayoutDashboard, LogOut, Menu, MessageSquare, PackageSearch, Route, ScrollText, Settings2, ShieldCheck, ShoppingCart, Truck, UserRound, UsersRound, WalletCards, Warehouse, X, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Surface = "admin" | "work" | "customer";
 
-const navigation = {
+type NavigationItem = { href: string; label: string; icon: LucideIcon; exact?: boolean; permission?: string; permissionsAny?: readonly string[]; group?: string };
+
+const adminGroups = [
+  { id: "sales", label: "Bán hàng", icon: ShoppingCart },
+  { id: "purchasing", label: "Mua hàng", icon: PackageSearch },
+  { id: "inventory", label: "Vật tư & kho", icon: Warehouse },
+  { id: "delivery", label: "Giao hàng", icon: Truck },
+  { id: "finance", label: "Tài chính", icon: WalletCards },
+  { id: "workforce", label: "Nhân công & dịch vụ", icon: UsersRound },
+  { id: "administration", label: "Quản trị", icon: Settings2 },
+] as const;
+
+const navigation: Record<Surface, readonly NavigationItem[]> = {
   admin: [
     { href: "/admin", label: "Tổng quan", icon: LayoutDashboard, exact: true, permission: "dashboard.read" },
-    { href: "/admin/quotations", label: "Báo giá", icon: FileText, permission: "quotation.read" },
-    { href: "/admin/orders", label: "Đơn bán", icon: ShoppingCart, permission: "orders.read" },
-    { href: "/admin/purchase-orders", label: "Đơn mua", icon: PackageSearch, permission: "purchasing.read" },
-    { href: "/admin/inventory", label: "Tồn kho", icon: Warehouse, permission: "inventory.read" },
-    { href: "/admin/dispatch", label: "Điều phối", icon: ClipboardCheck, permission: "delivery.read" },
-    { href: "/admin/routes", label: "Lộ trình", icon: Route, permission: "delivery.read" },
-    { href: "/admin/deliveries", label: "Giao hàng", icon: Truck, permission: "delivery.read" },
-    { href: "/admin/service-jobs", label: "Dịch vụ", icon: Truck, permission: "service.read" },
-    { href: "/admin/workforce", label: "Nhân sự", icon: UsersRound, permission: "workforce.read" },
-    { href: "/admin/compensation", label: "Thu nhập", icon: WalletCards, permission: "compensation.read" },
-    { href: "/admin/receivables", label: "Phải thu", icon: WalletCards, permission: "finance.ar.read" },
-    { href: "/admin/payment-notices", label: "Báo chuyển khoản", icon: WalletCards, permission: "finance.payment_notice.review" },
-    { href: "/admin/payables", label: "Phải trả", icon: WalletCards, permission: "finance.ap.read" },
-    { href: "/admin/cashbook", label: "Sổ tiền", icon: WalletCards, permission: "finance.ar.read" },
-    { href: "/admin/expenses", label: "Chi phí", icon: FileText, permission: "finance.expense.read" },
-    { href: "/admin/invoices", label: "Hồ sơ hóa đơn", icon: FileText, permission: "finance.ar.read" },
-    { href: "/admin/customers", label: "Khách hàng", icon: UsersRound, permission: "customers.read" },
-    { href: "/admin/suppliers", label: "Nhà cung cấp", icon: Factory, permission: "suppliers.read" },
-    { href: "/admin/products", label: "Vật tư", icon: Boxes, permission: "catalog.read" },
-    { href: "/admin/access", label: "Nhân viên & quyền", icon: ShieldCheck, permission: "roles.manage" },
+    { href: "/admin/orders", label: "Đơn bán", icon: ShoppingCart, permission: "orders.read", group: "sales" },
+    { href: "/admin/quotations", label: "Báo giá", icon: FileText, permission: "quotation.read", group: "sales" },
+    { href: "/admin/customers", label: "Khách hàng", icon: UsersRound, permission: "customers.read", group: "sales" },
+    { href: "/admin/purchase-orders", label: "Đơn mua", icon: PackageSearch, permission: "purchasing.read", group: "purchasing" },
+    { href: "/admin/suppliers", label: "Nhà cung cấp", icon: Factory, permission: "suppliers.read", group: "purchasing" },
+    { href: "/admin/products", label: "Vật tư", icon: Boxes, permission: "catalog.read", group: "inventory" },
+    { href: "/admin/inventory", label: "Tồn kho", icon: Warehouse, permission: "inventory.read", group: "inventory" },
+    { href: "/admin/stock-counts", label: "Kiểm kho", icon: ClipboardCheck, permission: "inventory.read", group: "inventory" },
+    { href: "/admin/dispatch", label: "Điều phối", icon: ClipboardCheck, permission: "delivery.read", group: "delivery" },
+    { href: "/admin/deliveries", label: "Phiếu giao", icon: Truck, permission: "delivery.read", group: "delivery" },
+    { href: "/admin/routes", label: "Lộ trình", icon: Route, permission: "delivery.read", group: "delivery" },
+    { href: "/admin/receivables", label: "Phải thu", icon: WalletCards, permission: "finance.ar.read", group: "finance" },
+    { href: "/admin/payables", label: "Phải trả", icon: WalletCards, permission: "finance.ap.read", group: "finance" },
+    { href: "/admin/cashbook", label: "Sổ tiền", icon: WalletCards, permission: "finance.ar.read", group: "finance" },
+    { href: "/admin/expenses", label: "Chi phí", icon: FileText, permission: "finance.expense.read", group: "finance" },
+    { href: "/admin/payment-notices", label: "Báo chuyển khoản", icon: WalletCards, permission: "finance.payment_notice.review", group: "finance" },
+    { href: "/admin/invoices", label: "Hồ sơ hóa đơn bán", icon: FileText, permission: "finance.ar.read", group: "finance" },
+    { href: "/admin/invoices/purchases", label: "Chứng từ mua", icon: FileText, permission: "finance.ap.read", group: "finance" },
+    { href: "/admin/workforce", label: "Nhân sự & công việc", icon: UsersRound, permission: "workforce.read", group: "workforce" },
+    { href: "/admin/compensation", label: "Thu nhập", icon: WalletCards, permission: "compensation.read", group: "workforce" },
+    { href: "/admin/service-jobs", label: "Dịch vụ", icon: Truck, permission: "service.read", group: "workforce" },
+    { href: "/admin/access", label: "Nhân viên & quyền", icon: ShieldCheck, permission: "roles.manage", group: "administration" },
     { href: "/admin/reports", label: "Báo cáo", icon: BarChart3, permissionsAny: ["finance.ar.read", "finance.ap.read", "finance.expense.read"] },
-    { href: "/admin/audit", label: "Nhật ký", icon: ScrollText, permission: "roles.manage" },
+    { href: "/admin/audit", label: "Nhật ký", icon: ScrollText, permission: "roles.manage", group: "administration" },
     { href: "/admin/messages", label: "Tin nhắn", icon: MessageSquare },
-    { href: "/admin/settings", label: "Cài đặt", icon: Settings2, permissionsAny: ["customers.manage", "suppliers.manage", "catalog.manage", "roles.manage", "pricing.read"] },
+    { href: "/admin/settings", label: "Cài đặt", icon: Settings2, permissionsAny: ["customers.manage", "suppliers.manage", "catalog.manage", "roles.manage", "pricing.read"], group: "administration" },
   ],
   work: [
     { href: "/work", label: "Việc cần làm", icon: ClipboardCheck, exact: true },
@@ -53,31 +67,72 @@ const surfaceNames = { admin: "Điều hành", work: "Tác nghiệp", customer: 
 export function AppShell({ surface, children, permissions, actorName, branchName }: { surface: Surface; children: React.ReactNode; permissions?: readonly string[]; actorName?: string; branchName?: string }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, { pathname: string; open: boolean }>>({});
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const closeButton = useRef<HTMLButtonElement>(null);
+  const visibleItems = navigation[surface].filter((item) => item.permissionsAny
+    ? item.permissionsAny.some((permission) => permissions?.includes(permission))
+    : !item.permission || permissions?.includes(item.permission));
+  const activeHref = visibleItems.filter((item) => pathname === item.href || (!item.exact && pathname.startsWith(`${item.href}/`)))
+    .sort((left, right) => right.href.length - left.href.length)[0]?.href;
   const initials = actorName?.trim().split(/\s+/).filter(Boolean).slice(-2).map((part) => part[0]?.toLocaleUpperCase("vi-VN")).join("") ?? "";
+
+  useEffect(() => { if (open) closeButton.current?.focus(); }, [open]);
+
+  function closeMenu() { setOpen(false); menuButton.current?.focus(); }
+  function renderLink(item: NavigationItem, nested = false) {
+    const Icon = item.icon;
+    const active = item.href === activeHref;
+    return <Link className={`nav-link${nested ? " nav-link-nested" : ""}${active ? " active" : ""}`} href={item.href} key={item.href} aria-current={active ? "page" : undefined} onClick={() => setOpen(false)}><Icon aria-hidden="true" size={nested ? 18 : 20} strokeWidth={1.8} /><span>{item.label}</span></Link>;
+  }
 
   return (
     <div className="app-shell">
-      <aside className={`sidebar${open ? " open" : ""}`} aria-label={`Điều hướng ${surfaceNames[surface]}`}>
+      {open && <button className="sidebar-backdrop" type="button" tabIndex={-1} aria-label="Đóng điều hướng" onClick={closeMenu} />}
+      <aside id="app-sidebar" className={`sidebar${open ? " open" : ""}`} aria-label={`Điều hướng ${surfaceNames[surface]}`} onKeyDown={(event) => {
+        if (!open) return;
+        if (event.key === "Escape") { event.preventDefault(); closeMenu(); }
+        if (event.key === "Tab") {
+          const focusable = [...event.currentTarget.querySelectorAll<HTMLElement>('a[href], button:not(:disabled)')].filter((element) => element.getClientRects().length > 0);
+          const first = focusable[0]; const last = focusable[focusable.length - 1];
+          if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+          else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+        }
+      }}>
         <div className="brand">
           <span className="brand-mark" aria-hidden="true">HX</span>
           <div><strong>HIỀN XA ERP</strong><span>{surfaceNames[surface]}</span></div>
-          <button className="mobile-close" type="button" aria-label="Đóng menu" onClick={() => setOpen(false)}><X size={22} /></button>
+          <button ref={closeButton} className="mobile-close" type="button" aria-label="Đóng menu" onClick={closeMenu}><X size={22} /></button>
         </div>
-        <nav className="nav-list">
-          {navigation[surface].filter((item) => "permissionsAny" in item ? item.permissionsAny.some((permission) => permissions?.includes(permission)) : !("permission" in item) || permissions?.includes(item.permission)).map((item) => {
-            const active = "exact" in item && item.exact ? pathname === item.href : pathname.startsWith(item.href);
-            const Icon = item.icon;
-            return <Link className={`nav-link${active ? " active" : ""}`} href={item.href} key={item.href} onClick={() => setOpen(false)}><Icon aria-hidden="true" size={20} strokeWidth={1.8} />{item.label}</Link>;
-          })}
+        <nav className="nav-list" aria-label="Các phân hệ">
+          {surface !== "admin" ? visibleItems.map((item) => renderLink(item)) : <>
+            {visibleItems.filter((item) => item.href === "/admin").map((item) => renderLink(item))}
+            {adminGroups.map((group) => {
+              const items = visibleItems.filter((item) => item.group === group.id);
+              if (!items.length) return null;
+              if (items.length === 1) return renderLink(items[0]);
+              const active = items.some((item) => item.href === activeHref);
+              const preference = expandedGroups[group.id];
+              const expanded = preference?.pathname === pathname ? preference.open : active;
+              const Icon = group.icon;
+              return <section className="nav-group" key={group.id}>
+                <button className={`nav-group-toggle${active ? " current" : ""}`} type="button" aria-expanded={expanded} aria-controls={`nav-${group.id}`} onClick={() => setExpandedGroups((current) => ({ ...current, [group.id]: { pathname, open: !expanded } }))}>
+                  <Icon aria-hidden="true" size={20} strokeWidth={1.8} /><span>{group.label}</span><ChevronDown className="nav-chevron" aria-hidden="true" size={16} />
+                </button>
+                <div id={`nav-${group.id}`} className="nav-group-links" hidden={!expanded}>{items.map((item) => renderLink(item, true))}</div>
+              </section>;
+            })}
+            {visibleItems.filter((item) => !item.group && item.href !== "/admin").map((item) => renderLink(item))}
+          </>}
         </nav>
         <div className="sidebar-foot">
           <form action="/auth/logout" method="post"><button className="logout-button" type="submit"><LogOut size={17} />Đăng xuất</button></form>
           Phiên làm việc có phân quyền
         </div>
       </aside>
-      <div className="workspace">
+      <div className="workspace" inert={open}>
         <header className="topbar">
-          <button className="mobile-menu" type="button" aria-label="Mở menu" onClick={() => setOpen(true)}><Menu size={24} /></button>
+          <button ref={menuButton} className="mobile-menu" type="button" aria-label="Mở menu" aria-expanded={open} aria-controls="app-sidebar" onClick={() => setOpen(true)}><Menu size={24} /></button>
           <span className="topbar-context">{branchName}</span>
           <div className="identity"><span>{actorName}</span><span className="identity-avatar" aria-hidden="true">{initials}</span></div>
         </header>
