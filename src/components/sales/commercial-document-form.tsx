@@ -2,10 +2,11 @@
 
 import { QuickCreateFocusGuard } from "@/components/sales/quick-create-focus-guard";
 
-import { useActionState, useEffect, useMemo, useRef, useState } from "react";
+import { startTransition, useActionState, useEffect, useMemo, useRef, useState } from "react";
+import { isPositiveSalesQuantity } from "@/modules/sales/quantity-input";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createCustomerQuickAction, createSiteQuickAction } from "@/modules/customers/actions";
-import { createQuotationAction, createSalesOrderAction, previewCommercialDocumentAction, updateQuotationDraftAction, updateSalesOrderDraftAction, type PricePreviewResult } from "@/modules/sales/actions";
+import { createQuotationAction, createSalesOrderAction, previewCommercialDocumentAction, updateQuotationDraftAction, updateSalesOrderDraftAction, type PricePreviewResult, type SalesActionState } from "@/modules/sales/actions";
 import { searchSalesCustomersAction, searchSalesSitesAction } from "@/modules/sales/form-lookup-actions";
 import type { SalesFormOptions } from "@/modules/sales/form-options";
 
@@ -64,13 +65,25 @@ function QuickCreatePanel({ mode, customerId, onCustomerCreated, onSiteCreated, 
 
 export function CommercialDocumentForm({ kind, options, operationId, canManagePrice, canManageCustomers, existing, initialCustomerId, initialSiteId }: { kind: "order" | "quote"; options: SalesFormOptions; operationId: string; canManagePrice: boolean; canManageCustomers: boolean; existing?: ExistingCommercialDraft; initialCustomerId?: string; initialSiteId?: string }) {
   const action = existing ? (kind === "order" ? updateSalesOrderDraftAction : updateQuotationDraftAction) : (kind === "order" ? createSalesOrderAction : createQuotationAction);
-  const [state, formAction, pending] = useActionState(action, undefined);
+  const lastSubmission = useRef<FormData | null>(null);
+  const submissionPending = useRef(false);
+  const [state, formAction, pending] = useActionState(async (previous: SalesActionState, data: FormData): Promise<SalesActionState> => {
+    lastSubmission.current = data;
+    try { return await action(previous, data); }
+    catch (error) {
+      // Preserve Next's redirect/auth control flow; only a failed transport is unresolved.
+      const digest = error && typeof error === "object" && "digest" in error ? String(error.digest) : "";
+      if (digest.startsWith("NEXT_REDIRECT") || digest.startsWith("NEXT_HTTP_ERROR_FALLBACK")) throw error;
+      return { success: false, outcomeUnknown: true, message: "Chưa xác định kết quả. Giữ nguyên mã thao tác; thử lại đúng dữ liệu đã gửi, không tạo đơn mới." };
+    } finally { submissionPending.current = false; }
+  }, undefined);
   const [customerOptions, setCustomerOptions] = useState(options.customers);
   const initialCustomer = options.customers.find((item) => item.id === initialCustomerId) ?? options.customers[0];
   const initialSite = initialCustomer?.sites.find((item) => item.id === initialSiteId) ?? initialCustomer?.sites[0];
   const [customerId, setCustomerId] = useState(existing?.customerId ?? initialCustomer?.id ?? "");
   const [siteId, setSiteId] = useState(existing?.siteId ?? initialSite?.id ?? "");
   const [terms, setTerms] = useState(existing?.terms ?? "");
+  const [effectiveAt, setEffectiveAt] = useState(localDateTime(existing?.effectiveAt ?? null));
   const [customerSearch, setCustomerSearch] = useState("");
   const [siteSearch, setSiteSearch] = useState("");
   const [customerLookupPending, setCustomerLookupPending] = useState(false);
@@ -87,7 +100,7 @@ export function CommercialDocumentForm({ kind, options, operationId, canManagePr
   const [previewPending, setPreviewPending] = useState(false);
   const [lines, setLines] = useState(existing ? existing.lines.map((line, key) => ({ ...line, key })) : [{ key: 0, sourceLineId: "", materialId: options.materials[0]?.id ?? "", uomId: options.materials[0]?.uoms[0]?.id ?? "", quantity: "", manualPriceVnd: "", manualReason: "" }]);
   const sites = useMemo(() => customerOptions.find((item) => item.id === customerId)?.sites ?? [], [customerId, customerOptions]);
-  const empty = !customerOptions.length || !options.materials.length || !siteId || lines.some((line) => !line.materialId || !line.uomId || !line.quantity);
+  const empty = !customerOptions.length || !options.materials.length || !siteId || lines.some((line) => !line.materialId || !line.uomId || !isPositiveSalesQuantity(line.quantity));
   function invalidatePrice() { priceRevision.current += 1; setPreview(null); }
   async function searchCustomers() {
     const revision = ++customerSearchRevision.current;
@@ -116,7 +129,6 @@ export function CommercialDocumentForm({ kind, options, operationId, canManagePr
         const nextSites = selected && !found.some((site) => site.id === selected.id) ? [selected, ...found] : found;
         return { ...customer, sites: nextSites };
       }));
-      setSiteId((current) => current || found[0]?.id || "");
       setLookupMessage(found.length ? "" : "Không tìm thấy công trình phù hợp.");
     } catch { if (revision === siteSearchRevision.current) setLookupMessage("Không thể tìm công trình. Thử lại sau."); }
     finally { if (revision === siteSearchRevision.current) setSiteLookupPending(false); }
@@ -145,7 +157,13 @@ export function CommercialDocumentForm({ kind, options, operationId, canManagePr
     } catch { if (requestRevision === priceRevision.current) setPreview({ success: false, message: "Không thể xem trước giá. Thử lại sau." }); }
     finally { setPreviewPending(false); }
   }
-  return <><form className="card card-pad" action={formAction}>
+  return <><form className="card card-pad" action={formAction} onReset={(event) => event.preventDefault()} onSubmit={(event) => {
+    event.preventDefault();
+    if (submissionPending.current || pending || empty || !preview?.success || state?.outcomeUnknown) return;
+    submissionPending.current = true;
+    const data = new FormData(event.currentTarget);
+    startTransition(() => formAction(data));
+  }}>
     <input type="hidden" name="operationId" value={operationId} />
     {existing && <><input type="hidden" name="documentId" value={existing.id} /><input type="hidden" name="expectedVersion" value={existing.version} /><input type="hidden" name="customerId" value={existing.customerId} /><input type="hidden" name="siteId" value={existing.siteId} /></>}
     <input type="hidden" name="pricePreview" value={preview?.success ? JSON.stringify(preview.lines) : ""} />
@@ -153,7 +171,7 @@ export function CommercialDocumentForm({ kind, options, operationId, canManagePr
       <div className="field"><div className="field-label-row"><label htmlFor="customerId">Khách hàng</label>{!existing && canManageCustomers && <button type="button" className="quick-create-trigger" onClick={() => setQuickMode("customer")}>+ Thêm khách</button>}</div>{!existing && <div className="field-label-row"><input aria-label="Tìm khách hàng" type="search" value={customerSearch} onChange={(event) => setCustomerSearch(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); void searchCustomers(); } }} placeholder="Mã hoặc tên khách" /><button className="button button-secondary" type="button" disabled={customerLookupPending} onClick={() => void searchCustomers()}>{customerLookupPending ? "Đang tìm..." : "Tìm khách"}</button></div>}<select id="customerId" name="customerId" value={customerId} disabled={!!existing} onChange={(event) => { const next = event.target.value; siteSearchRevision.current += 1; setCustomerId(next); setSiteId(""); setSiteSearch(""); invalidatePrice(); if (next) void searchSites(next, ""); }} required><option value="">Chọn khách hàng...</option>{customerOptions.map((customer) => <option key={customer.id} value={customer.id}>{customer.name}</option>)}</select></div>
       <div className="field"><div className="field-label-row"><label htmlFor="siteId">Công trình / điểm giao</label>{!existing && canManageCustomers && <button type="button" className="quick-create-trigger" onClick={() => setQuickMode("site")} disabled={!customerId}>+ Thêm công trình</button>}</div>{!existing && <div className="field-label-row"><input aria-label="Tìm công trình" type="search" value={siteSearch} onChange={(event) => setSiteSearch(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); if (customerId) void searchSites(customerId, siteSearch); } }} placeholder="Mã, tên hoặc địa chỉ" disabled={!customerId} /><button className="button button-secondary" type="button" disabled={!customerId || siteLookupPending} onClick={() => void searchSites(customerId, siteSearch)}>{siteLookupPending ? "Đang tìm..." : "Tìm điểm"}</button></div>}<select id="siteId" name="siteId" value={siteId} disabled={!!existing} onChange={(event) => { setSiteId(event.target.value); invalidatePrice(); }} required><option value="">Chọn công trình...</option>{sites.map((site) => <option key={site.id} value={site.id}>{site.name} · {site.address}</option>)}</select></div>
       {lookupMessage && <p className="form-message field-full" role="status">{lookupMessage}</p>}
-      <div className="field"><label htmlFor="effectiveAt">{kind === "order" ? "Ngày giao dự kiến" : "Hiệu lực đến"}</label><input id="effectiveAt" name="effectiveAt" type="datetime-local" defaultValue={localDateTime(existing?.effectiveAt ?? null)} required={kind === "quote"} /></div>
+      <div className="field"><label htmlFor="effectiveAt">{kind === "order" ? "Ngày giao dự kiến" : "Hiệu lực đến"}</label><input id="effectiveAt" name="effectiveAt" type="datetime-local" value={effectiveAt} onChange={(event) => setEffectiveAt(event.target.value)} required={kind === "quote"} /></div>
       <div className="field field-full"><label htmlFor="terms">Điều khoản / ghi chú</label><textarea id="terms" name="terms" maxLength={1000} aria-describedby="terms-hint" value={terms} onChange={(event) => setTerms(event.target.value)} placeholder="Điều kiện giao, thanh toán hoặc lưu ý cho khách hàng" /><small id="terms-hint" className="muted">Tối đa 1.000 ký tự · {terms.length}/1.000</small></div>
     </div>
     <div className="section-head flush"><h2>Dòng hàng</h2><span className="muted">{lines.length} / 50 dòng</span></div>
@@ -166,7 +184,7 @@ export function CommercialDocumentForm({ kind, options, operationId, canManagePr
         <div className="commercial-line-grid">
           <div className="field"><label htmlFor={`material-${line.key}`}>Vật tư *</label><select id={`material-${line.key}`} name="materialId" value={line.materialId} onChange={(event) => { const material = options.materials.find((item) => item.id === event.target.value); updateLine(line.key, { materialId: event.target.value, uomId: material?.uoms[0]?.id ?? "" }); }} required>{options.materials.map((material) => <option key={material.id} value={material.id}>{material.name}</option>)}</select></div>
           <div className="field"><label htmlFor={`uom-${line.key}`}>Đơn vị bán *</label><select id={`uom-${line.key}`} name="orderedUomId" value={line.uomId} onChange={(event) => updateLine(line.key, { uomId: event.target.value })} required>{uoms.map((uom) => <option key={uom.id} value={uom.id}>{uom.symbol}</option>)}</select></div>
-          <div className="field"><label htmlFor={`quantity-${line.key}`}>Số lượng *</label><input id={`quantity-${line.key}`} name="quantity" inputMode="decimal" placeholder="1" value={line.quantity} onChange={(event) => updateLine(line.key, { quantity: event.target.value })} required /></div>
+          <div className="field"><label htmlFor={`quantity-${line.key}`}>Số lượng *</label><input id={`quantity-${line.key}`} name="quantity" inputMode="decimal" placeholder="1" value={line.quantity} onChange={(event) => updateLine(line.key, { quantity: event.target.value })} aria-invalid={!isPositiveSalesQuantity(line.quantity)} aria-describedby={`quantity-error-${line.key}`} required />{!isPositiveSalesQuantity(line.quantity) && <small id={`quantity-error-${line.key}`} role="alert">Nhập số lượng lớn hơn 0, tối đa 6 chữ số thập phân.</small>}</div>
           {canManagePrice && <><div className="field"><label htmlFor={`manual-price-${line.key}`}>Giá thủ công (VND, nếu cần)</label><input id={`manual-price-${line.key}`} name="manualPriceVnd" inputMode="numeric" value={line.manualPriceVnd} onChange={(event) => updateLine(line.key, { manualPriceVnd: event.target.value })} /></div><div className="field"><label htmlFor={`manual-reason-${line.key}`}>Lý do giá thủ công</label><input id={`manual-reason-${line.key}`} name="manualReason" maxLength={500} value={line.manualReason} onChange={(event) => updateLine(line.key, { manualReason: event.target.value })} /></div></>}
         </div>
         {!canManagePrice && line.manualPriceVnd && <p className="muted">Giá thủ công đã duyệt: {formatVnd(vnd(line.manualPriceVnd))}. Bạn có thể sửa số lượng; đổi giá hoặc UOM cần quyền quản lý giá.</p>}
@@ -178,7 +196,7 @@ export function CommercialDocumentForm({ kind, options, operationId, canManagePr
     {preview?.message && <p role="status" className={`form-message${preview.success ? " success" : ""}`}>{preview.message}</p>}
     <p className="muted form-hint">Giá được kiểm lại khi lưu. Nếu chính sách giá thay đổi sau khi xem trước, cần xem trước lại; không mặc định giá bằng 0.</p>
     {state?.message && <p className={`form-message${state.success ? " success" : ""}`} role="status">{state.message}</p>}
-    <div className="form-actions"><button className="button button-primary" type="submit" disabled={pending || empty || !preview?.success}>{pending ? "Đang lưu..." : existing ? "Lưu thay đổi bản nháp" : "Lưu bản nháp"}</button></div>
+    <div className="form-actions"><button className="button button-primary" type="submit" disabled={pending || empty || !preview?.success || state?.outcomeUnknown}>{pending ? "Đang lưu..." : existing ? "Lưu thay đổi bản nháp" : "Lưu bản nháp"}</button>{state?.outcomeUnknown && <button className="button button-secondary" type="button" disabled={pending} onClick={() => { const original = lastSubmission.current; if (original && !submissionPending.current) { submissionPending.current = true; startTransition(() => formAction(original)); } }}>Thử lại đúng thao tác</button>}</div>
   </form>{quickMode && <QuickCreatePanel key={quickMode} mode={quickMode} customerId={customerId} onClose={() => setQuickMode(null)}
     onCustomerCreated={(customer) => { customerSearchRevision.current += 1; siteSearchRevision.current += 1; setCustomerOptions((current) => [...current, { ...customer, sites: [] }]); setCustomerId(customer.id); setSiteId(""); invalidatePrice(); setQuickMode("site"); }}
     onSiteCreated={(site) => { siteSearchRevision.current += 1; setCustomerOptions((current) => current.map((customer) => customer.id === customerId ? { ...customer, sites: [...customer.sites, site] } : customer)); setSiteId(site.id); invalidatePrice(); setQuickMode(null); }} />}</>;

@@ -1,3 +1,4 @@
+import { salesStateLabel } from "@/modules/portal/presentation";
 import { randomUUID } from "node:crypto";
 
 import Link from "next/link";
@@ -24,7 +25,7 @@ export default async function CustomerHomePage() {
 
       {snapshot.quotation ? (
         <section className={styles.card + " " + styles.cardAccent}>
-          <span className={styles.badge}>BÁO GIÁ · {snapshot.quotation.state ?? "ĐANG CHỜ"}</span>
+          <span className={styles.badge}>BÁO GIÁ · {salesStateLabel(snapshot.quotation.state)}</span>
           <h2>{snapshot.quotation.number ?? "Báo giá hiện tại"}</h2>
           <p>Mọi hành động được khóa vào đúng revision đang là current.</p>
           <div className={styles.actions}>

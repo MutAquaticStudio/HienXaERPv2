@@ -1,3 +1,4 @@
+import { workStateLabel } from "@/modules/portal/presentation";
 import Link from "next/link";
 
 import styles from "@/components/portal/portal.module.css";
@@ -10,7 +11,7 @@ function JobCard({ job, label }: { job: WorkerJob | null; label: string }) {
   }
   return (
     <article className={styles.card + " " + styles.cardAccent}>
-      <span className={styles.badge}>{label} · {job.state}</span>
+      <span className={styles.badge}>{label} · {workStateLabel(job.state)}</span>
       <h2>{job.title ?? job.number}</h2>
       <div className={styles.meta}>
         <span>{job.number}</span>

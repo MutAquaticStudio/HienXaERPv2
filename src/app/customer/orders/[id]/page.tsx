@@ -1,5 +1,7 @@
 import styles from "@/components/portal/portal.module.css";
 import { getCustomerPortalOrder } from "@/modules/portal/actions";
+import { salesStateLabel } from "@/modules/sales/presentation";
+import { deliveryStateLabel } from "@/modules/delivery/presentation";
 
 const money = (value: string | number = 0) => new Intl.NumberFormat("vi-VN", {
   style: "currency",
@@ -17,16 +19,16 @@ export default async function CustomerOrderPage({ params }: { params: Promise<{ 
       <header className={styles.hero}>
         <p className={styles.heroEyebrow}>Đơn hàng</p>
         <h1>{order.number ?? "Chi tiết đơn hàng"}</h1>
-        <p>Thương mại: {order.state ?? "Đang xử lý"} · Thực hiện: {order.fulfillment_state ?? "Chưa bắt đầu"}</p>
-        {order.can_view_finance ? <p>Thanh toán: {order.payment_state ?? "Chưa phát sinh"} · Giá trị: {money(order.total_amount_vnd ?? 0)}</p> : <p>Thông tin công nợ và thanh toán chỉ dành cho Owner hoặc Finance Contact.</p>}
+        <p>Thương mại: {salesStateLabel(order.state ?? "NOT_STARTED")} · Thực hiện: {salesStateLabel(order.fulfillment_state ?? "NOT_STARTED")}</p>
+        {order.can_view_finance ? <p>Thanh toán: {salesStateLabel(order.payment_state ?? "NOT_DUE")} · Giá trị: {money(order.total_amount_vnd ?? 0)}</p> : <p>Thông tin công nợ và thanh toán chỉ dành cho Owner hoặc Finance Contact.</p>}
       </header>
       <section className={styles.card}>
         <h2>Tiến trình giao nhận</h2>
         <div className={styles.timeline}>
           {order.deliveries.length ? order.deliveries.map((delivery) => (
             <article className={styles.timelineItem} id={"delivery-" + delivery.id} key={delivery.id}>
-              <strong>{delivery.number ?? "Lượt giao"} · {delivery.state ?? "Đang xử lý"}</strong>
-              {delivery.result ? <span className={styles.badge}>{delivery.result}</span> : null}
+              <strong>{delivery.number ?? "Lượt giao"} · {deliveryStateLabel(delivery.state ?? "PLANNED")}</strong>
+              {delivery.result ? <span className={styles.badge}>{deliveryStateLabel(delivery.result)}</span> : null}
               <span className={styles.hint}>{delivery.address ?? delivery.site_name ?? "Địa điểm đang cập nhật"}</span>
               {delivery.scheduled_at ? <span className={styles.hint}>Dự kiến: {new Date(delivery.scheduled_at).toLocaleString("vi-VN")}</span> : null}
               {delivery.delivered_at ? <span className={styles.hint}>Xác minh: {new Date(delivery.delivered_at).toLocaleString("vi-VN")}</span> : null}

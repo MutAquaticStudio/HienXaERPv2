@@ -7,7 +7,7 @@ import { requireCustomerAccess } from "@/lib/access/context";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { acceptCustomerQuotationAction } from "@/modules/sales/actions";
-import { salesStateLabel, salesStateTone } from "@/modules/sales/presentation";
+import { salesStateLabel, salesStateTone } from "@/modules/portal/presentation";
 
 type Quote = { id: string; quotation_number: string; current_revision_id: string };
 type Revision = { id: string; revision_number: number; state: string; total_vnd: string; customer_name_snapshot: string; site_name_snapshot: string; delivery_address_snapshot: string; commercial_terms: string | null; expires_at: string | null };

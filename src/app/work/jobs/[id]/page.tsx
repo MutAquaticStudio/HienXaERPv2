@@ -1,3 +1,4 @@
+import { workStateLabel, workKindLabel } from "@/modules/portal/presentation";
 import { ClaimJobButton } from "@/components/portal/claim-job-button";
 import styles from "@/components/portal/portal.module.css";
 import { StartJobButton } from "@/components/portal/start-job-button";
@@ -25,13 +26,13 @@ export default async function WorkJobPage({ params }: { params: Promise<{ id: st
   return (
     <div className={styles.page}>
       <header className={styles.hero}>
-        <p className={styles.heroEyebrow}>{job.kind ?? "Công việc"} · {job.number}</p>
+        <p className={styles.heroEyebrow}>{workKindLabel(job.kind)} · {job.number}</p>
         <h1>{job.title ?? "Chi tiết công việc"}</h1>
         <p>{job.site_name ?? job.address ?? "Địa điểm đang cập nhật"}</p>
       </header>
       <div className={styles.split}>
         <section className={styles.card}>
-          <span className={styles.badge}>{job.state}</span>
+          <span className={styles.badge}>{workStateLabel(job.state)}</span>
           <div className={styles.kv}><span>Thời gian</span><strong>{showDate(job.scheduled_start)}</strong></div>
           <div className={styles.kv}><span>Khách hàng</span><strong>{job.customer_name ?? "Chưa cập nhật"}</strong></div>
           <div className={styles.kv}><span>Địa chỉ</span><strong>{job.address ?? "Chưa cập nhật"}</strong></div>
@@ -39,8 +40,11 @@ export default async function WorkJobPage({ params }: { params: Promise<{ id: st
           <div className={styles.kv}><span>Điện thoại</span><strong>{job.receiver_phone ?? "Chưa cập nhật"}</strong></div>
           <div className={styles.kv}>
             <span>Số lượng</span>
-            <strong>{job.quantity ? job.quantity + " " + (job.unit ?? "") : "Theo xác nhận thực tế"}</strong>
+            <strong>{job.delivery ? `${job.delivery.lines.length} dòng vật tư` : job.quantity ? job.quantity + " " + (job.unit ?? "") : "Theo xác nhận thực tế"}</strong>
           </div>
+          {job.delivery?.lines.map((line) => <div className={styles.kv} key={line.id}>
+            <span>{line.material_name}</span><strong>{line.planned_base_quantity} {line.unit}</strong>
+          </div>)}
           {job.access_note ? <p className={styles.status}>{job.access_note}</p> : null}
           {available ? <ClaimJobButton version={job.version} workItemId={job.id} /> : null}
           {claimed ? <StartJobButton version={job.version} workItemId={job.id} /> : null}
@@ -48,7 +52,8 @@ export default async function WorkJobPage({ params }: { params: Promise<{ id: st
         {canSubmitResult ? (
           <section className={styles.card}>
             <h2>Hoàn tất tại hiện trường</h2>
-            <WorkResultDraftForm initialEvidenceId={job.proofs?.[0]?.id} version={job.version} workItemId={job.id} />
+            <WorkResultDraftForm initialEvidenceId={job.proofs?.[0]?.id} initialReceiverName={job.receiver_name}
+              delivery={job.delivery} version={job.version} workItemId={job.id} />
           </section>
         ) : (
           <section className={styles.card}>

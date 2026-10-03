@@ -24,6 +24,13 @@ export type WorkerJob = {
   access_note?: string;
   receiving_window?: string;
   proofs?: PortalProof[];
+  delivery?: {
+    id: string;
+    version: number;
+    state: string;
+    assignment_version: number | null;
+    lines: { id: string; material_name: string; unit: string; planned_base_quantity: string }[];
+  };
 };
 
 export type WorkerEarning = {

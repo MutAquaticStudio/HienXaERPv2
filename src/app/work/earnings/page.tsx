@@ -1,3 +1,4 @@
+import { earningStateLabel, earningKindLabel } from "@/modules/portal/presentation";
 import styles from "@/components/portal/portal.module.css";
 import { getWorkerPortalSnapshot } from "@/modules/portal/actions";
 
@@ -20,8 +21,8 @@ export default async function WorkEarningsPage() {
       <div className={styles.grid}>
         {snapshot.earnings.length ? snapshot.earnings.map((item) => (
           <article className={styles.card} key={item.id}>
-            <span className={styles.badge}>{item.state ?? "GHI NHẬN"}</span>
-            <h2>{item.type ?? "Khoản thu nhập"}</h2>
+            <span className={styles.badge}>{earningStateLabel(item.state)}</span>
+            <h2>{earningKindLabel(item.type)}</h2>
             <p className={styles.amount}>{money(item.amount_vnd)}</p>
             <p className={styles.hint}>{item.occurred_at ? new Date(item.occurred_at).toLocaleDateString("vi-VN") : ""}</p>
           </article>

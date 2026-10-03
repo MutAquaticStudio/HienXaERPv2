@@ -36,7 +36,7 @@ export async function publishDeliveryWorkItemAction(formData: FormData) {
     target_employee_id: null,
     operation_id: parsed.data.operationId,
   });
-  if (error) failed(parsed.data.deliveryId, "Chưa thể giao việc cho cổng thợ. Kiểm tra trạng thái Đã phân giao, lịch giao và lịch tài nguyên của nhân viên/xe.");
+  if (error) failed(parsed.data.deliveryId, "Chưa thể giao việc cho cổng thợ. Kiểm tra địa chỉ, tên/điện thoại người nhận, dòng vật tư, trạng thái Đã phân giao và lịch nhân viên/xe.");
   refresh(parsed.data.deliveryId);
   redirect(`/admin/deliveries/${parsed.data.deliveryId}?notice=work-published`);
 }
