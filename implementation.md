@@ -1881,3 +1881,10 @@ git=no commit, push, merge or PR in this deployment-only request
 - result: **PARTIAL / RELEASE_BLOCKED**; business PGlite and focused DOM fixes verified, native race and browser/runtime gates not claimed. Owner acceptance/device UAT remain separate.
 - blocker: native JSON adapter authorization; candidate browser/managed runtime alignment; provider sandbox; representative performance/managed recovery; historical value-only adjustment policy.
 - production_impact: **NOT_TOUCHED**; historical Production repair **NOT_AUTHORIZED**; no push/deploy/migration/DML/real invoice/message.
+
+### Local DB coverage delta (same application/migration inputs)
+
+- new_evidence: `rules-candidate-r9.json` / `.log`: **16/16 PASS**. Adds a complete two-line follow-up with different remaining quantities (1 and 2), two AR effects totaling 480000, per-line settled custody quantity/value zero, and a positive-control transaction rolled back before proving a persisted CLOSED remainder cannot create another delivery. The CLOSED state is a fixture/read-model/command-guard check, not acceptance of an Owner browser close workflow.
+- checks: r9 harness lint **PASS**; `rehearsal-business-r9.log` actual local restore/all-table reconciliation **PASS**, now using the 16-case business snapshot. Application fingerprint remains unchanged; UNIT/typecheck/build evidence reused. No active configured commit hooks exist; no hook test is claimed.
+- checkpoints: `d35443c` contains the coherent source/migration group; `8521e94` contains rehearsal/diagnostics and QA delta. Native JSON/race harness remains uncommitted pending authorized adapter repair; `node_modules` symlink remains unstaged. No push/deploy.
+- result/blocker/production: unchanged **PARTIAL / RELEASE_BLOCKED / NOT_TOUCHED**. Native prior run remains setup-failed, not a race or business PASS. Private disposable native QA DB is retained only for the pending retest; ownership is recorded in `native-isolation-probe.json`.
