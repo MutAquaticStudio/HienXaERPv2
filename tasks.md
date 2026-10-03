@@ -226,3 +226,12 @@ STATUS: BLOCKED_LOCAL_NATIVE_ENV
 - Pure preflight checks: 9/9 PASS. Native two paths and affected race checks: NOT_RUN, local PostgreSQL unavailable.
 - PGlite two-path harness stopped at setup; adapter correction awaits the requested decision. Raw view deparse differs between PostgreSQL 17/18; same-engine query normalization proved equivalent, not an application defect.
 - No managed QA apply, original-history repair, Production mutation, provider/performance/recovery rerun or historical value adjustment authorized/executed.
+
+### 2026-10-04 - VERIFY_EXISTING_RECONCILIATION_PATCH_LOCALLY delta
+
+- Local harness/comparator: VERIFIED_ISOLATED_PGLITE, not native.
+- Candidate-manifest CLEAN/DIVERGED reconstruction: 21/21 targeted checks.
+- Comparator: 5/5; preflight: 9/9; local target rejection: 3/3.
+- Remaining task: provision explicitly owned local PostgreSQL 17 runtime, then native two-path and actual local CLI deployment checks.
+- State: BLOCKED_ENV; managed apply NOT_ELIGIBLE_FOR_APPROVAL / NOT_AUTHORIZED.
+- Managed QA and Production: NOT_TOUCHED. No application/migration/contract edits.

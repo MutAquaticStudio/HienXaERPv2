@@ -1954,3 +1954,32 @@ git=no commit, push, merge or PR in this deployment-only request
 - target: Owner-designated QA ffrwiglcrlumfvhubaxg; actual business-data provenance UNKNOWN, requires Owner attestation before apply.
 - managed_schema_fingerprint: 0575c4276af39517d31c16b55dc5d025e4a1d1544faa7371c9ca9ab3bef79cb9 (affected-object/access scope, not whole schema).
 - production_impact: NOT_TOUCHED; managed_qa: NOT_MODIFIED; historical_repair: APPLY_BLOCKED_POLICY.
+
+### 2026-10-04 - Local reconciliation harness verification delta
+
+scope=VERIFY_EXISTING_RECONCILIATION_PATCH_LOCALLY
+base_commit=bd531c92f61ab764599209fb7ef5028f8d1af98d
+candidate_source_fingerprint=5f5fc7128ae4267a84f260f38b81e863815335264921494adff2f413e71d3a90
+changed_paths=scripts/qa/reconcile-current-candidate.mjs; scripts/qa/test-qa-reconciliation.mjs; scripts/qa/reconciliation-view-catalog.mjs; scripts/qa/test-reconciliation-view-catalog.mjs; scripts/qa/test-reconciliation-local-guard.mjs; tasks.md; implementation.md
+new_evidence=/Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/20261004-local-reconciliation/verification-evidence.json
+checks_new=PGlite two-path 21/21; same-engine comparator 5/5; preflight 9/9; local guard 3/3; scoped lint exit 0 (4 existing unused-variable warnings)
+result=PASS_ISOLATED_PGLITE_TWO_PATHS_NOT_NATIVE
+
+- Static unparameterized SQL uses PGlite exec; bound SQL remains single-statement query. Bound multi-statement SQL is rejected.
+- View comparison retains SELECT, dependencies, ordered column types/collation, owner, normalized ACL entries and security options; different engines/session or missing reference remain UNRESOLVED. Prior PG17/PG18 diagnostics retained.
+- First attempts are preserved: constrained numeric rejects infinity with 22003 before CHECK; NaN/negative fail CHECK with 23514. No finite-input assertion removed.
+- Archive fixtures exposed modern NULL worker results, an unrelated customer grant difference, and an applied-delta checksum mismatch. No archive/business/history data was rewritten to green. Final instances were newly constructed by executing candidate manifest SQL; a synthetic 1001 VND opening AR was preserved across apply/retry/rollback.
+- DIVERGED is scope reconstruction with cached observed extra SQL, not a full managed QA clone or attestation of unknown historical source. Custom executor acceptance does not prove Supabase CLI deployment compatibility.
+- Native evidence from the previous goal came from a Supabase QA child DB (PG17.6 Linux), not a recoverable local binary. Known local executable paths/PATH have no discovered usable native runtime. Process inspection was unavailable and does not prove no server exists.
+- Native CLEAN/DIVERGED, successful authorized SQL command effects, affected native races and actual CLI dry-run/apply/second-preflight: NOT_RUN / BLOCKED_LOCAL_NATIVE_ENV.
+- 73 source migration checksums recorded; five planned files match. Historical 56 unknown managed checksums and eight stored-text differences remain separate, not verified by this run.
+- Application/migration/contract inputs unchanged. Reuse UNIT138/DOM28/typecheck/build only for unchanged application inputs; prior native16/race5 only unchanged delivery/worker/SO/transit, never current reconciliation parity or deployment path.
+- Runtime installation request is recorded but NOT_EXECUTED; no new cloud project, managed query/mutation, public tunnel, system install, push or deployment.
+blocker=LOCAL_NATIVE_RUNTIME_NOT_PROVISIONED; CLI extra-history compatibility remains independently unverified locally
+managed_schema=NOT_VERIFIED_BY_THIS_RUN
+qa_real_data=UNKNOWN_UNLESS_OWNER_CONFIRMED
+historical_repair=APPLY_BLOCKED_POLICY
+managed_apply=NOT_AUTHORIZED
+cloud_apply_eligibility=NOT_ELIGIBLE
+production_impact=NOT_TOUCHED
+release=BLOCKED
