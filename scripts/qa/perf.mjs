@@ -93,7 +93,7 @@ try {
       } finally { await client.auth.signOut(); }
     } finally { await session.browser.close(); }
   }
-  await artifact('perf',{ status:results.some(r => r.errors) ? 'FAIL' : 'PARTIAL', sourceRequirements:['SPEC-PERF-002','SPEC-PERF-004'], measurement:'browser-click-to-selector-and-access-api', browserPayloadMetric:'resource-transfer-bytes-since-click', databaseBytes:bytes,dataset:counts,results, limitations:['server-duration-covers-access-api-only','true-cold-server-cache-not-reset','expanded-scale-not-run','draft-and-opening-balance-profile-not-full-operational-lifecycle','messages-not-implemented','no-human-task-duration'] });
+  await artifact('perf',{ status:results.some(r => r.errors) ? 'FAIL' : 'PARTIAL', sourceRequirements:['SPEC-PERF-002','SPEC-PERF-004'], measurement:'browser-click-to-selector-and-access-api', browserPayloadMetric:'resource-transfer-bytes-since-click', databaseBytes:bytes,dataset:counts,results, limitations:['server-duration-covers-access-api-only','true-cold-server-cache-not-reset','expanded-scale-not-run','draft-and-opening-balance-profile-not-full-operational-lifecycle','messaging-performance-not-measured','no-human-task-duration'] });
 } catch (error) {
   await artifact('perf',{status:'FAIL',results,error:error.message});
   process.exitCode=1;

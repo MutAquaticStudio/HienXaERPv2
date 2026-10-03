@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
-import { readFile, readdir } from 'node:fs/promises';
 import postgres from 'postgres';
 import { capacity, database, guard, required } from './core.mjs';
+import { migrationBody, migrationManifest } from './migration-manifest.mjs';
 
 // Isolated application-schema rehearsal, not a managed Auth/Storage restore.
 const config = guard();
@@ -53,11 +53,10 @@ async function preserved(sql) {
 
 try {
   report.qaDatabaseBytes = await capacity(admin);
-  const files = (await readdir('supabase/migrations')).filter(file => /^\d+_.*\.sql$/.test(file)).sort();
-  assert.equal(files.length, 49, 'Revisit the exact candidate when its migration set changes');
-  const migrations = [];
-  for (const file of files) migrations.push({ file, text: await readFile(`supabase/migrations/${file}`, 'utf8') });
-  report.migrationFingerprint = hash(migrations);
+  const manifest = await migrationManifest();
+  const migrations = manifest.migrations.map(migration => ({ file: migration.path.split('/').at(-1), text: migrationBody(migration.sql) }));
+  report.migrationManifest = manifest.migrations.map(migration => ({ order: migration.order, version: migration.version, path: migration.path, sha256: migration.sha256 }));
+  report.migrationFingerprint = manifest.fingerprint;
   report.migrationCount = migrations.length;
   let cleanCatalog;
   for (const mode of ['clean', 'upgrade']) {
@@ -111,7 +110,7 @@ try {
       const shape = await catalog(sql);
       if (mode === 'clean') cleanCatalog = shape;
       else assert.deepEqual(shape, cleanCatalog, 'Clean and upgraded application catalogs must agree');
-      report.checks.push({ name: mode === 'clean' ? 'CLEAN_49' : 'UPGRADE_9_TO_49', status: 'PASS', catalogFingerprint: hash(shape), objects: Object.fromEntries(Object.entries(shape).map(([key, value]) => [key, value.length])) });
+      report.checks.push({ name: mode === 'clean' ? 'CLEAN_CANDIDATE' : 'BOOTSTRAP_TO_CANDIDATE', status: 'PASS', catalogFingerprint: hash(shape), objects: Object.fromEntries(Object.entries(shape).map(([key, value]) => [key, value.length])) });
       console.log(JSON.stringify({ progress: mode, status: 'PASS' }));
     } finally { await sql.end({ timeout: 5 }); }
   }

@@ -1,19 +1,20 @@
 import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
-import { readFile, readdir, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
+import { migrationBody, migrationManifest } from './migration-manifest.mjs';
 import postgres from 'postgres';
 import { capacity, database, guard, required } from './core.mjs';
 
 // Prepare a guarded SQL Editor bundle; this script only connects to isolated QA.
 const config = guard();
 const folder = '/tmp/hienxa-cutover-20260922';
-const files = (await readdir('supabase/migrations')).filter(f => /^\d+_.*\.sql$/.test(f)).sort();
-const migrations = [];
-for (const file of files) migrations.push({ file, text: await readFile(`supabase/migrations/${file}`, 'utf8') });
-const fingerprint = createHash('sha256').update(JSON.stringify(migrations)).digest('hex');
-assert.equal(fingerprint, '5355cde9dca41bffb2bb3633134f8a846793eb9099b3343bab80fb4bce42b4dc', 'Migration inputs changed: invalidate prior evidence');
-assert.equal(migrations.length, 49);
-for (const m of migrations.slice(9)) assert.ok(!/^\s*(?:BEGIN(?:\s+(?:TRANSACTION|WORK))?|COMMIT|ROLLBACK)\s*;/im.test(m.text), 'Nested transaction control requires review');
+const manifest = await migrationManifest();
+const migrations = manifest.migrations.map(m => ({ file: m.path.split('/').at(-1), text: m.sql, executionText: migrationBody(m.sql) }));
+const files = migrations.map(m => m.file);
+const fingerprint = manifest.fingerprint;
+// Existing pre-cutover schema is identified by migration identity, not its old count.
+const bootstrapCount = migrations.findIndex(m => m.file.startsWith('20260914060713_')) + 1;
+assert.ok(bootstrapCount > 0, 'The historical bootstrap migration must be in this candidate');
 const versions = files.map(f => f.split('_')[0]);
 const list = values => `ARRAY[${values.map(v => `'${v}'`).join(',')}]::text[]`;
 const ledgerGuard = n => `IF ARRAY(SELECT version::text FROM supabase_migrations.schema_migrations ORDER BY version) <> ${list(versions.slice(0, n))} THEN RAISE EXCEPTION 'HX migration ledger mismatch: expected ${n} exact versions'; END IF;`;
@@ -25,7 +26,7 @@ BEGIN;
 SET LOCAL lock_timeout='5s';
 SET LOCAL statement_timeout='60s';
 DO $hx_guard$ DECLARE item text; found_count bigint; expected_count bigint; BEGIN
- ${ledgerGuard(9)}
+ ${ledgerGuard(bootstrapCount)}
  IF (SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind IN ('r','p')) <> 82 THEN RAISE EXCEPTION 'HX baseline table count changed'; END IF;
  FOR item IN SELECT format('%I.%I',n.nspname,c.relname) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind IN ('r','p') ORDER BY c.relname LOOP
   EXECUTE format('LOCK TABLE %s IN SHARE ROW EXCLUSIVE MODE',item);
@@ -44,16 +45,16 @@ DO $hx_capture$ DECLARE item text; payload jsonb; BEGIN
  END LOOP;
 END $hx_capture$;
 `;
-for (const m of migrations.slice(9)) {
+for (const m of migrations.slice(bootstrapCount)) {
  const version = m.file.split('_')[0];
  const name = m.file.slice(version.length + 1, -4);
  const delimiter = `$hx_migration_${version}$`;
  assert.ok(!m.text.includes(delimiter));
- bundle += `\n-- ${m.file}\n${m.text}\nINSERT INTO supabase_migrations.schema_migrations(version,name,statements) VALUES ('${version}','${name}',ARRAY[${delimiter}${m.text}${delimiter}]);\n`;
+ bundle += `\n-- ${m.file}\n${m.executionText}\nINSERT INTO supabase_migrations.schema_migrations(version,name,statements) VALUES ('${version}','${name}',ARRAY[${delimiter}${m.text}${delimiter}]);\n`;
 }
 bundle += `
 DO $hx_verify$ DECLARE item text; payload jsonb; old_payload jsonb; BEGIN
- ${ledgerGuard(49)}
+ ${ledgerGuard(migrations.length)}
  FOREACH item IN ARRAY ${list(preserved)} LOOP
   ${collect}
   SELECT s.payload INTO old_payload FROM hx_cutover_snapshot s WHERE s.name=item;
@@ -73,7 +74,7 @@ SELECT 'HX_ATOMIC_UPGRADE_COMMITTED' AS result,count(*) AS migration_count FROM 
 
 const admin = await database();
 const name = `hxqa_atomic_${randomUUID().replaceAll('-','').slice(0,12)}`;
-const report = { status: 'FAIL', sourceFingerprint: fingerprint, checks: [], cleanup: 'NOT_CREATED' };
+const report = { status: 'FAIL', sourceFingerprint: fingerprint, migrationManifest: manifest.migrations.map(migration => ({ order: migration.order, version: migration.version, path: migration.path, sha256: migration.sha256 })), checks: [], cleanup: 'NOT_CREATED' };
 let sql;
 try {
  await capacity(admin);
@@ -89,7 +90,7 @@ try {
  CREATE SCHEMA storage; CREATE TABLE storage.buckets(id text PRIMARY KEY,name text,public boolean DEFAULT false,file_size_limit bigint,allowed_mime_types text[]);
  CREATE TABLE storage.objects(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),bucket_id text REFERENCES storage.buckets(id),name text); ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
  CREATE SCHEMA supabase_migrations; CREATE TABLE supabase_migrations.schema_migrations(version text PRIMARY KEY,statements text[],name text);`);
- for(const m of migrations.slice(0,9)) await sql.begin(async t=>{await t.unsafe(m.text);await t`INSERT INTO supabase_migrations.schema_migrations(version,name) VALUES(${m.file.split('_')[0]},${m.file})`;});
+ for(const m of migrations.slice(0,bootstrapCount)) await sql.begin(async t=>{await t.unsafe(m.text);await t`INSERT INTO supabase_migrations.schema_migrations(version,name) VALUES(${m.file.split('_')[0]},${m.file})`;});
  const f={user:randomUUID(),branch:randomUUID(),employee:randomUUID(),role:randomUUID(),access:randomUUID()};
  await sql.begin(async t=>{
   await t`INSERT INTO auth.users VALUES(${f.user},'atomic-rehearsal@example.test')`;
@@ -101,21 +102,22 @@ try {
   await t`INSERT INTO public.employee_branch_access(id,employee_id,branch_id,role_id) VALUES(${f.access},${f.employee},${f.branch},${f.role})`;
   await t`INSERT INTO public.audit_events(actor_auth_user_id,branch_id,action,entity_type,entity_id,trace_id) VALUES(${f.user},${f.branch},'rehearsal.bootstrap','employee',${f.employee},${randomUUID()})`;
  });
+ const bootstrapTableCount=(await sql`SELECT count(*)::int AS n FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind IN ('r','p')`)[0].n;
  const failureSQL=bundle.replace('-- HX_COMMIT',()=>"DO $$ BEGIN RAISE EXCEPTION 'HX deliberate rollback probe'; END $$;");
  let rejected=false;
  try {await sql.unsafe(failureSQL);} catch(e){await sql.unsafe('ROLLBACK');assert.ok(e.message.includes('HX deliberate rollback probe'),e.message);rejected=true;}
  assert.ok(rejected);
- assert.equal((await sql`SELECT count(*)::int AS n FROM supabase_migrations.schema_migrations`)[0].n,9);
- assert.equal((await sql`SELECT count(*)::int AS n FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind IN ('r','p')`)[0].n,82);
+ assert.equal((await sql`SELECT count(*)::int AS n FROM supabase_migrations.schema_migrations`)[0].n,bootstrapCount);
+ assert.equal((await sql`SELECT count(*)::int AS n FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind IN ('r','p')`)[0].n,bootstrapTableCount);
  report.checks.push({name:'FAILURE_BEFORE_COMMIT_ROLLS_BACK',status:'PASS'});
  await sql.unsafe(bundle);
- assert.equal((await sql`SELECT count(*)::int AS n FROM supabase_migrations.schema_migrations`)[0].n,49);
+ assert.equal((await sql`SELECT count(*)::int AS n FROM supabase_migrations.schema_migrations`)[0].n,migrations.length);
  report.checks.push({name:'ATOMIC_UPGRADE_AND_PRESERVATION',status:'PASS'});
  let replayRejected=false;
- try {await sql.unsafe(bundle);} catch(e){await sql.unsafe('ROLLBACK');assert.ok(e.message.includes('expected 9 exact versions'),e.message);replayRejected=true;}
+ try {await sql.unsafe(bundle);} catch(e){await sql.unsafe('ROLLBACK');assert.ok(e.message.includes(`expected ${bootstrapCount} exact versions`),e.message);replayRejected=true;}
  assert.ok(replayRejected);
  report.checks.push({name:'REPLAY_REJECTED',status:'PASS'});
- await writeFile(`${folder}/production-upgrade-9-to-49.sql`,bundle,{mode:0o600});
+ await writeFile(`${folder}/candidate-upgrade.sql`,bundle,{mode:0o600});
  report.bundleSha256=createHash('sha256').update(bundle).digest('hex');report.bundleBytes=Buffer.byteLength(bundle);report.status='PASS';
 } catch(e) {report.error=e.message;process.exitCode=1;}
 finally {
