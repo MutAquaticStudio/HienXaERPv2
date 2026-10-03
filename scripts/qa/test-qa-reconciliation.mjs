@@ -40,9 +40,21 @@ function pgliteAdapter(connection) {
   return tag;
 }
 
+function nativeAdapter(connection) {
+  const tag=(strings,...params)=>connection(strings,...params);
+  tag.unsafe=(text,params=[])=>params.length ? connection.unsafe(text,params) : connection.unsafe(text).simple();
+  tag.begin=(modeOrCallback,maybeCallback)=>typeof modeOrCallback==='function'
+    ? connection.begin(tx=>modeOrCallback(nativeAdapter(tx)))
+    : connection.begin(modeOrCallback,tx=>maybeCallback(nativeAdapter(tx)));
+  return tag;
+}
+
 async function freshCandidateBaseline(sql) {
   // Existing R2 Auth bootstrap, in a newly created in-memory instance only.
-  await sql.unsafe(`create role anon nologin; create role authenticated nologin;
+  await sql.unsafe(`do $qa_roles$ begin
+    if not exists(select 1 from pg_roles where rolname='anon') then create role anon nologin; end if;
+    if not exists(select 1 from pg_roles where rolname='authenticated') then create role authenticated nologin; end if;
+    end $qa_roles$;
     create schema auth; create table auth.users(id uuid primary key);
     create function auth.uid() returns uuid language sql stable as $$
       select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
@@ -86,6 +98,10 @@ async function reconstruct(sql) {
   await sql.begin(async tx => {
     const query = text => tx.unsafe(text);
     const clean = await catalog(query);
+    if(process.env.HX_NATIVE_RESUME_DIVERGED_EVIDENCE) {
+      // Replay the explicitly owned synthetic diverged fixture, not managed history.
+      await tx.unsafe('alter table public.stock_count_lines drop constraint stock_count_lines_finite_count');
+    }
     for (const f of clean.schema.functions) {
       if (!fixture.catalogs.before.functions.some(b => sameFunction(f,b))) {
         // Exact signatures only. No CASCADE and only within disposable local fixtures.
@@ -109,7 +125,9 @@ async function reconstruct(sql) {
     for (const f of plan.executionOrder) await tx.unsafe('delete from supabase_migrations.schema_migrations where version=$1',[f.version]);
     // Cached stored statements, not an attestation of original source provenance.
     // This insertion occurs only during disposable, synthetic reconstruction.
-    await tx.unsafe('insert into supabase_migrations.schema_migrations(version,name,statements) values ($1,$2,array[$3]::text[])',
+    const existingExtra=clean.history.find(row=>row.version===plan.extraVersion);
+    if(existingExtra) assert.deepEqual(existingExtra.statements,[extraSql],'Synthetic extra history must retain its observed content');
+    await tx.unsafe('insert into supabase_migrations.schema_migrations(version,name,statements) values ($1,$2,array[$3]::text[]) on conflict(version) do nothing',
       [plan.extraVersion,'acceptance_count_guard_and_direct_po_terms',extraSql]);
   });
 }
@@ -137,7 +155,29 @@ async function runPath(kind,sql) {
   assert.equal(rolledBack.schemaFingerprint,before.schemaFingerprint);
   assert.equal(rolledBack.historyFingerprint,before.historyFingerprint);
   check(`${kind}_ATOMIC_ROLLBACK`);
-  const applied = await applyTransaction(sql,files,before,viewReference);
+  let applied;
+  if(mode==='--native' && kind==='DIVERGED' && process.env.HX_NATIVE_APPLY_VIA_LOCAL_CLI==='1') {
+    const referencePath=`${output}.cli-view-reference.json`;
+    await fs.writeFile(referencePath,JSON.stringify(viewReference,null,2));
+    const cliEvidence=[];
+    for(const cliMode of ['--preflight-local','--apply-local','--apply-local']) {
+      const env={...process.env,HX_LOCAL_RECONCILE_DATABASE_URL:process.env.HX_NATIVE_DIVERGED_DATABASE_URL,
+        HX_LOCAL_DISPOSABLE_RECONCILIATION:'1',HX_RECONCILIATION_VIEW_REFERENCE:referencePath,
+        HX_RECONCILIATION_OUTPUT:`${output}.cli-preflight.json`};
+      const result=spawnSync(process.execPath,['scripts/qa/reconcile-current-candidate.mjs',cliMode],{env,encoding:'utf8',timeout:120000,maxBuffer:10e6});
+      const log=(result.stdout??'')+(result.stderr??'');
+      const path=`${output}.cli-${cliEvidence.length}.log`;
+      await fs.writeFile(path,log);
+      assert.equal(result.status,0,`Actual local CLI failed (${cliMode}); see ${path}`);
+      const report=JSON.parse(result.stdout.trim().split('\n').at(-1));
+      cliEvidence.push({mode:cliMode,exit:result.status,report,artifact:path});
+    }
+    const after=await catalog(text=>sql.unsafe(text));
+    assert.deepEqual(cliEvidence[1].report.applied,pendingMigrations(files,before).map(file=>file.version));
+    assert.deepEqual(cliEvidence[2].report.applied,[]);
+    evidence.cliDeployment={status:'PASS_LOCAL_CUSTOM_RECONCILIATION_ENTRYPOINT',commands:cliEvidence};
+    applied={after,applied:cliEvidence[1].report.applied};
+  } else applied = await applyTransaction(sql,files,before,viewReference);
   assertTarget(applied.after,viewReference);
   assert.equal(applied.after.protectedAccessFingerprint,before.protectedAccessFingerprint);
   assert.deepEqual(await businessFacts(sql),factsBefore);
@@ -148,16 +188,12 @@ async function runPath(kind,sql) {
   assert.equal(repeat.after.historyFingerprint,applied.after.historyFingerprint);
   check(`${kind}_LEDGER_SKIP_SECOND_RUN`);
   const payload = {target_sales_order_id:randomUUID(),target_supplier_id:randomUUID(),purchase_lines:[{quantity:'1'}],expected_at:null,operation_id:randomUUID()};
-  await sql.begin(async tx => {
+  await assert.rejects(() => sql.begin(async tx => {
     await tx.unsafe('set local role authenticated');
-    let denied=false;
-    try {
-      await tx.unsafe(`select public.create_direct_purchase_from_sales_order(target_sales_order_id=>$1::uuid,
+    await tx.unsafe(`select public.create_direct_purchase_from_sales_order(target_sales_order_id=>$1::uuid,
         target_supplier_id=>$2::uuid,purchase_lines=>$3::jsonb,expected_at=>$4::timestamptz,operation_id=>$5::uuid)`,
         [payload.target_sales_order_id,payload.target_supplier_id,JSON.stringify(payload.purchase_lines),payload.expected_at,payload.operation_id]);
-    } catch(error) {if(error.code==='42501') denied=true;else throw error;}
-    assert.equal(denied,true);
-  });
+  }), error => error.code === '42501');
   check(`${kind}_PO_NAMED_APP_PAYLOAD_RESOLVES_AND_PERMISSION_DENIED`);
   const [countColumn] = await sql.unsafe(`select format_type(atttypid,atttypmod) as type,atttypmod as typmod
     from pg_attribute where attrelid='public.stock_count_lines'::regclass
@@ -185,10 +221,19 @@ async function runPath(kind,sql) {
   return applied.after;
 }
 
+import { spawnSync } from 'node:child_process';
+import { pendingMigrations } from './reconcile-current-candidate.mjs';
+import { createHash } from 'node:crypto';
+evidence.executionInputs=[];
+for(const file of ['test-qa-reconciliation.mjs','reconcile-current-candidate.mjs','reconciliation-view-catalog.mjs','qa-reconciliation-plan.json']) {
+  evidence.executionInputs.push({path:`scripts/qa/${file}`,sha256:createHash('sha256').update(await fs.readFile(new URL(file,import.meta.url))).digest('hex')});
+}
+evidence.migrationManifest=files.map(({version,path,sha256})=>({version,path,sha256}));
 const cleanup=[];
 try {
   const outputs=[];
-  for (const kind of ['CLEAN','DIVERGED']) {
+  const kinds=process.env.HX_NATIVE_ONLY_DIVERGED==='1' ? ['DIVERGED'] : ['CLEAN','DIVERGED'];
+  for (const kind of kinds) {
     let sql;
     if(mode==='--pglite') {
       const archive = kind==='DIVERGED' && process.env.HX_RECONCILIATION_DIVERGED_PGLITE_ARCHIVE
@@ -211,16 +256,50 @@ try {
       const url=new URL(rawUrl);
       if(!['localhost','127.0.0.1','[::1]'].includes(url.hostname) || !/^\/hx_qa_reconcile_[a-z0-9_]+$/.test(url.pathname)
         ||process.env.HX_LOCAL_DISPOSABLE_RECONCILIATION!=='1') throw new Error('native_target_not_local_disposable');
-      sql=postgres(rawUrl,{ssl:false,max:1,prepare:false,connect_timeout:5});
-      cleanup.push(()=>sql.end({timeout:3}));
-      const [identity]=await sql.unsafe('select current_database() as database,version() as engine,pg_backend_pid() as pid');
-      evidence[kind]={identity,target:'EXISTING_LOCAL_CANONICAL_BASELINE_WITH_AUTH_STORAGE_BOOTSTRAP'};
+      const connection=postgres(rawUrl,{ssl:false,max:1,prepare:false,connect_timeout:5});
+      cleanup.push(()=>connection.end({timeout:3}));
+      sql=nativeAdapter(connection);
+      const [identity]=await sql.unsafe(`select current_database() as database,version() as engine,pg_backend_pid() as pid,
+        current_setting('server_version_num') as server_version_num,current_setting('data_directory') as data_directory,
+        host(inet_server_addr()) as host,inet_server_port() as port`);
+      assert.equal(identity.database,url.pathname.slice(1));
+      assert.equal(identity.host,'127.0.0.1');
+      assert.equal(identity.port,Number(process.env.HX_NATIVE_CLUSTER_PORT));
+      assert.equal(Math.floor(Number(identity.server_version_num)/10000),17);
+      assert.equal(identity.data_directory,process.env.HX_NATIVE_DATA_DIRECTORY);
+      assert.match(identity.data_directory,/^\/private\/tmp\/hx-native-goal\.[A-Za-z0-9]+\/cluster-data$/);
+      const [{count}]=await sql.unsafe("select count(*)::int as count from pg_tables where schemaname in ('public','auth','storage','supabase_migrations')");
+      const resumePath=process.env[`HX_NATIVE_RESUME_${kind}_EVIDENCE`];
+      if(count && resumePath) {
+        const previous=JSON.parse(await fs.readFile(resumePath,'utf8'));
+        assert.equal(previous.native,true);
+        assert.equal(previous[kind].identity.database,identity.database);
+        assert.equal(previous[kind].identity.data_directory,identity.data_directory);
+        const appliedCheck=previous.checks.find(item=>item.name===`${kind}_SCOPED_SCHEMA_ACL_RLS_STORAGE_AND_DATA_PRESERVED` && item.status==='PASS');
+        assert.ok(appliedCheck,'Resume requires recorded successful scoped apply');
+        const resumed=await catalog(text=>sql.unsafe(text));
+        assert.equal(resumed.schemaFingerprint,appliedCheck.schemaFingerprint);
+        assert.equal(resumed.history.length,files.length+(kind==='DIVERGED'?1:0));
+        for(const file of files) {
+          const row=resumed.history.find(item=>item.version===file.version);
+          assert.ok(row,`Missing executed migration ${file.version}`);
+          assert.deepEqual(row.statements,[file.raw],`Executed content changed for ${file.version}`);
+        }
+        evidence[`${kind}_resume`]={artifact:resumePath,history:'ALL_CANDIDATE_EXECUTED_CONTENT_MATCHES',priorAtomicRollback:'REUSED_FROM_SAME_OWNED_DB'};
+      } else {
+        assert.equal(count,0,'Native baseline setup never overwrites a populated database');
+        await sql.unsafe('create extension if not exists pgcrypto');
+        await freshCandidateBaseline(sql);
+      }
+      evidence[kind]={identity,target:'NEW_OWNED_DB_BASELINE_EXECUTED_FROM_CANDIDATE_MANIFEST',auth:'SQL_AUTH_UID_FIXTURE_NOT_MANAGED_AUTH',storage:'NO_STORAGE_RUNTIME'};
     } else throw new Error('unsupported_mode');
     outputs.push(await runPath(kind,sql));
   }
-  assert.deepEqual(outputs[0].schema,outputs[1].schema);
-  check('CLEAN_AND_DIVERGED_SAME_SCOPED_TARGET');
-  evidence.status=mode==='--native'?'PASS_NATIVE_TWO_PATHS':'PASS_ISOLATED_PGLITE_TWO_PATHS_NOT_NATIVE';
+  if(outputs.length===2) {
+    assert.deepEqual(outputs[0].schema,outputs[1].schema);
+    check('CLEAN_AND_DIVERGED_SAME_SCOPED_TARGET');
+  }
+  evidence.status=mode==='--native'?(outputs.length===2?'PASS_NATIVE_TWO_PATHS':'PASS_NATIVE_DIVERGED_CLI_PATH'):'PASS_ISOLATED_PGLITE_TWO_PATHS_NOT_NATIVE';
 } catch(error) {
   evidence.status=error.message.startsWith('BLOCKED_LOCAL_NATIVE_ENV')?'BLOCKED_LOCAL_NATIVE_ENV':'FAIL';
   evidence.failures.push({message:error.message,code:error.code??null});
