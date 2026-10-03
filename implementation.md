@@ -1941,3 +1941,16 @@ git=no commit, push, merge or PR in this deployment-only request
 - evidence: `/private/tmp/hx-managed-reconcile-20261003/reconciliation-plan.json`, `migration-delta.tsv`, `local-reconciliation-probe.json` and `final-managed-reconciliation-evidence.json`; previous evidence retained.
 - result: **RELEASE_BLOCKED**. Owner must decide the extra contract disposition and authorize the exact managed QA reconciliation; only then may schema verification, browser Auth, the four runtime cases and Storage resume. Owner acceptance remains **PENDING_OWNER**.
 - production_impact: **NOT_TOUCHED**. Local documentation checkpoint only; no push, deployment, managed QA DDL/DML, Production access, real invoices/messages or historical repair.
+
+
+### Delta - COMPLETE_QA_RECONCILIATION_PATCH - 2026-10-03
+- scope: one canonical forward migration, exact execution manifest, guarded preflight/execution tool and focused local harness. No application/UI or Spec/UXUI/plan changes.
+- disposition: CANONICAL_FORWARD_WITH_INVARIANT_PRESERVATION; guard trace SPEC-INVTRY-005. Do not adopt the extra migration wholesale; retain canonical conflict code and five-argument PO RPC.
+- changed_paths: supabase/migrations/20261003161428_reconcile_qa_count_guard_and_direct_po_contract.sql; scripts/qa/qa-reconciliation-plan.json; scripts/qa/reconcile-current-candidate.mjs; scripts/qa/test-reconciliation-preflight.mjs. Uncommitted experimental harness: scripts/qa/test-qa-reconciliation.mjs.
+- new_evidence: /private/tmp/hx-complete-qa-patch-20261003/managed-preflight.json; preflight-unit.log (9/9 PASS); cli-dry-run-r2.json/log (73 real files checksum-matched; extra history rejected); native-two-paths.json (BLOCKED_LOCAL_NATIVE_ENV); isolated-two-paths.json (BLOCKED_SETUP, not business PASS); clean-canonical-sql.json (SQL executed, postcheck raw-view mismatch); view-engine-normalization.json (same query on PostgreSQL 18.3 PGlite).
+- reused_evidence: unchanged application inputs retain UNIT 138/138, DOM 28/28, typecheck/build, adapter and unchanged Delivery native/race evidence. Prior 72-migration native PASS does not verify the new manifest; no PGlite result is relabeled native/browser/Storage PASS.
+- result: BLOCKED_WITH_EXACT_CAUSE. Native PostgreSQL local not installed/running and no disposable native targets supplied; two-path native/race verification unavailable. Local PGlite harness correction is pending.
+- history_provenance: 56 UNKNOWN_HISTORICAL_CHECKSUM remain unknown, 8 stored-text mismatches are not silently relabeled matching. Extra history remains intact.
+- target: Owner-designated QA ffrwiglcrlumfvhubaxg; actual business-data provenance UNKNOWN, requires Owner attestation before apply.
+- managed_schema_fingerprint: 0575c4276af39517d31c16b55dc5d025e4a1d1544faa7371c9ca9ab3bef79cb9 (affected-object/access scope, not whole schema).
+- production_impact: NOT_TOUCHED; managed_qa: NOT_MODIFIED; historical_repair: APPLY_BLOCKED_POLICY.

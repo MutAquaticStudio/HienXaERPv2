@@ -215,3 +215,14 @@ Stop only for:
 - Production authorization.
 
 Otherwise continue authorized independent work.
+
+
+### QA reconciliation checkpoint - 2026-10-03
+CURRENT_SCOPE: COMPLETE_QA_RECONCILIATION_PATCH
+CURRENT_TASK: NATIVE_TWO_PATH_VERIFICATION
+STATUS: BLOCKED_LOCAL_NATIVE_ENV
+- Canonical forward patch prepared; stock count finite guards retained under SPEC-INVTRY-005, direct PO RPC restored to the existing five-argument caller.
+- Managed read-only preflight captured five pending real migrations; CLI dry-run rejects the preserved external history entry.
+- Pure preflight checks: 9/9 PASS. Native two paths and affected race checks: NOT_RUN, local PostgreSQL unavailable.
+- PGlite two-path harness stopped at setup; adapter correction awaits the requested decision. Raw view deparse differs between PostgreSQL 17/18; same-engine query normalization proved equivalent, not an application defect.
+- No managed QA apply, original-history repair, Production mutation, provider/performance/recovery rerun or historical value adjustment authorized/executed.
