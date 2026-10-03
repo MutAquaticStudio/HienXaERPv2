@@ -9,6 +9,9 @@ export function QuickCreateFocusGuard() {
     const dialog = markerRef.current?.closest<HTMLElement>('[role="dialog"]');
     if (!dialog) return;
 
+    const returnFocusTarget = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
     const previousTabIndex = dialog.getAttribute("tabindex");
     const previousOverflow = document.body.style.overflow;
     const background: Array<{ element: HTMLElement; inert: boolean }> = [];
@@ -82,6 +85,9 @@ export function QuickCreateFocusGuard() {
       document.body.style.overflow = previousOverflow;
       if (previousTabIndex === null) dialog.removeAttribute("tabindex");
       else dialog.setAttribute("tabindex", previousTabIndex);
+      if (returnFocusTarget?.isConnected && !returnFocusTarget.closest("[inert]")) {
+        returnFocusTarget.focus({ preventScroll: true });
+      }
     };
   }, []);
 

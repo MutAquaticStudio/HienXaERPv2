@@ -1818,3 +1818,14 @@ git=no commit, push, merge or PR in this deployment-only request
 - evidence: /private/tmp/hx-uxui-release-20261003; pre-fix /private/tmp/hx-uxui-20261002 establishes defects only, not post-fix PASS.
 - result: UX-only candidate; no API, query, permission, schema or business-rule changes. The separate acceptance-repair batch and its QA-only migration 20261002114730 are NOT included in this release.
 - production_impact: NOT_TOUCHED at checkpoint creation; release requires build, affected browser acceptance and CI success. No Production migration or DML authorized in this release.
+
+### 2026-10-03 - UX02 focus restoration correction
+
+- scope: Confirmed browser regression on 7ef3c709d8c4793d87be7a326885bbfdfcf8319b: Escape returned keyboard focus to BODY after closing quick Customer/Site creation.
+- changed_paths: src/components/sales/quick-create-focus-guard.tsx.
+- correction: Capture the focused opener on mount; after removing listeners and restoring background inert/scroll state, return focus without scrolling if that target remains connected and not inert.
+- invariants: No draft, API, permission, money, schema or migration changes. A removed opener is not focused after navigation.
+- reused_evidence: UX01/UX03/UX04/UX05/UX06, 97/97 existing unit suite and CI run 37087635061 for unchanged inputs; focused UX02 checks require fresh evidence.
+- checks: Targeted lint/typecheck/build and Customer/Site Escape/Close/Tab/Shift-Tab/draft-retention browser regression PENDING at checkpoint creation.
+- evidence: /private/tmp/hx-uxui-release-20261003; preceding failed focus observation retained in browser-evidence.json.
+- production_impact: NOT_TOUCHED at checkpoint creation; merge/deploy remain gated on targeted verification and CI.
