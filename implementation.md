@@ -1807,3 +1807,25 @@ git=no commit, push, merge or PR in this deployment-only request
 - result: ISOLATED_INDEX_VALIDATED + REAL_STORAGE_INVENTORY_COMPLETE. Historical fixture and comparator failures retained; not silently omitted. NO_CLEANUP_NEEDED_ON_STORAGE_EVIDENCE; no table merging/deletion.
 - blocker: NONE for these two authorized steps. Any later real-data cleanup or Production migration remains separately authorized work; active-webapp database binding was not reverified by this metadata-only inventory.
 - production_impact: READ_ONLY_METADATA via existing authenticated dashboard. No migration/DDL/DML/grant/config mutation, cleanup, VACUUM, deploy, commit or push.
+
+## 2026-10-03 - Isolated UX/UI usability release
+
+- scope: UX01-UX06 reproduced in the 2026-10-02 QA audit; mobile Sales Order cards, quick-create focus containment, readable filters, visible Dashboard charts, Vietnamese fulfillment labels and accurate draft PO copy.
+- contract_refs: UX-040.2, UX-060, UX-090, UX-140, UX-810, UX-800.1, UX-DASH-004, UX-FLOW-003, UX-REC-003.
+- base: a336bdedfd31bd47a10a809a79497375d05d8ec8; isolated from the dirty development workspace.
+- changed_paths: src/app/globals.css; src/app/admin/orders/page.tsx; src/app/admin/page.tsx; src/modules/sales/presentation.ts; src/components/sales/commercial-document-form.tsx; src/components/sales/quick-create-focus-guard.tsx; src/components/purchasing/purchase-order-form.tsx.
+- checks: UNIT:NEW PASS 16/16 affected existing tests; LINT:NEW PASS; TYPE:NEW PASS; QA_GUARD:NEW PASS ffrwiglcrlumfvhubaxg; BUILD/UI/CI: PENDING at checkpoint creation.
+- evidence: /private/tmp/hx-uxui-release-20261003; pre-fix /private/tmp/hx-uxui-20261002 establishes defects only, not post-fix PASS.
+- result: UX-only candidate; no API, query, permission, schema or business-rule changes. The separate acceptance-repair batch and its QA-only migration 20261002114730 are NOT included in this release.
+- production_impact: NOT_TOUCHED at checkpoint creation; release requires build, affected browser acceptance and CI success. No Production migration or DML authorized in this release.
+
+### 2026-10-03 - UX02 focus restoration correction
+
+- scope: Confirmed browser regression on 7ef3c709d8c4793d87be7a326885bbfdfcf8319b: Escape returned keyboard focus to BODY after closing quick Customer/Site creation.
+- changed_paths: src/components/sales/quick-create-focus-guard.tsx.
+- correction: Capture the focused opener on mount; after removing listeners and restoring background inert/scroll state, return focus without scrolling if that target remains connected and not inert.
+- invariants: No draft, API, permission, money, schema or migration changes. A removed opener is not focused after navigation.
+- reused_evidence: UX01/UX03/UX04/UX05/UX06, 97/97 existing unit suite and CI run 37087635061 for unchanged inputs; focused UX02 checks require fresh evidence.
+- checks: Targeted lint/typecheck/build and Customer/Site Escape/Close/Tab/Shift-Tab/draft-retention browser regression PENDING at checkpoint creation.
+- evidence: /private/tmp/hx-uxui-release-20261003; preceding failed focus observation retained in browser-evidence.json.
+- production_impact: NOT_TOUCHED at checkpoint creation; merge/deploy remain gated on targeted verification and CI.

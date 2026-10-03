@@ -1,5 +1,7 @@
 "use client";
 
+import { QuickCreateFocusGuard } from "@/components/sales/quick-create-focus-guard";
+
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createCustomerQuickAction, createSiteQuickAction } from "@/modules/customers/actions";
@@ -46,6 +48,7 @@ function QuickCreatePanel({ mode, customerId, onCustomerCreated, onSiteCreated, 
     finally { setPending(false); }
   }
   return <div className="quick-create-backdrop" role="presentation"><section className="quick-create-panel card" role="dialog" aria-modal="true" aria-labelledby="quick-create-title">
+    <QuickCreateFocusGuard />
     <div className="commercial-line-head"><div><p className="eyebrow">Tạo nhanh trong Sales</p><h2 id="quick-create-title">{mode === "customer" ? "Thêm khách hàng" : "Thêm công trình"}</h2></div><button className="button button-secondary" type="button" onClick={onClose}>Đóng</button></div>
     <p className="muted">Bản nháp hiện tại được giữ nguyên. Sau khi tạo, bản ghi mới sẽ được chọn tự động.</p>
     <form onSubmit={submit} className="form-grid">

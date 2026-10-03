@@ -35,7 +35,55 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
     rows = visibleIds.map((id) => byId.get(id)).filter((row): row is OrderRow => Boolean(row));
     if (rows.length !== visibleIds.length) throw new Error("Danh sách đơn bán không nhất quán.");
   }
-  return <><header className="page-heading"><div><p className="eyebrow">Bán hàng</p><h1>Đơn bán</h1><p className="lede">Một danh sách cho trạng thái thương mại, thực hiện và thanh toán được dẫn xuất.</p></div>{access.permissions.has("orders.create") && <ButtonLink href="/admin/orders/new">Tạo đơn bán</ButtonLink>}</header><ActionNotice notice={query.notice} error={query.error} />
-    <form className="filter-bar"><label>Tìm kiếm<input name="q" defaultValue={list.q} placeholder="Mã đơn, khách hàng, công trình" /></label><label>Thương mại<select name="state" defaultValue={list.state}><option value="">Tất cả</option><option value="DRAFT">Nháp</option><option value="CONFIRMED">Đã xác nhận</option><option value="CANCELLED">Đã hủy</option></select></label><button className="button button-secondary" type="submit">Áp dụng</button>{(list.q || list.state) && <Link className="code-link" href="/admin/orders">Xóa lọc</Link>}</form>
-    <section className="card"><div className="section-head"><h2>Đơn bán</h2><span className="scope-chip">25 / trang</span></div><div className="table-wrap"><table><thead><tr><th>Mã đơn</th><th>Khách hàng / công trình</th><th>Giá trị</th><th>Thương mại</th><th>Thực hiện</th><th>Thanh toán</th><th>Ngày tạo</th></tr></thead><tbody>{rows.map((order) => <tr key={order.id}><td><Link className="mono code-link" href={`/admin/orders/${order.id}`}>{order.order_number}</Link></td><td>{order.customer_name_snapshot}<small className="table-subline">{order.site_name_snapshot}</small></td><td className="mono">{formatVnd(vnd(order.total_vnd))}</td><td><StatusBadge tone={salesStateTone(order.commercial_state)}>{salesStateLabel(order.commercial_state)}</StatusBadge></td><td>{salesStateLabel(order.fulfillment_state)}</td><td>{salesStateLabel(order.payment_state)}</td><td>{formatBusinessDate(order.created_at)}</td></tr>)}</tbody></table>{!rows.length && <p className="empty-inline">Không có đơn bán phù hợp.</p>}</div><ListPager page={list.page} hasNext={hasNext} params={{ q: list.q, state: list.state }} /></section></>;
+  const isFiltered = Boolean(list.q || list.state);
+  return <>
+    <header className="page-heading">
+      <div><p className="eyebrow">Bán hàng</p><h1>Đơn bán</h1><p className="lede">Tìm đơn, xem tiến độ giao hàng và theo dõi thanh toán tại một nơi.</p></div>
+      {access.permissions.has("orders.create") && <ButtonLink href="/admin/orders/new">Tạo đơn bán</ButtonLink>}
+    </header>
+    <ActionNotice notice={query.notice} error={query.error} />
+    <form className="filter-bar" aria-label="Bộ lọc đơn bán">
+      <label>Tìm kiếm<input type="search" name="q" defaultValue={list.q} placeholder="Mã đơn, tên khách hoặc công trình" /></label>
+      <label>Trạng thái đơn<select name="state" defaultValue={list.state}><option value="">Tất cả</option><option value="DRAFT">Nháp</option><option value="CONFIRMED">Đã xác nhận</option><option value="CANCELLED">Đã hủy</option></select></label>
+      <button className="button button-secondary" type="submit">Áp dụng</button>
+      {isFiltered && <Link className="code-link" href="/admin/orders">Xóa lọc</Link>}
+    </form>
+    <section className="card">
+      <div className="section-head"><h2>Đơn bán</h2><span className="scope-chip">{CORE_LIST_PAGE_SIZE} / trang</span></div>
+      {rows.length > 0 ? <>
+        <div className="table-wrap orders-table-view"><table>
+          <thead><tr><th>Mã đơn</th><th>Khách hàng / công trình</th><th>Giá trị</th><th>Thương mại</th><th>Thực hiện</th><th>Thanh toán</th><th>Ngày tạo</th></tr></thead>
+          <tbody>{rows.map((order) => <tr key={order.id}>
+            <td><Link className="mono code-link" href={`/admin/orders/${order.id}`}>{order.order_number}</Link></td>
+            <td>{order.customer_name_snapshot}<small className="table-subline">{order.site_name_snapshot}</small></td>
+            <td className="mono">{formatVnd(vnd(order.total_vnd))}</td>
+            <td><StatusBadge tone={salesStateTone(order.commercial_state)}>{salesStateLabel(order.commercial_state)}</StatusBadge></td>
+            <td>{salesStateLabel(order.fulfillment_state)}</td><td>{salesStateLabel(order.payment_state)}</td>
+            <td>{formatBusinessDate(order.created_at)}</td>
+          </tr>)}</tbody>
+        </table></div>
+        <ul className="orders-card-list" aria-label="Danh sách đơn bán">
+          {rows.map((order) => <li key={order.id}><article className="order-summary-card">
+            <div className="order-summary-head">
+              <Link className="mono code-link" href={`/admin/orders/${order.id}`}>{order.order_number}</Link>
+              <StatusBadge tone={salesStateTone(order.commercial_state)}>{salesStateLabel(order.commercial_state)}</StatusBadge>
+            </div>
+            <p className="order-summary-customer">{order.customer_name_snapshot}</p>
+            <p className="order-summary-site">{order.site_name_snapshot}</p>
+            <dl className="order-summary-values">
+              <div><dt>Giá trị đơn</dt><dd className="mono">{formatVnd(vnd(order.total_vnd))}</dd></div>
+              <div><dt>Ngày tạo</dt><dd>{formatBusinessDate(order.created_at)}</dd></div>
+              <div><dt>Giao hàng</dt><dd>{salesStateLabel(order.fulfillment_state)}</dd></div>
+              <div><dt>Thanh toán</dt><dd>{salesStateLabel(order.payment_state)}</dd></div>
+            </dl>
+            <Link className="button button-secondary order-summary-action" href={`/admin/orders/${order.id}`} aria-label={`Xem chi tiết đơn ${order.order_number}`}>Xem chi tiết</Link>
+          </article></li>)}
+        </ul>
+      </> : <div className="orders-empty" role="status">
+        <p>{isFiltered ? "Không có đơn bán phù hợp. Thử tên khác hoặc xóa bộ lọc." : "Chưa có đơn bán trong chi nhánh này."}</p>
+        {isFiltered ? <Link className="button button-secondary" href="/admin/orders">Xóa bộ lọc</Link> : access.permissions.has("orders.create") && <ButtonLink href="/admin/orders/new">Tạo đơn bán đầu tiên</ButtonLink>}
+      </div>}
+      <ListPager page={list.page} hasNext={hasNext} params={{ q: list.q, state: list.state }} />
+    </section>
+  </>;
 }
