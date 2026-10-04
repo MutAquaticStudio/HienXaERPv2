@@ -7,14 +7,21 @@
 
 ```yaml
 CURRENT_PHASE: R12
-CURRENT_BATCH: FINALIZE_LOCAL_PO_PATCH_AND_PREPARE_RUNTIME_ACCEPTANCE_20261004
-CURRENT_TASK: FIX_RULES_01_05
-EXECUTION_STATUS: WAITING_RUNTIME_PREREQUISITES
-AUTHORIZATION_SCOPE: HANDOFF_AND_TARGETED_RUNTIME_QA
-LOCAL_IMPLEMENTATION: COMPLETE
-NATIVE_BUSINESS_VERIFICATION: PASS_LOCAL_AFFECTED_SCOPE
-RUNTIME_ACCEPTANCE: PARTIAL_ENV_BLOCKED
+CURRENT_BATCH: MILESTONE_B_QA_20261004
+CURRENT_TASK: BIZ_01_08_TARGETED_QA_AND_RELEASE_GATES
+EXECUTION_STATUS: BLOCKED_TARGETED_HARNESS_AND_RUNTIME_GATES
+AUTHORIZATION_SCOPE: REPAIR_INTEGRATE_BUSINESS_QA_AND_RELEASE_PREPARATION
+LOCAL_IMPLEMENTATION: PO_COMPLETE_READER_SCOPE_PATCH_PENDING_RETEST
+NATIVE_BUSINESS_VERIFICATION: PASS_REUSED_PO_DELIVERY_SCOPE_FINANCE_RACE_BLOCKED_SETUP
+RUNTIME_ACCEPTANCE: PARTIAL_HTTP_MANUAL_OWNER_UAT_NOT_RUN
 OWNER_ACCEPTANCE: PENDING_OWNER
+QA_PROJECT_REF: ffrwiglcrlumfvhubaxg
+QA_DATA_CLASSIFICATION: TEST_DATA_ONLY
+QA_CLASSIFICATION_SOURCE: OWNER_CONFIRMED
+QA_FIXTURE_WRITE_AUTHORIZATION: GRANTED_SCOPED_B1_B8
+QA_SCHEMA_MUTATION: PO_PATCH_ALREADY_APPLIED_NEW_PATCHES_NOT_AUTHORIZED
+QA_APPROVED_PATCH_SHA256: 9e74a7976728bb33b4401d642b79329e5d5ece9ac016e8509c06bbf238bf2f7d
+QA_SCHEMA_APPLY: APPLIED
 PRODUCTION_MUTATION: FORBIDDEN_WITHOUT_OWNER
 ```
 
@@ -239,3 +246,20 @@ STATUS: BLOCKED_LOCAL_NATIVE_ENV
 - Remaining task: provision explicitly owned local PostgreSQL 17 runtime, then native two-path and actual local CLI deployment checks.
 - State: BLOCKED_ENV; managed apply NOT_ELIGIBLE_FOR_APPROVAL / NOT_AUTHORIZED.
 - Managed QA and Production: NOT_TOUCHED. No application/migration/contract edits.
+
+## Milestone B scoped execution delta - QA-B-20261004T140821Z
+
+Owner authorizes B1-B8 fixtures only on `ffrwiglcrlumfvhubaxg` (`TEST_DATA_ONLY_OWNER_CONFIRMED`). No new managed migration, role upgrade, cleanup, push, deploy or historical repair is authorized.
+
+| Task | Actual state | Remaining gate |
+| --- | --- | --- |
+| BIZ-01 Master/Sales | PARTIAL; authenticated master/quote/revision/SO and negative checks passed | Visual quick-create UAT; Sales test actor lacks quotation.create |
+| BIZ-02 Purchasing | PARTIAL; reuse NV-01..08 technical PASS | Six PO visual cases; complete linked sourcing scope |
+| BIZ-03 Inventory/Delivery | BLOCKED_MANAGED_DEPENDENCY; native business/race evidence reused | Exact managed delivery/WorkerResult patches need approval; employee daily roles |
+| BIZ-04 Supplier direct | PARTIAL; source-separated AP/AR native evidence reused | Managed customer verification dependency; visual UAT |
+| BIZ-05 Finance | PARTIAL; payment split/readback passed | Harness assertion/RPC argument repairs; advance/reversal and new finance race |
+| BIZ-06 Exceptions | PARTIAL; native short delivery/return/follow-up evidence reused | Managed dependency; remaining loss/return/close and UI evidence |
+| BIZ-07 KPI/Reports/Documents | PARTIAL; filtered canonical KPI/readback passed | As-of harness repair; PDF runtime and earning facts not exercised |
+| BIZ-08 Daily roles/security | PARTIAL; six Auth sessions and direct permission/isolation denials passed | Purchasing/Dispatch/Finance employee actors; revocation/private Storage/shared-device runtime |
+
+Release support: real local dump/restore reconciliation PASS for current base fixture scope. Representative local order-filter measurement reproduced PERF-B-01; local reader-scope migration and harness are pending successful setup/retest, NOT a verified fix. Storage recovery is not proven. QA-to-live plan and manual UAT are prepared, not executed. Opening balances and release authorization remain Owner decisions. MILESTONE_B=NOT_READY.
