@@ -343,6 +343,64 @@ try{
     const [invalidEffects]=await sql`select count(*)::int count from public.payment_allocations where payment_id in (${small},${large})`;assert.equal(invalidEffects.count,0);
     evidence.paymentBounds={availableLimitRejected:true,debtLimitRejected:true,foreignBranchCustomerSiteRejected:true,failedAllocationEffects:0,APPayment:payment,reversal,allocated:'3000',reversalNet:'0'};
   });
+  await group('PO_ADDRESS_CONTRACT_DIAGNOSTICS',async()=>{
+    // Characterize existing behavior without approving an address policy.
+    await sql`insert into public.role_permissions(role_id,permission_code) values(${f.role},'roles.manage')`;
+    await sql`update public.suppliers set address_text='Synthetic supplier contact ONLY' where id=${f.supplier}`;
+    const facts=async operation=>{
+      const [row]=await sql`select
+        (select count(*)::int from public.purchase_orders where branch_id=${f.branch}) documents,
+        (select count(*)::int from public.purchase_order_lines l join public.purchase_orders p on p.id=l.purchase_order_id where p.branch_id=${f.branch}) lines,
+        (select count(*)::int from public.payable_obligations where branch_id=${f.branch}) ap,
+        (select count(*)::int from public.receivable_obligations where branch_id=${f.branch}) ar,
+        (select count(*)::int from public.inventory_movements where branch_id=${f.branch}) inventory,
+        (select count(*)::int from public.command_receipts where operation_id=${operation}) command`;
+      return row;
+    };
+    const updateWarehouse=(warehouse,from,to)=>rpc('save_catalog_record',['warehouses',warehouse,f.branch,{address_text:to},{address_text:from},'Synthetic address diagnostic update',id()]);
+    const observations=[];
+    for(const [label,formText] of [['MISSING',null],['EMPTY',''],['WHITESPACE','   ']]){
+      const warehouse=id(),operation=id();
+      // Source saveCatalogAction trims optional text to NULL; this is not a browser execution.
+      const normalized=formText===null?null:formText.trim()||null;assert.equal(normalized,null);
+      await rpc('save_catalog_record',['warehouses',warehouse,f.branch,{code:fixtureCode+'-'+label,name:'Synthetic receiving warehouse '+label,address_text:normalized,active:true},null,'Synthetic warehouse via catalog RPC',id()]);
+      const [source]=await sql`select address_text,active from public.warehouses where id=${warehouse}`;assert.equal(source.address_text,null);assert.equal(source.active,true);
+      const args=[f.branch,f.supplier,warehouse,when,'Synthetic PO address diagnostic',buyLines(),operation];
+      const before=await facts(operation);let failure;
+      try{await rpc('create_purchase_order_draft',args);}catch(error){failure=error;}
+      assert.ok(failure);assert.equal(failure.code,'23502');assert.equal(failure.schema_name,'public');assert.equal(failure.table_name,'purchase_orders');assert.equal(failure.column_name,'destination_address_snapshot');
+      assert.deepEqual(await facts(operation),before,'No partial PO/lines/AR/AP/inventory/receipt after failure');
+      check('PO_ADDRESS_'+label+'_EXACT_COLUMN_REPRODUCED',{code:failure.code,column:'public.purchase_orders.destination_address_snapshot',businessEffects:0,classification:'POLICY_UNRESOLVED_NOT_FRIENDLY_VALIDATION_PASS'});
+      const receivingAddress='Synthetic receiving address '+label;await updateWarehouse(warehouse,null,receivingAddress);
+      const purchase=await rpc('create_purchase_order_draft',args);assert.equal(await rpc('create_purchase_order_draft',args),purchase);
+      const [saved]=await sql`select p.destination_type,p.destination_address_snapshot,p.supplier_address_snapshot,count(l.id)::int lines,sum(l.line_total_cost_vnd)::text total from public.purchase_orders p join public.purchase_order_lines l on l.purchase_order_id=p.id where p.id=${purchase} group by p.id`;
+      assert.equal(saved.destination_type,'WAREHOUSE');assert.equal(saved.destination_address_snapshot,receivingAddress);assert.equal(saved.supplier_address_snapshot,'Synthetic supplier contact ONLY');assert.equal(saved.lines,2);assert.equal(saved.total,'7200');
+      const created=await facts(operation);assert.equal(created.documents,before.documents+1);assert.equal(created.lines,before.lines+2);assert.equal(created.command,1);
+      const confirm=[purchase,id()];await rpc('confirm_purchase_order',confirm);await rpc('confirm_purchase_order',confirm);
+      const confirmed=await facts(operation);assert.equal(confirmed.ap,before.ap);assert.equal(confirmed.ar,before.ar);assert.equal(confirmed.inventory,before.inventory);
+      await updateWarehouse(warehouse,receivingAddress,'Changed warehouse address AFTER CONFIRM');
+      const [snapshot]=await sql`select destination_address_snapshot,state from public.purchase_orders where id=${purchase}`;assert.equal(snapshot.destination_address_snapshot,receivingAddress);assert.equal(snapshot.state,'CONFIRMED');
+      check('PO_ADDRESS_'+label+'_CORRECTED_SAME_INTENT_RETRY_SNAPSHOT',{purchase,lineCount:2,total:'7200',extraEffects:0});
+      observations.push({label,formText,normalized,catalogSource:source.address_text,error:{code:failure.code,schema:failure.schema_name,table:failure.table_name,column:failure.column_name},purchase,receivingAddress,snapshot,confirmed});
+    }
+    for(const [label,address] of [['RAW_EMPTY',''],['RAW_WHITESPACE','   ']]){
+      const warehouse=id();await rpc('save_catalog_record',['warehouses',warehouse,f.branch,{code:fixtureCode+'-'+label,name:'Synthetic raw text warehouse '+label,address_text:address,active:true},null,'Synthetic raw API diagnostic',id()]);
+      const args=[f.branch,f.supplier,warehouse,when,'Synthetic raw text PO',buyLines(),id()];const purchase=await rpc('create_purchase_order_draft',args);assert.equal(await rpc('create_purchase_order_draft',args),purchase);await rpc('confirm_purchase_order',[purchase,id()]);
+      const [saved]=await sql`select state,destination_address_snapshot from public.purchase_orders where id=${purchase}`;assert.equal(saved.destination_address_snapshot,address);assert.equal(saved.state,'CONFIRMED');
+      observations.push({label,rawApiSource:address,purchase,observed:'EMPTY_TEXT_CREATE_AND_CONFIRM_ACCEPTED_POLICY_NOT_APPROVED'});
+      check('PO_ADDRESS_'+label+'_API_DIAGNOSTIC',{observed:'ACCEPTED',classification:'POLICY_UNRESOLVED_NOT_VALID_INPUT_CERTIFICATION'});
+    }
+    const order=await rpc('create_sales_order_draft',[f.branch,f.customer,f.site,when,'Synthetic direct address distinction',saleLines(),id()]);await rpc('confirm_sales_order',[order,id()]);
+    const [sale]=await sql`select delivery_address_snapshot from public.sales_orders where id=${order}`;const lines=await sql`select id from public.sales_order_lines where sales_order_id=${order} order by line_number`;
+    const payload=buyLines().map((line,index)=>({...line,linked_sales_order_line_id:lines[index].id}));await sql`update public.warehouses set address_text=null where id=${f.warehouse}`;
+    const args=[order,f.supplier,payload,when,id()],purchase=await rpc('create_direct_purchase_from_sales_order',args);assert.equal(await rpc('create_direct_purchase_from_sales_order',args),purchase);await rpc('confirm_purchase_order',[purchase,id()]);
+    const [direct]=await sql`select p.destination_type,p.warehouse_id,p.site_id,p.destination_address_snapshot,p.supplier_address_snapshot,count(l.id)::int lines,sum(l.line_total_cost_vnd)::text total from public.purchase_orders p join public.purchase_order_lines l on l.purchase_order_id=p.id where p.id=${purchase} group by p.id`;
+    assert.equal(direct.destination_type,'CUSTOMER_SITE');assert.equal(direct.warehouse_id,null);assert.equal(direct.site_id,f.site);assert.equal(direct.destination_address_snapshot,sale.delivery_address_snapshot);assert.notEqual(direct.destination_address_snapshot,direct.supplier_address_snapshot);assert.equal(direct.lines,2);assert.equal(direct.total,'7200');
+    await sql`update public.customer_sites set address_text='Changed site AFTER CONFIRM' where id=${f.site}`;await sql`update public.suppliers set address_text='Changed supplier AFTER CONFIRM' where id=${f.supplier}`;
+    const [frozen]=await sql`select destination_address_snapshot,supplier_address_snapshot from public.purchase_orders where id=${purchase}`;assert.equal(frozen.destination_address_snapshot,sale.delivery_address_snapshot);assert.equal(frozen.supplier_address_snapshot,'Synthetic supplier contact ONLY');
+    check('PO_ADDRESS_VALID_CUSTOMER_SITE_TWO_LINES_FROZEN_SNAPSHOT',{purchase,lineCount:2,total:'7200',warehouseAddressRequired:false});
+    evidence.poAddress={operation:'CREATE_DRAFT',destinationMode:'WAREHOUSE',column:'public.purchase_orders.destination_address_snapshot',addressSource:'public.warehouses.address_text',insertTrigger:false,mapperDropsAddress:false,callerAddressArgument:false,uiNormalizationSource:'src/modules/catalog/actions.ts::saveCatalogAction',userReachability:'AUTHORIZED_CATALOG_RPC_EXECUTED_UI_SOURCE_ACCEPTS_NOT_BROWSER_VERIFIED',resolution:'BLOCKED_EXACT_POLICY',observations,direct,frozen};
+  });
   await group('COMMERCIAL_DRAFT_EDIT_NATIVE',async()=>{
     const create=[f.branch,f.customer,f.site,when,'Synthetic editable SO',saleLines(),id()];
     const order=await rpc('create_sales_order_draft',create);assert.equal(await rpc('create_sales_order_draft',create),order);
