@@ -894,6 +894,12 @@ PO có:
 - state;
 - audit.
 
+### Warehouse destination address
+
+PO mới có `destination_mode=WAREHOUSE` chỉ được tạo khi `public.warehouses.address_text` của kho active, đúng branch có nội dung sau chuẩn hóa trim (bao gồm tab/newline). NULL, rỗng, chỉ khoảng trắng bị từ chối tại command/RPC; client không cung cấp snapshot thay nguồn. Kho danh mục vẫn được phép chưa có địa chỉ.
+Snapshot `public.purchase_orders.destination_address_snapshot` lấy từ kho trong transaction. DRAFT đổi kho hoặc chủ động cập nhật địa chỉ từ kho cần quyền, expected version, reason và audit; sửa quantity/terms không tự đổi snapshot. DRAFT thiếu snapshot có nội dung không được CONFIRM; sửa địa chỉ master rồi cập nhật snapshot của chính DRAFT đó. CONFIRMED không đồng bộ theo master, không tự sửa lịch sử. Giao thẳng vẫn lấy địa chỉ công trình khách.
+Validation thất bại không để PO/lines/allocation/success receipt dở dang. Retry intent chưa commit sau bổ sung địa chỉ được tạo một lần; retry intent đã commit cùng payload trả kết quả cũ sau kiểm quyền hiện tại, không thay snapshot; payload khác cùng key phải conflict.
+
 ## SPEC-PUR-002
 
 PO Confirmed không tự tạo AP.
