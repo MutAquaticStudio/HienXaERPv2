@@ -7,9 +7,9 @@
 
 ```yaml
 CURRENT_PHASE: R12
-CURRENT_BATCH: MILESTONE_B_QA_20261004
-CURRENT_TASK: BIZ_01_08_TARGETED_QA_AND_RELEASE_GATES
-EXECUTION_STATUS: BLOCKED_TARGETED_HARNESS_AND_RUNTIME_GATES
+CURRENT_BATCH: MILESTONE_B_CLOSURE_20261005
+CURRENT_TASK: MB_02_READER_REVOKE_AND_EXACT_QA_AUTHORIZATION_GATE
+EXECUTION_STATUS: PARTIAL_NATIVE_REPAIRS_LOCAL_READER_AND_EXTERNAL_RUNTIME_GATES
 AUTHORIZATION_SCOPE: REPAIR_INTEGRATE_BUSINESS_QA_AND_RELEASE_PREPARATION
 LOCAL_IMPLEMENTATION: PO_COMPLETE_READER_SCOPE_PATCH_PENDING_RETEST
 NATIVE_BUSINESS_VERIFICATION: PASS_REUSED_PO_DELIVERY_SCOPE_FINANCE_RACE_BLOCKED_SETUP
@@ -263,3 +263,20 @@ Owner authorizes B1-B8 fixtures only on `ffrwiglcrlumfvhubaxg` (`TEST_DATA_ONLY_
 | BIZ-08 Daily roles/security | PARTIAL; six Auth sessions and direct permission/isolation denials passed | Purchasing/Dispatch/Finance employee actors; revocation/private Storage/shared-device runtime |
 
 Release support: real local dump/restore reconciliation PASS for current base fixture scope. Representative local order-filter measurement reproduced PERF-B-01; local reader-scope migration and harness are pending successful setup/retest, NOT a verified fix. Storage recovery is not proven. QA-to-live plan and manual UAT are prepared, not executed. Opening balances and release authorization remain Owner decisions. MILESTONE_B=NOT_READY.
+
+
+### Milestone B closure delta - 2026-10-05
+
+| Scope | Actual state | Evidence / next gate |
+|---|---|---|
+| MB-01 harness | PARTIAL_6_OF_7 | Finance caller/race, role prerequisite and async metadata checks closed; reader revoke retest blocked by introduced bootstrap delimiter |
+| MB-02 reader / PERF-B-01 | NATIVE_FILTER_PERF_PASS_SECURITY_PARTIAL | Positive rows and 100-sample c1/c5 measurements PASS; revoke matrix pending; no cloud apply |
+| BIZ-05 / BIZ-07 as-of | TARGETED_NATIVE_HTTP_PASS_NOT_UI_ACCEPTED | Two real allocation races; six HTTP/DB checks; existing payment reused, reversal/advance appended |
+| BIZ-08 purchase cost | FIXED_VERIFIED_NATIVE_CLOUD_PENDING | MB-COST-01 CLEAN/DIVERGED 10/10 each; exact forward patch approval required |
+| Recovery | PASS_LOCAL_CURRENT_READER_AND_COST_SCOPE | Real isolated pg_dump/restore and selected facts/security reconciliation; Storage recovery NOT_RUN |
+| QA dependencies/personas | PENDING_EXACT_OWNER_APPROVAL | Narrow package includes three existing migrations plus cost patch; reader HELD; no role/schema changes made |
+| Manual UI UAT | MANUAL_OWNER_UAT_NOT_RUN | Updated actual finance balances and source IDs; six PO visual cases still pending |
+| Live transition/release | NOT_AUTHORIZED_NOT_READY | No assumed opening zero, no cleanup, no push/deploy; Owner acceptance pending |
+
+LOCAL_IMPLEMENTATION, NATIVE_BUSINESS_VERIFICATION, RUNTIME_ACCEPTANCE and OWNER_ACCEPTANCE remain distinct. PO LOCAL_PATCH_COMPLETE and technical NV-01..08 PASS unchanged; no PO re-audit.
+Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/QA-MB-CLOSURE-20261005T023000Z/exact-qa-schema-and-personas-request.json
