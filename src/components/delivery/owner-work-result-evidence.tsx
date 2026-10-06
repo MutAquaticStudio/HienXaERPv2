@@ -11,7 +11,7 @@ export async function OwnerWorkResultEvidence({ deliveryId }: { deliveryId: stri
   return <section className="field field-full" aria-label="Kết quả và bằng chứng thợ gửi">
     <strong>Ảnh / tài liệu thợ gửi</strong>
     {evidence.error ? <p role="alert">Chưa tải được bằng chứng. Không coi là đã kiểm tra.</p>
-      : evidence.data?.length ? <div className="form-actions">{evidence.data.map(item => <a key={item.evidence_id} className="button button-secondary" href={`/api/evidence/${encodeURIComponent(item.evidence_id)}/signed`} target="_blank" rel="noopener noreferrer">Mở bằng chứng</a>)}</div>
+      : evidence.data?.length ? <div className="form-actions">{evidence.data.map(item => <a key={item.evidence_id} className="button button-secondary" href={`/api/evidence/${encodeURIComponent(item.evidence_id)}/download`} target="_blank" rel="noopener noreferrer">Mở bằng chứng</a>)}</div>
       : <p className="muted">Kết quả này chưa kèm ảnh / tài liệu.</p>}
     <label htmlFor="verificationAdjustmentReason">Lý do điều chỉnh số lượng thợ (nếu thay đổi)</label>
     <input id="verificationAdjustmentReason" name="verificationAdjustmentReason" maxLength={500} placeholder="Giữ nguyên kết quả thợ; ghi rõ lý do cho số lượng Owner xác minh." />

@@ -8,11 +8,11 @@ vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({ f
 } }) }));
 beforeEach(() => { mocks.report.data = { source_work_item_result_id: "work-result" }; mocks.report.error = null; mocks.evidence.error = null; mocks.requested = []; });
 afterEach(cleanup);
-it("opens private signing routes linked to the exact worker result and exposes adjustment reason", async () => {
+it("opens private authorization-gated download routes linked to the exact worker result and exposes adjustment reason", async () => {
   render(await OwnerWorkResultEvidence({ deliveryId: "delivery" }));
   expect(mocks.requested).toContainEqual(["delivery_id", "delivery"]);
   expect(mocks.requested).toContainEqual(["work_result_id", "work-result"]);
-  expect(screen.getAllByRole("link").map(link => link.getAttribute("href"))).toEqual(["/api/evidence/proof-a/signed", "/api/evidence/proof-b/signed"]);
+  expect(screen.getAllByRole("link").map(link => link.getAttribute("href"))).toEqual(["/api/evidence/proof-a/download", "/api/evidence/proof-b/download"]);
   expect(screen.getByLabelText("Lý do điều chỉnh số lượng thợ (nếu thay đổi)")).toHaveAttribute("maxlength", "500");
 });
 it("does not expose evidence links after an RLS/read failure", async () => {

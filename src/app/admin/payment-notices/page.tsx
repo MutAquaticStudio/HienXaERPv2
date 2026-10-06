@@ -32,7 +32,7 @@ export default async function AdminPaymentNoticesPage() {
                 <span>Ngày chuyển {notice.paid_on}</span>
                 <span>{notice.reference ?? "Không có mã giao dịch"}</span>
               </div>
-              <a className={styles.link} href={"/api/evidence/" + notice.evidence_id + "/signed"} rel="noreferrer" target="_blank">Mở chứng từ</a>
+              <a className={styles.link} href={"/api/evidence/" + notice.evidence_id + "/download"} rel="noreferrer" target="_blank">Mở chứng từ</a>
               <form action={reviewPaymentNoticeAction} className={styles.form}>
                 <input name="notice_id" type="hidden" value={notice.id} />
                 <input name="version" type="hidden" value={notice.version} />

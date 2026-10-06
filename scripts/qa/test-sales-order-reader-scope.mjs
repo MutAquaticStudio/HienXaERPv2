@@ -19,7 +19,7 @@ const patchPath = path.resolve(import.meta.dirname, '../../supabase/migrations/2
 const bytes = fs.readFileSync(patchPath);
 const patch = bytes.toString('utf8');
 const sha256 = crypto.createHash('sha256').update(bytes).digest('hex');
-const evidence = { scope: 'SALES_ORDER_READER_SCOPE', migration: path.basename(patchPath), sha256, environment: 'OWNED_LOCAL_POSTGRESQL', managedQa: 'NOT_MODIFIED', production: 'NOT_TOUCHED', security: [], performance: [], status: 'RUNNING' };
+const evidence = { scope: 'SALES_ORDER_READER_SCOPE', candidate: process.env.HX_MB_CANDIDATE, migration: path.basename(patchPath), sha256, environment: 'OWNED_LOCAL_POSTGRESQL', managedQa: 'NOT_MODIFIED', production: 'NOT_TOUCHED', security: [], performance: [], status: 'RUNNING' };
 const rollback = new Error('EXPECTED_LOCAL_REHEARSAL_ROLLBACK');
 const record = () => fs.writeFileSync(path.join(out, 'sales-order-reader-scope-evidence.json'), JSON.stringify(evidence, null, 2));
 const open = database => postgres({ ...credentials, database, max: 5, prepare: false, connect_timeout: 10, idle_timeout: 10, onnotice: () => {} });
@@ -51,38 +51,60 @@ async function snapshot(tx) {
   };
 }
 async function matrix(tx, fixture) {
-  const results = [];
-  async function check(label, actor, mutate = null) {
+  const results = [], employee=fixture.actors[0]; assert.ok(employee);
+  const branchIds=Array.from(await tx`select id::text from public.sales_orders where branch_id=${employee.branch_id} order by id`,r=>r.id);
+  assert.ok(branchIds.length>0,'positive employee fixture must own orders');
+  async function check(label,actor,mutate=null,proof=null) {
     await tx.unsafe('savepoint reader_scope_case');
     try {
-      if (mutate) await mutate(tx);
-      const want = await expected(tx, actor);
-      const got = await visible(tx, actor);
-      assert.deepEqual(got, want, label);
-      results.push({ label, actor, count: got.length, idsHash: crypto.createHash('sha256').update(got.join('\n')).digest('hex'), result: 'PASS' });
-    } finally { await tx.unsafe('rollback to savepoint reader_scope_case'); }
+      if(mutate) await mutate(tx);
+      const want=await expected(tx,actor), got=await visible(tx,actor);
+      assert.deepEqual(got,want,label); if(proof) await proof(got);
+      const paths=await asActor(tx,actor,async t=>({
+        view:Array.from(await t`select id::text from public.sales_order_read order by id`,r=>r.id),
+        count:(await t`select count(*)::integer n from public.sales_orders`)[0].n,
+        exported:(await t`select coalesce(jsonb_agg(id::text order by id),'[]'::jsonb) ids from public.sales_orders`)[0].ids,
+        detail:Array.from(await t`select id::text from public.sales_orders where id=any(${branchIds}::uuid[]) order by id`,r=>r.id),
+        foreign:Array.from(await t`select id::text from public.sales_orders where branch_id<>${employee.branch_id} order by id`,r=>r.id),
+        pid:(await t`select pg_backend_pid() pid`)[0].pid,
+      }));
+      assert.deepEqual(paths.view,want,label+' view'); assert.equal(paths.count,want.length,label+' count');
+      assert.deepEqual(paths.exported,want,label+' export');
+      assert.deepEqual(paths.detail,want.filter(id=>branchIds.includes(id)),label+' direct IDs');
+      assert.deepEqual(paths.foreign,want.filter(id=>!branchIds.includes(id)),label+' foreign scope');
+      results.push({label,actor,count:got.length,expectedIds:want,idsHash:crypto.createHash('sha256').update(got.join('\n')).digest('hex'),paths,result:'PASS'});
+    } finally {await tx.unsafe('rollback to savepoint reader_scope_case'); await tx.unsafe('release savepoint reader_scope_case');}
   }
-  for (const actor of fixture.actors) await check(`active-${actor.code}-${actor.branch_id}`, actor.auth_user_id);
-  await check('unknown-actor', '00000000-0000-4000-8000-000000000001');
-  await check('no-auth-actor', null);
-  const employee = fixture.actors[0];
-  assert.ok(employee, 'owned fixture requires an employee');
-  await check('employee-revoked', employee.auth_user_id, t => t`update public.employees set active=false where id=${employee.employee_id}`);
-  await check('branch-access-revoked', employee.auth_user_id, t => t`update public.employee_branch_access set active=false where id=${employee.access_id}`);
-  await check('role-revoked', employee.auth_user_id, t => t`update public.roles set active=false where id=${employee.role_id}`);
-  await check('permission-removed', employee.auth_user_id, t => t`delete from public.role_permissions where role_id=${employee.role_id} and permission_code='orders.read'`);
-  await check('branch-revoked', employee.auth_user_id, t => t`update public.branches set active=false where id=${employee.branch_id}`);
-  for (const member of fixture.members) {
-    await check(`customer-only-${member.id}`, member.auth_user_id, t => t`update public.employees set active=false where auth_user_id=${member.auth_user_id}`);
-    await check(`membership-revoked-${member.id}`, member.auth_user_id, async t => {
-      await t`update public.employees set active=false where auth_user_id=${member.auth_user_id}`;
-      await t`update public.customer_portal_memberships set active=false where id=${member.id}`;
-    });
-    await check(`customer-revoked-${member.id}`, member.auth_user_id, async t => {
-      await t`update public.employees set active=false where auth_user_id=${member.auth_user_id}`;
-      await t`update public.customers set active=false where id=${member.customer_id}`;
-    });
+  const absent=ids=>assert.ok(branchIds.every(id=>!ids.includes(id)),'revoke must remove protected branch rows');
+  const empty=ids=>assert.deepEqual(ids,[],'unauthorized actor must receive no rows');
+  for(const actor of fixture.actors) await check('active-'+actor.code+'-'+actor.branch_id,actor.auth_user_id);
+  await check('active-positive-branch',employee.auth_user_id,null,ids=>assert.ok(branchIds.every(id=>ids.includes(id))));
+  await check('unknown-actor','00000000-0000-4000-8000-000000000001',null,empty);
+  await check('no-auth-actor',null,null,empty);
+  await check('employee-revoked',employee.auth_user_id,t=>t`update public.employees set active=false,deactivated_at=now() where id=${employee.employee_id}`,absent);
+  await check('branch-access-revoked',employee.auth_user_id,t=>t`update public.employee_branch_access set active=false,revoked_at=now() where id=${employee.access_id}`,absent);
+  await check('role-revoked',employee.auth_user_id,t=>t`update public.roles set active=false where id=${employee.role_id}`,absent);
+  const removePermission=async t=>{
+    await t`delete from public.role_permissions where role_id=${employee.role_id} and permission_code='orders.read'`;
+    await t`delete from public.employee_permission_grants where employee_id=${employee.employee_id} and branch_id=${employee.branch_id} and permission_code='orders.read'`;
+  };
+  await check('permission-removed',employee.auth_user_id,removePermission,absent);
+  await check('permission-restored',employee.auth_user_id,async t=>{
+    await removePermission(t); absent(await visible(t,employee.auth_user_id));
+    await t`insert into public.role_permissions(role_id,permission_code) values(${employee.role_id},'orders.read')`;
+  },ids=>assert.ok(branchIds.every(id=>ids.includes(id))));
+  await check('branch-revoked',employee.auth_user_id,t=>t`update public.branches set active=false where id=${employee.branch_id}`,absent);
+  for(const member of fixture.members) {
+    const only=async t=>t`update public.employees set active=false,deactivated_at=now() where auth_user_id=${member.auth_user_id}`;
+    const ownIds=Array.from(await tx`select id::text from public.sales_orders where customer_id=${member.customer_id} order by id`,r=>r.id);
+    await check('customer-only-'+member.id,member.auth_user_id,only,ids=>assert.deepEqual(ids,ownIds,'customer isolation'));
+    await check('membership-revoked-'+member.id,member.auth_user_id,async t=>{await only(t); await t`update public.customer_portal_memberships set active=false,revoked_at=now() where id=${member.id}`;},empty);
+    await check('customer-revoked-'+member.id,member.auth_user_id,async t=>{await only(t); await t`update public.customers set active=false where id=${member.customer_id}`;},empty);
   }
+  const a=results.find(r=>r.label==='active-positive-branch'), b=results.find(r=>r.label==='unknown-actor');
+  const again=await visible(tx,employee.auth_user_id),pid=(await tx`select pg_backend_pid() pid`)[0].pid;
+  assert.equal(a.paths.pid,b.paths.pid); assert.equal(pid,a.paths.pid); assert.notDeepEqual(a.expectedIds,b.expectedIds); assert.deepEqual(again,a.expectedIds);
+  results.push({label:'same-physical-connection-A-B-A',actorA:employee.auth_user_id,actorB:b.actor,pidA:a.paths.pid,pidB:b.paths.pid,expectedA:a.expectedIds,expectedB:b.expectedIds,result:'PASS'});
   return results;
 }
 async function verifyLocal(label, database) {
@@ -91,6 +113,7 @@ async function verifyLocal(label, database) {
   evidence.security.push(item);
   try {
     item.identity = await identity(sql, database);
+    await sql.unsafe("do $$ begin if not exists(select 1 from pg_roles where rolname='service_role') then create role service_role nologin nosuperuser nobypassrls; end if; end $$");
     await sql.begin(async tx => {
       await tx.unsafe("set local statement_timeout='15s'; set local lock_timeout='3s'");
       const old = await snapshot(tx);
@@ -101,8 +124,10 @@ async function verifyLocal(label, database) {
       const next = await snapshot(tx);
       assert.deepEqual(next.grants, old.grants);
       assert.deepEqual(next.flags, old.flags);
-      assert.deepEqual(next.policies.map(({qual,...p})=>p), old.policies.map(({qual,...p})=>p));
-      const [helper] = await tx`select p.prosecdef, p.provolatile, p.proconfig, has_function_privilege('authenticated',p.oid,'EXECUTE') allowed, has_function_privilege('anon',p.oid,'EXECUTE') anon_allowed, has_function_privilege('service_role',p.oid,'EXECUTE') service_allowed from pg_proc p where p.oid='private.sales_order_reader_scope()'::regprocedure`;
+      assert.deepEqual(next.policies.filter(p=>p.cmd!=='SELECT'),old.policies.filter(p=>p.cmd!=='SELECT'),'write policies unchanged');
+      assert.deepEqual(next.policies.map(p=>({...p,qual:p.cmd==='SELECT'?null:p.qual})),old.policies.map(p=>({...p,qual:p.cmd==='SELECT'?null:p.qual})));
+      const [helper] = await tx`select pg_get_userbyid(p.proowner) owner, p.prosecdef, p.provolatile, p.proconfig, has_function_privilege('authenticated',p.oid,'EXECUTE') allowed, has_function_privilege('anon',p.oid,'EXECUTE') anon_allowed, has_function_privilege('service_role',p.oid,'EXECUTE') service_allowed from pg_proc p where p.oid='private.sales_order_reader_scope()'::regprocedure`;
+      assert.equal(helper.owner,'postgres');
       assert.equal(helper.prosecdef, true);
       assert.equal(helper.provolatile, 's');
       assert.ok(helper.proconfig.includes('search_path=""'));

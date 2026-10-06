@@ -150,7 +150,97 @@ export async function applyTransaction(sql, files, before, viewReference) {
   });
 }
 
+// Exact Milestone-B selector. Legacy reconciliation modes remain unchanged.
+export async function loadExactManifest(manifestPath) {
+  const raw=await readFile(manifestPath); const manifest=JSON.parse(raw);
+  if(manifest.projectRef!=='ffrwiglcrlumfvhubaxg'||manifest.classification!=='TEST_DATA_ONLY_OWNER_CONFIRMED'||!Array.isArray(manifest.entries)||!manifest.entries.length) throw Error('exact_manifest_invalid');
+  const seen=new Set(),files=[];
+  for(const entry of manifest.entries) {
+    if(!/^\d{14}$/.test(entry.version)||seen.has(entry.version)||!/^supabase\/migrations\/\d{14}_[a-z0-9_]+\.sql$/.test(entry.path)||!entry.path.startsWith('supabase/migrations/'+entry.version+'_')||! /^[a-f0-9]{64}$/.test(entry.sha256)) throw Error('exact_manifest_duplicate_or_invalid_entry');
+    seen.add(entry.version); const bytes=await readFile(resolve(root,entry.path));
+    if(sha256(bytes)!==entry.sha256) throw Error('exact_manifest_checksum_mismatch:'+entry.version);
+    files.push({...entry,name:entry.path.split('/').pop().replace(entry.version+'_','').replace(/\.sql$/,''),raw:bytes.toString('utf8')});
+  }
+  if(!manifest.affected||!Array.isArray(manifest.affected.functions)||!Array.isArray(manifest.affected.relations)) throw Error('exact_manifest_affected_scope_missing');
+  return {manifest,manifestSha256:sha256(raw),files};
+}
+export async function exactScopeCatalog(query,loaded) {
+  const names=loaded.manifest.affected.functions, relations=loaded.manifest.affected.relations, versions=loaded.files.map(f=>f.version);
+  const q=(text,args=[])=>query(text,args);
+  const plain=rows=>Array.from(rows,r=>({...r}));
+  const aclExpr="coalesce((select jsonb_agg(jsonb_build_object('grantee',case when a.grantee=0 then 'PUBLIC' else pg_get_userbyid(a.grantee) end,'grantor',pg_get_userbyid(a.grantor),'privilege',a.privilege_type,'grantable',a.is_grantable) order by a.grantee=0 desc,pg_get_userbyid(a.grantee),a.privilege_type,a.is_grantable) from aclexplode(%ACL%) a),'[]'::jsonb)";
+  const acl=(expression)=>aclExpr.replace('%ACL%',expression);
+  return {
+    functions:plain(await q(`select n.nspname schema,p.proname name,pg_get_function_identity_arguments(p.oid) args,p.oid::regprocedure::text signature,pg_get_functiondef(p.oid) definition,pg_get_userbyid(p.proowner) owner,p.prosecdef,p.provolatile,p.proconfig,pg_get_function_result(p.oid) result,pg_get_expr(p.proargdefaults,0) defaults,${acl("coalesce(p.proacl,acldefault('f',p.proowner))")} grants from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname in ('public','private') and p.proname=any($1::text[]) order by n.nspname,p.proname,pg_get_function_identity_arguments(p.oid)`,[names])),
+    relations:plain(await q(`select c.relname name,c.relkind,c.reloptions,c.relrowsecurity,c.relforcerowsecurity,pg_get_userbyid(c.relowner) owner,case when c.relkind='v' then pg_get_viewdef(c.oid,false) end definition,${acl("coalesce(c.relacl,acldefault('r',c.relowner))")} grants from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname=any($1::text[]) order by c.relname`,[relations])),
+    columns:plain(await q(`select c.relname table_name,a.attname name,format_type(a.atttypid,a.atttypmod) type,a.attnotnull,pg_get_expr(d.adbin,d.adrelid) default_expression,case when coalesce(cardinality(a.attacl),0)=0 then 'NO_EXPLICIT_COLUMN_ACL' else 'EXPLICIT_COLUMN_ACL' end explicit_column_acl_state,${acl("case when coalesce(cardinality(a.attacl),0)=0 then null::aclitem[] else a.attacl end")} grants from pg_attribute a join pg_class c on c.oid=a.attrelid join pg_namespace n on n.oid=c.relnamespace left join pg_attrdef d on d.adrelid=c.oid and d.adnum=a.attnum where n.nspname='public' and c.relname=any($1::text[]) and a.attnum>0 and not a.attisdropped order by c.relname,a.attnum`,[relations])),
+    constraints:plain(await q(`select c.relname table_name,k.conname name,pg_get_constraintdef(k.oid) definition,k.convalidated from pg_constraint k join pg_class c on c.oid=k.conrelid join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname=any($1::text[]) order by c.relname,k.conname`,[relations])),
+    indexes:plain(await q(`select c.relname table_name,k.relname name,pg_get_indexdef(i.indexrelid) definition from pg_index i join pg_class c on c.oid=i.indrelid join pg_class k on k.oid=i.indexrelid join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname=any($1::text[]) order by c.relname,k.relname`,[relations])),
+    policies:plain(await q('select schemaname,tablename,policyname,permissive,roles,cmd,qual,with_check from pg_policies where schemaname=\'public\' and tablename=any($1::text[]) order by tablename,policyname',[relations])),
+    history:plain(await q('select version,name,statements from supabase_migrations.schema_migrations where version=any($1::text[]) order by version',[versions])),
+    historyDigests:plain(await q('select version,md5(row_to_json(m)::text) digest from supabase_migrations.schema_migrations m order by version')),
+    directPo6argDependents:plain(await q("select pg_describe_object(classid,objid,objsubid) dependent,deptype from pg_depend where refclassid='pg_proc'::regclass and refobjid=to_regprocedure('public.create_direct_purchase_from_sales_order(uuid,uuid,jsonb,timestamptz,uuid,text)') order by 1")),
+    stockCountPreconditions:plain(await q("select count(*)::integer rows,count(*) filter(where counted_base_quantity<0 or counted_base_quantity>='Infinity'::numeric)::integer invalid_quantity,count(*) filter(where adjustment_unit_cost_vnd<0 or adjustment_unit_cost_vnd>='Infinity'::numeric)::integer invalid_cost from public.stock_count_lines")),
+  };
+}
+export const exactStateFingerprint=snapshot=>hashJson(Object.fromEntries(['functions','relations','columns','constraints','indexes','policies','directPo6argDependents'].map(k=>[k,snapshot[k]])));
+export async function inspectExactCommitState(sql,loaded,{beforeFingerprint,afterFingerprint}) {
+  const current=await sql.begin(async tx=>{await tx.unsafe("set transaction read only; set local statement_timeout='20s'; set local search_path=pg_catalog");return exactScopeCatalog((s,a=[])=>tx.unsafe(s,a),loaded);});
+  const fingerprint=exactStateFingerprint(current);
+  const matching=loaded.files.filter(f=>{const row=current.history.find(r=>r.version===f.version);return row&&row.name===f.name&&Array.isArray(row.statements)&&sha256(row.statements.join('\n'))===f.sha256;});
+  const status=matching.length===loaded.files.length&&fingerprint===afterFingerprint?'COMMITTED_VERIFIED':current.history.length===0&&fingerprint===beforeFingerprint?'ROLLED_BACK_VERIFIED':'UNKNOWN_BLOCK_RETRY';
+  return {status,fingerprint,verifiedVersions:matching.map(f=>f.version),readOnly:true,automaticRetry:false};
+}
+export async function applyExactManifest(sql,loaded,{beforeFingerprint,verifyAfter}) {
+  if(!beforeFingerprint||typeof verifyAfter!=='function') throw Error('exact_apply_requires_precondition_and_postcheck');
+  try {return await sql.begin(async tx=>{
+    await tx.unsafe("set local lock_timeout='5s'; set local statement_timeout='60s'; set local search_path=pg_catalog; select pg_advisory_xact_lock(hashtextextended('hxqa:milestone-b-exact',0)); lock table supabase_migrations.schema_migrations in exclusive mode");
+    const query=(text,args=[])=>tx.unsafe(text,args), before=await exactScopeCatalog(query,loaded);
+    if(exactStateFingerprint(before)!==beforeFingerprint) throw Error('exact_preapply_state_changed');
+    if(before.directPo6argDependents.length||before.stockCountPreconditions.some(r=>r.invalid_quantity||r.invalid_cost)) throw Error('exact_scope_precondition_failed');
+    const applied=[],already=[];
+    for(const f of loaded.files) {
+      const row=before.history.find(r=>r.version===f.version);
+      if(row) {if(!Array.isArray(row.statements)||sha256(row.statements.join('\n'))!==f.sha256||row.name!==f.name) throw Error('exact_history_content_mismatch:'+f.version); already.push(f.version); continue;}
+      await tx.unsafe(transactionBody(f.raw));
+      await tx`insert into supabase_migrations.schema_migrations(version,name,statements) values(${f.version},${f.name},${[f.raw]})`;
+      applied.push(f.version);
+    }
+    const after=await exactScopeCatalog(query,loaded);
+    for(const row of before.historyDigests) if(!after.historyDigests.some(x=>x.version===row.version&&x.digest===row.digest)) throw Error('exact_existing_history_changed');
+    await verifyAfter(after,query);
+    return {status:applied.length?'APPLIED_EXACT_TRANSACTIONALLY':'ALREADY_APPLIED_VERIFIED',applied,already,after};
+  });} catch(error) {
+    error.exactCommitState=/^(ECONN|ETIMEDOUT|CONNECTION|CONNECTION_CLOSED|CONNECTION_DESTROYED)/.test(String(error.code||''))?'UNKNOWN_NO_RETRY':'FAILED_NO_AUTOMATIC_RETRY';
+    throw error;
+  }
+}
+async function exactMain() {
+  const mode=process.argv[2],managed=mode.endsWith('-qa'),applying=mode.startsWith('--apply');
+  const loaded=await loadExactManifest(process.env.HX_QA_EXACT_MANIFEST_FILE); let sql;
+  if(managed) {process.loadEnvFile(process.env.HX_QA_ENV_FILE); const core=await import('./core.mjs'); if(core.guard().ref!==loaded.manifest.projectRef) throw Error('exact_qa_target_mismatch'); sql=await core.database();}
+  else {const credentials=JSON.parse(await readFile(process.env.HX_NATIVE_CREDENTIALS_FILE)),owner=JSON.parse(await readFile(process.env.HX_NATIVE_OWNERSHIP_FILE)); const database=process.env.HX_QA_EXACT_LOCAL_DATABASE;
+    if(credentials.host!=='127.0.0.1'||credentials.port!==owner.port||!owner.clusterOwned||!/^hx_mb_final_[a-z0-9_]+$/.test(database)) throw Error('exact_local_target_not_owned');
+    sql=postgres({...credentials,database,max:1,prepare:false}); const [i]=await sql`select current_database() db,current_setting('data_directory') directory,inet_server_port() port`; if(i.db!==database||i.directory!==owner.data_directory||i.port!==owner.port){await sql.end(); throw Error('exact_local_identity_mismatch');}
+  }
+  try {
+    const before=await sql.begin(async tx=>{await tx.unsafe("set transaction read only; set local search_path=pg_catalog");return exactScopeCatalog((text,args=[])=>tx.unsafe(text,args),loaded);});
+    if(!applying) {await writeFile(process.env.HX_QA_EXACT_EVIDENCE_FILE,JSON.stringify({manifestSha256:loaded.manifestSha256,beforeFingerprint:exactStateFingerprint(before),before},null,2),{mode:0o600}); return;}
+    const expected=JSON.parse(await readFile(process.env.HX_QA_EXACT_EXPECTED_FILE));
+    if(managed) {const approval=JSON.parse(await readFile(process.env.HX_QA_EXACT_APPROVAL_FILE));
+      if(approval.status!=='OWNER_APPROVED_EXACT'||approval.projectRef!==loaded.manifest.projectRef||approval.manifestSha256!==loaded.manifestSha256||approval.expectedFileSha256!==sha256(await readFile(process.env.HX_QA_EXACT_EXPECTED_FILE))||approval.backupSafeguard!=='PASS_SCOPED'||approval.selectorStatus!=='PASS') throw Error('exact_owner_approval_required');
+      if(![expected.beforeFingerprint,expected.afterFingerprint].includes(exactStateFingerprint(before))) throw Error('exact_managed_capture_changed');
+      await writeFile(process.env.HX_QA_EXACT_EVIDENCE_FILE+'.preapply-backup.json',JSON.stringify(before,null,2),{mode:0o600});
+    }
+    let result;
+    try { result=await applyExactManifest(sql,loaded,{beforeFingerprint:exactStateFingerprint(before),verifyAfter:after=>{if(exactStateFingerprint(after)!==expected.afterFingerprint) throw Error('exact_postcheck_mismatch');}}); }
+    catch(error) {if(error.exactCommitState==='UNKNOWN_NO_RETRY'){let readback;try{readback=await inspectExactCommitState(sql,loaded,expected);}catch(readError){readback={status:'READBACK_UNAVAILABLE_BLOCK_RETRY',code:readError.code??null};}await writeFile(process.env.HX_QA_EXACT_EVIDENCE_FILE,JSON.stringify({status:'TRANSPORT_COMMIT_UNKNOWN_NO_RETRY',readback},null,2),{mode:0o600});}throw error;}
+    await writeFile(process.env.HX_QA_EXACT_EVIDENCE_FILE,JSON.stringify(result,null,2),{mode:0o600});
+  } finally {await sql.end({timeout:5});}
+}
 async function main() {
+  if(['--preflight-exact-local','--apply-exact-local','--preflight-exact-qa','--apply-approved-exact-qa'].includes(process.argv[2])) return exactMain();
+
   const mode = process.argv[2] ?? '--preflight';
   if (!['--preflight','--preflight-local','--apply-local','--apply-approved-qa'].includes(mode)) throw new Error('unsupported_mode');
   const local = mode==='--apply-local' || mode==='--preflight-local';

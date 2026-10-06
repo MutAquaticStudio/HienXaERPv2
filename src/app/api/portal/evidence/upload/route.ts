@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 
 import { NextResponse } from "next/server";
+import { createPortalEvidenceStorage } from "@/modules/portal/evidence-storage";
 
 import {
   authenticatedPortalClient,
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
       target_byte_size: file.size,
       operation_id: createOperationId,
     });
-    const { error: uploadError } = await context.supabase.storage
+    const { error: uploadError } = await createPortalEvidenceStorage()
       .from(evidence.bucket_id)
       .upload(evidence.object_path, bytes, { contentType: mimeType, upsert: true });
     if (uploadError) throw new Error(uploadError.message);

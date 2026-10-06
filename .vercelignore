@@ -16,3 +16,15 @@
 *.tsbuildinfo
 /*.md
 .DS_Store
+
+# Frozen application-only Preview: omit local QA and non-runtime repository data.
+/qa
+/scripts
+/supabase
+/reports
+/.github
+/src/**/__tests__
+/src/**/__mocks__
+/src/**/*.test.*
+/src/**/*.spec.*
+/vitest.config.mts
