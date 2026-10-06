@@ -457,3 +457,8 @@ Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c
 - [x] Approved original proposal hash verified; new monotonic version 20261007022922; native guard 4/4; managed QA exact history/security apply; ordinary return HTTP/reconciliation 8/8; PT409 preserved.
 - [ ] Merge narrow migration-only follow-up; combined pending seven-file Production rehearsal/atomic apply; private Storage cutover; Codex Browser live BIZ-06/BIZ-08 and remaining BIZ acceptance.
 - Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/production-po-rpc-closure-20261006T153240Z/return-forward-qa-fixture-journal.json. Production/operational readiness not inferred from QA PASS.
+
+### PR16 source-identity guard
+- [x] Reproduce mutable-source P1; Owner selects non-CANCELLED Delivery source freeze; separate 20261007022923 exact forward; native/security and managed QA/HTTP planning regression PASS; no backfill.
+- [ ] Complete PR16 review/CI/merge, pending eight-file Production rehearsal/apply and live browser acceptance.
+- Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/production-po-rpc-closure-20261006T153240Z/allocation-source-guard-qa-http-evidence.json.
