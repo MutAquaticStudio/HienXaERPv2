@@ -452,3 +452,8 @@ Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c
 - [x] Reproduce canonical verifier without evidence.manage; minimal linked-delivery authorization forward fix; native 27/27 and managed QA/ordinary HTTP 11/11; all temporary QA access restored.
 - [ ] Include exact 20261007022921 forward fix after original five-file Production transaction; merge/deploy/pin and Codex Browser live evidence acceptance.
 - Closure evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/production-po-rpc-closure-20261006T153240Z/p1-closure-evidence.json. UI/live/operational readiness is not implied.
+
+### PROD-RETURN-COST-01 forward closure (2026-10-07)
+- [x] Approved original proposal hash verified; new monotonic version 20261007022922; native guard 4/4; managed QA exact history/security apply; ordinary return HTTP/reconciliation 8/8; PT409 preserved.
+- [ ] Merge narrow migration-only follow-up; combined pending seven-file Production rehearsal/atomic apply; private Storage cutover; Codex Browser live BIZ-06/BIZ-08 and remaining BIZ acceptance.
+- Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/production-po-rpc-closure-20261006T153240Z/return-forward-qa-fixture-journal.json. Production/operational readiness not inferred from QA PASS.
