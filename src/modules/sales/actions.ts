@@ -1,6 +1,7 @@
 "use server";
 
 import Decimal from "decimal.js";
+import { isPositiveSalesQuantity } from "./quantity-input";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -9,10 +10,10 @@ import { requireCustomerAccess, requireInternalPermission } from "@/lib/access/c
 import { createServerSupabase } from "@/lib/supabase/server";
 import { resolvePrice, type PriceRule } from "@/modules/pricing/resolve-price";
 
-export type SalesActionState = { message: string; success?: boolean } | undefined;
+export type SalesActionState = { message: string; success?: boolean; outcomeUnknown?: boolean } | undefined;
 
 const positiveDecimal = z.string().trim().refine((value) => {
-  try { return new Decimal(value).isPositive(); } catch { return false; }
+  try { return isPositiveSalesQuantity(value); } catch { return false; }
 }, "Số lượng không hợp lệ.");
 const lineSchema = z.object({ materialId: z.uuid(), orderedUomId: z.uuid(), quantity: positiveDecimal,
   manualPriceVnd: z.string().trim().optional(), manualReason: z.string().trim().optional(),

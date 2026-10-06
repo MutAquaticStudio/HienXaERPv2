@@ -10,15 +10,20 @@ import {
   serializeSafeWorkDraft,
   type SafeWorkDraft,
 } from "@/modules/portal/draft";
+import type { WorkerJob } from "@/modules/portal/types";
 
 export function WorkResultDraftForm({
   workItemId,
   version,
   initialEvidenceId,
+  delivery,
+  initialReceiverName,
 }: {
   workItemId: string;
   version: number;
   initialEvidenceId?: string;
+  delivery?: WorkerJob["delivery"];
+  initialReceiverName?: string;
 }) {
   const key = "hx:work-draft:" + workItemId;
   const [draft, setDraft] = useState<SafeWorkDraft | null>(null);
@@ -33,10 +38,13 @@ export function WorkResultDraftForm({
   useEffect(() => {
     const timer = window.setTimeout(() => {
       const operationId = crypto.randomUUID();
-      setDraft(parseSafeWorkDraft(localStorage.getItem(key), version, operationId));
+      const raw = localStorage.getItem(key);
+      const restored = parseSafeWorkDraft(raw, version, operationId, delivery);
+      if (!raw) restored.receiverName = initialReceiverName ?? "";
+      setDraft(restored);
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [key, version]);
+  }, [key, version, delivery, initialReceiverName]);
 
   useEffect(() => {
     if (draft) localStorage.setItem(key, serializeSafeWorkDraft(draft));
@@ -76,7 +84,7 @@ export function WorkResultDraftForm({
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!draft) return;
+    if (!draft || submitting || uploading) return;
     setSubmitting(true);
     setError(false);
     setMessage("Đang gửi đúng phiên bản công việc...");
@@ -92,6 +100,12 @@ export function WorkResultDraftForm({
           evidenceId: evidenceId || null,
           expectedVersion: draft.expectedVersion,
           operationId: draft.operationId,
+          ...(draft.delivery ? {
+            deliveryLines: draft.delivery.lines,
+            expectedDeliveryVersion: draft.delivery.expectedVersion,
+            expectedAssignmentVersion: draft.delivery.expectedAssignmentVersion,
+            missingArrivalReason: draft.delivery.missingArrivalReason,
+          } : {}),
         }),
       });
       const body = await response.json() as { error?: string };
@@ -111,10 +125,26 @@ export function WorkResultDraftForm({
 
   return (
     <form className={styles.form} onSubmit={submit}>
-      <div className={styles.field}>
+      {delivery && draft.delivery ? delivery.lines.map((line) => <div className={styles.field} key={line.id}>
+        <label htmlFor={"actual-" + line.id}>Lượng thực tế · {line.material_name} ({line.unit})</label>
+        <span className={styles.hint}>Kế hoạch: {line.planned_base_quantity} {line.unit}. Nhập 0 nếu không giao được dòng này.</span>
+        <input id={"actual-" + line.id} inputMode="decimal" type="number" min="0" max={line.planned_base_quantity}
+          step="0.000001" required disabled={submitting || uploading}
+          value={draft.delivery?.lines.find((item) => item.deliveryLineId === line.id)?.actualQuantity ?? ""}
+          onChange={(event) => setDraft((current) => current?.delivery ? { ...current, delivery: { ...current.delivery,
+            lines: current.delivery.lines.map((item) => item.deliveryLineId === line.id
+              ? { ...item, actualQuantity: event.target.value } : item),
+          } } : current)} />
+      </div>) : <div className={styles.field}>
         <label htmlFor="actual-quantity">Số lượng thực tế</label>
         <input id="actual-quantity" inputMode="decimal" onChange={update("actualQuantity")} required value={draft.actualQuantity} />
-      </div>
+      </div>}
+      {delivery?.state === "DISPATCHED" && draft.delivery && <div className={styles.field}>
+        <label htmlFor="missing-arrival">Lý do chưa ghi nhận bước tới nơi</label>
+        <textarea id="missing-arrival" minLength={3} maxLength={1000} required value={draft.delivery.missingArrivalReason}
+          onChange={(event) => setDraft((current) => current?.delivery ? { ...current,
+            delivery: { ...current.delivery, missingArrivalReason: event.target.value } } : current)} />
+      </div>}
       <div className={styles.field}>
         <label htmlFor="receiver-name">Người nhận / xác nhận</label>
         <input id="receiver-name" maxLength={120} onChange={update("receiverName")} value={draft.receiverName} />
@@ -132,7 +162,7 @@ export function WorkResultDraftForm({
         </button>
       </div>
       {message ? <p className={styles.status + " " + (error ? styles.error : "")} role="status">{message}</p> : null}
-      <button className={styles.button} disabled={submitting || uploading} type="submit">
+      <button className={styles.button} disabled={submitting || uploading || (!!delivery && !delivery.assignment_version)} type="submit">
         {submitting ? "Đang gửi kết quả" : "Gửi kết quả công việc"}
       </button>
     </form>

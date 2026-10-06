@@ -1,6 +1,7 @@
 "use server";
 
 import Decimal from "decimal.js";
+import { normalizeWarehouseAddress, warehouseAddressRequired } from "./warehouse-address";
 import { revalidatePath } from "next/cache";
 import { redirect, unstable_rethrow } from "next/navigation";
 import { z } from "zod";
@@ -78,6 +79,10 @@ function toIso(value?: string) {
 }
 
 function errorMessage(message: string) {
+  if (message.includes("warehouse_address_required")) return warehouseAddressRequired;
+  if (message.includes("purchase_order_destination_address_required")) return "Địa chỉ nhận hàng trên PO nháp còn thiếu. Bổ sung địa chỉ kho rồi cập nhật địa chỉ từ kho trước khi xác nhận.";
+  if (message.includes("stale_record_reload")) return "Địa chỉ kho đã được người khác sửa. Hãy tải lại thông tin kho.";
+  if (message.includes("forbidden")) return "Bạn không có quyền thực hiện thao tác này tại chi nhánh hiện tại.";
   if (message.includes("operation_payload_conflict")) return "Mã thao tác đã được dùng với dữ liệu khác. Hãy tải lại màn hình.";
   if (message.includes("supplier_code_exists")) return "Mã nhà cung cấp đã tồn tại. Hãy chọn nhà cung cấp hiện có hoặc dùng mã khác.";
   if (message.includes("supply_allocation_exceeds_need")) return "Số lượng phân nguồn vượt phần dòng bán còn thiếu.";
@@ -353,4 +358,47 @@ export async function createSupplierQuickAction(_: PurchaseActionState, formData
   if (error || !data) return { message: errorMessage(error?.message ?? "unknown") };
   revalidatePath("/admin/purchase-orders/new");
   return { success: true, supplierId: data, message: "Đã tạo nhà cung cấp. Danh sách chọn đã được cập nhật." };
+}
+
+
+export async function updatePurchaseWarehouseAddressAction(input: {
+  warehouseId: string; address: string; expectedAddress: string | null; reason: string; operationId: string;
+}): Promise<{ success: boolean; message: string; address?: string }> {
+  const parsed = z.object({ warehouseId: z.uuid(), address: z.string().max(2000), expectedAddress: z.string().nullable(), reason: z.string().trim().min(3).max(500), operationId: z.uuid() }).safeParse(input);
+  if (!parsed.success) return { success: false, message: "Nhập địa chỉ và lý do cập nhật hợp lệ." };
+  const address = normalizeWarehouseAddress(parsed.data.address);
+  if (!address) return { success: false, message: warehouseAddressRequired };
+  try {
+    const access = await requireInternalPermission("purchasing.create");
+    if (!access.permissions.has("roles.manage")) return { success: false, message: "Bạn không có quyền sửa kho. Vui lòng liên hệ người phụ trách bổ sung địa chỉ." };
+    const supabase = await createServerSupabase();
+    const { data: warehouse, error: readError } = await supabase.from("warehouses").select("id").eq("id", parsed.data.warehouseId).eq("branch_id", access.branchId).eq("active", true).maybeSingle();
+    if (readError || !warehouse) return { success: false, message: "Kho không còn khả dụng trong chi nhánh hiện tại." };
+    const { error } = await supabase.rpc("save_catalog_record", { kind: "warehouses", target_id: parsed.data.warehouseId, target_branch_id: access.branchId,
+      values_json: { address_text: address }, expected_json: { address_text: parsed.data.expectedAddress }, change_reason: parsed.data.reason, operation_id: parsed.data.operationId });
+    if (error) return { success: false, message: errorMessage(error.message) };
+    revalidatePath("/admin/purchase-orders");
+    return { success: true, message: "Đã bổ sung địa chỉ kho. Nội dung đơn mua được giữ nguyên.", address };
+  } catch (error) { unstable_rethrow(error); return { success: false, message: error instanceof AppError ? error.message : "Không thể cập nhật địa chỉ kho. Nội dung đơn mua được giữ nguyên." }; }
+}
+
+export async function updatePurchaseDraftDestinationAction(input: {
+  documentId: string; expectedVersion: number; warehouseId: string; reason: string; operationId: string;
+}): Promise<{ success: boolean; message: string; version?: number; warehouseId?: string; address?: string }> {
+  const parsed = z.object({ documentId: z.uuid(), expectedVersion: z.number().int().positive(), warehouseId: z.uuid(), reason: z.string().trim().min(3).max(500), operationId: z.uuid() }).safeParse(input);
+  if (!parsed.success) return { success: false, message: "Thông tin kho nhận hoặc lý do chưa hợp lệ." };
+  try {
+    const access = await requireInternalPermission("purchasing.create");
+    const supabase = await createServerSupabase();
+    const { error } = await supabase.rpc("update_purchase_order_warehouse", { target_purchase_order_id: parsed.data.documentId, expected_version: parsed.data.expectedVersion,
+      target_warehouse_id: parsed.data.warehouseId, change_reason: parsed.data.reason, operation_id: parsed.data.operationId });
+    if (error) return { success: false, message: errorMessage(error.message) };
+    const { data, error: readError } = await supabase.from("purchase_orders").select("draft_version, warehouse_id, destination_address_snapshot")
+      .eq("id", parsed.data.documentId).eq("branch_id", access.branchId).eq("state", "DRAFT").maybeSingle();
+    if (readError || !data || data.draft_version !== parsed.data.expectedVersion + 1 || data.warehouse_id !== parsed.data.warehouseId) {
+      return { success: false, message: "PO đã được cập nhật. Hãy tải lại trước khi sửa tiếp để tránh ghi đè thay đổi mới." };
+    }
+    revalidatePath("/admin/purchase-orders");
+    return { success: true, message: "Đã cập nhật địa chỉ nhận của PO nháp. Chưa xác nhận đơn.", version: data.draft_version, warehouseId: data.warehouse_id, address: data.destination_address_snapshot };
+  } catch (error) { unstable_rethrow(error); return { success: false, message: error instanceof AppError ? error.message : "Chưa xác định được kết quả cập nhật. Hãy thử lại cùng thao tác." }; }
 }

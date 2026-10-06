@@ -1737,6 +1737,9 @@ Quote/SO/PO DRAFT detail có primary action `Sửa`.
 Edit quay lại cùng document, không clone revision vô nghĩa.
 SENT/CONFIRMED chuyển sang immutable presentation + revision/adjustment/cancel actions.
 
+PO về kho hiển thị địa chỉ hiện có tại “Kho nhận”, không nhập lại trên PO. Thiếu nội dung địa chỉ: báo “Kho nhận hàng chưa có địa chỉ. Vui lòng bổ sung địa chỉ kho trước khi lưu đơn mua.”; action “Bổ sung địa chỉ kho” chỉ cho người có quyền sửa kho, dùng vùng chỉnh sửa ngay trong form. Người thiếu quyền nhận hướng dẫn liên hệ người phụ trách. Không mất Supplier, lines, quantity, giá mua, ngày, điều khoản hay ghi chú; sau cập nhật giữ kho đang chọn, không tự xác nhận.
+DRAFT hiển thị snapshot riêng. Đổi kho/cập nhật địa chỉ từ kho là thao tác có chủ đích, cần lý do và version; giữ draft, không tự refresh khi sửa quantity/terms. DRAFT thiếu snapshot không được CONFIRM và có đường sửa ngay trên DRAFT đó.
+
 ## UX-REC-004 — Master data
 
 Mỗi master-data list có:

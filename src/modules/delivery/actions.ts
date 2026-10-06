@@ -33,13 +33,15 @@ function quantityLines(formData: FormData, idName: string, quantityName: string,
 }
 
 function verificationLines(formData: FormData) {
+  const adjustmentReason = String(formData.get("verificationAdjustmentReason") ?? "").trim();
+  if (adjustmentReason.length > 500) return null;
   const ids = formData.getAll("deliveryLineId");
   const accepted = formData.getAll("acceptedQuantity");
   const billable = formData.getAll("billableQuantity");
   const reasons = formData.getAll("billingVarianceReason");
   if (!ids.length || ids.length > 50 || [accepted, billable, reasons].some((values) => values.length !== ids.length)) return null;
   const seen = new Set<string>();
-  const lines: { delivery_line_id: string; accepted_base_quantity: string; billable_base_quantity: string; billing_variance_reason: string }[] = [];
+  const lines: { delivery_line_id: string; accepted_base_quantity: string; billable_base_quantity: string; billing_variance_reason: string; verification_adjustment_reason: string }[] = [];
   for (let index = 0; index < ids.length; index += 1) {
     const id = ids[index];
     const reason = reasons[index];
@@ -48,12 +50,13 @@ function verificationLines(formData: FormData) {
     const parsedBillable = typeof billable[index] === "string" ? nonNegative.safeParse(billable[index]) : null;
     if (!parsedId?.success || !parsedAccepted?.success || !parsedBillable?.success || seen.has(parsedId.data) || typeof reason !== "string" || reason.trim().length > 500) return null;
     seen.add(parsedId.data);
-    lines.push({ delivery_line_id: parsedId.data, accepted_base_quantity: parsedAccepted.data, billable_base_quantity: parsedBillable.data, billing_variance_reason: reason.trim() });
+    lines.push({ delivery_line_id: parsedId.data, accepted_base_quantity: parsedAccepted.data, billable_base_quantity: parsedBillable.data, billing_variance_reason: reason.trim(), verification_adjustment_reason: adjustmentReason });
   }
   return lines;
 }
 
 function message(value?: string) {
+  if (value?.includes("worker_quantity_adjustment_reason_required")) return "Nhập lý do điều chỉnh số lượng thợ đã gửi (từ 3 đến 500 ký tự), rồi xác minh lại.";
   if (value?.includes("operation_payload_conflict")) return "Mã thao tác đã được dùng với dữ liệu khác. Hãy tải lại.";
   if (value?.includes("version")) return "Phiếu đã được người khác cập nhật. Hãy tải lại.";
   if (value?.includes("inventory") || value?.includes("reservation")) return "Tồn khả dụng hoặc reservation không còn đủ.";

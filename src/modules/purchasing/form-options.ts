@@ -9,7 +9,7 @@ type MaterialRow = { id: string; name: string; base_uom_id: string };
 
 export type PurchaseFormOptions = {
   suppliers: { id: string; name: string }[];
-  warehouses: { id: string; name: string }[];
+  warehouses: { id: string; name: string; address: string | null }[];
   customers: { id: string; name: string; sites: { id: string; name: string; address: string }[] }[];
   materials: { id: string; name: string; uoms: { id: string; symbol: string }[] }[];
 };
@@ -55,7 +55,7 @@ export async function loadPurchaseFormOptions(branchId: string, selectedSupplier
   const supabase = await createServerSupabase();
   const [suppliers, warehouseResult, customerResult, materialResult, conversionResult, uomResult] = await Promise.all([
     loadPurchaseSuppliers(branchId, "", selectedSupplierId),
-    supabase.from("warehouses").select("id, name").eq("branch_id", branchId).eq("active", true).order("name"),
+    supabase.from("warehouses").select("id, name, address_text").eq("branch_id", branchId).eq("active", true).order("name"),
     supabase.from("customers").select("id, display_name, customer_sites(id, name, address_text)").eq("branch_id", branchId).eq("active", true).order("display_name"),
     supabase.from("materials").select("id, name, base_uom_id").eq("active", true).eq("purchase_enabled", true).order("name"),
     supabase.from("material_uom_conversions").select("material_id, from_uom_id").eq("active", true).eq("settlement_allowed", true),
@@ -74,7 +74,7 @@ export async function loadPurchaseFormOptions(branchId: string, selectedSupplier
   });
   return {
     suppliers,
-    warehouses: (warehouseResult.data ?? []).map((row) => ({ id: row.id, name: row.name })),
+    warehouses: (warehouseResult.data ?? []).map((row) => ({ id: row.id, name: row.name, address: row.address_text })),
     customers,
     materials,
   };

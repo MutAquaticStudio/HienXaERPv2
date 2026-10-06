@@ -42,7 +42,7 @@ export default async function CustomerDebtsPage() {
               <span className={styles.badge}>{notice.state}</span>
               <strong>{money(notice.amount_vnd)}</strong>
               <span className={styles.hint}>{notice.paid_on} · {notice.reference ?? "Không có mã giao dịch"}</span>
-              <a className={styles.link} href={"/api/evidence/" + notice.evidence_id + "/signed"} rel="noreferrer" target="_blank">Mở chứng từ riêng tư</a>
+              <a className={styles.link} href={"/api/evidence/" + notice.evidence_id + "/download"} rel="noreferrer" target="_blank">Mở chứng từ riêng tư</a>
               {notice.review_note ? <p>{notice.review_note}</p> : null}
             </article>
           ))}

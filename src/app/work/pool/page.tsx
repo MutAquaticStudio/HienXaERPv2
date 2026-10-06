@@ -1,3 +1,4 @@
+import { workKindLabel } from "@/modules/portal/presentation";
 import Link from "next/link";
 
 import { ClaimJobButton } from "@/components/portal/claim-job-button";
@@ -17,7 +18,7 @@ export default async function WorkPoolPage() {
       <div className={styles.grid}>
         {snapshot.pool.length ? snapshot.pool.map((job) => (
           <article className={styles.card + " " + styles.cardAccent} key={job.id}>
-            <span className={styles.badge + " " + styles.badgeWarm}>{job.kind ?? "CÔNG VIỆC"}</span>
+            <span className={styles.badge + " " + styles.badgeWarm}>{workKindLabel(job.kind)}</span>
             <h2>{job.title ?? job.number}</h2>
             <div className={styles.meta}>
               <span>{job.number}</span>

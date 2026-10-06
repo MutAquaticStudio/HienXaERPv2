@@ -4,7 +4,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { requireCustomerAccess } from "@/lib/access/context";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { salesStateLabel, salesStateTone } from "@/modules/sales/presentation";
+import { salesStateLabel, salesStateTone } from "@/modules/portal/presentation";
 
 type Quote = { id: string; quotation_number: string; revision_number: number; state: string; total_vnd: string; site_name_snapshot: string; expires_at: string | null };
 export default async function CustomerQuotationsPage({ searchParams }: { searchParams: Promise<{ notice?: string; error?: string }> }) {

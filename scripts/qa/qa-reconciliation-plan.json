@@ -1,0 +1,265 @@
+{
+  "scope": "COMPLETE_QA_RECONCILIATION_PATCH",
+  "version": 1,
+  "projectRef": "ffrwiglcrlumfvhubaxg",
+  "host": "ffrwiglcrlumfvhubaxg.supabase.co",
+  "productionRef": "nbwynrwkdbtfsitafsxa",
+  "baseCommit": "745309e2716208fb0aae7489870b6f3d906b8b27",
+  "disposition": "CANONICAL_FORWARD_WITH_INVARIANT_PRESERVATION",
+  "extraVersion": "20261002114730",
+  "historyProvenance": "UNKNOWN_HISTORICAL_CHECKSUM_56; STORED_TEXT_DIFFERS_8; NO_ORIGINAL_HISTORY_REWRITE",
+  "executionOrder": [
+    {
+      "version": "20260923162705",
+      "path": "supabase/migrations/20260923162705_revoke_uat_worker_compensation_read.sql",
+      "sha256": "ca8bf947a0d3493dadf225042bf655341fbc3f7f13e6cd8a4547483ca2ab342d",
+      "name": "revoke_uat_worker_compensation_read"
+    },
+    {
+      "version": "20261002071813",
+      "path": "supabase/migrations/20261002071813_index_quotation_and_customer_credit_lookups.sql",
+      "sha256": "cca7f71910a12e7e00e7a6e6d3cbe5bd67bcbf898b051d4ee75094ee2ed845a1",
+      "name": "index_quotation_and_customer_credit_lookups"
+    },
+    {
+      "version": "20261003063723",
+      "path": "supabase/migrations/20261003063723_fix_verified_delivery_rules.sql",
+      "sha256": "5022111d6ef3dcc9ca7c5af3853a7b7f851304f07c071da38a697a681ec034fa",
+      "name": "fix_verified_delivery_rules"
+    },
+    {
+      "version": "20261003074122",
+      "path": "supabase/migrations/20261003074122_audit_worker_quantity_verification.sql",
+      "sha256": "097d3c369e9a001b1f5712293cb37be54815218c029a6e70c791642c785f90aa",
+      "name": "audit_worker_quantity_verification"
+    },
+    {
+      "version": "20261003161428",
+      "path": "supabase/migrations/20261003161428_reconcile_qa_count_guard_and_direct_po_contract.sql",
+      "sha256": "d7f3d8a1728febe17d7040db84dbfe55f3294cea3754c3595d7321ac230eb939",
+      "name": "reconcile_qa_count_guard_and_direct_po_contract"
+    }
+  ],
+  "targetFunctions": [
+    {
+      "schema": "private",
+      "name": "delivery_allocation_consumed",
+      "args": "target_allocation_id uuid",
+      "result": "numeric",
+      "security_definer": false,
+      "config": [
+        "search_path=\"\""
+      ],
+      "bodyMd5": "52e7b8644a3d75c3d5d92b2e44ad416c"
+    },
+    {
+      "schema": "private",
+      "name": "delivery_line_transit_position",
+      "args": "target_line_id uuid",
+      "result": "TABLE(base_quantity numeric, inventory_value_vnd bigint)",
+      "security_definer": false,
+      "config": [
+        "search_path=\"\""
+      ],
+      "bodyMd5": "b2c1862093e24357f726b9bebfe378c2"
+    },
+    {
+      "schema": "private",
+      "name": "worker_work_item_payload",
+      "args": "target_work_item_id uuid",
+      "result": "jsonb",
+      "security_definer": true,
+      "config": [
+        "search_path=\"\""
+      ],
+      "bodyMd5": "89861639b29a351a7cd8914d5eb9149a"
+    },
+    {
+      "schema": "public",
+      "name": "create_delivery_from_allocation",
+      "args": "target_supply_allocation_id uuid, planned_base_quantity numeric, scheduled_at timestamp with time zone, operation_id uuid",
+      "result": "uuid",
+      "security_definer": true,
+      "config": [
+        "search_path=\"\""
+      ],
+      "bodyMd5": "eaea3e1c751dc44924435c9dcdece51a"
+    },
+    {
+      "schema": "public",
+      "name": "create_delivery_from_allocations",
+      "args": "target_sales_order_id uuid, planned_lines jsonb, scheduled_at timestamp with time zone, operation_id uuid",
+      "result": "uuid",
+      "security_definer": true,
+      "config": [
+        "search_path=\"\""
+      ],
+      "bodyMd5": "92816deb1fb4b16059105e39f510c5d9"
+    },
+    {
+      "schema": "public",
+      "name": "create_direct_purchase_from_sales_order",
+      "args": "target_sales_order_id uuid, target_supplier_id uuid, purchase_lines jsonb, expected_at timestamp with time zone, operation_id uuid",
+      "result": "uuid",
+      "security_definer": true,
+      "config": [
+        "search_path=\"\""
+      ],
+      "bodyMd5": "3ceecdec51a2a261cd19268fdee1570a"
+    },
+    {
+      "schema": "public",
+      "name": "publish_work_item",
+      "args": "target_branch_id uuid, source_kind text, source_id uuid, requested_assignment_mode text, target_employee_id uuid, operation_id uuid",
+      "result": "uuid",
+      "security_definer": true,
+      "config": [
+        "search_path=\"\""
+      ],
+      "bodyMd5": "4ac4e6ab33dfe8e84cfbaa6aee7051c7"
+    },
+    {
+      "schema": "public",
+      "name": "record_stock_count_line",
+      "args": "target_stock_count_id uuid, target_material_id uuid, counted_base_quantity numeric, adjustment_unit_cost_vnd numeric, reason text, target_evidence_id uuid, expected_count_version integer, operation_id uuid",
+      "result": "uuid",
+      "security_definer": true,
+      "config": [
+        "search_path=\"\""
+      ],
+      "bodyMd5": "bfcb5d4f35cdca1af10d7a3622a71278"
+    },
+    {
+      "schema": "public",
+      "name": "resolve_return_case",
+      "args": "target_return_case_id uuid, resolution text, target_warehouse_id uuid, resolution_reason text, target_evidence_id uuid, expected_version integer, operation_id uuid",
+      "result": "uuid",
+      "security_definer": true,
+      "config": [
+        "search_path=\"\""
+      ],
+      "bodyMd5": "bd1cca9d25c7d663c29d07cdc9f981f9"
+    },
+    {
+      "schema": "public",
+      "name": "submit_portal_delivery_result",
+      "args": "target_work_item_id uuid, result_lines jsonb, receiver_name text, note text, target_evidence_id uuid, missing_arrival_reason text, expected_work_version integer, expected_delivery_version integer, expected_assignment_version integer, operation_id uuid",
+      "result": "uuid",
+      "security_definer": true,
+      "config": [
+        "search_path=\"\""
+      ],
+      "bodyMd5": "7dd5ec5dbb67dd3593780949d615aadd"
+    },
+    {
+      "schema": "public",
+      "name": "submit_work_result",
+      "args": "target_work_item_id uuid, actual_quantity numeric, note text, receiver_name text, target_evidence_id uuid, expected_version integer, operation_id uuid",
+      "result": "uuid",
+      "security_definer": true,
+      "config": [
+        "search_path=\"\""
+      ],
+      "bodyMd5": "4e41710f865a7467bc64d2f3f422a42e"
+    },
+    {
+      "schema": "public",
+      "name": "update_delivery_receiver",
+      "args": "target_delivery_id uuid, receiver_name text, receiver_phone text, reason text, expected_version integer, operation_id uuid",
+      "result": "uuid",
+      "security_definer": true,
+      "config": [
+        "search_path=\"\""
+      ],
+      "bodyMd5": "46e0e1260d90957eaeb9b045230bdb2e"
+    },
+    {
+      "schema": "public",
+      "name": "verify_delivery",
+      "args": "target_delivery_result_id uuid, verification_lines jsonb, expected_delivery_version integer, operation_id uuid",
+      "result": "uuid",
+      "security_definer": true,
+      "config": [
+        "search_path=\"\""
+      ],
+      "bodyMd5": "b45fbed7b38d73fd83636384610eb229"
+    }
+  ],
+  "targetColumns": [
+    {
+      "table_schema": "public",
+      "table_name": "delivery_results",
+      "column_name": "source_work_item_result_id",
+      "udt_name": "uuid",
+      "is_nullable": "YES"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "work_item_results",
+      "column_name": "actual_quantity",
+      "udt_name": "numeric",
+      "is_nullable": "YES"
+    }
+  ],
+  "targetConstraints": [
+    {
+      "schema": "public",
+      "table": "delivery_results",
+      "name": "delivery_results_source_work_item_result_id_fkey",
+      "definition": "FOREIGN KEY (source_work_item_result_id) REFERENCES work_item_results(id) ON DELETE RESTRICT",
+      "validated": true
+    },
+    {
+      "schema": "public",
+      "table": "delivery_results",
+      "name": "delivery_results_source_work_item_result_id_key",
+      "definition": "UNIQUE (source_work_item_result_id)",
+      "validated": true
+    },
+    {
+      "schema": "public",
+      "table": "stock_count_lines",
+      "name": "stock_count_lines_finite_count",
+      "definition": "CHECK (((counted_base_quantity >= (0)::numeric) AND (counted_base_quantity < 'Infinity'::numeric))) NOT VALID",
+      "validated": false
+    }
+  ],
+  "targetIndexes": [
+    {
+      "schema": "public",
+      "table": "credit_commitments",
+      "name": "credit_commitments_customer_id_idx",
+      "definition": "CREATE INDEX credit_commitments_customer_id_idx ON public.credit_commitments USING btree (customer_id)"
+    },
+    {
+      "schema": "public",
+      "table": "quotations",
+      "name": "quotations_branch_created_id_idx",
+      "definition": "CREATE INDEX quotations_branch_created_id_idx ON public.quotations USING btree (branch_id, created_at DESC, id DESC)"
+    },
+    {
+      "schema": "public",
+      "table": "receivable_obligations",
+      "name": "receivable_obligations_customer_id_idx",
+      "definition": "CREATE INDEX receivable_obligations_customer_id_idx ON public.receivable_obligations USING btree (customer_id)"
+    }
+  ],
+  "targetViews": [
+    {
+      "schema": "public",
+      "name": "sales_order_read",
+      "definition": " SELECT o.id,\n    o.branch_id,\n    o.order_number,\n    o.customer_id,\n    o.site_id,\n    o.quotation_revision_id,\n    o.sales_owner_employee_id,\n    o.commercial_state,\n        CASE\n            WHEN ((EXISTS ( SELECT 1\n               FROM sales_order_lines l\n              WHERE (l.sales_order_id = o.id))) AND (NOT (EXISTS ( SELECT 1\n               FROM sales_order_lines l\n              WHERE ((l.sales_order_id = o.id) AND (COALESCE(( SELECT sum(v.accepted_base_quantity) AS sum\n                       FROM (delivery_verification_lines v\n                         JOIN delivery_lines dl ON ((dl.id = v.delivery_line_id)))\n                      WHERE (dl.sales_order_line_id = l.id)), (0)::numeric) < ((l.quantity * l.conversion_numerator) / l.conversion_denominator))))))) THEN 'FULFILLED'::text\n            WHEN ((o.commercial_state = 'CLOSED'::text) OR ((o.commercial_state = 'CANCELLED'::text) AND (EXISTS ( SELECT 1\n               FROM (delivery_verification_lines v\n                 JOIN delivery_lines dl ON ((dl.id = v.delivery_line_id)))\n              WHERE ((dl.delivery_id IN ( SELECT deliveries.id\n                       FROM deliveries\n                      WHERE (deliveries.sales_order_id = o.id))) AND (v.accepted_base_quantity > (0)::numeric)))))) THEN 'CLOSED_REMAINDER'::text\n            WHEN (EXISTS ( SELECT 1\n               FROM (delivery_verification_lines v\n                 JOIN delivery_lines dl ON ((dl.id = v.delivery_line_id)))\n              WHERE ((dl.delivery_id IN ( SELECT deliveries.id\n                       FROM deliveries\n                      WHERE (deliveries.sales_order_id = o.id))) AND (v.accepted_base_quantity > (0)::numeric)))) THEN 'PARTIAL'::text\n            ELSE 'NOT_STARTED'::text\n        END AS fulfillment_state,\n        CASE\n            WHEN (ar.obligation_count = 0) THEN 'NOT_DUE'::text\n            WHEN (ar.outstanding_vnd <= (0)::numeric) THEN 'PAID'::text\n            WHEN (ar.allocated_vnd > (0)::numeric) THEN 'PARTIAL'::text\n            ELSE 'UNPAID'::text\n        END AS payment_state,\n    o.customer_name_snapshot,\n    o.site_name_snapshot,\n    o.delivery_address_snapshot,\n    ((COALESCE(( SELECT sum(l.line_total_vnd) AS sum\n           FROM sales_order_lines l\n          WHERE (l.sales_order_id = o.id)), (0)::numeric))::bigint)::text AS total_vnd,\n    o.requested_delivery_at,\n    o.confirmed_at,\n    o.cancelled_at,\n    o.created_at\n   FROM (sales_orders o\n     LEFT JOIN LATERAL ( SELECT count(*) AS obligation_count,\n            COALESCE(sum(r.outstanding_amount_vnd), (0)::numeric) AS outstanding_vnd,\n            COALESCE(sum(r.allocated_amount_vnd), (0)::numeric) AS allocated_vnd\n           FROM receivable_read r\n          WHERE (r.sales_order_id = o.id)) ar ON (true));"
+    }
+  ],
+  "contractRefs": {
+    "finiteCount": "SPEC-INVTRY-005",
+    "directPo": "EXISTING_CANONICAL_RPC_AND_OWNER_DISPOSITION"
+  },
+  "dataChanges": [
+    "Revoke compensation.read for uat_worker/hxqa_worker only if present",
+    "Insert only genuinely applied migration versions/statements; retain extra and original rows"
+  ],
+  "postedBusinessMutation": false,
+  "historicalRepair": "APPLY_BLOCKED_POLICY",
+  "managedApplyAuthorized": false
+}

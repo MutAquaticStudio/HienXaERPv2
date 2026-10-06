@@ -7,10 +7,21 @@
 
 ```yaml
 CURRENT_PHASE: R12
-CURRENT_BATCH: R12
-CURRENT_TASK: R12-06
-EXECUTION_STATUS: IN_PROGRESS
-AUTHORIZATION_SCOPE: GA_GC_R10_R11_R12_BUILD_ONLY
+CURRENT_BATCH: MILESTONE_B_CLOSURE_20261005
+CURRENT_TASK: MB_02_READER_REVOKE_AND_EXACT_QA_AUTHORIZATION_GATE
+EXECUTION_STATUS: PARTIAL_NATIVE_REPAIRS_LOCAL_READER_AND_EXTERNAL_RUNTIME_GATES
+AUTHORIZATION_SCOPE: REPAIR_INTEGRATE_BUSINESS_QA_AND_RELEASE_PREPARATION
+LOCAL_IMPLEMENTATION: PO_COMPLETE_READER_SCOPE_PATCH_PENDING_RETEST
+NATIVE_BUSINESS_VERIFICATION: PASS_REUSED_PO_DELIVERY_SCOPE_FINANCE_RACE_BLOCKED_SETUP
+RUNTIME_ACCEPTANCE: PARTIAL_HTTP_MANUAL_OWNER_UAT_NOT_RUN
+OWNER_ACCEPTANCE: PENDING_OWNER
+QA_PROJECT_REF: ffrwiglcrlumfvhubaxg
+QA_DATA_CLASSIFICATION: TEST_DATA_ONLY
+QA_CLASSIFICATION_SOURCE: OWNER_CONFIRMED
+QA_FIXTURE_WRITE_AUTHORIZATION: GRANTED_SCOPED_B1_B8
+QA_SCHEMA_MUTATION: PO_PATCH_ALREADY_APPLIED_NEW_PATCHES_NOT_AUTHORIZED
+QA_APPROVED_PATCH_SHA256: 9e74a7976728bb33b4401d642b79329e5d5ece9ac016e8509c06bbf238bf2f7d
+QA_SCHEMA_APPLY: APPLIED
 PRODUCTION_MUTATION: FORBIDDEN_WITHOUT_OWNER
 ```
 
@@ -215,3 +226,229 @@ Stop only for:
 - Production authorization.
 
 Otherwise continue authorized independent work.
+
+
+### QA reconciliation checkpoint - 2026-10-03
+CURRENT_SCOPE: COMPLETE_QA_RECONCILIATION_PATCH
+CURRENT_TASK: NATIVE_TWO_PATH_VERIFICATION
+STATUS: BLOCKED_LOCAL_NATIVE_ENV
+- Canonical forward patch prepared; stock count finite guards retained under SPEC-INVTRY-005, direct PO RPC restored to the existing five-argument caller.
+- Managed read-only preflight captured five pending real migrations; CLI dry-run rejects the preserved external history entry.
+- Pure preflight checks: 9/9 PASS. Native two paths and affected race checks: NOT_RUN, local PostgreSQL unavailable.
+- PGlite two-path harness stopped at setup; adapter correction awaits the requested decision. Raw view deparse differs between PostgreSQL 17/18; same-engine query normalization proved equivalent, not an application defect.
+- No managed QA apply, original-history repair, Production mutation, provider/performance/recovery rerun or historical value adjustment authorized/executed.
+
+### 2026-10-04 - VERIFY_EXISTING_RECONCILIATION_PATCH_LOCALLY delta
+
+- Local harness/comparator: VERIFIED_ISOLATED_PGLITE, not native.
+- Candidate-manifest CLEAN/DIVERGED reconstruction: 21/21 targeted checks.
+- Comparator: 5/5; preflight: 9/9; local target rejection: 3/3.
+- Remaining task: provision explicitly owned local PostgreSQL 17 runtime, then native two-path and actual local CLI deployment checks.
+- State: BLOCKED_ENV; managed apply NOT_ELIGIBLE_FOR_APPROVAL / NOT_AUTHORIZED.
+- Managed QA and Production: NOT_TOUCHED. No application/migration/contract edits.
+
+## Milestone B scoped execution delta - QA-B-20261004T140821Z
+
+Owner authorizes B1-B8 fixtures only on `ffrwiglcrlumfvhubaxg` (`TEST_DATA_ONLY_OWNER_CONFIRMED`). No new managed migration, role upgrade, cleanup, push, deploy or historical repair is authorized.
+
+| Task | Actual state | Remaining gate |
+| --- | --- | --- |
+| BIZ-01 Master/Sales | PARTIAL; authenticated master/quote/revision/SO and negative checks passed | Visual quick-create UAT; Sales test actor lacks quotation.create |
+| BIZ-02 Purchasing | PARTIAL; reuse NV-01..08 technical PASS | Six PO visual cases; complete linked sourcing scope |
+| BIZ-03 Inventory/Delivery | BLOCKED_MANAGED_DEPENDENCY; native business/race evidence reused | Exact managed delivery/WorkerResult patches need approval; employee daily roles |
+| BIZ-04 Supplier direct | PARTIAL; source-separated AP/AR native evidence reused | Managed customer verification dependency; visual UAT |
+| BIZ-05 Finance | PARTIAL; payment split/readback passed | Harness assertion/RPC argument repairs; advance/reversal and new finance race |
+| BIZ-06 Exceptions | PARTIAL; native short delivery/return/follow-up evidence reused | Managed dependency; remaining loss/return/close and UI evidence |
+| BIZ-07 KPI/Reports/Documents | PARTIAL; filtered canonical KPI/readback passed | As-of harness repair; PDF runtime and earning facts not exercised |
+| BIZ-08 Daily roles/security | PARTIAL; six Auth sessions and direct permission/isolation denials passed | Purchasing/Dispatch/Finance employee actors; revocation/private Storage/shared-device runtime |
+
+Release support: real local dump/restore reconciliation PASS for current base fixture scope. Representative local order-filter measurement reproduced PERF-B-01; local reader-scope migration and harness are pending successful setup/retest, NOT a verified fix. Storage recovery is not proven. QA-to-live plan and manual UAT are prepared, not executed. Opening balances and release authorization remain Owner decisions. MILESTONE_B=NOT_READY.
+
+
+### Milestone B closure delta - 2026-10-05
+
+| Scope | Actual state | Evidence / next gate |
+|---|---|---|
+| MB-01 harness | PARTIAL_6_OF_7 | Finance caller/race, role prerequisite and async metadata checks closed; reader revoke retest blocked by introduced bootstrap delimiter |
+| MB-02 reader / PERF-B-01 | NATIVE_FILTER_PERF_PASS_SECURITY_PARTIAL | Positive rows and 100-sample c1/c5 measurements PASS; revoke matrix pending; no cloud apply |
+| BIZ-05 / BIZ-07 as-of | TARGETED_NATIVE_HTTP_PASS_NOT_UI_ACCEPTED | Two real allocation races; six HTTP/DB checks; existing payment reused, reversal/advance appended |
+| BIZ-08 purchase cost | FIXED_VERIFIED_NATIVE_CLOUD_PENDING | MB-COST-01 CLEAN/DIVERGED 10/10 each; exact forward patch approval required |
+| Recovery | PASS_LOCAL_CURRENT_READER_AND_COST_SCOPE | Real isolated pg_dump/restore and selected facts/security reconciliation; Storage recovery NOT_RUN |
+| QA dependencies/personas | PENDING_EXACT_OWNER_APPROVAL | Narrow package includes three existing migrations plus cost patch; reader HELD; no role/schema changes made |
+| Manual UI UAT | MANUAL_OWNER_UAT_NOT_RUN | Updated actual finance balances and source IDs; six PO visual cases still pending |
+| Live transition/release | NOT_AUTHORIZED_NOT_READY | No assumed opening zero, no cleanup, no push/deploy; Owner acceptance pending |
+
+LOCAL_IMPLEMENTATION, NATIVE_BUSINESS_VERIFICATION, RUNTIME_ACCEPTANCE and OWNER_ACCEPTANCE remain distinct. PO LOCAL_PATCH_COMPLETE and technical NV-01..08 PASS unchanged; no PO re-audit.
+Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/QA-MB-CLOSURE-20261005T023000Z/exact-qa-schema-and-personas-request.json
+
+### 2026-10-05 - Reader security and final QA package preparation
+
+- Reader bootstrap delimiter and membership revoke timestamp repaired; CLEAN 38 / reconstructed DIVERGED 13 cases PASS before/after. Positive expected IDs, inactive/revoke/regrant, customer isolation, same-PID A-B-A and view/detail/count/export verified. Reader SQL unchanged; native performance reused, not HTTP/browser PASS.
+- Exact allowlist entrypoint added. Seven loader/driver-failure checks PASS. New column-ACL capture helper raises 22023 on an empty ACL array; narrow guard repair question sent. Native transaction/history/rollback and scoped restore rehearsal NOT_RUN, not PASS.
+- Fresh QA metadata: selected five migration histories absent; nine stock count lines, zero finite violations; obsolete six-argument direct PO overload has zero dependents. Five-argument replacement currently absent, created by the reconciliation patch. No history repair or managed mutation.
+- Sales individual branch grants and minimum Purchasing/Warehouse-Dispatch/Finance employee packages prepared, not applied. Private portal-evidence request uses actual create_portal_evidence/finalize_portal_evidence/get_portal_evidence_for_signing; no upload/revoke/policy write.
+- Candidate provenance and evidence in /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/QA-MB-FINAL-PREP-20261005034758Z. Final schema approval request withheld until native selector and scoped recovery PASS. NOT_READY_TO_FREEZE; manual UAT NOT_RUN; B_TECHNICALLY_READY=NO; B_OPERATIONAL_READY=NO; OWNER_ACCEPTANCE=PENDING_OWNER.
+- No commit/push/deploy. Managed QA changes NONE this turn; Production NOT_TOUCHED. Previous PO/native business evidence remains scoped and unchanged.
+
+### MB exact-catalog ACL and scoped preapply delta (2026-10-05)
+- LOCAL_IMPLEMENTATION: column ACL capture fixed; NULL and empty ACL are NO_EXPLICIT_COLUMN_ACL, not acldefault privileges.
+- TARGETED_VERIFICATION: ACL cases 6/6 PASS; CLEAN/DIVERGED scoped schema/security reconstruction PASS; explicit column grant reconstruction PASS.
+- EXACT_ENTRYPOINT: both local clones applied the exact five-file allowlist atomically and verified already-applied/readback/history; managed QA remained read-only.
+- OPEN_HARNESS: QA-EXACT-REHEARSAL-FAULT-INJECTION did not match transactionBody after comments/wrapper stripping; fault/rollback transport cases are NOT VERIFIED. Original failed evidence retained.
+- FINAL_SCHEMA_APPROVAL: NOT_READY pending this narrow harness correction/retest; reader/security/performance/cost gates reused unchanged.
+- PERSONAS/STORAGE: existing READY_FOR_OWNER request packages reused; no users, grants, Storage objects, deploy, push or managed DDL executed.
+- Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/QA-MB-ACL-CLOSURE-20261005041552Z
+- RUNTIME_ACCEPTANCE/OWNER_ACCEPTANCE: unchanged; manual UAT not ready; candidate not frozen.
+
+### MB exact failure-path delta (2026-10-05)
+- Harness SQL fault hook now uses manifest version/history-insert boundary, not migration body matching; enabled only by explicit local rehearsal flag on an owned loopback target.
+- Native fault after versions 1, 3 and 5: actual SQLSTATE 22012 reached; all object/ACL/history changes rolled back. Each readback used a new connection with a different backend PID.
+- Selector missing gates reduced to one: 11/12 evidenced. Prior success/already-applied/capture/recovery/reader/performance/persona/Storage evidence reused unchanged.
+- OPEN introduced transport hook defect: subclass buffer name pending conflicts with the readonly net.Socket getter. No transport case ran; unknown-commit handling is NOT VERIFIED. Narrow correction request pending.
+- Initial connection-refused setup attempt retained; owned cluster binding corrected from 5432 to approved 54757 before successful rollback tests.
+- Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/QA-MB-ACL-CLOSURE-20261005041552Z/failure-paths-20261005T060837Z
+- No managed schema/account/Storage mutation, push, deploy, UAT or Production action.
+
+### MB final transport harness delta (2026-10-05)
+- LOCAL_IMPLEMENTATION: Socket test state moved to lexical WeakMap; no pending assignment, no global Node prototype changes; syntax PASS, targeted lint 0 errors / 2 unused-variable warnings.
+- Existing socket factory returns an unconnected net.Socket. postgres.js 3.4.9 invokes connected() directly for options.socket and requires the factory to supply a connected socket.
+- Native attempt stopped at startup with ERR_SOCKET_CLOSED before apply BEGIN; no COMMIT-window case, classification or blind-retry proof is claimed.
+- The structural SQL fault/rollback cases and prior eleven selector checks remain reused PASS. Selector remains 11/12; final schema package remains NOT_READY.
+- Narrow existing factory correction requested; no extra PO/reader/performance/Finance/rollback tests rerun.
+- Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/QA-MB-ACL-CLOSURE-20261005041552Z/transport-final-20261005T063555Z
+- No managed QA, Storage, deploy, push, cleanup or Production changes.
+
+### MB connected transport/readback closure (2026-10-05)
+- LOCAL_IMPLEMENTATION: postgres.js 3.4.9 factory awaits owned loopback TCP connect with finite timeout and listener/socket cleanup. WeakMap state and lexical owned-socket hooks only; no migration/application/production runner changes.
+- Connected-factory control PASS (SELECT 1, BEGIN, trivial rollback), PID 36569. Node Socket.connect shadowed the subclass write hook; uninjected commit readback through PID 37320 was retained as failed evidence, with no retry. Owner approved hook preservation and phase correction.
+- NATIVE_TRANSPORT: before-COMMIT socket loss 38033 -> new PID 38083: ROLLBACK_CONFIRMED, 0/5 history rows, full affected object/ACL/security pre-state equivalence. Post-server-COMMIT/pre-driver-ack socket loss 38084 -> new PID 38087: COMMIT_CONFIRMED, 5/5 exact history rows and full expected post-state fingerprint.
+- Actual exact-manifest classifier verified; execute counts COMMIT/ROLLBACK/INCONSISTENT=1/1/0, no blind retry. All required factory/BEGIN/migration/COMMIT/fault/close/readback phases captured.
+- Selector now 12/12, eleven checks reused. Five hashes, reader/security/performance/cost and scoped recovery evidence unchanged. Existing final schema package READY_FOR_OWNER; managed schema/personas/Storage execution remains pending exact Owner authorization.
+- Fresh owned clone setup reused the proven reconstruction method, not a new recovery gate. No prior SQL-fault/reader/performance/Finance/PO tests rerun. Harness syntax/lint PASS; sockets and scoped hooks cleaned up.
+- Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/QA-MB-ACL-CLOSURE-20261005041552Z/connected-transport-final-20261005T074950Z/connected-hook-retest-20261005T075646Z/final-transport-evidence.json; /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/QA-MB-ACL-CLOSURE-20261005041552Z/connected-transport-final-20261005T074950Z/connected-hook-retest-20261005T075646Z/transport-closure-delta.json
+- Managed QA/Storage/Production untouched. No UAT, commit, push or deploy. B_TECHNICALLY_READY=NO; B_OPERATIONAL_READY=NO.
+
+
+### MB exact managed QA execution delta (2026-10-05)
+- OWNER_AUTHORITY: exact final package SHA bb0c6ab7ef6006b2e443514f3c8b5d6bcd9d4cade148e0dbeb9c862aed59a925; target ffrwiglcrlumfvhubaxg, TEST_DATA_ONLY_OWNER_CONFIRMED. Exact five schema changes, Sales individual grants, three persona package and private Storage fixture scope authorized; no Production/go-live/UAT/push authority.
+- MANAGED_SCHEMA: five byte-exact migrations applied by unchanged exact selector in ONE_TRANSACTION_ALL_FIVE. New physical readback PID 537552: COMMIT_CONFIRMED; five history versions once, unrelated history unchanged; expected affected schema/security fingerprint 60e2e9dcd8a473beb43d327629f59469519e67ef9663f7b7c8a2ca9de326f45c. Pre-capture matched; obsolete Direct-PO overload dependent count zero and removed. PostgREST cache notification sent.
+- HTTP_PARTIAL: ordinary Sales/Owner reader each returned 25 exact independently expected IDs. Targeted HTTP client wallclock 25 samples/0 errors, p95 332.904ms on QA 20146 orders/100576 lines; not server-duration/browser evidence and not local SQL benchmark. Ordinary Owner raw PO cost columns denied 42501; remaining permission surfaces/security matrix not run.
+- INTERNAL_HARNESS_OPEN: persona state assertion counted four revoked history access rows along with one approved active row; no Sales grant/persona creation occurred. Metadata diagnostic output environment missing. Stock material code contained lowercase UUID against uppercase code constraint; entire new master transaction rolled back, persisted fixture rows zero. Correction requests sent; failures preserved, not business PASS.
+- Optional Direct-PO pre-state diagnostic incorrectly required the five-argument RPC before the verified migration creates it. Failed diagnostic retained; unchanged approved exact runner preflight/poststate independently passed. No migration rerun.
+- RUNTIME_ACCEPTANCE: persona provisioning, affected business/security HTTP checks and private Storage lifecycle/recovery remain incomplete. Current credentials exist; do not mislabel these internal harness failures as missing cloud/fixture authorization or missing secure credentials. No manual UAT, release freeze, commit/push/deploy, historical repair or other target mutation.
+- Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/QA-MB-MANAGED-EXEC-20261005T084239Z/managed-execution-delta.json
+- MANAGED_QA_CORE_READY_FOR_UAT=NO; candidate_ready_to_freeze=NO; OWNER_ACCEPTANCE=PENDING_OWNER; B_TECHNICALLY_READY=NO; B_OPERATIONAL_READY=NO; Production NOT_TOUCHED.
+
+
+## Managed runtime delta - 2026-10-05T11:35:57.211Z
+- LOCAL_IMPLEMENTATION: no application/migration changes. Schema phase remains CLOSED: five exact versions and poststate/history PASS reused; no reapply or preapply rehearsal.
+- QA setup: persona history assertion and metadata output path PASS. Stock material code corrected to deterministic uppercase; stock setup not executed because a newly introduced zero assertion needs correction.
+- MANAGED_TECHNICAL_RUNTIME: Sales individual branch grants EXACT (+quotation.create, +customers.manage); three ordinary employee personas authenticated and branch/permission isolation verified. Existing Sales history preserved and shared roles unchanged.
+- Reader managed security 15/15 PASS, temporary QA state restored. Purchase-cost managed HTTP 13 controls PASS, positive costs 60000/200000 and total 1000000 independently reconciled; existing source fixture read only.
+- Targeted HTTP performance: seven read paths have positive IDs and 10 samples each; dashboard adds 10 samples with independent canonical revenue 4802000. HTTP client wallclock is not SQL/server/browser time.
+- OPEN_LOCAL_HARNESS: stock zero assertion escape; customer setup must use save_customer_site_profile instead of denied raw INSERT; negative helper must preserve an existing operation ID. Correction questions already sent; no reply received. First new business fixture action failed without a committed master/business operation.
+- RUNTIME_ACCEPTANCE: Direct PO, stock, delivery/worker/Owner and private Storage lifecycle/recovery still NOT_RUN; UI/manual UAT NOT_RUN. Missing execution is not application FAIL or owner policy gate.
+- MANAGED_QA_CORE_READY_FOR_UAT=NO; candidate_ready_to_freeze=NO. OWNER_ACCEPTANCE=PENDING_OWNER; no freeze/commit/push/deploy/Production.
+- Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/QA-MB-MANAGED-EXEC-20261005T084239Z/runtime-resume-20261005T101347Z/runtime-execution-delta.json
+
+
+### 2026-10-05: managed core runtime closure delta
+
+- [x] LOCAL_HARNESS: stock numeric-zero assertion and valid uppercase material fixture; managed HTTP stock count 16 controls PASS.
+- [x] LOCAL_HARNESS: Customer/Site use canonical profile RPC; complete expected/base payload fixes the introduced credit-limit caller. Customer/Site records are reused, not recreated.
+- [x] TECHNICAL_HTTP: Sales Customer/Site -> two-line Quote -> revision -> linked SO PASS; price replacement preserves document snapshots; SO confirmation creates no AR.
+- [x] HARNESS_UNIT: negative-operation helper preserves an explicitly supplied operation ID (3/3); direct-PO HTTP same-key check is not yet executed.
+- [x] PERFORMANCE: classify existing positive-control measurements against SPEC-PERF-002/004 without rerunning samples; HTTP-client elapsed upper-bound evidence is not browser wait evidence.
+- [ ] Introduced purchase-price fixture caller used an unsupported authenticated INSERT (42501). Scoped SQL setup for exactly two owned configuration fixtures awaits the separately submitted response; no grants/schema relaxation.
+- [ ] Introduced authorization fetch-wrapper syntax error is caught before any request; narrow repair awaits the separately submitted response.
+- [ ] Direct PO/supplier-direct, Delivery/Worker/Owner and private Storage lifecycle/recovery remain NOT_EXECUTED in this continuation; prepared scripts do not constitute PASS.
+- RUNTIME_ACCEPTANCE: PARTIAL; MANAGED_QA_CORE_READY_FOR_UAT=NO; OWNER_ACCEPTANCE=PENDING_OWNER; no freeze, commit, push or deployment.
+- Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/QA-MB-MANAGED-EXEC-20261005T084239Z/runtime-resume-20261005T101347Z/closure-20261005T131326Z/runtime-closure-delta.json
+
+
+### 2026-10-05: final managed runtime gates, narrow continuation
+
+- [x] Owner authorizes exactly two purchase-price facts via controlled QA SETUP_ONLY, with no schema/RLS/grant/role change. Prepared continuation is syntax-valid; actual fixture INSERT was not reached.
+- [x] Authorization fetch wrapper delimiter repaired; syntax PASS and real Customer HTTP controls reached. No global fetch/Node monkey patch installed.
+- [x] HTTP shared client/identity and restricted-admin boundary: 10 controls PASS (Sales positive, logout/protected read denial, same client switched to Customer, seven ordinary personas denied permission administration). Browser/shared-device UI remains PENDING_OWNER.
+- [x] Current Sales fixture provenance saved separately: 1800000 + 1200000 = 3000000 VND; old fixture evidence remains separate.
+- [x] Storage exact package hash matches; Storage object writes not reached.
+- [x] Existing positive HTTP performance samples classified against SPEC-PERF-002/004, no samples rerun or dropped. API budget proven by conservative complete HTTP elapsed upper bound; browser/admin-shell timings NOT_COMPARABLE.
+- [ ] New introduced SO preflight used nonexistent state/total_vnd columns. Actual header uses commercial_state and totals must be independently reconciled from lines. No purchase-price fact committed. Narrow correction awaits the separately submitted response.
+- [ ] New introduced Worker negative setup assumes a foreign active assignment; actual count is zero. Preserve this case, construct canonical scoped fixture without bypassing auth or deleting history. Correction awaits the separately submitted response.
+- [ ] Direct PO/supplier direct/operation-ID real HTTP/Storage/Delivery-Worker-Owner remain NOT_EXECUTED because upstream fixture preconditions failed.
+- Reuse five applied migrations, reader 15, cost 13, Stock 16, Sales canonical workflow, personas/grants and Finance. No schema reapply, role mutation, cleanup, freeze, commit, push, deploy or manual UAT.
+- Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/QA-MB-MANAGED-EXEC-20261005T084239Z/runtime-resume-20261005T101347Z/closure-20261005T131326Z/final-managed-runtime-gates-delta.json
+
+### 2026-10-05 - Final dependent managed runtime delta (QA-MB-OPS-20261005T131835531Z)
+- COMPLETE: corrected SO preflight to commercial_state plus canonical two-line total; exactly two purchase-price fixtures were added as SETUP_ONLY. No schema/role/grant expansion.
+- COMPLETE: ordinary Purchasing Direct PO and supplier-direct HTTP; supplier AP 3,900,000 VND and customer AR 5,700,000 VND are separate sources; no fake inventory/double cost. Actual operation-ID retry/conflict controls passed.
+- COMPLETE: canonical own/foreign Work assignment; same Worker own read succeeds and foreign active assignment is denied. Authorization evidence totals 14 scoped HTTP controls, with 12 reused and 2 new.
+- COMPLETE_SCOPED: two private 68-byte PNG evidence objects; upload/finalize, Owner/Worker/signed reads, outsider denial, source metadata and isolated fixture byte/hash restore. All temporary Worker access revocations were restored.
+- OPEN P1 STORAGE-REVOKE-CACHE-01: warmed previously authorized Worker session downloads cached bytes after branch revoke. New signer and fresh sessions are denied. cacheControl=0 does not solve the warmed-session path. Do not mark the Storage revoke gate PASS.
+- OPEN QA-DELIVERY-READ-RPC-OPERATION-ID: introduced negative helper adds operation_id to read-only worker_portal_job and returns PGRST202. Handoff/start are committed; preserve IDs and resume only after caller repair. No Worker result or Owner verification is recorded yet.
+- MANAGED_QA_CORE_READY_FOR_UAT=NO; candidate_ready_to_freeze=NO. No Manual UAT, commit, push, deployment or Production operation.
+- Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/QA-MB-MANAGED-EXEC-20261005T084239Z/runtime-resume-20261005T101347Z/closure-20261005T131326Z/final-dependent-runtime-evidence.json
+
+
+### 2026-10-05T16:40:46.936Z - Delivery readonly caller and Storage network classification
+- COMPLETE_HARNESS: worker_portal_job receives target_work_item_id only; authenticated assigned Worker returned the existing Work/Delivery with both lines, outsider returned 42501. No operation_id is sent to this readonly RPC. Two real HTTP controls PASS.
+- DELIVERY_PENDING: existing Delivery 5a37db40-efc9-45b6-8530-c94121a9eb39 is DISPATCHED; Work 80631b03-7f5c-4bf0-84ef-82925ba9da7e is IN_PROGRESS. The resume harness introduced an IN_TRANSIT readiness assertion and stopped before new business writes. Narrow correction question pending; prior handoff/start were imported, not re-executed. Worker-result/Owner-verification/reconciliation are NOT_VERIFIED in this continuation.
+- STORAGE_CLASSIFIED P1_CONFIRMED: two fresh TLS authenticated downloads after scoped access revoke returned the exact private 68-byte fixture from CDN HIT, with no client cache or signed URL. Cache-nonce origin controls denied; incorrect origin/database authorization is NOT_PROVEN. User MODE_A new-network deny gate is not satisfied.
+- Separate OLD_SIGNED_TOKEN finding: pre-revoke signed access remained within its original 60-second TTL; expected non-retroactive behavior, not the basis for P1. Beyond-expiry behavior was not tested. New signing authorization denied; fresh-session denial and byte/hash restore evidence reused.
+- Original Worker access/role/individual grants restored; Storage policies unchanged. No new object, migration, role/grant expansion, UI/manual UAT, freeze, commit, push, deploy or Production action.
+- MANAGED_QA_CORE_READY_FOR_UAT=NO; candidate_ready_to_freeze=NO. Existing Sales/Stock/Reader/Cost/Finance/Direct/Supplier/performance and 14 authorization controls reused within their actual scopes.
+- Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/QA-MB-MANAGED-EXEC-20261005T084239Z/runtime-resume-20261005T101347Z/closure-20261005T131326Z/bridge-classification-20261005T161901Z/delivery-readonly-caller-http-control.json; /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/QA-MB-MANAGED-EXEC-20261005T084239Z/runtime-resume-20261005T101347Z/closure-20261005T131326Z/bridge-classification-20261005T161901Z/storage-revoke-security-classification.json; /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/QA-MB-MANAGED-EXEC-20261005T084239Z/runtime-resume-20261005T101347Z/closure-20261005T131326Z/bridge-classification-20261005T161901Z/delivery-worker-owner-runtime-evidence.json
+
+
+### 2026-10-05T17:20:53.728Z - Delivery closed; application evidence forward-fix verified
+- COMPLETE: SPEC-DEL-002 Delivery DISPATCHED is distinct from IN_TRANSIT custody. Corrected resume assertion only; verified 10 bags/600000 VND plus 2 m3/400000 VND in transit and symmetric handoff source movements. Existing handoff/start not re-executed.
+- COMPLETE_MANAGED_HTTP: two Worker all-line submissions, receiver/note/proof source, Owner read-and-verify existing results, permission denials, audited quantity adjustment and same-operation retries. Warehouse final zero, reservation zero, transit retains 1 bag/60000 VND. Delivery AR/revenue 2910000 and COGS 1940000 VND; no automated loss/return/history rewrite.
+- COMPLETE_LOCAL_FORWARD_FIX: /api/evidence/[id]/download checks real session plus canonical business RPC on every request, then server-only Storage read; streams bytes with private/no-store/CDN disabling headers. Old /signed URL is a non-redirect compatibility alias. Owner/customer links now use /download. Portal upload uses canonical current-user create/finalize RPCs plus trusted server-only upsert so removing ordinary SELECT does not break application upload.
+- HTTP_BOUNDARY_PASS: same unchanged QA Worker cookie across two fresh HTTP connections after revoke returns 404/no bytes/no source metadata. Owner/Worker before and Worker after restore return exact 68-byte hash. Outsider=404; unauthenticated=401; new signing=42501. Original access/grants restored.
+- OPEN_P1 STORAGE-REVOKE-CACHE-01: direct authenticated Storage request after revoke still returns 200/exact private bytes over fresh TLS from CDN HIT. Proxy alone is NOT sufficient. No managed policy changed. Exact forward policy package prepared, NOT APPLIED; post-policy warmed/CDN denial remains mandatory.
+- LOCAL_CHECKS: targeted lint/typecheck PASS; 13 unit/component tests PASS; one build PASS with nonblocking runtime-reexport warning on legacy alias (default Node runtime used). Exact policy SQL/recovery has PGlite 8/8 semantic controls, NOT native/managed Storage or CDN verification.
+- SUPPLEMENTARY_HARNESS: new optional read-only count diagnostic wrongly assumed two AR obligations. Actual count one; original exact monetary/source/idempotency checks remain PASS. Correction disclosed in one pending asynchronous question; no new transaction, no application defect inferred, no expectation silently changed.
+- Existing Sales/Stock/Reader/Cost/Finance/Direct/Supplier/performance gates reused. Local test server stopped by owned finite timeout; no local cluster started. No UAT, freeze, commit/push/deploy/Production.
+- Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/QA-MB-MANAGED-EXEC-20261005T084239Z/runtime-resume-20261005T101347Z/closure-20261005T131326Z/evidence-forward-fix-20261005T165518Z; MANAGED_QA_CORE_READY_FOR_UAT=NO; candidate_ready_to_freeze=NO.
+
+
+### 2026-10-05T17:58:12.699Z - Scoped Storage approval: readonly progress, no policy execution
+- Exact policy SQL hash matches 61efafbe9c99254336faeb9211ecdd5e1ff3bf0b16ab023067f8ce77c5e944ea; forward package hash 8bd77550a39aa94f306eb82a1945723ce572c92aa6aa2033f3dfe71a086a4336. Ten approved app path hashes unchanged; existing build VVErQkbtzJ3QHJ7qX0NhM reused, not rebuilt.
+- COMPLETE_READONLY: supplementary AR count repaired according to canonical verify_delivery: one header AR/revenue/cost row per verification, exact totals AR/revenue 2910000 VND and COGS 1940000 VND; original HTTP retry/source evidence reused, no Delivery/business command re-executed.
+- COMPLETE_READONLY: residual 1 bag/60000 VND is EXPECTED_LINKED_REMAINDER tied to Delivery e136fd7b-290a-4b8d-9657-ac974a833fe9, line e15df66e-46b8-4eea-a68a-447cae240c46, handoff 5048d48d-a4a1-443a-a570-20c10b5ab06f, verification line d231e216-e39c-4797-a8e9-4d463435d73e and allocation 08fc2900-b211-4e16-adee-a670b3cbd512. No return case or orphan; resolution remains explicit, not automatic return/loss.
+- INTRODUCED_CAPTURE_HARNESS_FAILURE: readonly proof-link query used evidence_object_id; actual catalog column is evidence_id. SQLSTATE 42703; no full pre-apply capture artifact/PASS was produced. Narrow caller repair was disclosed via asynchronous question; response pending. No policy/Storage object/access/history mutation occurred.
+- Local server started from existing build at 127.0.0.1:4057; default sandbox denied the independent HTTP identity request with EPERM. No browser/app identity PASS inferred. Owned server stopped at handoff; no local DB cluster started.
+- STORAGE-REVOKE-CACHE-01 remains OPEN_P1 until exact apply plus NEW post-policy fixture/runtime checks. Freeze and final Owner UAT artifact NOT_CREATED; UI/Owner acceptance remains pending. Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/QA-MB-MANAGED-EXEC-20261005T084239Z/runtime-resume-20261005T101347Z/closure-20261005T131326Z/evidence-forward-fix-20261005T165518Z/security-closure-20261005T175004Z/delivery-residual-ar-reconciliation.json. Remote not pushed; Production untouched.
+
+
+### 2026-10-05T20:16:19.717Z - Exact Storage forward fix executed; current UAT identity frozen
+- COMPLETE_CAPTURE: actual public.work_result_portal_evidence relation inspected; caller corrected to evidence_id, syntax PASS; full deterministic pre-state b5d179ee69cf0c5ed8e06de95f4bcb72e0498afe7787952b992b1a4e6d13c054.
+- COMPLETE_EXACT_QA_POLICY: approved SQL SHA 61efafbe9c99254336faeb9211ecdd5e1ff3bf0b16ab023067f8ce77c5e944ea applied once with own BEGIN/COMMIT and finite lock/statement/overall timeout. Removed only r9_portal_evidence_select; added r9_portal_evidence_server_read_only (RESTRICTIVE SELECT authenticated; bucket_id <> portal-evidence). Post-state 79d1c66716b97797b9f57914adf27f2fbc147c731df6f5f088ae1a0a8f580edd equals approved target. Existing bucket privacy, unrelated policies, table/column ACLs, canonical helpers, proof-result links and entire migration history unchanged. No fake migration version; five existing core migrations not re-applied.
+- COMPLETE_NEW_OBJECT_PRIMARY: 4a6095fe-27fa-4391-97e0-59d4eb6ec6b7 is a new post-policy synthetic PDF, 639 bytes, SHA 6f93950040195d35e8fd52391186b80273be91c9780475446074b2df3fb8c465. Owner/Worker/Receiver/outsider ordinary-JWT raw Storage reads deny. Worker/Owner app reads return exact bytes with private/no-store headers. Two fresh HTTP connections using unchanged Worker cookie deny immediately after scoped revoke; fresh login and canonical new signing also deny. Exact original access/role/individual grants restored; audit retained.
+- COMPLETE_TARGETED_WRITES_RECOVERY: application upload/create/finalize/source link and same-operation retry pass; outsider upload/finalize denied. Isolated restore 3004a4b8-68b8-45d2-a681-ecfcd3c7f091 has identical size/hash and Work source. Two new objects only; no deletes/public bucket/global policy or provider changes.
+- LEGACY: old synthetic proof remains linked to committed WorkResult and works through supported application stream. Historical pre-policy CDN evidence is retained separately; raw cached object not used as primary verdict, not purged/deleted.
+- STORAGE-REVOKE-CACHE-01=CLOSED for the approved post-policy architecture, not waiver. Confirmed core P0/P1=0; unchanged Sales/Stock/Reader/Cost/Finance/Direct/Supplier/Delivery/API performance gates reused. Delivery residual classification and corrected header AR assertion reused; no business replay.
+- CORE_BUSINESS_TECHNICAL_RUNTIME_READY=YES; MANAGED_QA_CORE_READY_FOR_UAT=YES. Exact local source/build/policy UAT snapshot frozen (no commit/push/deploy). APPLICATION_RELEASE_INPUT vs QA_HARNESS vs DOCUMENTATION explicitly classified. B_TECHNICALLY_READY remains NO pending canonical BIZ01..08 UI/manual acceptance; full milestone readiness is not inferred from core HTTP PASS. Owner/go-live acceptance pending; B_OPERATIONAL_READY=NO.
+- FINAL_OWNER_UAT_HANDOFF=/Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/QA-MB-MANAGED-EXEC-20261005T084239Z/runtime-resume-20261005T101347Z/closure-20261005T131326Z/evidence-forward-fix-20261005T165518Z/policy-execution-20261005T195547Z/FINAL_OWNER_UAT_HANDOFF.json; source/build freeze=/Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/QA-MB-MANAGED-EXEC-20261005T084239Z/runtime-resume-20261005T101347Z/closure-20261005T131326Z/evidence-forward-fix-20261005T165518Z/policy-execution-20261005T195547Z/frozen-owner-uat-candidate.json. Owner UAT not executed; own local server stopped after evidence. QA only; Production untouched.
+
+### HTTPS Preview packaging/runtime delta (2026-10-06)
+- COMPLETE: directory/file-aware upload manifest; 219 application inputs plus 5 required build/deploy files, no forbidden paths. `.vercelignore` excludes QA, reports, migrations and test-only files from hosting uploads.
+- COMPLETE: PREVIEW-NEXT-RUNTIME-01 fixed by a literal nodejs runtime export in the signed compatibility route; GET/auth/private evidence behavior unchanged. Targeted lint/typecheck and evidence route tests 7/7 PASS.
+- VERIFIED_BUILD: repaired-source Preview dpl_CB8H927YLyjp4LCe75FyEueQxApz READY (47s); application fingerprint 85d35e9593115511222e775e9c763856bb74b6ffb85b835c16de81da538f331e. Failed predecessor retained; no blind deployment retry.
+- BLOCKED_RUNTIME: official browser goto of the new Preview identity endpoint returns net::ERR_BLOCKED_BY_CLIENT; no exposed URL-approval API. BIZ-01..08 browser cases NOT_RUN, not FAIL/PASS. No hostname/proxy/browser substitution.
+- OPEN_LOCAL_REPORT_WRAPPER: introduced output-path NaN error; narrow repair question pending. Provider build cause/status captured independently in the official browser.
+- NOT_RUN: release commit/push/PR/merge/Production; automated 8/8 gate not met. No managed DB/schema/fixture writes in this delta.
+
+### 2026-10-06: latest source release preparation; Production gate held
+- [x] SOURCE: preserve PREVIEW-NEXT-RUNTIME-01 and canonical per-request private evidence authorization; application fingerprint 85d35e9593115511222e775e9c763856bb74b6ffb85b835c16de81da538f331e.
+- [x] FINAL_CHECKS: typecheck PASS; lint 0 errors / 10 warnings; affected evidence/Owner-result tests 13/13 PASS; Next 16.3.4 webpack Production build PASS. Worktree-only Turbopack dependency symlink failure retained, not an application failure.
+- [x] PRODUCTION_IDENTITY_READONLY: Vercel hien-xa-erp-v2 / main; current production dpl_FXFWUv3rfNRGcPhEVsd4hL6LexeD; verified project domain hien-xa-erp-v2-nu.vercel.app; Supabase nbwynrwkdbtfsitafsxa, distinct from QA.
+- [ ] PRODUCTION_GATE: connector rejects both Production metadata and read-only SQL with permission error; effective schema/security compatibility cannot yet be proven. Production SUPABASE_SECRET_KEY is absent. Do not merge auto-deploying main or deploy with these unresolved prerequisites.
+- [ ] LIVE_UAT: NOT_RUN; no Preview/local/HTTP evidence substituted. No Production data classification or business writes. Opening data/transition and operational activation pending Owner.
+- Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/production-release-20261006T080823Z; checks in sibling release-final-checks-20261006T080900Z. GitHub checkpoint/PR may proceed independently; no merge/deploy until Production safety verification succeeds.
+
+### PR15 delivery-verifier evidence P1 (2026-10-07)
+- [x] Reproduce canonical verifier without evidence.manage; minimal linked-delivery authorization forward fix; native 27/27 and managed QA/ordinary HTTP 11/11; all temporary QA access restored.
+- [ ] Include exact 20261007022921 forward fix after original five-file Production transaction; merge/deploy/pin and Codex Browser live evidence acceptance.
+- Closure evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/production-po-rpc-closure-20261006T153240Z/p1-closure-evidence.json. UI/live/operational readiness is not implied.

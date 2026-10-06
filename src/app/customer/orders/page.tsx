@@ -1,3 +1,4 @@
+import { salesStateLabel } from "@/modules/portal/presentation";
 import Link from "next/link";
 
 import styles from "@/components/portal/portal.module.css";
@@ -13,7 +14,7 @@ export default async function CustomerOrdersPage() {
       <div className={styles.grid}>
         {snapshot.orders.length ? snapshot.orders.map((order) => (
           <article className={styles.card} key={order.id}>
-            <span className={styles.badge}>{order.state ?? "ĐANG XỬ LÝ"}</span>
+            <span className={styles.badge}>{salesStateLabel(order.state)}</span>
             <h2>{order.number ?? "Đơn hàng"}</h2>
             <div className={styles.meta}>
               <span>{order.deliveries.length} lượt giao</span>
