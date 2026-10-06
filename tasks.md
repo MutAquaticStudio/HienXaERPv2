@@ -447,3 +447,8 @@ Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c
 - [ ] PRODUCTION_GATE: connector rejects both Production metadata and read-only SQL with permission error; effective schema/security compatibility cannot yet be proven. Production SUPABASE_SECRET_KEY is absent. Do not merge auto-deploying main or deploy with these unresolved prerequisites.
 - [ ] LIVE_UAT: NOT_RUN; no Preview/local/HTTP evidence substituted. No Production data classification or business writes. Opening data/transition and operational activation pending Owner.
 - Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/production-release-20261006T080823Z; checks in sibling release-final-checks-20261006T080900Z. GitHub checkpoint/PR may proceed independently; no merge/deploy until Production safety verification succeeds.
+
+### PR15 delivery-verifier evidence P1 (2026-10-07)
+- [x] Reproduce canonical verifier without evidence.manage; minimal linked-delivery authorization forward fix; native 27/27 and managed QA/ordinary HTTP 11/11; all temporary QA access restored.
+- [ ] Include exact 20261007022921 forward fix after original five-file Production transaction; merge/deploy/pin and Codex Browser live evidence acceptance.
+- Closure evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/production-po-rpc-closure-20261006T153240Z/p1-closure-evidence.json. UI/live/operational readiness is not implied.
