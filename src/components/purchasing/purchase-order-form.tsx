@@ -1,6 +1,7 @@
 "use client";
 
 import { startTransition, useActionState, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createPurchaseOrderAction, previewWarehousePurchaseAction, searchPurchaseSuppliersAction, updatePurchaseOrderDraftAction, updatePurchaseWarehouseAddressAction, updatePurchaseDraftDestinationAction, type CostPreviewResult } from "@/modules/purchasing/actions";
 import { normalizeWarehouseAddress, warehouseAddressRequired } from "@/modules/purchasing/warehouse-address";
@@ -145,7 +146,7 @@ export function PurchaseOrderForm({ options, operationId, salesLine, sourceLines
   }
   return <form className="card card-pad" onSubmit={(event) => {
     event.preventDefault();
-    if (pending || warehousePending || disabled || ((canReadPrice || createsSales) && !preview?.success) || (createsSales && !preview?.sales)) return;
+    if (pending || warehousePending || disabled || state?.partialPurchaseOrderId || ((canReadPrice || createsSales) && !preview?.success) || (createsSales && !preview?.sales)) return;
     const data = new FormData(event.currentTarget);
     startTransition(() => action(data));
   }}>
@@ -186,6 +187,7 @@ export function PurchaseOrderForm({ options, operationId, salesLine, sourceLines
     {preview?.message && <p role="status" className={`form-message${preview.success ? " success" : ""}`}>{preview.message}</p>}
     {mode === "LINKED_DIRECT" && !salesLine && <p className="mock-banner">{existing ? "Lưu cập nhật PO nháp này; không tạo đơn mua hoặc đơn bán mới. Đơn bán liên kết được giữ nguyên." : "Giá mua được lưu trên đơn mua. Gắn đơn bán có sẵn sẽ giữ nguyên giá bán; chọn tạo đơn bán liên kết sẽ lưu hai bản nháp cùng lúc."}</p>}
     {state?.message && <p className={`form-message${state.success ? " success" : ""}`} role="status">{state.message}</p>}
-    <div className="form-actions"><button className="button button-primary" disabled={pending || warehousePending || disabled || ((canReadPrice || createsSales) && !preview?.success) || (createsSales && !preview?.sales)} type="submit">{pending ? "Đang lưu..." : existing ? "Lưu thay đổi PO nháp" : salesLine ? "Lưu PO giao thẳng" : mode === "LINKED_DIRECT" ? "Lưu đơn mua và bản nháp bán" : "Lưu nháp đơn mua"}</button></div>
+    {state?.partialPurchaseOrderId && <Link className="button button-secondary" href={`/admin/purchase-orders/${state.partialPurchaseOrderId}/edit`}>Mở PO nháp đã tạo</Link>}
+    <div className="form-actions"><button className="button button-primary" disabled={pending || warehousePending || disabled || !!state?.partialPurchaseOrderId || ((canReadPrice || createsSales) && !preview?.success) || (createsSales && !preview?.sales)} type="submit">{pending ? "Đang lưu..." : existing ? "Lưu thay đổi PO nháp" : salesLine ? "Lưu PO giao thẳng" : mode === "LINKED_DIRECT" ? "Lưu đơn mua và bản nháp bán" : "Lưu nháp đơn mua"}</button></div>
   </form>;
 }
