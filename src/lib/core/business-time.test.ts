@@ -21,6 +21,20 @@ describe("business document display", () => {
     expect(result).toContain("03:19");
     expect(result).toContain("28");
   });
+  it("shows the delivery instant at 16:00 in the business timezone regardless of server timezone", () => {
+    const previous = process.env.TZ;
+    try {
+      for (const timezone of ["UTC", "America/Los_Angeles", "Asia/Ho_Chi_Minh"]) {
+        process.env.TZ = timezone;
+        const result = formatBusinessDateTime("2026-10-07T09:00:00Z");
+        expect(result).toContain("16:00");
+        expect(result).toContain("7 thg 10, 2026");
+      }
+    } finally {
+      if (previous === undefined) delete process.env.TZ;
+      else process.env.TZ = previous;
+    }
+  });
   it("removes database quantity padding without rounding away stored precision", () => {
     expect(formatQuantity("1.000000")).toBe("1");
     expect(formatQuantity("1234.567000")).toBe("1.234,567");

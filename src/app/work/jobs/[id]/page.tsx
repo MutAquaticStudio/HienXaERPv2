@@ -6,10 +6,11 @@ import { WorkResultDraftForm } from "@/components/portal/work-result-draft-form"
 import { ForegroundGpsControl } from "@/components/routing/foreground-gps-control";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { getWorkerPortalJob } from "@/modules/portal/actions";
+import { formatBusinessDateTime } from "@/lib/core/business-time";
 
 function showDate(value?: string) {
   return value
-    ? new Intl.DateTimeFormat("vi-VN", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value))
+    ? formatBusinessDateTime(value)
     : "Chưa chốt";
 }
 
