@@ -2403,3 +2403,6 @@ An introduced read-only build-report path-concatenation error (NaN) remains awai
 - Local harness repairs: native uses existing valid role codes and bounded employee codes, never loosens constraints; Keychain parser extracts only secret after numeric status 0, rejects metadata-only/malformed/nonzero responses and preserves JSON-like secret characters. No credential values committed or recorded.
 - Code checks: parser 6/6, helper 4/4, lint/typecheck/local Next webpack build PASS. Remaining: CI/PR merge, exact Production apply, browser before/reload/navigation closure, then unfinished UAT. Existing Storage cutover/security/recovery and completed BIZ subflows reused; opening balances/data transition remain Owner pending.
 - Evidence directory: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/production-po-rpc-closure-20261006T153240Z.
+
+## LIVE-BIZ03-TIME-01 (2026-10-07)
+Delivery list and Worker job schedule displays now share formatBusinessDateTime with Delivery detail. Reproduction uses DL-2026-000003 / WRK-202610-000002. Local targeted lint, typecheck, 14 tests and webpack build PASS; no schema/data mutation. Existing worker-reader correlation native/QA/Production evidence remains valid. UI retest follows the exact merged release.

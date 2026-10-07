@@ -470,3 +470,8 @@ Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c
 - Assignment options now follow employee_branch_access FKs, current trusted branch, active employee/access/role; deduplicate actual employee IDs. No privileged client or payroll payload.
 - PASS: native scoped reader 17 checks/reconstruction; ordinary QA HTTP 13 controls; parser 6 tests; assignment helper 4 tests; targeted lint/typecheck and local webpack build. QA migration committed exactly once; post-commit transport loss read back confirmed, no SQL replay; temporary QA access states restored.
 - Production apply/browser reload closure and remaining BIZ UAT are pending. Storage, PO/Finance completed subflows and BIZ-01 remain reused within their unchanged inputs. No full automated/live/operational readiness claim.
+
+## LIVE-BIZ03-TIME-01 (2026-10-07)
+- Reproduced: Delivery list and Worker job showed 09:00 while detail showed 16:00 for the same 2026-10-07T09:00:00Z instant.
+- Minimal fix: both affected displays use the existing Asia/Ho_Chi_Minh business formatter. No stored timestamps, permissions or schema changed.
+- Targeted eslint/typecheck PASS; business-time 14/14 PASS across UTC/Los_Angeles/Vietnam; webpack production build PASS. Production browser retest pending deployment.
