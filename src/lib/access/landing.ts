@@ -6,6 +6,8 @@ const destinations = [
   ["purchasing.read", "/admin/purchase-orders"],
   ["finance.ar.read", "/admin/receivables"],
   ["finance.ap.read", "/admin/payables"],
+  ["finance.expense.read", "/admin/expenses"],
+  ["finance.payment_notice.review", "/admin/payment-notices"],
   ["orders.read", "/admin/orders"],
   ["quotation.read", "/admin/quotations"],
   ["inventory.read", "/admin/inventory"],
@@ -16,6 +18,10 @@ const destinations = [
   ["compensation.read", "/admin/compensation"],
   ["service.read", "/admin/service-jobs"],
   ["roles.manage", "/admin/access"],
+  ["pricing.read", "/admin/settings/pricing"],
+  ["customers.manage", "/admin/settings"],
+  ["suppliers.manage", "/admin/settings"],
+  ["catalog.manage", "/admin/settings"],
   ["work.read", "/work"],
 ] as const;
 
