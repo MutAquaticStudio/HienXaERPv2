@@ -10,8 +10,9 @@ import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { resolvePrice, type PriceRule } from "@/modules/pricing/resolve-price";
 import { loadPurchaseSuppliers } from "./form-options";
+import { finishDirectPurchaseDraft } from "./finish-direct-draft";
 
-export type PurchaseActionState = { message: string; success?: boolean; supplierId?: string } | undefined;
+export type PurchaseActionState = { message: string; success?: boolean; supplierId?: string; partialPurchaseOrderId?: string } | undefined;
 
 export async function searchPurchaseSuppliersAction(query: string) {
   const access = await requireInternalPermission("purchasing.create");
@@ -240,6 +241,17 @@ async function saveWarehouseDocument(mode: "create" | "edit", formData: FormData
     } else if (input.salesOrderId) {
       rpcResult = await supabase.rpc("create_direct_purchase_from_sales_order", { target_sales_order_id: input.salesOrderId,
         target_supplier_id: input.supplierId, purchase_lines: result.lines, expected_at: expectedAt, operation_id: input.operationId });
+      if (!rpcResult.error && rpcResult.data) {
+        try {
+          await finishDirectPurchaseDraft(supabase, { purchaseOrderId: rpcResult.data, branchId: access.branchId,
+            expectedAt, terms: input.terms || null, operationId: input.operationId, lines: result.lines });
+        } catch {
+          revalidatePath("/admin/purchase-orders");
+          revalidatePath(`/admin/purchase-orders/${rpcResult.data}`);
+          return { partialPurchaseOrderId: rpcResult.data,
+            message: "PO nháp đã được tạo nhưng chưa xác nhận được điều khoản. Không tạo lại; mở PO này để kiểm tra và hoàn tất bản nháp." };
+        }
+      }
     } else {
       const salesLines = await buildSalesLines(input.customerId!, result.lines, access.branchId, input.lines, access.permissions.has("pricing.manage"));
       const actualSales = salesPreview(salesLines);

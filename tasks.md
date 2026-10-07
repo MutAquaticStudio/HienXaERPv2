@@ -475,3 +475,10 @@ Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c
 - Reproduced: Delivery list and Worker job showed 09:00 while detail showed 16:00 for the same 2026-10-07T09:00:00Z instant.
 - Minimal fix: both affected displays use the existing Asia/Ho_Chi_Minh business formatter. No stored timestamps, permissions or schema changed.
 - Targeted eslint/typecheck PASS; business-time 14/14 PASS across UTC/Los_Angeles/Vietnam; webpack production build PASS. Production browser retest pending deployment.
+
+## Production UAT delta (2026-10-07)
+- LIVE-BIZ03-01 employee reader CLOSED: forward 20261007111747 / SHA256 23d64c001a3665e223658faa99eac2cf8944126a8ecd3297f417623af1e52bed; native 17, QA 13, exact Production apply once, Worker visible after reload/navigation. PR18 merged e4ed63969529b9e72d19af54123f765024c2bce6.
+- LIVE-BIZ03-TIME-01 CLOSED on Production via PR19 / 690ba21c9e1c523193723111db814349e447b287: same original Worker job and Delivery list show 16:00 Vietnam, not 09:00 UTC.
+- Actual Codex Browser Warehouse -> Worker -> Owner result bridge PASS without re-entering quantities; proof file selection remains browser-platform blocked. Short/return/follow-up subflow PASS: A20 -> A18 -> return2 -> follow-up2, B4; AR/revenue3m, cost1m, final custody0.
+- New LIVE-BIZ02-TIME-01 and LIVE-BIZ04-TERMS-01 reproduced on PO8. Local hotfix uses existing business formatter and existing versioned Direct Draft updater, preserving created line/allocation identities. Two commands are explicit; completion uncertainty yields a linked existing Draft and blocks duplicate creation, not false success.
+- Focused 38 tests, typecheck and webpack build PASS; lint 0 errors / 2 mock-test warnings. CI and fresh ordinary-browser terms persistence retest pending. No new schema, role or grant change.
