@@ -489,3 +489,8 @@ Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c
 - Targeted 20 tests/lint/typecheck/webpack build PASS. CI and Production UI retest pending.
 - New P1 LIVE-BIZ06-CLOSE-01 held separately: no UI remaining-close after verified Delivery, and existing sales_order_delivery_cancellation_guard rejects cancellation whenever Delivery history exists, including resolved history. This preserves safety but provides no dedicated close-remaining command. Native cancellation returned 23514 and fixture rollback PASS; the separate close RPC proposal remains LOCAL_ONLY pending targeted verification and exact approval.
 - BIZ05 ordinary Finance UI AR multi2m+0.5m, advance100k, matching, inverse reversals and preserved baseline/source reconciliation PASS. New controlled AR/revenue5.28m unchanged by payment.
+
+## LIVE-BIZ07-EXPENSE-TIME-01 (2026-10-08)
+- Ordinary LIVE-UAT Finance created exactly one isolated expense Draft6904dee0-87da-4e66-8cf0-e4fa45c2dae3 for1,000 VND through Codex Browser. The historical Draft remains untouched; no external transfer.
+- Backend effective_at2026-10-07T18:19Z is business date8/10. List/reload incorrectly displayed7/10 because its formatter used server timezone.
+- Minimal app-only correction uses existing formatBusinessDate for this column. No RPC/schema/permission/money change. Targeted checks, CI and same-record Production retest are required before closure.
