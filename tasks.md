@@ -482,3 +482,10 @@ Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c
 - Actual Codex Browser Warehouse -> Worker -> Owner result bridge PASS without re-entering quantities; proof file selection remains browser-platform blocked. Short/return/follow-up subflow PASS: A20 -> A18 -> return2 -> follow-up2, B4; AR/revenue3m, cost1m, final custody0.
 - New LIVE-BIZ02-TIME-01 and LIVE-BIZ04-TERMS-01 reproduced on PO8. Local hotfix uses existing business formatter and existing versioned Direct Draft updater, preserving created line/allocation identities. Two commands are explicit; completion uncertainty yields a linked existing Draft and blocks duplicate creation, not false success.
 - Focused 38 tests, typecheck and webpack build PASS; lint 0 errors / 2 mock-test warnings. CI and fresh ordinary-browser terms persistence retest pending. No new schema, role or grant change.
+
+## LIVE-BIZ07-TIME-01 (2026-10-07)
+- Reproduced: Customer Dashboard past cutoff returned correct zero facts but caption showed current knowledge time; drill-down displayed UTC calendar day and passed an unclamped future period end.
+- Minimal app-only fix: shared business-date effective cutoff=min(period end, server knowledge cutoff), default instant now, explicit invalid-date rejection; Main caption/secondary AR/AP readers and drill-down share that cutoff. No RPC/schema/security/KPI-money rewrite.
+- Targeted 20 tests/lint/typecheck/webpack build PASS. CI and Production UI retest pending.
+- New P1 LIVE-BIZ06-CLOSE-01 held separately: no UI remaining-close after verified Delivery, and existing sales_order_delivery_cancellation_guard rejects cancellation whenever Delivery history exists, including resolved history. This preserves safety but provides no dedicated close-remaining command. Native cancellation returned 23514 and fixture rollback PASS; the separate close RPC proposal remains LOCAL_ONLY pending targeted verification and exact approval.
+- BIZ05 ordinary Finance UI AR multi2m+0.5m, advance100k, matching, inverse reversals and preserved baseline/source reconciliation PASS. New controlled AR/revenue5.28m unchanged by payment.

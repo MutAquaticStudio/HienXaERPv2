@@ -4,6 +4,7 @@ import { DashboardDetails, type DashboardDetail } from "@/components/dashboard/d
 import { requireInternalPermission } from "@/lib/access/context";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { dashboardSnapshotCutoff } from "@/modules/reports/dashboard-snapshot-cutoff";
 
 type Quality = "READY" | "INCOMPLETE" | "NOT_APPLICABLE" | "FORBIDDEN" | "UNAVAILABLE";
 type Metric = { value_vnd?: string | number | null; value?: string | number | null; quality: Quality };
@@ -82,10 +83,11 @@ async function DashboardFilters({ access, query, from, to }: { access: Dashboard
 
 async function DashboardSecondary({ access, query, to, dashboardArgs, snapshot }: { access: DashboardAccess; query: DashboardQuery; to: string; dashboardArgs: DashboardArgs; snapshot: Snapshot }) {
   const supabase = await createServerSupabase();
+  const effectiveCutoff = dashboardSnapshotCutoff(to, dashboardArgs.knowledge_cutoff);
   const [dashboardDetailResult, receivableResult, payableResult] = await Promise.all([
     supabase.rpc("finance_dashboard_detail", dashboardArgs),
-    access.permissions.has("finance.ar.read") ? supabase.rpc("finance_obligation_snapshot", { target_branch_id: access.branchId, target_side: "AR", as_of: instant(to), knowledge_cutoff: dashboardArgs.knowledge_cutoff, target_customer_id: query.customer || null, target_site_id: query.site || null, target_sales_employee_id: query.sales || null }).gt("outstanding_amount_vnd", 0).order("outstanding_amount_vnd", { ascending: false }).limit(6) : Promise.resolve({ data: [] }),
-    access.permissions.has("finance.ap.read") ? supabase.rpc("finance_obligation_snapshot", { target_branch_id: access.branchId, target_side: "AP", as_of: instant(to), knowledge_cutoff: dashboardArgs.knowledge_cutoff, target_customer_id: query.customer || null, target_site_id: query.site || null, target_sales_employee_id: query.sales || null }).gt("outstanding_amount_vnd", 0).order("outstanding_amount_vnd", { ascending: false }).limit(6) : Promise.resolve({ data: [] }),
+    access.permissions.has("finance.ar.read") ? supabase.rpc("finance_obligation_snapshot", { target_branch_id: access.branchId, target_side: "AR", as_of: effectiveCutoff, knowledge_cutoff: dashboardArgs.knowledge_cutoff, target_customer_id: query.customer || null, target_site_id: query.site || null, target_sales_employee_id: query.sales || null }).gt("outstanding_amount_vnd", 0).order("outstanding_amount_vnd", { ascending: false }).limit(6) : Promise.resolve({ data: [] }),
+    access.permissions.has("finance.ap.read") ? supabase.rpc("finance_obligation_snapshot", { target_branch_id: access.branchId, target_side: "AP", as_of: effectiveCutoff, knowledge_cutoff: dashboardArgs.knowledge_cutoff, target_customer_id: query.customer || null, target_site_id: query.site || null, target_sales_employee_id: query.sales || null }).gt("outstanding_amount_vnd", 0).order("outstanding_amount_vnd", { ascending: false }).limit(6) : Promise.resolve({ data: [] }),
   ]);
   const receivables = (receivableResult.data ?? []) as Receivable[];
   const payables = (payableResult.data ?? []) as Payable[];
@@ -105,6 +107,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
   const to = /^\d{4}-\d{2}-\d{2}$/.test(query.to ?? "") ? query.to! : defaults.to;
   const supabase = await createServerSupabase();
   const cutoff = new Date().toISOString();
+  const effectiveCutoff = dashboardSnapshotCutoff(to, cutoff);
   const dashboardArgs = {
     target_branch_id: access.branchId,
     from_inclusive: instant(from),
@@ -117,7 +120,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
   };
   const snapshotResult = await supabase.rpc("finance_dashboard_snapshot", dashboardArgs);
   const fallback: Snapshot = {
-    scope: { from: instant(from), to: instant(to), as_of: new Date().toISOString(), branch_id: access.branchId },
+    scope: { from: instant(from), to: instant(to), as_of: effectiveCutoff, branch_id: access.branchId },
     revenue: { quality: "UNAVAILABLE" }, direct_cost: { quality: "UNAVAILABLE" }, gross_profit: { quality: "UNAVAILABLE" },
     operating_expense: { quality: "UNAVAILABLE" }, operating_profit: { quality: "UNAVAILABLE" }, operating_margin_bps: { quality: "UNAVAILABLE" },
     receivable: { quality: "UNAVAILABLE" }, payable: { quality: "UNAVAILABLE" }, salary_payable: { quality: "INCOMPLETE" }, commission_payable: { quality: "INCOMPLETE" },
@@ -137,7 +140,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
   return <><header className="page-heading"><div><p className="eyebrow">Tổng quan kinh doanh</p><h1>Tổng quan</h1><p className="lede">Doanh thu theo kỳ và công nợ tại thời điểm đã chọn. Thu tiền không làm tăng doanh thu lần nữa.</p></div>{access.permissions.has("finance.ar.read") && <Link className="button button-secondary" href="/admin/cashbook">Mở sổ tiền</Link>}</header>
     <Suspense fallback={null}><LowStockAlert access={access} /></Suspense>
     <Suspense fallback={<section className="card card-pad"><p className="muted">Đang tải bộ lọc...</p></section>}><DashboardFilters access={access} query={query} from={from} to={to} /></Suspense>
-    <p className="report-cutoff">Kỳ {vietnameseDate.format(new Date(instant(from)))} đến trước {vietnameseDate.format(new Date(instant(to)))} · số dư tính đến {vietnameseDateTime.format(new Date(snapshot.scope.as_of))}</p>
+    <p className="report-cutoff">Kỳ {vietnameseDate.format(new Date(instant(from)))} đến trước {vietnameseDate.format(new Date(instant(to)))} · số dư tính đến {vietnameseDateTime.format(new Date(effectiveCutoff))}</p>
     <section className="metric-grid finance-metrics"><Kpi label="Doanh thu" metric={snapshot.revenue} /><Kpi label="Lợi nhuận gộp quản trị" metric={snapshot.gross_profit} /><Kpi label="Chi phí vận hành" metric={snapshot.operating_expense} /><Kpi label="Lợi nhuận hoạt động" metric={snapshot.operating_profit} /><Kpi label="Biên lợi nhuận" metric={snapshot.operating_margin_bps}>{snapshot.operating_margin_bps.quality === "READY" && snapshot.operating_margin_bps.value != null ? `${(Number(snapshot.operating_margin_bps.value) / 100).toLocaleString("vi-VN")}%` : "—"}</Kpi></section>
     <section className="card card-pad result-chart"><div className="section-head flush"><h2>Biểu đồ kết quả kinh doanh</h2><span className="scope-chip">Cùng kỳ và phạm vi</span></div>{profitBars.map((item) => { const value = BigInt(String(item.metric.value_vnd)); const absolute = value < 0n ? -value : value; const width = Number((absolute * 100n) / maxBar); return <div className="bar-row" key={item.label}><span>{item.label}</span><div className="bar-track" aria-hidden="true"><i style={{ "--bar-width": `${Math.max(width, 2)}%` } as CSSProperties} /></div><strong>{moneyMetric(item.metric)}</strong></div>; })}{!profitBars.length && <p className="empty-inline">Chưa có chỉ số đủ điều kiện hiển thị biểu đồ. Xem thông báo tại từng chỉ số.</p>}</section>
     <Suspense fallback={<section className="card card-pad"><p className="muted">Đang tải phân tích và công nợ chi tiết...</p></section>}><DashboardSecondary access={access} query={query} to={to} dashboardArgs={dashboardArgs} snapshot={snapshot} /></Suspense>
