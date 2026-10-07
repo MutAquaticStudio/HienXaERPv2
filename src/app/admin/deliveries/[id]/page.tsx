@@ -13,6 +13,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { assignDeliveryAction, handoffDeliveryAction, markDeliveryArrivedAction, resolveReturnCaseAction, submitDeliveryResultAction, uploadDeliveryEvidenceAction, verifyDeliveryAction } from "@/modules/delivery/actions";
 import { deliveryStateLabel, deliveryStateTone, sourceModeLabel } from "@/modules/delivery/presentation";
 import { updateDeliveryReceiverAction } from "@/modules/delivery/receiver-actions";
+import { listAssignmentEmployees } from "@/modules/delivery/assignment-options";
 
 type Delivery = { id: string; sales_order_id: string; delivery_number: string; execution_state: string; result_kind: string | null; customer_name_snapshot: string; site_name_snapshot: string; delivery_address_snapshot: string; receiver_name_snapshot: string | null; receiver_phone_snapshot: string | null; scheduled_at: string | null; version: number; employee_id: string | null; vehicle_id: string | null; external_carrier_name: string | null };
 type DeliveryLine = { id: string; material_name_snapshot: string; source_mode: string; warehouse_id: string | null; planned_base_quantity: string; actual_base_quantity: string; accepted_base_quantity: string; billable_base_quantity: string; base_uom_symbol: string };
@@ -29,7 +30,7 @@ export default async function DeliveryDetailPage({ params, searchParams }: { par
     supabase.from("delivery_line_read").select("id, material_name_snapshot, source_mode, warehouse_id, planned_base_quantity, actual_base_quantity, accepted_base_quantity, billable_base_quantity, base_uom_symbol").eq("delivery_id", id).order("id"),
     supabase.from("delivery_results").select("id, result_kind, receiver_name, note, evidence_object_id, submitted_at").eq("delivery_id", id).maybeSingle(),
     supabase.from("delivery_assignments").select("id, assignment_version, employee_id, vehicle_id, external_carrier_name, assigned_at, superseded_at").eq("delivery_id", id).order("assignment_version", { ascending: false }),
-    supabase.from("employees").select("id, display_name").eq("active", true).order("display_name"),
+    access.permissions.has("delivery.assign") ? listAssignmentEmployees(supabase, access.branchId) : Promise.resolve({ data: [], error: null }),
     supabase.from("vehicles").select("id, plate_number").eq("branch_id", access.branchId).eq("active", true).order("plate_number"),
     supabase.from("warehouses").select("id, name").eq("branch_id", access.branchId).eq("active", true).order("name"),
   ]);

@@ -462,3 +462,11 @@ Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c
 - [x] Reproduce mutable-source P1; Owner selects non-CANCELLED Delivery source freeze; separate 20261007022923 exact forward; native/security and managed QA/HTTP planning regression PASS; no backfill.
 - [ ] Complete PR16 review/CI/merge, pending eight-file Production rehearsal/apply and live browser acceptance.
 - Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/production-po-rpc-closure-20261006T153240Z/allocation-source-guard-qa-http-evidence.json.
+
+## LIVE-BIZ03-01 employee reader closure (2026-10-07)
+
+- Root cause B_RLS_WRONG_IDENTIFIER_JOIN: employees_workforce_read compared a.employee_id with a.id, not employees.id. Production identity/branch/role mappings are valid.
+- Forward 20261007111747_employee_workforce_reader_correlation.sql, SHA256 23d64c001a3665e223658faa99eac2cf8944126a8ecd3297f417623af1e52bed. One existing SELECT predicate only; no new grant, shared role change, or business DML.
+- Assignment options now follow employee_branch_access FKs, current trusted branch, active employee/access/role; deduplicate actual employee IDs. No privileged client or payroll payload.
+- PASS: native scoped reader 17 checks/reconstruction; ordinary QA HTTP 13 controls; parser 6 tests; assignment helper 4 tests; targeted lint/typecheck and local webpack build. QA migration committed exactly once; post-commit transport loss read back confirmed, no SQL replay; temporary QA access states restored.
+- Production apply/browser reload closure and remaining BIZ UAT are pending. Storage, PO/Finance completed subflows and BIZ-01 remain reused within their unchanged inputs. No full automated/live/operational readiness claim.
