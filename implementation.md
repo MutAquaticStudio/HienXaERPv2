@@ -2416,3 +2416,4 @@ LIVE-BIZ07-TIME-01 was reproduced through Codex Browser on canonical Production.
 
 ## Expense business-date display follow-up (2026-10-08)
 LIVE-BIZ07-EXPENSE-TIME-01 is isolated to the Expenses list formatter. Reuse existing business-time utility; preserve Finance guards, underlying effective_at and approval/ledger contract. Exactly one LIVE-UAT Draft was created via ordinary Finance browser actions, never replayed. The old September Draft is not approved or mutated. Production closure requires exact merged-source deployment and same-record reload evidence.
+The related AP source row for that expense shows the same timestamp-to-UTC-day defect. The same narrow formatter correction covers AP recorded_at; no change to due_date, canonical debt, payment commands, approvals, RLS or grants. Ordinary Finance UI approval produced exactly one AP1,000 with zero payment delta and preserved the historical Draft.

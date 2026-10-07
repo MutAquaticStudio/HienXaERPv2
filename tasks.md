@@ -494,3 +494,4 @@ Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c
 - Ordinary LIVE-UAT Finance created exactly one isolated expense Draft6904dee0-87da-4e66-8cf0-e4fa45c2dae3 for1,000 VND through Codex Browser. The historical Draft remains untouched; no external transfer.
 - Backend effective_at2026-10-07T18:19Z is business date8/10. List/reload incorrectly displayed7/10 because its formatter used server timezone.
 - Minimal app-only correction uses existing formatBusinessDate for this column. No RPC/schema/permission/money change. Targeted checks, CI and same-record Production retest are required before closure.
+- The AP row generated from that approved LIVE-UAT expense independently reproduced the same wrong server-day display for recorded_at. Apply the same existing business-date formatter to AP's recorded timestamp only; due-date semantics and payment/expense/AP queries remain unchanged.
