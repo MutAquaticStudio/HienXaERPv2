@@ -1,3 +1,4 @@
+import { ReturnCaseHistory } from "@/components/sales/return-case-history";
 import { OwnerWorkResultEvidence } from "@/components/delivery/owner-work-result-evidence";
 import { DeliveryWorkItemBridge } from "@/components/delivery/work-item-bridge";
 import { OpenReturnCaseForm } from "@/components/delivery/open-return-case-form";
@@ -82,6 +83,7 @@ export default async function DeliveryDetailPage({ params, searchParams }: { par
         return { id: item.id, label: `Dòng ${lineNumber} · ${deliveryLine?.material_name_snapshot ?? "Dòng giao"} · khách nhận ${item.accepted_base_quantity} ${deliveryLine?.base_uom_symbol ?? "base"}` };
       })} />}
       {cases.filter((item) => item.state === "OPEN").map((item) => <form className="exception-card" action={resolveReturnCaseAction} key={item.id}><strong>{lines.find((line) => line.id === verified.find((row) => row.id === item.delivery_verification_line_id)?.delivery_line_id)?.material_name_snapshot ?? "Dòng giao"} · {item.case_kind} · {item.base_quantity} base</strong><p>{item.reason}</p><input type="hidden" name="deliveryId" value={delivery.id} /><input type="hidden" name="returnCaseId" value={item.id} /><input type="hidden" name="version" value={item.version} /><input type="hidden" name="resolution" value={item.case_kind === "TRANSIT_LOSS" ? "LOSS_APPROVED" : "RETURNED"} /><input type="hidden" name="operationId" value={randomUUID()} />{item.case_kind !== "TRANSIT_LOSS" && <div className="field"><label>Kho nhận lại</label><select name="warehouseId" required><option value="">Chọn kho</option>{(warehouseResult.data ?? []).map((warehouse) => <option key={warehouse.id} value={warehouse.id}>{warehouse.name}</option>)}</select></div>}<div className="field"><label>Lý do duyệt</label><input name="reason" minLength={3} required /></div><button className="button button-danger action-full" type="submit">{item.case_kind === "TRANSIT_LOSS" ? "Duyệt hao hụt" : "Xác nhận về kho"}</button></form>)}
+      <ReturnCaseHistory cases={cases} />
       {delivery.execution_state === "VERIFIED" && cases.length === 0 && <p className="muted command-note">Đã ghi nhận theo source verification. Trả hàng, hàng còn xe và hao hụt phải mở hồ sơ riêng.</p>}
     </aside></div>
   </>;
