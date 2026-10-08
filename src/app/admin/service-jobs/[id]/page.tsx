@@ -5,6 +5,7 @@ import { ActionNotice } from "@/components/sales/action-notice";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { requireInternalPermission } from "@/lib/access/context";
 import { formatVnd, vnd } from "@/lib/core/money";
+import { formatServiceSchedule } from "@/modules/workforce/service-schedule";
 import { createServerSupabase } from "@/lib/supabase/server";
 import {
   assignWorkItemAction, calculateEarningAction, claimWorkItemAction, heartbeatWorkItemAction,
@@ -53,7 +54,7 @@ export default async function ServiceJobDetail({ params, searchParams }: { param
     <div className="two-column">
       <section className="card card-pad"><div className="section-head"><h2>Nguồn và thực hiện</h2><StatusBadge tone={job.execution_state === "VERIFIED" ? "success" : "warning"}>{serviceStateLabel(job.execution_state)}</StatusBadge></div>
         <dl className="detail-grid">
-          <div className="detail-item"><dt>Lịch</dt><dd>{new Intl.DateTimeFormat("vi-VN", { dateStyle: "medium", timeStyle: "short" }).format(new Date(job.scheduled_start))}</dd></div>
+          <div className="detail-item"><dt>Lịch</dt><dd>{formatServiceSchedule(job.scheduled_start)}</dd></div>
           <div className="detail-item"><dt>Phiếu việc</dt><dd>{job.work_number ?? "Chưa phát hành"}</dd></div>
           <div className="detail-item"><dt>Người thực hiện</dt><dd>{job.operator_name ?? "Chưa nhận"}</dd></div>
           <div className="detail-item"><dt>Trạng thái việc</dt><dd>{job.work_state ? workStateLabel(job.work_state) : "Chưa có"}</dd></div>
