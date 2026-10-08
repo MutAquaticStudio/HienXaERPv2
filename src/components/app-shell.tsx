@@ -4,6 +4,7 @@ import { BarChart3, Boxes, ChevronDown, ClipboardCheck, Factory, FileText, Layou
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { UatBrowserTiming } from "@/components/uat-browser-timing";
 
 type Surface = "admin" | "work" | "customer";
 
@@ -136,7 +137,7 @@ export function AppShell({ surface, children, permissions, actorName, branchName
           <span className="topbar-context">{branchName}</span>
           <div className="identity"><span>{actorName}</span><span className="identity-avatar" aria-hidden="true">{initials}</span></div>
         </header>
-        <main className="content">{children}</main>
+        <main className="content">{children}{surface === "admin" && <UatBrowserTiming />}</main>
       </div>
     </div>
   );
