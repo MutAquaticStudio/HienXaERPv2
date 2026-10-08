@@ -495,3 +495,8 @@ Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c
 - Backend effective_at2026-10-07T18:19Z is business date8/10. List/reload incorrectly displayed7/10 because its formatter used server timezone.
 - Minimal app-only correction uses existing formatBusinessDate for this column. No RPC/schema/permission/money change. Targeted checks, CI and same-record Production retest are required before closure.
 - The AP row generated from that approved LIVE-UAT expense independently reproduced the same wrong server-day display for recorded_at. Apply the same existing business-date formatter to AP's recorded timestamp only; due-date semantics and payment/expense/AP queries remain unchanged.
+
+## Verified-work earning UI seam (2026-10-08)
+- Existing canonical WORK_ITEM_VERIFICATION calculator is available but Compensation UI only exposed manual bases. Add a compensation.manage-gated, branch-scoped VERIFIED work source picker and applicable PER_JOB/PER_TRIP rule versions.
+- UAT-only Worker rule LIVE_UAT_WK_VERIFY_50K v1 targets employee13de4b1a-27ac-4254-8a57-d60f4cd72d4c,50,000 VND from2026-10-07. Not real HR policy. Calculation and earning approval remain explicit canonical steps, not an invented automatic trigger.
+- Targeted6 eligibility tests/lint/typecheck PASS; ordinary Owner source-query positive control pending/recorded independently. Production UI earning PASS is not yet claimed. Allocation-based Sales commission remains a separate unsupported schema/API source, not profit-basis PASS.
