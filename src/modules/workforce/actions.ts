@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { earningCommandError } from "./earning-command-error";
 
 const optionalUuid = z.union([z.uuid(), z.literal("")]);
 const decimal = z.string().trim().regex(/^-?\d+(?:\.\d{1,6})?$/);
@@ -234,7 +235,7 @@ export async function calculateEarningAction(formData: FormData) {
     target_rule_id: parsed.data.ruleId, source_kind: parsed.data.sourceKind,
     source_id: parsed.data.sourceId, operation_id: parsed.data.operationId,
   });
-  if (error) fail(target, error.message);
+  if (error) fail(target, earningCommandError(error));
   revalidatePath("/admin/compensation");
   revalidatePath(target);
   redirect(target + "?notice=earning-calculated");

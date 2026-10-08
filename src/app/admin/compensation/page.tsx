@@ -1,4 +1,6 @@
 import { randomUUID } from "node:crypto";
+import { configureRecognitionAction } from "@/modules/workforce/recognition-action";
+import { EarningSourceTrace, type EarningSource } from "@/modules/workforce/earning-source-trace";
 import { ActionNotice } from "@/components/sales/action-notice";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { requireInternalPermission } from "@/lib/access/context";
@@ -10,7 +12,7 @@ import {
   payEarningAction, recordCompensationBasisAction,
 } from "@/modules/workforce/actions";
 
-type Earning = {
+type Earning = EarningSource & {
   id: string; employee_id: string; employee_name: string; rule_code_snapshot: string;
   rule_version_snapshot: number; earning_type: string; classification: string; source_key: string;
   basis_quantity: string; calculated_amount_vnd: string; approval_state: string; version: number;
@@ -40,12 +42,25 @@ export default async function CompensationPage({ searchParams }: { searchParams:
   const [{ data }, { data: rules }, { data: bases }, { data: workers }, { data: accounts }] = results;
   const rows = (data ?? []) as Earning[];
   const workerOptions = [...new Map((workers ?? []).map((worker) => [worker.id, worker] as const)).values()];
+  const { data: recognitionPolicies, error: recognitionError } = await supabase.from("compensation_recognition_policies").select("rule_id, recognition_kind, effective_at").eq("branch_id", access.branchId);
+  if (recognitionError) throw new Error("Khong tai duoc cau hinh ghi nhan thu nhap.");
   const canManage = access.permissions.has("compensation.manage");
   const canApprove = access.permissions.has("compensation.approve");
   const canPay = access.permissions.has("finance.payment.post");
   return <>
     <header className="page-heading"><div><p className="eyebrow">Compensation ledger</p><h1>Thu nhập, lương và hoa hồng</h1><p className="lede">Mỗi earning giữ source, basis, rule/version và approval; payment chỉ tất toán nghĩa vụ.</p></div></header>
     <ActionNotice notice={query.notice} error={query.error} />
+    {canManage && canApprove && <details className="card card-pad quick-create"><summary>Phê duyệt ghi nhận tự động theo sự kiện</summary>
+      <p>Chỉ sự kiện mới; không backfill. Quy tắc và phê duyệt giữ nguyên lịch sử.</p>
+      <form className="command-panel" action={configureRecognitionAction}>
+        <input type="hidden" name="operationId" value={randomUUID()} />
+        <div className="field"><label>Rule/version của nhân viên</label><select name="ruleId" required><option value="">Chọn rule</option>{(rules ?? []).filter(r => r.employee_id && !recognitionPolicies?.some(p => p.rule_id === r.id)).map(r => <option key={r.id} value={r.id}>{r.code} v{r.version}</option>)}</select></div>
+        <div className="field"><label>Sự kiện ghi nhận</label><select name="recognitionKind"><option value="WORK_ITEM_VERIFICATION">Owner xác minh kết quả Worker</option><option value="AR_PAYMENT_ALLOCATION">Phân bổ payment vào AR của Sales</option></select></div>
+        <div className="field"><label>Hiệu lực (giờ Việt Nam)</label><input name="effectiveAt" type="datetime-local" required /></div>
+        <button type="submit" className="button button-primary">Phê duyệt recognition</button>
+      </form>
+      <ul>{recognitionPolicies?.map(p => <li key={p.rule_id}>{p.recognition_kind} · {p.effective_at} · {p.rule_id}</li>)}</ul>
+    </details>}
     {canManage && <VerifiedWorkEarningForm branchId={access.branchId} rules={(rules ?? []) as VerifiedWorkRule[]} />}
     {canManage && <div className="two-column">
       <details className="card card-pad quick-create"><summary>Tạo phiên bản rule</summary>
@@ -55,7 +70,7 @@ export default async function CompensationPage({ searchParams }: { searchParams:
           <div className="field"><label>Tên rule</label><input name="name" required /></div>
           <div className="field"><label>Nhân viên áp dụng</label><select name="employeeId"><option value="">Toàn chi nhánh</option>{workerOptions.map((item) => <option key={item.id} value={item.id}>{item.code} · {item.display_name}</option>)}</select></div>
           <div className="field"><label>Basis</label><select name="earningType">{earningTypes.map((item) => <option key={item}>{item}</option>)}</select></div>
-          <div className="field"><label>Calculator</label><select name="calculationKind"><option value="FIXED_PER_BASIS">VND mỗi đơn vị basis</option><option value="PERCENT_BPS">Basis points lợi nhuận</option></select></div>
+          <div className="field"><label>Calculator</label><select name="calculationKind"><option value="FIXED_PER_BASIS">VND mỗi đơn vị basis</option><option value="PERCENT_BPS">Basis points (100 = 1%)</option></select></div>
           <div className="field"><label>Rate VND hoặc bps</label><input name="rate" inputMode="decimal" required /></div>
           <div className="field"><label>Phân loại</label><select name="classification"><option value="DIRECT_LABOR">Chi phí trực tiếp</option><option value="OPEX">Opex</option><option value="SALES_COMMISSION">Hoa hồng sales</option></select></div>
           <div className="field"><label>Hiệu lực từ</label><input type="date" name="effectiveFrom" defaultValue={currentDate()} required /></div>
@@ -86,7 +101,7 @@ export default async function CompensationPage({ searchParams }: { searchParams:
     <section className="card"><div className="section-head"><h2>{rows.length} EarningEvent</h2><span className="scope-chip">Traceable và append-only</span></div>
       <div className="table-wrap"><table><thead><tr><th>Nhân viên / nguồn</th><th>Rule</th><th>Basis</th><th>Tính toán</th><th>Duyệt</th><th>Phải trả</th><th>Thao tác</th></tr></thead><tbody>
         {rows.map((earning) => <tr key={earning.id}>
-          <td>{earning.employee_name}<small className="table-subline mono">{earning.source_key}</small></td>
+          <td>{earning.employee_name}<EarningSourceTrace source={earning} /></td>
           <td>{earning.rule_code_snapshot} v{earning.rule_version_snapshot}<small className="table-subline">{earning.earning_type} · {earning.classification}</small></td>
           <td className="mono">{earning.basis_quantity}</td><td className="mono">{formatVnd(vnd(String(earning.calculated_amount_vnd)))}</td>
           <td><StatusBadge tone={earning.approval_state === "APPROVED" ? "success" : "warning"}>{earning.approval_state}</StatusBadge></td>
