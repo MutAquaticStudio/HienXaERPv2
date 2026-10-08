@@ -527,3 +527,37 @@ Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c
 - QA HTTP AR2000000 -> commission+20000; retry same payment unchanged; full reversal appended-20000. Harness incorrectly included derived outstanding in original-history equality; physical readback preserves original+20000 and negative source FK. Assertion repair pending acknowledgement, no payment recreation.
 - Independent QA Worker6/6 automatic verification/retry/source/permission PASS; independent AP/advance/date controls3/3 PASS. No managed permission broadening; compensation standing approval uses Owner manage+approve.
 - Completed BIZ01/02/04/05/06/08 and Storage evidence reused. No operational HR-policy claim; mandatory file/timing tooling signoff remains.
+
+## 2026-10-08 - PR28 compensation live acceptance closure
+
+- [x] Repair only derived-outstanding assertion; helper regression 8/8 and QA aggregate readback 12/12 PASS without replaying QA business commands. Native 13/13, Worker 6/6, Finance controls 3/3 reused.
+- [x] PR28 reviewed, ready, CI PASS and merged as c94ccabb64063c645f76a8a9de5b769ccccb43b8; exact Production deployment dpl_H85ousZ5PXArgb6iBEEo8iSDcXS4 READY and composite live pin PASS.
+- [x] Exact compensation forward 20261008091836 applied once in Production, SHA256 f959b49873f6c0117c6ab428107e4c432fcaa7eaa9a0cc601d38f2a6c7511c50; unrelated migration history preserved.
+- [x] Codex Browser live AR allocation 2,000,000 -> +20,000 commission; reversal -> -20,000, net 0, original physical earning unchanged. AP 700,000 control -> 0 commission.
+- [x] Fresh Worker result: before Owner verification 0; automatic recognition on verification +50,000 and one AP. Reload and UI canonical retry retain the same earning; no raw database error.
+- [x] Worker and Sales report source traceability PASS; BIZ01/02/04/05/06/08 reused PASS. BIZ07 functional scope PASS.
+- [ ] Mandatory browser file selection and precise browser timing remain Owner tooling handoffs, not application P1s. BIZ03 BLOCKED_BROWSER_FILE_UPLOAD_ONLY; BIZ07 PASS_FUNCTIONAL_BLOCKED_TIMING_TOOL_ONLY.
+- [ ] B_TECHNICALLY_READY=NO_OWNER_TOOLING_SIGNOFF_ONLY; technical_application_ready=YES; confirmed core P0/P1=0. B_OPERATIONAL_READY=NO: opening balances PENDING_OWNER, data transition NOT_EXECUTED, operational HR policy not approved.
+- Evidence: compensation-final-release-acceptance.json, compensation-live-closure.json, compensation-live-source-graph.json and updated live-uat-record-manifest.json in the existing production-po-rpc-closure-20261006T153240Z run. Compensation settings are controlled UAT_ONLY, not actual HR policy.
+
+## 2026-10-09 - Final Seoul locality and browser timing closure
+
+- Owner-selected database locality: Production Supabase `nbwynrwkdbtfsitafsxa`, authoritative region `ap-northeast-2` (Seoul). PR #30 corrected the unshipped `hnd1` proposal to `icn1`; no Tokyo Production deployment is claimed.
+- PR #30 release head: `02b0e3514367434e543b4ba6a0b1e4e28d1fdf3b`; merged main: `69805e887a047c352458a0bc61813c7c14a82a06`.
+- Production: `https://hien-xa-erp-v2-nu.vercel.app/`, deployment `dpl_Ey8F9EgnTNw7DL1Uv8pfHgddFkAe`, READY, effective region `icn1`; composite live identity pin PASS.
+- Application release fingerprint (including provider configuration): `d2ec349f2752cb813ddcaa5834c700eb8e85776444cf81754a6f5393be93a3e5`. Runtime-only fingerprint unchanged: `6397c36e37d8914339fec494e06acdf5d5a60fb9b31963c0b0a54485227efe93`.
+- ADMIN_SHELL_BROWSER: reused valid 100-sample p95 `227.80504150390624 ms`, PASS against `<300 ms`.
+- DASHBOARD_BROWSER_CONTENT: original p95 `3993.264660644531 ms`; independent post-icn1 run, 100 native UI refresh samples, concurrency 1, p50 `372.25 ms`, p95 `576.6798950195313 ms`, p99 `964.8831445312528 ms`, first sample `572.199951171875 ms`, errors 0, over-budget 0/100, PASS against `<2000 ms`.
+- Observed p95 difference: `3416.584765625 ms` (`85.55868583660437%`). This is an observed comparison, not a controlled causal estimate: baseline DPR 2 versus retest DPR 1 is disclosed; CSS viewport 476x708, browser engine, filters and readiness criterion were retained. No certified cold-cache claim.
+- The prior 28-record post-icn1 run interrupted by authentication rate-limit/redirect remains separate, failed/incomplete evidence. It is not silently discarded or included as successful samples in the independent 100-sample run. No Auth settings were changed.
+- LIVE-PERF-DASHBOARD: CLOSED_PRODUCTION_VERIFIED. BIZ-01..08: PASS with prior unchanged business evidence reused and BIZ-07 timing closed; confirmed core P0=0, P1=0. LIVE_APPLICATION_VALIDATED=YES; B_TECHNICALLY_READY=YES.
+- Opening balances=PENDING_OWNER; data transition=NOT_EXECUTED; B_OPERATIONAL_READY=NO. Controlled UAT compensation values are not real HR policy. No business UAT replay, schema, Storage, role, compensation or opening-data changes in this region/timing closure.
+- Evidence directory: `/Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c44b0b9289d/hienxa-qa/production-po-rpc-closure-20261006T153240Z`.
+- Authoritative artifacts: `final-seoul-performance-closure.json`, `final-icn1-live-pin.json`, `final-icn1-source-manifest.json`, `final-browser-timing-post-icn1-raw.json`, `post-icn1-auth-interrupted-raw.json`, `final-browser-timing-icn1-verdict.png`.
+- This acceptance status append is local documentation only; it does not change the pinned application release or introduce another release/deployment.
+
+## 2026-10-09 - Operational transition entry state
+
+- Final current technical state supersedes the historical pending tooling checkpoints above: BIZ-01..08=PASS, automated UI 8/8, confirmed core P0=0/P1=0, Storage cutover and revoke/recovery=PASS, compensation recognition/idempotency/reversal=PASS, actual browser upload=PASS, final browser timing=PASS, Seoul/icn1 correction complete, B_TECHNICALLY_READY=YES.
+- Operational gates: real opening balances PENDING_OWNER; data transition NOT_EXECUTED; cutover timestamp PENDING_OWNER; real compensation policy PENDING_OWNER; Owner operational activation PENDING. B_OPERATIONAL_READY=NO.
+- Begin read-only operational baseline and LIVE-UAT exclusion inventory. Preserve posted synthetic history and obtain authoritative real inputs before imports. No additional technical QA is required absent an actual transition defect.
