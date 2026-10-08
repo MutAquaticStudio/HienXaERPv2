@@ -34,6 +34,9 @@ export type PricePreviewResult = { success: boolean; message: string; lines?: Pr
 const commandSchema = z.object({ entityId: z.uuid(), operationId: z.uuid() });
 
 function commandError(message: string) {
+  if (message.includes("sales_order_unresolved_execution")) return "Còn giao hàng, việc hoặc hàng đang vận chuyển chưa xử lý. Hãy hoàn tất trước khi đóng phần còn lại.";
+  if (message.includes("sales_order_has_no_remaining")) return "Đơn không còn số lượng chưa giao để đóng.";
+  if (message.includes("sales_order_not_closeable")) return "Đơn không còn ở trạng thái có thể đóng phần còn lại. Hãy tải lại.";
   if (message.includes("credit_limit_exceeded")) return "Hạn mức tín dụng không đủ để xác nhận đơn.";
   if (message.includes("credit_limit_not_approved")) return "Khách hàng chưa có hạn mức tín dụng được duyệt.";
   if (message.includes("overdue_receivable_blocks_credit")) return "Khách hàng có công nợ quá hạn; chưa thể xác nhận đơn.";
@@ -306,6 +309,12 @@ export async function cancelSalesOrderAction(formData: FormData) {
   const parsed = commandSchema.extend({ reason: z.string().trim().min(3).max(500) }).safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId"), reason: formData.get("reason") });
   if (!parsed.success) redirect("/admin/orders?error=invalid-command");
   return internalCommand("orders.cancel", "cancel_sales_order", { target_order_id: parsed.data.entityId, cancel_reason: parsed.data.reason, operation_id: parsed.data.operationId }, `/admin/orders/${parsed.data.entityId}`, "cancelled");
+}
+
+export async function closeSalesOrderRemainingAction(formData: FormData) {
+  const parsed = commandSchema.extend({ reason: z.string().trim().min(3).max(500) }).safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId"), reason: formData.get("reason") });
+  if (!parsed.success) redirect("/admin/orders?error=invalid-command");
+  return internalCommand("orders.cancel", "close_sales_order_remaining", { target_order_id: parsed.data.entityId, close_reason: parsed.data.reason, operation_id: parsed.data.operationId }, `/admin/orders/${parsed.data.entityId}`, "remaining-closed");
 }
 
 export async function sendQuotationAction(formData: FormData) {

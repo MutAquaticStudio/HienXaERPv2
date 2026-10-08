@@ -495,3 +495,9 @@ Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c
 - Backend effective_at2026-10-07T18:19Z is business date8/10. List/reload incorrectly displayed7/10 because its formatter used server timezone.
 - Minimal app-only correction uses existing formatBusinessDate for this column. No RPC/schema/permission/money change. Targeted checks, CI and same-record Production retest are required before closure.
 - The AP row generated from that approved LIVE-UAT expense independently reproduced the same wrong server-day display for recorded_at. Apply the same existing business-date formatter to AP's recorded timestamp only; due-date semantics and payment/expense/AP queries remain unchanged.
+
+## Approved BIZ06/07/08 continuation (2026-10-08)
+- Owner approved exact close forward20261007183000 SHA754145dce77986e3b7980cbc5d73ecafdea3f76860875cfc7967867533ebff2d. Native21/21 and scoped recovery reused; QA SQL transaction committed once and semantic postcheck/history matched. New expected-grants fingerprint harness ordering mismatch blocks final readback classification; no reapply or Production apply.
+- Minimal SO close form/caller use existing orders.cancel and approved RPC; existing cancellation trigger/action untouched. Focused12 tests/lint/typecheck PASS; no complete UI or Production PASS claimed.
+- Milestone-B controlled UAT compensation fixture policy only: effective2026-10-07T00:00+07, Worker50,000 per Owner-verified result, Sales1% of eligible AR payment allocations. Not the real HR policy.
+- Existing calculator supports verified-work basis but Sales commissions currently use SO profit, not Payment Allocation. Never force an allocation result through profit/manual basis. Reference payment700,000 was supplier AP disbursement; eligible Sales allocation0, expected reference commission0.
