@@ -4,6 +4,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { requireInternalPermission } from "@/lib/access/context";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { VerifiedWorkEarningForm, type VerifiedWorkRule } from "@/modules/workforce/verified-work-earning-form";
 import {
   approveEarningAction, calculateEarningAction, createCompensationRuleAction,
   payEarningAction, recordCompensationBasisAction,
@@ -28,7 +29,7 @@ export default async function CompensationPage({ searchParams }: { searchParams:
   const supabase = await createServerSupabase();
   const results = await Promise.all([
     supabase.from("earning_event_read").select("*").eq("branch_id", access.branchId).order("created_at", { ascending: false }),
-    supabase.from("compensation_rules").select("id, code, name, version, earning_type, calculation_kind").eq("branch_id", access.branchId).order("created_at", { ascending: false }),
+    supabase.from("compensation_rules").select("id, code, name, version, employee_id, earning_type, calculation_kind, effective_from, effective_to").eq("branch_id", access.branchId).order("created_at", { ascending: false }),
     supabase.from("compensation_manual_bases").select("id, employee_id, basis_type, basis_quantity, period_start, period_end, description").eq("branch_id", access.branchId).order("recorded_at", { ascending: false }),
     supabase.from("workforce_read").select("id, code, display_name").eq("branch_id", access.branchId).eq("active", true).order("display_name"),
     supabase.from("finance_accounts").select("id, code, name").eq("branch_id", access.branchId).eq("active", true).order("name"),
@@ -45,6 +46,7 @@ export default async function CompensationPage({ searchParams }: { searchParams:
   return <>
     <header className="page-heading"><div><p className="eyebrow">Compensation ledger</p><h1>Thu nhập, lương và hoa hồng</h1><p className="lede">Mỗi earning giữ source, basis, rule/version và approval; payment chỉ tất toán nghĩa vụ.</p></div></header>
     <ActionNotice notice={query.notice} error={query.error} />
+    {canManage && <VerifiedWorkEarningForm branchId={access.branchId} rules={(rules ?? []) as VerifiedWorkRule[]} />}
     {canManage && <div className="two-column">
       <details className="card card-pad quick-create"><summary>Tạo phiên bản rule</summary>
         <form className="command-panel" action={createCompensationRuleAction}>
