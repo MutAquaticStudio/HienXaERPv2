@@ -23,3 +23,12 @@ describe("resolved return history", () => {
     expect(html).not.toContain("<script>"); expect(html).toContain("&lt;script&gt;");
   });
 });
+
+it("labels the canonical TRANSIT_REMAINDER enum without changing stored state", () => {
+  const input = { ...row, case_kind: "TRANSIT_REMAINDER" };
+  const html = renderToStaticMarkup(<ReturnCaseHistory cases={[input]} />);
+  expect(html).toContain("Ph\u1ea7n ch\u01b0a giao tr\u1ea3 kho");
+  expect(html).not.toContain("TRANSIT_REMAINDER");
+  expect(input.case_kind).toBe("TRANSIT_REMAINDER");
+  expect(html).toContain("RETURNED");
+});

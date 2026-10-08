@@ -4,7 +4,7 @@ type ReturnHistoryCase = {
 };
 const kinds: Record<string, string> = {
   CUSTOMER_RETURN: "Kh\u00e1ch tr\u1ea3 sau x\u00e1c minh",
-  TRANSIT_RETURN: "Ph\u1ea7n ch\u01b0a giao tr\u1ea3 kho",
+  TRANSIT_REMAINDER: "Ph\u1ea7n ch\u01b0a giao tr\u1ea3 kho",
   TRANSIT_LOSS: "Hao h\u1ee5t \u0111ang giao",
 };
 const states: Record<string, string> = {
