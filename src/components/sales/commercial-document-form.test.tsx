@@ -35,7 +35,7 @@ it("does not passively reprice a stored draft when it first opens", async () => 
   render(<CommercialDocumentForm {...props} existing={{ id: "draft", version: 1, customerId: "customer-a", siteId: "site-a", effectiveAt: null, terms: "Original", lines: [{ sourceLineId: "old-line", materialId: "material", uomId: "uom-a", quantity: "2", manualPriceVnd: "90000", manualReason: "Approved snapshot" }] }} />);
   await act(async () => { await new Promise(resolve => setTimeout(resolve, 350)); });
   expect(mocks.preview).not.toHaveBeenCalled();
-  expect(screen.getByLabelText("Giá thủ công (VND, nếu cần)")).toHaveValue("90000");
+  expect(screen.getByLabelText("Giá bán cuối (VND/ĐVT bán, tùy chọn)")).toHaveValue("90000");
 });
 it("discards an older asynchronous result after UOM changes", async () => {
   let finishOld: (value: Awaited<ReturnType<typeof mocks.preview>>) => void = () => {};
@@ -58,8 +58,8 @@ it("preserves customer, site, all line fields, date, notes and intent after a re
   render(<CommercialDocumentForm {...props} initialCustomerId="customer-b" initialSiteId="site-b" />);
   fireEvent.change(screen.getByLabelText("Đơn vị bán *"), { target: { value: "uom-b" } });
   fireEvent.change(screen.getByLabelText("Số lượng *"), { target: { value: "2.5" } });
-  fireEvent.change(screen.getByLabelText("Giá thủ công (VND, nếu cần)"), { target: { value: "120000" } });
-  fireEvent.change(screen.getByLabelText("Lý do giá thủ công"), { target: { value: "Giá đã duyệt" } });
+  fireEvent.change(screen.getByLabelText("Giá bán cuối (VND/ĐVT bán, tùy chọn)"), { target: { value: "120000" } });
+  fireEvent.change(screen.getByLabelText("Lý do ngoại lệ giá"), { target: { value: "Giá đã duyệt" } });
   fireEvent.change(screen.getByLabelText("Ngày giao dự kiến"), { target: { value: "2026-10-28T09:00" } });
   fireEvent.change(screen.getByLabelText("Điều khoản / ghi chú"), { target: { value: "Giữ nguyên ghi chú" } });
   await previewAndSubmit(); await screen.findByText("Không thể lưu: kiểm tra dữ liệu.");

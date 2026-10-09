@@ -2533,3 +2533,7 @@ Permission-gated branch/material warehouse quantities composed from warehouse_in
 
 ## PR04 safe draft cancellation
 SO/PO draft removal uses existing permission-checked cancel RPCs with reason/confirmation and preserved audit/history. Default lists exclude CANCELLED, explicit filters retain all/history. Posted execution guards unchanged. Quotation has no canonical cancellation RPC and is not hard-deleted or given an invented workflow. No schema or Production economic writes. PR03 PR36 merged379ab17 with31 tests, CI/build and Owner stock/Sales-denial UI PASS.
+
+
+## PR05 optional final Sales unit price
+Blank uses canonical engine; existing pricing.manage required for new override. Ordinary exact VND final price at/below a valid reference gets deterministic server-generated before/after/rule audit reason; absent-reference/increased-price cases keep human exception reason. Existing approved manual draft snapshots remain intact, all DB guards and actor/time audit stay canonical. No new floor policy, purchase-cost discount, role expansion or migration. PR04 PR37 merged540827e,16tests/CI/build and UI cancellation/reload/history PASS; one labelled cancelled QA-only SO retained, no ledger.
