@@ -1,6 +1,8 @@
 "use server";
 
 import Decimal from "decimal.js";
+import { finalPurchaseCostReason } from "./manual-cost";
+import { finalSellingPriceReason } from "@/modules/sales/final-price";
 import { normalizeWarehouseAddress, warehouseAddressRequired } from "./warehouse-address";
 import { revalidatePath } from "next/cache";
 import { redirect, unstable_rethrow } from "next/navigation";
@@ -125,7 +127,7 @@ async function buildWarehouseLines(input: z.infer<typeof documentSchema>, branch
     supabase.from("material_uom_conversions").select("material_id, from_uom_id, to_uom_id, numerator, denominator, rounding_mode, effective_from")
       .in("material_id", materialIds).in("from_uom_id", uomIds).eq("active", true).eq("settlement_allowed", true)
       .lte("effective_from", now).or(`effective_to.is.null,effective_to.gt.${now}`).order("effective_from", { ascending: false }),
-    supabase.from("purchase_price_rules").select("id, material_id, purchase_uom_id, unit_cost_vnd, version, source_type")
+    supabase.from("purchase_price_rules").select("id, material_id, purchase_uom_id, unit_cost_vnd::text, version, source_type")
       .eq("branch_id", branchId).eq("supplier_id", input.supplierId).in("material_id", materialIds).in("purchase_uom_id", uomIds)
       .eq("active", true).lte("effective_from", now).or(`effective_to.is.null,effective_to.gt.${now}`).order("version", { ascending: false }),
   ]);
@@ -140,7 +142,7 @@ async function buildWarehouseLines(input: z.infer<typeof documentSchema>, branch
       row.material_id === entry.materialId && row.from_uom_id === entry.orderedUomId && row.to_uom_id === material.base_uom_id);
     if (entry.orderedUomId !== material.base_uom_id && !conversion) throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: không có quy đổi mua hợp lệ.`, status: 422 });
     const manual = entry.manualCostVnd?.trim() ?? "";
-    const reason = entry.manualCostReason?.trim() ?? "";
+    let reason = entry.manualCostReason?.trim() ?? "";
     const original = entry.sourceLineId ? originals?.get(entry.sourceLineId) : undefined;
     if (entry.sourceLineId && !original) throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: dòng nguồn không thuộc bản nháp.`, status: 422 });
     if (original?.price_source_type === "MANUAL_APPROVED" && !canManagePrice) {
@@ -155,8 +157,11 @@ async function buildWarehouseLines(input: z.infer<typeof documentSchema>, branch
         rounding_mode: original.rounding_mode, unit_cost_vnd: original.unit_cost_vnd,
         purchase_price_rule_id: null, purchase_price_rule_version: null, price_source_type: "MANUAL_APPROVED", override_reason: null };
     }
-    if (manual && (!canManagePrice || !/^[1-9]\d*$/.test(manual) || manual.length > 19 || BigInt(manual) > 9223372036854775807n || reason.length < 3)) {
-      throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: giá mua thủ công cần quyền và lý do.`, status: 422 });
+    const reference = priceResult.data?.find((row) => row.material_id === entry.materialId && row.purchase_uom_id === entry.orderedUomId);
+    if (manual) {
+      if (!canManagePrice) throw new AppError({ code: "FORBIDDEN", message: `Dòng ${index + 1}: không có quyền quản lý giá mua.`, status: 403 });
+      if (!reason && original?.price_source_type === "MANUAL_APPROVED" && original.material_id === entry.materialId && original.ordered_uom_id === entry.orderedUomId && original.unit_cost_vnd === manual) reason = original.override_reason ?? "";
+      reason = finalPurchaseCostReason(manual, reason, reference ? { id: reference.id, version: reference.version, unitCostVnd: reference.unit_cost_vnd.toString() } : null);
     }
     if (!manual && reason) throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: lý do giá thủ công thiếu đơn giá.`, status: 422 });
     const rule = manual ? null : priceResult.data?.find((row) => row.material_id === entry.materialId && row.purchase_uom_id === entry.orderedUomId);
@@ -287,7 +292,7 @@ async function buildSalesLines(customerId: string, purchaseLines: { material_id:
   const [customerResult, materialResult, ruleResult] = await Promise.all([
     supabase.from("customers").select("tier_code").eq("id", customerId).eq("branch_id", branchId).eq("active", true).maybeSingle(),
     supabase.from("materials").select("id, group_id, base_uom_id").in("id", materialIds),
-    supabase.from("pricing_rules").select("id, branch_id, scope_type, customer_id, material_id, material_group_id, customer_tier_code, price_uom_id, unit_price_vnd, version, source_type, effective_from, effective_to, active")
+    supabase.from("pricing_rules").select("id, branch_id, scope_type, customer_id, material_id, material_group_id, customer_tier_code, price_uom_id, unit_price_vnd::text, version, source_type, effective_from, effective_to, active")
       .eq("branch_id", branchId).in("price_uom_id", uomIds).eq("active", true),
   ]);
   if (customerResult.error || !customerResult.data || materialResult.error || !materialResult.data || materialResult.data.length !== materialIds.length || ruleResult.error)
@@ -304,9 +309,12 @@ async function buildSalesLines(customerId: string, purchaseLines: { material_id:
   const at = new Date();
   return purchaseLines.map((line, index) => {
     const manual = inputs[index].manualSalesPriceVnd?.trim() ?? "";
-    const reason = inputs[index].manualSalesReason?.trim() ?? "";
-    if (manual && (!canManagePrice || !/^[1-9]\d*$/.test(manual) || manual.length > 19 || BigInt(manual) > 9223372036854775807n || reason.length < 3)) {
-      throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: giá bán thủ công cần quyền quản lý giá và lý do.`, status: 422 });
+    let reason = inputs[index].manualSalesReason?.trim() ?? "";
+    if (manual) {
+      if (!canManagePrice) throw new AppError({ code: "FORBIDDEN", message: `Dòng ${index + 1}: không có quyền quản lý giá bán.`, status: 403 });
+      let reference: PriceRule | null = null;
+      try { reference = resolvePrice({ branchId, customerId, customerTierCode, materialId: line.material_id, materialGroupId: materials.get(line.material_id)!.group_id, priceUomId: line.ordered_uom_id, at, rules }); } catch (error) { if (!(error instanceof AppError)) throw error; }
+      reason = finalSellingPriceReason(manual, reason, reference);
     }
     if (!manual && reason) throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: cần nhập giá bán khi ghi lý do.`, status: 422 });
     const selected = manual ? null : resolvePrice({ branchId, customerId, customerTierCode,
