@@ -1,0 +1,882 @@
+{
+  "A": {
+    "branch_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Duy nhất; [A-Z0-9_-], 2–24 ký tự."
+    },
+    "branch_name": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "2–120 ký tự."
+    },
+    "company_name": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "tax_code": {
+      "required": "OPTIONAL",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "address": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "reuse_branch_id": {
+      "required": "OPTIONAL",
+      "unit": "N/A",
+      "rule": "Chọn ID hiện có hoặc để trống nếu tạo mới; HX hiện chứa UAT."
+    },
+    "active": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "TRUE/FALSE, cần duyệt kích hoạt."
+    },
+    "source_date": {
+      "required": "REQUIRED",
+      "unit": "YYYY-MM-DD",
+      "rule": "Ngày của hồ sơ gốc, không lấy ngày UAT."
+    },
+    "source_ref": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Mã chứng từ hoặc tên tệp + sheet/dòng; không chứa mật khẩu/token."
+    }
+  },
+  "B": {
+    "employee_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Duy nhất; [A-Z0-9_-], 2–24 ký tự."
+    },
+    "display_name": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "2–120 ký tự."
+    },
+    "email": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Email xác nhận thuộc người dùng; không nhập mật khẩu."
+    },
+    "branch_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Tham chiếu A."
+    },
+    "job_role": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Owner / Sales / Purchasing / Warehouse-Dispatch / Finance / Worker; map quyền tối thiểu trước kích hoạt."
+    },
+    "individual_grants": {
+      "required": "OPTIONAL",
+      "unit": "N/A",
+      "rule": "Danh sách quyền cụ thể được Owner duyệt; không tự nâng quyền."
+    },
+    "reuse_employee_id": {
+      "required": "OPTIONAL",
+      "unit": "N/A",
+      "rule": "ID hiện có được xác nhận dùng thật."
+    },
+    "active": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "TRUE/FALSE."
+    },
+    "onboarding_method": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Tái sử dụng / thư mời sau duyệt / bàn giao bảo mật."
+    },
+    "source_date": {
+      "required": "REQUIRED",
+      "unit": "YYYY-MM-DD",
+      "rule": "Ngày của hồ sơ gốc, không lấy ngày UAT."
+    },
+    "source_ref": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Mã chứng từ hoặc tên tệp + sheet/dòng; không chứa mật khẩu/token."
+    }
+  },
+  "C": {
+    "customer_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Duy nhất toàn hệ thống; [A-Z0-9_-], 2–32 ký tự."
+    },
+    "branch_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Tham chiếu A."
+    },
+    "display_name": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "2–160 ký tự."
+    },
+    "customer_type": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "INDIVIDUAL hoặc BUSINESS."
+    },
+    "phone": {
+      "required": "OPTIONAL",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "email": {
+      "required": "OPTIONAL",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "address": {
+      "required": "OPTIONAL",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "tax_code": {
+      "required": "OPTIONAL",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "sales_employee_code": {
+      "required": "OPTIONAL",
+      "unit": "N/A",
+      "rule": "Tham chiếu B."
+    },
+    "payment_terms_days": {
+      "required": "REQUIRED",
+      "unit": "ngày",
+      "rule": "Số nguyên 0–365; 0 chỉ khi Owner xác nhận."
+    },
+    "credit_limit_vnd": {
+      "required": "OPTIONAL",
+      "unit": "VND",
+      "rule": "Số nguyên VND >=0; để trống nếu chưa chốt, không mặc định 0."
+    },
+    "active": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "TRUE/FALSE."
+    },
+    "source_date": {
+      "required": "REQUIRED",
+      "unit": "YYYY-MM-DD",
+      "rule": "Ngày của hồ sơ gốc, không lấy ngày UAT."
+    },
+    "source_ref": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Mã chứng từ hoặc tên tệp + sheet/dòng; không chứa mật khẩu/token."
+    }
+  },
+  "D": {
+    "customer_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Tham chiếu C."
+    },
+    "site_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Duy nhất trong một khách hàng."
+    },
+    "site_name": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "2–160 ký tự."
+    },
+    "address": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "3–500 ký tự."
+    },
+    "receiver_name": {
+      "required": "OPTIONAL",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "receiver_phone": {
+      "required": "OPTIONAL",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "sales_employee_code": {
+      "required": "OPTIONAL",
+      "unit": "N/A",
+      "rule": "Tham chiếu B."
+    },
+    "active": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "TRUE/FALSE."
+    },
+    "source_date": {
+      "required": "REQUIRED",
+      "unit": "YYYY-MM-DD",
+      "rule": "Ngày của hồ sơ gốc, không lấy ngày UAT."
+    },
+    "source_ref": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Mã chứng từ hoặc tên tệp + sheet/dòng; không chứa mật khẩu/token."
+    }
+  },
+  "E": {
+    "branch_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Tham chiếu A."
+    },
+    "supplier_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Duy nhất theo chi nhánh."
+    },
+    "supplier_name": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "2–160 ký tự."
+    },
+    "phone": {
+      "required": "OPTIONAL",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "email": {
+      "required": "OPTIONAL",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "tax_code": {
+      "required": "OPTIONAL",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "address": {
+      "required": "OPTIONAL",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "payment_terms_days": {
+      "required": "REQUIRED",
+      "unit": "ngày",
+      "rule": "Số nguyên 0–365, cần nguồn xác nhận."
+    },
+    "active": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "TRUE/FALSE."
+    },
+    "source_date": {
+      "required": "REQUIRED",
+      "unit": "YYYY-MM-DD",
+      "rule": "Ngày của hồ sơ gốc, không lấy ngày UAT."
+    },
+    "source_ref": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Mã chứng từ hoặc tên tệp + sheet/dòng; không chứa mật khẩu/token."
+    }
+  },
+  "F": {
+    "material_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Duy nhất toàn hệ thống; [A-Z0-9_-], 2–32 ký tự."
+    },
+    "material_name": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "2–160 ký tự."
+    },
+    "group_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Tạo/reuse nhóm trước vật tư."
+    },
+    "group_name": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "base_uom_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "[a-z0-9_], 1–20 ký tự; tạo/reuse ĐVT trước vật tư."
+    },
+    "base_uom_name": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "base_uom_symbol": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "1–16 ký tự."
+    },
+    "decimal_scale": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Số nguyên 0–6."
+    },
+    "specification": {
+      "required": "OPTIONAL",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "sale_enabled": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "TRUE/FALSE; ít nhất bán hoặc mua bật."
+    },
+    "purchase_enabled": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "TRUE/FALSE."
+    },
+    "alternate_uom_code": {
+      "required": "OPTIONAL",
+      "unit": "N/A",
+      "rule": "Nếu sử dụng, cung cấp tử/mẫu và căn cứ."
+    },
+    "conversion_numerator": {
+      "required": "CONDITIONAL",
+      "unit": "N/A",
+      "rule": "Dương, hữu hạn; bắt buộc nếu có ĐVT quy đổi."
+    },
+    "conversion_denominator": {
+      "required": "CONDITIONAL",
+      "unit": "N/A",
+      "rule": "Dương, hữu hạn, khác 0."
+    },
+    "conversion_kind": {
+      "required": "CONDITIONAL",
+      "unit": "N/A",
+      "rule": "EXACT / PACKAGING / ESTIMATED / MEASURED / VEHICLE_LOAD; tải xe không dùng quyết toán."
+    },
+    "source_date": {
+      "required": "REQUIRED",
+      "unit": "YYYY-MM-DD",
+      "rule": "Ngày của hồ sơ gốc, không lấy ngày UAT."
+    },
+    "source_ref": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Mã chứng từ hoặc tên tệp + sheet/dòng; không chứa mật khẩu/token."
+    }
+  },
+  "G": {
+    "branch_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Tham chiếu A."
+    },
+    "warehouse_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Duy nhất theo chi nhánh."
+    },
+    "warehouse_name": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "2–120 ký tự."
+    },
+    "address": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Địa chỉ thực phục vụ PO/giao nhận."
+    },
+    "active": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "TRUE/FALSE."
+    },
+    "source_date": {
+      "required": "REQUIRED",
+      "unit": "YYYY-MM-DD",
+      "rule": "Ngày của hồ sơ gốc, không lấy ngày UAT."
+    },
+    "source_ref": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Mã chứng từ hoặc tên tệp + sheet/dòng; không chứa mật khẩu/token."
+    }
+  },
+  "H": {
+    "branch_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Tham chiếu A."
+    },
+    "warehouse_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Tham chiếu G, đúng chi nhánh."
+    },
+    "material_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Tham chiếu F."
+    },
+    "lot_ref": {
+      "required": "OPTIONAL",
+      "unit": "N/A",
+      "rule": "Chỉ nếu nghiệp vụ thực dùng lô; cần chốt mapping, schema hiện chưa có cột lô đầu kỳ."
+    },
+    "uom_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "ĐVT hợp lệ có quy đổi được duyệt."
+    },
+    "quantity": {
+      "required": "REQUIRED",
+      "unit": "ĐVT dòng",
+      "rule": "Số thập phân chính xác, hữu hạn, không âm; 0 chỉ khi nguồn xác nhận."
+    },
+    "base_quantity": {
+      "required": "REQUIRED",
+      "unit": "ĐVT cơ sở",
+      "rule": "Đối chiếu đúng tỷ lệ quy đổi, không dùng float."
+    },
+    "unit_cost_vnd_per_base": {
+      "required": "REQUIRED",
+      "unit": "VND/ĐVT cơ sở",
+      "rule": "Số thập phân chính xác theo nguồn."
+    },
+    "inventory_value_vnd": {
+      "required": "REQUIRED",
+      "unit": "VND",
+      "rule": "Số nguyên VND; đối chiếu lượng × giá theo quy tắc làm tròn được duyệt."
+    },
+    "source_date": {
+      "required": "REQUIRED",
+      "unit": "YYYY-MM-DD",
+      "rule": "Ngày của hồ sơ gốc, không lấy ngày UAT."
+    },
+    "source_ref": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Mã chứng từ hoặc tên tệp + sheet/dòng; không chứa mật khẩu/token."
+    }
+  },
+  "I": {
+    "branch_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Tham chiếu A."
+    },
+    "customer_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Tham chiếu C, đúng chi nhánh."
+    },
+    "site_code": {
+      "required": "OPTIONAL",
+      "unit": "N/A",
+      "rule": "Tham chiếu D thuộc đúng khách."
+    },
+    "legacy_order_ref": {
+      "required": "OPTIONAL",
+      "unit": "N/A",
+      "rule": "Chỉ tham chiếu, không tạo SO giả."
+    },
+    "document_ref": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Duy nhất theo khách/nguồn."
+    },
+    "original_amount_vnd": {
+      "required": "REQUIRED",
+      "unit": "VND",
+      "rule": "Số nguyên VND >= số còn nợ; giữ trong nguồn đối soát."
+    },
+    "outstanding_amount_vnd": {
+      "required": "REQUIRED",
+      "unit": "VND",
+      "rule": "Số nguyên VND >=0; hoàn tiền/credit có loại chứng từ riêng."
+    },
+    "due_date": {
+      "required": "REQUIRED",
+      "unit": "YYYY-MM-DD",
+      "rule": "Ngày hợp lệ theo nguồn, không tự suy đoán."
+    },
+    "source_date": {
+      "required": "REQUIRED",
+      "unit": "YYYY-MM-DD",
+      "rule": "Ngày của hồ sơ gốc, không lấy ngày UAT."
+    },
+    "source_ref": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Mã chứng từ hoặc tên tệp + sheet/dòng; không chứa mật khẩu/token."
+    }
+  },
+  "J": {
+    "branch_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Tham chiếu A."
+    },
+    "supplier_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Tham chiếu E, đúng chi nhánh."
+    },
+    "document_ref": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Duy nhất theo NCC/nguồn."
+    },
+    "original_amount_vnd": {
+      "required": "REQUIRED",
+      "unit": "VND",
+      "rule": "Số nguyên VND >= số còn nợ."
+    },
+    "outstanding_amount_vnd": {
+      "required": "REQUIRED",
+      "unit": "VND",
+      "rule": "Số nguyên VND >=0; không dùng receipt giả."
+    },
+    "due_date": {
+      "required": "REQUIRED",
+      "unit": "YYYY-MM-DD",
+      "rule": "Ngày hợp lệ theo nguồn."
+    },
+    "source_date": {
+      "required": "REQUIRED",
+      "unit": "YYYY-MM-DD",
+      "rule": "Ngày của hồ sơ gốc, không lấy ngày UAT."
+    },
+    "source_ref": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Mã chứng từ hoặc tên tệp + sheet/dòng; không chứa mật khẩu/token."
+    }
+  },
+  "K": {
+    "branch_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Tham chiếu A."
+    },
+    "account_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Duy nhất theo chi nhánh; [A-Z0-9_-], 2–24 ký tự."
+    },
+    "account_name": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "account_kind": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "CASH hoặc BANK."
+    },
+    "opening_balance_vnd": {
+      "required": "REQUIRED",
+      "unit": "VND",
+      "rule": "Số nguyên VND chính xác; không lấy từ payment UAT."
+    },
+    "statement_ref": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Mã tham chiếu, không chứa thông tin đăng nhập ngân hàng."
+    },
+    "source_date": {
+      "required": "REQUIRED",
+      "unit": "YYYY-MM-DD",
+      "rule": "Ngày của hồ sơ gốc, không lấy ngày UAT."
+    },
+    "source_ref": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Mã chứng từ hoặc tên tệp + sheet/dòng; không chứa mật khẩu/token."
+    }
+  },
+  "L": {
+    "branch_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Tham chiếu A."
+    },
+    "employee_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Tham chiếu B."
+    },
+    "payable_kind": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Lương / công / hoa hồng / khác theo nguồn thực."
+    },
+    "period_start": {
+      "required": "REQUIRED",
+      "unit": "YYYY-MM-DD",
+      "rule": "Kỳ phát sinh đã xác nhận."
+    },
+    "period_end": {
+      "required": "REQUIRED",
+      "unit": "YYYY-MM-DD",
+      "rule": "Không trước ngày bắt đầu."
+    },
+    "original_amount_vnd": {
+      "required": "REQUIRED",
+      "unit": "VND",
+      "rule": "Số nguyên VND theo nguồn thực."
+    },
+    "outstanding_amount_vnd": {
+      "required": "REQUIRED",
+      "unit": "VND",
+      "rule": "Số nguyên VND theo nguồn thực; không suy từ UAT."
+    },
+    "due_date": {
+      "required": "REQUIRED",
+      "unit": "YYYY-MM-DD",
+      "rule": "Theo nguồn được duyệt."
+    },
+    "source_date": {
+      "required": "REQUIRED",
+      "unit": "YYYY-MM-DD",
+      "rule": "Ngày của hồ sơ gốc, không lấy ngày UAT."
+    },
+    "source_ref": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Mã chứng từ hoặc tên tệp + sheet/dòng; không chứa mật khẩu/token."
+    }
+  },
+  "M": {
+    "branch_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "legacy_order_ref": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "line_ref": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "customer_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "site_code": {
+      "required": "OPTIONAL",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "sales_employee_code": {
+      "required": "OPTIONAL",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "material_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "uom_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "ordered_quantity": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Chính xác, hữu hạn."
+    },
+    "accepted_quantity": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Theo lịch sử thật; không ghi lại revenue/kho."
+    },
+    "remaining_quantity": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Đối chiếu đặt - hoàn thành - phần đóng."
+    },
+    "unit_price_vnd": {
+      "required": "REQUIRED",
+      "unit": "VND",
+      "rule": "Giá lịch sử từ nguồn, không áp giá master mới."
+    },
+    "status": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "source_date": {
+      "required": "REQUIRED",
+      "unit": "YYYY-MM-DD",
+      "rule": "Ngày của hồ sơ gốc, không lấy ngày UAT."
+    },
+    "source_ref": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Mã chứng từ hoặc tên tệp + sheet/dòng; không chứa mật khẩu/token."
+    }
+  },
+  "N": {
+    "branch_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "legacy_order_ref": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "line_ref": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "supplier_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "warehouse_code": {
+      "required": "CONDITIONAL",
+      "unit": "N/A",
+      "rule": "Bắt buộc với nguồn kho; không tạo kho giả cho supplier-direct."
+    },
+    "source_kind": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "WAREHOUSE hoặc SUPPLIER_DIRECT theo hợp đồng."
+    },
+    "material_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "uom_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "ordered_quantity": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Chính xác, hữu hạn."
+    },
+    "received_quantity": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Không phát sinh lại kho/AP của phần đã ghi sổ."
+    },
+    "remaining_quantity": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Đối chiếu số đặt - số đã nhận/đã đóng."
+    },
+    "unit_cost_vnd": {
+      "required": "REQUIRED",
+      "unit": "VND",
+      "rule": "Chính xác theo chứng từ."
+    },
+    "status": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "source_date": {
+      "required": "REQUIRED",
+      "unit": "YYYY-MM-DD",
+      "rule": "Ngày của hồ sơ gốc, không lấy ngày UAT."
+    },
+    "source_ref": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Mã chứng từ hoặc tên tệp + sheet/dòng; không chứa mật khẩu/token."
+    }
+  },
+  "O": {
+    "branch_code": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "legacy_work_ref": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "work_kind": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "DELIVERY / SERVICE theo nguồn."
+    },
+    "legacy_order_ref": {
+      "required": "CONDITIONAL",
+      "unit": "N/A",
+      "rule": "Bắt buộc với giao hàng."
+    },
+    "worker_employee_code": {
+      "required": "OPTIONAL",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "status": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "material_code": {
+      "required": "CONDITIONAL",
+      "unit": "N/A",
+      "rule": "Với chuyến giao vật tư."
+    },
+    "uom_code": {
+      "required": "CONDITIONAL",
+      "unit": "N/A",
+      "rule": "No assumed/default value; validate against canonical catalog and approved source."
+    },
+    "remaining_quantity": {
+      "required": "CONDITIONAL",
+      "unit": "N/A",
+      "rule": "Số chính xác nếu có giao vật tư."
+    },
+    "transit_quantity": {
+      "required": "CONDITIONAL",
+      "unit": "N/A",
+      "rule": "Phải có biên bản bàn giao và mapping custody."
+    },
+    "transit_value_vnd": {
+      "required": "CONDITIONAL",
+      "unit": "VND",
+      "rule": "Đối chiếu nguồn; không cộng hai lần vào tồn đầu kỳ."
+    },
+    "already_posted_refs": {
+      "required": "CONDITIONAL",
+      "unit": "N/A",
+      "rule": "Bắt buộc nếu đã có kho/AR/AP/thu nhập."
+    },
+    "source_date": {
+      "required": "REQUIRED",
+      "unit": "YYYY-MM-DD",
+      "rule": "Ngày của hồ sơ gốc, không lấy ngày UAT."
+    },
+    "source_ref": {
+      "required": "REQUIRED",
+      "unit": "N/A",
+      "rule": "Mã chứng từ hoặc tên tệp + sheet/dòng; không chứa mật khẩu/token."
+    }
+  }
+}

@@ -561,3 +561,38 @@ Evidence: /Users/nox/.codex/visualizations/2026/09/10/01a08a7b-2842-7c51-8860-2c
 - Final current technical state supersedes the historical pending tooling checkpoints above: BIZ-01..08=PASS, automated UI 8/8, confirmed core P0=0/P1=0, Storage cutover and revoke/recovery=PASS, compensation recognition/idempotency/reversal=PASS, actual browser upload=PASS, final browser timing=PASS, Seoul/icn1 correction complete, B_TECHNICALLY_READY=YES.
 - Operational gates: real opening balances PENDING_OWNER; data transition NOT_EXECUTED; cutover timestamp PENDING_OWNER; real compensation policy PENDING_OWNER; Owner operational activation PENDING. B_OPERATIONAL_READY=NO.
 - Begin read-only operational baseline and LIVE-UAT exclusion inventory. Preserve posted synthetic history and obtain authoritative real inputs before imports. No additional technical QA is required absent an actual transition defect.
+
+## 2026-10-09 - Operational importer acceptance continuation
+
+- Existing technical milestone and BIZ evidence remain closed/reused. No Production connection or write; no real opening import, activation or compensation policy enabled.
+- Local roles fixture repaired using existing role codes with new isolated IDs; uppercase/noncanonical role rejection preserved. Schema role constraint and taxonomy unchanged.
+- New operational parser/importer plus forward `20261008224033_operational_opening_sources.sql` are UNRELEASED. SHA256 `5ea93da878981186fe6273ef887adcc052f04c35530cfa924ec9d144cebd9994`.
+- Isolated PGlite run `OPTRANS-SYNTHETIC-20261009T014947650Z`: 22 checks PASS for 25 A-L rows and O custody-only, including same-operation idempotency, source conflict, real-fault rollback, reader reconciliation and no fake economic events. On-hand 171025; separate transit 75013; AR 750000; supplier AP 350000; cash 2000000; employee AP 80000 VND.
+- Full 32-row operational import is NOT PASS. M/N: NOT_SUPPORTED_AT_CUTOVER because canonical continuation lacks pre-cutover fulfilled/received baselines; supplier-direct linkage is also absent. O: OWNER_DECISION_REQUIRED (finish old process versus new post-cutover job); a custody source is not a resumable Work/Delivery.
+- PostgreSQL 17.6 QA rehearsal `OPTRANS-SYNTHETIC-QA-20261009T015745449Z` stopped on introduced driver JSONB double-encoding (P0002). Entire transaction rolled back: no migration history, new schema, Auth or fixture rows persisted. Pooler reused backend PID on readback; no independent-backend claim.
+- Pending local adapter/readback repair; same-source new-operation, managed reporting and populated XLSX acceptance remain unverified. No operational-transition PR/merge because acceptance is incomplete. Thirteen master records remain Owner decisions; no real values requested yet.
+
+
+## Operational importer wrapper repair checkpoint (2026-10-09)
+
+- QA run OPTRANS-SYNTHETIC-QA-20261009T035303885Z: 13 acceptance checks PASS, 1 FAIL. JSONB wrapper unit checks 13/13 and real PostgreSQL JSONB 7/7 PASS; targeted lint PASS.
+- Pooler readback is validated by ended writer transaction, closed client, new logical client and new read-only transaction. Both backend PIDs were 939214, informational only. Rollback prestate/history/auth/fixture preservation PASS.
+- Exact opening migration SHA remains 5ea93da878981186fe6273ef887adcc052f04c35530cfa924ec9d144cebd9994. Rehearsed only; no schema/history persisted. Supported 25 rows reached real writers; 6 M/N held, 1 O custody/Owner boundary. Totals: inventory 171025, transit 75013, AR 750000, supplier AP 350000, cash 2000000, employee payable 80000. All rolled back.
+- New importer defect OPTRANS_MASTER_TIMESTAMP_COMPARE_01: new-operation retry incorrectly conflicts at employees.deactivated_at (Date versus ISO string comparison). Requested narrowly scoped repair; no migration/business-contract changes.
+- Committed independent readback and final 11-control classification remain pending. No operational PR/CI/merge or real-data request. Production connection NONE, writes 0; B_TECHNICALLY_READY YES_REUSED; B_OPERATIONAL_READY NO.
+- Evidence: /Users/nox/Downloads/HienXaERP/outputs/synthetic-dry-run/importer-acceptance/wrapper-repair-checkpoint.json and /Users/nox/Downloads/HienXaERP/outputs/synthetic-dry-run/importer-acceptance/OPTRANS-SYNTHETIC-QA-20261009T035303885Z.json.
+
+
+## Operational importer supported-scope QA acceptance (2026-10-09)
+
+This result supersedes the earlier wrapper/timestamp checkpoints above. B_TECHNICALLY_READY remains YES_REUSED; no technical ERP/BIZ rerun.
+
+- OPTRANS_MASTER_TIMESTAMP_COMPARE_01 CLOSED: inspect actual pg_catalog type, preserve timestamptz microseconds through text readback, compare absolute instants; zone-less timestamp remains wall-clock and date remains date-only. Invalid temporals fail explicitly. Approved numeric-scale follow-up compares numeric columns using exact Decimal; text fields remain strict. No migration-byte change.
+- Temporal tests 10/10 and numeric tests 7/7 PASS. Existing wrapper unit 13/13 and real PostgreSQL JSONB 7/7 PASS reused. Driver Result array assertion corrected in QA harness; resumption restores the exact original package serialization before receipt-hash validation.
+- QA run OPTRANS-QA-SYNTHETIC-20261009T040353681Z: exact migration 20261008224033 applied once, SHA256 5ea93da878981186fe6273ef887adcc052f04c35530cfa924ec9d144cebd9994. Operation A committed; operation B with identical source identities committed only a new receipt, not duplicate masters, balances or audit events. Five negative attempts left no receipts/economic effects. Resume gates 13/13 PASS. No migration/A replay.
+- Independent committed readback after writer close uses a new logical client and read-only transaction. PID is informational only. Inventory 171025; separate transit 75013; AR 750000; supplier AP 350000; cash/bank 2000000; employee payable 80000 VND. Quantity reconciliation: 100 syn_kg SYN_CEMENT and 3 syn_bag SYN_PACK, never summed across UOM. Original historical debt amounts and zero-outstanding sources retained.
+- Read models reconcile all six balances. No fake SO/PO/receipt/Delivery/revenue/payment/COGS/earning; source conflict, true temporal/master conflict, invalid UOM and duplicate source rollback PASS. Prior invalid-material/customer/supplier rollback reused. Dashboard current-period revenue/cost/compensation remain zero; canonical future 2026-10-15 cutover is not incorrectly counted in today's as-of AR/AP. Earlier synthetic post-cutover dashboard proof remains valid.
+- Supported scope: 32 parsed rows, 25 A-L imported, 6 M/N held, 1 O custody-only/Owner decision. M/N NOT_SUPPORTED_AT_CUTOVER; O OWNER_DECISION_REQUIRED. This is canonical CSV supported-scope importer acceptance, not a claim that all 32 rows are imported or a real workbook/cutover approval. Populated real XLSX must still pass real-package dry-run.
+- Synthetic QA branch IDs f2d43b4b-ed9b-4400-8c40-6f6b8c87fd96 and 9a6b3767-284c-43da-9194-fd56a456621d and all posted source IDs are recorded in the run fixture manifest, excluded from real cutover, retained without ad-hoc deletion. Imported operational employee bindings remain inactive; temporary QA read control has no password/login provisioning.
+- Production connection NONE; Production economic/opening writes 0. No Production migration/import authorization is inferred from merging inert operator scripts. Thirteen Master_review decisions, real cutover data and operational compensation remain Owner inputs. B_OPERATIONAL_READY=NO.
+- Local evidence: outputs/synthetic-dry-run/importer-acceptance/OPTRANS-QA-SYNTHETIC-20261009T040353681Z-resume.json and OPTRANS-QA-SYNTHETIC-20261009T040353681Z-fixture-manifest.json. Local-only harnesses/evidence/credentials are excluded from source control.
