@@ -1,0 +1,11 @@
+import {expect,it} from "vitest";
+import {finalSellingPriceReason} from "./final-price";
+import type {PriceRule} from "@/modules/pricing/resolve-price";
+const rule={id:"r",unitPriceVnd:"150000",version:2} as PriceRule;
+it("records exact authoritative before/after without float discount arithmetic",()=>expect(JSON.parse(finalSellingPriceReason("90000","",rule))).toEqual({adjustment:"SALE_FINAL_UNIT_PRICE",reasonSource:"SYSTEM",beforeVnd:"150000",afterVnd:"90000",ruleId:"r",ruleVersion:2}));
+it.each(["0","-1","1.1","NaN","Infinity","9223372036854775808"])("rejects invalid final VND %s",price=>expect(()=>finalSellingPriceReason(price,"",rule)).toThrow());
+it("requires human exception reason when reference is absent",()=>expect(()=>finalSellingPriceReason("90000","",null)).toThrow("Ghi chú ngoại lệ"));
+it("requires human exception reason for an increased final price",()=>expect(()=>finalSellingPriceReason("150001","",rule)).toThrow("Ghi chú ngoại lệ"));
+it("preserves approved human reasons",()=>expect(finalSellingPriceReason("90000","  Approved exception  ",null)).toBe("Approved exception"));
+it("does not lose bigint precision",()=>expect(JSON.parse(finalSellingPriceReason("9007199254740993","",{...rule,unitPriceVnd:"9007199254740994"})).afterVnd).toBe("9007199254740993"));
+it("keeps normal audit metadata deterministic for preview/save/retry",()=>expect(finalSellingPriceReason("90000","",rule)).toBe(finalSellingPriceReason("90000","",rule)));

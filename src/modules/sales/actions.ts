@@ -1,6 +1,7 @@
 "use server";
 
 import Decimal from "decimal.js";
+import { finalSellingPriceReason } from "./final-price";
 import { isPositiveSalesQuantity } from "./quantity-input";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -136,8 +137,9 @@ async function createCommercialLines(input: z.infer<typeof documentSchema>, bran
     const conversion = inputLine.orderedUomId === material.base_uom_id ? null : conversions.find((row) => row.material_id === inputLine.materialId && row.from_uom_id === inputLine.orderedUomId && row.to_uom_id === material.base_uom_id);
     if (inputLine.orderedUomId !== material.base_uom_id && !conversion) throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: không có quy đổi quyết toán hợp lệ.`, status: 422 });
     const manualPriceVnd = inputLine.manualPriceVnd?.trim() ?? "";
-    const manualReason = inputLine.manualReason?.trim() ?? "";
     const original = originals?.get(inputLine.sourceLineId ?? "");
+    let manualReason = inputLine.manualReason?.trim() ?? "";
+    if (!manualReason && original?.price_source_type === "MANUAL_APPROVED" && original.material_id === inputLine.materialId && original.ordered_uom_id === inputLine.orderedUomId && String(original.unit_price_vnd) === manualPriceVnd) manualReason = original.override_reason ?? "";
     const conversionNumerator = conversion?.numerator.toString() ?? "1";
     const conversionDenominator = conversion?.denominator.toString() ?? "1";
     const conversionRounding = "HALF_UP";
@@ -148,6 +150,12 @@ async function createCommercialLines(input: z.infer<typeof documentSchema>, bran
       new Decimal(original.conversion_denominator).eq(conversionDenominator) && original.rounding_mode === conversionRounding;
     if (manualPriceVnd) {
       if (!canManagePrice && !preserveApprovedPrice) throw new AppError({ code: "FORBIDDEN", message: `Dòng ${index + 1}: không có quyền đổi giá đã duyệt.`, status: 403 });
+      if (!manualReason) {
+        let reference: PriceRule | null = null;
+        try { reference = resolvePrice({ branchId, customerId: input.customerId, customerTierCode, materialId: inputLine.materialId, materialGroupId: material.group_id, priceUomId: inputLine.orderedUomId, at: now, rules }); }
+        catch (error) { if (!(error instanceof AppError)) throw error; }
+        manualReason = finalSellingPriceReason(manualPriceVnd, "", reference);
+      }
       if (!/^[1-9]\d*$/.test(manualPriceVnd) || manualPriceVnd.length > 19 || BigInt(manualPriceVnd) > 9223372036854775807n || manualReason.length < 3 || manualReason.length > 500) {
         throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: giá thủ công phải dương và có lý do từ 3 đến 500 ký tự.`, status: 422 });
       }
@@ -161,7 +169,7 @@ async function createCommercialLines(input: z.infer<typeof documentSchema>, bran
           materialId: inputLine.materialId, materialGroupId: material.group_id,
           priceUomId: inputLine.orderedUomId, at: now, rules });
       } catch (error) {
-        if (error instanceof AppError) throw new AppError({ code: error.code, message: `Dòng ${index + 1}: không có giá hợp lệ.${canManagePrice ? " Nhập giá thủ công và lý do, rồi xem trước lại." : " Liên hệ người quản lý giá."}`, status: error.status });
+        if (error instanceof AppError) throw new AppError({ code: error.code, message: `Dòng ${index + 1}: không có giá hợp lệ.${canManagePrice ? " Nhập giá bán cuối và ghi chú ngoại lệ, rồi xem trước lại." : " Liên hệ người quản lý giá."}`, status: error.status });
         throw error;
       }
     }
