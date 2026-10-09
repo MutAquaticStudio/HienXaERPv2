@@ -2529,3 +2529,7 @@ PR02 source gates: 31/31 affected tests PASS, typecheck/lint PASS, canonical iso
 
 ## PR03 warehouse availability
 Permission-gated branch/material warehouse quantities composed from warehouse_inventory_read; exact base-UOM shortage hint does not block draft, infer conversions, expose cost, or reserve stock. Existing allocation/create-delivery RPCs remain the only source/reservation commands. No schema or Production business writes.
+
+
+## PR04 safe draft cancellation
+SO/PO draft removal uses existing permission-checked cancel RPCs with reason/confirmation and preserved audit/history. Default lists exclude CANCELLED, explicit filters retain all/history. Posted execution guards unchanged. Quotation has no canonical cancellation RPC and is not hard-deleted or given an invented workflow. No schema or Production economic writes. PR03 PR36 merged379ab17 with31 tests, CI/build and Owner stock/Sales-denial UI PASS.

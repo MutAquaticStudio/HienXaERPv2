@@ -1,3 +1,4 @@
+import { CancelDocumentForm } from "@/components/documents/cancel-document-form";
 import { WarehouseAllocationFields } from "@/components/inventory/material-stock-hint";
 import { loadWarehouseAvailability } from "@/modules/inventory/availability-server";
 import { SalesOrderCreditOverride } from "@/components/sales/credit-override";
@@ -70,7 +71,7 @@ export default async function OrderDetailPage({ params, searchParams }: { params
         <div className="field"><label htmlFor={"schedule-" + group.key}>Lịch giao</label><input id={"schedule-" + group.key} name="scheduledAt" type="datetime-local" /></div>
         <button className="button button-primary action-full" type="submit">Tạo phiếu giao nhiều dòng</button>
       </form>)}
-      {["DRAFT", "CONFIRMED"].includes(order.commercial_state) && deliveries.length === 0 && access.permissions.has("orders.cancel") && <form className="inline-command" action={cancelSalesOrderAction}><input type="hidden" name="entityId" value={order.id} /><input type="hidden" name="operationId" value={randomUUID()} /><div className="field"><label htmlFor="reason">Lý do hủy</label><input id="reason" name="reason" minLength={3} required /></div><button className="button button-danger action-full" type="submit">Hủy đơn</button></form>}
+      {["DRAFT", "CONFIRMED"].includes(order.commercial_state) && deliveries.length === 0 && access.permissions.has("orders.cancel") && <CancelDocumentForm entityId={order.id} operationId={randomUUID()} state={order.commercial_state} label="Hủy đơn" action={cancelSalesOrderAction} />}
       {order.commercial_state === "CONFIRMED" && allocations.length === 0 && <p className="muted">Chưa có nguồn hàng. Chọn nguồn hoặc đặt NCC từ dòng hàng.</p>}
       {["CANCELLED", "CLOSED"].includes(order.commercial_state) && <p className="muted">Đơn đã ở trạng thái kết thúc, không còn command thương mại.</p>}
     </aside></div>

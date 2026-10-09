@@ -296,6 +296,7 @@ async function internalCommand(permission: string, rpc: string, args: Record<str
   const { error } = await supabase.rpc(rpc, args);
   if (error) redirect(`${destination}?error=${encodeURIComponent(commandError(error.message))}`);
   revalidatePath(destination);
+  if (rpc === "cancel_sales_order") revalidatePath("/admin/orders");
   redirect(`${destination}?notice=${notice}`);
 }
 
