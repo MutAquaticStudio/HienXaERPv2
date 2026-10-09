@@ -2,6 +2,9 @@ import "server-only";
 
 import { createServerSupabase } from "@/lib/supabase/server";
 
+import { loadWarehouseAvailability } from "@/modules/inventory/availability-server";
+import type { WarehouseAvailability } from "@/modules/inventory/availability";
+
 type CustomerRecord = {
   id: string;
   display_name: string;
@@ -11,11 +14,12 @@ type MaterialRecord = { id: string; name: string; base_uom_id: string };
 type ConversionRecord = { material_id: string; from_uom_id: string };
 
 export type SalesFormOptions = {
+  availability?: WarehouseAvailability;
   customers: { id: string; name: string; sites: { id: string; name: string; address: string }[] }[];
   materials: { id: string; name: string; uoms: { id: string; symbol: string }[] }[];
 };
 
-export async function loadSalesFormOptions(branchId: string, selectedCustomerId?: string, selectedSiteId?: string): Promise<SalesFormOptions> {
+export async function loadSalesFormOptions(branchId: string, selectedCustomerId?: string, selectedSiteId?: string, canReadInventory = false): Promise<SalesFormOptions> {
   const supabase = await createServerSupabase();
   const validCustomerId = /^[0-9a-f-]{36}$/i.test(selectedCustomerId ?? "") ? selectedCustomerId : undefined;
   const validSiteId = /^[0-9a-f-]{36}$/i.test(selectedSiteId ?? "") ? selectedSiteId : undefined;
@@ -47,5 +51,5 @@ export async function loadSalesFormOptions(branchId: string, selectedCustomerId?
     const uomIds = new Set([material.base_uom_id, ...conversions.filter((row) => row.material_id === material.id).map((row) => row.from_uom_id)]);
     return { id: material.id, name: material.name, uoms: [...uomIds].map((id) => ({ id, symbol: uomSymbols.get(id) ?? "Đơn vị" })) };
   });
-  return { customers, materials };
+  return { customers, materials, ...(canReadInventory ? { availability: await loadWarehouseAvailability(branchId, materials.map(row => row.id)) } : {}) };
 }
