@@ -8,7 +8,7 @@ import { UatBrowserTiming } from "@/components/uat-browser-timing";
 
 type Surface = "admin" | "work" | "customer";
 
-type NavigationItem = { href: string; label: string; icon: LucideIcon; exact?: boolean; permission?: string; permissionsAny?: readonly string[]; group?: string };
+type NavigationItem = { href: string; label: string; icon: LucideIcon; exact?: boolean; permission?: string; permissionsAny?: readonly string[]; group?: string; managementPermission?: string; managementHref?: string };
 
 const adminGroups = [
   { id: "sales", label: "Bán hàng", icon: ShoppingCart },
@@ -25,13 +25,14 @@ const navigation: Record<Surface, readonly NavigationItem[]> = {
     { href: "/admin", label: "Tổng quan", icon: LayoutDashboard, exact: true, permission: "dashboard.read" },
     { href: "/admin/orders", label: "Đơn bán", icon: ShoppingCart, permission: "orders.read", group: "sales" },
     { href: "/admin/quotations", label: "Báo giá", icon: FileText, permission: "quotation.read", group: "sales" },
-    { href: "/admin/customers", label: "Khách hàng", icon: UsersRound, permission: "customers.read", group: "sales" },
+    { href: "/admin/customers", label: "Khách hàng", icon: UsersRound, permission: "customers.read", managementPermission: "customers.manage", managementHref: "/admin/customers/manage", group: "sales" },
     { href: "/admin/purchase-orders", label: "Đơn mua", icon: PackageSearch, permission: "purchasing.read", group: "purchasing" },
-    { href: "/admin/suppliers", label: "Nhà cung cấp", icon: Factory, permission: "suppliers.read", group: "purchasing" },
-    { href: "/admin/products", label: "Vật tư", icon: Boxes, permission: "catalog.read", group: "inventory" },
-    { href: "/admin/inventory", label: "Tồn kho", icon: Warehouse, permission: "inventory.read", group: "inventory" },
+    { href: "/admin/suppliers", label: "Nhà cung cấp", icon: Factory, permission: "suppliers.read", managementPermission: "suppliers.manage", managementHref: "/admin/suppliers/manage", group: "purchasing" },
+    { href: "/admin/products", label: "Vật tư", icon: Boxes, permission: "catalog.read", managementPermission: "catalog.manage", managementHref: "/admin/products/manage", group: "inventory" },
+    { href: "/admin/products/pricing", label: "Giá bán", icon: WalletCards, permission: "pricing.read", group: "inventory" },
+    { href: "/admin/inventory", label: "Tồn kho", icon: Warehouse, permission: "inventory.read", managementPermission: "roles.manage", managementHref: "/admin/inventory/warehouses", group: "inventory" },
     { href: "/admin/stock-counts", label: "Kiểm kho", icon: ClipboardCheck, permission: "inventory.read", group: "inventory" },
-    { href: "/admin/dispatch", label: "Điều phối", icon: ClipboardCheck, permission: "delivery.read", group: "delivery" },
+    { href: "/admin/dispatch", label: "Điều phối", icon: ClipboardCheck, permission: "delivery.read", managementPermission: "roles.manage", managementHref: "/admin/dispatch/resources", group: "delivery" },
     { href: "/admin/deliveries", label: "Phiếu giao", icon: Truck, permission: "delivery.read", group: "delivery" },
     { href: "/admin/routes", label: "Lộ trình", icon: Route, permission: "delivery.read", group: "delivery" },
     { href: "/admin/receivables", label: "Phải thu", icon: WalletCards, permission: "finance.ar.read", group: "finance" },
@@ -48,7 +49,7 @@ const navigation: Record<Surface, readonly NavigationItem[]> = {
     { href: "/admin/reports", label: "Báo cáo", icon: BarChart3, permissionsAny: ["finance.ar.read", "finance.ap.read", "finance.expense.read"] },
     { href: "/admin/audit", label: "Nhật ký", icon: ScrollText, permission: "roles.manage", group: "administration" },
     { href: "/admin/messages", label: "Tin nhắn", icon: MessageSquare },
-    { href: "/admin/settings", label: "Cài đặt", icon: Settings2, permissionsAny: ["customers.manage", "suppliers.manage", "catalog.manage", "roles.manage", "pricing.read"], group: "administration" },
+    { href: "/admin/settings", label: "Cài đặt", icon: Settings2, permission: "roles.manage", group: "administration" },
   ],
   work: [
     { href: "/work", label: "Việc cần làm", icon: ClipboardCheck, exact: true },
@@ -73,7 +74,9 @@ export function AppShell({ surface, children, permissions, actorName, branchName
   const closeButton = useRef<HTMLButtonElement>(null);
   const visibleItems = navigation[surface].filter((item) => item.permissionsAny
     ? item.permissionsAny.some((permission) => permissions?.includes(permission))
-    : !item.permission || permissions?.includes(item.permission));
+    : !item.permission || permissions?.includes(item.permission) || Boolean(item.managementPermission && permissions?.includes(item.managementPermission)))
+    .map((item) => item.managementHref && item.permission && !permissions?.includes(item.permission)
+      ? { ...item, href: item.managementHref } : item);
   const activeHref = visibleItems.filter((item) => pathname === item.href || (!item.exact && pathname.startsWith(`${item.href}/`)))
     .sort((left, right) => right.href.length - left.href.length)[0]?.href;
   const initials = actorName?.trim().split(/\s+/).filter(Boolean).slice(-2).map((part) => part[0]?.toLocaleUpperCase("vi-VN")).join("") ?? "";

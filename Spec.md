@@ -2724,3 +2724,12 @@ Các lát cắt ưu tiên:
 Mỗi lát cắt dùng cùng entity/source hiện có; không tạo bản ghi “workflow state” thứ hai chỉ để theo dõi tiến độ.
 
 # KẾT THÚC Spec.md
+
+
+## SPEC-OPMOD-001: Owner-approved operational enhancements (2026-10-09)
+
+Catalog CRUD belongs to the owning ERP module. Products own materials/groups/UOM/conversions and Sales pricing; Customers own customers/sites; Suppliers own supplier master; Inventory owns warehouses; Dispatch owns vehicles/machines; Settings owns branches and access. Reuse existing editors, RPCs, validation, permissions, RLS and audit. Legacy catalog URLs must redirect with record/search context preserved. Manage-only permissions retain their existing authorized workspace; no reader or price permission is inferred.
+
+Follow in six scoped PRs: PR00 module ownership; PR01 read-only material detail using canonical price/UOM/inventory readers; PR02 automatic authoritative price preview without changing saved snapshots; PR03 warehouse availability and existing reservation/handoff integration, never extra stock posting; PR04 audited draft cancellation, never hard-delete posted history; PR05 optional final discounted Sales unit price, exact VND arithmetic and authorized/audited adjustments, retaining reasons for floor/approval exceptions. No independent price/stock store or new ERP architecture.
+
+Production UAT cleanup is independently PASS; real opening balances are not supplied or approved as zero. Real compensation remains inactive pending Owner policy. No synthetic business writes are permitted on clean HX for feature acceptance. QA and read-only live acceptance remain separate release gates.

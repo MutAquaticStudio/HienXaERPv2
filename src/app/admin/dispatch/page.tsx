@@ -62,7 +62,7 @@ export default async function DispatchPage({ searchParams }: { searchParams: Pro
   }));
 
   return <>
-    <header className="page-heading"><div><p className="eyebrow">Điều phối</p><h1>Bảng phân giao</h1><p className="lede">Mỗi cột là một trạng thái vận hành từ dữ liệu nguồn; mỗi truy vấn chỉ tải tối đa 25 phiếu.</p></div></header>
+    <header className="page-heading"><div><p className="eyebrow">Điều phối</p><h1>Bảng phân giao</h1>{access.permissions.has("roles.manage") && <div className="form-actions"><Link className="button button-secondary" href="/admin/dispatch/resources?kind=vehicles">Xe</Link><Link className="button button-secondary" href="/admin/dispatch/resources?kind=machines">Máy / thiết bị</Link></div>}<p className="lede">Mỗi cột là một trạng thái vận hành từ dữ liệu nguồn; mỗi truy vấn chỉ tải tối đa 25 phiếu.</p></div></header>
     <form action="/admin/dispatch" method="get" className="filter-bar"><label>Tìm kiếm<input name="q" defaultValue={firstValue(query.q)} maxLength={80} placeholder="Mã phiếu, khách hàng, công trình" /></label><button className="button button-secondary" type="submit">Tìm</button>{firstValue(query.q) && <Link className="code-link" href="/admin/dispatch">Xóa tìm kiếm</Link>}</form>
     <section className="dispatch-board">{columns.map((column) => <div className="dispatch-column" key={column.title}>
       <div className="dispatch-column-head"><h2>{column.title}</h2><span>{column.rows.length}{column.hasNext ? "+" : ""}</span></div>

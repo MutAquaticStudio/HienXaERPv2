@@ -5,6 +5,7 @@ import { requireInternalPermission } from '@/lib/access/context';
 import { createServerSupabase } from '@/lib/supabase/server';
 import { portalRpc, PortalRpcError } from '@/modules/portal/server';
 import { catalogs } from './fields';
+import { catalogHref } from './ownership';
 import { z } from 'zod';
 import Decimal from 'decimal.js';
 export type CatalogState = {message:string;success?:boolean;recordId?:string;kind?:string};
@@ -59,7 +60,7 @@ export async function saveCatalogAction(_:CatalogState|undefined, form:FormData)
    ? {target_id:recordId,source_branch_id:access.branchId,values_json:values,expected_json:expected,change_reason:String(form.get('reason')??''),operation_id:randomUUID()}
    : {kind,target_id:recordId,target_branch_id:access.branchId,values_json:values,expected_json:expected,change_reason:String(form.get('reason')??''),operation_id:randomUUID()};
   await portalRpc(await createServerSupabase(),rpcName,payload);
-  for(const path of ['/admin/catalog','/admin/products','/admin/customers','/admin/suppliers']) revalidatePath(path);
+  for(const path of ['/admin/catalog','/admin/products','/admin/customers','/admin/suppliers','/admin/inventory','/admin/dispatch',catalogHref(kind).split('?')[0]]) revalidatePath(path);
   return {success:true,message:'Đã lưu và ghi lịch sử thay đổi.',recordId,kind};
  }catch(error){
   const code=error instanceof PortalRpcError?error.code:'';

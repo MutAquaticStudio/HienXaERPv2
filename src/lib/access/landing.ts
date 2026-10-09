@@ -18,10 +18,10 @@ const destinations = [
   ["compensation.read", "/admin/compensation"],
   ["service.read", "/admin/service-jobs"],
   ["roles.manage", "/admin/access"],
-  ["pricing.read", "/admin/settings/pricing"],
-  ["customers.manage", "/admin/settings"],
-  ["suppliers.manage", "/admin/settings"],
-  ["catalog.manage", "/admin/settings"],
+  ["pricing.read", "/admin/products/pricing"],
+  ["customers.manage", "/admin/customers/manage"],
+  ["suppliers.manage", "/admin/suppliers/manage"],
+  ["catalog.manage", "/admin/products/manage"],
   ["work.read", "/work"],
 ] as const;
 
