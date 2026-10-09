@@ -610,3 +610,6 @@ This result supersedes the earlier wrapper/timestamp checkpoints above. B_TECHNI
 - Real operational activation/openings: NOT_AUTHORIZED_IN_THIS_FEATURE_RUN.
 
 PR00 local checks PASS (55 tests/typecheck/lint/isolated Turbopack build). Hosted UI QA and GitHub CI PENDING; localhost browser block is TOOLING_LIMITATION, not an application P1. PR00 is not merged or live accepted.
+
+PR00 COMPLETE: PR33 merged 3622d1ed17f75537b83a28dc2174b8a3c916e2f5; 55 targeted tests, typecheck/lint/build, GitHub CI and 14 actual Codex Browser QA cases PASS. One SYN warehouse created/edited/deactivated only on QA, two audit events, no inventory movement. Classic branch protection/rulesets absent; no protection bypass.
+PR01 IN_PROGRESS: permission-filtered read-only material detail; no schema, price store or inventory write.
