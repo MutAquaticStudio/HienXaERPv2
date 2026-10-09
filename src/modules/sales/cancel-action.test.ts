@@ -1,0 +1,11 @@
+import {beforeEach,expect,it,vi} from "vitest";
+const m=vi.hoisted(()=>({permission:vi.fn(),rpc:vi.fn(),revalidate:vi.fn()}));
+vi.mock("@/lib/access/context",()=>({requireInternalPermission:m.permission,requireCustomerAccess:vi.fn()}));vi.mock("@/lib/supabase/server",()=>({createServerSupabase:async()=>({rpc:m.rpc})}));vi.mock("next/cache",()=>({revalidatePath:m.revalidate}));vi.mock("next/navigation",()=>({redirect:(p:string)=>{throw Error("REDIRECT:"+p)}}));
+import {cancelSalesOrderAction} from "./actions";
+const id="11111111-1111-4111-8111-111111111111",op="22222222-2222-4222-8222-222222222222";
+const form=(reason="Unused synthetic draft")=>{const f=new FormData();f.set("entityId",id);f.set("operationId",op);f.set("reason",reason);return f};
+beforeEach(()=>{vi.clearAllMocks();m.permission.mockResolvedValue({});m.rpc.mockResolvedValue({data:id,error:null})});
+it("uses canonical audited cancellation and stable operation, never a table delete",async()=>{await expect(cancelSalesOrderAction(form())).rejects.toThrow("notice=cancelled");expect(m.permission).toHaveBeenCalledWith("orders.cancel");expect(m.rpc).toHaveBeenCalledExactlyOnceWith("cancel_sales_order",{target_order_id:id,cancel_reason:"Unused synthetic draft",operation_id:op});expect(m.revalidate).toHaveBeenCalledWith("/admin/orders")});
+it("enforces permission at action boundary",async()=>{m.permission.mockRejectedValue(Error("FORBIDDEN"));await expect(cancelSalesOrderAction(form())).rejects.toThrow("FORBIDDEN");expect(m.rpc).not.toHaveBeenCalled()});
+it("does not claim success on posted-history conflict",async()=>{m.rpc.mockResolvedValue({error:{message:"Sales order with delivery history cannot be cancelled"}});await expect(cancelSalesOrderAction(form())).rejects.toThrow("?error=");expect(m.revalidate).not.toHaveBeenCalled()});
+it.each(["","x","x".repeat(501)])("rejects invalid reason",async reason=>{await expect(cancelSalesOrderAction(form(reason))).rejects.toThrow("invalid-command");expect(m.rpc).not.toHaveBeenCalled()});
