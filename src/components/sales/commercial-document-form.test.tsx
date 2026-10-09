@@ -24,6 +24,30 @@ beforeEach(() => {
   mocks.sites.mockResolvedValue(props.options.customers[1].sites);
 });
 afterEach(cleanup);
+it("automatically previews valid new input without writing a document", async () => {
+  render(<CommercialDocumentForm {...props} />);
+  fireEvent.change(screen.getByLabelText("Số lượng *"), { target: { value: "2" } });
+  await waitFor(() => expect(mocks.preview).toHaveBeenCalledWith(expect.objectContaining({ lines: [expect.objectContaining({ quantity: "2", orderedUomId: "uom-a" })] })));
+  expect(mocks.save).not.toHaveBeenCalled();
+  expect(screen.getByLabelText("Số lượng *")).toHaveValue("2");
+});
+it("does not passively reprice a stored draft when it first opens", async () => {
+  render(<CommercialDocumentForm {...props} existing={{ id: "draft", version: 1, customerId: "customer-a", siteId: "site-a", effectiveAt: null, terms: "Original", lines: [{ sourceLineId: "old-line", materialId: "material", uomId: "uom-a", quantity: "2", manualPriceVnd: "90000", manualReason: "Approved snapshot" }] }} />);
+  await act(async () => { await new Promise(resolve => setTimeout(resolve, 350)); });
+  expect(mocks.preview).not.toHaveBeenCalled();
+  expect(screen.getByLabelText("Giá thủ công (VND, nếu cần)")).toHaveValue("90000");
+});
+it("discards an older asynchronous result after UOM changes", async () => {
+  let finishOld: (value: Awaited<ReturnType<typeof mocks.preview>>) => void = () => {};
+  mocks.preview.mockImplementationOnce(() => new Promise(resolve => { finishOld = resolve; }));
+  render(<CommercialDocumentForm {...props} />);
+  fireEvent.change(screen.getByLabelText("Số lượng *"), { target: { value: "2" } });
+  await waitFor(() => expect(mocks.preview).toHaveBeenCalledTimes(1));
+  fireEvent.change(screen.getByLabelText("Đơn vị bán *"), { target: { value: "uom-b" } });
+  await act(async () => finishOld({ success: true, message: "STALE_PRICE", lines: [], totalVnd: "999" }));
+  expect(screen.queryByText("STALE_PRICE")).not.toBeInTheDocument();
+  await waitFor(() => expect(mocks.preview).toHaveBeenLastCalledWith(expect.objectContaining({ lines: [expect.objectContaining({ orderedUomId: "uom-b" })] })));
+});
 async function previewAndSubmit() {
   fireEvent.click(screen.getByRole("button", { name: "Tính giá và xem trước" }));
   const button = screen.getByRole("button", { name: "Lưu bản nháp" });

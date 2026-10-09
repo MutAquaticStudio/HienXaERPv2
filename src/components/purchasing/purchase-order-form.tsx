@@ -1,6 +1,6 @@
 "use client";
 
-import { startTransition, useActionState, useMemo, useRef, useState } from "react";
+import { startTransition, useActionState, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createPurchaseOrderAction, previewWarehousePurchaseAction, searchPurchaseSuppliersAction, updatePurchaseOrderDraftAction, updatePurchaseWarehouseAddressAction, updatePurchaseDraftDestinationAction, type CostPreviewResult } from "@/modules/purchasing/actions";
@@ -74,7 +74,7 @@ export function PurchaseOrderForm({ options, operationId, salesLine, sourceLines
   const priceRevision = useRef(0);
   const [previewRecord, setPreviewRecord] = useState<{ state: typeof state; supplierId: string; value: CostPreviewResult } | null>(null);
   const preview = previewRecord?.state === state && previewRecord?.supplierId === supplierId ? previewRecord.value : null;
-  function setPreview(next: CostPreviewResult | null) { setPreviewRecord(next ? { state, supplierId, value: next } : null); }
+  const setPreview = useCallback((next: CostPreviewResult | null) => { setPreviewRecord(next ? { state, supplierId, value: next } : null); }, [state, supplierId]);
   const [previewPending, setPreviewPending] = useState(false);
   const sites = useMemo(() => options.customers.find((row) => row.id === customerId)?.sites ?? [], [customerId, options.customers]);
   const sourceMode = !!salesLine || existing?.destinationType === "CUSTOMER_SITE";
@@ -83,7 +83,7 @@ export function PurchaseOrderForm({ options, operationId, salesLine, sourceLines
   const createsSales = !warehouseMode && !sourceMode;
   const emptyLines = !supplierId || !options.materials.length || lines.some((line) => !line.materialId || !line.uomId || !line.quantity || (sourceMode && !line.salesLineId));
   const disabled = emptyLines || (warehouseMode ? !warehouseId || (!existing && addressMissing) || (!!existing && warehouseId !== committedWarehouseId) : sourceMode ? !availableSourceLines.length : !canCreateSales || !sites.length);
-  function invalidatePrice() { priceRevision.current += 1; setPreview(null); }
+  function invalidatePrice() { priceRevision.current += 1; setPreview(null); setPreviewPending(false); }
   function updateLine(key: number, change: Partial<(typeof lines)[number]>) {
     invalidatePrice();
     setLines((current) => current.map((line) => line.key === key ? { ...line, ...change } : line));
@@ -98,9 +98,9 @@ export function PurchaseOrderForm({ options, operationId, salesLine, sourceLines
       materialId: source?.materialId ?? material.id, uomId: source?.uomId ?? material.uoms[0]?.id ?? "",
       quantity: source?.remainingOrderedQuantity ?? "", manualCostVnd: "", manualCostReason: "", manualSalesPriceVnd: "", manualSalesReason: "" }]);
   }
-  async function loadPreview() {
+  const loadPreview = useCallback(async () => {
     if (emptyLines) { setPreview({ success: false, message: "Nhập đủ các dòng mua trước khi xem giá." }); return; }
-    const revision = priceRevision.current;
+    const revision = ++priceRevision.current;
     setPreviewPending(true);
     try {
       const result = await previewWarehousePurchaseAction({ mode, supplierId, warehouseId: warehouseMode ? warehouseId : undefined,
@@ -113,8 +113,13 @@ export function PurchaseOrderForm({ options, operationId, salesLine, sourceLines
           sourceLineId: line.sourceLineId || undefined, salesLineId: line.salesLineId || undefined })) });
       if (revision === priceRevision.current) setPreview(result);
     } catch { if (revision === priceRevision.current) setPreview({ success: false, message: "Không thể xem trước giá mua." }); }
-    finally { setPreviewPending(false); }
-  }
+    finally { if (revision === priceRevision.current) setPreviewPending(false); }
+  }, [emptyLines, setPreview, mode, supplierId, warehouseMode, warehouseId, sourceMode, customerId, existing, salesLine, documentVersion, operationId, lines]);
+  useEffect(() => {
+    if ((!canReadPrice && !createsSales) || disabled || pending || warehousePending || state?.partialPurchaseOrderId || (existing && priceRevision.current === 0)) return;
+    const timer = setTimeout(() => { void loadPreview(); }, 250);
+    return () => { clearTimeout(timer); priceRevision.current += 1; };
+  }, [canReadPrice, createsSales, disabled, pending, warehousePending, state?.partialPurchaseOrderId, existing, loadPreview]);
   async function saveWarehouseAddress() {
     if (warehousePending || pending) return;
     const target = warehouseId;

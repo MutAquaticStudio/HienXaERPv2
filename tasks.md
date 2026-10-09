@@ -613,3 +613,5 @@ PR00 local checks PASS (55 tests/typecheck/lint/isolated Turbopack build). Hoste
 
 PR00 COMPLETE: PR33 merged 3622d1ed17f75537b83a28dc2174b8a3c916e2f5; 55 targeted tests, typecheck/lint/build, GitHub CI and 14 actual Codex Browser QA cases PASS. One SYN warehouse created/edited/deactivated only on QA, two audit events, no inventory movement. Classic branch protection/rulesets absent; no protection bypass.
 PR01 IN_PROGRESS: permission-filtered read-only material detail; no schema, price store or inventory write.
+
+PR01 COMPLETE: PR34 merged bda051e56ead6affed6c69fab742884d670a1577; 33 tests/typecheck/lint/build/CI and actual Owner/Sales detail/cost/reload/branch-isolation UI PASS. PR02 IN_PROGRESS: debounced existing-engine preview only, no passive old-draft repricing or auto-save.

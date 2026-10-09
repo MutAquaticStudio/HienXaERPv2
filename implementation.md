@@ -2522,3 +2522,6 @@ PR00 hosted QA closure: exact Preview dpl_EkL3CXsSKeFbFtMTeNbsKsyrF9E2, e99f5448
 PR01 uses canonical global material/UOM master and branch-scoped pricing/inventory readers with permission-gated queries, exact text monetary/quantity transport, no invented zero opening.
 
 PR01 source gates: 33/33 targeted tests PASS, typecheck/lint PASS, canonical isolated Turbopack build PASS. Exact quantity/cost transport uses PostgREST text projection; no float money math. QA cast-reader checks use the actual HXQA-MATERIAL code (obsolete material-0 harness label was not reused). Hosted UI and CI pending before merge.
+
+PR01 hosted closure: exact READY Preview dpl_2TFpkNQZtK1wUoQV3mrF3aLSeDKx, c5356d8, QA ff...; actual Sales list→detail, cost hidden/stock denied; Owner existing Material A 60,000 VND/bao and reload PASS; Owner A→B removes A cost. CI 37942550836 PASS; PR34 merged bda051e. Provider status mismatch recorded, authoritative exact deployment READY; no retry or account/project workaround.
+PR02 source gates: 31/31 affected tests PASS, typecheck/lint PASS, canonical isolated Turbopack build PASS. Existing snapshot preview commands reused; auto-preview valid inputs after 250ms, stale result protection, no writer call, edit initial snapshot untouched, cost-read gate preserved, manual fallback retained. Hosted UI/CI pending.
