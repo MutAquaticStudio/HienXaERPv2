@@ -178,3 +178,8 @@ Implementation complete when:
 - R11 provider-neutral complete, provider blocker explicit if any;
 - R12 non-Production scope complete;
 - unresolved human gates explicit.
+
+
+## Operational enhancement sequence (2026-10-09)
+
+Prerequisite: verified Production UAT cleanup PASS; original 574-row database cleanup is not replayed. Reuse the current release worktree and preserve legacy workspace edits. PR00 moves existing catalog editor/readers into owning modules with permission-preserving redirects and route invalidation. PR01 adds material read composition. PR02 automates existing price resolution. PR03 improves stock visibility without new postings. PR04 reuses safe cancellation. PR05 adds optional final Sales unit-price adjustment and preserves authorization/audit. Each PR requires affected tests, typecheck/lint/build, affected QA, CI and reviewed merge. Deploy the exact final main only after all six scopes are accepted; no Production opening import or synthetic ledger activation.

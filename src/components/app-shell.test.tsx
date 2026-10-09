@@ -23,7 +23,7 @@ describe("grouped operational navigation", () => {
   it("keeps all existing destinations and exposes existing stock-count and purchase-document routes", () => {
     const { container } = render(shell());
     const hrefs = [...container.querySelectorAll("aside a")].map((link) => link.getAttribute("href"));
-    expect(new Set(hrefs).size).toBe(27);
+    expect(new Set(hrefs).size).toBe(28);
     expect(hrefs).toContain("/admin/stock-counts");
     expect(hrefs).toContain("/admin/invoices/purchases");
     expect(hrefs).toContain("/admin/access");
@@ -37,6 +37,18 @@ describe("grouped operational navigation", () => {
     expect(container.querySelector('a[href="/admin/access"]')).toBeNull();
     expect(container.querySelector('a[href="/admin/payables"]')).toBeNull();
     expect(container.querySelector('a[href="/admin/settings"]')).toBeNull();
+  });
+
+  it.each([
+    ["catalog.manage", "Vật tư", "/admin/products/manage"],
+    ["customers.manage", "Khách hàng", "/admin/customers/manage"],
+    ["suppliers.manage", "Nhà cung cấp", "/admin/suppliers/manage"],
+    ["pricing.read", "Giá bán", "/admin/products/pricing"],
+  ])("preserves the independently authorized %s module", (permission, label, href) => {
+    render(shell([permission]));
+    expect(screen.getByRole("link", { name: label })).toHaveAttribute("href", href);
+    expect(screen.queryByRole("link", { name: "Cài đặt" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Quản lý danh mục" })).not.toBeInTheDocument();
   });
 
   it("renders a single permitted destination without an extra expansion step", () => {

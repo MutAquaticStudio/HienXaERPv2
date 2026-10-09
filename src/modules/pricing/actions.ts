@@ -21,6 +21,7 @@ export async function savePricingRuleAction(_: PricingState | undefined, form: F
     try {
       await portalRpc(await createServerSupabase(), "deactivate_pricing_rule", { target_id: supersedesId, target_branch_id: access.branchId, expected_version: expectedVersion, change_reason: reason, operation_id: randomUUID() });
       revalidatePath("/admin/settings/pricing");
+      revalidatePath("/admin/products/pricing");
       return { message: "Đã ngừng chính sách giá; chứng từ cũ giữ giá đã chốt.", success: true };
     } catch (error) { return pricingError(error); }
   }
@@ -52,6 +53,7 @@ export async function savePricingRuleAction(_: PricingState | undefined, form: F
   try {
     await portalRpc(await createServerSupabase(), "save_pricing_rule", { target_id: randomUUID(), target_branch_id: access.branchId, supersedes_id: mode === "replace" ? supersedesId : null, expected_version: mode === "replace" ? expectedVersion : null, values_json: values, change_reason: reason, operation_id: randomUUID() });
     revalidatePath("/admin/settings/pricing");
+    revalidatePath("/admin/products/pricing");
     return { message: mode === "replace" ? "Đã tạo phiên bản giá mới; lịch sử giữ nguyên." : "Đã tạo chính sách giá.", success: true };
   } catch (error) { return pricingError(error); }
 }

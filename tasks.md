@@ -596,3 +596,17 @@ This result supersedes the earlier wrapper/timestamp checkpoints above. B_TECHNI
 - Synthetic QA branch IDs f2d43b4b-ed9b-4400-8c40-6f6b8c87fd96 and 9a6b3767-284c-43da-9194-fd56a456621d and all posted source IDs are recorded in the run fixture manifest, excluded from real cutover, retained without ad-hoc deletion. Imported operational employee bindings remain inactive; temporary QA read control has no password/login provisioning.
 - Production connection NONE; Production economic/opening writes 0. No Production migration/import authorization is inferred from merging inert operator scripts. Thirteen Master_review decisions, real cutover data and operational compensation remain Owner inputs. B_OPERATIONAL_READY=NO.
 - Local evidence: outputs/synthetic-dry-run/importer-acceptance/OPTRANS-QA-SYNTHETIC-20261009T040353681Z-resume.json and OPTRANS-QA-SYNTHETIC-20261009T040353681Z-fixture-manifest.json. Local-only harnesses/evidence/credentials are excluded from source control.
+
+
+## Safe operational enhancements (2026-10-09)
+
+- Cleanup prerequisite: PASS, independent 405-FK check, 8 Storage objects absent, 9 test identities disabled, Owner/HX retained. Original DB execution count remains 1.
+- PR00 module-owned catalog CRUD/legacy redirects: IN_PROGRESS.
+- PR01 material detail: PENDING.
+- PR02 automatic price resolution: PENDING.
+- PR03 warehouse visibility/integration: PENDING.
+- PR04 safe draft cancellation: PENDING.
+- PR05 optional final Sales unit price/audit: PENDING.
+- Real operational activation/openings: NOT_AUTHORIZED_IN_THIS_FEATURE_RUN.
+
+PR00 local checks PASS (55 tests/typecheck/lint/isolated Turbopack build). Hosted UI QA and GitHub CI PENDING; localhost browser block is TOOLING_LIMITATION, not an application P1. PR00 is not merged or live accepted.

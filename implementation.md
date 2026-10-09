@@ -2508,3 +2508,12 @@ This result supersedes the earlier wrapper/timestamp checkpoints above. B_TECHNI
 - Synthetic QA branch IDs f2d43b4b-ed9b-4400-8c40-6f6b8c87fd96 and 9a6b3767-284c-43da-9194-fd56a456621d and all posted source IDs are recorded in the run fixture manifest, excluded from real cutover, retained without ad-hoc deletion. Imported operational employee bindings remain inactive; temporary QA read control has no password/login provisioning.
 - Production connection NONE; Production economic/opening writes 0. No Production migration/import authorization is inferred from merging inert operator scripts. Thirteen Master_review decisions, real cutover data and operational compensation remain Owner inputs. B_OPERATIONAL_READY=NO.
 - Local evidence: outputs/synthetic-dry-run/importer-acceptance/OPTRANS-QA-SYNTHETIC-20261009T040353681Z-resume.json and OPTRANS-QA-SYNTHETIC-20261009T040353681Z-fixture-manifest.json. Local-only harnesses/evidence/credentials are excluded from source control.
+
+
+## Production cleanup checkpoint and PR00 start (2026-10-09)
+
+Cleanup independently PASS, run 0790e16e-2c5e-43bd-8c03-48fef7484168; clean fingerprint 8e5a5f15d15e6b8d429149eb286cde6ad89b70263befff8aa0364599ddcb6601. Original 574-row database commit executed once. Eight Storage objects absent; eight Auth UAT users banned and one soft-deleted via Auth Admin, retaining UUIDs; all UAT sessions/refresh tokens absent. Real Owner password/identity/access unchanged. Proof branch remains inactive solely for four retained audit FK references. Encrypted verified backups retained. No opening balances or real compensation activation.
+
+PR00 scope: reuse catalog editor and its authenticated branch-scoped read composition in module management routes; redirect old catalog URL; move Sales pricing entry to Products; preserve manage-only landing and all original RPC permissions/validation/history. No migration or economic write. Targeted source/route tests and release checks pending.
+
+PR00 local source gates: 55/55 targeted tests PASS; typecheck and affected lint PASS; canonical Turbopack Production build PASS in isolated source+lockfile snapshot (459 cached packages, no env copied). Shared workspace dependencies were not modified. Codex Browser localhost reports ERR_BLOCKED_BY_CLIENT: actual UI QA NOT_VERIFIED, hosted QA preview remains required before merge. No schema/economic write.

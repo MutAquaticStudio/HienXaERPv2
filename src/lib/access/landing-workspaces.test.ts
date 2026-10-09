@@ -5,10 +5,10 @@ describe("independently authorized workspace landing", () => {
   it.each([
     ["finance.expense.read", "/admin/expenses"],
     ["finance.payment_notice.review", "/admin/payment-notices"],
-    ["pricing.read", "/admin/settings/pricing"],
-    ["customers.manage", "/admin/settings"],
-    ["suppliers.manage", "/admin/settings"],
-    ["catalog.manage", "/admin/settings"],
+    ["pricing.read", "/admin/products/pricing"],
+    ["customers.manage", "/admin/customers/manage"],
+    ["suppliers.manage", "/admin/suppliers/manage"],
+    ["catalog.manage", "/admin/products/manage"],
     ["roles.manage", "/admin/access"],
   ])("routes %s to its existing authorized workspace", (permission, path) => {
     expect(internalLandingPath(new Set([permission]))).toBe(path);
