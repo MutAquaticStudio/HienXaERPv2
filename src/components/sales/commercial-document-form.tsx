@@ -2,7 +2,7 @@
 
 import { QuickCreateFocusGuard } from "@/components/sales/quick-create-focus-guard";
 
-import { startTransition, useActionState, useEffect, useMemo, useRef, useState } from "react";
+import { startTransition, useActionState, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { isPositiveSalesQuantity } from "@/modules/sales/quantity-input";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createCustomerQuickAction, createSiteQuickAction } from "@/modules/customers/actions";
@@ -96,12 +96,12 @@ export function CommercialDocumentForm({ kind, options, operationId, canManagePr
   const priceRevision = useRef(0);
   const [previewRecord, setPreviewRecord] = useState<{ state: typeof state; value: PricePreviewResult } | null>(null);
   const preview = previewRecord?.state === state ? previewRecord?.value ?? null : null;
-  function setPreview(next: PricePreviewResult | null) { setPreviewRecord(next ? { state, value: next } : null); }
+  const setPreview = useCallback((next: PricePreviewResult | null) => { setPreviewRecord(next ? { state, value: next } : null); }, [state]);
   const [previewPending, setPreviewPending] = useState(false);
   const [lines, setLines] = useState(existing ? existing.lines.map((line, key) => ({ ...line, key })) : [{ key: 0, sourceLineId: "", materialId: options.materials[0]?.id ?? "", uomId: options.materials[0]?.uoms[0]?.id ?? "", quantity: "", manualPriceVnd: "", manualReason: "" }]);
   const sites = useMemo(() => customerOptions.find((item) => item.id === customerId)?.sites ?? [], [customerId, customerOptions]);
   const empty = !customerOptions.length || !options.materials.length || !siteId || lines.some((line) => !line.materialId || !line.uomId || !isPositiveSalesQuantity(line.quantity));
-  function invalidatePrice() { priceRevision.current += 1; setPreview(null); }
+  function invalidatePrice() { priceRevision.current += 1; setPreview(null); setPreviewPending(false); }
   async function searchCustomers() {
     const revision = ++customerSearchRevision.current;
     setCustomerLookupPending(true);
@@ -144,9 +144,9 @@ export function CommercialDocumentForm({ kind, options, operationId, canManagePr
     const key = nextLineKey.current++;
     setLines((current) => [...current, { key, sourceLineId: "", materialId: material.id, uomId: material.uoms[0]?.id ?? "", quantity: "", manualPriceVnd: "", manualReason: "" }]);
   }
-  async function loadPreview() {
+  const loadPreview = useCallback(async () => {
     if (empty) { setPreview({ success: false, message: "Chọn khách, công trình và nhập đủ dòng hàng trước khi xem giá." }); return; }
-    const requestRevision = priceRevision.current;
+    const requestRevision = ++priceRevision.current;
     setPreviewPending(true);
     try {
       const result = await previewCommercialDocumentAction({ kind, customerId, siteId,
@@ -155,8 +155,13 @@ export function CommercialDocumentForm({ kind, options, operationId, canManagePr
           manualPriceVnd: line.manualPriceVnd, manualReason: line.manualReason, sourceLineId: line.sourceLineId })) });
       if (requestRevision === priceRevision.current) setPreview(result);
     } catch { if (requestRevision === priceRevision.current) setPreview({ success: false, message: "Không thể xem trước giá. Thử lại sau." }); }
-    finally { setPreviewPending(false); }
-  }
+    finally { if (requestRevision === priceRevision.current) setPreviewPending(false); }
+  }, [empty, setPreview, kind, customerId, siteId, existing, lines]);
+  useEffect(() => {
+    if (empty || pending || state?.outcomeUnknown || (existing && priceRevision.current === 0)) return;
+    const timer = setTimeout(() => { void loadPreview(); }, 250);
+    return () => { clearTimeout(timer); priceRevision.current += 1; };
+  }, [empty, pending, state?.outcomeUnknown, existing, loadPreview]);
   return <><form className="card card-pad" action={formAction} onReset={(event) => event.preventDefault()} onSubmit={(event) => {
     event.preventDefault();
     if (submissionPending.current || pending || empty || !preview?.success || state?.outcomeUnknown) return;

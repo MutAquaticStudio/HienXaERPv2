@@ -44,6 +44,22 @@ const supplierOptions = {
   materials: [{ id: "a", name: "Vật tư A", uoms: [{ id: "uom", symbol: "bao" }] }],
 };
 
+it("auto-previews a valid purchase without creating PO/SO", async () => {
+  vi.mocked(previewWarehousePurchaseAction).mockClear();vi.mocked(createPurchaseOrderAction).mockClear();
+  render(<PurchaseOrderForm operationId="auto-preview" canCreateSales={false} canManagePrice canReadPrice options={supplierOptions} />);
+  fireEvent.change(screen.getByLabelText("Số lượng *"), { target: { value: "3" } });
+  await waitFor(() => expect(previewWarehousePurchaseAction).toHaveBeenCalledWith(expect.objectContaining({ supplierId: "supplier", lines: [expect.objectContaining({ quantity: "3" })] })));
+  expect(createPurchaseOrderAction).not.toHaveBeenCalled();
+});
+it("never requests cost preview for an actor without cost read", async () => {
+  vi.mocked(previewWarehousePurchaseAction).mockClear();
+  render(<PurchaseOrderForm operationId="hidden-cost" canCreateSales={false} canManagePrice={false} canReadPrice={false} options={supplierOptions} />);
+  fireEvent.change(screen.getByLabelText("Số lượng *"), { target: { value: "3" } });
+  await new Promise(resolve => setTimeout(resolve, 350));
+  expect(previewWarehousePurchaseAction).not.toHaveBeenCalled();
+  expect(screen.getByText("Giá mua được giữ ẩn theo quyền. Hệ thống vẫn kiểm tra giá khi lưu.")).toBeInTheDocument();
+});
+
 it("does not silently substitute another supplier when the requested supplier is missing", () => {
   render(<PurchaseOrderForm operationId="operation" canCreateSales canManagePrice canReadPrice initialSupplierId="missing" options={supplierOptions} />);
   expect(screen.getByLabelText("Nhà cung cấp")).toHaveValue("");
