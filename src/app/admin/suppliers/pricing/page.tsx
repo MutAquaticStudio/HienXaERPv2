@@ -18,11 +18,20 @@ export default async function PurchasePricingPage({searchParams}:{searchParams:P
  if(query.state==="ACTIVE")request=request.eq("active",true);if(query.state==="INACTIVE")request=request.eq("active",false);
  const result=read?await request:{data:[],error:null};if(result.error)throw new Error("Không tải được bảng giá mua trong phạm vi.");
  const rows=(result.data??[]) as unknown as PurchasePriceRule[],q=query.q?.trim().toLocaleLowerCase()??"";
+ const supplierIds=[...new Set(rows.map(r=>r.supplier_id))],materialIds=[...new Set(rows.map(r=>r.material_id))],unitIds=[...new Set(rows.map(r=>r.purchase_uom_id))];
+ const noLabels=Promise.resolve({data:[],error:null});
+ const [supplierLabels,materialLabels,unitLabels]=await Promise.all([
+  read&&access.permissions.has("suppliers.read")&&supplierIds.length?db.from("suppliers").select("id,name").eq("branch_id",access.branchId).in("id",supplierIds).limit(100):noLabels,
+  read&&access.permissions.has("catalog.read")&&materialIds.length?db.from("materials").select("id,name").in("id",materialIds).limit(100):noLabels,
+  read&&access.permissions.has("catalog.read")&&unitIds.length?db.from("units_of_measure").select("id,symbol").in("id",unitIds).limit(100):noLabels,
+ ]);
+ if([supplierLabels,materialLabels,unitLabels].some(r=>r.error))throw new Error("Không tải được tên NCC/vật tư trong phạm vi được phép.");
+ const labels={suppliers:[...((supplierLabels.data??[]) as unknown as {id:string;name:string}[]),...(options.suppliers??[])],materials:[...((materialLabels.data??[]) as unknown as {id:string;name:string}[]),...options.materials],units:[...((unitLabels.data??[]) as unknown as {id:string;symbol:string}[]).map(u=>({id:u.id,name:u.symbol})),...options.units]};
  const label=(items:{id:string;name:string}[]|undefined,id:string)=>items?.find(x=>x.id===id)?.name??id;
- const shown=rows.filter(r=>!q||[label(options.suppliers,r.supplier_id),label(options.materials,r.material_id)].some(v=>v.toLocaleLowerCase().includes(q)));
+ const shown=rows.filter(r=>!q||[label(labels.suppliers,r.supplier_id),label(labels.materials,r.material_id)].some(v=>v.toLocaleLowerCase().includes(q)));
  return <><header className="page-heading"><div><p className="eyebrow">Nhà cung cấp · {access.branchName}</p><h1>Bảng giá mua</h1><p className="lede">Dùng purchase_price_rules hiện có. Đổi giá bằng phiên bản mới, không sửa snapshot PO đã chốt.</p></div><Link href="/admin/suppliers" className="button button-secondary">Nhà cung cấp</Link></header>
  <form className="filter-bar"><label>Tìm NCC / vật tư<input name="q" defaultValue={query.q}/></label><label>Trạng thái<select name="state" defaultValue={query.state??""}><option value="">Tất cả / lịch sử</option><option value="ACTIVE">Đang dùng</option><option value="INACTIVE">Đã ngừng</option></select></label>{query.supplier&&<input type="hidden" name="supplier" value={query.supplier}/>}<button className="button button-secondary">Áp dụng</button></form>
  {manage&&<details className="card card-pad"><summary>Tạo giá mua</summary><PricingRuleEditor purchase options={options} command={{targetId:randomUUID(),operationId:randomUUID()}}/></details>}
  {!read&&<p className="muted">Quyền quản lý không tự cấp quyền đọc chi phí. Chỉ tạo giá từ dữ liệu được cung cấp.</p>}<p className="muted">Tối đa 100 phiên bản mới nhất trong chi nhánh.</p>
- {shown.map(rule=><details className="card card-pad" key={rule.id}><summary>{label(options.suppliers,rule.supplier_id)} · {label(options.materials,rule.material_id)} · {formatVnd(vnd(rule.unit_cost_vnd))} · v{rule.version} · {rule.active?"Đang dùng":"Đã ngừng"}</summary><p>ĐVT {label(options.units,rule.purchase_uom_id)} · {rule.source_type} · {rule.effective_from}{rule.effective_to?" đến trước "+rule.effective_to:""}</p>{manage&&rule.active&&<PricingRuleEditor purchase purchaseRule={rule} options={options} command={{targetId:randomUUID(),operationId:randomUUID()}}/>}</details>)}</>;
+ {shown.map(rule=><details className="card card-pad" key={rule.id}><summary>{label(labels.suppliers,rule.supplier_id)} · {label(labels.materials,rule.material_id)} · {formatVnd(vnd(rule.unit_cost_vnd))} · v{rule.version} · {rule.active?"Đang dùng":"Đã ngừng"}</summary><p>ĐVT {label(labels.units,rule.purchase_uom_id)} · {rule.source_type} · {rule.effective_from}{rule.effective_to?" đến trước "+rule.effective_to:""}</p>{manage&&rule.active&&<PricingRuleEditor purchase purchaseRule={rule} options={options} command={{targetId:randomUUID(),operationId:randomUUID()}}/>}</details>)}</>;
 }
