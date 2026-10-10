@@ -10,8 +10,12 @@ export type EarningSource = {
 };
 const dateTime = (value: string) => formatBusinessDateTime(value);
 export function EarningSourceTrace({ source }: { source: EarningSource }) {
+  const separator = source.source_key.indexOf(":");
+  const kind = separator < 0 ? source.source_key : source.source_key.slice(0, separator);
+  const reference = separator < 0 ? null : source.source_key.slice(separator + 1);
   return <small className="table-subline mono">
-    {financeSourceLabel(source.source_key.split(":")[0])}
+    {financeSourceLabel(kind)}
+    {reference && <span className="table-subline">Mã nguồn: {reference}</span>}
     {source.work_item_result_id && <span className="table-subline">Kết quả công việc: {source.work_item_result_id}</span>}
     {source.work_item_id && <span className="table-subline">Công việc: {source.work_item_id}</span>}
     {source.work_item_verification_id && <span className="table-subline">Xác minh của chủ doanh nghiệp: {source.work_item_verification_id}{source.work_verified_at && <> · {dateTime(source.work_verified_at)}</>}</span>}
