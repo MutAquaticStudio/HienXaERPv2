@@ -1,16 +1,18 @@
 "use server";
-import { operationalPostingError } from "@/lib/core/errors";
+import { operationalPostingError, quantityInputError } from "@/lib/core/errors";
 
 
-import Decimal from "decimal.js";
+import { isExactEntryQuantity } from "@/lib/core/quantity";
 import { revalidatePath } from "next/cache";
+import { isAuthoritativeRejection, type CommandOutcome } from "@/lib/core/command-outcome";
+import { checkSavedCommandFieldsAction } from "@/lib/core/command-outcome-actions";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 const positive = z.string().trim().refine((value) => {
-  try { const quantity = new Decimal(value); return quantity.isFinite() && quantity.isPositive(); } catch { return false; }
+  return isExactEntryQuantity(value);
 });
 
 function operationLines(formData: FormData, quantityKey: "received_quantity" | "supplier_quantity") {
@@ -37,6 +39,8 @@ function operationLines(formData: FormData, quantityKey: "received_quantity" | "
 function message(value?: string) {
   const postingError = operationalPostingError(value);
   if (postingError) return postingError;
+  const quantityError = quantityInputError(value);
+  if (quantityError) return quantityError;
   if (value?.includes("stock_count_cutoff_stale") || value?.includes("stock_count_basis_changed_recount_required")) return "Kho đã có biến động làm căn cứ đếm không còn hợp lệ. Giữ hồ sơ chênh lệch, đối chiếu biến động và kiểm kê lại tại mốc mới trước khi duyệt.";
   if (value?.includes("stock_count_adjustment_below_reserved_or_on_hand")) return "Chưa thể duyệt: lượng sau điều chỉnh thấp hơn lượng đang giữ chỗ hoặc làm tồn kho âm. Hãy đối chiếu hàng và các phiếu giữ chỗ.";
   if (value?.includes("stock_count_inventory_value_inconsistent")) return "Chưa thể duyệt: lượng và giá trị tồn sau điều chỉnh không khớp. Hãy kiểm tra căn cứ giá vốn.";
@@ -47,11 +51,13 @@ function message(value?: string) {
   return "Không thể ghi nhận nghiệp vụ kho. Không có thay đổi nào được chốt.";
 }
 
-export async function receivePurchaseOrderAction(formData: FormData) {
+export async function receivePurchaseOrderWithOutcomeAction(formData: FormData): Promise<CommandOutcome> {
   const parsed = z.object({ purchaseOrderId: z.uuid(), receivedAt: z.iso.datetime(), operationId: z.uuid(), evidenceId: z.union([z.uuid(), z.literal("")]).optional() }).safeParse(Object.fromEntries(formData));
   const lines = operationLines(formData, "received_quantity");
-  if (!parsed.success || !lines) redirect("/admin/purchase-orders?error=invalid-receipt");
+  if (!parsed.success || !lines) return { status: "FAILED", message: "Vui lòng kiểm tra dòng và số lượng nhận hàng." };
   await requireInternalPermission("inventory.receive");
+  const changedIntent = await checkSavedCommandFieldsAction(formData, "receive_purchase_order");
+  if (changedIntent) return changedIntent;
   const supabase = await createServerSupabase();
   const { data, error } = await supabase.rpc("receive_purchase_order", {
     target_purchase_order_id: parsed.data.purchaseOrderId,
@@ -61,17 +67,30 @@ export async function receivePurchaseOrderAction(formData: FormData) {
     operation_id: parsed.data.operationId,
   });
   const destination = `/admin/purchase-orders/${parsed.data.purchaseOrderId}`;
-  if (error || !data) redirect(`${destination}?error=${encodeURIComponent(message(error?.message))}`);
+  if (error || !data) return {
+    status: isAuthoritativeRejection(error?.code) ? "FAILED" : "UNKNOWN",
+    message: isAuthoritativeRejection(error?.code) ? message(error?.message) : "Chưa xác định được kết quả ghi nhận. Hãy tra cứu và thử lại cùng thao tác, không tạo lần nhận mới.",
+  };
   revalidatePath("/admin/inventory");
   revalidatePath(destination);
-  redirect(`${destination}?notice=received`);
+  return { status: "SUCCESS", resultId: String(data), message: "Đã ghi nhận hàng nhập và công nợ đúng nguồn." };
 }
 
-export async function verifySupplierFulfillmentAction(formData: FormData) {
+export async function receivePurchaseOrderAction(formData: FormData) {
+  const result = await receivePurchaseOrderWithOutcomeAction(formData);
+  const id = z.uuid().safeParse(formData.get("purchaseOrderId"));
+  const target = id.success ? `/admin/purchase-orders/${id.data}` : "/admin/purchase-orders";
+  if (result.status !== "SUCCESS") redirect(`${target}?error=${encodeURIComponent(result.message)}`);
+  redirect(`${target}?notice=received`);
+}
+
+export async function verifySupplierFulfillmentWithOutcomeAction(formData: FormData): Promise<CommandOutcome> {
   const parsed = z.object({ purchaseOrderId: z.uuid(), supplierReference: z.string().trim().max(120).optional(), operationId: z.uuid(), evidenceId: z.union([z.uuid(), z.literal("")]).optional() }).safeParse(Object.fromEntries(formData));
   const lines = operationLines(formData, "supplier_quantity");
-  if (!parsed.success || !lines) redirect("/admin/purchase-orders?error=invalid-fulfillment");
+  if (!parsed.success || !lines) return { status: "FAILED", message: "Vui lòng kiểm tra dòng và số lượng nhà cung cấp giao." };
   await requireInternalPermission("inventory.receive");
+  const changedIntent = await checkSavedCommandFieldsAction(formData, "verify_supplier_fulfillment");
+  if (changedIntent) return changedIntent;
   const supabase = await createServerSupabase();
   const { data, error } = await supabase.rpc("verify_supplier_fulfillment", {
     target_purchase_order_id: parsed.data.purchaseOrderId,
@@ -81,9 +100,20 @@ export async function verifySupplierFulfillmentAction(formData: FormData) {
     operation_id: parsed.data.operationId,
   });
   const destination = `/admin/purchase-orders/${parsed.data.purchaseOrderId}`;
-  if (error || !data) redirect(`${destination}?error=${encodeURIComponent(message(error?.message))}`);
+  if (error || !data) return {
+    status: isAuthoritativeRejection(error?.code) ? "FAILED" : "UNKNOWN",
+    message: isAuthoritativeRejection(error?.code) ? message(error?.message) : "Chưa xác định được kết quả ghi nhận. Hãy tra cứu và thử lại cùng thao tác, không tạo lần nhận mới.",
+  };
   revalidatePath(destination);
-  redirect(`${destination}?notice=supplier-verified`);
+  return { status: "SUCCESS", resultId: String(data), message: "Đã xác minh lượng nhà cung cấp giao và công nợ đúng nguồn." };
+}
+
+export async function verifySupplierFulfillmentAction(formData: FormData) {
+  const result = await verifySupplierFulfillmentWithOutcomeAction(formData);
+  const id = z.uuid().safeParse(formData.get("purchaseOrderId"));
+  const target = id.success ? `/admin/purchase-orders/${id.data}` : "/admin/purchase-orders";
+  if (result.status !== "SUCCESS") redirect(`${target}?error=${encodeURIComponent(result.message)}`);
+  redirect(`${target}?notice=supplier-verified`);
 }
 
 export async function openStockCountAction(formData: FormData) {
@@ -97,7 +127,7 @@ export async function openStockCountAction(formData: FormData) {
 }
 
 export async function recordStockCountLineAction(formData: FormData) {
-  const parsed = z.object({ stockCountId: z.uuid(), materialId: z.uuid(), quantity: z.string().trim().refine((value) => { try { return !new Decimal(value).isNegative(); } catch { return false; } }), unitCost: z.string().trim().optional(), reason: z.string().trim().max(500).optional(), version: z.coerce.number().int().positive(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ stockCountId: z.uuid(), materialId: z.uuid(), quantity: z.string().trim().refine((value) => { return isExactEntryQuantity(value, true); }), unitCost: z.string().trim().optional(), reason: z.string().trim().max(500).optional(), version: z.coerce.number().int().positive(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect("/admin/stock-counts?error=invalid-line");
   await requireInternalPermission("inventory.count");
   const supabase = await createServerSupabase();

@@ -1,8 +1,10 @@
 "use server";
-import { operationalPostingError } from "@/lib/core/errors";
+import { operationalPostingError, quantityInputError } from "@/lib/core/errors";
 
 
 import { revalidatePath } from "next/cache";
+import { isAuthoritativeRejection, type CommandOutcome } from "@/lib/core/command-outcome";
+import { checkSavedCommandFieldsAction } from "@/lib/core/command-outcome-actions";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
@@ -32,6 +34,8 @@ function withQuery(target: string, values: Record<string, string>) {
 function message(value?: string) {
   const postingError = operationalPostingError(value);
   if (postingError) return postingError;
+  const quantityError = quantityInputError(value);
+  if (quantityError) return quantityError;
   if (value?.includes("operation_payload_conflict")) return "Mã thao tác đã được dùng với dữ liệu khác. Hãy tải lại.";
   if (value?.includes("exceeds_payment")) return "Tổng phân bổ và tiền ứng vượt số tiền của phiếu.";
   if (value?.includes("exceeds_outstanding")) return "Phân bổ hoặc điều chỉnh vượt số dư hiện tại.";
@@ -63,7 +67,7 @@ export async function createFinanceAccountAction(formData: FormData) {
   redirect("/admin/cashbook?notice=account-created");
 }
 
-export async function postPaymentAction(formData: FormData) {
+export async function submitPaymentWithOutcomeAction(formData: FormData): Promise<CommandOutcome> {
   const parsed = z.object({
     direction: z.enum(["RECEIPT", "DISBURSEMENT"]),
     partyId: z.uuid(),
@@ -76,17 +80,18 @@ export async function postPaymentAction(formData: FormData) {
     allocationsJson: z.string(),
     operationId: z.uuid(),
   }).safeParse(Object.fromEntries(formData));
-  const target = destination(formData.get("redirectTo"), "/admin/cashbook");
-  if (!parsed.success) redirect(withQuery(target, { error: "invalid-payment" }));
+  if (!parsed.success) return { status: "FAILED", message: "Vui lòng nhập đầy đủ thông tin phiếu thu/chi hợp lệ." };
 
   let allocations: Array<{ obligation_id: string; amount_vnd: string }>;
   try {
     allocations = z.array(z.object({ obligation_id: z.uuid(), amount_vnd: money })).parse(JSON.parse(parsed.data.allocationsJson));
   } catch {
-    redirect(withQuery(target, { error: "invalid-allocations" }));
+    return { status: "FAILED", message: "Vui lòng kiểm tra các khoản được phân bổ." };
   }
 
   const access = await requireInternalPermission("finance.payment.post");
+  const changedIntent = await checkSavedCommandFieldsAction(formData, "post_payment");
+  if (changedIntent) return changedIntent;
   const supabase = await createServerSupabase();
   const { data, error } = await supabase.rpc("post_payment", {
     target_branch_id: access.branchId,
@@ -102,12 +107,22 @@ export async function postPaymentAction(formData: FormData) {
     advance_amount_vnd: parsed.data.advanceAmount || "0",
     operation_id: parsed.data.operationId,
   });
-  if (error || !data) redirect(withQuery(target, { error: message(error?.message) }));
+  if (error || !data) return {
+    status: isAuthoritativeRejection(error?.code) ? "FAILED" : "UNKNOWN",
+    message: isAuthoritativeRejection(error?.code) ? message(error?.message) : "Chưa xác định được kết quả lưu phiếu. Hãy tra cứu và thử lại cùng thao tác, không ghi một phiếu mới.",
+  };
   revalidatePath("/admin");
   revalidatePath("/admin/receivables");
   revalidatePath("/admin/payables");
   revalidatePath("/admin/cashbook");
-  redirect(withQuery(target, { notice: "payment-posted", payment: String(data) }));
+  return { status: "SUCCESS", resultId: String(data), message: "Đã ghi nhận thu/chi và các phân bổ đúng nguồn." };
+}
+
+export async function postPaymentAction(formData: FormData) {
+  const result = await submitPaymentWithOutcomeAction(formData);
+  const target = destination(formData.get("redirectTo"), "/admin/cashbook");
+  if (result.status !== "SUCCESS") redirect(withQuery(target, { error: result.message }));
+  redirect(withQuery(target, { notice: "payment-posted", payment: result.resultId }));
 }
 
 export async function reversePaymentAction(formData: FormData) {

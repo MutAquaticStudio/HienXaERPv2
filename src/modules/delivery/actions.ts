@@ -1,5 +1,5 @@
 "use server";
-import { operationalPostingError } from "@/lib/core/errors";
+import { operationalPostingError, quantityInputError } from "@/lib/core/errors";
 
 
 import Decimal from "decimal.js";
@@ -60,6 +60,8 @@ function verificationLines(formData: FormData) {
 function message(value?: string) {
   const postingError = operationalPostingError(value);
   if (postingError) return postingError;
+  const quantityError = quantityInputError(value);
+  if (quantityError) return quantityError;
   if (value?.includes("worker_quantity_adjustment_reason_required")) return "Nhập lý do điều chỉnh số lượng thợ đã gửi (từ 3 đến 500 ký tự), rồi xác minh lại.";
   if (value?.includes("operation_payload_conflict")) return "Mã thao tác đã được dùng với dữ liệu khác. Hãy tải lại.";
   if (value?.includes("version")) return "Phiếu đã được người khác cập nhật. Hãy tải lại.";

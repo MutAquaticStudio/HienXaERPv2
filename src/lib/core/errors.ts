@@ -9,6 +9,14 @@ export type AppErrorCode =
 
 export type AppErrorStatus = 401 | 403 | 404 | 409 | 422 | 429 | 503;
 
+export function quantityInputError(message: unknown): string | null {
+  if (typeof message !== "string") return null;
+  if (message.includes("quantity_precision_exceeds_six")) return "Số lượng chỉ hỗ trợ tối đa 6 chữ số sau dấu thập phân. Vui lòng nhập lại; hệ thống không tự làm tròn.";
+  if (/quantity_(?:invalid_or_out_of_range|format_invalid|line_invalid|lines_required)/.test(message)) return "Vui lòng nhập số lượng hợp lệ trong giới hạn hỗ trợ và đầy đủ các dòng vật tư.";
+  if (message.includes("billing_source_requires_reconciliation")) return "Giá trị đã ghi theo dòng nguồn cần được đối chiếu trước khi ghi nhận đợt tiếp theo. Vui lòng liên hệ kế toán.";
+  return null;
+}
+
 /** Presentation only: the database remains the authority that rejects posting. */
 export function operationalPostingError(message: unknown,
   context: "posting" | "sales-order-confirmation" | "purchase-order-confirmation" = "posting"): string | null {
@@ -20,6 +28,8 @@ export function operationalPostingError(message: unknown,
 
 /** Keep clear Vietnamese validation details, without displaying unmapped backend errors. */
 export function userFacingError(message: string | undefined | null, fallback = "Có lỗi xảy ra. Vui lòng thử lại"): string {
+  const quantity = quantityInputError(message);
+  if (quantity) return quantity;
   const posting = operationalPostingError(message);
   if (posting) return posting;
   const value = message?.trim();

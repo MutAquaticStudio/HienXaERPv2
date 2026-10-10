@@ -2,7 +2,8 @@
 import { formatBusinessDate } from "@/lib/core/business-time";
 
 import { useMemo, useState } from "react";
-import { postPaymentAction } from "@/modules/finance/actions";
+import { submitPaymentWithOutcomeAction } from "@/modules/finance/actions";
+import { ReliableCommandForm } from "@/components/reliable-command-form";
 import { formatVnd, vnd } from "@/lib/core/money";
 
 export type PaymentTarget = {
@@ -22,6 +23,7 @@ type Props = {
   defaultEffectiveAt: string;
   redirectTo: string;
   operationId: string;
+  actorScope: string;
   historicalContext?: boolean;
 };
 
@@ -70,7 +72,17 @@ export function PaymentForm(props: Props) {
     .filter((item) => integer(item.amount_vnd) > 0n);
 
   return (
-    <form className="card card-pad payment-editor" action={postPaymentAction}>
+    <ReliableCommandForm className="card card-pad payment-editor" action={submitPaymentWithOutcomeAction}
+      command="post_payment" scope={`${props.actorScope}:${props.direction}:${props.partyId}`} operationId={props.operationId}
+      onRestore={(entries) => {
+        const fields = Object.fromEntries(entries);
+        setAmount(fields.amount ?? "");
+        setAdvance(fields.advanceAmount ?? "0");
+        try {
+          const values = JSON.parse(fields.allocationsJson ?? "[]") as Array<{ obligation_id: string; amount_vnd: string }>;
+          setAllocations(Object.fromEntries(values.map((item) => [item.obligation_id, item.amount_vnd])));
+        } catch { setAllocations({}); }
+      }} onNew={() => { setAmount(""); setAdvance("0"); setAllocations({}); }}>
       <div className="section-head flush">
         <div><p className="eyebrow">{props.direction === "RECEIPT" ? "Phiếu thu" : "Phiếu chi"}</p><h2>{props.partyName}</h2></div>
         <span className="scope-chip">Số dư hiện tại</span>
@@ -79,7 +91,6 @@ export function PaymentForm(props: Props) {
       <input type="hidden" name="direction" value={props.direction} />
       <input type="hidden" name="partyId" value={props.partyId} />
       <input type="hidden" name="allocationsJson" value={JSON.stringify(allocationPayload)} />
-      <input type="hidden" name="operationId" value={props.operationId} />
       <input type="hidden" name="redirectTo" value={props.redirectTo} />
       <div className="inline-create">
         <label>Số tiền {props.direction === "RECEIPT" ? "nhận" : "chi"}<input name="amount" value={amount} onChange={(event) => setAmount(event.target.value)} inputMode="numeric" required /></label>
@@ -103,6 +114,6 @@ export function PaymentForm(props: Props) {
         <span className={unallocated < 0n ? "money-negative" : ""}>Còn chưa phân loại<strong>{formatVnd(vnd(unallocated.toString()))}</strong></span>
       </div>
       <button className="button button-primary action-full" type="submit" disabled={received <= 0n || unallocated < 0n}>Ghi nhận {props.direction === "RECEIPT" ? "thu tiền" : "chi tiền"}</button>
-    </form>
+    </ReliableCommandForm>
   );
 }

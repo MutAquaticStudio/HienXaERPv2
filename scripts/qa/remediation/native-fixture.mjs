@@ -45,7 +45,7 @@ export async function openQA(args) {
   return { sql, fixtures, actor, rpc, identity };
 }
 
-export async function stockFixture(tx, qa, quantity = "45") {
+export async function stockFixture(tx, qa, quantity = "45", options = {}) {
   const { fixtures: f, rpc } = qa;
   await tx.unsafe("set local role postgres");
   const prefix = "RM" + randomUUID().replaceAll("-", "").slice(0, 8).toUpperCase();
@@ -62,7 +62,7 @@ export async function stockFixture(tx, qa, quantity = "45") {
   await tx`insert into public.materials(id,group_id,code,name,base_uom_id)
     values(${material},${group.group_id},${prefix},'Cát kiểm thử khắc phục',${uom})`;
   await tx`insert into public.pricing_rules(id,branch_id,scope_type,material_id,price_uom_id,unit_price_vnd,version,source_type,effective_from,created_by)
-    values(${price},${f.branch},'DEFAULT',${material},${uom},230000,1,'LIST','2020-01-01',${f.owner})`;
+    values(${price},${f.branch},'DEFAULT',${material},${uom},${options.unitPriceVnd ?? "230000"},1,'LIST','2020-01-01',${f.owner})`;
   await tx`insert into public.purchase_price_rules(id,branch_id,supplier_id,material_id,purchase_uom_id,unit_cost_vnd,version,source_type,effective_from,created_by)
     values(${cost},${f.branch},${f.supplier},${material},${uom},150000,1,'CONTRACT','2020-01-01',${f.owner})`;
   const common = { material_id: material, ordered_uom_id: uom, quantity,
@@ -74,13 +74,13 @@ export async function stockFixture(tx, qa, quantity = "45") {
   await rpc(tx, "confirm_purchase_order", [po, randomUUID()]);
   const [purchaseLine] = await tx`select id from public.purchase_order_lines where purchase_order_id=${po}`;
   await rpc(tx, "receive_purchase_order", [po, [{ purchase_order_line_id: purchaseLine.id, received_quantity: quantity }], null, receivedAt, randomUUID()]);
-  return { prefix, uom, material, price, cost, po, common, cutoff: clock.now, customer, site };
+  return { prefix, uom, material, price, cost, po, common, cutoff: clock.now, customer, site, unitPriceVnd: options.unitPriceVnd ?? "230000" };
 }
 
 export async function salesFixture(tx, qa, stock) {
   const { fixtures: f, rpc } = qa;
   const so = await rpc(tx, "create_sales_order_draft", [f.branch, stock.customer, stock.site, null, "QA khắc phục",
-    [{ ...stock.common, unit_price_vnd: "230000", pricing_rule_id: stock.price, pricing_rule_version: 1, price_source_type: "LIST" }], randomUUID()]);
+    [{ ...stock.common, unit_price_vnd: stock.unitPriceVnd, pricing_rule_id: stock.price, pricing_rule_version: 1, price_source_type: "LIST" }], randomUUID()]);
   await rpc(tx, "confirm_sales_order", [so, randomUUID()]);
   const [line] = await tx`select id from public.sales_order_lines where sales_order_id=${so}`;
   return { so, line: line.id };

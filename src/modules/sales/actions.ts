@@ -6,7 +6,7 @@ import { isPositiveSalesQuantity } from "./quantity-input";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { AppError, operationalPostingError } from "@/lib/core/errors";
+import { AppError, operationalPostingError, quantityInputError } from "@/lib/core/errors";
 import { requireCustomerAccess, requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { resolvePrice, type PriceRule } from "@/modules/pricing/resolve-price";
@@ -37,6 +37,8 @@ const commandSchema = z.object({ entityId: z.uuid(), operationId: z.uuid() });
 function commandError(message: string, confirmingOrder = false) {
   const postingError = operationalPostingError(message, confirmingOrder ? "sales-order-confirmation" : "posting");
   if (postingError) return postingError;
+  const quantityError = quantityInputError(message);
+  if (quantityError) return quantityError;
   if (message.includes("sales_order_not_confirmable")) return "Đơn bán không còn ở trạng thái có thể xác nhận. Hãy tải lại để kiểm tra.";
   if (message.includes("order_lines_required")) return "Vui lòng thêm ít nhất một dòng vật tư cho đơn bán.";
   if (confirmingOrder && message.includes("forbidden")) return "Bạn không có quyền xác nhận đơn bán tại chi nhánh này.";

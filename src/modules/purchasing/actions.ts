@@ -1,13 +1,14 @@
 "use server";
 
 import Decimal from "decimal.js";
+import { isExactEntryQuantity } from "@/lib/core/quantity";
 import { finalPurchaseCostReason } from "./manual-cost";
 import { finalSellingPriceReason } from "@/modules/sales/final-price";
 import { normalizeWarehouseAddress, warehouseAddressRequired } from "./warehouse-address";
 import { revalidatePath } from "next/cache";
 import { redirect, unstable_rethrow } from "next/navigation";
 import { z } from "zod";
-import { AppError, operationalPostingError } from "@/lib/core/errors";
+import { AppError, operationalPostingError, quantityInputError } from "@/lib/core/errors";
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { resolvePrice, type PriceRule } from "@/modules/pricing/resolve-price";
@@ -27,7 +28,7 @@ export async function searchPurchaseSuppliersAction(query: string) {
     return { suppliers: [], message: "Không thể tìm nhà cung cấp. Hãy thử lại." };
   }
 }
-const positive = z.string().trim().refine((value) => { try { return new Decimal(value).isPositive(); } catch { return false; } });
+const positive = z.string().trim().refine((value) => { return isExactEntryQuantity(value); });
 const documentLineSchema = z.object({ materialId: z.uuid(), orderedUomId: z.uuid(), quantity: positive,
   manualCostVnd: z.string().trim().optional(), manualCostReason: z.string().trim().max(500).optional(),
   manualSalesPriceVnd: z.string().trim().optional(), manualSalesReason: z.string().trim().max(500).optional(),
@@ -84,6 +85,8 @@ function toIso(value?: string) {
 function errorMessage(message: string, confirmingOrder = false) {
   const postingError = operationalPostingError(message, confirmingOrder ? "purchase-order-confirmation" : "posting");
   if (postingError) return postingError;
+  const quantityError = quantityInputError(message);
+  if (quantityError) return quantityError;
   if (message.includes("purchase_order_not_confirmable")) return "Đơn mua không còn ở trạng thái có thể xác nhận. Hãy tải lại để kiểm tra.";
   if (message.includes("purchase_lines_required")) return "Vui lòng thêm ít nhất một dòng vật tư cho đơn mua.";
   if (message.includes("warehouse_address_required")) return warehouseAddressRequired;

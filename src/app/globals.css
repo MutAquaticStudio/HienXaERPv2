@@ -730,3 +730,5 @@ tbody tr:hover { background: #f8fbff; }
   .sidebar, .nav-chevron { transition: none; }
   .loading-bar::after { animation: none; }
 }
+
+.reliable-command-fields { display: contents; border: 0; margin: 0; padding: 0; min-width: 0; }

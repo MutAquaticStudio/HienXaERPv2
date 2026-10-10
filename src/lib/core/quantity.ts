@@ -4,6 +4,14 @@ import { AppError } from "./errors";
 export type QuantityUnit = "kg" | "ton" | "bag";
 export type Quantity = Readonly<{ value: string; unit: QuantityUnit }>;
 
+/** Input contract shared with numeric(20,6) commands; display never rounds stored values. */
+export function isExactEntryQuantity(value: string, allowZero = false): boolean {
+  if (!/^\d+(?:\.\d{1,6})?$/.test(value.trim())) return false;
+  const amount = new Decimal(value.trim());
+  return amount.isFinite() && amount.lessThan("100000000000000")
+    && (allowZero ? !amount.isNegative() : amount.greaterThan(0));
+}
+
 // Display the stored quantity exactly, without database scale padding or rounding.
 export function formatQuantity(value: string) {
   const [integer, fraction] = new Decimal(value).toFixed().split(".");
