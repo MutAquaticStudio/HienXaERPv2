@@ -1,4 +1,6 @@
 "use server";
+import { operationalPostingError } from "@/lib/core/errors";
+
 
 import Decimal from "decimal.js";
 import { revalidatePath } from "next/cache";
@@ -33,6 +35,8 @@ function operationLines(formData: FormData, quantityKey: "received_quantity" | "
 }
 
 function message(value?: string) {
+  const postingError = operationalPostingError(value);
+  if (postingError) return postingError;
   if (value?.includes("operation_payload_conflict")) return "Mã thao tác đã được dùng với dữ liệu khác. Hãy tải lại.";
   if (value?.includes("exceeds")) return "Số lượng vượt phần còn lại của chứng từ nguồn.";
   if (value?.includes("version")) return "Dữ liệu đã được người khác cập nhật. Hãy tải lại.";

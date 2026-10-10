@@ -8,7 +8,7 @@ function asVnd(value: bigint): Vnd {
 
 export function vnd(value: string | bigint): Vnd {
   if (typeof value === "string" && !/^-?\d+$/.test(value)) {
-    throw new AppError({ code: "VALIDATION_FAILED", message: "Giá trị VND phải là số nguyên.", status: 422 });
+    throw new AppError({ code: "VALIDATION_FAILED", message: "Số tiền phải là số nguyên đồng.", status: 422 });
   }
   return asVnd(BigInt(value));
 }
@@ -27,7 +27,7 @@ export function multiplyVnd(amount: Vnd, multiplier: bigint): Vnd {
 
 export function applyBasisPoints(amount: Vnd, basisPoints: number): Vnd {
   if (!Number.isInteger(basisPoints)) {
-    throw new AppError({ code: "VALIDATION_FAILED", message: "Basis points phải là số nguyên.", status: 422 });
+    throw new AppError({ code: "VALIDATION_FAILED", message: "Tỷ lệ điều chỉnh phải là số nguyên.", status: 422 });
   }
   return asVnd(divideHalfUp(amount * BigInt(basisPoints), BigInt(10_000)));
 }

@@ -10,7 +10,7 @@ export default async function EditPurchaseOrderPage({ params }: { params: Promis
   const access = await requireInternalPermission("purchasing.create");
   const { id } = await params;
   if (!access.permissions.has("purchasing.price.read")) {
-    return <section className="card card-pad"><h1>Không thể sửa PO này</h1><p>Cần quyền xem giá mua để sửa bản nháp mà không thay đổi giá ẩn.</p><Link className="button button-secondary" href={`/admin/purchase-orders/${id}`}>Về đơn mua</Link></section>;
+    return <section className="card card-pad"><h1>Không thể sửa đơn mua này</h1><p>Cần quyền xem giá mua để sửa bản nháp mà không thay đổi giá ẩn.</p><Link className="button button-secondary" href={`/admin/purchase-orders/${id}`}>Về đơn mua</Link></section>;
   }
   const supabase = await createServerSupabase();
   const [orderResult, lineResult] = await Promise.all([

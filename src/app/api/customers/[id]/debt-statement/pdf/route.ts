@@ -1,3 +1,4 @@
+import { formatBusinessDate, formatBusinessDateTime } from "@/lib/core/business-time";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { createStandardPdf, pdfResponse } from "@/lib/pdf/standard-document";
 
@@ -7,7 +8,7 @@ const sourceLabel = (value: string) => ({
   OPENING_BALANCE: "Số dư đầu kỳ",
   DELIVERY_VERIFICATION: "Giao hàng",
   SERVICE_VERIFICATION: "Dịch vụ",
-} as Record<string, string>)[value] ?? value.replaceAll("_", " ").toLowerCase();
+} as Record<string, string>)[value] ?? "Khoản công nợ";
 
 function localDate() {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
@@ -44,12 +45,12 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const bytes = await createStandardPdf({
     title: "BẢNG ĐỐI CHIẾU CÔNG NỢ",
     reference: `AR-${customerResult.data.id.slice(0, 8)}-${asOf.replaceAll("-", "")}`,
-    subtitle: `Số dư đến hết ${new Intl.DateTimeFormat("vi-VN").format(new Date(`${asOf}T12:00:00+07:00`))}`,
+    subtitle: `Số dư đến hết ${formatBusinessDate(`${asOf}T12:00:00+07:00`)}`,
     fields: [
       { label: "Khách hàng", value: customerResult.data.display_name },
-      { label: "Ngày đối chiếu", value: new Intl.DateTimeFormat("vi-VN").format(new Date(`${asOf}T12:00:00+07:00`)) },
+      { label: "Ngày đối chiếu", value: formatBusinessDate(`${asOf}T12:00:00+07:00`) },
       { label: "Phạm vi", value: "Toàn bộ công trình của khách hàng" },
-      { label: "Dữ liệu ghi nhận đến", value: new Intl.DateTimeFormat("vi-VN", { dateStyle: "medium", timeStyle: "short" }).format(new Date(cutoff)) },
+      { label: "Dữ liệu ghi nhận đến", value: formatBusinessDateTime(cutoff) },
     ],
     columns: [
       { label: "Công trình", key: "site", width: 130 },
@@ -57,9 +58,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       { label: "Hạn", key: "due", width: 83 },
       { label: "Còn nợ", key: "amount", width: 120, align: "right" },
     ],
-    rows: obligations.map((row) => ({ site: row.site_name ?? "Chưa gắn công trình", source: `${sourceLabel(row.source_type)} ${row.source_id}`, due: new Intl.DateTimeFormat("vi-VN").format(new Date(row.due_date)), amount: money(row.outstanding_amount_vnd) })),
+    rows: obligations.map((row) => ({ site: row.site_name ?? "Chưa gắn công trình", source: `${sourceLabel(row.source_type)} ${row.source_id}`, due: formatBusinessDate(row.due_date), amount: money(row.outstanding_amount_vnd) })),
     totals: [{ label: "Tổng còn phải thu", value: money(total.toString()) }],
-    trace: `Source customer_id=${customerResult.data.id}; as_of=${asOf}; cutoff=${cutoff}; obligation_count=${obligations.length}`,
+    trace: `Khách hàng: ${customerResult.data.id}; ngày chốt: ${formatBusinessDate(asOf)}; ghi nhận đến: ${formatBusinessDateTime(cutoff)}; số khoản công nợ: ${obligations.length}`,
     disclaimer: "Bảng đối chiếu công nợ - không phải hóa đơn thuế.",
   });
   return pdfResponse(bytes, `debt-reconciliation-${customerResult.data.id.slice(0, 8)}-${asOf}.pdf`);

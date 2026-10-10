@@ -14,6 +14,6 @@ export async function OwnerWorkResultEvidence({ deliveryId }: { deliveryId: stri
       : evidence.data?.length ? <div className="form-actions">{evidence.data.map(item => <a key={item.evidence_id} className="button button-secondary" href={`/api/evidence/${encodeURIComponent(item.evidence_id)}/download`} target="_blank" rel="noopener noreferrer">Mở bằng chứng</a>)}</div>
       : <p className="muted">Kết quả này chưa kèm ảnh / tài liệu.</p>}
     <label htmlFor="verificationAdjustmentReason">Lý do điều chỉnh số lượng thợ (nếu thay đổi)</label>
-    <input id="verificationAdjustmentReason" name="verificationAdjustmentReason" maxLength={500} placeholder="Giữ nguyên kết quả thợ; ghi rõ lý do cho số lượng Owner xác minh." />
+    <input id="verificationAdjustmentReason" name="verificationAdjustmentReason" maxLength={500} placeholder="Giữ nguyên kết quả thợ; ghi rõ lý do cho số lượng chủ doanh nghiệp xác minh." />
   </section>;
 }

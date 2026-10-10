@@ -27,10 +27,10 @@ export async function WorkProofGallery({ workItemId }: { workItemId: string }) {
   return (
     <section className={styles.card} aria-labelledby="work-proof-heading">
       <h2 id="work-proof-heading">{"B\u1eb1ng ch\u1ee9ng c\u1ee7a c\u00f4ng vi\u1ec7c"}</h2>
-      <p className={styles.hint}>{"M\u1ed7i l\u1ea7n m\u1edf t\u1ec7p \u0111\u1ec1u ki\u1ec3m quy\u1ec1n hi\u1ec7n t\u1ea1i. Kh\u00f4ng d\u00f9ng link Storage c\u00f4ng khai."}</p>
+      <p className={styles.hint}>{"Mỗi lần mở tệp đều kiểm tra quyền truy cập hiện tại. Minh chứng được lưu riêng tư."}</p>
       <ul>{proofs.map((proof) => (
         <li key={proof.id}>
-          <p>{proof.id} {" \u00b7 "}{proof.mime_type} {" \u00b7 "}{String(proof.final_byte_size ?? "")} bytes</p>
+          <p>{proof.id} {" \u00b7 "}{proof.mime_type === "application/pdf" ? "Tài liệu PDF" : "Ảnh minh chứng"} {" \u00b7 "}{proof.final_byte_size == null ? "" : Number(proof.final_byte_size).toLocaleString("vi-VN")} byte</p>
           <a href={`/api/evidence/${proof.id}/signed`}>{"M\u1edf b\u1eb1ng ch\u1ee9ng"}</a>
         </li>
       ))}</ul>

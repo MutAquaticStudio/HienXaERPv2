@@ -6,7 +6,7 @@ import { isPositiveSalesQuantity } from "./quantity-input";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { AppError } from "@/lib/core/errors";
+import { AppError, operationalPostingError } from "@/lib/core/errors";
 import { requireCustomerAccess, requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { resolvePrice, type PriceRule } from "@/modules/pricing/resolve-price";
@@ -35,6 +35,8 @@ export type PricePreviewResult = { success: boolean; message: string; lines?: Pr
 const commandSchema = z.object({ entityId: z.uuid(), operationId: z.uuid() });
 
 function commandError(message: string) {
+  const postingError = operationalPostingError(message);
+  if (postingError) return postingError;
   if (message.includes("sales_order_unresolved_execution")) return "Còn giao hàng, việc hoặc hàng đang vận chuyển chưa xử lý. Hãy hoàn tất trước khi đóng phần còn lại.";
   if (message.includes("sales_order_has_no_remaining")) return "Đơn không còn số lượng chưa giao để đóng.";
   if (message.includes("sales_order_not_closeable")) return "Đơn không còn ở trạng thái có thể đóng phần còn lại. Hãy tải lại.";
@@ -160,7 +162,7 @@ async function createCommercialLines(input: z.infer<typeof documentSchema>, bran
         throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: giá thủ công phải dương và có lý do từ 3 đến 500 ký tự.`, status: 422 });
       }
     } else if (manualReason) {
-      throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: cần nhập giá khi ghi lý do override.`, status: 422 });
+      throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: cần nhập giá khi ghi lý do ngoại lệ.`, status: 422 });
     }
     let selected: PriceRule | null = null;
     if (!manualPriceVnd) {

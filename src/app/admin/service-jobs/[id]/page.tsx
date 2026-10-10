@@ -1,3 +1,5 @@
+import { formatQuantity } from "@/lib/core/quantity";
+import { serviceStateLabel, earningTypeLabel } from "@/modules/workforce/presentation";
 import Link from "next/link";
 import { randomUUID } from "node:crypto";
 import { notFound } from "next/navigation";
@@ -23,8 +25,7 @@ type Job = {
 };
 const today = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ho_Chi_Minh" }).format(new Date());
 
-const serviceStateLabel = (state: string) => ({ SCHEDULED: "Đã lên lịch", IN_PROGRESS: "Đang làm", RESULT_SUBMITTED: "Chờ xác minh", VERIFIED: "Đã xác minh", CANCELLED: "Đã hủy" } as Record<string, string>)[state] ?? state;
-const workStateLabel = (state: string) => ({ AVAILABLE: "Chờ nhận", CLAIMED: "Đã nhận", IN_PROGRESS: "Đang làm", DONE: "Hoàn tất", VERIFIED: "Đã xác minh", CANCELLED: "Đã hủy" } as Record<string, string>)[state] ?? state;
+const workStateLabel = (state: string) => ({ AVAILABLE: "Chờ nhận", CLAIMED: "Đã nhận", IN_PROGRESS: "Đang làm", DONE: "Hoàn tất", VERIFIED: "Đã xác minh", CANCELLED: "Đã hủy" } as Record<string, string>)[state] ?? "Trạng thái đang cập nhật";
 
 export default async function ServiceJobDetail({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ notice?: string; error?: string }> }) {
   const access = await requireInternalPermission("service.read");
@@ -46,7 +47,7 @@ export default async function ServiceJobDetail({ params, searchParams }: { param
     <header className="page-heading"><div><p className="eyebrow">{job.job_number}</p><h1>{job.service_type}</h1><p className="lede">{job.customer_name} · {job.site_name}</p></div><Link className="button button-secondary" href="/admin/service-jobs">Về danh sách</Link></header>
     <ActionNotice notice={query.notice} error={query.error} />
     <section className="metric-grid">
-      <article className="card metric-card"><span className="metric-label">Kế hoạch</span><strong className="metric-value">{job.planned_quantity} {job.unit_label}</strong></article>
+      <article className="card metric-card"><span className="metric-label">Kế hoạch</span><strong className="metric-value">{formatQuantity(String(job.planned_quantity))} {job.unit_label}</strong></article>
       <article className="card metric-card"><span className="metric-label">Thực tế</span><strong className="metric-value">{job.actual_quantity ?? "Chưa có"}</strong></article>
       <article className="card metric-card"><span className="metric-label">Tính khách</span><strong className="metric-value">{job.billable_quantity ?? "Chưa xác minh"}</strong></article>
       <article className="card metric-card"><span className="metric-label">Tính công</span><strong className="metric-value">{job.compensable_quantity ?? "Chưa xác minh"}</strong></article>
@@ -99,7 +100,7 @@ export default async function ServiceJobDetail({ params, searchParams }: { param
         </form>}
         {job.service_verification_id && canComp && <form className="command-panel" action={calculateEarningAction}>
           <input type="hidden" name="sourceKind" value="SERVICE_VERIFICATION" /><input type="hidden" name="sourceId" value={job.service_verification_id} /><input type="hidden" name="returnTo" value={"/admin/service-jobs/" + job.id} /><input type="hidden" name="operationId" value={randomUUID()} />
-          <div className="field"><label>Quy tắc thu nhập</label><select name="ruleId" required><option value="">Chọn quy tắc đúng căn cứ tính</option>{(rules ?? []).map((rule) => <option key={rule.id} value={rule.id}>{rule.code} v{rule.version} · {rule.earning_type}</option>)}</select></div>
+          <div className="field"><label>Quy tắc thu nhập</label><select name="ruleId" required><option value="">Chọn quy tắc đúng căn cứ tính</option>{(rules ?? []).map((rule) => <option key={rule.id} value={rule.id}>{rule.code} · Phiên bản {rule.version} · {earningTypeLabel(rule.earning_type)}</option>)}</select></div>
           <button className="button button-secondary" type="submit">Tính thu nhập</button>
         </form>}
       </aside>

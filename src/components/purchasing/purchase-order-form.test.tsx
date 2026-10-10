@@ -135,7 +135,7 @@ it("refreshes a legacy draft snapshot only by explicit action and advances its e
   expect(updatePurchaseDraftDestinationAction).not.toHaveBeenCalled();
   fireEvent.change(screen.getByLabelText("Lý do cập nhật kho nhận"), { target: { value: "Bổ sung snapshot" } });
   fireEvent.click(screen.getByRole("button", { name: "Cập nhật địa chỉ từ kho" }));
-  await screen.findByText("Địa chỉ nhận đã lưu trên PO: Địa chỉ mới");
+  await screen.findByText("Địa chỉ nhận đã lưu trên đơn mua: Địa chỉ mới");
   expect(screen.getByLabelText("Số lượng *")).toHaveValue("3");
   expect(document.querySelector('input[name="expectedVersion"]')).toHaveValue("2");
 });

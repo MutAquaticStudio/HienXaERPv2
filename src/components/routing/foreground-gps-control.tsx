@@ -1,4 +1,6 @@
 "use client";
+import { userFacingError } from "@/lib/core/errors";
+
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -6,7 +8,7 @@ type Props = { deliveryId: string; assignmentVersion: number };
 
 export function ForegroundGpsControl({ deliveryId, assignmentVersion }: Props) {
   const [state, setState] = useState<"idle" | "starting" | "active" | "stopping" | "error">("idle");
-  const [message, setMessage] = useState("GPS chỉ chạy khi trang này đang mở ở foreground.");
+  const [message, setMessage] = useState("Vị trí chỉ được chia sẻ khi bạn đang mở trang này.");
   const [hasSession, setHasSession] = useState(false);
   const sessionId = useRef<string | null>(null);
   const watchId = useRef<number | null>(null);
@@ -40,7 +42,7 @@ export function ForegroundGpsControl({ deliveryId, assignmentVersion }: Props) {
 
   useEffect(() => {
     const onVisibility = () => {
-      if (document.visibilityState !== "visible" && sessionId.current) void stop("Đã dừng vì ứng dụng rời foreground.");
+      if (document.visibilityState !== "visible" && sessionId.current) void stop("Đã dừng chia sẻ vị trí vì bạn đã rời trang.");
     };
     document.addEventListener("visibilitychange", onVisibility);
     return () => {
@@ -60,7 +62,7 @@ export function ForegroundGpsControl({ deliveryId, assignmentVersion }: Props) {
 
   async function start() {
     if (!navigator.geolocation) { setState("error"); setMessage("Thiết bị không hỗ trợ định vị."); return; }
-    if (document.visibilityState !== "visible") { setState("error"); setMessage("Mở ứng dụng ở foreground trước khi bật GPS."); return; }
+    if (document.visibilityState !== "visible") { setState("error"); setMessage("Mở lại trang này trước khi bật chia sẻ vị trí."); return; }
     setState("starting");
     let response: Response;
     try {
@@ -75,7 +77,7 @@ export function ForegroundGpsControl({ deliveryId, assignmentVersion }: Props) {
       return;
     }
     const body = await response.json().catch(() => null) as { sessionId?: string; lastSequence?: number; error?: string } | null;
-    if (!response.ok || !body?.sessionId || !Number.isSafeInteger(body.lastSequence) || body.lastSequence! < 0) { setState("error"); setMessage(body?.error ?? "Không thể đồng bộ phiên GPS."); return; }
+    if (!response.ok || !body?.sessionId || !Number.isSafeInteger(body.lastSequence) || body.lastSequence! < 0) { setState("error"); setMessage(userFacingError(body?.error, "Không thể đồng bộ phiên vị trí.")); return; }
     sessionId.current = body.sessionId;
     setHasSession(true);
     sequence.current = body.lastSequence!;
@@ -102,8 +104,8 @@ export function ForegroundGpsControl({ deliveryId, assignmentVersion }: Props) {
               operationId: crypto.randomUUID(),
             }),
           });
-          if (!ping.ok) await stop("Phiên GPS đã dừng vì assignment hoặc thứ tự vị trí không còn hợp lệ.");
-          else { setState("active"); setMessage("Đang chia sẻ vị trí khi trang ở foreground."); }
+          if (!ping.ok) await stop("Phiên GPS đã dừng vì phân công hoặc thứ tự cập nhật vị trí không còn hợp lệ.");
+          else { setState("active"); setMessage("Đang chia sẻ vị trí khi bạn đang mở trang này."); }
         } catch {
           await stop("Đã dừng vì không thể gửi vị trí lên máy chủ.");
         }
@@ -112,7 +114,7 @@ export function ForegroundGpsControl({ deliveryId, assignmentVersion }: Props) {
       void stop(error.code === error.PERMISSION_DENIED ? "Bạn chưa cấp quyền vị trí cho trình duyệt." : "Không lấy được vị trí hiện tại.", "error");
     }, { enableHighAccuracy: true, maximumAge: 15000, timeout: 20000 });
     setState("active");
-    setMessage("Đang chờ vị trí đầu tiên. GPS chỉ hoạt động khi trang ở foreground.");
+    setMessage("Đang chờ vị trí đầu tiên. Hãy giữ trang này mở để chia sẻ vị trí.");
   }
 
   return (
@@ -124,7 +126,7 @@ export function ForegroundGpsControl({ deliveryId, assignmentVersion }: Props) {
       {state === "active" || state === "stopping" || (state === "error" && hasSession) ? (
         <button className="button button-secondary" type="button" disabled={state === "stopping"} onClick={() => void stop()}>{state === "error" ? "Thử dừng GPS" : "Dừng GPS"}</button>
       ) : (
-        <button className="button button-primary" type="button" disabled={state === "starting"} onClick={() => void start()}>{state === "starting" ? "Đang bật..." : "Bật GPS foreground"}</button>
+        <button className="button button-primary" type="button" disabled={state === "starting"} onClick={() => void start()}>{state === "starting" ? "Đang bật..." : "Bật chia sẻ vị trí"}</button>
       )}
     </section>
   );

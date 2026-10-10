@@ -1,4 +1,6 @@
 "use server";
+import { userFacingError } from "@/lib/core/errors";
+
 
 import { revalidatePath } from "next/cache";
 import { requireInternalPermission } from "@/lib/access/context";
@@ -11,7 +13,7 @@ export type RouteActionState = {
   planId?: string;
 };
 
-const initialError = (message: string): RouteActionState => ({ status: "error", message });
+const initialError = (message: string): RouteActionState => ({ status: "error", message: userFacingError(message, "Không thể cập nhật lộ trình. Vui lòng thử lại.") });
 
 function parseDeliveryIds(value: FormDataEntryValue | null) {
   try {
@@ -96,7 +98,7 @@ export async function createRoutePlanAction(_previous: RouteActionState, formDat
     } else if (totalQuantity === null) {
       capacityWarning = "Đơn vị hàng không đồng nhất với tải trọng xe; cần kiểm tra thủ công.";
     } else if (totalQuantity > capacity) {
-      capacityWarning = "Tổng hàng toàn tuyến vượt tải trọng xe; kiểm tra pickup/drop từng chặng trước Apply.";
+      capacityWarning = "Tổng hàng toàn tuyến vượt tải trọng xe; kiểm tra lượng nhận và giao từng chặng trước khi áp dụng.";
     }
     return {
       delivery_id: deliveryId,
@@ -130,7 +132,7 @@ export async function createRoutePlanAction(_previous: RouteActionState, formDat
   revalidatePath("/admin/routes");
   return {
     status: "success",
-    message: recommendation.state === "RECOMMENDED" ? "Đã tạo đề xuất lộ trình. Kiểm tra rồi bấm Apply." : "Đã tạo thứ tự thủ công vì provider không khả dụng. Kiểm tra rồi bấm Apply.",
+    message: recommendation.state === "RECOMMENDED" ? "Đã tạo đề xuất lộ trình. Kiểm tra rồi bấm Áp dụng và phân giao." : "Đã tạo thứ tự thủ công vì dịch vụ bản đồ không khả dụng. Kiểm tra rồi bấm Áp dụng và phân giao.",
     planId: String(data),
   };
 }
@@ -140,7 +142,7 @@ export async function applyRoutePlanAction(_previous: RouteActionState, formData
   const planId = String(formData.get("plan_id") ?? "");
   const expectedVersion = Number(formData.get("expected_version"));
   const operationId = String(formData.get("operation_id") ?? "");
-  if (!planId || !Number.isInteger(expectedVersion) || expectedVersion < 1 || !/^[0-9a-f-]{36}$/i.test(operationId)) return initialError("RoutePlan không hợp lệ.");
+  if (!planId || !Number.isInteger(expectedVersion) || expectedVersion < 1 || !/^[0-9a-f-]{36}$/i.test(operationId)) return initialError("Lộ trình không hợp lệ.");
   const supabase = await createServerSupabase();
   const { error } = await supabase.rpc("apply_route_plan", {
     target_route_plan_id: planId,
@@ -149,8 +151,8 @@ export async function applyRoutePlanAction(_previous: RouteActionState, formData
   });
   if (error) {
     const stale = error.message.includes("stale") || error.message.includes("version_conflict");
-    return initialError(stale ? "Dữ liệu giao hàng đã thay đổi. Tạo lại RoutePlan trước khi Apply." : error.message);
+    return initialError(stale ? "Dữ liệu giao hàng đã thay đổi. Tạo lại lộ trình trước khi áp dụng." : error.message);
   }
   revalidatePath("/admin/routes");
-  return { status: "success", message: "Đã Apply lộ trình và cập nhật assignment.", planId };
+  return { status: "success", message: "Đã áp dụng lộ trình và cập nhật phân công.", planId };
 }

@@ -6,7 +6,7 @@ export default async function WorkProfilePage() {
   return (
     <div className={styles.page}>
       <header className={styles.sectionHead}>
-        <div><h1>Hồ sơ làm việc</h1><p>Danh tính đang được xác thực từ hồ sơ nhân sự active.</p></div>
+        <div><h1>Hồ sơ làm việc</h1><p>Thông tin từ hồ sơ nhân sự đang hoạt động.</p></div>
       </header>
       <section className={styles.card}>
         <div className={styles.kv}><span>Họ tên</span><strong>{employee.display_name}</strong></div>

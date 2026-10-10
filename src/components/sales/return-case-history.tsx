@@ -1,3 +1,4 @@
+import { formatQuantity } from "@/lib/core/quantity";
 type ReturnHistoryCase = {
   id: string; case_kind: string; base_quantity: string | number;
   reason: string; state: string; version: number;
@@ -19,8 +20,8 @@ export function ReturnCaseHistory({ cases }: { cases: readonly ReturnHistoryCase
   return <section className="source-history" aria-labelledby="return-history-heading">
     <h3 id="return-history-heading">{"L\u1ecbch s\u1eed x\u1eed l\u00fd giao h\u00e0ng"}</h3>
     {resolved.map((item) => <article className="exception-card" key={item.id}>
-      <strong>{kinds[item.case_kind] ?? item.case_kind} {" \u00b7 "}{String(item.base_quantity)} base</strong>
-      <p>{states[item.state] ?? item.state} {" \u00b7 "}<span className="mono">{item.state}</span> {" \u00b7 v"}{item.version}</p>
+      <strong>{Object.hasOwn(kinds, item.case_kind) ? kinds[item.case_kind] : "Hồ sơ xử lý giao hàng"} {" \u00b7 "}{formatQuantity(String(item.base_quantity))} đơn vị cơ sở</strong>
+      <p>{Object.hasOwn(states, item.state) ? states[item.state] : "Chưa xác định trạng thái"} {" · Phiên bản "}{item.version}</p>
       <p>{item.reason}</p><p className="mono">{item.id}</p>
     </article>)}
   </section>;

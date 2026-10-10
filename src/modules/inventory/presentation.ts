@@ -1,5 +1,9 @@
+function lookupLabel(labels: Record<string, string>, value: string | null | undefined, fallback: string) {
+  return value && Object.hasOwn(labels, value) ? labels[value] : fallback;
+}
+
 export function inventoryMovementLabel(value: string) {
-  return ({
+  return lookupLabel({
     PURCHASE_RECEIPT: "Nhận hàng NCC",
     DELIVERY_HANDOFF: "Bàn giao lên xe",
     DELIVERY_VERIFIED: "Khách đã nhận",
@@ -7,9 +11,9 @@ export function inventoryMovementLabel(value: string) {
     RETURN_TRANSFER: "Nhận hàng còn lại",
     CUSTOMER_RETURN: "Khách trả hàng",
     TRANSIT_LOSS: "Hao hụt đang giao",
-  } as Record<string, string>)[value] ?? value;
+  }, value, "Phát sinh kho");
 }
 
 export function stockCountStateLabel(value: string) {
-  return ({ OPEN: "Đang kiểm", APPROVED: "Đã duyệt", CANCELLED: "Đã hủy" } as Record<string, string>)[value] ?? value;
+  return lookupLabel({ OPEN: "Đang kiểm", APPROVED: "Đã duyệt", CANCELLED: "Đã hủy" }, value, "Trạng thái đang cập nhật");
 }

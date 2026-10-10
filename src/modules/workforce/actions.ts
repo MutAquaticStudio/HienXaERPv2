@@ -1,4 +1,6 @@
 "use server";
+import { userFacingError } from "@/lib/core/errors";
+
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -12,7 +14,14 @@ const decimal = z.string().trim().regex(/^-?\d+(?:\.\d{1,6})?$/);
 const positiveMoney = z.string().trim().regex(/^\d+$/).refine((value) => BigInt(value) > 0n);
 const localDateTime = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
 const toInstant = (value: string) => new Date(value + ":00+07:00").toISOString();
-const fail = (path: string, message?: string): never => redirect(path + "?error=" + encodeURIComponent(message ?? "command-failed"));
+function workCommandMessage(message?: string) {
+  if (message === "service_not_cancelable" || message === "service_cancel_has_execution") return "Không thể hủy lịch dịch vụ vì đã phát sinh công việc hoặc kết quả xác minh.";
+  if (message?.includes("version") || message?.includes("stale")) return "Dữ liệu công việc đã thay đổi. Vui lòng tải lại trước khi tiếp tục.";
+  if (message === "forbidden") return "Bạn không có quyền thực hiện thao tác này.";
+  if (message === "resource_conflict") return "Nhân viên hoặc xe đã có lịch trùng. Chọn lịch khác rồi thử lại.";
+  return userFacingError(message);
+}
+const fail = (path: string, message?: string): never => redirect(path + "?error=" + encodeURIComponent(workCommandMessage(message)));
 
 export async function createServiceJobAction(formData: FormData) {
   const parsed = z.object({

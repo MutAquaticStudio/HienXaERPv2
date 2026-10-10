@@ -1,4 +1,6 @@
 "use client";
+import { userFacingError } from "@/lib/core/errors";
+import { FilePicker } from "@/components/ui/file-picker";
 
 import type { ChangeEvent, FormEvent } from "react";
 import { useEffect, useState } from "react";
@@ -76,7 +78,7 @@ export function WorkResultDraftForm({
       setError(true);
       setMessage(uploadError instanceof TypeError || !navigator.onLine
         ? "Mất kết nối. Bản nháp và tệp vẫn được giữ; hãy kết nối lại rồi tải minh chứng lần nữa."
-        : uploadError instanceof Error ? uploadError.message : "Tải minh chứng thất bại");
+        : uploadError instanceof Error ? userFacingError(uploadError.message) : "Tải minh chứng thất bại");
     } finally {
       setUploading(false);
     }
@@ -115,7 +117,7 @@ export function WorkResultDraftForm({
       router.refresh();
     } catch (submitError) {
       setError(true);
-      setMessage(submitError instanceof Error ? submitError.message : "Gửi kết quả thất bại");
+      setMessage(submitError instanceof Error ? (submitError.message === "stale_work_or_delivery_version" ? "Công việc hoặc phiếu giao đã thay đổi. Vui lòng tải lại để kiểm tra; bản nháp vẫn được giữ." : userFacingError(submitError.message)) : "Gửi kết quả thất bại");
     } finally {
       setSubmitting(false);
     }
@@ -152,11 +154,11 @@ export function WorkResultDraftForm({
       <div className={styles.field}>
         <label htmlFor="result-note">Ghi chú hiện trường</label>
         <textarea id="result-note" maxLength={1000} minLength={3} onChange={update("note")} value={draft.note} />
-        <span className={styles.hint}>Chỉ số lượng, người nhận và ghi chú được lưu cục bộ. Không lưu ảnh, token hay dữ liệu tiền.</span>
+        <span className={styles.hint}>Chỉ số lượng, người nhận và ghi chú được lưu cục bộ. Không lưu ảnh, thông tin đăng nhập hoặc số tiền.</span>
       </div>
       <div className={styles.field}>
         <label htmlFor="proof-file">Minh chứng riêng</label>
-        <input accept="image/jpeg,image/png,application/pdf" id="proof-file" onChange={(event) => setFile(event.target.files?.[0] ?? null)} type="file" />
+        <FilePicker accept="image/jpeg,image/png,application/pdf" id="proof-file" onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
         <button className={styles.buttonSecondary} disabled={!file || uploading} onClick={uploadProof} type="button">
           {uploading ? "Đang tải minh chứng" : evidenceId ? "Tải lại minh chứng" : "Tải minh chứng"}
         </button>

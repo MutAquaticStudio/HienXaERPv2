@@ -28,5 +28,5 @@ const destinations = [
 export function internalLandingPath(permissions: ReadonlySet<string>): string {
   const destination = destinations.find(([permission]) => permissions.has(permission));
   if (destination) return destination[1];
-  throw new AppError({ code: "FORBIDDEN", message: "No authorized workspace is available.", status: 403 });
+  throw new AppError({ code: "FORBIDDEN", message: "Bạn chưa được cấp quyền vào khu vực làm việc. Vui lòng liên hệ quản trị viên.", status: 403 });
 }

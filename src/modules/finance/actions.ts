@@ -1,4 +1,6 @@
 "use server";
+import { operationalPostingError } from "@/lib/core/errors";
+
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -28,13 +30,15 @@ function withQuery(target: string, values: Record<string, string>) {
 }
 
 function message(value?: string) {
+  const postingError = operationalPostingError(value);
+  if (postingError) return postingError;
   if (value?.includes("operation_payload_conflict")) return "Mã thao tác đã được dùng với dữ liệu khác. Hãy tải lại.";
   if (value?.includes("exceeds_payment")) return "Tổng phân bổ và tiền ứng vượt số tiền của phiếu.";
   if (value?.includes("exceeds_outstanding")) return "Phân bổ hoặc điều chỉnh vượt số dư hiện tại.";
   if (value?.includes("scope_mismatch")) return "Khoản được chọn không cùng đối tác hoặc chi nhánh.";
   if (value?.includes("version")) return "Dữ liệu đã thay đổi. Hãy tải lại trước khi duyệt.";
   if (value?.includes("reversed")) return "Phiếu đã đảo hoặc không còn cho phép thao tác này.";
-  return "Không thể hoàn tất thao tác tài chính. Không có hậu quả nào được ghi một phần.";
+  return "Không thể hoàn tất thao tác tài chính. Vui lòng thử lại.";
 }
 
 export async function createFinanceAccountAction(formData: FormData) {

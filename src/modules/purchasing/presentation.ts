@@ -1,5 +1,6 @@
 export function purchaseStateLabel(state: string) {
-  return ({ DRAFT: "Bản nháp", CONFIRMED: "Đã xác nhận", CLOSED: "Đã hoàn tất", CANCELLED: "Đã hủy", WAREHOUSE: "Về kho Hiền Xa", CUSTOMER_SITE: "Giao thẳng công trình", SUPPLIER_DIRECT: "NCC giao thẳng", SUPPLIER_TO_WAREHOUSE: "NCC giao về kho" } as Record<string, string>)[state] ?? state;
+  const labels: Record<string, string> = { DRAFT: "Bản nháp", CONFIRMED: "Đã xác nhận", CLOSED: "Đã hoàn tất", CANCELLED: "Đã hủy", WAREHOUSE: "Về kho Hiền Xa", CUSTOMER_SITE: "Giao thẳng công trình", SUPPLIER_DIRECT: "Nhà cung cấp giao thẳng", SUPPLIER_TO_WAREHOUSE: "Nhà cung cấp giao về kho" };
+  return Object.hasOwn(labels, state) ? labels[state] : "Chưa xác định";
 }
 
 export function purchaseStateTone(state: string): "success" | "warning" | "info" | "danger" {

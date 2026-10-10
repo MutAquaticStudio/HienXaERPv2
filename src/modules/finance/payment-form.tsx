@@ -1,4 +1,5 @@
 "use client";
+import { formatBusinessDate } from "@/lib/core/business-time";
 
 import { useMemo, useState } from "react";
 import { postPaymentAction } from "@/modules/finance/actions";
@@ -91,7 +92,7 @@ export function PaymentForm(props: Props) {
       <div className="allocation-editor">
         <div className="allocation-head"><strong>Phân bổ thủ công</strong><span>Đã chọn {allocationPayload.length} khoản · không tự chọn thứ tự khoản</span></div>
         <div className="filter-bar"><label>Tìm khoản theo nguồn<input value={search} onChange={(event) => setSearch(event.target.value)} maxLength={80} placeholder="Mã hoặc tên nguồn" /></label><button className="button button-secondary" type="button" disabled={busy} onClick={() => void loadObligations(1, search)}>Tìm khoản</button></div>
-        {visible.map((item) => <label className="allocation-row" key={item.id}><span><strong>{item.sourceLabel}</strong><small>Đến hạn {new Intl.DateTimeFormat("vi-VN").format(new Date(item.dueDate))} · còn {formatVnd(vnd(item.outstandingAmountVnd))}</small></span><input aria-label={`Phân bổ cho ${item.sourceLabel}`} value={allocations[item.id] ?? ""} onChange={(event) => setAllocations((current) => ({ ...current, [item.id]: event.target.value }))} inputMode="numeric" placeholder="0" /></label>)}
+        {visible.map((item) => <label className="allocation-row" key={item.id}><span><strong>{item.sourceLabel}</strong><small>Đến hạn {formatBusinessDate(item.dueDate)} · còn {formatVnd(vnd(item.outstandingAmountVnd))}</small></span><input aria-label={`Phân bổ cho ${item.sourceLabel}`} value={allocations[item.id] ?? ""} onChange={(event) => setAllocations((current) => ({ ...current, [item.id]: event.target.value }))} inputMode="numeric" placeholder="0" /></label>)}
         {!visible.length && <p className="empty-inline">Không có khoản còn dư phù hợp.</p>}
         {loadError && <p className="form-message" role="alert">{loadError}</p>}
         <div className="action-cluster"><span className="muted">Trang {page}</span>{page > 1 && <button className="button button-secondary" type="button" disabled={busy} onClick={() => void loadObligations(page - 1, appliedSearch)}>Trước</button>}{hasNext && <button className="button button-secondary" type="button" disabled={busy} onClick={() => void loadObligations(page + 1, appliedSearch)}>Tiếp</button>}</div>

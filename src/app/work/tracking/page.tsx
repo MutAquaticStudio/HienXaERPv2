@@ -1,3 +1,4 @@
+import { deliveryStateLabel } from "@/modules/delivery/presentation";
 import { ForegroundGpsControl } from "@/components/routing/foreground-gps-control";
 import { requireInternalAccess } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
@@ -20,7 +21,7 @@ export default async function WorkerTrackingPage() {
         address_text: string;
         execution_state: string;
       }) => <section className={styles.card} key={row.delivery_id}>
-        <span className={styles.badge}>{row.execution_state}</span>
+        <span className={styles.badge}>{deliveryStateLabel(row.execution_state)}</span>
         <h2>{row.delivery_number} · {row.site_name}</h2>
         <p>{row.customer_name} · {row.address_text}</p>
         <ForegroundGpsControl deliveryId={row.delivery_id} assignmentVersion={row.assignment_version} />

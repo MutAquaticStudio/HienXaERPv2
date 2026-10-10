@@ -11,13 +11,13 @@ export async function listAssignmentEmployees(client: Pick<SupabaseClient, "from
     .eq("active", true)
     .eq("employees.active", true)
     .eq("roles.active", true);
-  if (error) throw new AppError({ code: "DEPENDENCY_UNAVAILABLE", message: "Unable to load assignment employees.", status: 503 });
+  if (error) throw new AppError({ code: "DEPENDENCY_UNAVAILABLE", message: "Không tải được nhân viên có thể phân giao.", status: 503 });
   const employees = new Map<string, EmployeeOption>();
   for (const row of (data ?? []) as unknown as Membership[]) {
     const related = Array.isArray(row.employees) ? row.employees : [row.employees];
     for (const employee of related) {
       if (!employee || typeof employee.id !== "string" || typeof employee.display_name !== "string") {
-        throw new AppError({ code: "DEPENDENCY_UNAVAILABLE", message: "Invalid assignment employee response.", status: 503 });
+        throw new AppError({ code: "DEPENDENCY_UNAVAILABLE", message: "Thông tin nhân viên phân giao không hợp lệ. Vui lòng tải lại.", status: 503 });
       }
       employees.set(employee.id, { id: employee.id, display_name: employee.display_name });
     }

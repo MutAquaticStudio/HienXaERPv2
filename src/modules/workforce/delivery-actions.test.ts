@@ -77,4 +77,17 @@ describe("Delivery work-item commands", () => {
     mocks.rpc.mockResolvedValue({ error: { message: "resource_conflict" } });
     await expect(publishDeliveryWorkItemAction(form())).rejects.toThrow(`/admin/deliveries/${deliveryId}?error=`);
   });
+
+  it.each(["publish", "verify"])("preserves the pending-opening posting rejection when attempting to %s", async (command) => {
+    mocks.rpc.mockResolvedValue({ error: { code: "PT423", message: "branch_not_operational" } });
+    let redirect = "";
+    try {
+      if (command === "publish") await publishDeliveryWorkItemAction(form());
+      else await verifyDeliveryWorkItemAction(form({ workItemId, version: "3" }));
+    } catch (error) { redirect = decodeURIComponent((error as Error).message); }
+    expect(redirect).toContain("?error=Chưa thể ghi sổ: chi nhánh chưa được kích hoạt.");
+    expect(redirect).toContain("Thiết lập hệ thống → Chuẩn bị vận hành");
+    expect(redirect).not.toMatch(/notice=|branch_not_operational|PT423/);
+    expect(mocks.rpc).toHaveBeenCalledTimes(1);
+  });
 });

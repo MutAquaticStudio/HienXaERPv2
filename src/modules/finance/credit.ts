@@ -15,7 +15,7 @@ export function calculateCreditExposure(input: {
 }): CreditExposure {
   const advance = input.eligibleReservedAdvanceVnd ?? vnd("0");
   const exposure = subtractVnd(addVnd(input.receivableVnd, input.commitmentVnd), advance);
-  if (exposure < BigInt(0)) throw new AppError({ code: "VALIDATION_FAILED", message: "Credit exposure không thể âm.", status: 422 });
+  if (exposure < BigInt(0)) throw new AppError({ code: "VALIDATION_FAILED", message: "Dư nợ dùng tính hạn mức không thể âm.", status: 422 });
   return { receivableVnd: input.receivableVnd, commitmentVnd: input.commitmentVnd, eligibleReservedAdvanceVnd: advance, exposureVnd: exposure };
 }
 

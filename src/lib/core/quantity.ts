@@ -7,7 +7,7 @@ export type Quantity = Readonly<{ value: string; unit: QuantityUnit }>;
 // Display the stored quantity exactly, without database scale padding or rounding.
 export function formatQuantity(value: string) {
   const [integer, fraction] = new Decimal(value).toFixed().split(".");
-  const whole = new Intl.NumberFormat("vi-VN").format(BigInt(integer));
+  const whole = `${integer === "-0" ? "-" : ""}${new Intl.NumberFormat("vi-VN").format(BigInt(integer))}`;
   return fraction ? `${whole},${fraction}` : whole;
 }
 

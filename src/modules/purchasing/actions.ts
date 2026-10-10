@@ -7,7 +7,7 @@ import { normalizeWarehouseAddress, warehouseAddressRequired } from "./warehouse
 import { revalidatePath } from "next/cache";
 import { redirect, unstable_rethrow } from "next/navigation";
 import { z } from "zod";
-import { AppError } from "@/lib/core/errors";
+import { AppError, operationalPostingError } from "@/lib/core/errors";
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { resolvePrice, type PriceRule } from "@/modules/pricing/resolve-price";
@@ -82,8 +82,10 @@ function toIso(value?: string) {
 }
 
 function errorMessage(message: string) {
+  const postingError = operationalPostingError(message);
+  if (postingError) return postingError;
   if (message.includes("warehouse_address_required")) return warehouseAddressRequired;
-  if (message.includes("purchase_order_destination_address_required")) return "Địa chỉ nhận hàng trên PO nháp còn thiếu. Bổ sung địa chỉ kho rồi cập nhật địa chỉ từ kho trước khi xác nhận.";
+  if (message.includes("purchase_order_destination_address_required")) return "Địa chỉ nhận hàng trên đơn mua nháp còn thiếu. Bổ sung địa chỉ kho rồi cập nhật địa chỉ từ kho trước khi xác nhận.";
   if (message.includes("stale_record_reload")) return "Địa chỉ kho đã được người khác sửa. Hãy tải lại thông tin kho.";
   if (message.includes("forbidden")) return "Bạn không có quyền thực hiện thao tác này tại chi nhánh hiện tại.";
   if (message.includes("operation_payload_conflict")) return "Mã thao tác đã được dùng với dữ liệu khác. Hãy tải lại màn hình.";
@@ -91,7 +93,7 @@ function errorMessage(message: string) {
   if (message.includes("supply_allocation_exceeds_need")) return "Số lượng phân nguồn vượt phần dòng bán còn thiếu.";
   if (message.includes("price_snapshot")) return "Giá mua đã thay đổi hoặc không còn hiệu lực.";
   if (message.includes("draft_version_conflict")) return "Bản nháp đã được người khác sửa. Hãy tải lại.";
-  if (message.includes("version_conflict")) return "Allocation đã được người khác cập nhật. Hãy tải lại.";
+  if (message.includes("version_conflict")) return "Phân bổ nguồn hàng đã được người khác cập nhật. Hãy tải lại.";
   if (message.includes("manual_purchase_price_change_requires_permission")) return "Giá mua thủ công đã duyệt chỉ được giữ nguyên; cần quyền quản lý giá để thay đổi.";
   if (message.includes("purchase_order_not_editable")) return "Đơn mua không còn là bản nháp có thể sửa.";
   return "Không thể lưu nghiệp vụ mua hàng. Không có thay đổi nào được xác nhận.";
@@ -216,7 +218,7 @@ async function saveWarehouseDocument(mode: "create" | "edit", formData: FormData
       if (draft.order.supplier_id !== input.supplierId || expectedMode !== input.mode ||
         (input.mode === "WAREHOUSE" && draft.order.warehouse_id !== input.warehouseId) ||
         (input.mode === "LINKED_DIRECT" && draft.order.source_sales_order_id !== input.salesOrderId))
-        return { message: "Điểm đến hoặc nguồn của PO đã thay đổi. Hãy tải lại." };
+        return { message: "Điểm đến hoặc nguồn của đơn mua đã thay đổi. Hãy tải lại." };
       if (draft.order.draft_version !== input.expectedVersion) return { message: errorMessage("draft_version_conflict") };
     } else if (input.mode === "WAREHOUSE" ? !input.warehouseId || input.lines.some((line) => line.salesLineId) :
       !input.salesOrderId && (!input.customerId || !input.siteId || !access.permissions.has("orders.create"))) {
@@ -254,7 +256,7 @@ async function saveWarehouseDocument(mode: "create" | "edit", formData: FormData
           revalidatePath("/admin/purchase-orders");
           revalidatePath(`/admin/purchase-orders/${rpcResult.data}`);
           return { partialPurchaseOrderId: rpcResult.data,
-            message: "PO nháp đã được tạo nhưng chưa xác nhận được điều khoản. Không tạo lại; mở PO này để kiểm tra và hoàn tất bản nháp." };
+            message: "Đơn mua nháp đã được tạo nhưng chưa xác nhận được điều khoản. Không tạo lại; mở đơn này để kiểm tra và hoàn tất bản nháp." };
         }
       }
     } else {
@@ -262,7 +264,7 @@ async function saveWarehouseDocument(mode: "create" | "edit", formData: FormData
       const actualSales = salesPreview(salesLines);
       let expectedSales: z.infer<typeof salesPreviewLineSchema>[];
       try { expectedSales = z.array(salesPreviewLineSchema).length(actualSales.lines.length).parse(JSON.parse(String(formData.get("salesPreview") ?? ""))); }
-      catch { return { message: "Cần xem trước giá bán của mọi dòng trước khi tạo SO liên kết." }; }
+      catch { return { message: "Cần xem trước giá bán của mọi dòng trước khi tạo đơn bán liên kết." }; }
       if (!actualSales.lines.every((line, index) => Object.keys(line).every((key) => line[key as keyof typeof line] === expectedSales[index][key as keyof typeof line]))) {
         return { message: "Giá bán hoặc dòng hàng đã thay đổi. Vui lòng xem trước lại." };
       }
@@ -296,7 +298,7 @@ async function buildSalesLines(customerId: string, purchaseLines: { material_id:
       .eq("branch_id", branchId).in("price_uom_id", uomIds).eq("active", true),
   ]);
   if (customerResult.error || !customerResult.data || materialResult.error || !materialResult.data || materialResult.data.length !== materialIds.length || ruleResult.error)
-    throw new AppError({ code: "VALIDATION_FAILED", message: "Không thể resolve giá bán cho draft liên kết.", status: 422 });
+    throw new AppError({ code: "VALIDATION_FAILED", message: "Không thể xác định giá bán cho bản nháp liên kết.", status: 422 });
   const rules: PriceRule[] = (ruleResult.data ?? []).map((row) => ({
     id: row.id, branchId: row.branch_id, scope: row.scope_type as PriceRule["scope"],
     customerId: row.customer_id ?? undefined, materialId: row.material_id ?? undefined, materialGroupId: row.material_group_id ?? undefined,
@@ -416,9 +418,9 @@ export async function updatePurchaseDraftDestinationAction(input: {
     const { data, error: readError } = await supabase.from("purchase_orders").select("draft_version, warehouse_id, destination_address_snapshot")
       .eq("id", parsed.data.documentId).eq("branch_id", access.branchId).eq("state", "DRAFT").maybeSingle();
     if (readError || !data || data.draft_version !== parsed.data.expectedVersion + 1 || data.warehouse_id !== parsed.data.warehouseId) {
-      return { success: false, message: "PO đã được cập nhật. Hãy tải lại trước khi sửa tiếp để tránh ghi đè thay đổi mới." };
+      return { success: false, message: "Đơn mua đã được cập nhật. Hãy tải lại trước khi sửa tiếp để tránh ghi đè thay đổi mới." };
     }
     revalidatePath("/admin/purchase-orders");
-    return { success: true, message: "Đã cập nhật địa chỉ nhận của PO nháp. Chưa xác nhận đơn.", version: data.draft_version, warehouseId: data.warehouse_id, address: data.destination_address_snapshot };
+    return { success: true, message: "Đã cập nhật địa chỉ nhận của đơn mua nháp. Chưa xác nhận đơn.", version: data.draft_version, warehouseId: data.warehouse_id, address: data.destination_address_snapshot };
   } catch (error) { unstable_rethrow(error); return { success: false, message: error instanceof AppError ? error.message : "Chưa xác định được kết quả cập nhật. Hãy thử lại cùng thao tác." }; }
 }

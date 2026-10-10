@@ -1,3 +1,5 @@
+import { financeStateLabel } from "@/modules/finance/presentation";
+import { formatBusinessDate } from "@/lib/core/business-time";
 import { randomUUID } from "node:crypto";
 
 import styles from "@/components/portal/portal.module.css";
@@ -25,11 +27,11 @@ export default async function AdminPaymentNoticesPage() {
           const noteId = "note-" + notice.id;
           return (
             <article className={styles.card} key={notice.id}>
-              <span className={styles.badge}>{notice.state}</span>
+              <span className={styles.badge}>{financeStateLabel(notice.state)}</span>
               <h2>{notice.customer_name}</h2>
               <p className={styles.amount}>{money(notice.amount_vnd)}</p>
               <div className={styles.meta}>
-                <span>Ngày chuyển {notice.paid_on}</span>
+                <span>Ngày chuyển {formatBusinessDate(notice.paid_on)}</span>
                 <span>{notice.reference ?? "Không có mã giao dịch"}</span>
               </div>
               <a className={styles.link} href={"/api/evidence/" + notice.evidence_id + "/download"} rel="noreferrer" target="_blank">Mở chứng từ</a>

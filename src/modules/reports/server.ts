@@ -1,3 +1,5 @@
+import { formatBusinessDate } from "@/lib/core/business-time";
+import { financeSourceLabel } from "@/modules/finance/presentation";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 export type ReportKind = "receivables" | "payables" | "expenses";
@@ -55,7 +57,7 @@ export async function loadObligationRows(access: Access, filters: ReportFilters,
   const obligations = (data ?? []) as Obligation[];
   const base = side === "AR" ? "/admin/receivables" : "/admin/payables";
   return {
-    rows: obligations.slice(0, limit).map((row) => ({ id: row.obligation_id, label: row.party_name, context: `${row.site_name ?? row.source_type} · ${row.source_type}`, date: row.due_date, amountVnd: String(row.outstanding_amount_vnd), href: `${base}/${row.obligation_id}` })),
+    rows: obligations.slice(0, limit).map((row) => ({ id: row.obligation_id, label: row.party_name, context: [row.site_name, financeSourceLabel(row.source_type)].filter(Boolean).join(" · "), date: row.due_date, amountVnd: String(row.outstanding_amount_vnd), href: `${base}/${row.obligation_id}` })),
     hasNext: obligations.length > limit,
   };
 }
@@ -97,7 +99,7 @@ export async function loadFixedReport(access: Access, filters: ReportFilters): P
       quality,
       rows,
       chart: rows.slice(0, 8).map((row) => ({ label: row.label, amountVnd: row.amountVnd })),
-      scopeText: `Kỳ ${filters.from} đến trước ${filters.to}`,
+      scopeText: `Kỳ ${formatBusinessDate(filters.from)} đến trước ${formatBusinessDate(filters.to)}`,
       hasNext: false,
       cutoff,
     };
@@ -121,7 +123,7 @@ export async function loadFixedReport(access: Access, filters: ReportFilters): P
     quality: metric.quality,
     rows,
     chart: chartRows.slice(0, 8).map((row) => ({ label: row.label, amountVnd: row.amountVnd })),
-    scopeText: `Số dư đến hết ${filters.asOf}`,
+    scopeText: `Số dư đến hết ${formatBusinessDate(filters.asOf)}`,
     hasNext: metric.quality === "READY" && obligationPage.hasNext,
     cutoff,
   };

@@ -19,7 +19,8 @@ it("preserves all line quantities after rejection and reload, retries the same i
   fireEvent.change(screen.getByLabelText("Lượng thực tế · Material A (unit)"), { target: { value: "1" } });
   fireEvent.change(screen.getByLabelText("Lượng thực tế · Material B (kg)"), { target: { value: "0" } });
   fireEvent.submit(screen.getByRole("button", { name: "Gửi kết quả công việc" }).closest("form")!);
-  await screen.findByText("stale_work_or_delivery_version");
+  await screen.findByText("Công việc hoặc phiếu giao đã thay đổi. Vui lòng tải lại để kiểm tra; bản nháp vẫn được giữ.");
+  expect(screen.queryByText("stale_work_or_delivery_version")).not.toBeInTheDocument();
   const original = JSON.parse(fetcher.mock.calls[0][1].body);
   expect(original.deliveryLines.map((line: { actualQuantity: string }) => line.actualQuantity)).toEqual(["1", "0"]);
   expect(navigation.push).not.toHaveBeenCalled(); first.unmount();

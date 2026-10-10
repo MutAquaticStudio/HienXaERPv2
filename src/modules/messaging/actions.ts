@@ -1,4 +1,6 @@
 "use server";
+import { userFacingError } from "@/lib/core/errors";
+
 
 import { revalidatePath } from "next/cache";
 import { requireInternalAccess } from "@/lib/access/context";
@@ -27,7 +29,7 @@ export async function createConversationAction(_state: MessageActionState, formD
     target_participant_auth_user_ids: [participantId],
     operation_id: operationId,
   });
-  if (error) return { status: "error", message: error.message };
+  if (error) return { status: "error", message: userFacingError(error.message, "Không thể gửi hoặc tạo hội thoại. Vui lòng thử lại.") };
   revalidatePath("/admin/messages");
   return { status: "success", message: "Đã tạo hội thoại.", conversationId: String(data) };
 }
@@ -46,7 +48,7 @@ export async function sendMessageAction(_state: MessageActionState, formData: Fo
     target_body: body,
     operation_id: operationId,
   });
-  if (error) return { status: "error", message: error.message };
+  if (error) return { status: "error", message: userFacingError(error.message, "Không thể gửi hoặc tạo hội thoại. Vui lòng thử lại.") };
   revalidatePath(`/${surface}/messages`);
   return { status: "success", message: "Đã gửi tin nhắn.", messageId: String(data) };
 }

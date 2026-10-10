@@ -30,6 +30,6 @@ export default async function EditQuotationPage({ params }: { params: Promise<{ 
       quantity: String(line.quantity), manualPriceVnd: line.price_source_type === "MANUAL_APPROVED" ? String(line.unit_price_vnd) : "",
       manualReason: line.price_source_type === "MANUAL_APPROVED" ? line.override_reason ?? "" : "" })),
   };
-  return <><header className="page-heading"><div><p className="eyebrow">Báo giá · Bản nháp</p><h1>Sửa {quote.quotation_number}</h1><p className="lede">Sửa cùng revision trước khi gửi; sau khi gửi, lịch sử được khóa.</p></div><Link className="button button-secondary" href={`/admin/quotations/${id}`}>Về báo giá</Link></header>
+  return <><header className="page-heading"><div><p className="eyebrow">Báo giá · Bản nháp</p><h1>Sửa {quote.quotation_number}</h1><p className="lede">Sửa cùng phiên bản trước khi gửi; sau khi gửi, lịch sử được khóa.</p></div><Link className="button button-secondary" href={`/admin/quotations/${id}`}>Về báo giá</Link></header>
     <CommercialDocumentForm kind="quote" options={options} operationId={randomUUID()} canManagePrice={access.permissions.has("pricing.manage")} canManageCustomers={false} existing={existing} /></>;
 }

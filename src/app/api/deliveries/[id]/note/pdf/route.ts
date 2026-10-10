@@ -1,3 +1,4 @@
+import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { createStandardPdf, pdfResponse } from "@/lib/pdf/standard-document";
 import { formatQuantity } from "@/lib/core/quantity";
@@ -28,8 +29,8 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
       { label: "Công trình", value: delivery.site_name_snapshot },
       { label: "Địa chỉ giao", value: delivery.delivery_address_snapshot },
       { label: "Người nhận", value: `${delivery.receiver_name_snapshot ?? "Chưa ghi nhận"}${delivery.receiver_phone_snapshot ? ` - ${delivery.receiver_phone_snapshot}` : ""}` },
-      { label: "Lịch giao", value: delivery.scheduled_at ? new Intl.DateTimeFormat("vi-VN", { dateStyle: "medium", timeStyle: "short" }).format(new Date(delivery.scheduled_at)) : "Chưa hẹn" },
-      { label: "Xác minh", value: delivery.verified_at ? new Intl.DateTimeFormat("vi-VN", { dateStyle: "medium", timeStyle: "short" }).format(new Date(delivery.verified_at)) : "Chưa xác minh" },
+      { label: "Lịch giao", value: delivery.scheduled_at ? formatBusinessDateTime(delivery.scheduled_at) : "Chưa hẹn" },
+      { label: "Xác minh", value: delivery.verified_at ? formatBusinessDateTime(delivery.verified_at) : "Chưa xác minh" },
     ],
     columns: [
       { label: "Vật tư", key: "material", width: 174 },
@@ -39,7 +40,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
       { label: "Khách nhận", key: "accepted", width: 83, align: "right" },
     ],
     rows: lines.map((line) => ({ material: line.material_name_snapshot, source: sourceModeLabel(line.source_mode), planned: `${formatQuantity(line.planned_base_quantity)} ${line.base_uom_symbol}`, actual: `${formatQuantity(line.actual_base_quantity)} ${line.base_uom_symbol}`, accepted: `${formatQuantity(line.accepted_base_quantity)} ${line.base_uom_symbol}` })),
-    trace: `Source delivery_id=${delivery.id}; generated_at=${generatedAt}; state=${delivery.execution_state}`,
+    trace: `Phiếu giao: ${delivery.id}; lập lúc: ${formatBusinessDateTime(generatedAt)}; trạng thái: ${deliveryStateLabel(delivery.execution_state)}`,
     disclaimer: "Phiếu giao hàng - không phải hóa đơn thuế.",
   });
   return pdfResponse(bytes, `${delivery.delivery_number}-delivery-note.pdf`);

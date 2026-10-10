@@ -1,3 +1,4 @@
+import { formatBusinessDate } from "@/lib/core/business-time";
 import { earningStateLabel, earningKindLabel } from "@/modules/portal/presentation";
 import styles from "@/components/portal/portal.module.css";
 import { getWorkerPortalSnapshot } from "@/modules/portal/actions";
@@ -16,7 +17,7 @@ export default async function WorkEarningsPage() {
       <header className={styles.hero}>
         <p className={styles.heroEyebrow}>Thu nhập đã ghi nhận</p>
         <h1>{money(String(total))}</h1>
-        <p>Chỉ các earning event của chính bạn; thanh toán thực tế được theo dõi riêng.</p>
+        <p>Chỉ các khoản thu nhập của chính bạn; thanh toán thực tế được theo dõi riêng.</p>
       </header>
       <div className={styles.grid}>
         {snapshot.earnings.length ? snapshot.earnings.map((item) => (
@@ -24,7 +25,7 @@ export default async function WorkEarningsPage() {
             <span className={styles.badge}>{earningStateLabel(item.state)}</span>
             <h2>{earningKindLabel(item.type)}</h2>
             <p className={styles.amount}>{money(item.amount_vnd)}</p>
-            <p className={styles.hint}>{item.occurred_at ? new Date(item.occurred_at).toLocaleDateString("vi-VN") : ""}</p>
+            <p className={styles.hint}>{item.occurred_at ? formatBusinessDate(item.occurred_at) : ""}</p>
           </article>
         )) : <p className={styles.empty}>Chưa có khoản thu nhập được ghi nhận.</p>}
       </div>

@@ -18,7 +18,7 @@ export async function saveCatalogAction(_:CatalogState|undefined, form:FormData)
   const fields=(kind==='conversions'&&editing?config.fields.filter(f=>f.key==='active'):config.fields).filter(f=>!f.permission||access.permissions.has(f.permission));
   const values:Record<string,string|boolean|null>={};
   for(const f of fields){const raw=String(form.get(f.key)??'').trim(); if(f.required&&!raw) return {message:`Vui lòng nhập ${f.label}.`}; values[f.key]=f.type==='checkbox'?form.get(f.key)==='on':raw||null;}
-  if((kind==='customers'||kind==='suppliers')&&values.email&&!z.email().safeParse(values.email).success) return {message:'Email chưa hợp lệ.'};
+  if((kind==='customers'||kind==='suppliers')&&values.email&&!z.email().safeParse(values.email).success) return {message:'Địa chỉ thư điện tử chưa hợp lệ.'};
   if((kind==='customers'||kind==='suppliers')&&(!Number.isInteger(Number(values.payment_terms_days))||Number(values.payment_terms_days)<0||Number(values.payment_terms_days)>365)) return {message:'Hạn thanh toán phải từ 0 đến 365 ngày.'};
   if(kind==='customers'&&values.credit_limit_vnd!=null){const amount=String(values.credit_limit_vnd);if(!/^\d+$/.test(amount)||amount.length>19||BigInt(amount)>9223372036854775807n) return {message:'Hạn mức tín dụng phải là số VND nguyên không âm hợp lệ.'};}
   if(kind==='materials'||kind==='groups'){
@@ -40,7 +40,7 @@ export async function saveCatalogAction(_:CatalogState|undefined, form:FormData)
    }
    const conversionType=String(values.conversion_type);
    if(!['EXACT','PACKAGING','ESTIMATED','MEASURED','VEHICLE_LOAD'].includes(conversionType)) return {message:'Loại quy đổi không hợp lệ.'};
-   if(conversionType==='VEHICLE_LOAD'&&values.settlement_allowed) return {message:'VEHICLE_LOAD chỉ dùng lập kế hoạch, không được phép thanh toán.'};
+   if(conversionType==='VEHICLE_LOAD'&&values.settlement_allowed) return {message:'Quy đổi theo tải xe chỉ dùng lập kế hoạch, không được phép thanh toán.'};
    if(['ESTIMATED','MEASURED'].includes(conversionType)&&!values.source_note) return {message:'Quy đổi ước lượng hoặc đo thực tế cần ghi nguồn đo.'};
    const scale=Number(values.rounding_scale);
    if(!Number.isInteger(scale)||scale<0||scale>6) return {message:'Số chữ số làm tròn phải từ 0 đến 6.'};

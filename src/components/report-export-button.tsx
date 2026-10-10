@@ -1,4 +1,6 @@
 "use client";
+import { reportExportStateLabel } from "@/modules/finance/presentation";
+
 
 import { useEffect, useState } from "react";
 
@@ -43,16 +45,16 @@ export function ReportExportButton({ href, filename }: { href: string; filename:
           return;
         }
         const created = await response.json() as { jobId: string };
-        if (!created.jobId) throw new Error("Không nhận được mã job xuất file.");
+        if (!created.jobId) throw new Error("Không nhận được mã tác vụ xuất tệp.");
         activeJobId = created.jobId;
         setJobId(activeJobId);
         window.sessionStorage.setItem(storageKey, activeJobId);
       }
       for (;;) {
         const progress = await fetch(`/api/reports/export?job=${encodeURIComponent(activeJobId)}`, { method: "POST", cache: "no-store" });
-        if (!progress.ok) throw new Error("Không thể tiếp tục job xuất file.");
+        if (!progress.ok) throw new Error("Không thể tiếp tục tác vụ xuất tệp.");
         const job = await progress.json() as JobStatus;
-        setStatus(`Đã xử lý ${job.processedRows} dòng · ${job.state}`);
+        setStatus(`Đã xử lý ${job.processedRows.toLocaleString("vi-VN")} dòng · ${reportExportStateLabel(job.state)}`);
         if (job.state === "COMPLETED") {
           const file = await fetch(`/api/reports/export?job=${encodeURIComponent(activeJobId)}&download=1`, { cache: "no-store" });
           if (!file.ok) throw new Error("Không thể tải file đã hoàn tất.");
@@ -62,7 +64,7 @@ export function ReportExportButton({ href, filename }: { href: string; filename:
           setJobId("");
           return;
         }
-        if (job.state === "FAILED") throw new Error(job.safeError || "Job xuất file thất bại.");
+        if (job.state === "FAILED") throw new Error(job.safeError || "Xuất tệp thất bại.");
         const due = job.nextRunAt ? new Date(job.nextRunAt).getTime() - Date.now() : 0;
         await new Promise((resolve) => window.setTimeout(resolve, Math.max(250, Math.min(30000, due))));
       }
@@ -75,5 +77,5 @@ export function ReportExportButton({ href, filename }: { href: string; filename:
     }
   }
 
-  return <div className="action-cluster"><button className="button button-secondary" type="button" disabled={busy} onClick={() => void start()}>{jobId ? "Tiếp tục CSV" : "Xuất CSV"}</button>{status && <span role="status" className="muted">{status}</span>}{jobId && <a className="code-link" href={`/api/reports/export?job=${encodeURIComponent(jobId)}`}>Job {jobId.slice(0, 8)}</a>}</div>;
+  return <div className="action-cluster"><button className="button button-secondary" type="button" disabled={busy} onClick={() => void start()}>{jobId ? "Tiếp tục CSV" : "Xuất CSV"}</button>{status && <span role="status" className="muted">{status}</span>}{jobId && <a className="code-link" href={`/api/reports/export?job=${encodeURIComponent(jobId)}`}>Tác vụ {jobId.slice(0, 8)}</a>}</div>;
 }

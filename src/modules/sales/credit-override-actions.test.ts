@@ -53,4 +53,18 @@ describe("one-confirmation credit override server action", () => {
     await expect(confirmSalesOrderCreditOverride(input())).rejects.toThrow("error=");
     expect(mocks.revalidate).not.toHaveBeenCalled();
   });
+  it("preserves the posting guard and explains the activation block in Vietnamese", async () => {
+    mocks.rpc.mockResolvedValue({ data: null, error: { message: "branch_not_operational", code: "PT423" } });
+    let destination = "";
+    try { await confirmSalesOrderCreditOverride(input()); }
+    catch (error) { destination = error instanceof Error ? error.message : ""; }
+    expect(decodeURIComponent(destination)).toContain("Chưa thể ghi sổ");
+    expect(decodeURIComponent(destination)).toContain("Chuẩn bị vận hành");
+    expect(destination).not.toContain("branch_not_operational");
+    expect(destination).not.toContain("success=");
+    expect(mocks.revalidate).not.toHaveBeenCalled();
+    expect(mocks.rpc).toHaveBeenCalledWith("confirm_sales_order_with_credit_override", expect.objectContaining({
+      target_order_id: orderId, expected_snapshot_hash: "a".repeat(64),
+    }));
+  });
 });

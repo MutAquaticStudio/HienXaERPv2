@@ -28,6 +28,6 @@ export async function savePurchasePricingRuleAction(_:PricingState|undefined,for
    await portalRpc(db,"save_purchase_price_rule",{target_id:target,target_branch_id:access.branchId,supersedes_id:mode==="replace"?oldId:null,expected_version:mode==="replace"?version:null,values_json:values,change_reason:reason,operation_id:operation});
   }
   revalidatePath("/admin/suppliers/pricing");revalidatePath("/admin/products");revalidatePath("/admin/purchase-orders");
-  return{success:true,message:mode==="deactivate"?"Đã ngừng giá mua; lịch sử chứng từ giữ nguyên.":"Đã lưu phiên bản giá mua; không đổi snapshot chứng từ cũ."};
+  return{success:true,message:mode==="deactivate"?"Đã ngừng giá mua; lịch sử chứng từ giữ nguyên.":"Đã lưu phiên bản giá mua; thông tin trên chứng từ cũ được giữ nguyên."};
  }catch(error){const code=error instanceof PortalRpcError?error.code:"";return{message:code==="PT409"||code==="23505"?"Phiên bản hoặc thao tác đã thay đổi. Tải lại trước khi lưu.":code==="42501"?"Không có quyền quản lý giá mua trong chi nhánh này.":"Chưa xác nhận được kết quả. Giữ nguyên mã thao tác và dữ liệu khi thử lại."};}
 }

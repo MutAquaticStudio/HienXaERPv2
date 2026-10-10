@@ -1,4 +1,6 @@
 "use server";
+import { operationalPostingError } from "@/lib/core/errors";
+
 
 import { revalidatePath } from "next/cache";
 import { requireInternalPermission } from "@/lib/access/context";
@@ -10,6 +12,8 @@ function input(formData: FormData, name: string) { return String(formData.get(na
 function validId(value: string) { return /^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(value); }
 function failure(message: string): InvoiceActionState { return { status: "error", message }; }
 function safeError(message: string) {
+  const postingError = operationalPostingError(message);
+  if (postingError) return postingError;
   if (message.includes("already_covered") || message.includes("duplicate key")) return "Nguồn đã có nháp hoặc chứng từ tương ứng. Tải lại danh sách.";
   if (message.includes("version_conflict")) return "Dữ liệu đã thay đổi. Tải lại trước khi thao tác.";
   if (message.includes("forbidden")) return "Bạn không có quyền thực hiện thao tác này.";
@@ -37,7 +41,7 @@ export async function approveInvoiceBusinessAction(_state: InvoiceActionState, f
   if (error) return failure(safeError(error.message));
   revalidatePath(`/admin/invoices/${id}`);
   revalidatePath("/admin/invoices");
-  return { status: "success", message: "Đã duyệt nguồn nghiệp vụ. Vẫn chờ policy/provider; không phát hành." };
+  return { status: "success", message: "Đã duyệt nguồn nghiệp vụ. Chờ cấu hình dịch vụ và chính sách phát hành." };
 }
 
 export async function cancelInvoiceDraftAction(_state: InvoiceActionState, formData: FormData): Promise<InvoiceActionState> {
@@ -50,7 +54,7 @@ export async function cancelInvoiceDraftAction(_state: InvoiceActionState, formD
   if (error) return failure(safeError(error.message));
   revalidatePath(`/admin/invoices/${id}`);
   revalidatePath("/admin/invoices");
-  return { status: "success", message: "Đã hủy nháp và giải phóng coverage nguồn." };
+  return { status: "success", message: "Đã hủy nháp. Nguồn nghiệp vụ có thể dùng để lập nháp mới." };
 }
 
 export async function createInvoiceAdjustmentAction(_state: InvoiceActionState, formData: FormData): Promise<InvoiceActionState> {
@@ -61,7 +65,7 @@ export async function createInvoiceAdjustmentAction(_state: InvoiceActionState, 
   const { error } = await supabase.rpc("create_invoice_adjustment_draft", { target_invoice_id: id, target_receivable_adjustment_id: adjustment, operation_id: operation });
   if (error) return failure(safeError(error.message));
   revalidatePath(`/admin/invoices/${id}`);
-  return { status: "success", message: "Đã ghi nháp điều chỉnh từ AR; chờ quy trình pháp lý/provider." };
+  return { status: "success", message: "Đã lập nháp điều chỉnh từ công nợ phải thu; chờ quy trình phát hành." };
 }
 
 export async function registerPurchaseSourceAction(_state: InvoiceActionState, formData: FormData): Promise<InvoiceActionState> {
@@ -78,5 +82,5 @@ export async function registerPurchaseSourceAction(_state: InvoiceActionState, f
   });
   if (error) return failure(safeError(error.message));
   revalidatePath("/admin/invoices/purchases");
-  return { status: "success", message: "Đã ghi nguồn AP; chưa xác nhận chứng từ pháp lý." };
+  return { status: "success", message: "Đã ghi nguồn công nợ phải trả; chưa xác nhận chứng từ pháp lý." };
 }

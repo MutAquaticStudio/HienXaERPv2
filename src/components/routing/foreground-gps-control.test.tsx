@@ -42,13 +42,13 @@ describe("foreground GPS failure handling", () => {
       .mockResolvedValueOnce({ ok: true });
     vi.stubGlobal("fetch", request);
     render(<ForegroundGpsControl deliveryId="delivery" assignmentVersion={1} />);
-    fireEvent.click(screen.getByRole("button", { name: "Bật GPS foreground" }));
+    fireEvent.click(screen.getByRole("button", { name: "Bật chia sẻ vị trí" }));
     await waitFor(() => expect(watchPosition).toHaveBeenCalledOnce());
     await act(async () => {
       locationError?.({ code: 1, PERMISSION_DENIED: 1 } as GeolocationPositionError);
     });
     await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Bạn chưa cấp quyền vị trí cho trình duyệt."));
-    expect(screen.getByRole("button", { name: "Bật GPS foreground" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Bật chia sẻ vị trí" })).toBeEnabled();
     expect(request).toHaveBeenCalledWith("/api/gps/session/stop", expect.objectContaining({ method: "POST" }));
   });
 
@@ -59,22 +59,22 @@ describe("foreground GPS failure handling", () => {
       .mockResolvedValueOnce({ ok: true });
     vi.stubGlobal("fetch", request);
     render(<ForegroundGpsControl deliveryId="delivery" assignmentVersion={1} />);
-    fireEvent.click(screen.getByRole("button", { name: "Bật GPS foreground" }));
+    fireEvent.click(screen.getByRole("button", { name: "Bật chia sẻ vị trí" }));
     await screen.findByRole("button", { name: "Dừng GPS" });
     fireEvent.click(screen.getByRole("button", { name: "Dừng GPS" }));
     await screen.findByRole("button", { name: "Thử dừng GPS" });
     expect(screen.getByRole("status")).toHaveTextContent("chưa xác nhận dừng phiên trên máy chủ");
     fireEvent.click(screen.getByRole("button", { name: "Thử dừng GPS" }));
     await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Đã dừng chia sẻ vị trí."));
-    expect(screen.getByRole("button", { name: "Bật GPS foreground" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Bật chia sẻ vị trí" })).toBeEnabled();
   });
 
   it("recovers the start button after a network error", async () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValueOnce(new Error("offline")));
     render(<ForegroundGpsControl deliveryId="delivery" assignmentVersion={1} />);
-    fireEvent.click(screen.getByRole("button", { name: "Bật GPS foreground" }));
+    fireEvent.click(screen.getByRole("button", { name: "Bật chia sẻ vị trí" }));
     await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Không thể kết nối để bật GPS."));
-    expect(screen.getByRole("button", { name: "Bật GPS foreground" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Bật chia sẻ vị trí" })).toBeEnabled();
   });
 
   it("continues the sequence of an active session after reconnecting", async () => {
@@ -83,7 +83,7 @@ describe("foreground GPS failure handling", () => {
       .mockResolvedValue({ ok: true });
     vi.stubGlobal("fetch", request);
     render(<ForegroundGpsControl deliveryId="delivery" assignmentVersion={1} />);
-    fireEvent.click(screen.getByRole("button", { name: "Bật GPS foreground" }));
+    fireEvent.click(screen.getByRole("button", { name: "Bật chia sẻ vị trí" }));
     await waitFor(() => expect(watchPosition).toHaveBeenCalledOnce());
     await act(async () => {
       locationSuccess?.({

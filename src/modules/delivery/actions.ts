@@ -1,4 +1,6 @@
 "use server";
+import { operationalPostingError } from "@/lib/core/errors";
+
 
 import Decimal from "decimal.js";
 import { revalidatePath } from "next/cache";
@@ -56,13 +58,15 @@ function verificationLines(formData: FormData) {
 }
 
 function message(value?: string) {
+  const postingError = operationalPostingError(value);
+  if (postingError) return postingError;
   if (value?.includes("worker_quantity_adjustment_reason_required")) return "Nhập lý do điều chỉnh số lượng thợ đã gửi (từ 3 đến 500 ký tự), rồi xác minh lại.";
   if (value?.includes("operation_payload_conflict")) return "Mã thao tác đã được dùng với dữ liệu khác. Hãy tải lại.";
   if (value?.includes("version")) return "Phiếu đã được người khác cập nhật. Hãy tải lại.";
-  if (value?.includes("inventory") || value?.includes("reservation")) return "Tồn khả dụng hoặc reservation không còn đủ.";
+  if (value?.includes("inventory") || value?.includes("reservation")) return "Tồn khả dụng hoặc lượng hàng đã giữ không còn đủ.";
   if (value?.includes("billing")) return "Lượng tính tiền khác lượng nhận cần quyền và lý do.";
   if (value?.includes("exceeds")) return "Số lượng vượt phần còn lại của nguồn.";
-  return "Không thể hoàn tất thao tác giao hàng. Không có hậu quả nào được ghi một phần.";
+  return "Không thể hoàn tất thao tác giao hàng. Vui lòng thử lại.";
 }
 
 export async function allocateWarehouseSourceAction(formData: FormData) {
@@ -87,9 +91,9 @@ export async function allocateWarehouseSourceAction(formData: FormData) {
     operation_id: parsed.data.operationId,
   });
   if (error) {
-    const reason = error.message.includes("supply_allocation_exceeds_need") ? "Lượng phân nguồn vượt phần còn thiếu."
+    const reason = operationalPostingError(error.message) ?? (error.message.includes("supply_allocation_exceeds_need") ? "Lượng phân nguồn vượt phần còn thiếu."
       : error.message.includes("warehouse_invalid") ? "Kho không còn hợp lệ trong chi nhánh."
-      : "Không thể phân nguồn kho. Kiểm tra dữ liệu và thử lại.";
+      : "Không thể phân nguồn kho. Kiểm tra dữ liệu và thử lại.");
     redirect(`${destination}?error=${encodeURIComponent(reason)}`);
   }
   revalidatePath(destination);

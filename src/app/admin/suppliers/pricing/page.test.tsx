@@ -26,7 +26,7 @@ it("labels current, future, expired and inactive prices under a controlled serve
  const first=mocks.results.purchase_price_rules.data[0] as Record<string,unknown>;
  mocks.results.purchase_price_rules.data=[first,{...first,id:"future",version:3,effective_from:"2026-10-11T00:00:00+07:00"},{...first,id:"expired",version:4,effective_to:"2026-10-10T00:00:00+07:00"},{...first,id:"inactive",version:5,active:false}];
  render(await PurchasePricingPage({searchParams:Promise.resolve({})}));
- for(const [version,label] of [[1,"Đang hiệu lực"],[3,"Chưa có hiệu lực"],[4,"Hết hiệu lực"],[5,"Đã ngừng"]])expect(screen.getByText(new RegExp("v"+version+" · "+label))).toBeInTheDocument();
+ for(const [version,label] of [[1,"Đang hiệu lực"],[3,"Chưa có hiệu lực"],[4,"Hết hiệu lực"],[5,"Đã ngừng"]])expect(screen.getByText(new RegExp("Phiên bản "+version+" · "+label))).toBeInTheDocument();
 });
 it.each(["ACTIVE","FUTURE","EXPIRED","INACTIVE"])("filters %s consistently before rendering",async state=>{
  const first=mocks.results.purchase_price_rules.data[0] as Record<string,unknown>;

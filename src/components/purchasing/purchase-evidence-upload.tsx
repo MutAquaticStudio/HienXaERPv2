@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useState, type ChangeEvent } from "react";
+import { userFacingError } from "@/lib/core/errors";
+import { FilePicker } from "@/components/ui/file-picker";
 import { createBrowserSupabase } from "@/lib/supabase/browser";
 
 type OperationIds = { create: string; finalize: string };
@@ -48,7 +50,7 @@ export function PurchaseEvidenceUpload({ purchaseOrderId }: { purchaseOrderId: s
       if (operationIds.current?.create !== ids.create) return;
       const message = reason instanceof Error ? reason.message : "Không thể tải minh chứng.";
       setEvidenceId("");
-      setError(message);
+      setError(userFacingError(message, "Không thể tải minh chứng. Vui lòng thử lại."));
       inputRef.current?.setCustomValidity("Tải lại minh chứng hoặc bỏ chọn tệp trước khi lưu.");
     } finally {
       if (operationIds.current?.create === ids.create) setBusy(false);
@@ -79,7 +81,7 @@ export function PurchaseEvidenceUpload({ purchaseOrderId }: { purchaseOrderId: s
 
   return <div className="field">
     <label htmlFor={`purchaseEvidence-${purchaseOrderId}`}>Minh chứng nhận hàng/NCC giao (tùy chọn)</label>
-    <input ref={inputRef} id={`purchaseEvidence-${purchaseOrderId}`} type="file" accept=".png,.jpg,.jpeg,.pdf,image/png,image/jpeg,application/pdf" onChange={onFileChange} />
+    <FilePicker inputRef={inputRef} id={`purchaseEvidence-${purchaseOrderId}`} accept=".png,.jpg,.jpeg,.pdf,image/png,image/jpeg,application/pdf" onChange={onFileChange} />
     <input type="hidden" name="evidenceId" value={evidenceId} />
     <p className="muted" role="status">{busy ? "Đang tải minh chứng..." : evidenceId ? "Đã tải minh chứng; sẽ gắn khi xác nhận nghiệp vụ." : "Chấp nhận PNG, JPEG hoặc PDF tối đa 10 MB."}</p>
     {error && <p role="alert">{error} {selectedFile && selectedFile.size <= maxBytes && <button className="button button-secondary" type="button" disabled={busy} onClick={() => { if (operationIds.current) void upload(selectedFile, operationIds.current); }}>Thử tải lại</button>}</p>}

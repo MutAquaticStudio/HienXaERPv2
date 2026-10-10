@@ -13,7 +13,7 @@ export type PartySnapshot = Readonly<{
 
 export function createPartySnapshot(input: PartySnapshot): PartySnapshot {
   if (!input.customerId || !input.siteId || !input.customerName.trim() || !input.siteName.trim() || !input.deliveryAddress.trim()) {
-    throw new AppError({ code: "VALIDATION_FAILED", message: "Thiếu thông tin snapshot khách hàng/công trình.", status: 422 });
+    throw new AppError({ code: "VALIDATION_FAILED", message: "Thiếu thông tin khách hàng hoặc công trình tại thời điểm lập chứng từ.", status: 422 });
   }
   return Object.freeze({ ...input });
 }

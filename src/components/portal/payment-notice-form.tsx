@@ -1,4 +1,6 @@
 "use client";
+import { userFacingError } from "@/lib/core/errors";
+import { FilePicker } from "@/components/ui/file-picker";
 
 import type { FormEvent } from "react";
 import { useRef, useState } from "react";
@@ -56,7 +58,7 @@ export function PaymentNoticeForm({ customerId }: { customerId: string }) {
       setError(true);
       setMessage(submitError instanceof TypeError || !navigator.onLine
         ? "Mất kết nối. Thông tin và chứng từ vẫn trên biểu mẫu; hãy kết nối lại rồi gửi lần nữa."
-        : submitError instanceof Error ? submitError.message : "Gửi thông báo thất bại");
+        : submitError instanceof Error ? userFacingError(submitError.message) : "Gửi thông báo thất bại");
     } finally {
       setBusy(false);
     }
@@ -78,7 +80,7 @@ export function PaymentNoticeForm({ customerId }: { customerId: string }) {
       </div>
       <div className={styles.field}>
         <label htmlFor="notice-file">Chứng từ</label>
-        <input accept="image/jpeg,image/png,application/pdf" id="notice-file" name="file" required type="file" />
+        <FilePicker accept="image/jpeg,image/png,application/pdf" id="notice-file" name="file" required />
       </div>
       <div className={styles.field}>
         <label htmlFor="notice-note">Ghi chú</label>

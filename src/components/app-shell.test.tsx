@@ -17,7 +17,7 @@ describe("grouped operational navigation", () => {
     expect(screen.getByRole("button", { name: "Bán hàng" })).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("button", { name: "Tài chính" })).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByRole("link", { name: "Đơn bán" })).toHaveAttribute("aria-current", "page");
-    expect(screen.queryByRole("link", { name: "Phải trả" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Công nợ phải trả" })).not.toBeInTheDocument();
   });
 
   it("keeps all existing destinations and exposes existing stock-count and purchase-document routes", () => {
@@ -55,7 +55,7 @@ describe("grouped operational navigation", () => {
     location.pathname = "/admin/payables";
     render(shell(["finance.ap.read"]));
     expect(screen.getByRole("button", { name: "Tài chính" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Phải trả" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Công nợ phải trả" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Chứng từ mua" })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Hồ sơ hóa đơn bán" })).not.toBeInTheDocument();
   });
@@ -97,7 +97,7 @@ describe("grouped operational navigation", () => {
   it("keeps Vietnamese labels and the authenticated actor/branch intact", () => {
     render(shell());
     const sidebar = screen.getByRole("complementary");
-    expect(within(sidebar).getByRole("button", { name: "Vật tư & kho" })).toBeInTheDocument();
+    expect(within(sidebar).getByRole("button", { name: "Kho hàng" })).toBeInTheDocument();
     expect(within(sidebar).getByRole("button", { name: "Nhân công & dịch vụ" })).toBeInTheDocument();
     expect(sidebar.textContent).not.toMatch(/\uFFFD|Ã[\u0080-\u00bf]|Â[\u0080-\u00bf]/u);
     expect(screen.getByText("Chủ QA")).toBeInTheDocument();
