@@ -2621,3 +2621,10 @@ Hai lỗi máy chủ có chủ đích trên DB thử nghiệm trả HTTP500 th�
 PR41 phạm vi/quality và SO/PO trong điều kiện hợp lệ PASS theo evidence đã ghi. Lỗi người dùng Production được phân loại chặn theo OP-CUTOVER-01; chưa có mã đơn/nội dung lỗi gốc để khẳng định điều kiện đầu tiên của riêng SO. Production vẫn PENDING_OPENING; không mở hoạt động nghiệp vụ, nhập đầu kỳ, migration, merge hoặc deploy. Nghiệm thu PR không thay thế full-system release/Owner approval.
 
 Chỉ sau gate SO/PO mới tìm Taste Skill trong catalog và các thư mục cài đặt Codex/Claude/Cursor/config/project. Không có SKILL.md Taste khả dụng, không có tool orchestrator skills.list; chỉ gặp reference design-taste-frontend.md của Higgsfield. Không dùng reference này thay Taste hoặc giả kết quả. TASTE_SKILL=NOT_STARTED; VISUAL_REFINEMENT/POST_TASTE_VISUAL_REGRESSION=NOT_STARTED; PR42_STATUS=BLOCKED. PR41 giữ Draft. Báo cáo, file list, ảnh trước/sau PR41 (không phải Taste) và bằng chứng đều lưu ngoài repo ở HienXaERP-PR41-Acceptance-20261010.
+
+
+## REM-G01-G23 implementation evidence
+
+Owner G01–G23 prompt authorizes source/schema, isolated QA, commits and Draft PR; no Production/merge/deploy. Supersedes OP-CUTOVER-01 mandatory opening/manual activation for new operations; protected historical import/immutability retained, not expanded. Single agent, sequential packages; stage1 G01/G05/G21 active. Track decisions/status/evidence in reports/business-flow-remediation. Old acceptance is reference only, not repair PASS.
+
+REM package1: G01/G05 and count portion ofG21 implemented in3 forward migrations; fresh native89 schema/upgrade preservation/recovery102tables; native5,AuthHTTP12,Browser4/5images/0errors and2true lock-overlap races PASS scoped. Typecheck,34affectedtests,targetedlint PASS. No Production/merge/deploy. Full regression/build/CI final remain NOT_RUN.

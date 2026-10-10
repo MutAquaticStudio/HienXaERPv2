@@ -37,6 +37,9 @@ function operationLines(formData: FormData, quantityKey: "received_quantity" | "
 function message(value?: string) {
   const postingError = operationalPostingError(value);
   if (postingError) return postingError;
+  if (value?.includes("stock_count_cutoff_stale") || value?.includes("stock_count_basis_changed_recount_required")) return "Kho đã có biến động làm căn cứ đếm không còn hợp lệ. Giữ hồ sơ chênh lệch, đối chiếu biến động và kiểm kê lại tại mốc mới trước khi duyệt.";
+  if (value?.includes("stock_count_adjustment_below_reserved_or_on_hand")) return "Chưa thể duyệt: lượng sau điều chỉnh thấp hơn lượng đang giữ chỗ hoặc làm tồn kho âm. Hãy đối chiếu hàng và các phiếu giữ chỗ.";
+  if (value?.includes("stock_count_inventory_value_inconsistent")) return "Chưa thể duyệt: lượng và giá trị tồn sau điều chỉnh không khớp. Hãy kiểm tra căn cứ giá vốn.";
   if (value?.includes("operation_payload_conflict")) return "Mã thao tác đã được dùng với dữ liệu khác. Hãy tải lại.";
   if (value?.includes("exceeds")) return "Số lượng vượt phần còn lại của chứng từ nguồn.";
   if (value?.includes("version")) return "Dữ liệu đã được người khác cập nhật. Hãy tải lại.";

@@ -44,7 +44,7 @@ export default async function DeliveryDetailPage({ params, searchParams }: { par
   const result = resultResult.data as Result | null;
   const { data: verification } = await supabase.from("delivery_verifications").select("id").eq("delivery_id", id).maybeSingle();
   const [{ data: verificationLines }, { data: returnCases }] = await Promise.all([
-    verification ? supabase.from("delivery_verification_lines").select("id, delivery_line_id, accepted_base_quantity, billable_base_quantity, receivable_amount_vnd, inventory_cost_vnd").eq("delivery_verification_id", verification.id) : Promise.resolve({ data: [] }),
+    verification ? supabase.from("delivery_verification_line_read").select("id, delivery_line_id, accepted_base_quantity, billable_base_quantity, receivable_amount_vnd, inventory_cost_vnd").eq("delivery_verification_id", verification.id) : Promise.resolve({ data: [] }),
     supabase.from("return_cases").select("id, delivery_verification_line_id, case_kind, base_quantity, reason, state, version").eq("branch_id", access.branchId).in("delivery_line_id", lines.map((line) => line.id)),
   ]);
   const verified = (verificationLines ?? []) as VerificationLine[];
