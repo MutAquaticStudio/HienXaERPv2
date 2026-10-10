@@ -18,6 +18,7 @@ export function PricingRuleEditor({ rule, options, purchase = false, purchaseRul
   const fallback = useRef<HTMLElement | null>(null);
   const returnFocus = useRef(false);
   const completed = useRef(false);
+  const closePending = useRef(false);
   const [confirming, setConfirming] = useState(false);
   const [reason, setReason] = useState("");
   const [validation, setValidation] = useState<string>();
@@ -27,30 +28,49 @@ export function PricingRuleEditor({ rule, options, purchase = false, purchaseRul
   }, undefined);
   useLayoutEffect(() => {
     const summary = root.current?.closest("details")?.querySelector("summary");
+    const main = root.current?.closest("main");
     const modal = dialog.current;
+    const ruleId = (purchase ? purchaseRule : rule)?.id;
     fallback.current = summary ?? root.current;
     return () => {
-      if ((submitting.current || modal?.open || completed.current) && summary?.isConnected) {
-        summary.focus({ preventScroll: true });
+      if (!(submitting.current || modal?.open || completed.current || closePending.current)) return;
+      const restoreAfterClose = () => {
+        const retained = summary?.isConnected ? summary : Array.from(main?.querySelectorAll<HTMLElement>("details[data-price-rule-id]") ?? [])
+          .find(row => row.dataset.priceRuleId === ruleId)?.querySelector<HTMLElement>("summary");
+        const destination = retained ?? main?.querySelector<HTMLElement>("h1[tabindex]");
+        if (destination?.isConnected && !destination.closest("[hidden]")) destination.focus({ preventScroll: true });
+      };
+      if (modal && (modal.open || closePending.current)) {
+        // A native close event can arrive after React has removed this editor.
+        modal.addEventListener("close", restoreAfterClose, { once: true });
+        if (modal.open) modal.close();
+      } else {
+        // A removed/filtered row must not be the destination of an unmount cleanup.
+        const heading = main?.querySelector<HTMLElement>("h1[tabindex]");
+        if (heading?.isConnected) heading.focus({ preventScroll: true });
+        else if (summary?.isConnected) summary.focus({ preventScroll: true });
       }
     };
   }, []);
   useLayoutEffect(() => {
-    if (confirming && !state?.success) {
-      if (dialog.current && !dialog.current.open) {
+    if (state?.success) {
+      completed.current = true;
+      if (dialog.current?.open) {
+        closePending.current = true;
+        dialog.current.close();
+      } else if (!closePending.current && status.current?.isConnected && !status.current.closest("[hidden]")) {
+        status.current.focus({ preventScroll: true });
+      }
+    } else if (confirming) {
+      if (dialog.current && !dialog.current.open && !closePending.current) {
         dialog.current.showModal();
         reasonInput.current?.focus();
       }
-    } else {
-      dialog.current?.close();
-      if (state?.success) {
-        completed.current = true;
-        status.current?.focus({ preventScroll: true });
-      } else if (returnFocus.current) {
-        returnFocus.current = false;
-        const origin = deactivateButton.current;
-        (origin?.isConnected && !origin.disabled ? origin : fallback.current)?.focus({ preventScroll: true });
-      }
+    } else if (returnFocus.current && !closePending.current) {
+      returnFocus.current = false;
+      const origin = deactivateButton.current;
+      const destination = origin?.isConnected && !origin.disabled ? origin : fallback.current;
+      if (destination?.isConnected && !destination.closest("[hidden]")) destination.focus({ preventScroll: true });
     }
   }, [confirming, state?.success]);
   const targetRule = purchase ? purchaseRule : rule;
@@ -73,7 +93,10 @@ export function PricingRuleEditor({ rule, options, purchase = false, purchaseRul
     if (pending || submitting.current) return;
     returnFocus.current = true;
     setValidation(undefined);
-    setConfirming(false);
+    if (dialog.current?.open) {
+      closePending.current = true;
+      dialog.current.close();
+    } else setConfirming(false);
   }
   function dialogKeyDown(event: React.KeyboardEvent<HTMLDialogElement>) {
     if (event.key === "Escape") { event.preventDefault(); cancel(); return; }
@@ -105,7 +128,7 @@ export function PricingRuleEditor({ rule, options, purchase = false, purchaseRul
     {state && <p ref={status} tabIndex={-1} role="status" className="form-message">{state.message}</p>}
     <div className="form-actions"><button className="button button-primary" type="submit" name="mode" value={targetRule ? "replace" : "create"} disabled={pending || (!!targetRule && state?.success)}>{pending ? "Đang lưu..." : targetRule ? "Tạo phiên bản mới" : "Tạo chính sách giá"}</button>{targetRule && <button ref={deactivateButton} className="button button-secondary" type="button" disabled={pending || state?.success || confirming} onClick={() => { setValidation(undefined); setConfirming(true); }}>Ngừng sử dụng</button>}</div>
   </form>
-    {targetRule && <dialog ref={dialog} hidden={!confirming || !!state?.success} className="card card-pad" aria-labelledby={`${id}-confirm-heading`} aria-describedby={`${id}-confirm-consequence`} aria-modal="true" style={{width:"min(36rem, calc(100vw - 2rem))",maxHeight:"calc(100dvh - 2rem)",overflowY:"auto",margin:"auto"}} onCancel={event => { event.preventDefault(); cancel(); }} onKeyDown={dialogKeyDown}>
+    {targetRule && <dialog ref={dialog} hidden={!confirming} className="card card-pad" aria-labelledby={`${id}-confirm-heading`} aria-describedby={`${id}-confirm-consequence`} aria-modal="true" style={{width:"min(36rem, calc(100vw - 2rem))",maxHeight:"calc(100dvh - 2rem)",overflowY:"auto",margin:"auto"}} onCancel={event => { event.preventDefault(); cancel(); }} onClose={() => { closePending.current = false; setConfirming(false); }} onKeyDown={dialogKeyDown}>
       <h3 id={`${id}-confirm-heading`}>Xác nhận ngừng sử dụng giá</h3>
       <p>{identity}</p>
       <p>Mã quy tắc: {targetRule.id} · Phiên bản: {targetRule.version}</p>

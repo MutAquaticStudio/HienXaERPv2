@@ -10,14 +10,14 @@ const nativeShowModal = Object.getOwnPropertyDescriptor(HTMLDialogElement.protot
 const nativeClose = Object.getOwnPropertyDescriptor(HTMLDialogElement.prototype, "close");
 beforeAll(() => {
   Object.defineProperty(HTMLDialogElement.prototype, "showModal", {configurable:true,value:function(this:HTMLDialogElement){this.setAttribute("open","");}});
-  Object.defineProperty(HTMLDialogElement.prototype, "close", {configurable:true,value:function(this:HTMLDialogElement){this.removeAttribute("open");}});
+  Object.defineProperty(HTMLDialogElement.prototype, "close", {configurable:true,value:function(this:HTMLDialogElement){if(this.hasAttribute("open")){this.removeAttribute("open");this.dispatchEvent(new Event("close"));}}});
 });
 afterAll(() => {
   if(nativeShowModal)Object.defineProperty(HTMLDialogElement.prototype,"showModal",nativeShowModal);else Reflect.deleteProperty(HTMLDialogElement.prototype,"showModal");
   if(nativeClose)Object.defineProperty(HTMLDialogElement.prototype,"close",nativeClose);else Reflect.deleteProperty(HTMLDialogElement.prototype,"close");
 });
 beforeEach(() => { vi.clearAllMocks(); vi.mocked(savePurchasePricingRuleAction).mockResolvedValue({success:true,message:"Đã tạo giá mua."}); vi.mocked(savePricingRuleAction).mockResolvedValue({success:true,message:"Đã tạo chính sách giá."}); });
-afterEach(cleanup);
+afterEach(()=>{cleanup();vi.restoreAllMocks();});
 
 it("allows creating another price rule after a successful save", async () => {
   render(<PricingRuleEditor options={{ customers: [], groups: [], materials: [{ id: "material", name: "Vật tư" }], units: [{ id: "uom", name: "Bao" }] }} />);
@@ -161,4 +161,49 @@ it("returns focus to the retained rule summary when the editor disappears",()=>{
  view.rerender(<details open><summary tabIndex={0}>Quy tắc giá QA</summary></details>);
  expect(screen.getByText("Quy tắc giá QA")).toHaveFocus();
  expect(savePurchasePricingRuleAction).not.toHaveBeenCalled();
+});
+
+it("waits for native close before hiding or focusing the visible success status",async()=>{
+  vi.spyOn(HTMLDialogElement.prototype,"close").mockImplementationOnce(function(this:HTMLDialogElement){expect(this).not.toHaveAttribute("hidden");this.removeAttribute("open");});
+  confirmation();
+  const modal=screen.getByRole("dialog");
+  fireEvent.change(screen.getByLabelText("Lý do ngừng sử dụng *"),{target:{value:"QA success close order"}});
+  fireEvent.click(screen.getByRole("button",{name:"Xác nhận ngừng sử dụng"}));
+  await waitFor(()=>expect(modal).not.toHaveAttribute("open"));
+  expect(modal).not.toHaveAttribute("hidden");
+  expect(screen.getByRole("status")).not.toHaveFocus();
+  fireEvent(modal,new Event("close"));
+  await waitFor(()=>expect(screen.getByRole("status")).toHaveFocus());
+  expect(screen.getByRole("status")).toBeVisible();
+  expect(modal).toHaveAttribute("hidden");
+  expect(savePurchasePricingRuleAction).toHaveBeenCalledTimes(1);
+});
+it("waits for native cancel close before restoring the enabled originating button",()=>{
+  vi.spyOn(HTMLDialogElement.prototype,"close").mockImplementationOnce(function(this:HTMLDialogElement){this.removeAttribute("open");});
+  confirmation();
+  const modal=screen.getByRole("dialog"),origin=screen.getByRole("button",{name:"Ngừng sử dụng",hidden:true});
+  fireEvent.click(screen.getByRole("button",{name:"Quay lại"}));
+  expect(origin).toBeDisabled();
+  expect(modal).not.toHaveAttribute("hidden");
+  fireEvent(modal,new Event("close"));
+  expect(origin).toBeEnabled();
+  expect(origin).toHaveFocus();
+  expect(savePurchasePricingRuleAction).not.toHaveBeenCalled();
+});
+it.each([false,true])("restores connected fallback after revalidation before native close; filtered=%s",async filtered=>{
+  vi.spyOn(HTMLDialogElement.prototype,"close").mockImplementationOnce(function(this:HTMLDialogElement){this.removeAttribute("open");});
+  const options={customers:[],groups:[],materials:[],units:[]};
+  const view=render(<main><h1 tabIndex={-1}>Bảng giá QA</h1><details open data-price-rule-id="old"><summary>Quy tắc giá QA</summary><PricingRuleEditor purchase purchaseRule={existing} options={options} /></details></main>);
+  fireEvent.click(screen.getByRole("button",{name:"Ngừng sử dụng"}));
+  const modal=screen.getByRole("dialog");
+  fireEvent.change(screen.getByLabelText("Lý do ngừng sử dụng *"),{target:{value:"QA revalidation close order"}});
+  fireEvent.click(screen.getByRole("button",{name:"Xác nhận ngừng sử dụng"}));
+  await waitFor(()=>expect(modal).not.toHaveAttribute("open"));
+  view.rerender(<main><h1 tabIndex={-1}>Bảng giá QA</h1>{!filtered&&<details open data-price-rule-id="old"><summary>Quy tắc giá QA</summary></details>}</main>);
+  fireEvent(modal,new Event("close"));
+  const destination=filtered?screen.getByRole("heading",{name:"Bảng giá QA"}):screen.getByText("Quy tắc giá QA");
+  expect(destination).toHaveFocus();
+  expect(destination).toBeVisible();
+  expect(document.activeElement).not.toBe(document.body);
+  expect(savePurchasePricingRuleAction).toHaveBeenCalledTimes(1);
 });
