@@ -64,7 +64,7 @@ function QuickCreatePanel({ mode, customerId, onCustomerCreated, onSiteCreated, 
   </section></div>;
 }
 
-export function CommercialDocumentForm({ kind, options, operationId, canManagePrice, canManageCustomers, existing, initialCustomerId, initialSiteId }: { kind: "order" | "quote"; options: SalesFormOptions; operationId: string; canManagePrice: boolean; canManageCustomers: boolean; existing?: ExistingCommercialDraft; initialCustomerId?: string; initialSiteId?: string }) {
+export function CommercialDocumentForm({ kind, options, operationId, canManagePrice, canManageCustomers, existing, initialCustomerId, initialSiteId, initialMaterialId }: { kind: "order" | "quote"; options: SalesFormOptions; operationId: string; canManagePrice: boolean; canManageCustomers: boolean; existing?: ExistingCommercialDraft; initialCustomerId?: string; initialSiteId?: string; initialMaterialId?: string }) {
   const action = existing ? (kind === "order" ? updateSalesOrderDraftAction : updateQuotationDraftAction) : (kind === "order" ? createSalesOrderAction : createQuotationAction);
   const lastSubmission = useRef<FormData | null>(null);
   const submissionPending = useRef(false);
@@ -99,7 +99,8 @@ export function CommercialDocumentForm({ kind, options, operationId, canManagePr
   const preview = previewRecord?.state === state ? previewRecord?.value ?? null : null;
   const setPreview = useCallback((next: PricePreviewResult | null) => { setPreviewRecord(next ? { state, value: next } : null); }, [state]);
   const [previewPending, setPreviewPending] = useState(false);
-  const [lines, setLines] = useState(existing ? existing.lines.map((line, key) => ({ ...line, key })) : [{ key: 0, sourceLineId: "", materialId: options.materials[0]?.id ?? "", uomId: options.materials[0]?.uoms[0]?.id ?? "", quantity: "", manualPriceVnd: "", manualReason: "" }]);
+  const initialMaterial = initialMaterialId ? options.materials.find(m => m.id === initialMaterialId) : options.materials[0];
+  const [lines, setLines] = useState(existing ? existing.lines.map((line, key) => ({ ...line, key })) : [{ key: 0, sourceLineId: "", materialId: initialMaterial?.id ?? "", uomId: initialMaterial?.uoms[0]?.id ?? "", quantity: "", manualPriceVnd: "", manualReason: "" }]);
   const sites = useMemo(() => customerOptions.find((item) => item.id === customerId)?.sites ?? [], [customerId, customerOptions]);
   const empty = !customerOptions.length || !options.materials.length || !siteId || lines.some((line) => !line.materialId || !line.uomId || !isPositiveSalesQuantity(line.quantity));
   function invalidatePrice() { priceRevision.current += 1; setPreview(null); setPreviewPending(false); }

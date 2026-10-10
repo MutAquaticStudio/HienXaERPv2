@@ -90,7 +90,7 @@ async function loadEditableManualLines(kind: "order" | "quote", documentId: stri
     parentColumn = "revision_id";
   }
   const { data: originals, error } = await supabase.from(table)
-    .select("id, material_id, ordered_uom_id, unit_price_vnd, conversion_numerator, conversion_denominator, rounding_mode, price_source_type, override_reason")
+    .select("id, material_id, ordered_uom_id, unit_price_vnd::text, conversion_numerator, conversion_denominator, rounding_mode, price_source_type, override_reason")
     .eq(parentColumn, documentId);
   if (error) throw new AppError({ code: "DEPENDENCY_UNAVAILABLE", message: "Không thể đọc dòng bản nháp.", status: 503 });
   return new Map((originals ?? []).map((line) => [line.id, line as OriginalManualLine]));
@@ -118,7 +118,7 @@ async function createCommercialLines(input: z.infer<typeof documentSchema>, bran
       .in("material_id", materialIds).in("from_uom_id", uomIds).eq("active", true).eq("settlement_allowed", true)
       .lte("effective_from", timestamp).or(`effective_to.is.null,effective_to.gt.${timestamp}`).order("effective_from", { ascending: false }),
     supabase.from("pricing_rules")
-      .select("id, branch_id, scope_type, customer_id, material_id, material_group_id, customer_tier_code, price_uom_id, unit_price_vnd, version, source_type, effective_from, effective_to, active")
+      .select("id, branch_id, scope_type, customer_id, material_id, material_group_id, customer_tier_code, price_uom_id, unit_price_vnd::text, version, source_type, effective_from, effective_to, active")
       .eq("branch_id", branchId).in("price_uom_id", uomIds).eq("active", true)
       .lte("effective_from", timestamp).or(`effective_to.is.null,effective_to.gt.${timestamp}`),
   ]);
