@@ -10,10 +10,12 @@ export type AppErrorCode =
 export type AppErrorStatus = 401 | 403 | 404 | 409 | 422 | 429 | 503;
 
 /** Presentation only: the database remains the authority that rejects posting. */
-export function operationalPostingError(message: unknown): string | null {
-  return typeof message === "string" && /\bbranch_not_operational\b/.test(message)
-    ? "Chưa thể ghi sổ: chi nhánh chưa được kích hoạt. Chủ doanh nghiệp cần xem bước còn thiếu tại Thiết lập hệ thống → Chuẩn bị vận hành."
-    : null;
+export function operationalPostingError(message: unknown,
+  context: "posting" | "sales-order-confirmation" | "purchase-order-confirmation" = "posting"): string | null {
+  if (typeof message !== "string" || !/\bbranch_not_operational\b/.test(message)) return null;
+  if (context === "posting") return "Chưa thể ghi sổ: chi nhánh chưa được kích hoạt. Chủ doanh nghiệp cần xem bước còn thiếu tại Thiết lập hệ thống → Chuẩn bị vận hành.";
+  const document = context === "sales-order-confirmation" ? "đơn bán" : "đơn mua";
+  return `Chưa thể xác nhận ${document}: chi nhánh chưa được kích hoạt vận hành. Chủ doanh nghiệp cần xem bước còn thiếu tại Thiết lập hệ thống → Chuẩn bị vận hành.`;
 }
 
 /** Keep clear Vietnamese validation details, without displaying unmapped backend errors. */

@@ -34,9 +34,12 @@ export type PricePreviewLine = z.infer<typeof previewLineSchema>;
 export type PricePreviewResult = { success: boolean; message: string; lines?: PricePreviewLine[]; totalVnd?: string };
 const commandSchema = z.object({ entityId: z.uuid(), operationId: z.uuid() });
 
-function commandError(message: string) {
-  const postingError = operationalPostingError(message);
+function commandError(message: string, confirmingOrder = false) {
+  const postingError = operationalPostingError(message, confirmingOrder ? "sales-order-confirmation" : "posting");
   if (postingError) return postingError;
+  if (message.includes("sales_order_not_confirmable")) return "Đơn bán không còn ở trạng thái có thể xác nhận. Hãy tải lại để kiểm tra.";
+  if (message.includes("order_lines_required")) return "Vui lòng thêm ít nhất một dòng vật tư cho đơn bán.";
+  if (confirmingOrder && message.includes("forbidden")) return "Bạn không có quyền xác nhận đơn bán tại chi nhánh này.";
   if (message.includes("sales_order_unresolved_execution")) return "Còn giao hàng, việc hoặc hàng đang vận chuyển chưa xử lý. Hãy hoàn tất trước khi đóng phần còn lại.";
   if (message.includes("sales_order_has_no_remaining")) return "Đơn không còn số lượng chưa giao để đóng.";
   if (message.includes("sales_order_not_closeable")) return "Đơn không còn ở trạng thái có thể đóng phần còn lại. Hãy tải lại.";
@@ -304,7 +307,7 @@ async function internalCommand(permission: string, rpc: string, args: Record<str
   await requireInternalPermission(permission);
   const supabase = await createServerSupabase();
   const { error } = await supabase.rpc(rpc, args);
-  if (error) redirect(`${destination}?error=${encodeURIComponent(commandError(error.message))}`);
+  if (error) redirect(`${destination}?error=${encodeURIComponent(commandError(error.message, rpc === "confirm_sales_order"))}`);
   revalidatePath(destination);
   if (rpc === "cancel_sales_order") revalidatePath("/admin/orders");
   redirect(`${destination}?notice=${notice}`);

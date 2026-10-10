@@ -81,9 +81,11 @@ function toIso(value?: string) {
   return date.toISOString();
 }
 
-function errorMessage(message: string) {
-  const postingError = operationalPostingError(message);
+function errorMessage(message: string, confirmingOrder = false) {
+  const postingError = operationalPostingError(message, confirmingOrder ? "purchase-order-confirmation" : "posting");
   if (postingError) return postingError;
+  if (message.includes("purchase_order_not_confirmable")) return "Đơn mua không còn ở trạng thái có thể xác nhận. Hãy tải lại để kiểm tra.";
+  if (message.includes("purchase_lines_required")) return "Vui lòng thêm ít nhất một dòng vật tư cho đơn mua.";
   if (message.includes("warehouse_address_required")) return warehouseAddressRequired;
   if (message.includes("purchase_order_destination_address_required")) return "Địa chỉ nhận hàng trên đơn mua nháp còn thiếu. Bổ sung địa chỉ kho rồi cập nhật địa chỉ từ kho trước khi xác nhận.";
   if (message.includes("stale_record_reload")) return "Địa chỉ kho đã được người khác sửa. Hãy tải lại thông tin kho.";
@@ -354,7 +356,7 @@ export async function confirmPurchaseOrderAction(formData: FormData) {
   const supabase = await createServerSupabase();
   const { error } = await supabase.rpc("confirm_purchase_order", { target_purchase_order_id: parsed.data.entityId, operation_id: parsed.data.operationId });
   const destination = `/admin/purchase-orders/${parsed.data.entityId}`;
-  if (error) redirect(`${destination}?error=${encodeURIComponent(errorMessage(error.message))}`);
+  if (error) redirect(`${destination}?error=${encodeURIComponent(errorMessage(error.message, true))}`);
   revalidatePath("/admin/purchase-orders");
   redirect(`${destination}?notice=confirmed`);
 }

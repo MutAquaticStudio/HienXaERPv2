@@ -12,6 +12,20 @@ describe("user-facing errors", () => {
     expect(userFacingError("branch_not_operational: ordinary posting requires ACTIVE")).toBe(text);
   });
 
+  it.each([
+    ["sales-order-confirmation", "đơn bán"],
+    ["purchase-order-confirmation", "đơn mua"],
+  ] as const)("describes %s as confirmation while preserving the default posting feedback", (context, label) => {
+    const refusal = "branch_not_operational: ordinary posting requires ACTIVE";
+    const text = operationalPostingError(refusal, context);
+    expect(text).toContain(`Chưa thể xác nhận ${label}`);
+    expect(text).toContain("chi nhánh chưa được kích hoạt vận hành");
+    expect(text).toContain("Thiết lập hệ thống → Chuẩn bị vận hành");
+    expect(text).not.toMatch(/ghi sổ|branch_not_operational|ACTIVE|PT423/);
+    expect(operationalPostingError("credit_limit_exceeded", context)).toBeNull();
+    expect(operationalPostingError(refusal)).toBe("Chưa thể ghi sổ: chi nhánh chưa được kích hoạt. Chủ doanh nghiệp cần xem bước còn thiếu tại Thiết lập hệ thống → Chuẩn bị vận hành.");
+  });
+
   it.each([undefined, null, "", "PT423", "forbidden", "PENDING_OPENING", "Something went wrong", "relation sales_order_lines does not exist"])("hides unmapped internal errors: %s", (value) => {
     expect(userFacingError(value)).toBe("Có lỗi xảy ra. Vui lòng thử lại");
     expect(operationalPostingError(value)).toBeNull();
