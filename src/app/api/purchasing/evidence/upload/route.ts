@@ -6,6 +6,7 @@ import { z } from "zod";
 import { resolveInternalAccess } from "@/lib/access/context";
 import { AppError } from "@/lib/core/errors";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { finalizeVerifiedEvidence } from "@/modules/portal/evidence-storage";
 import { detectEvidenceMime } from "@/modules/portal/server";
 
 const bucket = "inventory-evidence";
@@ -109,11 +110,12 @@ export async function PATCH(request: Request) {
       (evidence.upload_state === "VERIFIED" && (evidence.checksum_sha256 !== checksum || Number(evidence.byte_size) !== bytes.length))) {
       return failure("Tệp đã tải không khớp lựa chọn hiện tại.", 409);
     }
-    const { error: finalizeError } = await supabase.rpc("finalize_evidence_upload", {
-      target_evidence_id: parsed.data.evidenceId, checksum_sha256: checksum,
-      byte_size: bytes.length, operation_id: parsed.data.finalizeOperationId,
+    const { data: actor, error: actorError } = await supabase.auth.getUser();
+    if (actorError || !actor.user) return failure("Phiên đăng nhập đã hết hạn.", 401);
+    await finalizeVerifiedEvidence("INTERNAL", {
+      actorUuid: actor.user.id, evidenceId: parsed.data.evidenceId, checksum,
+      byteSize: bytes.length, operationId: parsed.data.finalizeOperationId,
     });
-    if (finalizeError) return failure("Không thể xác minh tệp minh chứng.", 502);
     return NextResponse.json({ evidenceId: parsed.data.evidenceId }, { headers: { "cache-control": "private, no-store" } });
   } catch { return failure("Không thể xác minh minh chứng.", 400); }
 }

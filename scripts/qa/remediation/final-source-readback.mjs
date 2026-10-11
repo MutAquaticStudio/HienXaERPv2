@@ -9,7 +9,7 @@ const read = async name => JSON.parse(await readFile(new URL(name, 'file://' + a
 const checks = [];
 try {
   const [history] = await qa.sql`select count(*)::int n from supabase_migrations.schema_migrations`;
-  assert.equal(history.n, 164);
+  assert.equal(history.n, Number(args["expected-schema"] ?? 164));
   const old = await read('PACKAGE4_G09_AUTH_REVENUE.json');
   const fee = await read('PACKAGE9_G16_FEE_AUTH142.json');
   async function snapshot(customer, cutoff = '2030-01-01', role = 'finance') {
