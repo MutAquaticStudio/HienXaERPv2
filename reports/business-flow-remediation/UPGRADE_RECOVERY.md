@@ -48,3 +48,6 @@ Schema119–121: each forward QAupgrade saved private600 nativebackup and old pu
 
 
 126–129: mỗi forward có private600 backup và chứng minh old publiccolumns/rows hash+count không đổi. Server price priority/snapshot helper126, purchase priority127, retail commandreceipt/recovery128, giữ namespace version hiện hữu129. Không replay/copy nền PR41. Fresh129 từ0/RLS0. Backuppre126..129 được giữ; khôi phục129 cuối còn chờ trước bàn giao toàn nhiệm vụ. Không Production/realInvoice/realMoney/realRights.
+
+
+130–136: each private600 backup beforeforward keptold publiccolumns/rows hash+count. Legacyfundreconciliation happensonlyexplicitcommand againstvalidolddecision/sources; no migrationbackfillRA/cash/stock.132 quantitypolicy newcolumnNULL foroldrows, no historicalearningsrewrite.133unappliedsyntaxfailure fullyrolledback; correctedunappliedfile thenhistory133.134resolution+135existingADJOPEXcontract+136reliableintents allorderedforwards. NewpublicresolutiontableRLS/noauthwrite, immutabledecisions; oldearnedpaid161k preserved. Fresh136from0/RLS0. Latest136nativearchive restore finalstillpending; ManagedAuthStoragePITR notverified.

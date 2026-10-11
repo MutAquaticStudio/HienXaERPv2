@@ -13,6 +13,8 @@ const wholeMoney = z.string().trim().regex(/^\d{1,19}$/).refine(value => BigInt(
 const positiveMoney = wholeMoney.refine(value => BigInt(value) > 0n);
 const identity = { operationId: z.uuid(), creditId: z.uuid() };
 function failure(value?: string) {
+  if (value?.includes("legacy_return_credit_source_mismatch")) return "Giá trị phải khớp điều chỉnh đã ghi và nguồn hàng trả. Không ghi giảm lần nữa.";
+  if (value?.includes("legacy_return_adjustment_sources_ambiguous")) return "Hồ sơ có nhiều điều chỉnh cũ. Cần đối chiếu từng nguồn trước khi xử lý khoản có.";
   if (value?.includes("exceeds_remaining")) return "Số tiền vượt khoản có còn lại. Tải lại để đối chiếu trước khi ghi.";
   if (value?.includes("return_credit_exceeds_source")) return "Số tiền giảm vượt lượng hàng trả hoặc giá trị nguồn đã xác minh.";
   if (value?.includes("already_decided")) return "Hồ sơ đã có quyết định tài chính. Tải lại để xem khoản có và lịch sử.";

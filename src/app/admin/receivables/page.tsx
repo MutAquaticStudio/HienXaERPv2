@@ -44,7 +44,7 @@ export default async function ReceivablesPage({ searchParams }: { searchParams: 
       .order("posted_at", { ascending: false }).order("id").range(paymentList.from, paymentList.to + 1) : Promise.resolve({ data: [], error: null }),
     customerId ? supabase.from("customer_credit_read").select("id, return_case_id, delivery_number, order_number, approved_credit_vnd, amount_vnd, remaining_vnd, refunded_vnd, offset_vnd")
       .eq("branch_id", access.branchId).eq("customer_id", customerId).order("approved_at", { ascending: false }).order("id").range(creditList.from, creditList.to + 1) : Promise.resolve({ data: [], error: null }),
-    customerId ? supabase.from("customer_return_finance_read").select("id, delivery_number, order_number, material_name_snapshot, base_quantity, maximum_credit_vnd, legacy_adjustment_exists")
+    customerId ? supabase.from("customer_return_finance_read").select("id, delivery_number, order_number, material_name_snapshot, base_quantity, maximum_credit_vnd, legacy_adjustment_exists, legacy_credit_amount_vnd")
       .eq("branch_id", access.branchId).eq("customer_id", customerId).order("id").range(returnList.from, returnList.to + 1) : Promise.resolve({ data: [], error: null }),
   ]);
   if (pageResult.error || selectedResult.error || sourceResult.error || creditResult.error || returnResult.error) throw new Error("Không thể tải phải thu.");

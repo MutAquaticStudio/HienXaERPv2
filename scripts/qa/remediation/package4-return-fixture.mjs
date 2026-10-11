@@ -45,9 +45,9 @@ export async function paidReturnScenario(tx, qa, finance, { billable = "14", pai
   return { stock, sale, account, payment, obligation: ar?.id ?? null, returnCase, verificationLine: vl.id, delivery, commissionRule, commissionEmployee };
 }
 
-export async function nextReceivableFromReturnedStock(tx, qa, doc) {
+export async function nextReceivableFromReturnedStock(tx, qa, doc, uid = qa.fixtures.owner) {
   const { fixtures: f, rpc } = qa;
-  const sale = await salesFixture(tx, qa, { ...doc.stock, common: { ...doc.stock.common, quantity: "1" } });
+  const sale = await salesFixture(tx, qa, { ...doc.stock, common: { ...doc.stock.common, quantity: "1" } }, uid);
   const source = await rpc(tx, "upsert_supply_allocation", [sale.line, "WAREHOUSE", null, f.warehouse, "1", null, null, randomUUID()]);
   const d = await rpc(tx, "create_delivery_from_allocations", [sale.so, [{ supply_allocation_id: source, planned_base_quantity: "1" }],
     new Date().toISOString(), randomUUID()]);

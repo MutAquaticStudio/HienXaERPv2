@@ -8,7 +8,7 @@ import type { CreditCommand } from "@/modules/finance/credit-command";
 
 type Props = {
   action: (form: FormData) => Promise<CommandOutcome>;
-  command: "post_payment" | "receive_purchase_order" | "verify_supplier_fulfillment" | "allocate_payment" | CreditCommand;
+  command: "post_payment" | "receive_purchase_order" | "verify_supplier_fulfillment" | "allocate_payment" | "resolve_commission_reconciliation" | CreditCommand;
   scope: string;
   operationId: string;
   children: ReactNode;

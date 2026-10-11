@@ -7,7 +7,7 @@ import type { PaymentTarget } from "./payment-form";
 import { formatVnd, vnd } from "@/lib/core/money";
 
 export type ReturnFinanceRow = { id: string; delivery_number: string; order_number: string; material_name_snapshot: string;
-  base_quantity: string; maximum_credit_vnd: string; legacy_adjustment_exists: boolean };
+  base_quantity: string; maximum_credit_vnd: string; legacy_adjustment_exists: boolean; legacy_credit_amount_vnd?: string | null };
 export type CustomerCreditRow = { id: string; return_case_id: string; delivery_number: string; order_number: string;
   approved_credit_vnd: string; amount_vnd: string; remaining_vnd: string; refunded_vnd: string; offset_vnd: string };
 type Account = { id: string; code: string; name: string };
@@ -57,13 +57,13 @@ export function CustomerCreditPanel({ customerId, pending, credits, accounts, ta
     <p className="muted">Giảm phần chưa thanh toán vào công nợ; phần tiền đã thu được giữ để hoàn hoặc cấn trừ có nguồn. Ghi hoàn tiền khi khoản hoàn đã thực hiện.</p>
     {pending.map(row => <article className="exception-card" key={row.id}><strong>{row.delivery_number} · {row.material_name_snapshot} · trả {row.base_quantity}</strong>
       <p>Giới hạn theo hàng trả và chứng từ gốc: {formatVnd(vnd(row.maximum_credit_vnd))}.</p>
-      {row.legacy_adjustment_exists ? <p className="form-message">Đã có điều chỉnh trước đây. Cần đối chiếu nguồn tiền và lịch sử khoản có; không ghi giảm thêm.</p>
-        : canApprove ? <ReliableCommandForm className="command-panel" command="adjust_return_receivable" action={approveReturnCreditAction}
+      {row.legacy_adjustment_exists && <p className="form-message">Đã có điều chỉnh trước đây. Đối chiếu nguồn tiền theo đúng giá trị đã ghi; không giảm công nợ hoặc doanh thu thêm lần nữa.</p>}
+      {canApprove ? <ReliableCommandForm className="command-panel" command="adjust_return_receivable" action={approveReturnCreditAction}
           operationId={approvalOperations[row.id]} scope={`${actorScope}:RETURN:${row.id}`}>
           <input type="hidden" name="returnCaseId" value={row.id} />
-          <div className="field"><label htmlFor={"return-credit-" + row.id}>Số tiền giảm cho hàng trả (VND)</label><input id={"return-credit-" + row.id} name="amount" inputMode="numeric" maxLength={19} defaultValue={row.maximum_credit_vnd} required /></div>
-          <div className="field"><label htmlFor={"return-reason-" + row.id}>Lý do duyệt giảm</label><input id={"return-reason-" + row.id} name="reason" minLength={3} maxLength={500} required /></div>
-          <button className="button button-danger" type="submit">Duyệt giảm theo hàng trả</button>
+          <div className="field"><label htmlFor={"return-credit-" + row.id}>{row.legacy_adjustment_exists ? "Giá trị điều chỉnh đã ghi (VND)" : "Số tiền giảm cho hàng trả (VND)"}</label><input id={"return-credit-" + row.id} name="amount" inputMode="numeric" maxLength={19} readOnly={row.legacy_adjustment_exists} defaultValue={row.legacy_credit_amount_vnd ?? row.maximum_credit_vnd} required /></div>
+          <div className="field"><label htmlFor={"return-reason-" + row.id}>{row.legacy_adjustment_exists ? "Lý do đối chiếu nguồn tiền" : "Lý do duyệt giảm"}</label><input id={"return-reason-" + row.id} name="reason" minLength={3} maxLength={500} required /></div>
+          <button className="button button-danger" type="submit">{row.legacy_adjustment_exists ? "Đối chiếu nguồn điều chỉnh đã ghi" : "Duyệt giảm theo hàng trả"}</button>
         </ReliableCommandForm> : <p className="muted">Cần người có quyền duyệt điều chỉnh công nợ.</p>}
     </article>)}
     {credits.map(credit => <article className="exception-card" key={credit.id}><strong>{credit.delivery_number} · đã duyệt giảm {formatVnd(vnd(credit.approved_credit_vnd))}</strong>
