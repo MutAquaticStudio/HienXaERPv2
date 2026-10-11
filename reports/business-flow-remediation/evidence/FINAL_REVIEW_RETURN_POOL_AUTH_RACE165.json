@@ -1,0 +1,38 @@
+{
+  "scope": "G03_TWO_REAL_JWT_ACTORS_RETIRE_DIFFERENT_DELIVERIES_ONE_COST_POOL",
+  "productionAccess": "NONE",
+  "tokensRecorded": false,
+  "excludedAdvanceRacesReexecuted": false,
+  "status": "PASS",
+  "actors": [
+    "0d1d2134-5a21-40a4-9fcb-375898d3c133",
+    "e04f1e5a-2a2d-4347-a506-1b6a35ea790f"
+  ],
+  "pidA": 26121,
+  "pidB": 26122,
+  "observedBlockingPids": [
+    26121
+  ],
+  "partial": {
+    "value": "4500001"
+  },
+  "facts": {
+    "returned_value": "6750000",
+    "returned_quantity": "45.000000",
+    "remaining_cost": "0",
+    "audits": 2
+  },
+  "sources": {
+    "sale": {
+      "so": "9cfb81ed-6950-4e07-a015-601ff36fb8cf",
+      "line": "de3fe9b2-d07b-4a89-9356-f350bc8fd8e9"
+    },
+    "material": "73e40630-49a6-4bea-b90b-dca31106f97b",
+    "cases": [
+      "3a1ca9d8-1bb7-404f-bcf2-fc09c454586e",
+      "1bf5dd05-99e2-4d7b-8a50-8011ca23adaf",
+      "ece49500-9aa4-46a2-b6ab-050f1a2af2a6"
+    ],
+    "quantity": "45"
+  }
+}

@@ -137,3 +137,9 @@ T26 sourceWarehouse/direct, partial/multiple/caps, physical/acceptance noAPcash,
 ## Commit và kết quả cuối
 
 Code mới G20/G22/G23: 649dd17bfe9cca4599d9dc61be040f4edb0a302a; G17/G18:8f84c66; G19:9c3e425; phần nền giữ3b83779 vàcáccommit trongGAP_STATUS. [Evidence index](EVIDENCE_INDEX.json) chứa SHA256 và exactraceexclusions; artifacts finalreadonly/upgrade không ghi lại source cũ. CI của head cuối phải đọc từ PR; không dùngCI của649dd17 khiPRhead khác. Bảng chính42rows supersede mappingT khác ở ghi chú gói lịch sử.
+
+## Đối chiếu cuối sau rà soát
+
+Code e7f7bb69020c9e7b8a1b3cea3821f5edfd2d7f5f/schema169. T18/T31 thêm cost lũy kế đúng nguồn warehouse và direct across3deliveries, twoactor sourcepool race; T40 thêm NULL/501 reason+fault/retry; T05/T39 thêm server-only byte-attestation, pending metadata không thànhREADY, freezeREADY và branch storage helper. T39 fullStorage thật vẫn BLOCKED; không dùng unit/native thay trueupload/download/RLS. T42 thêmoldGPSping/retry denied vàmessageJWTqueryfallback; khôngdevice/websocket. [Danh sách ca cụ thể chưa nghiệm thu](FINAL_REVIEW.md#3-điều-kiện-còn-thiếu-trước-phát-hành) ghi nghiệp vụ, lý do, môi trường/đầu vào thiếu, phạm vi bịchặn vàcách kiểm tiếp cho từngcase.
+
+CI bc8bb21 chỉ làbaseline; kết quảhead mới xemPR42. Hai advance races không chạy lại trongràsoát/CI (CIunit không gọiscript native-race). Evidence mới cóchecksumtrongindex, source definitions+ACL+lastmigration cótrongFINAL_REVIEW_EFFECTIVE169.

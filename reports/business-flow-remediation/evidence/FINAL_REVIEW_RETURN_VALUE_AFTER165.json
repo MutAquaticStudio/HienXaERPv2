@@ -1,0 +1,20 @@
+{
+  "scope": "G03_CUSTOMER_PHYSICAL_RETURN_CUMULATIVE_SOURCE_VALUE",
+  "phase": "after",
+  "status": "PASS",
+  "facts": {
+    "source": {
+      "id": "0860a3d5-b0a9-487e-b6a7-3e1dba572168",
+      "value": "150000",
+      "unit": "149999.550001"
+    },
+    "returned": {
+      "quantity": "1.000003",
+      "value": "150000"
+    },
+    "independentExpectedValue": "150000",
+    "cases": 3
+  },
+  "rolledBack": true,
+  "productionAccess": "NONE"
+}

@@ -1,0 +1,9 @@
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+
+ RUN  v5.0.0 /Users/nox/.codex/worktrees/post-pr40-ux-vietnamese/HienXaERP
+
+
+ Test Files  2 passed (2)
+      Tests  14 passed (14)
+   Start at  00:35:23
+   Duration  387ms (setup 49%, import 26%, transform 19%, tests 5%, worker 1%)

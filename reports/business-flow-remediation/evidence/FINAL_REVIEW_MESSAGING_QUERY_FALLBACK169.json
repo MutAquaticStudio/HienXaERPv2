@@ -1,0 +1,15 @@
+{
+  "status": "PASS_QUERY_FALLBACK",
+  "scope": "REAL_JWT_NATIVE_PERSIST_SEND_AND_INDEPENDENT_QUERY_WITHOUT_REALTIME",
+  "conversation": "75c4ab42-c9a1-4483-8edb-4e2a0ec6be40",
+  "message": "bd0d0873-0a4e-4028-83e5-a6e06e879ad7",
+  "count": {
+    "messages": 1
+  },
+  "realtimeTested": false,
+  "browserReloadTested": false,
+  "financialEffects": 0,
+  "productionAccess": "NONE",
+  "managedBusinessWrites": 0,
+  "tokensRecorded": false
+}

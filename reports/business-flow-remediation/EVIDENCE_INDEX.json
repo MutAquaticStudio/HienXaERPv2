@@ -679,6 +679,229 @@
       "status": "PASS_G13_TOTAL_CARGO",
       "scope": "G13_ACTUAL_CARGO_ACROSS_NONOVERLAPPING_DELIVERIES",
       "checks": 3
+    },
+    {
+      "file": "FINAL_REVIEW_RETURN_VALUE_BEFORE.json",
+      "sha256": "cba1ef38de2986cc33e8d9f8f19ecfad86f92480772ea603b4aac0fbddf99585",
+      "status": "REPRODUCED_ONE_VND_VALUE_CREATION",
+      "scope": "G03_CUSTOMER_PHYSICAL_RETURN_CUMULATIVE_SOURCE_VALUE"
+    },
+    {
+      "file": "FINAL_REVIEW_RETURN_VALUE_AFTER165.json",
+      "sha256": "ccdaab3bbd4144955fffc2512d6aa718de07eaacfaedbf18bb060f7957f12b6c",
+      "status": "PASS",
+      "scope": "G03_CUSTOMER_PHYSICAL_RETURN_CUMULATIVE_SOURCE_VALUE"
+    },
+    {
+      "file": "FINAL_REVIEW_DIRECT_RETURN_VALUE165.json",
+      "sha256": "82837d651fb26dbe35815bec786dba51e229b239d44aef9b3458ae6a2e1ee3c5",
+      "status": "PASS",
+      "scope": "G03_CUSTOMER_PHYSICAL_RETURN_CUMULATIVE_SOURCE_VALUE"
+    },
+    {
+      "file": "FINAL_REVIEW_DIRECT_MULTI_RETURN165.json",
+      "sha256": "0d7710ad07b5c47c89d9909fdce2e882490e32594a8a44e65c50c0468285b0b8",
+      "status": "PASS",
+      "scope": "G03_CUSTOMER_PHYSICAL_RETURN_CUMULATIVE_SOURCE_VALUE"
+    },
+    {
+      "file": "FINAL_REVIEW_RETURN_POOL_AUTH_RACE165.json",
+      "sha256": "d0575519072a49e7fcda5dd75d4d2c7387611fc5850f85362d2405bf85232bd5",
+      "status": "PASS",
+      "scope": "G03_TWO_REAL_JWT_ACTORS_RETIRE_DIFFERENT_DELIVERIES_ONE_COST_POOL"
+    },
+    {
+      "file": "FINAL_REVIEW_RETURN_REASON_ATOMIC166.json",
+      "sha256": "f5a81819a2caf1445b5b7d2d64cd28e6153a6473df21169f28df7f35c9e01f68",
+      "status": "PASS",
+      "scope": "G03_CUSTOMER_PHYSICAL_RETURN_CUMULATIVE_SOURCE_VALUE"
+    },
+    {
+      "file": "FINAL_REVIEW_NULL_REASON_BEFORE165.json",
+      "sha256": "88211b365759252639fbf82c56bbd12a5f1d8a63422372d824516fa657bf2ef7",
+      "status": "REPRODUCED_NULL_RETURN_REASON_SUCCESS_AUDIT",
+      "scope": "G03_CUSTOMER_PHYSICAL_RETURN_CUMULATIVE_SOURCE_VALUE"
+    },
+    {
+      "file": "FINAL_REVIEW_G19_PHYSICAL165.json",
+      "sha256": "f1d17aa264d64b66c12e024702e62bf68b82a3b9b3bc2424b6e020d4efe58194",
+      "status": "PASS",
+      "scope": "G19_PHYSICAL_AND_VENDOR_ACCEPTANCE_SEPARATE_FROM_AP_CASH"
+    },
+    {
+      "file": "FINAL_REVIEW_G19_RECORDED_CUSTODY165.json",
+      "sha256": "f0b365c93279b161d9d73f1f5417c46d88c770eb1e9a52aaee1ef7d96b60c650",
+      "status": "PASS",
+      "scope": "G19_RECORDED_DIRECT_WAREHOUSE_CUSTODY_THEN_PARTIAL_VENDOR_RETURN"
+    },
+    {
+      "file": "FINAL_REVIEW_GPS_BOUNDARY165.json",
+      "sha256": "a15c4eb7c2caf8a3c7a3f2e12155682f97974207127984e1236e069cdf92b0a7",
+      "status": "PASS",
+      "scope": "G06_GPS_OLD_START_PING_RETRY_AND_NEW_SESSION_AUTHORIZATION"
+    },
+    {
+      "file": "FINAL_REVIEW_SOURCE_READBACK165.json",
+      "sha256": "036edba82c475d3a1a701a5af735f84e7f0a1d8eabf89ab8b45e6e3e33e7cac6",
+      "status": "PASS",
+      "scope": "FINAL_SCHEMA164_REAL_JWT_READ_ONLY_G09_G16_G05"
+    },
+    {
+      "file": "FINAL_REVIEW_OLD_DOCUMENT_CONTINUATION165.json",
+      "sha256": "23473c23acfaca0eb6d7005ccb8f115c6565e7825f5fa68352f1983bad4df7b2",
+      "status": "PASS",
+      "scope": "RESTORED136_DOCUMENT_CONTINUES_AFTER165_WITH_UNCHANGED_SOURCE_AND_SINGLE_EFFECT"
+    },
+    {
+      "file": "FINAL_REVIEW_OLD_DOCUMENT_VALUES168.json",
+      "sha256": "6e33c3072e07d405abaa210a72240e971cd2fa651c1d5d77c179450df5d0e927",
+      "status": "PASS",
+      "scope": "READ_ONLY_OLD_SOURCE_1000_VND_PRICE_AND_LINKED_INVENTORY_AP"
+    },
+    {
+      "file": "FINAL_REVIEW_EXTERNAL_BOUNDARIES.json",
+      "sha256": "14a8ee8525a848a193095863fb8a07119d03cf79abe6d7ae8c44b51e29431f93",
+      "status": null,
+      "scope": "READ_ONLY_NATIVE_STORAGE_ENVIRONMENT_PREFLIGHT"
+    },
+    {
+      "file": "FINAL_REVIEW_EVIDENCE_BEFORE166.json",
+      "sha256": "c4313636baf25c4fb5e7cab81bfa63d592b00daf66e0f3d17cb57f92a943e6e2",
+      "status": "REPRODUCED_METADATA_ONLY_READY_WITHOUT_UPLOAD",
+      "scope": "G05_G15_G22_METADATA_WITHOUT_STORAGE_CANNOT_FINALIZE"
+    },
+    {
+      "file": "FINAL_REVIEW_EVIDENCE_GATES169.json",
+      "sha256": "acd2486f3c54b09f56c8d586a3f00a653dd577aa086ecee1415c1977a0233300",
+      "status": "PASS_FAIL_CLOSED_ONLY",
+      "scope": "G05_G15_G22_METADATA_WITHOUT_STORAGE_CANNOT_FINALIZE"
+    },
+    {
+      "file": "FINAL_REVIEW_EVIDENCE_SCOPE_GATES168.json",
+      "sha256": "acd2486f3c54b09f56c8d586a3f00a653dd577aa086ecee1415c1977a0233300",
+      "status": "PASS_FAIL_CLOSED_ONLY",
+      "scope": "G05_G15_G22_METADATA_WITHOUT_STORAGE_CANNOT_FINALIZE"
+    },
+    {
+      "file": "FINAL_REVIEW_MESSAGING_QUERY_FALLBACK169.json",
+      "sha256": "1182fe65d4f3cbdbff715023822a6bf908893d5f0060871e4293956869ffa6b0",
+      "status": "PASS_QUERY_FALLBACK",
+      "scope": "REAL_JWT_NATIVE_PERSIST_SEND_AND_INDEPENDENT_QUERY_WITHOUT_REALTIME"
+    },
+    {
+      "file": "FINAL_REVIEW_EXISTING_DATA_IMPACT168.json",
+      "sha256": "31664601448470faf9ec2322f0648bc9c098fae6c0bf40a78c68cea2110e5c23",
+      "status": null,
+      "scope": null
+    },
+    {
+      "file": "FINAL_REVIEW_FRESH165.json",
+      "sha256": "89e7c2b524aab7e788022cd533ff6fb051fbdf11a1c309e3e36c0ba0d84d40e7",
+      "status": "PASS_SCHEMA_FROM_ZERO",
+      "scope": "FRESH_NATIVE_APPLICATION_SCHEMA_AUTH_SHIM"
+    },
+    {
+      "file": "FINAL_REVIEW_UPGRADE165.json",
+      "sha256": "9bd2e363a3e5b6a906c4b5fd75e7e06cb521a0950cda76df7abad58d78f98a6b",
+      "status": "FORWARD_QA_UPGRADE",
+      "scope": null
+    },
+    {
+      "file": "FINAL_REVIEW_UPGRADE166.json",
+      "sha256": "dc46790228497208f7dcc7243604d5948336f199486fcc561d9d0f77eddc3285",
+      "status": "FORWARD_QA_UPGRADE",
+      "scope": null
+    },
+    {
+      "file": "FINAL_REVIEW_UPGRADE167.json",
+      "sha256": "5d9b25d24c053a169a6401c9ff9f59a8d8789a78aa2e883a0267fc0573ad4271",
+      "status": "FORWARD_QA_UPGRADE",
+      "scope": null
+    },
+    {
+      "file": "FINAL_REVIEW_UPGRADE168.json",
+      "sha256": "55a834670030abf2fa6336801a805910b94eb77b3cec7e33e3931170ee4de946",
+      "status": "FORWARD_QA_UPGRADE",
+      "scope": null
+    },
+    {
+      "file": "FINAL_REVIEW_UPGRADE169.json",
+      "sha256": "cd291a2650411b222e7151f50dd090fc1a2ca292784fb692df9e4b326a07bd87",
+      "status": "FORWARD_QA_UPGRADE",
+      "scope": null
+    },
+    {
+      "file": "FINAL_REVIEW_FRESH_UPGRADE166.json",
+      "sha256": "07c26fa5ccd02d7e8f8d3b15d2fa98c25df2cc50bd0b4e939554bd29c2ba280f",
+      "status": "FORWARD_QA_UPGRADE",
+      "scope": null
+    },
+    {
+      "file": "FINAL_REVIEW_FRESH_UPGRADE167.json",
+      "sha256": "de452ee0b29a6d10a17c023c472b9c9e619509c34dc69cdecddd850b5b6c39ce",
+      "status": "FORWARD_QA_UPGRADE",
+      "scope": null
+    },
+    {
+      "file": "FINAL_REVIEW_FRESH_UPGRADE168.json",
+      "sha256": "ac90da169d516046419bbdb106d43e3a6e050fa19f0b63b01769ea662ea5048b",
+      "status": "FORWARD_QA_UPGRADE",
+      "scope": null
+    },
+    {
+      "file": "FINAL_REVIEW_FRESH_UPGRADE169.json",
+      "sha256": "548f407ea32560cb8b23d21d99afe891e4dc256d03a6b56d710b208ee4796e4b",
+      "status": "FORWARD_QA_UPGRADE",
+      "scope": null
+    },
+    {
+      "file": "FINAL_REVIEW_REPRESENTATIVE_UPGRADE166.json",
+      "sha256": "d1cec0ec64baad08c784d08593fb0bd0028e2d9fb213f385efcc993fb850e5e9",
+      "status": "FORWARD_QA_UPGRADE",
+      "scope": null
+    },
+    {
+      "file": "FINAL_REVIEW_REPRESENTATIVE_UPGRADE167.json",
+      "sha256": "9e0490c8c2bc3f314303d917acd4d4e80da57087a95ce227e65d093f247a3aa7",
+      "status": "FORWARD_QA_UPGRADE",
+      "scope": null
+    },
+    {
+      "file": "FINAL_REVIEW_REPRESENTATIVE_UPGRADE168.json",
+      "sha256": "ebfe17c84c2322c16a99ada85f49ad7bdc35673ed4080af9bb77ba4a9bfbe993",
+      "status": "FORWARD_QA_UPGRADE",
+      "scope": null
+    },
+    {
+      "file": "FINAL_REVIEW_REPRESENTATIVE_UPGRADE169.json",
+      "sha256": "09db5182eb6df3595d92d4e670b49c2c1b010a8f197f37e8df95365a5b4bf6bc",
+      "status": "FORWARD_QA_UPGRADE",
+      "scope": null
+    },
+    {
+      "file": "FINAL_REVIEW_EFFECTIVE169.json",
+      "sha256": "e809767083aae82de0b33e8044ba5be51b9291cb205d39bb08cd9e5f858e0155",
+      "schema": 169
+    },
+    {
+      "file": "FINAL_REVIEW_STORAGE_UNIT169.log",
+      "sha256": "ef6adcd0255f00250f5d6d38dfcd3bf8709f3934e8fe8875fe09efe55ef7d426",
+      "originalSha256": "4e6ea06ca1167321b57acb354cdb44e46959ea45c3c0c7f307a7a42ab7396166"
+    },
+    {
+      "file": "FINAL_REVIEW_AFFECTED_UNIT.log",
+      "sha256": "57f1aaed6f019b24de8634b553372c21fe530810345af90c68cd92521348d43e",
+      "originalSha256": "daabd6c956e4ccd37bac99cf6dc1344e05f94c790d8fe46521db7a2eb3a11085"
+    },
+    {
+      "file": "FINAL_REVIEW_TYPECHECK169_FINAL.log",
+      "sha256": "99d7c2179cdd316467c51f37901025a0753453664d741214ba56fc631fa6c0bc",
+      "originalSha256": "99d7c2179cdd316467c51f37901025a0753453664d741214ba56fc631fa6c0bc"
+    },
+    {
+      "file": "FINAL_REVIEW_LAST_LINT.log",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
   ],
   "limits": [
@@ -687,6 +910,10 @@
     "Real legal invoice emission blocked: provider/API/sandbox not supplied.",
     "Native application archive restore does not verify Managed Auth/Storage/PITR.",
     "T01–T42 have scoped results and outstanding cases explicitly listed in TEST_MATRIX.md.",
-    "CI must be checked for the final PR head, not inferred from this implementation commit."
-  ]
+    "CI must be checked for the final PR head, not inferred from this implementation commit.",
+    "Legacy READY/VERIFIED evidence requires actual-byte re-verification and server attestation before source use; no backfill truth.",
+    "Storage real upload/read/RLS/recovery remains blocked by absent backend and private server credential; native/unit proof only fail-closed behavior."
+  ],
+  "finalReviewImplementationCommit": "e7f7bb69020c9e7b8a1b3cea3821f5edfd2d7f5f",
+  "finalReviewSchema": 169
 }

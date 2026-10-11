@@ -79,3 +79,13 @@ MainQA không bị reset; checkout gốc giữ nguyên. Backup được giữ ri
 Trước nâng cấp môi trường thật: kiểm backup/dung lượng và nguồn cargo, legacycredit, paidreview; đóng lưu lượng ghi; áp dụng theo thứ tự toàn bộ migration87–164 sau nền PR41/schema86; kiểm RPC và readers cuối. Không backfill tiền, kho, activation hoặc giá chứng từ.
 
 Nếu chưa có facts mới, dùng bản ứng dụng tương thích schema hoặc khôi phục archive đã xác minh trên bản sao. Nếu đã có facts mới, giữ journal/sourceIDs và đối chiếu phần phát sinh; dùng forwardfix hoặc kế hoạch restore bảo toàn dữ liệu. Không DROP/downmigration để xóa ledger mới. Chưa diễn tập failover Production; task này không nâng cấp hay triển khai Production.
+
+## Rà soát cuối /165–169
+
+165 cost trả vật lý tính theo chênh lệch giá trị lũy kế nguồn; không rewrite movement/DCE cũ.166 bắt buộc reason trước effect, cache thànhcông vẫn trả trước guardmới.167–169 phải đi cùng binary mới: client không tựfinalizePENDING; máy chủ upload/readback actualbyte+magic+size+SHA và gọi service-onlyRPC vớiactor từsession; privateattestation immutablerecord chothao tác đãđốichiếu. READY khôngwrite qua publicStorage; internalpolicies dùngbranch/meta chínhxác. Không tựbackfill assetlegacy thànhtruth.
+
+Mỗiforward đã cóbackup riêng600, hash/count toàncột public cũ giữ nguyên. Chỉ áp dụng165–169 cònthiếu trên bản sao136→164; nguồn cũ tiếpnhận1000đ/1receipt/1AP/1movement vàseparate retry đạt. Fresh từ0→165đãđạt, chỉáp dụng166–169 cònthiếu đến169; khôngmigrate lại từđầu. NoNativeStorage.objects fake.
+
+Trước mởtraffic: cấu hình private SUPABASE_SECRET_KEY trênserver vàbackendStorage thực/buckets/policies, xác minh quyềnservice-role, chạy T39-S1..S5. Kiểm assetlegacy actualdownload/hash vàthêmattestationquađườngtrustedserver cóquyền; mismatch/mấtfile không sửaSHA haygiảVerified, tạo hồsơ/nguồn minhchứng đúng cótruyvết. Source bắtbuộcminhchứng bịgiữ lại nếu assetkhôngđủ; nguồn optionalnull không thànhgate đầu kỳ. Chưa cóStorage đểdiễntậptrongtasknày, vìvậy đây làblockerphát hànhluồngfile.
+
+Rollbackbinary trước167 không được dùng đểfinalize/tiếpnhậnminhchứngsau169; phối hợpbackup/binary/migrationvàđóngwrite. Sauposts mới khôngDROP ledger/attestation đểrollback; giữsourceIDs vàđốichiếu, forwardfix hoặcrestorebản sao đãkiểm vàbảo toànphát sinh. NativeDBarchive khôngManagedAuth/Storage/PITR; phảidiễntậprecovery riêngtrênQA tươngứngtrướcProduction.

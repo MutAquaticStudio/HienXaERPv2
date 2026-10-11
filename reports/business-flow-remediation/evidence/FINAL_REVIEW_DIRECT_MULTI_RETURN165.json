@@ -1,0 +1,34 @@
+{
+  "scope": "G03_CUSTOMER_PHYSICAL_RETURN_CUMULATIVE_SOURCE_VALUE",
+  "phase": "after",
+  "status": "PASS",
+  "facts": {
+    "mode": "DIRECT",
+    "sources": [
+      {
+        "id": "4dfbbd7c-965d-4471-84fd-c932dfe58898",
+        "value": null,
+        "unit": null
+      },
+      {
+        "id": "10f0b47e-610d-4966-8eee-1a5c4e8065ed",
+        "value": null,
+        "unit": null
+      },
+      {
+        "id": "e9150d3e-2329-4c95-be22-19d7b489656c",
+        "value": null,
+        "unit": null
+      }
+    ],
+    "returned": {
+      "quantity": "45.000000",
+      "value": "6750000"
+    },
+    "remainingCost": "0",
+    "independentExpectedValue": "6750000",
+    "cases": 3
+  },
+  "rolledBack": true,
+  "productionAccess": "NONE"
+}
