@@ -1,0 +1,44 @@
+import Link from "next/link";
+import { randomUUID } from "node:crypto";
+import { notFound } from "next/navigation";
+import Decimal from "decimal.js";
+import { requireInternalAccess } from "@/lib/access/context";
+import { createServerSupabase } from "@/lib/supabase/server";
+import { formatVnd, vnd } from "@/lib/core/money";
+import { formatBusinessDateTime } from "@/lib/core/business-time";
+import { SupplierReturnEventForm, SupplierCreditApprovalForm, SupplierCreditSettlementForm } from "@/modules/purchasing/supplier-return-forms";
+
+const Exact = Decimal.clone({ precision: 50 });
+const labels: Record<string, string> = { PHYSICAL_RETURN: "Thực trả nhà cung cấp", SUPPLIER_ACCEPTANCE: "Nhà cung cấp chấp nhận", CLOSE_DISPATCH: "Đóng phần chưa trả" };
+function localNow() { return new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date()).replace(" ", "T"); }
+export default async function SupplierReturnDetail({ params }: { params: Promise<{ id: string }> }) {
+ const access = await requireInternalAccess(), { id } = await params; if (!/^[0-9a-f-]{36}$/i.test(id) || !["purchasing.read", "inventory.read", "finance.ap.read"].some(p => access.permissions.has(p))) notFound();
+ const db = await createServerSupabase(), canFinanceRead = access.permissions.has("finance.ap.read");
+ const [source, history, creditRows] = await Promise.all([
+  db.from("supplier_return_read").select("*").eq("id", id).eq("branch_id", access.branchId).maybeSingle(),
+  db.from("supplier_return_event_read").select("id, event_kind, base_quantity, source_value_vnd, supplier_reference, reason, recorded_by, recorded_at").eq("case_id", id).eq("branch_id", access.branchId).order("recorded_at").order("id"),
+  canFinanceRead ? db.from("supplier_return_credit_read").select("id, acceptance_event_id, approved_credit_vnd, amount_vnd, remaining_vnd, refunded_vnd, offset_vnd, retained_charge_vnd, inventory_valuation_difference_vnd, approved_at, reason").eq("case_id", id).eq("branch_id", access.branchId).order("approved_at") : Promise.resolve({ data: [], error: null }),
+ ]);
+ if (source.error || history.error || creditRows.error) throw new Error("Không thể tải nguồn trả nhà cung cấp."); if (!source.data) notFound();
+ const c = source.data, events = history.data ?? [], credits = creditRows.data ?? [];
+ const accepts = events.filter(e => e.event_kind === "SUPPLIER_ACCEPTANCE"), approvedIds = new Set(credits.map(e => e.acceptance_event_id));
+ const canPay = access.permissions.has("finance.payment.post"), canApprove = access.permissions.has("finance.ap.adjust");
+ const [accounts, payables] = await Promise.all([
+  canPay ? db.from("finance_accounts").select("id, code, name").eq("branch_id", access.branchId).eq("active", true).order("code").limit(100) : Promise.resolve({ data: [], error: null }),
+  canPay ? db.from("payable_read").select("id, source_label, outstanding_amount_vnd").eq("branch_id", access.branchId).eq("supplier_id", c.supplier_id).gt("outstanding_amount_vnd", 0).order("due_date").limit(100) : Promise.resolve({ data: [], error: null }),
+ ]);
+ if (accounts.error || payables.error) throw new Error("Không thể tải nguồn hoàn hoặc bù trừ nhà cung cấp.");
+ const accountOptions = (accounts.data ?? []).map(a => ({ id: a.id, label: `${a.code} · ${a.name}` }));
+ const payableOptions = (payables.data ?? []).map(p => ({ id: p.id, label: `${p.source_label} · còn ${formatVnd(vnd(String(p.outstanding_amount_vnd)))}` }));
+ const scope = `${access.authUserId}:${access.branchId}:supplier-return:${id}`;
+ return <><header className="page-heading"><div><p className="eyebrow">Trả nhà cung cấp theo nguồn</p><h1>{c.return_number}</h1><p className="lede">{c.supplier_name} · {c.material_name} · {c.warehouse_id ? "Thực trả từ kho đã nhận" : "Trả thẳng nhà cung cấp; không nhập kho nội bộ"}</p></div><Link className="button button-secondary" href="/admin/purchases/returns">Hồ sơ trả nhà cung cấp</Link></header>
+  <section className="card card-pad"><h2>Lượng và nguồn</h2><p>Dự kiến {c.requested_base_quantity}; đã thực trả {c.physically_returned_base_quantity}; nhà cung cấp chấp nhận {c.supplier_accepted_base_quantity}.</p><p>{c.reason}</p><p>Nhà cung cấp đang giữ chờ chấp nhận {c.vendor_pending_base_quantity} đơn vị cơ sở.</p>{c.vendor_pending_value_vnd !== null && <p>Giá trị đang giữ chờ chấp nhận: {formatVnd(vnd(c.vendor_pending_value_vnd))}.</p>}{c.dispatch_closed && <p>Đã đóng phần chưa thực trả; kế hoạch gốc được giữ.</p>}<p className="muted">Nguồn {c.source_receipt_line_id || c.source_fulfillment_line_id}{c.source_return_case_id && ` · hồ sơ trên xe ${c.source_return_case_id}`}. Chấp nhận lượng chưa giảm phải trả; quyết định tài chính theo từng chấp nhận ghi riêng.</p></section>
+  <div className="two-column">{access.permissions.has("inventory.reserve") && <details className="card card-pad"><summary>Xác nhận lượng thực trả</summary><SupplierReturnEventForm caseId={id} kind="PHYSICAL_RETURN" version={c.version} operationId={randomUUID()} scope={`${scope}:physical`} canRecord={!c.dispatch_closed && new Exact(c.physically_returned_base_quantity).lt(c.requested_base_quantity)} /></details>}
+   {access.permissions.has("purchasing.confirm") && <details className="card card-pad"><summary>Ghi nhà cung cấp chấp nhận</summary><SupplierReturnEventForm caseId={id} kind="SUPPLIER_ACCEPTANCE" version={c.version} operationId={randomUUID()} scope={`${scope}:acceptance`} canRecord={new Exact(c.supplier_accepted_base_quantity).lt(c.physically_returned_base_quantity)} /></details>}
+   {access.permissions.has("purchasing.cancel") && <details className="card card-pad"><summary>Đóng phần chưa trả</summary><SupplierReturnEventForm caseId={id} kind="CLOSE_DISPATCH" version={c.version} operationId={randomUUID()} scope={`${scope}:close`} canRecord={!c.dispatch_closed} /></details>}
+  </div>
+  <section className="card"><div className="section-head"><h2>Thực trả và nhà cung cấp chấp nhận</h2></div><div className="table-wrap"><table><thead><tr><th>Thời điểm / người</th><th>Thao tác</th><th>Lượng</th><th>Chứng từ / lý do</th>{(access.permissions.has("purchasing.price.read") || canFinanceRead) && <th>Giới hạn nguồn</th>}</tr></thead><tbody>{events.map(e => <tr key={e.id}><td>{formatBusinessDateTime(e.recorded_at)}<small className="table-subline">{e.recorded_by}</small></td><td>{labels[e.event_kind]}</td><td>{e.base_quantity}</td><td>{e.supplier_reference || e.id}<small className="table-subline">{e.reason}</small></td>{(access.permissions.has("purchasing.price.read") || canFinanceRead) && <td>{e.source_value_vnd === null ? "Chưa xác minh" : formatVnd(vnd(e.source_value_vnd))}</td>}</tr>)}</tbody></table></div></section>
+  {canApprove && accepts.map(e => <details key={e.id} className="card card-pad"><summary>Quyết định giảm phải trả · {e.supplier_reference}</summary><SupplierCreditApprovalForm caseId={id} acceptanceId={e.id} version={c.version} amount={e.source_value_vnd || "0"} operationId={randomUUID()} scope={`${scope}:approve:${e.id}`} canRecord={!approvedIds.has(e.id)} />{approvedIds.has(e.id) && <p>Chấp nhận này đã có quyết định; đăng ký chứng từ không giảm nghĩa vụ lần nữa.</p>}</details>)}
+  {canFinanceRead && <section className="card card-pad"><h2>Giảm phải trả và tiền cần hoàn / bù trừ</h2>{!credits.length && <p>Chưa có quyết định giảm phải trả.</p>}{credits.map(credit => <div className={BigInt(credit.remaining_vnd) > 0n ? "exception-card" : "card card-pad"} key={credit.id}><strong>Giảm phải trả {formatVnd(vnd(credit.approved_credit_vnd))} · tiền chờ xử lý {formatVnd(vnd(credit.remaining_vnd))}</strong><p>Đã nhận hoàn {formatVnd(vnd(credit.refunded_vnd))}; bù trừ {formatVnd(vnd(credit.offset_vnd))}. {credit.reason}</p>{credit.inventory_valuation_difference_vnd !== null && BigInt(credit.inventory_valuation_difference_vnd) !== 0n && <p>Chênh vốn thực xuất so với chứng từ gốc: {formatVnd(vnd(credit.inventory_valuation_difference_vnd))}, giữ riêng với khoản nhà cung cấp giảm.</p>}{BigInt(credit.retained_charge_vnd) > 0n && <p>Khoản giữ lại so với giá trị nguồn: {formatVnd(vnd(credit.retained_charge_vnd))}, ghi chi phí theo quyết định này.</p>}{canPay && <div className="two-column">{(["REFUND", "OFFSET"] as const).map(kind => <details key={kind} className="card card-pad"><summary>{kind === "REFUND" ? "Ghi tiền nhà cung cấp đã hoàn" : "Bù trừ vào phải trả"}</summary><SupplierCreditSettlementForm caseId={id} creditId={credit.id} kind={kind} operationId={randomUUID()} scope={`${scope}:credit:${credit.id}:${kind}`} accounts={accountOptions} payables={payableOptions} now={localNow()} canRecord={BigInt(credit.remaining_vnd) > 0n} /></details>)}</div>}</div>)}</section>}
+ </>;
+}
