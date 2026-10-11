@@ -85,8 +85,8 @@ describe("Delivery work-item commands", () => {
       if (command === "publish") await publishDeliveryWorkItemAction(form());
       else await verifyDeliveryWorkItemAction(form({ workItemId, version: "3" }));
     } catch (error) { redirect = decodeURIComponent((error as Error).message); }
-    expect(redirect).toContain("?error=Chưa thể ghi sổ: chi nhánh chưa được kích hoạt.");
-    expect(redirect).toContain("Thiết lập hệ thống → Chuẩn bị vận hành");
+    expect(redirect).toContain("?error=Chưa thể ghi sổ: chưa xác minh được điều kiện vận hành");
+    expect(redirect).toContain("phiên bản hệ thống và phạm vi truy cập");
     expect(redirect).not.toMatch(/notice=|branch_not_operational|PT423/);
     expect(mocks.rpc).toHaveBeenCalledTimes(1);
   });

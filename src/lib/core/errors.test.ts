@@ -5,9 +5,9 @@ describe("user-facing errors", () => {
   it("explains the real posting block without exposing internal state or claiming success", () => {
     const text = operationalPostingError("branch_not_operational: ordinary posting requires ACTIVE");
     expect(text).toContain("Chưa thể ghi sổ");
-    expect(text).toContain("chưa được kích hoạt");
-    expect(text).toContain("Chủ doanh nghiệp");
-    expect(text).toContain("Thiết lập hệ thống → Chuẩn bị vận hành");
+    expect(text).toContain("chưa xác minh được điều kiện vận hành");
+    expect(text).toContain("Người quản trị");
+    expect(text).toContain("phiên bản hệ thống và phạm vi truy cập");
     expect(text).not.toMatch(/branch_not_operational|ACTIVE|PT423/);
     expect(userFacingError("branch_not_operational: ordinary posting requires ACTIVE")).toBe(text);
   });
@@ -19,11 +19,11 @@ describe("user-facing errors", () => {
     const refusal = "branch_not_operational: ordinary posting requires ACTIVE";
     const text = operationalPostingError(refusal, context);
     expect(text).toContain(`Chưa thể xác nhận ${label}`);
-    expect(text).toContain("chi nhánh chưa được kích hoạt vận hành");
-    expect(text).toContain("Thiết lập hệ thống → Chuẩn bị vận hành");
+    expect(text).toContain("chưa xác minh được điều kiện vận hành");
+    expect(text).toContain("phiên bản hệ thống và phạm vi truy cập");
     expect(text).not.toMatch(/ghi sổ|branch_not_operational|ACTIVE|PT423/);
     expect(operationalPostingError("credit_limit_exceeded", context)).toBeNull();
-    expect(operationalPostingError(refusal)).toBe("Chưa thể ghi sổ: chi nhánh chưa được kích hoạt. Chủ doanh nghiệp cần xem bước còn thiếu tại Thiết lập hệ thống → Chuẩn bị vận hành.");
+    expect(operationalPostingError(refusal)).toBe("Chưa thể ghi sổ: chưa xác minh được điều kiện vận hành của chi nhánh. Người quản trị cần kiểm tra phiên bản hệ thống và phạm vi truy cập.");
   });
 
   it.each([undefined, null, "", "PT423", "forbidden", "PENDING_OPENING", "Something went wrong", "relation sales_order_lines does not exist"])("hides unmapped internal errors: %s", (value) => {

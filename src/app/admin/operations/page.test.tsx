@@ -13,7 +13,7 @@ beforeEach(() => {
   const access = { branchId: "branch", branchName: "Hiền Xa", permissions: new Set(["roles.manage"]) };
   mocks.access.mockResolvedValue(access);
   mocks.permission.mockResolvedValue(access);
-  mocks.state.mockResolvedValue({ state: "PENDING_OPENING", version: 0, canActivate: false, reconciliationId: null });
+  mocks.state.mockResolvedValue({ state: "PENDING_OPENING", version: 0, canActivate: false, reconciliationId: null, postingAllowed: true, historicalQuality: "UNRECONCILED", recordedOperationsSince: null });
 });
 afterEach(cleanup);
 
@@ -21,10 +21,10 @@ it("shows setup status only to the authorized administrator who opens this page"
   render(await OperationsPage({ searchParams: Promise.resolve({}) }));
   expect(mocks.permission).toHaveBeenCalledWith("roles.manage");
   expect(mocks.state).toHaveBeenCalledWith("branch");
-  expect(screen.getByRole("heading", { name: "Chuẩn bị vận hành" })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "Phạm vi dữ liệu" })).toBeInTheDocument();
   expect(screen.queryByText("PENDING_OPENING")).not.toBeInTheDocument();
   expect(screen.queryByText("NOT_VERIFIED")).not.toBeInTheDocument();
-  expect(screen.getByText(/nhập và đối chiếu số dư đầu kỳ/i)).toBeInTheDocument();
+  expect(screen.getByText(/Có thể thực hiện giao dịch mới hợp lệ/i)).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "Kích hoạt vận hành" })).not.toBeInTheDocument();
   expect(mocks.activate).not.toHaveBeenCalled();
 });
@@ -57,12 +57,12 @@ it("keeps activation absent for unknown status and actors not authorized by the 
   }
 });
 
-it("retains the exact version-bound confirmation only when the database authorizes activation", async () => {
-  mocks.state.mockResolvedValue({ state: "READY_FOR_ACTIVATION", version: 2, canActivate: true, reconciliationId: "readback" });
+it("does not ask for manual activation even when a legacy response advertises it", async () => {
+  mocks.state.mockResolvedValue({ state: "READY_FOR_ACTIVATION", version: 2, canActivate: true, reconciliationId: "readback", postingAllowed: true, historicalQuality: "UNRECONCILED", recordedOperationsSince: null });
   render(await OperationsPage({ searchParams: Promise.resolve({}) }));
-  expect(screen.getByRole("button", { name: "Kích hoạt vận hành" })).toBeInTheDocument();
-  expect(screen.getByText("ACTIVATE:branch:2")).toBeInTheDocument();
-  expect(screen.getByRole("checkbox")).toBeRequired();
-  expect(screen.getByLabelText("Xác nhận kích hoạt")).toBeRequired();
+  expect(screen.queryByRole("button", { name: "Kích hoạt vận hành" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+  expect(screen.getByText(/Có thể thực hiện giao dịch mới hợp lệ/i)).toBeInTheDocument();
+  expect(screen.getByText(/Thiếu lịch sử không có nghĩa số dư trước đây bằng 0/i)).toBeInTheDocument();
   expect(mocks.activate).not.toHaveBeenCalled();
 });

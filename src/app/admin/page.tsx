@@ -6,11 +6,12 @@ import { requireInternalPermission } from "@/lib/access/context";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { dashboardSnapshotCutoff } from "@/modules/reports/dashboard-snapshot-cutoff";
+import { recordingScopeText } from "@/modules/operations/state";
 
 type Quality = "READY" | "INCOMPLETE" | "NOT_APPLICABLE" | "FORBIDDEN" | "UNAVAILABLE";
 type Metric = { value_vnd?: string | number | null; value?: string | number | null; quality: Quality };
 type Snapshot = {
-  scope: { from: string; to: string; as_of: string; branch_id: string };
+  scope: { from: string; to: string; as_of: string; branch_id: string; historical_quality?: string };
   revenue: Metric; direct_cost: Metric; gross_profit: Metric; operating_expense: Metric;
   operating_profit: Metric; operating_margin_bps: Metric; receivable: Metric; payable: Metric;
   salary_payable: Metric; commission_payable: Metric;
@@ -142,6 +143,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
     <Suspense fallback={null}><LowStockAlert access={access} /></Suspense>
     <Suspense fallback={<section className="card card-pad"><p className="muted">Đang tải bộ lọc...</p></section>}><DashboardFilters access={access} query={query} from={from} to={to} /></Suspense>
     <p className="report-cutoff">Kỳ {formatBusinessDate(instant(from))} đến trước {formatBusinessDate(instant(to))} · số dư tính đến {formatBusinessDateTime(effectiveCutoff)}</p>
+    <p className="quality-callout" data-recording-scope="RECORDED_TRANSACTIONS">{recordingScopeText(snapshot.scope.historical_quality)}</p>
     <section className="metric-grid finance-metrics" data-uat-dashboard-kpi={snapshotResult.error || !snapshotResult.data ? "error" : "ready"}><Kpi label="Doanh thu" metric={snapshot.revenue} /><Kpi label="Lợi nhuận gộp quản trị" metric={snapshot.gross_profit} /><Kpi label="Chi phí vận hành" metric={snapshot.operating_expense} /><Kpi label="Lợi nhuận hoạt động" metric={snapshot.operating_profit} /><Kpi label="Biên lợi nhuận" metric={snapshot.operating_margin_bps}>{snapshot.operating_margin_bps.quality === "READY" && snapshot.operating_margin_bps.value != null ? `${(Number(snapshot.operating_margin_bps.value) / 100).toLocaleString("vi-VN")}%` : "—"}</Kpi></section>
     <section className="card card-pad result-chart"><div className="section-head flush"><h2>Biểu đồ kết quả kinh doanh</h2><span className="scope-chip">Cùng kỳ và phạm vi</span></div>{profitBars.map((item) => { const value = BigInt(String(item.metric.value_vnd)); const absolute = value < 0n ? -value : value; const width = Number((absolute * 100n) / maxBar); return <div className="bar-row" key={item.label}><span>{item.label}</span><div className="bar-track" aria-hidden="true"><i style={{ "--bar-width": `${Math.max(width, 2)}%` } as CSSProperties} /></div><strong>{moneyMetric(item.metric)}</strong></div>; })}{!profitBars.length && <p className="empty-inline">Chưa có chỉ số đủ điều kiện hiển thị biểu đồ. Xem thông báo tại từng chỉ số.</p>}</section>
     <Suspense fallback={<section className="card card-pad"><p className="muted">Đang tải phân tích và công nợ chi tiết...</p></section>}><DashboardSecondary access={access} query={query} to={to} dashboardArgs={dashboardArgs} snapshot={snapshot} /></Suspense>

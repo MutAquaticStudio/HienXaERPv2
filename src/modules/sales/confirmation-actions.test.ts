@@ -50,8 +50,8 @@ describe.each(cases)("confirmation feedback for $label", (flow) => {
     mocks.rpc.mockResolvedValue({ data: null, error: { code: "PT423", message: "branch_not_operational: ordinary posting requires ACTIVE" } });
     const url = await destination(flow.action); const message = url.searchParams.get("error");
     expect(message).toContain(`Chưa thể xác nhận ${flow.label}`);
-    expect(message).toContain("chi nhánh chưa được kích hoạt vận hành");
-    expect(message).toContain("Thiết lập hệ thống → Chuẩn bị vận hành");
+    expect(message).toContain("chưa xác minh được điều kiện vận hành");
+    expect(message).toContain("phiên bản hệ thống và phạm vi truy cập");
     expect(message).not.toMatch(/ghi sổ|branch_not_operational|ACTIVE|PT423/);
     expect(url.pathname).toBe(flow.detail); expect(url.searchParams.has("notice")).toBe(false);
     expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith(flow.rpc, flow.args);

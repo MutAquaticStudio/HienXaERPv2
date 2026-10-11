@@ -21,9 +21,9 @@ export function quantityInputError(message: unknown): string | null {
 export function operationalPostingError(message: unknown,
   context: "posting" | "sales-order-confirmation" | "purchase-order-confirmation" = "posting"): string | null {
   if (typeof message !== "string" || !/\bbranch_not_operational\b/.test(message)) return null;
-  if (context === "posting") return "Chưa thể ghi sổ: chi nhánh chưa được kích hoạt. Chủ doanh nghiệp cần xem bước còn thiếu tại Thiết lập hệ thống → Chuẩn bị vận hành.";
+  if (context === "posting") return "Chưa thể ghi sổ: chưa xác minh được điều kiện vận hành của chi nhánh. Người quản trị cần kiểm tra phiên bản hệ thống và phạm vi truy cập.";
   const document = context === "sales-order-confirmation" ? "đơn bán" : "đơn mua";
-  return `Chưa thể xác nhận ${document}: chi nhánh chưa được kích hoạt vận hành. Chủ doanh nghiệp cần xem bước còn thiếu tại Thiết lập hệ thống → Chuẩn bị vận hành.`;
+  return `Chưa thể xác nhận ${document}: chưa xác minh được điều kiện vận hành của chi nhánh. Người quản trị cần kiểm tra phiên bản hệ thống và phạm vi truy cập.`;
 }
 
 /** Keep clear Vietnamese validation details, without displaying unmapped backend errors. */

@@ -71,9 +71,11 @@ export async function stockFixture(tx, qa, quantity = "45", options = {}) {
   const receivedAt = new Date(Date.parse(clock.now) - 1000).toISOString();
   const po = await rpc(tx, "create_purchase_order_draft", [f.branch, f.supplier, f.warehouse, null, "QA độc lập",
     [{ ...common, unit_cost_vnd: "150000", purchase_price_rule_id: cost, purchase_price_rule_version: 1, price_source_type: "CONTRACT" }], randomUUID()]);
-  await rpc(tx, "confirm_purchase_order", [po, randomUUID()]);
-  const [purchaseLine] = await tx`select id from public.purchase_order_lines where purchase_order_id=${po}`;
-  await rpc(tx, "receive_purchase_order", [po, [{ purchase_order_line_id: purchaseLine.id, received_quantity: quantity }], null, receivedAt, randomUUID()]);
+  if (!options.prepareOnly) {
+    await rpc(tx, "confirm_purchase_order", [po, randomUUID()]);
+    const [purchaseLine] = await tx`select id from public.purchase_order_lines where purchase_order_id=${po}`;
+    await rpc(tx, "receive_purchase_order", [po, [{ purchase_order_line_id: purchaseLine.id, received_quantity: quantity }], null, receivedAt, randomUUID()]);
+  }
   return { prefix, uom, material, price, cost, po, common, cutoff: clock.now, customer, site, unitPriceVnd: options.unitPriceVnd ?? "230000" };
 }
 

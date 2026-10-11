@@ -59,7 +59,7 @@ describe("one-confirmation credit override server action", () => {
     try { await confirmSalesOrderCreditOverride(input()); }
     catch (error) { destination = error instanceof Error ? error.message : ""; }
     expect(decodeURIComponent(destination)).toContain("Chưa thể ghi sổ");
-    expect(decodeURIComponent(destination)).toContain("Chuẩn bị vận hành");
+    expect(decodeURIComponent(destination)).toContain("phiên bản hệ thống");
     expect(destination).not.toContain("branch_not_operational");
     expect(destination).not.toContain("success=");
     expect(mocks.revalidate).not.toHaveBeenCalled();
