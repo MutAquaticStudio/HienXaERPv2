@@ -17,3 +17,9 @@ Các87..89 phải triển khai như gói trước mở lưu lượng mới; khô
 Gói95–103 chỉ forward, old public columns/rows giữ nguyên per-apply manifests. Fresh103 từ0 PASS. File95–98 có sửa tiếp theo cho immutable assignment/zero load/read boundary; phải triển khai toàn gói trước mở lưu lượng. Không rewrite forward đã áp dụng QA.
 
 Existing vehicles giữ cap/UOM nhưng căn cứ xác minh mới NULL, không được tự gắn đã xác minh. Owner chủ động nhập căn cứ qua danh mục; cap/UOM không đổi được xác minh kể cả xe đang được phân. Người trên assignment cũ thiếu work.claim phải được rà: trước bắt đầu có thể reassign người đủ quyền; đã bắt đầu không đơn giản đổi, cần quyết định/bàn giao có căn cứ. Không tự đổi role, phiếu hoặc số dư lịch sử để thông qua. Nhiều warehouse trong một phiếu cũ phải review/tách trước xuất; không giả tất cả đã lấy cùng lúc.
+
+## G07 — forward104–109
+
+Toàn gói giữ nguyên dữ liệu/cột nghiệp vụ cũ theo mỗi apply manifest; không tự tính lại advance hoặc sửa lịch sử. Advance consumption mới chỉ phân loại allocation thực, không tạo cash event. Giữ compatibility canonical RPC, cho phép nhiều partial intents cùng nguồn/nợ. Read permission phân AR customer/AP supplier; private balance helpers không mở EXECUTE. Forward109 sửa caller EXECUTE của function trong view qua guarded public reader, không mở raw helper.
+
+Fresh109 từ0 PASS native PG17/Auth shim. Triển khai cùng gói trước mở chức năng mới vì các forward reader/permission correction phải có đủ. Backups pre-apply riêng tư600; không claim đã diễn tập restore109 hay Managed Auth/Storage recovery. Không Production apply.

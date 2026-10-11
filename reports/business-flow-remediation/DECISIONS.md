@@ -31,3 +31,7 @@ Mỗi default phải có code/UI/test/evidence. Pin commit/schema/environment. K
 Một delivery của một SO, một điểm lấy nội bộ; nhiều kho tách delivery trước khi bàn giao (G14 cho phép mô hình tách phiếu). Lượng chưa lấy giải phóng giữ chỗ và giữ phần nguồn chưa dùng, không đổi kế hoạch. Zero line ghi quan sát lượng0 với cost NULL, không stock movement; dòng không bán có cost0 khi xác minh, không giả thiếu giá vốn của dòng có doanh thu.
 
 Giữ default lịch4giờ từ mã cũ, hiện rõ/editable trước assign, lưu start/end cùng intent. Xe nội bộ cần cap/UOM/căn cứ nguồn/người-thời điểm xác minh; chưa đủ thì từ chối có hướng dẫn, không mặc định mật độ. Xác minh lại cùng cap khi đang có phân công được; đổi cap/UOM hoặc tắt xe đang bận bị chặn. Chỉ assignee có tài khoản active + work.claim tại chi nhánh được chọn; không thay quyền để làm test đạt.
+
+## G07 — tiền đã ghi nhận
+
+Phân bổ tiền đã có dùng cả phần ứng trước chưa dùng, không ghi thu/chi lại. Tiêu phần chưa phân loại trước, rồi ghi consumption advance theo allocation thực. Partial allocations cùng payment/obligation bằng intent khác hợp lệ trong giới hạn nguồn/nợ; retry cùng intent không tạo hiệu lực thêm. Đảo toàn phiếu tiền thực giữ hành vi có quyền/lý do và đảo classification để khôi phục debt đúng, không dùng cơ chế đó để hoàn một phần sales return ở G08. Dữ liệu finance không lưu plaintext trong localStorage; chỉ opaque intent UUID, bản payload ở private actor/branch draft.

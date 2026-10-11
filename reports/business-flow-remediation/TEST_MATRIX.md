@@ -64,3 +64,13 @@ T20/T23/T40: native6 scenarios, actual14/plan15, release residual, zero unloaded
 Package3 schema103 từ0 native/Auth shim PASS; upgrade95–103 giữ nguyên cột/dòng nghiệp vụ cũ. 7 files/67 affected unit tests, typecheck, targeted lint PASS. Package1 native5 và Package2 native3 regression PASS tại101; new102/103 eligibility/capacity không tác động các external-only cases đó. Full42 matrix, seven business scenarios, build/CI final vẫn NOT_RUN.
 
 Failure evidence được giữ: reader invoker mất dòng Warehouse đã sửa bằng forward100; screenshot caret style injection và lịch fixture trùng được phân loại harness, chạy fresh unique schedules + caret initial đạt. Không bỏ qua console errors.
+
+## G07 — tiếp tục phần chưa hoàn tất ngày 2026-10-11
+
+Khi tiếp tục: head3f787b9, G07 uncommitted; Git và process đã đọc trước khi chạy. Không còn process test G07/Vitest/Playwright/typecheck đang chạy; PG/gateway/PostgREST/Next QA vẫn hoạt động. Dirty checkout gốc được giữ nguyên. Hai race đã exit0 trước ngắt, không chạy lại; kết nối observer mới đọc lại dữ liệu khớp cả hai evidence, mỗi nguồn chỉ một allocation, một consumption, một command receipt và một audit. Hai actor Finance/Owner có PID khác, pg_blocking_pids chứng minh chờ khóa; same-intent là cùng Finance UID hai phiên, không phải hai người. Race dùng native authenticated UID, actual JWT đã kiểm riêng qua HTTP/Browser.
+
+Đã chạy phần còn thiếu: fault AFTER INSERT advance_allocations rollback cả allocation/consumption/receipt/audit, giữ nguồn tiền1m và nợ1m; thử lại cùng intent600k đạt, còn nợ/ứng400k. Khác khách, duplicate obligation, cùng intent khác payload bị từ chối. Supplier advance150k phân bổ50k+100k vào một AP bằng hai intent, một cash event, AR-only Sales không thấy nguồn supplier/balance. Fixtures bổ sung rollback, hai persisted race không bị sửa. Harness lần đầu thiếu quote alias cashEvents, toàn TX rollback; sửa alias test, không sửa business SQL.
+
+G07 native core, real Finance Auth HTTP, actual Finance UI lost response/reload,4 screenshots1280/390 đã hoàn tất trước ngắt và không chạy lại. Đã xem ảnh committed recovery ở desktop/mobile. Strict classifier: chỉ ERR_FAILED sau intentional abort, unexpected0. Affected unit mới7files68tests exit0; lint script mới exit0. Typecheck/target lint frontend đã exit0 trước migration109, không có đổi TS sau đó nên không chạy lại. Fresh109 từ0 exit0, public tables thiếu RLS0; Auth shim, không Managed Auth/Storage restore.
+
+Evidence: PACKAGE4_G07_RESUME_VERIFICATION.json, PACKAGE4_G07_FRESH_SCHEMA109.json, PACKAGE4_G07_AFFECTED_UNIT.log; sử dụng giữ nguyên CONCURRENCY/SAME_INTENT_CONCURRENCY/AUTH_HTTP_FINAL/BROWSER. Full matrix/build/CI cuối và G08 integration chưa đạt, không suy rộng PASS.

@@ -7,7 +7,7 @@ import type { CommandOutcome } from "@/lib/core/command-outcome";
 
 type Props = {
   action: (form: FormData) => Promise<CommandOutcome>;
-  command: "post_payment" | "receive_purchase_order" | "verify_supplier_fulfillment";
+  command: "post_payment" | "receive_purchase_order" | "verify_supplier_fulfillment" | "allocate_payment";
   scope: string;
   operationId: string;
   children: ReactNode;

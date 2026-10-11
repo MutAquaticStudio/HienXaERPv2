@@ -271,3 +271,29 @@ export async function recordReceivableAdjustmentAction(formData: FormData) {
 export async function recordPayableAdjustmentAction(formData: FormData) {
   return adjustmentAction(formData, "AP");
 }
+
+export async function allocateExistingPaymentAction(form: FormData): Promise<CommandOutcome> {
+  const parsed = z.object({ paymentId: z.uuid(), direction: z.enum(["RECEIPT", "DISBURSEMENT"]), partyId: z.uuid(),
+    allocationsJson: z.string(), operationId: z.uuid() }).safeParse(Object.fromEntries(form));
+  if (!parsed.success) return { status: "FAILED", message: "Chọn phiếu tiền và các khoản công nợ hợp lệ." };
+  let raw: unknown;
+  try { raw = JSON.parse(parsed.data.allocationsJson); } catch { return { status: "FAILED", message: "Các khoản phân bổ chưa hợp lệ." }; }
+  const lines = z.array(z.object({ obligation_id: z.uuid(), amount_vnd: money })).min(1).max(50).safeParse(raw);
+  if (!lines.success) return { status: "FAILED", message: "Chọn từ 1 đến 50 khoản và nhập số tiền VND nguyên hợp lệ." };
+  const access = await requireInternalPermission("finance.payment.post");
+  const changed = await checkSavedCommandFieldsAction(form, "allocate_payment");
+  if (changed) return changed;
+  const supabase = await createServerSupabase();
+  const { data: source, error: sourceError } = await supabase.from("payments").select("branch_id, direction, customer_id, supplier_id")
+    .eq("id", parsed.data.paymentId).eq("branch_id", access.branchId).maybeSingle();
+  if (sourceError || !source || source.direction !== parsed.data.direction
+    || (parsed.data.direction === "RECEIPT" ? source.customer_id : source.supplier_id) !== parsed.data.partyId) {
+    return { status: "FAILED", message: "Phiếu được chọn không thuộc đối tác hoặc chi nhánh này." };
+  }
+  const { data, error } = await supabase.rpc("allocate_payment", { target_payment_id: parsed.data.paymentId,
+    allocation_lines: lines.data, operation_id: parsed.data.operationId });
+  if (error || !data) return { status: isAuthoritativeRejection(error?.code) ? "FAILED" : "UNKNOWN",
+    message: error && isAuthoritativeRejection(error.code) ? message(error.message) : "Chưa xác định được kết quả phân bổ. Giữ thao tác để tra cứu hoặc thử lại." };
+  for (const path of ["/admin/receivables", "/admin/payables", "/admin/cashbook", "/admin"]) revalidatePath(path);
+  return { status: "SUCCESS", resultId: String(data), message: "Đã phân bổ tiền đã có; không ghi thu/chi lần nữa." };
+}

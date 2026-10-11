@@ -5,7 +5,7 @@ import { requireInternalAccess } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import type { CommandOutcome } from "./command-outcome";
 
-const commandSchema = z.enum(["post_payment", "receive_purchase_order", "verify_supplier_fulfillment"]);
+const commandSchema = z.enum(["post_payment", "receive_purchase_order", "verify_supplier_fulfillment", "allocate_payment"]);
 
 export async function saveCommandDraftAction(operationId: string, command: string, entries: Array<[string, string]>): Promise<CommandOutcome> {
   const parsed = z.object({ operationId: z.uuid(), command: commandSchema, entries: z.array(z.tuple([z.string().max(100), z.string().max(20000)])).max(200) }).safeParse({ operationId, command, entries });
@@ -46,7 +46,7 @@ export async function checkSavedCommandFieldsAction(form: FormData, command: str
 }
 
 export async function lookupCommandOutcomeAction(operationId: string, command: string): Promise<CommandOutcome> {
-  const parsed = z.object({ operationId: z.uuid(), command: z.enum(["post_payment", "receive_purchase_order", "verify_supplier_fulfillment"]) }).safeParse({ operationId, command });
+  const parsed = z.object({ operationId: z.uuid(), command: z.enum(["post_payment", "receive_purchase_order", "verify_supplier_fulfillment", "allocate_payment"]) }).safeParse({ operationId, command });
   if (!parsed.success) return { status: "UNKNOWN", message: "Chưa thể tra cứu kết quả thao tác." };
   const access = await requireInternalAccess();
   const supabase = await createServerSupabase();
