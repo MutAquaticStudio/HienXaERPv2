@@ -6,9 +6,13 @@ import { getCommandDraftAction, lookupCommandOutcomeAction, saveCommandDraftActi
 import type { CommandOutcome } from "@/lib/core/command-outcome";
 import type { CreditCommand } from "@/modules/finance/credit-command";
 
+import type { DocumentCommand } from "@/modules/invoicing/document-commands";
+
+import type { NoticeCommand } from "@/modules/finance/notice-commands";
+
 type Props = {
   action: (form: FormData) => Promise<CommandOutcome>;
-  command: "post_payment" | "receive_purchase_order" | "verify_supplier_fulfillment" | "allocate_payment" | "resolve_commission_reconciliation" | "create_delivery_expense" | "approve_expense" | "create_warehouse_transfer" | "record_warehouse_transfer_event" | "create_supplier_return" | "record_supplier_return_event" | "approve_supplier_return_credit" | "refund_supplier_credit" | "offset_supplier_credit" | CreditCommand;
+  command: "post_payment" | "receive_purchase_order" | "verify_supplier_fulfillment" | "allocate_payment" | "resolve_commission_reconciliation" | "create_delivery_expense" | "approve_expense" | "create_warehouse_transfer" | "record_warehouse_transfer_event" | "create_supplier_return" | "record_supplier_return_event" | "approve_supplier_return_credit" | "refund_supplier_credit" | "offset_supplier_credit" | CreditCommand | DocumentCommand | NoticeCommand;
   scope: string;
   operationId: string;
   children: ReactNode;

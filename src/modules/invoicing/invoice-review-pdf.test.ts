@@ -73,7 +73,7 @@ describe("invoice review PDF", () => {
       source_obligation_id: "9536e917-f401-4b8b-9a94-63a4775e2ba0",
       source_type: "SERVICE_VERIFICATION",
       source_id: "80ee8222-f511-4e70-a266-ee5c6f1dfdd5",
-      source_amount_vnd: 100000,
+      source_amount_vnd: "100000",
       billing_verified_at: "2026-09-21T00:00:00.000Z",
       invoice_due_at: null,
       status: "DRAFT",
@@ -81,13 +81,13 @@ describe("invoice review PDF", () => {
       provider_state: "NOT_CONFIGURED",
       create_operation_id: "536a868d-0faa-4033-833a-95af80c94bb9",
     };
-    state.lines = [{ line_number: 1, source_line_id: state.invoice.source_id, description_snapshot: "Nguon dich vu QA", quantity_snapshot: 1, source_amount_vnd: 100000 }];
+    state.lines = [{ line_number: 1, source_line_id: state.invoice.source_id, description_snapshot: "Nguon dich vu QA", quantity_snapshot: "1.000000", source_amount_vnd: "100000" }];
 
     const response = await request(invoiceId);
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("application/pdf");
     expect(response.headers.get("content-disposition")).toContain(`invoice-review-${invoiceId}.pdf`);
-    expect(state.queriedTables).toEqual(["invoice_intents", "invoice_draft_lines"]);
+    expect(state.queriedTables).toEqual(["invoice_intent_read", "invoice_draft_line_read"]);
     const document = await PDFDocument.load(await response.arrayBuffer());
     expect(document.getPageCount()).toBe(1);
   });
