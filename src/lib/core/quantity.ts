@@ -12,6 +12,20 @@ export function isExactEntryQuantity(value: string, allowZero = false): boolean 
     && (allowZero ? !amount.isNegative() : amount.greaterThan(0));
 }
 
+/** Integer arithmetic preserves all six storage digits, including large rational factors. */
+export function isExactBaseQuantity(value: string, numerator: string, denominator: string): boolean {
+  if (![value, numerator, denominator].every((part) => isExactEntryQuantity(part))) return false;
+  const scaled = (part: string) => {
+    const [whole, fraction = ""] = part.trim().split(".");
+    return BigInt(whole) * 1000000n + BigInt(fraction.padEnd(6, "0"));
+  };
+  const product = scaled(value) * scaled(numerator);
+  const divisor = scaled(denominator);
+  if (product % divisor !== 0n) return false;
+  const base = product / divisor;
+  return base > 0n && base < 100000000000000000000n;
+}
+
 // Display the stored quantity exactly, without database scale padding or rounding.
 export function formatQuantity(value: string) {
   const [integer, fraction] = new Decimal(value).toFixed().split(".");

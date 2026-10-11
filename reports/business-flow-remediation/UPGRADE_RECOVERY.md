@@ -45,3 +45,6 @@ Schema119–121: each forward QAupgrade saved private600 nativebackup and old pu
 
 
 122–125: private recordingstart/table withRLS+noauthgrants; existing publicrows/columns unchangedoneachQAupgrade.122 removesordinaryACTIVErequirement,123 completesrequired audittrace,124 scopes historicalknowledge,125 fixesworkassignment branchauditlookup. Apply all forwardsbefore openingtraffic. Backupspre122–125 private600 retained; nativepre125 restore asnewhx_remediation_recovery124_g11 confirmed109publictables/count+hash andhistory124; originalQA/Productionnotoverwritten. Fresh125pass. Existingoperationalstates/version/activationIDs neverchanged bymigrations; legacyopeningcap stillrequired; nofakeopening0. Firstvalidnewsource recordsstart+auditatomic; failedfirstsource no persistentstart. NoManagedAuth/StoragePITRclaim.
+
+
+126–129: mỗi forward có private600 backup và chứng minh old publiccolumns/rows hash+count không đổi. Server price priority/snapshot helper126, purchase priority127, retail commandreceipt/recovery128, giữ namespace version hiện hữu129. Không replay/copy nền PR41. Fresh129 từ0/RLS0. Backuppre126..129 được giữ; khôi phục129 cuối còn chờ trước bàn giao toàn nhiệm vụ. Không Production/realInvoice/realMoney/realRights.
