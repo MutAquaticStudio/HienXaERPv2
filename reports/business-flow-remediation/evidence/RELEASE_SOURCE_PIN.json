@@ -1,0 +1,23 @@
+{
+  "scope": "RELEASE_BLOCKER_SOURCE_AND_LOCAL_VERIFICATION_PIN",
+  "sourceCommit": "ad364cb1b1f103d8086b92b03eb2ce9f8bf9376b",
+  "baseline": "9f099e5bb7a3cfe962bc70459cf9876321fbc7bd",
+  "canonicalSchema": 174,
+  "qaHistoryEntries": 175,
+  "excludedAdvanceRacesReexecuted": false,
+  "actualStorage": true,
+  "actualRealtime": true,
+  "physicalGps": false,
+  "legalInvoiceIssued": false,
+  "productionAccess": "NONE",
+  "localChecks": {
+    "typecheck": "PASS",
+    "lintErrors": 0,
+    "lintWarningsBaseline": 13,
+    "build": "PASS",
+    "affectedUnitFiles": 7,
+    "affectedUnitTests": 32,
+    "nodeReverificationTests": 8
+  },
+  "ci": "Must verify on final PR head; 9f099e5 CI is baseline only"
+}

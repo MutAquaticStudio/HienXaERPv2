@@ -1,6 +1,6 @@
 # PR42 — đóng điều kiện chặn phát hành
 
-Tiếp nối head bàn giao `9f099e5`. Chỉ xử lý Storage, minh chứng cũ, Realtime và các phụ thuộc phát hành; không triển khai lại G01–G23. Không merge, không dùng Production để thử, không phát hành hóa đơn thật hoặc thay đổi dữ liệu doanh nghiệp thật.
+Source cuối: `ad364cb1b1f103d8086b92b03eb2ce9f8bf9376b`; [RELEASE_SOURCE_PIN](evidence/RELEASE_SOURCE_PIN.json) gắn hash mã và kiểm tra cục bộ. Tiếp nối head bàn giao `9f099e5`. Chỉ xử lý Storage, minh chứng cũ, Realtime và các phụ thuộc phát hành; không triển khai lại G01–G23. Không merge, không dùng Production để thử, không phát hành hóa đơn thật hoặc thay đổi dữ liệu doanh nghiệp thật.
 
 ## Kết quả kiểm chứng
 
@@ -54,3 +54,5 @@ Những ca mở rộng T04/T05/T06/T12/T19/T21/T25/T30/T36/T37/T40/T41 ở FINAL
 **Triển khai:** cần phê duyệt riêng, môi trường đích và toàn bộ phụ thuộc của phạm vi đã chọn, backup/restore DB + byte Storage, khảo sát/xử lý legacy thật, bản ứng dụng/schema đồng bộ, private key chỉ tại server, smoke test đúng quyền và giám sát. GPS và hóa đơn pháp lý chưa đủ nghiệm thu. Không tự thu hẹp phạm vi; nếu muốn phát hành phần nhỏ hơn, người dùng phải quyết định rõ tính năng, phụ thuộc và tác động vận hành.
 
 Hai race ứng trước `package4-advance-race.mjs --mode different-intents` và `--mode same-intent` không chạy lại, kể cả CI. Giữ bằng chứng một phân bổ600.000đ/còn400.000đ/một phiếu tiền.
+
+Kiểm tra cục bộ cuối đạt: typecheck, lint0 lỗi/13 cảnh báo nền, build;7 tệp/32 ca bị ảnh hưởng và8 ca Node khảo sát. CI phải đối chiếu head PR cuối; không dùng CI9f099e5 thay phiên bản mới.

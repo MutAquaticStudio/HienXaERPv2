@@ -1131,6 +1131,12 @@
       "sha256": "4c932afa423cf8ffe47336cf2fc38c45b4153780249b335676500e41a235c264",
       "status": "VIEWED",
       "scope": "QA_BROWSER_SCREENSHOT"
+    },
+    {
+      "file": "RELEASE_SOURCE_PIN.json",
+      "sha256": "6e3c857001fc0c947051e7bdae0c2efdb60cff4df9e122b5d0a23195c42bbfb7",
+      "status": "PASS_LOCAL_CHECKS",
+      "scope": "RELEASE_BLOCKER_SOURCE_AND_LOCAL_VERIFICATION_PIN"
     }
   ],
   "limits": [
@@ -1150,7 +1156,7 @@
     "canonicalSchema": 174,
     "managedQaHistoryEntries": 175,
     "managedQaExtraHistory": "20261002114730",
-    "sourceCommit": "PINNED_IN_RELEASE_HEAD_ARTIFACT",
+    "sourceCommit": "ad364cb1b1f103d8086b92b03eb2ce9f8bf9376b",
     "realStorageTested": true,
     "realRealtimeTested": true,
     "physicalGpsDeviceTested": false,
@@ -1189,7 +1195,8 @@
       "STORAGE_REPRESENTATIVE_FORWARD173.json",
       "STORAGE_REPRESENTATIVE_FORWARD174.json",
       "messaging-reload171.png",
-      "realtime-browser-recovery-final.png"
+      "realtime-browser-recovery-final.png",
+      "RELEASE_SOURCE_PIN.json"
     ],
     "sourceFileSha256": {
       "src/components/messaging/messaging-controls.tsx": "33003b8c84c657fb1bb05de39deaaf56421573a88d2b7ae5bca6f3a1f4caec73",
