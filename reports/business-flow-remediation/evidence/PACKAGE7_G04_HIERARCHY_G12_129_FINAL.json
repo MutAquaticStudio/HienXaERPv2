@@ -1,0 +1,41 @@
+{
+  "scope": "T17_LITERAL230K_460K_G04_HIERARCHY_G12_PRICE_VERSIONS",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "productionAccess": "NONE",
+  "managedAuthTested": false,
+  "checks": [
+    {
+      "name": "CUSTOMER_MATERIAL_OVER_GROUP_OVER_TIER_OVER_DEFAULT_VERSION_WITHIN_SCOPE",
+      "status": "PASS",
+      "literal460": {
+        "price": "460000"
+      },
+      "groupOrder": "f4358ae7-84bf-4e3d-89b2-f1fbd707a3dd",
+      "validLowerTier": {
+        "price": "180000"
+      },
+      "oldSnapshot": {
+        "price": "460000"
+      }
+    },
+    {
+      "name": "PRICE_REPLACE_DEACTIVATE_NULL_STALE_DENIED_CACHED_RETRY_VALID",
+      "status": "PASS"
+    },
+    {
+      "name": "EXPIRED_HIGHER_RULE_IGNORED_DUPLICATE_SCOPE_VERSION_REJECTED_APPROVED_LOWER_OVERRIDE_VALID",
+      "status": "PASS"
+    },
+    {
+      "name": "EXISTING_GLOBAL_VERSION_UNIQUE_NAMESPACE_WITH_BRANCH_SCOPED_AUTHORIZATION",
+      "status": "PASS",
+      "branchFact": {
+        "branch_id": "7fa38d07-676a-4b22-a27d-ce9e64822222",
+        "version": 2
+      },
+      "cloudRolesChanged": false
+    }
+  ],
+  "status": "PASS_PRICE_HIERARCHY_AND_VERSION_CONTRACTS",
+  "rolledBack": true
+}

@@ -1,0 +1,25 @@
+{
+  "scope": "T27_LITERAL15_SHIP14_RECEIVE1_TRANSIT_AND_G01_BASIS_INVALIDATION",
+  "status": "PASS",
+  "facts": {
+    "read": {
+      "shipped_base_quantity": "15.000000",
+      "received_base_quantity": "14.000000",
+      "in_transit_base_quantity": "1.000000",
+      "in_transit_value_vnd": "150000",
+      "transfer_state": "IN_PROGRESS"
+    },
+    "sum": {
+      "qty": "15.000000",
+      "value": "2250000"
+    },
+    "failed": {
+      "receipts": 0,
+      "audits": 0
+    },
+    "countRemainsOpen": true
+  },
+  "rolledBack": true,
+  "managedAuthTested": false,
+  "productionAccess": "NONE"
+}

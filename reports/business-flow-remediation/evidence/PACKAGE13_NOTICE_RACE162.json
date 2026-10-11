@@ -1,0 +1,65 @@
+{
+  "scope": "G22_REAL_JWT_TWO_NOTICES_COMPETE_FOR_REMAINING_BANK_COVERAGE400K",
+  "productionAccess": "NONE",
+  "excludedAdvanceRacesReexecuted": false,
+  "documents": {
+    "stock": {
+      "prefix": "RM5896A2A5",
+      "uom": "024d9287-f1f3-4cfa-8e57-97c1068035a1",
+      "material": "f78b6b06-d85b-4682-9e07-853e02dc7e4e",
+      "price": "3cbc342e-1962-4c11-ae7f-b92bf818e6e5",
+      "cost": "bd98fd74-8786-4c2b-9706-b8035af53599",
+      "po": "8f294d81-8fb6-402f-9382-4a48e9d0b3f5",
+      "common": {
+        "material_id": "f78b6b06-d85b-4682-9e07-853e02dc7e4e",
+        "ordered_uom_id": "024d9287-f1f3-4cfa-8e57-97c1068035a1",
+        "quantity": "14",
+        "conversion_numerator": "1",
+        "conversion_denominator": "1",
+        "rounding_mode": "HALF_UP"
+      },
+      "cutoff": "2026-10-11 21:50:31.826632+07",
+      "customer": "ac96b2c5-01bb-45f3-954b-45ed3269e348",
+      "site": "911bdaa4-b975-4274-801a-b2fa8a2d6ee3",
+      "unitPriceVnd": "230000"
+    },
+    "sale": {
+      "so": "2b40e9d3-6f85-4214-bad5-3d6ed6f0d772",
+      "line": "49a06e72-8270-4432-96a0-69bdf7d0e5eb"
+    },
+    "account": "59804f22-fe4d-4cbc-b783-2f19a1f25c2d",
+    "payment": "717e25e5-6656-4a5a-9ec4-e90ddad2b0f6",
+    "obligation": "b5b736a1-d96a-4483-9980-0ddaba32a8a8",
+    "returnCase": "4d593459-a5b6-46ce-8b17-e0039968181f",
+    "verificationLine": "2cb1abf3-d6ed-4a11-8d71-ffdc93a67575",
+    "delivery": "e9a58554-3682-460e-9111-a6032d96f732",
+    "branch": "12cbc71f-c3a5-46cc-bc2b-7ebcd7fc00a2",
+    "customer": "ac96b2c5-01bb-45f3-954b-45ed3269e348",
+    "first": "5743ef19-7b31-4ecb-9adc-f4a421ba0d6a",
+    "second": "bfbe0341-c485-4830-913d-4796ed4c02b3",
+    "syntheticEvidenceMetadata": true,
+    "actualStorageTested": false,
+    "bank": "491f5f48-1465-4971-b570-81ba85331d26",
+    "match": "49d2314c-829c-4846-b6cc-422ed473967c"
+  },
+  "race": {
+    "actors": [
+      "0d1d2134-5a21-40a4-9fcb-375898d3c133",
+      "a89838c9-bb2d-4758-874c-b031f9655f49"
+    ],
+    "pidA": 92714,
+    "pidB": 92715,
+    "observedBlockingPids": [
+      92714
+    ],
+    "facts": {
+      "linked": "1000000",
+      "debt": "2220000",
+      "cash": 1,
+      "loser_receipts": 0,
+      "loser_audits": 0
+    }
+  },
+  "newMatch": "fd10be8f-25e1-4a4f-ad64-d8d824ec4515",
+  "status": "PASS"
+}

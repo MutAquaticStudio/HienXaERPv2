@@ -1,0 +1,230 @@
+{
+  "scope": "FINAL_SCHEMA164_REAL_JWT_READ_ONLY_G09_G16_G05",
+  "status": "PASS",
+  "schema": 164,
+  "checks": [
+    {
+      "name": "EXISTING_GROSS_1040000_PRESERVED_WITHOUT_RECREATING_SOURCE",
+      "status": "PASS",
+      "snapshot": {
+        "scope": {
+          "to": "2026-10-11T22:40:12.647939+07:00",
+          "from": "2000-01-01T00:00:00+07:00",
+          "as_of": "2026-10-11T22:40:12.647939+07:00",
+          "branch_id": "dd101b24-aa92-4fd0-a0e7-30a935c2724c",
+          "balance_scope": "RECORDED_TRANSACTIONS",
+          "historical_quality": "UNRECONCILED",
+          "business_total_verified": false,
+          "recorded_operations_since": "2026-10-10T23:34:07.728747+07:00"
+        },
+        "payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "revenue": {
+          "quality": "READY",
+          "value_vnd": "2990000"
+        },
+        "receivable": {
+          "quality": "READY",
+          "value_vnd": "0"
+        },
+        "direct_cost": {
+          "quality": "READY",
+          "value_vnd": "1950000"
+        },
+        "gross_profit": {
+          "quality": "READY",
+          "value_vnd": "1040000"
+        },
+        "salary_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_profit": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_expense": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "commission_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_margin_bps": {
+          "value": null,
+          "quality": "NOT_APPLICABLE"
+        }
+      }
+    },
+    {
+      "name": "EVERY_DIRECT_SOURCE_REQUIRED_AND_FEE_NOT_A_COMPLETENESS_SUBSTITUTE",
+      "status": "PASS",
+      "historical": {
+        "scope": {
+          "to": "2026-10-11T22:40:12.682986+07:00",
+          "from": "2000-01-01T00:00:00+07:00",
+          "as_of": "2026-10-11T17:09:32.946296+07:00",
+          "branch_id": "dd101b24-aa92-4fd0-a0e7-30a935c2724c",
+          "balance_scope": "RECORDED_TRANSACTIONS",
+          "historical_quality": "UNRECONCILED",
+          "business_total_verified": false,
+          "recorded_operations_since": "2026-10-10T23:34:07.728747+07:00"
+        },
+        "payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "revenue": {
+          "quality": "READY",
+          "value_vnd": "2300000"
+        },
+        "receivable": {
+          "quality": "READY",
+          "value_vnd": "2300000"
+        },
+        "direct_cost": {
+          "quality": "INCOMPLETE",
+          "value_vnd": null
+        },
+        "gross_profit": {
+          "quality": "INCOMPLETE",
+          "value_vnd": null
+        },
+        "salary_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_profit": {
+          "quality": "INCOMPLETE",
+          "value_vnd": null
+        },
+        "operating_expense": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "commission_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_margin_bps": {
+          "value": null,
+          "quality": "INCOMPLETE"
+        }
+      },
+      "current": {
+        "scope": {
+          "to": "2026-10-11T22:40:12.71107+07:00",
+          "from": "2000-01-01T00:00:00+07:00",
+          "as_of": "2026-10-11T22:40:12.71107+07:00",
+          "branch_id": "dd101b24-aa92-4fd0-a0e7-30a935c2724c",
+          "balance_scope": "RECORDED_TRANSACTIONS",
+          "historical_quality": "UNRECONCILED",
+          "business_total_verified": false,
+          "recorded_operations_since": "2026-10-10T23:34:07.728747+07:00"
+        },
+        "payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "revenue": {
+          "quality": "READY",
+          "value_vnd": "2300000"
+        },
+        "receivable": {
+          "quality": "READY",
+          "value_vnd": "2300000"
+        },
+        "direct_cost": {
+          "quality": "READY",
+          "value_vnd": "1520000"
+        },
+        "gross_profit": {
+          "quality": "READY",
+          "value_vnd": "780000"
+        },
+        "salary_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_profit": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_expense": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "commission_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_margin_bps": {
+          "value": null,
+          "quality": "NOT_APPLICABLE"
+        }
+      }
+    },
+    {
+      "name": "SALES_READER_STILL_DENIED_COST_AND_PROFIT",
+      "status": "PASS",
+      "denied": {
+        "scope": {
+          "to": "2026-10-11T22:40:12.740064+07:00",
+          "from": "2000-01-01T00:00:00+07:00",
+          "as_of": "2026-10-11T22:40:12.740064+07:00",
+          "branch_id": "dd101b24-aa92-4fd0-a0e7-30a935c2724c",
+          "balance_scope": "RECORDED_TRANSACTIONS",
+          "historical_quality": "UNRECONCILED",
+          "business_total_verified": false,
+          "recorded_operations_since": "2026-10-10T23:34:07.728747+07:00"
+        },
+        "payable": {
+          "quality": "FORBIDDEN",
+          "value_vnd": null
+        },
+        "revenue": {
+          "quality": "READY",
+          "value_vnd": "2300000"
+        },
+        "receivable": {
+          "quality": "READY",
+          "value_vnd": "2300000"
+        },
+        "direct_cost": {
+          "quality": "FORBIDDEN",
+          "value_vnd": null
+        },
+        "gross_profit": {
+          "quality": "FORBIDDEN",
+          "value_vnd": null
+        },
+        "salary_payable": {
+          "quality": "FORBIDDEN",
+          "value_vnd": null
+        },
+        "operating_profit": {
+          "quality": "FORBIDDEN",
+          "value_vnd": null
+        },
+        "operating_expense": {
+          "quality": "FORBIDDEN",
+          "value_vnd": null
+        },
+        "commission_payable": {
+          "quality": "FORBIDDEN",
+          "value_vnd": null
+        },
+        "operating_margin_bps": {
+          "value": null,
+          "quality": "FORBIDDEN"
+        }
+      }
+    }
+  ],
+  "newBusinessWrites": 0,
+  "tokensRecorded": false,
+  "productionAccess": "NONE"
+}

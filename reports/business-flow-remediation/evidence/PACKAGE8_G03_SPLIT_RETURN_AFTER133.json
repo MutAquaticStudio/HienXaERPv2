@@ -1,0 +1,37 @@
+{
+  "scope": "G02_ALL_QUANTITY_SEAMS_G03_SPLIT_RETURN_CUMULATIVE",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "productionAccess": "NONE",
+  "managedAuthTested": false,
+  "checks": [
+    {
+      "name": "COMPENSATION_INPUT_PRECISION_REJECTED",
+      "status": "PASS"
+    },
+    {
+      "name": "THREE_DELIVERIES_AND_EXACT_RETRIES",
+      "status": "PASS",
+      "amounts": [
+        "3450001",
+        "3450000",
+        "3449999"
+      ],
+      "total": "10350000"
+    },
+    {
+      "name": "SPLIT_RETURN_CUMULATIVE_EXACT_AND_RETRY_NO_DUPLICATE",
+      "status": "PASS",
+      "credits": [
+        "1725000",
+        "1725001"
+      ],
+      "facts": {
+        "adjustments": "-3450001",
+        "decisions": 2
+      }
+    }
+  ],
+  "excludedAdvanceRaces": true,
+  "status": "PASS_EXECUTED_DB_SCOPE",
+  "rolledBack": true
+}

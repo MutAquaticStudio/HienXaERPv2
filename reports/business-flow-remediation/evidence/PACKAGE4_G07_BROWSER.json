@@ -1,0 +1,42 @@
+{
+  "scope": "G07_BROWSER_PRIOR_ADVANCE_LOST_ALLOCATION_RESPONSE_RECOVERY",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "origin": "http://127.0.0.1:3110",
+  "browserPlugin": "ABSENT",
+  "fallbackReason": "Browser plugin and browser skill not available; installed Playwright used",
+  "checks": [
+    {
+      "name": "REAL_FINANCE_PRIOR_ADVANCE_COMMIT_ABORT_RELOAD_LOOKUP",
+      "status": "PASS",
+      "facts": {
+        "payments": 1,
+        "cash": "1000000",
+        "debt": "0",
+        "advance": "0",
+        "allocations": 1
+      },
+      "onlyOpaqueIntentStored": true
+    }
+  ],
+  "screenshots": [
+    "/Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation/browser/package4-advance/g07-prior-advance-selected-before-allocation.png",
+    "/Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation/browser/package4-advance/g07-allocation-committed-response-lost-unknown.png",
+    "/Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation/browser/package4-advance/g07-reloaded-lookup-committed-no-second-payment.png",
+    "/Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation/browser/package4-advance/g07-mobile-committed-recovery.png"
+  ],
+  "errors": [
+    {
+      "message": "Failed to load resource: net::ERR_FAILED",
+      "afterIntentionalAbort": true
+    }
+  ],
+  "productionAccess": "NONE",
+  "expectedTransportErrors": [
+    {
+      "message": "Failed to load resource: net::ERR_FAILED",
+      "afterIntentionalAbort": true
+    }
+  ],
+  "unexpectedConsoleErrors": 0,
+  "status": "PASS_EXECUTED_G07_BROWSER_LOST_RESPONSE"
+}

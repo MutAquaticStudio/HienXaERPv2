@@ -1,0 +1,42 @@
+{
+  "scope": "REAL_AUTHENTICATED_ASSIGNMENT_AND_ACTUAL_LOADING_HTTP",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "managedQaBusinessWrites": 0,
+  "tokensRecorded": false,
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "G06_G12_G13_ASSIGN_PERMISSION_VERSION_VALID_AND_RETRY",
+      "status": "PASS",
+      "forbidden": 403,
+      "nullVersion": 409,
+      "positive": 200,
+      "actor": "e04f1e5a-2a2d-4347-a506-1b6a35ea790f"
+    },
+    {
+      "name": "G02_G14_ACTUAL14_AUTHENTICATED_COMMIT_RETRY_SAFE_READ",
+      "status": "PASS",
+      "precisionRejected": 400,
+      "missingRejected": 400,
+      "independentNativeReadback": {
+        "execution_state": "DISPATCHED",
+        "planned": "15.000000",
+        "loaded": "14.000000",
+        "transit": "14.000000",
+        "audit": 1
+      },
+      "salesLoadedRead": {
+        "id": "b431431f-7dd5-4785-89fe-169c60255916",
+        "loaded_base_quantity": "14.000000"
+      },
+      "warehouseSourceRead": {
+        "id": "336196de-755f-4c28-a476-e5467d087e66",
+        "material_name_snapshot": "Cát kiểm thử khắc phục",
+        "planned_base_quantity": "15.000000",
+        "loaded_base_quantity": "14.000000"
+      },
+      "unauthorizedWorkerRows": 0
+    }
+  ],
+  "status": "PASS_EXECUTED_AUTHENTICATED_HTTP_SCOPE"
+}

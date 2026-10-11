@@ -1,0 +1,52 @@
+{
+  "scope": "G20_RESUME_ONLY_UNFINISHED_DOCUMENT_FAULT_PRECISION_AFTER_EXPECTED_ERROR_HARNESS",
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "MULTI_RECEIPT_MATCH_CANCEL_RETRY_PRICE_VARIANCE_SOURCE_COVERAGE_IMMUTABLE",
+      "status": "PASS",
+      "doc": {
+        "match_state": "MATCHED",
+        "business_state": "BUSINESS_APPROVED",
+        "legal_state": "EXTERNAL_DOCUMENT_UNVERIFIED",
+        "declared_value_vnd": "300000"
+      },
+      "immutable": {
+        "price": "200000.000000",
+        "match_result": "PRICE_VARIANCE",
+        "covered": false
+      }
+    },
+    {
+      "name": "CREDIT_NOTE_LINKS_EXISTING_CREDIT_WITH_ZERO_ADDITIONAL_AP_ADJUSTMENT_PAYMENT",
+      "status": "PASS",
+      "before": {
+        "ap": 93,
+        "adjustments": 8,
+        "payments": 43
+      },
+      "after": {
+        "ap": 93,
+        "adjustments": 8,
+        "payments": 43
+      }
+    },
+    {
+      "name": "SOURCE_LINE_FAULT_ATOMIC_PRECISION_RETRY",
+      "status": "PASS",
+      "fact": {
+        "fault": {
+          "headers": 0,
+          "receipts": 0,
+          "audits": 0
+        },
+        "retry": "ac001822-35fe-4192-863c-f58df50c5ef3",
+        "precisionRejected": true
+      }
+    }
+  ],
+  "previousEvidence": "/Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation/PACKAGE12_DOCUMENT_NATIVE156-failure.json",
+  "previousFailure": "Expected approved-document cancellation rejection was caught without a savepoint, poisoning only QA fixture transaction; harness now uses rejected/savepoint",
+  "rolledBack": true,
+  "productionAccess": "NONE"
+}

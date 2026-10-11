@@ -1,0 +1,114 @@
+{
+  "scope": "G08_REAL_AUTH_COMMITTED_CUSTOMER_CREDIT_CORE",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "tokensRecorded": false,
+  "managedQaBusinessWrites": 0,
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "REAL_FINANCE_REFUND_RETRY_ONE_EFFECT",
+      "status": "PASS",
+      "creditId": "580fa74d-e0da-46b7-a48c-62562e1d7b9f",
+      "facts": {
+        "originaldebt": "0",
+        "credit": "0",
+        "originalavailable": "0",
+        "cash": "2990000",
+        "payments": 2,
+        "receipts": 1,
+        "audits": 1
+      },
+      "deniedSalesStatus": 403,
+      "workerCreditRows": 0,
+      "excessStatus": 400,
+      "readerPid": 51962
+    },
+    {
+      "name": "REAL_FINANCE_OFFSET_RETRY_ONE_EFFECT",
+      "status": "PASS",
+      "creditId": "77b7f198-f060-4226-84c3-8b93786b4ef4",
+      "facts": {
+        "originaldebt": "0",
+        "credit": "0",
+        "originalavailable": "0",
+        "cash": "3220000",
+        "payments": 1,
+        "receipts": 1,
+        "audits": 1
+      },
+      "deniedSalesStatus": 403,
+      "workerCreditRows": 0,
+      "excessStatus": 400,
+      "readerPid": 51962
+    }
+  ],
+  "documents": {
+    "refund": {
+      "stock": {
+        "prefix": "RM9ADE4F21",
+        "uom": "09c5e806-fa1a-4c46-b4e2-f09bc8e91a03",
+        "material": "a81d5ff7-34a8-4dc8-a841-f03099f40848",
+        "price": "f8349757-0ba8-4ce2-b9da-b13f44949a63",
+        "cost": "73b3efa8-d566-41f7-bf17-7c044b2c6d83",
+        "po": "0c5b75d6-3e33-4c75-b82c-382a9f1f5a13",
+        "common": {
+          "material_id": "a81d5ff7-34a8-4dc8-a841-f03099f40848",
+          "ordered_uom_id": "09c5e806-fa1a-4c46-b4e2-f09bc8e91a03",
+          "quantity": "14",
+          "conversion_numerator": "1",
+          "conversion_denominator": "1",
+          "rounding_mode": "HALF_UP"
+        },
+        "cutoff": "2026-10-11 12:21:38.772211+07",
+        "customer": "907e47c4-cd16-4e85-8756-48de73e6902b",
+        "site": "4ddce674-1069-4b21-8fb7-b31ebacc86ae",
+        "unitPriceVnd": "230000"
+      },
+      "sale": {
+        "so": "982039c9-c986-4746-b661-ed83d2fa53c8",
+        "line": "aed32d7b-0c4a-431b-9949-826334d97143"
+      },
+      "account": "c75eadce-d8dc-455e-b4f6-2aa8d2fae5a6",
+      "payment": "55c2516c-9fa9-4898-9e75-9c39f77f3cbc",
+      "obligation": "fccbce8e-7301-4c1b-b026-2d12b9f8987a",
+      "returnCase": "49e8a4cf-e25e-4cd0-9e25-b193a557f47b",
+      "verificationLine": "f768416d-87a6-456c-9287-ffcf1d3cb87c",
+      "delivery": "adb12c19-b92c-4789-a6d0-9cc54a9dc183"
+    },
+    "offset": {
+      "stock": {
+        "prefix": "RMB4682C16",
+        "uom": "d3d7a21b-747c-4b7f-8939-2c708a8f7793",
+        "material": "50a4e29b-0395-45f1-98b9-89c091405f5a",
+        "price": "77970471-ad83-4fc8-b309-f79ae7220885",
+        "cost": "ddfa2003-ccbc-431a-830b-9245d14054e6",
+        "po": "556a1452-379a-4f16-a6b0-9aa9a1a46748",
+        "common": {
+          "material_id": "50a4e29b-0395-45f1-98b9-89c091405f5a",
+          "ordered_uom_id": "d3d7a21b-747c-4b7f-8939-2c708a8f7793",
+          "quantity": "14",
+          "conversion_numerator": "1",
+          "conversion_denominator": "1",
+          "rounding_mode": "HALF_UP"
+        },
+        "cutoff": "2026-10-11 12:21:38.772211+07",
+        "customer": "602db08c-ce8e-4d95-a717-bda296b1114a",
+        "site": "119620eb-6669-47b5-b198-1771475f67cc",
+        "unitPriceVnd": "230000"
+      },
+      "sale": {
+        "so": "fd065946-d7a4-4527-b519-7e8fa5548c2d",
+        "line": "644b3898-9c5c-4440-9d6e-dd0f62c5ef5d"
+      },
+      "account": "c2f849c1-efe3-4e38-ab12-f931c596294f",
+      "payment": "1655d3c3-78d4-4dc1-b01b-9bc7ecd8d729",
+      "obligation": "49169610-0394-446e-adbc-9cbe7a9b721d",
+      "returnCase": "1bcb19b8-e6d0-4435-b8cd-04bc98c50262",
+      "verificationLine": "97ec3ded-fc4e-4df5-8300-ddcadd9df089",
+      "delivery": "a8c6f05f-ac89-4a36-b02c-95ce486a2caf",
+      "nextObligation": "b5b07d85-da22-4413-8ef4-6af08a12d009"
+    },
+    "writerPid": 51920
+  },
+  "status": "PASS_REAL_AUTH_CUSTOMER_CREDIT_CORE"
+}

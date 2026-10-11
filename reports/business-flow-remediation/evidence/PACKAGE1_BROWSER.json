@@ -1,0 +1,44 @@
+{
+  "scope": "REAL_BROWSER_REAL_QA_LOGIN_NATIVE_RPC_AND_FRESH_READBACK",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "browser": "Chromium",
+  "browserPlugin": "ABSENT",
+  "fallbackReason": "Browser plugin and browser skill not available; installed Playwright used",
+  "origin": "http://127.0.0.1:3110",
+  "productionAccess": "NONE",
+  "consoleErrors": [],
+  "checks": [
+    {
+      "name": "G01_WAREHOUSE_UI_DENIED_WITH_VIETNAMESE_REASON_RELOAD",
+      "status": "PASS",
+      "state": "OPEN",
+      "viewport": "1280x900"
+    },
+    {
+      "name": "G01_WAREHOUSE_UI_VALID_COMMIT_RELOAD_READBACK",
+      "status": "PASS",
+      "facts": {
+        "state": "APPROVED",
+        "qty": "15.000000"
+      }
+    },
+    {
+      "name": "G01_MOBILE_COUNT_READ",
+      "status": "PASS",
+      "viewport": "390x844"
+    },
+    {
+      "name": "G05_SALES_DELIVERY_DETAIL_SAFE_VIEW_RELOAD",
+      "status": "PASS",
+      "role": "sales"
+    }
+  ],
+  "screenshots": [
+    "/Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation/browser/package1/g01-stale-before-approval.png",
+    "/Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation/browser/package1/g01-stale-rejected-vietnamese.png",
+    "/Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation/browser/package1/g01-valid-approved-reloaded.png",
+    "/Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation/browser/package1/g01-mobile-count.png",
+    "/Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation/browser/package1/g05-sales-safe-delivery-detail.png"
+  ],
+  "status": "PASS_EXECUTED_BROWSER_SCOPE"
+}

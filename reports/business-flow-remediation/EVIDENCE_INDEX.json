@@ -1,0 +1,692 @@
+{
+  "implementationCommit": "649dd17bfe9cca4599d9dc61be040f4edb0a302a",
+  "migrations": 164,
+  "artifactRoot": "reports/business-flow-remediation/evidence",
+  "productionAccess": "NONE",
+  "excludedAdvanceRaces": [
+    {
+      "script": "scripts/qa/remediation/package4-advance-race.mjs",
+      "mode": "different-intents",
+      "retainedEvidence": "PACKAGE4_G07_CONCURRENCY.json",
+      "reexecuted": false,
+      "facts": {
+        "debt": "400000",
+        "advance": "400000",
+        "allocated": "600000",
+        "effects": 1,
+        "payments": 1
+      }
+    },
+    {
+      "script": "scripts/qa/remediation/package4-advance-race.mjs",
+      "mode": "same-intent",
+      "retainedEvidence": "PACKAGE4_G07_SAME_INTENT_CONCURRENCY.json",
+      "reexecuted": false,
+      "facts": {
+        "debt": "400000",
+        "advance": "400000",
+        "allocated": "600000",
+        "effects": 1,
+        "payments": 1
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "FINAL_FRESH164.json",
+      "sha256": "c9a0648973ced4c58ccd4b41f53b4c57047caca1befa390d52cd232a4cf2e637",
+      "status": "PASS_SCHEMA_FROM_ZERO",
+      "scope": "FRESH_NATIVE_APPLICATION_SCHEMA_AUTH_SHIM",
+      "schema": null,
+      "checks": 0
+    },
+    {
+      "file": "FINAL_RECOVERY163.json",
+      "sha256": "ab0703741a1fcad1c6d01efc438809e5d57336bcd0ab9508b0f57bd3e8548bc5",
+      "status": "PASS_NATIVE_DATA_RECOVERY",
+      "scope": "ISOLATED_NATIVE_DATABASE_ARCHIVE_RECOVERY",
+      "schema": null,
+      "checks": 0
+    },
+    {
+      "file": "FINAL_RESTORE136.json",
+      "sha256": "176e3ec08cbfc25ef57c7653316c4a2e166ce86c791d27a8f1452c1cbcf3169e",
+      "status": "PASS_NATIVE_DATA_RECOVERY",
+      "scope": "ISOLATED_NATIVE_DATABASE_ARCHIVE_RECOVERY",
+      "schema": null,
+      "checks": 0
+    },
+    {
+      "file": "FINAL_UPGRADE136_TO164.json",
+      "sha256": "8bf5402a48363c1d0f94d4923c931b4f2b7ad447b7c620e536b1fbfa69eceed3",
+      "status": "PASS",
+      "scope": "REPRESENTATIVE_RESTORED136_TO164_APPLICATION_UPGRADE",
+      "schema": null,
+      "checks": 0
+    },
+    {
+      "file": "FINAL_SEAMS164.json",
+      "sha256": "a7dcfa56c877a378c1c490d9d12576318b60059a70863329b278bfce9f698352",
+      "status": "PASS_EXECUTED_DB_SEAMS",
+      "scope": "G02_INPUT_AND_CONVERSION_SEAMS_G12_VERSION_G21_ATOMIC_AUDIT",
+      "schema": null,
+      "checks": 26
+    },
+    {
+      "file": "FINAL_SOURCE_READBACK164.json",
+      "sha256": "e1f717998034ad19424b361fbf3351bcc6c3658ea7ea6a522c30400fbc47b0e3",
+      "status": "PASS",
+      "scope": "FINAL_SCHEMA164_REAL_JWT_READ_ONLY_G09_G16_G05",
+      "schema": 164,
+      "checks": 3
+    },
+    {
+      "file": "FINAL_G23_BROWSER164.json",
+      "sha256": "356d6324746513781a228b6de95ee6a814c76381d34458a2e48e4950d8af6b0d",
+      "status": "PASS",
+      "scope": "G23_BROWSER_DIRECT_ORDER_UNPAID_AND_VENDOR_REFUND_PENDING_NOT_COMPLETE",
+      "schema": null,
+      "checks": 0
+    },
+    {
+      "file": "PACKAGE9_EXPENSE_NATIVE142.json",
+      "sha256": "4cc5045c2283b0b0d0547989abc67ea6784ae2c4a44c98b3ac2bcda21da7d036",
+      "status": "PASS",
+      "scope": "G17_SOURCE_TRIP_COST_DIRECT_OVERHEAD_AP_ATOMIC_RETRY_AND_G16",
+      "schema": null,
+      "checks": 2
+    },
+    {
+      "file": "PACKAGE9_EXPENSE_AUTH138.json",
+      "sha256": "011f28af8ee437c95cdb234d461c1d2643a8223c359695bbb4c6860f7e6f0a18",
+      "status": "PASS",
+      "scope": "G17_REAL_JWT_FAILED_REDELIVERY_COST_SOURCE_READBACK",
+      "schema": null,
+      "checks": 2
+    },
+    {
+      "file": "PACKAGE9_EXPENSE_BROWSER138.json",
+      "sha256": "65bf5bd6f12136d3058cb4c9faef6ca3c79fdd314910ec15cb6cfce302c95cb8",
+      "status": "PASS",
+      "scope": "G17_OWNER_BROWSER_CREATE_APPROVE_AFTER_COMMIT_RESPONSE_LOSS_RELOAD",
+      "schema": null,
+      "checks": 2
+    },
+    {
+      "file": "PACKAGE9_VEHICLE_NATIVE142.json",
+      "sha256": "4a4d216f620ce32b373eccf3cfe9a1f8bac98e3db2c6b57bcdd129e850d34913",
+      "status": "PASS",
+      "scope": "G17_INTERNAL_VEHICLE_IMMUTABLE_ASSIGNMENT_NO_EMPLOYEE_DOUBLE_COUNT",
+      "schema": null,
+      "checks": 0
+    },
+    {
+      "file": "PACKAGE9_G16_FEE_AUTH142.json",
+      "sha256": "085eb9ebea1ab08e2f481e6e2d7a2c6088844a980510a7f4a2984960805eed51",
+      "status": "PASS",
+      "scope": "G16_NEW_DIRECT_TRIP_FEE_CANNOT_REPRESENT_MISSING_DIRECT_SUPPLY_COST",
+      "schema": null,
+      "checks": 2
+    },
+    {
+      "file": "PACKAGE10_TRANSFER_NATIVE140.json",
+      "sha256": "c3e9b57d00582cc67b871565166f8592494e494dd9d48a6180cb08f427f5203e",
+      "status": "PASS",
+      "scope": "G18_NATIVE_PARTIAL_SHORTAGE_SOURCE_VALUE_FAULT_RETRY_VERSION",
+      "schema": null,
+      "checks": 2
+    },
+    {
+      "file": "PACKAGE10_TRANSFER_SEAMS142.json",
+      "sha256": "3e9e9a250dbe3e5a261de537d5eca129cab7adf49edb0160add14c8e1abdc62b",
+      "status": "PASS",
+      "scope": "T27_LITERAL15_SHIP14_RECEIVE1_TRANSIT_AND_G01_BASIS_INVALIDATION",
+      "schema": null,
+      "checks": 0
+    },
+    {
+      "file": "PACKAGE10_TRANSFER_CROSS_ACTOR_INTENT142.json",
+      "sha256": "7ec16696ced0f56b3c54cb6c6e196e186e35e951b5f76be7582e8cfa00c7876d",
+      "status": "PASS",
+      "scope": "G18_REAL_AUTH_TWO_ACTORS_RECEIVE_SAME_SOURCE",
+      "schema": null,
+      "checks": 0
+    },
+    {
+      "file": "PACKAGE10_TRANSFER_BROWSER142.json",
+      "sha256": "62cb6dcae537e3f0f398ba2b14af407816a80882eb3b94a70a3fb0a20efe3d09",
+      "status": "PASS",
+      "scope": "G18_WAREHOUSE_OWNER_BROWSER_RECEIPT_SHORTAGE_APPROVED_LOSS_RECOVERY",
+      "schema": null,
+      "checks": 3
+    },
+    {
+      "file": "PACKAGE11_PHYSICAL_NATIVE150.json",
+      "sha256": "f1d17aa264d64b66c12e024702e62bf68b82a3b9b3bc2424b6e020d4efe58194",
+      "status": "PASS",
+      "scope": "G19_PHYSICAL_AND_VENDOR_ACCEPTANCE_SEPARATE_FROM_AP_CASH",
+      "schema": null,
+      "checks": 2
+    },
+    {
+      "file": "PACKAGE11_CREDIT_NATIVE145.json",
+      "sha256": "94c7bd663bb4a50435361d1c0cfdc9aac12761fbaafd57cfd678565a953bfed5",
+      "status": "PASS",
+      "scope": "G19_PAID_SOURCE_CREDIT_REFUND_AND_OFFSET_BOUND_CAPS_AND_ATOMICITY",
+      "schema": null,
+      "checks": 0
+    },
+    {
+      "file": "PACKAGE11_SUPPLIER_AUTH147.json",
+      "sha256": "4ef89392dd375642abcf53579800c394f72ae363c18cd1a48d4b34e30af7ae99",
+      "status": "PASS",
+      "scope": "G19_REAL_JWT_WAREHOUSE_PURCHASING_FINANCE_PAID_PARTIAL_CREDIT_VARIANCE",
+      "schema": null,
+      "checks": 1
+    },
+    {
+      "file": "PACKAGE11_SUPPLIER_BROWSER148_FINAL.json",
+      "sha256": "2a4279c86231720bc244241bd8f8892d2539bda2c88cc0f94a948b4cf8946526",
+      "status": "PASS_READ_ONLY_BROWSER_RESUME",
+      "scope": "G19_READ_ONLY_RESUME_FINAL_HYDRATION_AND_SCREENSHOTS",
+      "schema": null,
+      "checks": 0
+    },
+    {
+      "file": "PACKAGE11_SUPPLIER_CREDIT_RACE148_RESUMED.json",
+      "sha256": "b3093965ddebe895bef3b7d86b584fe6e4fce886abb2533ba0913a9374946a3d",
+      "status": "PASS",
+      "scope": "G19_ACTUAL_JWT_REFUND_VS_OFFSET_SHARED_SUPPLIER_CREDIT",
+      "schema": null,
+      "checks": 0
+    },
+    {
+      "file": "PACKAGE11_DIRECT_AUTH150.json",
+      "sha256": "c90b6fceeb8db8eb6406f612bb20c10a9fdd7f3110c7cc0b0ff5f7129ef25003",
+      "status": "PASS",
+      "scope": "G19_G16_G14_REAL_JWT_DIRECT_VENDOR_RETURN_NO_WAREHOUSE_RETIRED_SOURCE",
+      "schema": null,
+      "checks": 0
+    },
+    {
+      "file": "PACKAGE11_INVENTORY_VALUE152.json",
+      "sha256": "98b96676034ca6101e33f059fdf9f41d6bcafbc41f03083f2d0121c0420c4a64",
+      "status": "PASS",
+      "scope": "G19_WAREHOUSE_WEIGHTED_VALUE_SEPARATE_FROM_VENDOR_CREDIT_PRICE",
+      "schema": null,
+      "checks": 0
+    },
+    {
+      "file": "PACKAGE11_RECORDED_WAREHOUSE_CUSTODY154_FINAL.json",
+      "sha256": "f0b365c93279b161d9d73f1f5417c46d88c770eb1e9a52aaee1ef7d96b60c650",
+      "status": "PASS",
+      "scope": "G19_RECORDED_DIRECT_WAREHOUSE_CUSTODY_THEN_PARTIAL_VENDOR_RETURN",
+      "schema": null,
+      "checks": 1
+    },
+    {
+      "file": "PACKAGE12_DOCUMENT_NATIVE156_FINAL.json",
+      "sha256": "daeb96e22384ea2a33426f0437b01a91538c42bcaba43fc4676e55654a779b81",
+      "status": "PASS",
+      "scope": "G20_RESUME_ONLY_UNFINISHED_DOCUMENT_FAULT_PRECISION_AFTER_EXPECTED_ERROR_HARNESS",
+      "schema": null,
+      "checks": 3
+    },
+    {
+      "file": "PACKAGE12_DOCUMENT_AUTH158.json",
+      "sha256": "b4c953d89f3d749e249432a976b65d4cb8b7cab5544befb77df8702e19ab9962",
+      "status": "PASS",
+      "scope": "G20_G19_ACTUAL_JWT_INVOICE_CREDITNOTE_SOURCE_MATCH_NO_AP_REPEAT",
+      "schema": null,
+      "checks": 2
+    },
+    {
+      "file": "PACKAGE12_DOCUMENT_BROWSER158.json",
+      "sha256": "1dcac73cf793b53c57115099f1546550ef011c4cc1af2bad55d114b964dfdf40",
+      "status": "PASS_INDEPENDENT_MATCH_EXPORT_LEGAL_ISSUANCE_BLOCKED",
+      "scope": "G20_G19_BROWSER_CREDIT_DOC_RECOVERY_EXPORT_NO_SECOND_AP",
+      "schema": null,
+      "checks": 2
+    },
+    {
+      "file": "PACKAGE12_INTERNAL_INVOICE158.json",
+      "sha256": "a618616093ffc8546588b0552e0182228fe3e90cb224f7da7b39306fb74f4f31",
+      "status": "PASS_INTERNAL_SCOPE_LEGAL_PROVIDER_BLOCKED",
+      "scope": "G20_INTERNAL_INVOICE_AND_RETURN_ADJUSTMENT_NO_LEGAL_ISSUANCE_OR_SECOND_DEBT",
+      "schema": null,
+      "checks": 0
+    },
+    {
+      "file": "PACKAGE12_INVOICE_BROWSER159.json",
+      "sha256": "83e629f397455fe90aa29472fb999788ec0c708c9d34a09438166249070e2899",
+      "status": "PASS_INTERNAL_INVOICE_LEGAL_ISSUANCE_BLOCKED",
+      "scope": "G20_INTERNAL_INVOICE_CREATE_APPROVE_LOST_RESPONSE_RECOVERY_REVIEW_PDF",
+      "schema": null,
+      "checks": 2
+    },
+    {
+      "file": "PACKAGE13_NOTICE_NATIVE164.json",
+      "sha256": "2a24990304b034db4cf7e2457e01ca1e363c8ce731dfa6241ae19a05a0ec07b5",
+      "status": "PASS",
+      "scope": "G22_NOTICE_REVIEW_VS_BANK_COVERAGE_VS_DEBT_ALLOCATION",
+      "schema": null,
+      "checks": 0
+    },
+    {
+      "file": "PACKAGE13_NOTICE_AUTH161.json",
+      "sha256": "313cdac2f30d2c2a3dcd913d32576098495ce4c5354996067f4e80d83396f018",
+      "status": "PASS",
+      "scope": "G22_REAL_JWT_NOTICE_REVIEW_RECONCILIATION_MATCH_SCOPE",
+      "schema": null,
+      "checks": 0
+    },
+    {
+      "file": "PACKAGE13_NOTICE_RACE162.json",
+      "sha256": "90c29eb269a94df1760bfda58aa286be7d55255ce23126c4406cb75c09906d1e",
+      "status": "PASS",
+      "scope": "G22_REAL_JWT_TWO_NOTICES_COMPETE_FOR_REMAINING_BANK_COVERAGE400K",
+      "schema": null,
+      "checks": 0
+    },
+    {
+      "file": "PACKAGE13_NOTICE_BROWSER162.json",
+      "sha256": "608b767ff09cae76e8a56030c4e600ba2dc338c6aa6d6914434a7d9da945d67b",
+      "status": "PASS",
+      "scope": "G22_BROWSER_MATCH_CORRECTION_RECOVERY_NO_CASH_OR_DEBT_EFFECT",
+      "schema": null,
+      "checks": 2
+    },
+    {
+      "file": "PACKAGE14_OPERATIONS_NATIVE163.json",
+      "sha256": "b7d5c87c6f71768307176e30365726148dea607f4083935651bcfba20a234857",
+      "status": "PASS",
+      "scope": "G23_INDEPENDENT_COMMERCIAL_DELIVERY_PAYMENT_RETURN_EXCEPTION_COMPLETION",
+      "schema": null,
+      "checks": 2
+    },
+    {
+      "file": "PACKAGE4_G07_CONCURRENCY.json",
+      "sha256": "e9c84f6da264a1daa397557fdabd15d321aaf915c2b36d85508efd74fcfdb11b",
+      "status": "PASS_EXECUTED_ADVANCE_RACE",
+      "scope": "G07_REAL_NATIVE_PAYMENT_OR_DRAFT_LOCK_CONTENTION",
+      "schema": null,
+      "checks": 0
+    },
+    {
+      "file": "PACKAGE4_G07_SAME_INTENT_CONCURRENCY.json",
+      "sha256": "f27bcb1aab0d9c25bbd4fe30648996176d966b9c4a478d00f2cff9620c9a7bce",
+      "status": "PASS_EXECUTED_ADVANCE_RACE",
+      "scope": "G07_REAL_NATIVE_PAYMENT_OR_DRAFT_LOCK_CONTENTION",
+      "schema": null,
+      "checks": 0
+    },
+    {
+      "file": "PACKAGE4_G07_RESUME_VERIFICATION.json",
+      "sha256": "1d883e27196949a46d33416481850efcd777a431fd41e93f65dca173f594cbf5",
+      "status": "PASS_G07_RESUME_VERIFICATION",
+      "scope": "G07_RESUME_READBACK_AND_UNFINISHED_CHECKS",
+      "schema": null,
+      "checks": 4
+    },
+    {
+      "file": "PACKAGE8_COMMISSION_RESOLUTION135_FINAL.json",
+      "sha256": "117ea23ad69ccec45cab80c901be664d3dec29811d68c38c7b634f1d81b40ce3",
+      "status": "PASS_BOTH_EXECUTED_COMMISSION_RESOLUTION_METHODS",
+      "scope": "ACTUAL_EXECUTED_RECOVERY_AND_WAIVER_CHECKPOINTS",
+      "schema": null,
+      "checks": 2
+    },
+    {
+      "file": "PACKAGE8_COMMISSION_AUTH_RACE136.json",
+      "sha256": "4f56af905daea82c4b54154ddbbc2f47702d9db6e86e175560399b009db857aa",
+      "status": "PASS_REAL_AUTH_COMMISSION_RECOVERY_PAYOUT_RACE",
+      "scope": "G09_REAL_AUTH_RECOVERY_VS_PAYOUT_SAME_UNPAID_COMMISSION",
+      "schema": null,
+      "checks": 1
+    },
+    {
+      "file": "PACKAGE8_COMMISSION_BROWSER136_LABELS_FIXED.json",
+      "sha256": "977ec75b5c254f463962a0b8e034a579952cf6d5cbcdc4ff0a9a94368a28595a",
+      "status": "PASS_COMMISSION_REVIEW_BROWSER_RECOVERY_AND_WAIVER",
+      "scope": "G09_REAL_OWNER_BROWSER_COMMISSION_REVIEW_RECOVERY_AND_WAIVE",
+      "schema": null,
+      "checks": 2
+    },
+    {
+      "file": "PACKAGE8_G02_HOUR_AFTER132.json",
+      "sha256": "2a94b181314175f1946a78a3a6ba294ab0408fe0892eb792b53e9d7c570eede0",
+      "status": "PASS_HOUR_BASIS_NORMALIZED_BEFORE_PRICE",
+      "scope": "G02_DERIVED_HOUR_STORAGE_AND_PRICING_SAME_QUANTITY",
+      "schema": null,
+      "checks": 0
+    },
+    {
+      "file": "PACKAGE8_G03_SPLIT_RETURN_AFTER133.json",
+      "sha256": "9956ca61dec203c9f5f0d7d02799e07fca8e06f796fa3b9f8913bf8786c991ca",
+      "status": "PASS_EXECUTED_DB_SCOPE",
+      "scope": "G02_ALL_QUANTITY_SEAMS_G03_SPLIT_RETURN_CUMULATIVE",
+      "schema": null,
+      "checks": 3
+    },
+    {
+      "file": "PACKAGE8_LEGACY_BROWSER131.json",
+      "sha256": "223ca9983aee6fefd95d4935316e5f4ba8d4b790af00d458c843624a00ce39d8",
+      "status": "PASS_LEGACY_RECONCILIATION_BROWSER_RECOVERY_AND_NET_REPORT",
+      "scope": "G08_REAL_FINANCE_BROWSER_RECONCILE_EXISTING_LEGACY_SOURCE_LOST_RESPONSE_RELOAD",
+      "schema": null,
+      "checks": 2
+    },
+    {
+      "file": "PACKAGE5_G16_BROWSER121_FINAL.json",
+      "sha256": "ac1a60e2487e91d8ba27b9eb4f1adc42c258b076c1a799ebfb38ee6b106ef112",
+      "status": "PASS_BROWSER_COST_SOURCE_COMPLETENESS_AND_SCOPED_EXPORT",
+      "scope": "G16_REAL_BROWSER_COST_INCOMPLETE_TO_COMPLETE_G05_ROLE_GUARD_AR_EXPORT",
+      "schema": null,
+      "checks": 5
+    },
+    {
+      "file": "PACKAGE5_G15_AUTH_INTENT_RACES121.json",
+      "sha256": "c877e0df26e7145fc75599e6e5deb1947008fa8696abaa333647770605bd83d9",
+      "status": "PASS_REAL_AUTH_THREE_SAVED_INTENT_RACES",
+      "scope": "G15_REAL_AUTH_SAME_SAVED_INTENT_TWO_SESSIONS_THREE_COMMANDS",
+      "schema": null,
+      "checks": 3
+    },
+    {
+      "file": "PACKAGE5_QUANTITY_RETURN_AUDIT121.json",
+      "sha256": "9956ca61dec203c9f5f0d7d02799e07fca8e06f796fa3b9f8913bf8786c991ca",
+      "status": "PASS_EXECUTED_DB_SCOPE",
+      "scope": "G02_ALL_QUANTITY_SEAMS_G03_SPLIT_RETURN_CUMULATIVE",
+      "schema": null,
+      "checks": 3
+    },
+    {
+      "file": "FINAL_UNIT_PRECOMMIT.log",
+      "sha256": "ad649d9cb62153de476f8f75ec656d74ecad13f8ec4dfb92ae0b03a18dced271",
+      "originalSha256": "1cf597b282618d1663d56d32454afa9bc271a3dff47a18763338b44bdcdd3a80",
+      "publishedLogWhitespaceNormalized": true
+    },
+    {
+      "file": "FINAL_AFFECTED_UNIT_SOURCE.log",
+      "sha256": "b190ef8d778df2ae2c42ae7ca7e2c597435e6a5ca6e27abed5f88709d2f32913",
+      "originalSha256": "106ca25795904077350a2f46a0ff240fa9610ac880ff1ab45f39a0d70a1b0e52",
+      "publishedLogWhitespaceNormalized": true
+    },
+    {
+      "file": "FINAL_TYPECHECK_SOURCE.log",
+      "sha256": "99d7c2179cdd316467c51f37901025a0753453664d741214ba56fc631fa6c0bc"
+    },
+    {
+      "file": "FINAL_LINT_SOURCE.log",
+      "sha256": "09850f67dba258d9fbd75fed640dd87785e2782779b1228a55b69815aa1d578e",
+      "originalSha256": "b70462baef334422b0079e53dab734cd85dbbc7c567e97746340fcecfa262648",
+      "publishedLogWhitespaceNormalized": true
+    },
+    {
+      "file": "FINAL_CHANGED_LINT_SOURCE.log",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "publishedLogWhitespaceNormalized": true
+    },
+    {
+      "file": "FINAL_BUILD_SOURCE.log",
+      "sha256": "7c6309fc8872d069d3720dabf020086bb1a2ff7f6e29750cbcf9ad930099fb78",
+      "originalSha256": "6e0173c8f0413f0ce4927e9c3aebf25bf3f764bb456e4992859825ce83269674",
+      "publishedLogWhitespaceNormalized": true
+    },
+    {
+      "file": "FINAL_QA_UNIT_PRECOMMIT.log",
+      "sha256": "8a2a3e0a10cccfdb9a1af70541856211f700c9484ac5605ab79db76f199e6dc1"
+    },
+    {
+      "file": "FINAL_QA_SEED_CURRENT_CONTRACT.log",
+      "sha256": "f9f7d0de64bf618f1e2c93829dc2313b5a29a304bba8c10a411e44f2aa0761dc"
+    },
+    {
+      "file": "PACKAGE1_DB_REGRESSION.json",
+      "sha256": "f6194c9269c751c8ceb7a06ca0502a09f6fa6e080672b3b8973b86854c725dfd",
+      "status": "PASS_EXECUTED_DB_SCOPE",
+      "scope": "NATIVE_CANONICAL_RPC_SQL_AUTH_FIXTURE",
+      "checks": 5
+    },
+    {
+      "file": "PACKAGE1_CONCURRENCY.json",
+      "sha256": "8e0ae40ed77247f529e445b2d3c1120c0907ca8b65d94c445fb9bf89277a170e",
+      "status": "PASS_EXECUTED_TRUE_CONCURRENCY_SCOPE",
+      "scope": "NATIVE_DISTINCT_ACTORS_BACKENDS_OBSERVED_LOCK_OVERLAP",
+      "checks": 2
+    },
+    {
+      "file": "PACKAGE1_AUTH_HTTP.json",
+      "sha256": "e6cd557d4a2fdf3aa3d162dfdd11f18b435110a839640ab05764e96a077eac7e",
+      "status": "PASS_EXECUTED_AUTHENTICATED_HTTP_SCOPE",
+      "scope": "REAL_MANAGED_QA_AUTH_ES256_POSTGREST_ISOLATED_NATIVE_DB",
+      "checks": 12
+    },
+    {
+      "file": "PACKAGE1_BROWSER.json",
+      "sha256": "31fb4abcd76d5bdf5ea87d69a0cc427ab80350c50c1b07d7f4a0c646549ba319",
+      "status": "PASS_EXECUTED_BROWSER_SCOPE",
+      "scope": "REAL_BROWSER_REAL_QA_LOGIN_NATIVE_RPC_AND_FRESH_READBACK",
+      "checks": 4
+    },
+    {
+      "file": "PACKAGE2_DB_REGRESSION.json",
+      "sha256": "e52a94f7b05eab06e854a223cdbd955293f13e257972ff11dcba3b22b0b10c07",
+      "status": "PASS_EXECUTED_DB_SCOPE",
+      "scope": "NATIVE_EXACT_QUANTITY_CUMULATIVE_BILLING_VERSION_CONTRACTS",
+      "checks": 3
+    },
+    {
+      "file": "PACKAGE2_BILLING_CONCURRENCY.json",
+      "sha256": "467a8e7ca682dc0ed7edd0a05bf53661f10c0aeee2ef2198dfe5336fbc7ccafa",
+      "status": "PASS_EXECUTED_CONCURRENT_BILLING",
+      "scope": "REAL_NATIVE_SOURCE_LINE_LOCK_RACE",
+      "checks": 0
+    },
+    {
+      "file": "PACKAGE3_DB_REGRESSION_FINAL.json",
+      "sha256": "3886a13b16451510690aeae8e368100644dc897963cc49189b52a6b70a744003",
+      "status": "PASS_EXECUTED_DB_SCOPE",
+      "scope": "ASSIGNMENT_SCHEDULE_CAPACITY_ACTUAL_LOADING",
+      "checks": 6
+    },
+    {
+      "file": "PACKAGE3_REASSIGNMENT_AUTH_HTTP_FINAL.json",
+      "sha256": "721f8547a93831770db1a908e030ab263990d559dc0b143bd998bd61f748253d",
+      "status": "PASS_EXECUTED_AUTHENTICATED_REASSIGNMENT",
+      "scope": "REAL_AUTHENTICATED_REASSIGNMENT_WORK_LIFECYCLE",
+      "checks": 1
+    },
+    {
+      "file": "PACKAGE3_AUTH_HTTP_FINAL.json",
+      "sha256": "c72f3d04446b00da32cf50178fdca2c90c973740421922c6b198397abeabad32",
+      "status": "PASS_EXECUTED_AUTHENTICATED_HTTP_SCOPE",
+      "scope": "REAL_AUTHENTICATED_ASSIGNMENT_AND_ACTUAL_LOADING_HTTP",
+      "checks": 2
+    },
+    {
+      "file": "PACKAGE3_ASSIGNMENT_CONCURRENCY_FINAL.json",
+      "sha256": "707a7537c65cebe4f84cdf35030d3a4672a0de306639a1977683caba344d1c24",
+      "status": "PASS_EXECUTED_CONCURRENT_ASSIGNMENT",
+      "scope": "NATIVE_DISTINCT_ACTOR_ASSIGNMENT_RESOURCE_LOCK_RACE",
+      "checks": 0
+    },
+    {
+      "file": "PACKAGE3_BROWSER_ELIGIBLE.json",
+      "sha256": "a8f13ddf7eba4ab1dbd5929c3449b58d1bc7d020677d018a99b927426000bda8",
+      "status": "PASS_EXECUTED_BROWSER_SCOPE",
+      "scope": "REAL_WAREHOUSE_BROWSER_ASSIGNMENT_LOADING_EXCEPTION",
+      "checks": 4
+    },
+    {
+      "file": "PACKAGE3_CARGO_AUTH_RACE.json",
+      "sha256": "c891e714ef2b068d005d38711464303e9e0d9408cb10970e9b3fbe9f1f254c34",
+      "status": "PASS_REAL_AUTH_CARGO_RACE",
+      "scope": "G13_REAL_QA_AUTH_HTTP_VEHICLE_MUTEX_RACE",
+      "checks": 0
+    },
+    {
+      "file": "PACKAGE3_CARGO_BROWSER.json",
+      "sha256": "4c85830674447544f2dd0d5dc51411b898cd369768f4cb91204bf3e896d0913b",
+      "status": "PASS_REAL_BROWSER_CARGO_LIMIT",
+      "scope": "G13_REAL_WAREHOUSE_BROWSER_ACTUAL_CARGO_LIMIT",
+      "checks": 2
+    },
+    {
+      "file": "PACKAGE3_DIRECT_CARGO_BOARD_AFTER.json",
+      "sha256": "5203d4d72f7a77352b136a5ec44aca35114c38851871e5f42f2f83f83ee55d2f",
+      "status": "PASS_DIRECT_CARGO_BOARD",
+      "scope": "G10_DIRECT_UNREPORTED_CARGO_BOARD",
+      "checks": 0
+    },
+    {
+      "file": "PACKAGE4_G07_CORE_FINAL.json",
+      "sha256": "71bc1b3b07876b9df9c923d6646878bd2ce54812242ab673b59f50b59590880d",
+      "status": "PASS_G07_CORE_AND_PARTIAL_SOURCE_ALLOCATIONS",
+      "scope": "G07_ADVANCE_SOURCE_ALLOCATION_NO_NEW_CASH",
+      "checks": 0
+    },
+    {
+      "file": "PACKAGE4_G07_AUTH_HTTP_FINAL.json",
+      "sha256": "bca97ba8c285e0b88e783849b79f0f1a19a77d0be103209f0961960960518a3e",
+      "status": "PASS_EXECUTED_AUTHENTICATED_G07",
+      "scope": "G07_REAL_AUTH_ALLOCATE_PRIOR_ADVANCE",
+      "checks": 1
+    },
+    {
+      "file": "PACKAGE4_G07_BROWSER.json",
+      "sha256": "e2dce8556d5bc8bc40d97dfb3f8554d5294354c2495f30eaa140c1c2a9329fcc",
+      "status": "PASS_EXECUTED_G07_BROWSER_LOST_RESPONSE",
+      "scope": "G07_BROWSER_PRIOR_ADVANCE_LOST_ALLOCATION_RESPONSE_RECOVERY",
+      "checks": 1
+    },
+    {
+      "file": "PACKAGE4_G08_AUTH_HTTP.json",
+      "sha256": "b324c2e1b8ccc36fb5c17898005622d0ed06deb9e0d3d9c5126b7962dd1550b0",
+      "status": "PASS_REAL_AUTH_CUSTOMER_CREDIT_CORE",
+      "scope": "G08_REAL_AUTH_COMMITTED_CUSTOMER_CREDIT_CORE",
+      "checks": 2
+    },
+    {
+      "file": "PACKAGE4_G08_BROWSER.json",
+      "sha256": "d8f3ab00f106c2b36f32de4b8e67d74e25edc0d00efe66884acba643797a6ebb",
+      "status": "PASS_REAL_BROWSER_CUSTOMER_CREDIT",
+      "scope": "G08_REAL_FINANCE_BROWSER_APPROVAL_REFUND_RECOVERY_OFFSET",
+      "checks": 2
+    },
+    {
+      "file": "PACKAGE4_G08_AUTH_REFUND_OFFSET_RACE.json",
+      "sha256": "ca06008ad06dc56b3133d70bbb5471a4fec0358d7a846203d3b7e1b5d982d99a",
+      "status": "PASS_REAL_AUTH_REFUND_OFFSET_RACE",
+      "scope": "G08_REAL_AUTH_TWO_ACTORS_REFUND_VS_OFFSET_SAME_CREDIT",
+      "checks": 0
+    },
+    {
+      "file": "PACKAGE5_CREDIT_EDGE121.json",
+      "sha256": "877d69ba29776db331b91f775bae5196bf4162a1e8119d1f145bf4fc7d09d45a",
+      "status": "PASS_EXECUTED_CREDIT_AND_MANUAL_COMMISSION",
+      "scope": "G08_PARTIAL_REFUND_AND_OFFSET_SHARED_CREDIT_G09_MANUAL_NET_PROFIT_COMMISSION",
+      "checks": 2
+    },
+    {
+      "file": "PACKAGE5_G09_AUTH_REVENUE_AFTER119.json",
+      "sha256": "31d573761277b717d18ba8fec7aae2961582a3581f8893279bf2d9fa191fc92a",
+      "status": "PASS_AUTHENTICATED_REVENUE_CLASSIFICATION_AND_CUTOFF",
+      "scope": "G09_ACTUAL_AUTH_SIGNED_REVENUE_PERIOD_CUTOFF_CLASSIFICATION",
+      "checks": 2
+    },
+    {
+      "file": "PACKAGE5_G15_PAYMENT_BROWSER121.json",
+      "sha256": "66d4eea48848e96bcce7582e66f8a36bd5f33a58233376f17d084b535b2f625b",
+      "status": "PASS_EXECUTED_BROWSER_PAYMENT_RECOVERY_SCOPE",
+      "scope": "REAL_BROWSER_LOST_RESPONSE_AFTER_ACTUAL_PAYMENT_COMMIT",
+      "checks": 2
+    },
+    {
+      "file": "PACKAGE5_G15_PURCHASE_BROWSER121.json",
+      "sha256": "111f657081a3e22c0039b1255d9937f7489f67bd44210167d0d0bfc35823e917",
+      "status": "PASS_EXECUTED_BROWSER_PURCHASE_RECOVERY_SCOPE",
+      "scope": "REAL_BROWSER_RECEIPT_AND_DIRECT_FULFILLMENT_LOST_RESPONSE_AFTER_COMMIT",
+      "checks": 2
+    },
+    {
+      "file": "PACKAGE6_G11_NATIVE124.json",
+      "sha256": "e29cd5b98d04cbfbf6dbec7ad6eca8182b94fdaa746549c4c2debaa5105f35f5",
+      "status": "PASS_NO_OPENING_NATIVE_SOURCE_FLOW",
+      "scope": "G11_FRESH_PENDING_BRANCH_VALID_SOURCE_TRANSACTIONS_WITHOUT_OPENING",
+      "checks": 6
+    },
+    {
+      "file": "PACKAGE6_G11_AUTH_HTTP124_FINAL.json",
+      "sha256": "ed9433fdaeccadb05c62c7d576436f957d7a832a2a167795eed7478e49aea520",
+      "status": "PASS_REAL_AUTH_G11_NEW_TRANSACTIONS_POSTCOMMIT",
+      "scope": "G11_REAL_AUTH_FRESH_PENDING_BRANCH_POSTCOMMIT_INDEPENDENT_READ",
+      "checks": 2
+    },
+    {
+      "file": "PACKAGE6_G11_BROWSER124_FINAL.json",
+      "sha256": "015d7f9eccaa6e6fce46861c9aebf75549529bfe8f2a8eb56e8c246e51189e22",
+      "status": "PASS_G11_BROWSER_PENDING_BRANCH_AND_SCOPED_EXPORT",
+      "scope": "G11_REAL_BROWSER_PENDING_BRANCH_NO_ACTIVATION_NEW_RECEIPT_SCOPED_REPORTS",
+      "checks": 4
+    },
+    {
+      "file": "PACKAGE6_G11_START_SAFETY124.json",
+      "sha256": "4d84a4942518498754fdf40981c81f0c98e651e137dd8a1e605ad69060f55205",
+      "status": "PASS_G11_START_ATOMICITY_AND_REAL_AUTH_CONCURRENCY",
+      "scope": "G11_FIRST_SOURCE_FAULT_AND_REAL_AUTH_TWO_ACTORS_ONE_STABLE_START",
+      "checks": 2
+    },
+    {
+      "file": "PACKAGE7_G04_HIERARCHY_G12_129_FINAL.json",
+      "sha256": "92801b5d4fa744db71f56c8ae1666e5d674fa977cad81abb7787aab17e651619",
+      "status": "PASS_PRICE_HIERARCHY_AND_VERSION_CONTRACTS",
+      "scope": "T17_LITERAL230K_460K_G04_HIERARCHY_G12_PRICE_VERSIONS",
+      "checks": 4
+    },
+    {
+      "file": "PACKAGE7_G04_AUTH_HTTP127.json",
+      "sha256": "095f2ba720500927e251fb37408add87a14bcdcfd5942c4afeeddc0beb57bd88",
+      "status": "PASS_REAL_AUTH_PRICE_PRIORITY_AND_SNAPSHOT",
+      "scope": "G04_REAL_SALES_AUTH_SERVER_PRIORITY_AND_SAVED_PRICE_RETRY",
+      "checks": 2
+    },
+    {
+      "file": "PACKAGE7_G04_BROWSER127_FINAL.json",
+      "sha256": "20f977788565e3d80d6ff81010f7f3ffada62cf6abed5d726466a0a73f750291",
+      "status": "PASS_SALES_BROWSER_SAVED_PRICE_AND_INDEPENDENT_READ",
+      "scope": "G04_REAL_SALES_BROWSER_SAVED_PRICE_QTY_EDIT_RELOAD",
+      "checks": 1
+    },
+    {
+      "file": "PACKAGE11_G08_REGRESSION150.json",
+      "sha256": "680cc1d4499e9b42f41946b87369e45a40f5d11eb13334a88c1b2103c5c5d704",
+      "status": "PASS_NATIVE_CREDIT_BOUNDARIES",
+      "scope": "G08_UNFINISHED_NATIVE_BOUNDARIES",
+      "checks": 3
+    },
+    {
+      "file": "PACKAGE11_G11_G07_NEW_NONRACE150.json",
+      "sha256": "10469b64f55dd961b8906feda57db313d00ac822078f257113c8640dc953c4a7",
+      "status": "PASS_NO_OPENING_NATIVE_SOURCE_FLOW",
+      "scope": "G11_FRESH_PENDING_BRANCH_VALID_SOURCE_TRANSACTIONS_WITHOUT_OPENING",
+      "checks": 6
+    },
+    {
+      "file": "PACKAGE11_G13_G14_CARGO_REGRESSION150_SEQUENTIAL.json",
+      "sha256": "248a15af4957c571c15bdb8b06f77a960c3fd5ace9ba0f978f407e3998f2ce22",
+      "status": "PASS_G13_TOTAL_CARGO",
+      "scope": "G13_ACTUAL_CARGO_ACROSS_NONOVERLAPPING_DELIVERIES",
+      "checks": 3
+    }
+  ],
+  "limits": [
+    "Actual business writes only owned native QA DB; real QA JWT authentication via guarded bridge.",
+    "Synthetic portal photo metadata is not actual Storage upload evidence.",
+    "Real legal invoice emission blocked: provider/API/sandbox not supplied.",
+    "Native application archive restore does not verify Managed Auth/Storage/PITR.",
+    "T01–T42 have scoped results and outstanding cases explicitly listed in TEST_MATRIX.md.",
+    "CI must be checked for the final PR head, not inferred from this implementation commit."
+  ]
+}

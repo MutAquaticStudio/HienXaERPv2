@@ -1,0 +1,38 @@
+{
+  "scope": "G13_REAL_WAREHOUSE_BROWSER_ACTUAL_CARGO_LIMIT",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "origin": "http://127.0.0.1:3110",
+  "browserPlugin": "ABSENT",
+  "fallbackReason": "Browser plugin and browser skill not available; installed Playwright used",
+  "productionAccess": "NONE",
+  "consoleErrors": [],
+  "screenshots": [
+    "/Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation/browser/package3-cargo/g13-cargo-limit-vietnamese-denial.png",
+    "/Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation/browser/package3-cargo/g13-mobile-cargo-limit-reloaded.png",
+    "/Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation/browser/package3-cargo/g13-mobile-load-five-total-twenty-committed.png",
+    "/Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation/browser/package3-cargo/g13-desktop-load-five-total-twenty-committed.png"
+  ],
+  "checks": [
+    {
+      "name": "OVERLOAD_DENIAL_AND_RELOAD_KEEPS_ASSIGNED_WITHOUT_EFFECT",
+      "status": "PASS",
+      "denied": {
+        "execution_state": "ASSIGNED",
+        "version": 2,
+        "handoffs": 0
+      }
+    },
+    {
+      "name": "LOADS_ONLY_REMAINING_FIVE_AND_RELOAD_CONFIRMS_TOTAL_TWENTY",
+      "status": "PASS",
+      "accepted": {
+        "execution_state": "DISPATCHED",
+        "loaded": "5.000000",
+        "total": "20.000000",
+        "handoffs": 1,
+        "transit": "5.000000"
+      }
+    }
+  ],
+  "status": "PASS_REAL_BROWSER_CARGO_LIMIT"
+}

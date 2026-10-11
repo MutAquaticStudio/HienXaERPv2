@@ -1,0 +1,49 @@
+{
+  "scope": "G13_REAL_QA_AUTH_HTTP_VEHICLE_MUTEX_RACE",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "productionAccess": "NONE",
+  "managedQaBusinessWrites": 0,
+  "tokensRecorded": false,
+  "status": "PASS_REAL_AUTH_CARGO_RACE",
+  "documents": {
+    "branch": "dd101b24-aa92-4fd0-a0e7-30a935c2724c",
+    "vehicle": "447847a8-3ff1-48f5-b3a3-983ab342352f",
+    "material": "b3512a2e-4534-46dc-adb5-61c183edebfd",
+    "first": {
+      "delivery": "969304aa-4954-4440-989a-35beb983cca8",
+      "line": "41c75b3f-a1ae-4ca6-9511-c596e61fdde0",
+      "employee": "7a29b908-578e-4d45-b408-70f7a93256a9",
+      "allocation": "088bfcda-8fae-4c28-b791-01e68dc10c38",
+      "start": "2195-02-05T00:00:00.000Z",
+      "end": "2195-02-05T04:00:00.000Z"
+    },
+    "second": {
+      "delivery": "e5bd47d8-a034-4b93-8c62-0da06d3f2550",
+      "line": "a9c71441-0cd4-4a36-9cf1-a9bb01c842d9",
+      "employee": "bccb7cb3-b921-4878-8eaf-57493d046d04",
+      "allocation": "100752f9-1b17-47e5-872f-15faeabe1581",
+      "start": "2195-02-06T00:00:00.000Z",
+      "end": "2195-02-06T04:00:00.000Z"
+    }
+  },
+  "actors": [
+    "0d1d2134-5a21-40a4-9fcb-375898d3c133",
+    "e04f1e5a-2a2d-4347-a506-1b6a35ea790f"
+  ],
+  "pidA": 39839,
+  "pidB": 39840,
+  "observedBlockingPids": [
+    39839
+  ],
+  "firstStatus": 200,
+  "secondStatus": 400,
+  "secondError": "vehicle_actual_cargo_capacity_exceeded",
+  "facts": {
+    "handoffs": 1,
+    "loaded": "15.000000",
+    "directsyntheticmovements": 0,
+    "rejectedstate": "ASSIGNED",
+    "rejectedreceipts": 0,
+    "rejectedaudits": 0
+  }
+}

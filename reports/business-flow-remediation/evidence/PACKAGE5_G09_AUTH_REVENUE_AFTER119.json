@@ -1,0 +1,383 @@
+{
+  "scope": "G09_ACTUAL_AUTH_SIGNED_REVENUE_PERIOD_CUTOFF_CLASSIFICATION",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "productionAccess": "NONE",
+  "tokensRecorded": false,
+  "managedQaBusinessWrites": 0,
+  "checks": [
+    {
+      "name": "RETURN_NET_ONCE_AND_CROSS_PERIOD_KNOWLEDGE_CUTOFF",
+      "status": "PASS",
+      "source": {
+        "entries": 1,
+        "delta": "-230000"
+      },
+      "before": {
+        "scope": {
+          "to": "2026-10-11T13:57:46.988354+07:00",
+          "from": "2000-01-01T07:00:00+07:00",
+          "as_of": "2026-10-11T13:57:46.988354+07:00",
+          "branch_id": "dd101b24-aa92-4fd0-a0e7-30a935c2724c"
+        },
+        "payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "revenue": {
+          "quality": "READY",
+          "value_vnd": "3220000"
+        },
+        "receivable": {
+          "quality": "READY",
+          "value_vnd": "0"
+        },
+        "direct_cost": {
+          "quality": "READY",
+          "value_vnd": "2100000"
+        },
+        "gross_profit": {
+          "quality": "READY",
+          "value_vnd": "1120000"
+        },
+        "salary_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_profit": {
+          "quality": "READY",
+          "value_vnd": "1120000"
+        },
+        "operating_expense": {
+          "quality": "READY",
+          "value_vnd": "0"
+        },
+        "commission_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_margin_bps": {
+          "value": 3478.2608695652175,
+          "quality": "READY"
+        }
+      },
+      "net": {
+        "scope": {
+          "to": "2026-10-11T13:57:47.069108+07:00",
+          "from": "2000-01-01T07:00:00+07:00",
+          "as_of": "2026-10-11T13:57:47.069108+07:00",
+          "branch_id": "dd101b24-aa92-4fd0-a0e7-30a935c2724c"
+        },
+        "payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "revenue": {
+          "quality": "READY",
+          "value_vnd": "2990000"
+        },
+        "receivable": {
+          "quality": "READY",
+          "value_vnd": "0"
+        },
+        "direct_cost": {
+          "quality": "READY",
+          "value_vnd": "1950000"
+        },
+        "gross_profit": {
+          "quality": "READY",
+          "value_vnd": "1040000"
+        },
+        "salary_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_profit": {
+          "quality": "READY",
+          "value_vnd": "1040000"
+        },
+        "operating_expense": {
+          "quality": "READY",
+          "value_vnd": "0"
+        },
+        "commission_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_margin_bps": {
+          "value": 3478.2608695652175,
+          "quality": "READY"
+        }
+      },
+      "oldKnowledge": {
+        "scope": {
+          "to": "2026-10-11T13:57:47.090515+07:00",
+          "from": "2000-01-01T07:00:00+07:00",
+          "as_of": "2026-10-11T13:57:46.970562+07:00",
+          "branch_id": "dd101b24-aa92-4fd0-a0e7-30a935c2724c"
+        },
+        "payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "revenue": {
+          "quality": "READY",
+          "value_vnd": "3220000"
+        },
+        "receivable": {
+          "quality": "READY",
+          "value_vnd": "0"
+        },
+        "direct_cost": {
+          "quality": "READY",
+          "value_vnd": "2100000"
+        },
+        "gross_profit": {
+          "quality": "READY",
+          "value_vnd": "1120000"
+        },
+        "salary_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_profit": {
+          "quality": "READY",
+          "value_vnd": "1120000"
+        },
+        "operating_expense": {
+          "quality": "READY",
+          "value_vnd": "0"
+        },
+        "commission_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_margin_bps": {
+          "value": 3478.2608695652175,
+          "quality": "READY"
+        }
+      },
+      "earlierPeriod": {
+        "scope": {
+          "to": "2026-10-11T13:57:46.970562+07:00",
+          "from": "2000-01-01T07:00:00+07:00",
+          "as_of": "2026-10-11T13:57:47.112046+07:00",
+          "branch_id": "dd101b24-aa92-4fd0-a0e7-30a935c2724c"
+        },
+        "payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "revenue": {
+          "quality": "READY",
+          "value_vnd": "3220000"
+        },
+        "receivable": {
+          "quality": "READY",
+          "value_vnd": "0"
+        },
+        "direct_cost": {
+          "quality": "READY",
+          "value_vnd": "2100000"
+        },
+        "gross_profit": {
+          "quality": "READY",
+          "value_vnd": "1120000"
+        },
+        "salary_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_profit": {
+          "quality": "READY",
+          "value_vnd": "1120000"
+        },
+        "operating_expense": {
+          "quality": "READY",
+          "value_vnd": "0"
+        },
+        "commission_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_margin_bps": {
+          "value": 3478.2608695652175,
+          "quality": "READY"
+        }
+      },
+      "laterPeriod": {
+        "scope": {
+          "to": "2026-10-11T13:57:47.128763+07:00",
+          "from": "2026-10-11T13:57:46.970562+07:00",
+          "as_of": "2026-10-11T13:57:47.128763+07:00",
+          "branch_id": "dd101b24-aa92-4fd0-a0e7-30a935c2724c"
+        },
+        "payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "revenue": {
+          "quality": "READY",
+          "value_vnd": "-230000"
+        },
+        "receivable": {
+          "quality": "READY",
+          "value_vnd": "0"
+        },
+        "direct_cost": {
+          "quality": "READY",
+          "value_vnd": "-150000"
+        },
+        "gross_profit": {
+          "quality": "READY",
+          "value_vnd": "-80000"
+        },
+        "salary_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_profit": {
+          "quality": "READY",
+          "value_vnd": "-80000"
+        },
+        "operating_expense": {
+          "quality": "READY",
+          "value_vnd": "0"
+        },
+        "commission_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_margin_bps": {
+          "value": null,
+          "quality": "READY"
+        }
+      }
+    },
+    {
+      "name": "PRICE_CHANGES_REVENUE_WRITE_OFF_OTHER_DO_NOT",
+      "status": "PASS",
+      "classified": {
+        "scope": {
+          "to": "2026-10-11T13:57:47.175686+07:00",
+          "from": "2000-01-01T07:00:00+07:00",
+          "as_of": "2026-10-11T13:57:47.175686+07:00",
+          "branch_id": "dd101b24-aa92-4fd0-a0e7-30a935c2724c"
+        },
+        "payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "revenue": {
+          "quality": "READY",
+          "value_vnd": "3120000"
+        },
+        "receivable": {
+          "quality": "READY",
+          "value_vnd": "3020000"
+        },
+        "direct_cost": {
+          "quality": "READY",
+          "value_vnd": "1950000"
+        },
+        "gross_profit": {
+          "quality": "READY",
+          "value_vnd": "1170000"
+        },
+        "salary_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_profit": {
+          "quality": "READY",
+          "value_vnd": "1170000"
+        },
+        "operating_expense": {
+          "quality": "READY",
+          "value_vnd": "0"
+        },
+        "commission_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_margin_bps": {
+          "value": 3750,
+          "quality": "READY"
+        }
+      },
+      "classification": {
+        "revenuerows": 1,
+        "debt": "3020000"
+      }
+    }
+  ],
+  "docs": {
+    "paid": {
+      "stock": {
+        "prefix": "RM39CA7F17",
+        "uom": "2f83fd40-2f78-44b0-b10b-e8fca09b58c8",
+        "material": "6f9cc746-38c5-4e45-a68a-b88d8fa08e16",
+        "price": "3c5423f3-7f85-4ec8-9888-db6774fbd929",
+        "cost": "f1a2e6ec-de97-4406-ac74-ed3e452deb8d",
+        "po": "4d8d143f-1e54-4152-aa3e-a346bb83958c",
+        "common": {
+          "material_id": "6f9cc746-38c5-4e45-a68a-b88d8fa08e16",
+          "ordered_uom_id": "2f83fd40-2f78-44b0-b10b-e8fca09b58c8",
+          "quantity": "14",
+          "conversion_numerator": "1",
+          "conversion_denominator": "1",
+          "rounding_mode": "HALF_UP"
+        },
+        "cutoff": "2026-10-11 13:57:46.833844+07",
+        "customer": "7cd08723-dba0-4eff-865b-a2ecc6672174",
+        "site": "4fa685ab-4d44-40e8-976a-e75070c49d6d",
+        "unitPriceVnd": "230000"
+      },
+      "sale": {
+        "so": "6f16463d-2574-4e98-8955-30bf0aa25c12",
+        "line": "9d556dfc-480b-40ab-9f52-0406bffb187d"
+      },
+      "account": "6e98221b-8676-43e7-a6f1-7c29d803c3a2",
+      "payment": "902e4438-ac9d-4803-a113-9091c8b7553e",
+      "obligation": "31441e79-1c60-40a8-b727-dd0d95472a59",
+      "returnCase": "8f6883b2-f2be-4670-94ba-c07c8fe7accd",
+      "verificationLine": "4733f52d-754d-4b0d-846c-540895aafcaf",
+      "delivery": "00b93c30-3b91-437c-bfc6-7fca3396ca21"
+    },
+    "unpaid": {
+      "stock": {
+        "prefix": "RMED6264DA",
+        "uom": "ac609493-5e63-449d-b830-d650cba71ba5",
+        "material": "7082dabf-3854-4255-b0fe-4aed72f10822",
+        "price": "f50bd76f-d7de-402e-817d-3bd497fe6f6a",
+        "cost": "643b6f51-01cb-4a67-9c00-5a7e36236db7",
+        "po": "1a670c6d-8670-403d-889e-4538e6d506c1",
+        "common": {
+          "material_id": "7082dabf-3854-4255-b0fe-4aed72f10822",
+          "ordered_uom_id": "ac609493-5e63-449d-b830-d650cba71ba5",
+          "quantity": "14",
+          "conversion_numerator": "1",
+          "conversion_denominator": "1",
+          "rounding_mode": "HALF_UP"
+        },
+        "cutoff": "2026-10-11 13:57:46.833844+07",
+        "customer": "1c0e246c-3843-42ca-8bac-24ed41573327",
+        "site": "15267a9a-fddf-4ca3-9e83-0b5658410a88",
+        "unitPriceVnd": "230000"
+      },
+      "sale": {
+        "so": "6de9b3fd-5e0f-4689-a514-750f405c82d9",
+        "line": "0ac72285-4490-4d1c-9a7d-d0e6b66b329c"
+      },
+      "account": "c68e02d9-d116-40bd-a294-2b68955bd617",
+      "payment": null,
+      "obligation": "82dc6dfc-b417-45bd-9875-2b12cae855a8",
+      "returnCase": "b20c09f9-0154-4564-b3dd-611352a28859",
+      "verificationLine": "533b815c-036c-44ac-8580-fb5a86ce3747",
+      "delivery": "060340dd-66a5-49fb-9a75-2f8a319f31e9"
+    },
+    "writerPid": 94307
+  },
+  "readerPid": 94309,
+  "cutoff": "2026-10-11 13:57:46.970562+07",
+  "status": "PASS_AUTHENTICATED_REVENUE_CLASSIFICATION_AND_CUTOFF"
+}

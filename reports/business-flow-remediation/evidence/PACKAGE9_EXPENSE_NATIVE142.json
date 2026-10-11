@@ -1,0 +1,181 @@
+{
+  "scope": "G17_SOURCE_TRIP_COST_DIRECT_OVERHEAD_AP_ATOMIC_RETRY_AND_G16",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "productionAccess": "NONE",
+  "managedAuthTested": false,
+  "checks": [
+    {
+      "status": "PASS",
+      "name": "DIRECT100K_OVERHEAD30K_NO_DOUBLE_REPORT_AP_PAYMENT_FAULT_VERSION_RETRY",
+      "facts": {
+        "ap": 1,
+        "payments": 0,
+        "earnings": 0,
+        "create_audits": 1,
+        "approval_audits": 1
+      },
+      "baseline": {
+        "scope": {
+          "to": "2026-10-11T17:07:32.171857+07:00",
+          "from": "2000-01-01T00:00:00+07:00",
+          "as_of": "2026-10-11T17:07:32.171857+07:00",
+          "branch_id": "c7a06f86-45a2-460e-a79d-622d09048be6",
+          "balance_scope": "RECORDED_TRANSACTIONS",
+          "historical_quality": "UNRECONCILED",
+          "business_total_verified": false,
+          "recorded_operations_since": null
+        },
+        "payable": {
+          "quality": "READY",
+          "value_vnd": "2100000"
+        },
+        "revenue": {
+          "quality": "READY",
+          "value_vnd": "0"
+        },
+        "receivable": {
+          "quality": "READY",
+          "value_vnd": "3220000"
+        },
+        "direct_cost": {
+          "quality": "READY",
+          "value_vnd": "0"
+        },
+        "gross_profit": {
+          "quality": "READY",
+          "value_vnd": "0"
+        },
+        "salary_payable": {
+          "quality": "READY",
+          "value_vnd": "0"
+        },
+        "operating_profit": {
+          "quality": "READY",
+          "value_vnd": "0"
+        },
+        "operating_expense": {
+          "quality": "READY",
+          "value_vnd": "0"
+        },
+        "commission_payable": {
+          "quality": "READY",
+          "value_vnd": "0"
+        },
+        "operating_margin_bps": {
+          "value": null,
+          "quality": "READY"
+        }
+      },
+      "after": {
+        "scope": {
+          "to": "2026-10-11T17:07:32.171857+07:00",
+          "from": "2000-01-01T00:00:00+07:00",
+          "as_of": "2026-10-11T17:07:32.171857+07:00",
+          "branch_id": "c7a06f86-45a2-460e-a79d-622d09048be6",
+          "balance_scope": "RECORDED_TRANSACTIONS",
+          "historical_quality": "UNRECONCILED",
+          "business_total_verified": false,
+          "recorded_operations_since": null
+        },
+        "payable": {
+          "quality": "READY",
+          "value_vnd": "2230000"
+        },
+        "revenue": {
+          "quality": "READY",
+          "value_vnd": "0"
+        },
+        "receivable": {
+          "quality": "READY",
+          "value_vnd": "3220000"
+        },
+        "direct_cost": {
+          "quality": "READY",
+          "value_vnd": "100000"
+        },
+        "gross_profit": {
+          "quality": "READY",
+          "value_vnd": "-100000"
+        },
+        "salary_payable": {
+          "quality": "READY",
+          "value_vnd": "0"
+        },
+        "operating_profit": {
+          "quality": "READY",
+          "value_vnd": "-130000"
+        },
+        "operating_expense": {
+          "quality": "READY",
+          "value_vnd": "30000"
+        },
+        "commission_payable": {
+          "quality": "READY",
+          "value_vnd": "0"
+        },
+        "operating_margin_bps": {
+          "value": null,
+          "quality": "READY"
+        }
+      }
+    },
+    {
+      "name": "G16_PRIOR_MIXED_SOURCE_COMPLETE_EVIDENCE_READ_ONLY",
+      "status": "PASS",
+      "sourceReport": {
+        "scope": {
+          "to": "2026-10-11T17:07:32.171857+07:00",
+          "from": "2000-01-01T00:00:00+07:00",
+          "as_of": "2026-10-11T17:07:32.171857+07:00",
+          "branch_id": "dd101b24-aa92-4fd0-a0e7-30a935c2724c",
+          "balance_scope": "RECORDED_TRANSACTIONS",
+          "historical_quality": "UNRECONCILED",
+          "business_total_verified": false,
+          "recorded_operations_since": "2026-10-10T23:34:07.728747+07:00"
+        },
+        "payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "revenue": {
+          "quality": "READY",
+          "value_vnd": "2300000"
+        },
+        "receivable": {
+          "quality": "READY",
+          "value_vnd": "2300000"
+        },
+        "direct_cost": {
+          "quality": "READY",
+          "value_vnd": "1500000"
+        },
+        "gross_profit": {
+          "quality": "READY",
+          "value_vnd": "800000"
+        },
+        "salary_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_profit": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_expense": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "commission_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_margin_bps": {
+          "value": null,
+          "quality": "NOT_APPLICABLE"
+        }
+      }
+    }
+  ],
+  "status": "PASS",
+  "rolledBack": true
+}

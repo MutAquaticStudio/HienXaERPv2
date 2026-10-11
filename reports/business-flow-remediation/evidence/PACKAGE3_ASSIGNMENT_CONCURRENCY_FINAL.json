@@ -1,0 +1,21 @@
+{
+  "scope": "NATIVE_DISTINCT_ACTOR_ASSIGNMENT_RESOURCE_LOCK_RACE",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "status": "PASS_EXECUTED_CONCURRENT_ASSIGNMENT",
+  "actorA": "0d1d2134-5a21-40a4-9fcb-375898d3c133",
+  "actorB": "e04f1e5a-2a2d-4347-a506-1b6a35ea790f",
+  "pidA": 10199,
+  "pidB": 10200,
+  "observedBlockingPids": [
+    10199
+  ],
+  "rejected": {
+    "code": "23P01",
+    "message": "work_resource_schedule_collision"
+  },
+  "facts": {
+    "assignments": 1
+  },
+  "managedAuthTestedInRace": false,
+  "productionAccess": "NONE"
+}

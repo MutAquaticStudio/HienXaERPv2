@@ -1,0 +1,203 @@
+{
+  "scope": "G16_NEW_DIRECT_TRIP_FEE_CANNOT_REPRESENT_MISSING_DIRECT_SUPPLY_COST",
+  "productionAccess": "NONE",
+  "managedQaBusinessWrites": 0,
+  "documents": {
+    "so": "ec45391c-2c22-46f5-a353-0ad417fd2970",
+    "customer": "949b1959-bfee-48f8-849b-28ab00c350df",
+    "deliveries": [
+      "14a28962-0432-4a7b-96a0-fbe132d50998",
+      "a087efde-be71-4d48-90f0-2491afb33b72"
+    ],
+    "verifications": [
+      "471f22f4-c06f-415e-b583-9fedc47a11f9",
+      "ab2e99a3-f68c-4084-853e-343b960b08cd"
+    ],
+    "po": "241bfea9-2ba3-4414-a296-d05267a40c97",
+    "purchaseLine": "85ebac1a-529d-4473-a2a6-faa0641c821a",
+    "writerPid": 51066
+  },
+  "checks": [
+    {
+      "name": "TRIP_FEE_APPROVED_BUT_MISSING_DIRECT_SUPPLY_STILL_INCOMPLETE",
+      "status": "PASS",
+      "before": {
+        "scope": {
+          "to": "2026-10-11T17:09:32.865164+07:00",
+          "from": "2000-01-01T00:00:00+07:00",
+          "as_of": "2026-10-11T17:09:32.865164+07:00",
+          "branch_id": "dd101b24-aa92-4fd0-a0e7-30a935c2724c",
+          "balance_scope": "RECORDED_TRANSACTIONS",
+          "historical_quality": "UNRECONCILED",
+          "business_total_verified": false,
+          "recorded_operations_since": "2026-10-10T23:34:07.728747+07:00"
+        },
+        "payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "revenue": {
+          "quality": "READY",
+          "value_vnd": "2300000"
+        },
+        "receivable": {
+          "quality": "READY",
+          "value_vnd": "2300000"
+        },
+        "direct_cost": {
+          "quality": "INCOMPLETE",
+          "value_vnd": null
+        },
+        "gross_profit": {
+          "quality": "INCOMPLETE",
+          "value_vnd": null
+        },
+        "salary_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_profit": {
+          "quality": "INCOMPLETE",
+          "value_vnd": null
+        },
+        "operating_expense": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "commission_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_margin_bps": {
+          "value": null,
+          "quality": "INCOMPLETE"
+        }
+      },
+      "feeOnly": {
+        "scope": {
+          "to": "2026-10-11T17:09:32.946296+07:00",
+          "from": "2000-01-01T00:00:00+07:00",
+          "as_of": "2026-10-11T17:09:32.946296+07:00",
+          "branch_id": "dd101b24-aa92-4fd0-a0e7-30a935c2724c",
+          "balance_scope": "RECORDED_TRANSACTIONS",
+          "historical_quality": "UNRECONCILED",
+          "business_total_verified": false,
+          "recorded_operations_since": "2026-10-10T23:34:07.728747+07:00"
+        },
+        "payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "revenue": {
+          "quality": "READY",
+          "value_vnd": "2300000"
+        },
+        "receivable": {
+          "quality": "READY",
+          "value_vnd": "2300000"
+        },
+        "direct_cost": {
+          "quality": "INCOMPLETE",
+          "value_vnd": null
+        },
+        "gross_profit": {
+          "quality": "INCOMPLETE",
+          "value_vnd": null
+        },
+        "salary_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_profit": {
+          "quality": "INCOMPLETE",
+          "value_vnd": null
+        },
+        "operating_expense": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "commission_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_margin_bps": {
+          "value": null,
+          "quality": "INCOMPLETE"
+        }
+      }
+    },
+    {
+      "name": "ACTUAL_SOURCE_COST_ALONE_COMPLETES_ALL_LINES_THEN_FEE_COUNTS_ONCE",
+      "status": "PASS",
+      "complete": {
+        "scope": {
+          "to": "2026-10-11T17:09:32.97961+07:00",
+          "from": "2000-01-01T00:00:00+07:00",
+          "as_of": "2026-10-11T17:09:32.97961+07:00",
+          "branch_id": "dd101b24-aa92-4fd0-a0e7-30a935c2724c",
+          "balance_scope": "RECORDED_TRANSACTIONS",
+          "historical_quality": "UNRECONCILED",
+          "business_total_verified": false,
+          "recorded_operations_since": "2026-10-10T23:34:07.728747+07:00"
+        },
+        "payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "revenue": {
+          "quality": "READY",
+          "value_vnd": "2300000"
+        },
+        "receivable": {
+          "quality": "READY",
+          "value_vnd": "2300000"
+        },
+        "direct_cost": {
+          "quality": "READY",
+          "value_vnd": "1520000"
+        },
+        "gross_profit": {
+          "quality": "READY",
+          "value_vnd": "780000"
+        },
+        "salary_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_profit": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_expense": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "commission_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_margin_bps": {
+          "value": null,
+          "quality": "NOT_APPLICABLE"
+        }
+      }
+    }
+  ],
+  "createInput": {
+    "target_branch_id": "dd101b24-aa92-4fd0-a0e7-30a935c2724c",
+    "target_assignment_id": "473f0591-5de6-4dc7-ae4b-4f4e583a82ae",
+    "target_category_id": "5abcb71b-af43-4fdc-8c94-b573b1c30939",
+    "target_supplier_id": "bb3dcba3-6aaa-464d-89f6-9f6e9df99cf0",
+    "amount_vnd": "20000",
+    "effective_at": "2026-10-11T10:09:31.896Z",
+    "due_date": "2030-01-01",
+    "description": "Phí chuyến không thay giá vốn hàng giao thẳng",
+    "cost_scope": "DIRECT_DELIVERY",
+    "supplier_reference": "G16_FEE_ec45391c-2c22-46f5-a353-0ad417fd2970",
+    "target_evidence_id": null,
+    "expected_delivery_version": 5,
+    "operation_id": "cfd54a3d-30a6-485e-87a6-dbe958790ed6"
+  },
+  "expense": "38c1d38a-ac89-4847-a20b-95053a7c907a",
+  "status": "PASS"
+}

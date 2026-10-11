@@ -1,0 +1,89 @@
+{
+  "scope": "REAL_MANAGED_QA_AUTH_ES256_POSTGREST_ISOLATED_NATIVE_DB",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "tokensRecorded": false,
+  "managedQaBusinessWrites": 0,
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "FORGED_SIGNATURE_REJECTED",
+      "status": "PASS",
+      "httpStatus": 401
+    },
+    {
+      "name": "G05_DIRECT_COST_OR_INFERENCE_DENIED",
+      "status": "PASS",
+      "resource": "delivery_verification_lines",
+      "httpStatus": 403
+    },
+    {
+      "name": "G05_DIRECT_COST_OR_INFERENCE_DENIED",
+      "status": "PASS",
+      "resource": "delivery_verification_lines",
+      "httpStatus": 403
+    },
+    {
+      "name": "G05_DIRECT_COST_OR_INFERENCE_DENIED",
+      "status": "PASS",
+      "resource": "delivery_verification_lines",
+      "httpStatus": 403
+    },
+    {
+      "name": "G05_DIRECT_COST_OR_INFERENCE_DENIED",
+      "status": "PASS",
+      "resource": "delivery_handoff_lines",
+      "httpStatus": 403
+    },
+    {
+      "name": "G05_DIRECT_COST_OR_INFERENCE_DENIED",
+      "status": "PASS",
+      "resource": "stock_count_lines",
+      "httpStatus": 403
+    },
+    {
+      "name": "G05_AUTHENTICATED_SALES_SAFE_DELIVERY_READ",
+      "status": "PASS",
+      "subject": "d593fd7b-027e-4075-83b8-5f7253d64093",
+      "fieldsMasked": true
+    },
+    {
+      "name": "G05_AUTHENTICATED_FINANCE_COST_ALLOWED",
+      "status": "PASS",
+      "subject": "a89838c9-bb2d-4758-874c-b031f9655f49",
+      "costVnd": "2250000"
+    },
+    {
+      "name": "G05_WORKER_OUTSIDE_READER_PERMISSION",
+      "status": "PASS",
+      "subject": "654de2bf-cf27-4536-ad03-258c348e1f51",
+      "rows": 0
+    },
+    {
+      "name": "G01_SALES_CANNOT_APPROVE_COUNT",
+      "status": "PASS",
+      "httpStatus": 403
+    },
+    {
+      "name": "G01_AUTHENTICATED_WAREHOUSE_STALE_DENIED",
+      "status": "PASS",
+      "subject": "e04f1e5a-2a2d-4347-a506-1b6a35ea790f",
+      "httpStatus": 409,
+      "staleFacts": {
+        "state": "OPEN",
+        "receipts": 0,
+        "audit": 0
+      }
+    },
+    {
+      "name": "G01_HTTP_VALID_COMMITTED_RETRY_INDEPENDENT_READBACK",
+      "status": "PASS",
+      "subject": "e04f1e5a-2a2d-4347-a506-1b6a35ea790f",
+      "committed": {
+        "state": "APPROVED",
+        "qty": "15.000000",
+        "audit": 1
+      }
+    }
+  ],
+  "status": "PASS_EXECUTED_AUTHENTICATED_HTTP_SCOPE"
+}

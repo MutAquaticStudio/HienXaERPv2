@@ -1,0 +1,40 @@
+{
+  "scope": "G20_G19_BROWSER_CREDIT_DOC_RECOVERY_EXPORT_NO_SECOND_AP",
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright; Browser plugin not available",
+  "checks": [
+    {
+      "name": "CREDIT_REGISTRATION_COMMIT_LOSS_RELOAD_SINGLE_DOCUMENT",
+      "status": "PASS"
+    },
+    {
+      "name": "REVIEW_COMMIT_LOSS_RELOAD_EXPORT_FORMULA_SAFE_SOURCE_LINK_NO_FINANCIAL_CHANGE",
+      "status": "PASS",
+      "before": {
+        "ap": 2,
+        "adjustments": 2,
+        "payments": 3
+      },
+      "after": {
+        "ap": 2,
+        "adjustments": 2,
+        "payments": 3
+      },
+      "csvFormulaProtected": true
+    }
+  ],
+  "expectedTransportErrors": [
+    {
+      "text": "Failed to load resource: net::ERR_FAILED",
+      "url": "http://127.0.0.1:3110/admin/invoices/purchases/matching"
+    },
+    {
+      "text": "Failed to load resource: net::ERR_FAILED",
+      "url": "http://127.0.0.1:3110/admin/invoices/purchases/matching/3e983fa4-70e3-4f2a-9604-9b603cc3eae3"
+    }
+  ],
+  "unexpectedErrors": [],
+  "documentId": "3e983fa4-70e3-4f2a-9604-9b603cc3eae3",
+  "status": "PASS_INDEPENDENT_MATCH_EXPORT_LEGAL_ISSUANCE_BLOCKED"
+}

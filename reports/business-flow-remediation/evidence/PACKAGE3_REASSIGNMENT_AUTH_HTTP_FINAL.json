@@ -1,0 +1,20 @@
+{
+  "scope": "REAL_AUTHENTICATED_REASSIGNMENT_WORK_LIFECYCLE",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "checks": [
+    {
+      "name": "G06_REAL_AUTH_OLD_ACTOR_REVOKED_NEW_ACTOR_START_AND_SUBMIT",
+      "status": "PASS",
+      "oldActorDenied": 403,
+      "newActor": "0d1d2134-5a21-40a4-9fcb-375898d3c133",
+      "resultFacts": {
+        "execution_state": "RESULT_SUBMITTED",
+        "work_state": "DONE",
+        "results": 1
+      }
+    }
+  ],
+  "productionAccess": "NONE",
+  "tokensRecorded": false,
+  "status": "PASS_EXECUTED_AUTHENTICATED_REASSIGNMENT"
+}

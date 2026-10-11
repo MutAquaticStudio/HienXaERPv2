@@ -1,0 +1,92 @@
+{
+  "scope": "G18_WAREHOUSE_OWNER_BROWSER_RECEIPT_SHORTAGE_APPROVED_LOSS_RECOVERY",
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright; Browser plugin not available",
+  "checks": [
+    {
+      "name": "WAREHOUSE_RECEIVE_AFTER_COMMIT_LOSS_RELOAD_COST_HIDDEN",
+      "status": "PASS"
+    },
+    {
+      "name": "SHORTAGE_PERSISTS_WITH_TRANSIT_NO_FAKE_RECEIPT",
+      "status": "PASS",
+      "issue": "92086fa1-d047-44bd-82ad-05a95b177fb7"
+    },
+    {
+      "name": "OWNER_APPROVED_LOSS_RECOVERY_CONSERVATION_NO_COUNT_ADJUSTMENTS",
+      "status": "PASS",
+      "facts": {
+        "quantity": "9.000000",
+        "value": "1350000",
+        "receipts": 2,
+        "losses": 1,
+        "counts": 0
+      }
+    }
+  ],
+  "expectedTransportErrors": [
+    {
+      "text": "Failed to load resource: net::ERR_FAILED",
+      "url": "http://127.0.0.1:3110/admin/inventory/transfers/e779cc2b-a4e1-474a-85bf-c38f8694dd93"
+    },
+    {
+      "text": "Failed to load resource: net::ERR_FAILED",
+      "url": "http://127.0.0.1:3110/admin/inventory/transfers/e779cc2b-a4e1-474a-85bf-c38f8694dd93"
+    }
+  ],
+  "unexpectedErrors": [],
+  "lossReport": {
+    "scope": {
+      "to": "2026-10-11T17:07:19.786134+07:00",
+      "from": "2000-01-01T00:00:00+07:00",
+      "as_of": "2026-10-11T17:07:19.786134+07:00",
+      "branch_id": "a2b34f87-9a85-4ac8-8899-4a00ac34d03f",
+      "balance_scope": "RECORDED_TRANSACTIONS",
+      "historical_quality": "UNRECONCILED",
+      "business_total_verified": false,
+      "recorded_operations_since": "2026-10-11T17:04:35.52926+07:00"
+    },
+    "payable": {
+      "quality": "READY",
+      "value_vnd": "1500000"
+    },
+    "revenue": {
+      "quality": "READY",
+      "value_vnd": "0"
+    },
+    "receivable": {
+      "quality": "READY",
+      "value_vnd": "0"
+    },
+    "direct_cost": {
+      "quality": "READY",
+      "value_vnd": "0"
+    },
+    "gross_profit": {
+      "quality": "READY",
+      "value_vnd": "0"
+    },
+    "salary_payable": {
+      "quality": "READY",
+      "value_vnd": "0"
+    },
+    "operating_profit": {
+      "quality": "READY",
+      "value_vnd": "-150000"
+    },
+    "operating_expense": {
+      "quality": "READY",
+      "value_vnd": "150000"
+    },
+    "commission_payable": {
+      "quality": "READY",
+      "value_vnd": "0"
+    },
+    "operating_margin_bps": {
+      "value": null,
+      "quality": "READY"
+    }
+  },
+  "status": "PASS"
+}

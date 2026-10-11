@@ -1,0 +1,45 @@
+{
+  "scope": "G20_INTERNAL_INVOICE_CREATE_APPROVE_LOST_RESPONSE_RECOVERY_REVIEW_PDF",
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "checks": [
+    {
+      "name": "INVOICE_DRAFT_CREATE_COMMIT_LOSS_RELOAD_SOURCE_DISAPPEARS_RECOVERY_NOTICE",
+      "status": "PASS"
+    },
+    {
+      "name": "APPROVE_COMMIT_LOSS_RELOAD_NO_SECOND_DEBT_PDF_INTERNAL_LEGAL_NOT_ISSUED",
+      "status": "PASS",
+      "before": {
+        "ar": 1,
+        "revenue": 1,
+        "payments": 0
+      },
+      "after": {
+        "ar": 1,
+        "revenue": 1,
+        "payments": 0
+      },
+      "legal": {
+        "provider_state": "NOT_CONFIGURED",
+        "legal_invoice_number": null,
+        "issued_at": null,
+        "amount": "920000"
+      },
+      "pdfBytes": 304162
+    }
+  ],
+  "expectedTransportErrors": [
+    {
+      "text": "Failed to load resource: net::ERR_FAILED",
+      "url": "http://127.0.0.1:3110/admin/invoices"
+    },
+    {
+      "text": "Failed to load resource: net::ERR_FAILED",
+      "url": "http://127.0.0.1:3110/admin/invoices/93974ae6-ea71-4bc0-aef5-64cadcc155b6"
+    }
+  ],
+  "unexpectedErrors": [],
+  "invoice": "93974ae6-ea71-4bc0-aef5-64cadcc155b6",
+  "status": "PASS_INTERNAL_INVOICE_LEGAL_ISSUANCE_BLOCKED"
+}

@@ -1,0 +1,29 @@
+{
+  "scope": "G07_REAL_NATIVE_PAYMENT_OR_DRAFT_LOCK_CONTENTION",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "status": "PASS_EXECUTED_ADVANCE_RACE",
+  "mode": "different-intents",
+  "actorA": "a89838c9-bb2d-4758-874c-b031f9655f49",
+  "actorB": "0d1d2134-5a21-40a4-9fcb-375898d3c133",
+  "distinctActors": true,
+  "pidA": 17503,
+  "pidB": 17504,
+  "observedBlockingPids": [
+    17503
+  ],
+  "result": {
+    "error": {
+      "code": "23514",
+      "message": "allocation_exceeds_outstanding"
+    }
+  },
+  "facts": {
+    "debt": "400000",
+    "advance": "400000",
+    "allocated": "600000",
+    "effects": 1,
+    "payments": 1
+  },
+  "managedAuthTestedInRace": false,
+  "productionAccess": "NONE"
+}

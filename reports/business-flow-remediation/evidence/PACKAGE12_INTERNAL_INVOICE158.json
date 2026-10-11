@@ -1,0 +1,29 @@
+{
+  "scope": "G20_INTERNAL_INVOICE_AND_RETURN_ADJUSTMENT_NO_LEGAL_ISSUANCE_OR_SECOND_DEBT",
+  "productionAccess": "NONE",
+  "managedAuthTested": false,
+  "facts": {
+    "before": {
+      "ar": 1,
+      "revenue": 1,
+      "payments": 1
+    },
+    "after": {
+      "ar": 1,
+      "revenue": 1,
+      "payments": 1
+    },
+    "doc": {
+      "status": "BUSINESS_APPROVED",
+      "provider_state": "NOT_CONFIGURED",
+      "legal_invoice_number": null,
+      "issued_at": null,
+      "amount": "3220000"
+    },
+    "line": {
+      "amount": "-230000"
+    }
+  },
+  "status": "PASS_INTERNAL_SCOPE_LEGAL_PROVIDER_BLOCKED",
+  "rolledBack": true
+}

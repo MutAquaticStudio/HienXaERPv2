@@ -1,0 +1,19 @@
+{
+  "scope": "G17_INTERNAL_VEHICLE_IMMUTABLE_ASSIGNMENT_NO_EMPLOYEE_DOUBLE_COUNT",
+  "status": "PASS",
+  "fact": {
+    "source": {
+      "vehicle_id": "2dd10ed5-ada0-4d82-b56f-ba0a90c78d40",
+      "plate_number": "RMBC7B4B15",
+      "assignment_id": "866cf148-97e5-4ed4-975b-1042e2b7ee0f"
+    },
+    "expense": "e5e6f5bc-2df5-4402-ad62-2148277dadf2",
+    "earnings": {
+      "n": 0
+    },
+    "preHandoffRejected": true
+  },
+  "rolledBack": true,
+  "managedAuthTested": false,
+  "productionAccess": "NONE"
+}

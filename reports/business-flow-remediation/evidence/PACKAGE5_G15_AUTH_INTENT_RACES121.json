@@ -1,0 +1,92 @@
+{
+  "scope": "G15_REAL_AUTH_SAME_SAVED_INTENT_TWO_SESSIONS_THREE_COMMANDS",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "productionAccess": "NONE",
+  "managedQaBusinessWrites": 0,
+  "tokensRecorded": false,
+  "checks": [
+    {
+      "command": "post_payment",
+      "status": "PASS",
+      "sameActorTwoSessions": "a89838c9-bb2d-4758-874c-b031f9655f49",
+      "pidA": 93180,
+      "pidB": 93181,
+      "observedBlockingPids": [
+        93180
+      ],
+      "effects": {
+        "n": 1
+      },
+      "durable": {
+        "receipts": 1,
+        "audits": 1
+      },
+      "outcome": {
+        "status": "COMMITTED",
+        "result_id": "878314a9-05a9-494f-ae39-c30529df88a2"
+      },
+      "docs": {
+        "customer": "79793a4b-dba4-41f4-861d-bc231cf3c669",
+        "account": "3f5a44cf-0378-4f58-9158-4967c6ee1fe7"
+      },
+      "intent": "11d49641-5496-40d4-80bc-7eebeed879cc"
+    },
+    {
+      "command": "receive_purchase_order",
+      "status": "PASS",
+      "sameActorTwoSessions": "e04f1e5a-2a2d-4347-a506-1b6a35ea790f",
+      "pidA": 93181,
+      "pidB": 93180,
+      "observedBlockingPids": [
+        93181
+      ],
+      "effects": {
+        "n": 1
+      },
+      "durable": {
+        "receipts": 1,
+        "audits": 1
+      },
+      "outcome": {
+        "status": "COMMITTED",
+        "result_id": "90a6c69e-00ae-4d92-87c8-93d88b84e8dd"
+      },
+      "docs": {
+        "po": "3ba97f6b-1980-4191-aff3-1b4fd89b281f",
+        "line": "277cbe97-f8d3-4e59-bc98-76c1c6bad984"
+      },
+      "intent": "4e6537de-d248-4193-8d5a-f640e6dff771"
+    },
+    {
+      "command": "verify_supplier_fulfillment",
+      "status": "PASS",
+      "sameActorTwoSessions": "e04f1e5a-2a2d-4347-a506-1b6a35ea790f",
+      "pidA": 93180,
+      "pidB": 93181,
+      "observedBlockingPids": [
+        93180
+      ],
+      "effects": {
+        "n": 1
+      },
+      "durable": {
+        "receipts": 1,
+        "audits": 1
+      },
+      "outcome": {
+        "status": "COMMITTED",
+        "result_id": "b41523a3-7078-4e27-898e-c9ceedfe5099"
+      },
+      "docs": {
+        "po": "599c06ac-d0fd-40e5-ada1-424fb7acc21e",
+        "line": "05bfb316-e52c-4662-af0d-0c79f511fd50"
+      },
+      "intent": "13cf72b7-0474-4814-a6e3-11fce3377410"
+    }
+  ],
+  "excluded": [
+    "PACKAGE4_G07_CONCURRENCY",
+    "PACKAGE4_G07_SAME_INTENT_CONCURRENCY"
+  ],
+  "status": "PASS_REAL_AUTH_THREE_SAVED_INTENT_RACES"
+}

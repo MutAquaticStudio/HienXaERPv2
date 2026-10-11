@@ -1,0 +1,64 @@
+$ node --test scripts/qa/*.test.mjs
+✔ guard accepts exact QA URL and verified database (0.893292ms)
+✔ guard rejects production, ambiguous hosts, TLS bypass and capacity overrides (0.2785ms)
+✔ deterministic IDs and percentiles include failed/slow samples (1.148625ms)
+✖ QA seed replays idempotently against real migrations and isolates branches (1755.805291ms)
+✔ success extracts only the secret payload (0.519125ms)
+✔ success status metadata is not a secret (0.226625ms)
+✔ missing, empty and nonstring payloads fail closed (0.107792ms)
+✔ malformed response and invalid metadata types fail closed (0.095125ms)
+✔ nonzero operation status never returns a payload (0.583917ms)
+✔ JSON-like secret characters and whitespace remain unchanged (0.063625ms)
+✔ manifest validates exact statement bytes, not just count (71.527375ms)
+✔ missing or split SQL is explicitly unverifiable (22.532083ms)
+✔ only reviewed outer transaction envelopes are stripped (0.807792ms)
+✔ only declared JSON parameters are decoded and typed (1.0965ms)
+✔ SQL NULL, JSON null, empty object/array and JSON string stay distinct (0.139209ms)
+✔ nested JSON and Vietnamese quotation marks survive one decode (0.107792ms)
+✔ invalid JSON text, omitted JSON and mismatched metadata fail closed (1.471625ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 16
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1857.05825
+
+✖ failing tests:
+
+test at scripts/qa/fixtures.test.mjs:8:1
+✖ QA seed replays idempotently against real migrations and isolates branches (1755.805291ms)
+  error: role "service_role" does not exist
+      at pe.Ue (file:///Users/nox/.codex/worktrees/post-pr40-ux-vietnamese/HienXaERP/node_modules/.pnpm/@electric-sql+pglite@0.5.8/node_modules/@electric-sql/pglite/dist/chunk-2BOC2OMW.js:1:17959)
+      at pe.tt (file:///Users/nox/.codex/worktrees/post-pr40-ux-vietnamese/HienXaERP/node_modules/.pnpm/@electric-sql+pglite@0.5.8/node_modules/@electric-sql/pglite/dist/chunk-2BOC2OMW.js:1:15347)
+      at pe.parse (file:///Users/nox/.codex/worktrees/post-pr40-ux-vietnamese/HienXaERP/node_modules/.pnpm/@electric-sql+pglite@0.5.8/node_modules/@electric-sql/pglite/dist/chunk-2BOC2OMW.js:1:14021)
+      at N.qe (file:///Users/nox/.codex/worktrees/post-pr40-ux-vietnamese/HienXaERP/node_modules/.pnpm/@electric-sql+pglite@0.5.8/node_modules/@electric-sql/pglite/dist/index.js:5:1762)
+      at file:///Users/nox/.codex/worktrees/post-pr40-ux-vietnamese/HienXaERP/node_modules/.pnpm/@electric-sql+pglite@0.5.8/node_modules/@electric-sql/pglite/dist/index.js:5:1155
+      at wasm://wasm/0267bb86:wasm-function[10930]:0x5a5ccf
+      at wasm://wasm/0267bb86:wasm-function[3585]:0x27eaeb
+      at wasm://wasm/0267bb86:wasm-function[3627]:0x2869d1
+      at wasm://wasm/0267bb86:wasm-function[3637]:0x286c2d
+      at wasm://wasm/0267bb86:wasm-function[9914]:0x54fd4d {
+    length: 89,
+    severity: 'ERROR',
+    code: '42704',
+    detail: undefined,
+    hint: undefined,
+    position: undefined,
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: 'acl.c',
+    line: '5562',
+    routine: 'get_role_oid',
+    query: "-- Cache current-actor authorization scope once per statement, not per order.\n-- Existing permission/membership functions remain the authoritative checks.\ndo $migration$\nbegin\n  if not exists (\n    select 1 from pg_catalog.pg_policies\n    where schemaname = 'public' and tablename = 'sales_orders'\n      and policyname = 'sales_orders_select' and cmd = 'SELECT'\n      and roles = array['authenticated']::name[]\n      and qual = '(( SELECT private.has_permission(sales_orders.branch_id, ''orders.read''::text) AS has_permission) OR ( SELECT private.has_customer_membership(sales_orders.customer_id, NULL::text[]) AS has_customer_membership))'\n  ) or pg_catalog.to_regprocedure('private.sales_order_reader_scope()') is not null then\n    raise exception using errcode = '55000', message = 'sales_order_reader_scope_precondition_failed';\n  end if;\nend;\n$migration$;\n\ncreate function private.sales_order_reader_scope()\nreturns table (branch_ids uuid[], customer_ids uuid[])\nlanguage sql stable security definer\nset search_path = ''\nas $function$\n  select\n    array(\n      select distinct a.branch_id\n      from public.employee_branch_access a\n      join public.employees e on e.id = a.employee_id\n      where e.auth_user_id = (select auth.uid())\n        and private.has_permission(a.branch_id, 'orders.read')\n    ),\n    array(\n      select distinct m.customer_id\n      from public.customer_portal_memberships m\n      where m.auth_user_id = (select auth.uid())\n        and private.has_customer_membership(m.customer_id, null::text[])\n    );\n$function$;\n\nrevoke all on function private.sales_order_reader_scope() from public, anon, service_role;\ngrant execute on function private.sales_order_reader_scope() to authenticated;\n\nalter policy sales_orders_select on public.sales_orders\nusing (\n  branch_id = any (((select scope.branch_ids from private.sales_order_reader_scope() scope))::uuid[])\n  or customer_id = any (((select scope.customer_ids from private.sales_order_reader_scope() scope))::uuid[])\n);\n",
+    params: undefined,
+    queryOptions: undefined
+  }
+[ELIFECYCLE] Command failed with exit code 1.

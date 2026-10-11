@@ -1,0 +1,27 @@
+{
+  "scope": "G22_NOTICE_REVIEW_VS_BANK_COVERAGE_VS_DEBT_ALLOCATION",
+  "productionAccess": "NONE",
+  "managedAuthTested": false,
+  "actualStorageTested": false,
+  "facts": {
+    "photo": {
+      "debt": "3220000",
+      "cash": 0
+    },
+    "afterMatching": {
+      "debt": "2220000",
+      "allocation_available": "0",
+      "cash": 1,
+      "matched": "600000",
+      "audit": 1
+    },
+    "afterCorrection": {
+      "remaining_match_vnd": "0",
+      "money_match_state": "MATCHED"
+    },
+    "newMatch": "573080ef-1376-439f-a4ff-9f52d01b0dce",
+    "noMoneyOrDebtEffectsFromNoticeCommands": true
+  },
+  "status": "PASS",
+  "rolledBack": true
+}

@@ -1,0 +1,40 @@
+{
+  "scope": "G16_REAL_BROWSER_COST_INCOMPLETE_TO_COMPLETE_G05_ROLE_GUARD_AR_EXPORT",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright; Browser plugin not available",
+  "origin": "http://127.0.0.1:3110",
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "WAREHOUSE_COST_PRESENT_DIRECT_COST_MISSING_HIDES_PROFIT",
+      "status": "PASS",
+      "profit": "Lợi nhuận gộp quản trị\n—\nChưa đủ hoặc chưa khớp giá vốn theo dòng và nguồn"
+    },
+    {
+      "name": "ACTUAL_WAREHOUSE_UI_SOURCE_COMMIT_INDEPENDENT_READ",
+      "status": "PASS",
+      "facts": {
+        "source": 1,
+        "cost": "750000"
+      }
+    },
+    {
+      "name": "RELOAD_COMPLETE_ONLY_AFTER_BOTH_SOURCE_LINES_MATCH",
+      "status": "PASS",
+      "profit": "Lợi nhuận gộp quản trị\n800.000 ₫"
+    },
+    {
+      "name": "AUTHENTICATED_AR_CSV_MATCHES_SOURCE_DEBT_WITHOUT_COST_FIELDS",
+      "status": "PASS",
+      "totalVnd": "2300000",
+      "pnlCsvImplemented": false
+    },
+    {
+      "name": "SALES_ROLE_CANNOT_READ_COST_OR_PROFIT_FROM_NEW_DASHBOARD_PATH",
+      "status": "PASS"
+    }
+  ],
+  "expectedTransportErrors": [],
+  "unexpectedErrors": [],
+  "status": "PASS_BROWSER_COST_SOURCE_COMPLETENESS_AND_SCOPED_EXPORT"
+}

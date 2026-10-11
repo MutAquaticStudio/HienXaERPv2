@@ -1,0 +1,62 @@
+{
+  "scope": "G08_REAL_AUTH_TWO_ACTORS_REFUND_VS_OFFSET_SAME_CREDIT",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "productionAccess": "NONE",
+  "managedQaBusinessWrites": 0,
+  "tokensRecorded": false,
+  "status": "PASS_REAL_AUTH_REFUND_OFFSET_RACE",
+  "actors": [
+    "a89838c9-bb2d-4758-874c-b031f9655f49",
+    "0d1d2134-5a21-40a4-9fcb-375898d3c133"
+  ],
+  "pidA": 76520,
+  "pidB": 76521,
+  "observedBlockingPids": [
+    76520
+  ],
+  "refundStatus": 200,
+  "offsetStatus": 400,
+  "facts": {
+    "credit": "0",
+    "nextdebt": "230000",
+    "settlements": 1,
+    "payments": 2,
+    "rejectedreceipts": 0,
+    "rejectedaudits": 0
+  },
+  "doc": {
+    "stock": {
+      "prefix": "RMAE6013B7",
+      "uom": "ae529f84-2020-484c-9edd-0522e0b5270e",
+      "material": "c34a31b1-1703-4975-93fb-433a58b9450e",
+      "price": "bfa6d72d-db01-4e2e-acbc-4746de56f1be",
+      "cost": "5d6135b5-baaa-4a08-8743-650065010f9d",
+      "po": "7ec4e781-9dd5-451e-9f49-8b7acf847bb1",
+      "common": {
+        "material_id": "c34a31b1-1703-4975-93fb-433a58b9450e",
+        "ordered_uom_id": "ae529f84-2020-484c-9edd-0522e0b5270e",
+        "quantity": "14",
+        "conversion_numerator": "1",
+        "conversion_denominator": "1",
+        "rounding_mode": "HALF_UP"
+      },
+      "cutoff": "2026-10-11 13:11:10.157669+07",
+      "customer": "5b75b9d7-ab7b-452a-b270-c89459541543",
+      "site": "d72aee09-b3b2-4342-b133-11960f270084",
+      "unitPriceVnd": "230000"
+    },
+    "sale": {
+      "so": "caf15934-d49c-4af4-acf7-624ced32d579",
+      "line": "7bf0b4ba-900b-4b9c-b206-cb2c25773559"
+    },
+    "account": "29fc3224-a877-442a-8529-0d47631a70fb",
+    "payment": "1642f49c-1744-4e2c-aa3d-55ead11b3eb5",
+    "obligation": "8c415fdc-a381-4024-919e-d40f59d13b99",
+    "returnCase": "9784c6c0-6a0e-43c1-a3de-7f3e4cf5677b",
+    "verificationLine": "e926eb8a-a2bc-42aa-afe7-39c3d31a6909",
+    "delivery": "3e665384-72f0-401c-9d34-6e2ecd567d08",
+    "nextObligation": "748a7026-b330-45b2-bbeb-4a8aa1f4c838",
+    "credit": "333ed7b2-c91e-4f3d-b802-d1cd4ce8aee7",
+    "fund": "c1e036e1-d0d6-472a-ad24-1b5564ee5daf"
+  }
+}

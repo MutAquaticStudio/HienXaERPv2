@@ -1,0 +1,34 @@
+{
+  "scope": "REAL_BROWSER_LOST_RESPONSE_AFTER_ACTUAL_PAYMENT_COMMIT",
+  "origin": "http://127.0.0.1:3110",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright",
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "ACTUAL_COMMIT_RESPONSE_LOST_RELOAD_RECONCILES_ONE_RECEIPT",
+      "status": "PASS",
+      "facts": {
+        "n": 1,
+        "amount": "1000000"
+      },
+      "browserIdentifierOnly": true
+    },
+    {
+      "name": "DISTINCT_ACTUAL_RECEIPT_SAME_AMOUNT_ALLOWED",
+      "status": "PASS",
+      "facts": {
+        "n": 2,
+        "amount": "2000000"
+      }
+    }
+  ],
+  "expectedTransportErrors": [
+    {
+      "text": "Failed to load resource: net::ERR_FAILED",
+      "url": "http://127.0.0.1:3110/admin/receivables?customer=c077221a-d5db-43bd-8d85-dc121bb8ee6b"
+    }
+  ],
+  "unexpectedErrors": [],
+  "status": "PASS_EXECUTED_BROWSER_PAYMENT_RECOVERY_SCOPE"
+}

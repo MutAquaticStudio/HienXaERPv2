@@ -1,0 +1,31 @@
+{
+  "scope": "G07_REAL_AUTH_ALLOCATE_PRIOR_ADVANCE",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "REAL_FINANCE_PRIOR_RECEIPT_ALLOCATED_WITHOUT_NEW_CASH",
+      "status": "PASS",
+      "facts": {
+        "payments": 1,
+        "cash": "1000000",
+        "debt": "0",
+        "advance": "0",
+        "consumptions": 1
+      },
+      "salesDenied": 403,
+      "workerDeniedRead": true,
+      "durableLookup": "COMMITTED",
+      "sourceReader": {
+        "available_amount_vnd": "0",
+        "advance_remaining_vnd": "0"
+      },
+      "cashbookReader": {
+        "advance_amount_vnd": 0,
+        "unallocated_amount_vnd": 0
+      }
+    }
+  ],
+  "tokensRecorded": false,
+  "status": "PASS_EXECUTED_AUTHENTICATED_G07"
+}

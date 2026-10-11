@@ -63,3 +63,19 @@ Deploy all forwards together before opening newexpense/transfer forms. Preserve 
 Deploy all source/credit/recovery/valuation forwards together before opening supplier-return UI. New tables/column refs preserve legacy receipts, money, AP and histories. SourceUnit fromoriginalPOLine, explicit physicaldestinationSUPPLIER avoids fakeWH; actual recordedWarehouse returns preserve source. CreditLedger reservesreleasedoriginalpayment; refund/offset/sourceguard remainatomic; do notundo/dropledger after newposts. Legacyevents before151 retainactualpostedsourcevalue, newevents captureactualWH value and sequencedacceptancecost; no retroactivehistoryrewrite. Source-retiredquantity/verifiedcargo guards blockreusing returned/lostunit; replacement usesappropriate newrecordedsource withoutchanging oldPOprice/limit. Inventorydifference masked separatelyfromvendorapprovedamount.
 
 Allapply manifests oldpubliccols/rowhash/countunchanged. Initial146unappliedDDLcolumnnameerror rolledback andcorrectedbeforeapply; applied143–154immutable. Fresh150/RLS0 andisolatedpre150/schema149118table restoration/history/hashpassed. Fresh154/RLS0 và restorepre154/schema153118bảng/hash/historyPASS. AuthUIDshim recovery coverslocal applicationDB, notManagedAuth/StoragePITR. NoProduction writes/deploy/realbank. Legalinvoiceprovider remainsblockedonlythatboundary.
+
+## Gói12–14 /155–164
+
+Deploy all document/notice/status forwards with readers before enabling forms. Matching documents are AP-neutral metadata with immutable snapshots/coverage; canceldraftmetadata releasescoverage, doesnotundoCash/AR/AP. Existinginvoicelegalprovider remainsNOT_CONFIGURED; exportsPDF/CSVexplicitreviewonly. Notice matches reusealreadyreconciledactualpaymentcoverage; correctionisimmutablehistory anddoesnotreverseactualmoney. Operationalcompletionderivedfromallsourceconditions, commercialCLOSED nevermeansallDone. SourcegrantRLS/costprivacy preserved; no openinggate/stateflip/backfillmoney/price/quantities. 156unappliedviewdependencyerror rolledbackthenfixedbeforeapply;155–164appliedimmutable.
+
+Finalfresh164allmigrations/RLSmissing0 passed; restorepre164/schema163ownedclone PASS122bảng/history163/hash tạiFINAL_RECOVERY163. Everyforwardmanifest oldpubliccols/rows/hashunchanged, representativeDB includesoldsourcefacts/openroles/realQAUIDlocalshims. NoManagedAuth/Storage/PITRrecoveryclaim. Afternewpostedsourcefacts, restoreisolatedarchiveandreconcile, no destructiveDROP/downmigration. NoProductiondeploy/DML/realmoney/emission.
+
+## Chứng minh nâng cấp cuối từ dữ liệu phiên bản trước
+
+`FINAL_RESTORE136` khôi phục archive trước137 vào bản sao độc lập;110 bảng public, hash và history136 khớp. `FINAL_UPGRADE136_TO164` áp dụng28 migration còn thiếu; từng bước đối chiếu119 bảng public/private theo đúng cột cũ, số dòng và hash. Facts, quyền, trạng thái vận hành và phiên bản cũ được giữ nguyên. Sau nâng cấp có164 migration và không bảng public nào thiếu RLS.
+
+MainQA không bị reset; checkout gốc giữ nguyên. Backup được giữ riêng với mode600 và không commit. Code649dd17 giữ các migration đã áp dụng bất biến. Fresh164 và archive163 đều đạt; đây là phục hồi DB ứng dụng tại nativeQA với AuthUID shim, không phải Managed Auth/Storage/PITR.
+
+Trước nâng cấp môi trường thật: kiểm backup/dung lượng và nguồn cargo, legacycredit, paidreview; đóng lưu lượng ghi; áp dụng theo thứ tự toàn bộ migration87–164 sau nền PR41/schema86; kiểm RPC và readers cuối. Không backfill tiền, kho, activation hoặc giá chứng từ.
+
+Nếu chưa có facts mới, dùng bản ứng dụng tương thích schema hoặc khôi phục archive đã xác minh trên bản sao. Nếu đã có facts mới, giữ journal/sourceIDs và đối chiếu phần phát sinh; dùng forwardfix hoặc kế hoạch restore bảo toàn dữ liệu. Không DROP/downmigration để xóa ledger mới. Chưa diễn tập failover Production; task này không nâng cấp hay triển khai Production.

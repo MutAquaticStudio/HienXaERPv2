@@ -1,51 +1,51 @@
 # T01–T42 — kết quả bản sửa
 
-Expected/source ở audit07; không PASS từ evidence cũ.
+ID/expected theo audit07. Bảng chính dưới đây là ánh xạ cuối; ghi chú gói ở dưới giữ lịch sử thực thi. PASS/SCOPED chỉ có hiệu lực trong phạm vi nêu, không nghiệm thu toàn bộ T01–T42. Bằng chứng cũ được giữ khi đường mã/bất biến không đổi; phần đổi được hồi quy chọn lọc trên schema164.
 
-| Test | DB | Auth HTTP | Browser | Concurrent/fault | Commit/evidence | Kết quả/giới hạn |
-|---|---|---|---|---|---|---|
-| T01 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T02 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T03 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T04 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T05 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T06 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T07 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T08 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T09 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T10 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T11 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T12 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T13 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T14 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T15 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T16 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T17 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T18 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T19 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T20 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T21 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T22 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T23 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T24 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T25 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T26 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T27 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T28 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T29 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T30 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T31 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T32 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T33 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T34 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T35 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T36 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T37 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T38 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T39 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T40 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T41 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
-| T42 | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | — | Chưa chạy bản sửa |
+| Test | G | DB | Auth HTTP | Browser | Đồng thời / sự cố | Bằng chứng | Kết luận / giới hạn |
+|---|---|---|---|---|---|---|---|
+| T01 | G11 | PASS | PASS | PASS | PASS nguồn mới | PACKAGE6_G11_AUTH_HTTP124_FINAL / BROWSER124_FINAL | Nhánh PENDING xác nhận nguồn mới; một start; không nhập đầu kỳ. |
+| T02 | G11 | PASS | PASS | PASS nhận | PASS xác nhận | PACKAGE6_G11_NATIVE124 / START_SAFETY124 | PO xác nhận chưa stock/AP; sau đó nhận thực mới ghi. Không chứng minh mọi mẫu PO. |
+| T03 | G11 | PASS | PASS | PASS | PASS rollback | PACKAGE6_G11_NATIVE124 / AUTH_HTTP124_FINAL | PENDING vận hành không activation/zero-opening; lịch sử UNRECONCILED, tổng doanh nghiệp chưa xác minh. |
+| T04 | G02/G11 | SCOPED | SCOPED | SCOPED | — | FINAL_SEAMS164 / PACKAGE6_G11_AUTH_HTTP124_FINAL | Guard nguồn/độ chính xác được thử; mọi tổ hợp thiếu trường mọi form chưa chạy. |
+| T05 | G05 | PASS phạm vi | PASS phạm vi | PASS phạm vi | — | PACKAGE1_AUTH_HTTP / PACKAGE11_INVENTORY_VALUE152 / FINAL_SOURCE_READBACK164 | Owner/Finance/Sales/Warehouse/Worker theo đường đổi; disabled/customer toàn hệ thống chưa sweep. |
+| T06 | G05/G11/G18–20/G22 | PASS phạm vi | PASS phạm vi | SCOPED | — | PACKAGE6_G11_AUTH_HTTP124_FINAL / PACKAGE12_DOCUMENT_AUTH158 / PACKAGE13_NOTICE_AUTH161 | Chi nhánh/khách/nguồn và vốn mới được chặn; không claim toàn bộ portal/Storage. |
+| T07 | G06/G12/G18–20/G22 | PASS | PASS phạm vi | PASS phạm vi | PASS | FINAL_SEAMS164 / PACKAGE10_TRANSFER_NATIVE140 / PACKAGE12_DOCUMENT_NATIVE156_FINAL | Sai state/version ở lệnh đổi; approved supplier doc không cancel. Không mọi API cũ. |
+| T08 | G07/G12/G15/G18–22 | PASS | PASS | PASS | PASS | PACKAGE5_G15_AUTH_INTENT_RACES121 / PACKAGE12_DOCUMENT_BROWSER158 / PACKAGE13_NOTICE_BROWSER162 | Ý định cũ trả đúng kết quả trước guard state/version; đổi payload bị conflict. |
+| T09 | G03/G07/G18–22 | PASS | PASS | PASS phạm vi | PASS | PACKAGE11_SUPPLIER_AUTH147 / PACKAGE12_DOCUMENT_AUTH158 / PACKAGE13_NOTICE_AUTH161 | Nonce mới không vượt nguồn/coverage; không tác động tài chính hai lần. |
+| T10 | G15 | PASS | PASS | PASS | PASS aftercommit | PACKAGE5_G15_AUTH_INTENT_RACES121 / PAYMENT_BROWSER121 / PURCHASE_BROWSER121; PACKAGE9–13 browsers | Thu/chi, nhận, xác minh NCC và lệnh mới: DB đã commit rồi abort response, reload/lookup cùng intent. Hai race advance cũ bị loại. |
+| T11 | G11/G12 | PASS | PASS | — | PASS hai actor | PACKAGE6_G11_START_SAFETY124 | Hai QA UID/PID xác nhận PO khác trên nhánh mới; source/start một lần. 8 race confirm cũ giữ giới hạn trước đó. |
+| T12 | G13/G14 | SCOPED | SCOPED | SCOPED | PARTIAL | PACKAGE3_CARGO_AUTH_RACE / PACKAGE3_CARGO_BROWSER | Race lấy hàng dùng chung xe đã đạt; literal hai allocation cùng 15 tồn chưa có race riêng trong đợt này. |
+| T13 | G13 | PASS | PASS | PASS | PASS hai actor | PACKAGE3_ASSIGNMENT_CONCURRENCY_FINAL / CARGO_AUTH_RACE | Khóa employee/vehicle, tổng cargo thực còn trên xe; conversion/cap và lịch kiểm theo nguồn. |
+| T14 | G06 | PASS | PASS | PASS | PASS fault/retry | PACKAGE3_REASSIGNMENT_AUTH_HTTP_FINAL / BROWSER_ELIGIBLE | Trước start đồng bộ delivery/work/GPS; người cũ bị chặn, đã start không đổi tùy ý. |
+| T15 | G12 | PASS 37 contracts | PASS phạm vi | PASS recover | PASS | FINAL_CONTRACT_INVENTORY164 / FINAL_SEAMS164; package9–13 native | Không exact expected_version nullable unsafe; dual/source versions được thử theo lệnh; không claim mọi SDK caller. |
+| T16 | G02 | PASS | PASS phạm vi | PASS phạm vi | PASS fault | FINAL_SEAMS164 / PACKAGE8_G02_HOUR_AFTER132 / PACKAGE12_DOCUMENT_NATIVE156_FINAL | Lượng/quy đổi/giờ và giá document được chặn trước tiền/lưu; source copy giữ snapshot. Cực trị mọi tổ hợp chưa sweep. |
+| T17 | G04 | PASS | PASS | PASS | PASS retry | PACKAGE7_G04_HIERARCHY_G12_129_FINAL / AUTH_HTTP127 / BROWSER127_FINAL | Ưu tiên khách/vật tư→nhóm→tier→default; override quyền/lý do; chứng từ cũ giữ giá/quy đổi. |
+| T18 | G03 | PASS | PASS verify | PASS verify | PASS billing race | PACKAGE2_BILLING_CONCURRENCY / PACKAGE5_QUANTITY_RETURN_AUDIT121 / PACKAGE8_G03_SPLIT_RETURN_AFTER133 | 15.000003+15.000003+14.999994; 3.450.001+3.450.000+3.449.999=10.350.000; đợt cuối không chặn; return cumulative đúng. |
+| T19 | G03/G11/G14/G23 | SCOPED | PASS phạm vi | PASS phạm vi | PASS fault/retry | PACKAGE6_G11_AUTH_HTTP124_FINAL / PACKAGE3_DB_REGRESSION_FINAL / PACKAGE14_OPERATIONS_NATIVE163 | Nhiều delivery giữ nguồn; đóng phần chưa lấy giải phóng đúng. Full nhiềuSKU/tất cảUOM xuyên trình duyệt chưa chứng minh. |
+| T20 | G13/G14 | PASS | PASS | PASS | PASS cargo race | PACKAGE3_DB_REGRESSION_FINAL / CARGO_AUTH_RACE / PACKAGE11_G13_G14_CARGO_REGRESSION150_SEQUENTIAL | Plan15 thực14, residual1, unloaded0 không tạo kho/cost; tải dùng tổng cargo, không plan. |
+| T21 | G14/G03 | PASS phạm vi | PASS phạm vi | PASS trường thực | PASS rollback | PACKAGE3_AUTH_HTTP_FINAL / PACKAGE3_DB_REGRESSION_FINAL | Vượt lượng, thiếu quantity và accepted/billable guards; toàn bộ amendment matrix chưa chạy. |
+| T22 | G10/G18/G19/G23 | PASS | PASS | PASS | PASS fault | PACKAGE3_CARGO_AND_DIRECT_AFFECTED_REGRESSION / PACKAGE10_TRANSFER_BROWSER142 / PACKAGE11_DIRECT_AUTH150 | Failed/redelivery, physicalreturn/loss, direct không kho giả; nguồn retired không lấy lại. |
+| T23 | G10/G23 | PASS | PASS | PASS | PASS retry | PACKAGE3_DIRECT_CARGO_BOARD_AFTER / PACKAGE3_BROWSER_ELIGIBLE / FINAL_G23_BROWSER164 | FULL/accepted lệch và direct remainder hiện tới xử lý; không complete khi ngoại lệ/tiền mở. |
+| T24 | G16/G19 | PASS | PASS | PASS chất lượng | PASS retry | PACKAGE4_G16_AFTER / PACKAGE5_G16_BROWSER121_FINAL / PACKAGE11_DIRECT_AUTH150 | Nguồn NCC và khách độc lập; direct không inventory giả; vendor-return không reuse nguồn đã retired. |
+| T25 | G02/G03 | SCOPED | SCOPED | SCOPED | PASS retry/fault | FINAL_SEAMS164 / PACKAGE5_PURCHASE_BROWSER121 / PACKAGE6_G11_BROWSER124_FINAL | Nhận partial còn1, precision/cap và recovery đã đạt; literal PO30 nhận10+20 ở đủ nhiều dòng chưa chạy riêng. |
+| T26 | G19 | PASS | PASS | PASS | PASS hai actor | PACKAGE11_PHYSICAL_NATIVE150 / CREDIT_NATIVE145 / SUPPLIER_AUTH147 / SUPPLIER_BROWSER148_FINAL / CREDIT_RACE148_RESUMED / RECORDED_WAREHOUSE_CUSTODY154_FINAL | Receipt/direct/recordedWH; nhiều lần, actualvalue/cap, paid refund+offset, AP một credit; G20 note metadata không giảm AP nữa. |
+| T27 | G18 | PASS | PASS | PASS | PASS hai actor | PACKAGE10_TRANSFER_SEAMS142 / TRANSFER_CROSS_ACTOR_INTENT142 / TRANSFER_BROWSER142 | Literal15 ship14 receive+1transit; partial/missing/loss/version/atomic retry; tổng giá trị bảo toàn trừ loss duyệt. MộtSKU/samebranch. |
+| T28 | G01 | PASS | PASS | PASS | PASS hai actor | PACKAGE1_CONCURRENCY / PACKAGE6_G11_G01_REGRESSION124 / PACKAGE10_TRANSFER_SEAMS142 | Tồn/basis đổi, reservation hoặc transfer làm count stale bị chặn trước movement/audit. |
+| T29 | G07 | PASS giữ | PASS giữ | PASS giữ | EXCLUDED cũ | PACKAGE4_G07_CONCURRENCY / SAME_INTENT_CONCURRENCY / RESUME_VERIFICATION; PACKAGE11_G11_G07_NEW_NONRACE150 | Không chạy lại hai race cũ: một600.000/nguồn1m/còn400.000/cash1. NEW nonrace100k/75k còn25k sau sourcebalance đổi. |
+| T30 | G07 | PASS phạm vi | PASS | PASS | PASS recovery | PACKAGE4_G07_AUTH_HTTP_FINAL / BROWSER / CORE_FINAL | UI phân bổ tiền cũ AR/AP, partial/caps; không tiền lần2. Literal10m/30m/2×10m không chạy riêng. |
+| T31 | G08/G03 | PASS | PASS | PASS | PASS refund/offset race | PACKAGE4_G08_AUTH_REFUND_OFFSET_RACE / PACKAGE5_CREDIT_EDGE121 / PACKAGE8_LEGACY_BROWSER131 / PACKAGE11_G08_REGRESSION150 | Partialrefund+offset không vượt credit; giữ receipt2.99m của hàng còn giữ; legacy explicit reconcile không RA/cash lần2. |
+| T32 | G09 | PASS | PASS | PASS scope | — | PACKAGE5_G09_AUTH_REVENUE_AFTER119 / FINAL_SOURCE_READBACK164 | Net2.99m/cost1.95m/gross1.04m; đúng kỳ/knowledge cutoff; WRITE_OFF không return-revenue. Đọc lại độc lập không recreate ca cũ. |
+| T33 | G16 | PASS | PASS | PASS | PASS source recovery | PACKAGE5_G16_BROWSER121_FINAL / PACKAGE9_G16_FEE_AUTH142 / FINAL_SOURCE_READBACK164 | WH vốn đủ +direct thiếu→INCOMPLETE/null; tripfee không đại diện source; actualsource đủ mới READY; Sales vẫn masked. |
+| T34 | G17 | PASS | PASS | PASS | PASS aftercommit | PACKAGE9_EXPENSE_NATIVE142 / EXPENSE_AUTH138 / EXPENSE_BROWSER138 / VEHICLE_NATIVE142 | Success/failed/redelivery, actualassignment+vehicle/carrier, direct/overhead, reuseAP/cash, earning0; không hỗ trợ grouptrip nhân bản cost. |
+| T35 | G20 | PASS độc lập | PASS | PASS PDF/CSV | PASS aftercommit | PACKAGE12_DOCUMENT_NATIVE156_FINAL / DOCUMENT_AUTH158 / DOCUMENT_BROWSER158 / INTERNAL_INVOICE158 / INVOICE_BROWSER159 | Threewayqty/price/value/sourcecoverage, RETURN_CREDIT≤approval, internalapproval AP/ARneutral. Legalprovider/sandbox BLOCKED, không claim phát hành. |
+| T36 | G02/G12/G15/G21 | SCOPED | SCOPED | SCOPED | PASS source seams | FINAL_SEAMS164 / PACKAGE8_G02_HOUR_AFTER132 | Service dualversions, actual/billable/compensable/hour-basis precision/guard; fullservice endtoendbrowser chưa chạy. |
+| T37 | G08/G09/G21/G23 | PASS phạm vi | PASS | PASS | PASS hai actor | PACKAGE8_COMMISSION_RESOLUTION135_FINAL / COMMISSION_AUTH_RACE136 / COMMISSION_BROWSER136_LABELS_FIXED | Netprofitmanual52k; paid161k giữ nguyên, 11.5k có sourcedreview/decision/recovery. Không claim mọi payroll/rule/businesspolicy. |
+| T38 | G22 | PASS | PASS | PASS | PASS hai actor | PACKAGE13_NOTICE_NATIVE164 / AUTH161 / RACE162 / BROWSER162 | ACCEPTED photo khôngcash/debt; existingBANKreceipt/link cap samecustomer/branch; correctionfreescoverage only. Synthetic evidence metadata; actualStorage không chứng minh. |
+| T39 | G05/G15 | SCOPED | SCOPED | NOT_RUN realStorage | — | Existing evidence source/unit checks; PACKAGE13_NOTICE_NATIVE164 actualStorageTested=false | RealStorage bytes/sign/download/outage/recovery BLOCKED ở harnessnative không có Storage. Không giả ảnh1byte là upload thật. |
+| T40 | G21 | PASS phạm vi | PASS phạm vi | PASS recovery | PASS fault+retry | FINAL_SEAMS164; PACKAGE1/3/5/6/8–13 faults/audits | Lệnh đang sửa cùngTX actor/source/version/reason; rollback khôngsuccessaudit, retry1; history khôngcostpayload. Chưa audit mọi lệnh legacy. |
+| T41 | G05/G09/G11/G20 | PASS phạm vi | PASS phạm vi | PASS PDF/CSV | — | PACKAGE5_G16_BROWSER121_FINAL / PACKAGE6_G11_BROWSER124_FINAL / PACKAGE12_DOCUMENT_BROWSER158 | Source/time/quality/masking; CSVformula apostrophe &exactBigInt. Export>1000 vàtất cảfilter chưa chạy mới. |
+| T42 | G06/G05 | PASS GPS scope | PASS reassignee | NOT_RUN deviceRealtime | — | PACKAGE3_REASSIGNMENT_AUTH_HTTP_FINAL / PACKAGE3_DB_REGRESSION_FINAL | Oldsession revoked/newassignee scoped; liveRealtime, thiết bịGPS vàfullmessaging chưa kiểm chứng. |
 
 ## Package1 — fresh scope
 
@@ -133,3 +133,7 @@ T34: direct100k/overhead30k (native), failed40k+redelivery60k (actualJWT), inter
 ## Gói11 / T26, T33, T10/T15/T40 — scope154
 
 T26 sourceWarehouse/direct, partial/multiple/caps, physical/acceptance noAPcash, paidSourcecredit/refund/offset/fault/UUIDretry ActualJWTandBrowser passed. SourceDoccredit registration/no-doubleAP remainsG20dependency. T33 actualDirect5→accepted4/retired1 netcost600/gross320READY; tripfee cannotstandforcost earlier142; old1040 read-only preserved. T10 lostaftercommit credit/refund/reload oneeffect; screenshotharnesslatecaretwarning fixedread-only withoutbusinessreplay. T15null/staleCaseversions/source/permissions/cacheafterversion PASS. T40source/audit/rollback/newrace no successfake. Sourceexpense50 onWHWAC200 vsoriginalcredit150 correctandmasked. Twooldadvance races excluded; newG19 refundvsOffset150 twoactors/PIDs/observedblocking recorded. Full all42tests/latestCI notcertifiedbythese scopedcases.
+
+## Commit và kết quả cuối
+
+Code mới G20/G22/G23: 649dd17bfe9cca4599d9dc61be040f4edb0a302a; G17/G18:8f84c66; G19:9c3e425; phần nền giữ3b83779 vàcáccommit trongGAP_STATUS. [Evidence index](EVIDENCE_INDEX.json) chứa SHA256 và exactraceexclusions; artifacts finalreadonly/upgrade không ghi lại source cũ. CI của head cuối phải đọc từ PR; không dùngCI của649dd17 khiPRhead khác. Bảng chính42rows supersede mappingT khác ở ghi chú gói lịch sử.

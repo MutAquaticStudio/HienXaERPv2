@@ -1,0 +1,53 @@
+{
+  "scope": "G08_REAL_FINANCE_BROWSER_APPROVAL_REFUND_RECOVERY_OFFSET",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "origin": "http://127.0.0.1:3110",
+  "browserPlugin": "ABSENT",
+  "fallbackReason": "Browser plugin and browser skill not available; installed Playwright used",
+  "productionAccess": "NONE",
+  "errors": [
+    {
+      "message": "Failed to load resource: net::ERR_FAILED",
+      "afterIntentionalAbort": true
+    }
+  ],
+  "screenshots": [
+    "/Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation/browser/package4-credit/g08-approved-return-holds-source-credit.png",
+    "/Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation/browser/package4-credit/g08-refund-response-lost-unknown-after-commit.png",
+    "/Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation/browser/package4-credit/g08-reloaded-refund-committed-once.png",
+    "/Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation/browser/package4-credit/g08-mobile-refund-recovery.png",
+    "/Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation/browser/package4-credit/g08-offset-committed-reloaded-no-new-cash.png"
+  ],
+  "checks": [
+    {
+      "name": "REAL_UI_APPROVAL_REFUND_AFTER_COMMIT_ABORT_RELOAD_ONE_CASH_EFFECT",
+      "status": "PASS",
+      "refunded": {
+        "debt": "0",
+        "credit": "0",
+        "receiptavailable": "0",
+        "cash": "2990000",
+        "payments": 2
+      },
+      "onlyOpaqueIntentStored": true
+    },
+    {
+      "name": "REAL_UI_CREDIT_OFFSET_VALID_CUSTOMER_DEBT_NO_NEW_MONEY",
+      "status": "PASS",
+      "offset": {
+        "credit": "0",
+        "nextdebt": "0",
+        "payments": 1,
+        "cash": "3220000"
+      }
+    }
+  ],
+  "expectedTransportErrors": [
+    {
+      "message": "Failed to load resource: net::ERR_FAILED",
+      "afterIntentionalAbort": true
+    }
+  ],
+  "unexpectedConsoleErrors": 0,
+  "status": "PASS_REAL_BROWSER_CUSTOMER_CREDIT"
+}

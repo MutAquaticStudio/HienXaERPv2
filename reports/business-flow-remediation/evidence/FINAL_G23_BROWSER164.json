@@ -1,0 +1,8 @@
+{
+  "scope": "G23_BROWSER_DIRECT_ORDER_UNPAID_AND_VENDOR_REFUND_PENDING_NOT_COMPLETE",
+  "productionAccess": "NONE",
+  "businessWrites": 0,
+  "expectedTransportErrors": [],
+  "unexpectedErrors": [],
+  "status": "PASS"
+}

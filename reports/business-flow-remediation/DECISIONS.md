@@ -47,3 +47,7 @@ Giảm tiền trả hàng trước vào debt chưa thanh toán; chỉ phần vư
 RevenueRETURN/PRICE signedsource riêng; WRITE_OFF/OTHER không revenue. SourceFKlegacyReturn readthrough khi không typedrecord, không backfill hoặc giảmhai lần. Period theo approval/recordedAt từngfact; cutoff giữ nguồn thấy tại thời điểm. Warehousecost theo verifiedline; direct theo đúngPOline/SOline, sourceqty/cost và cutoff; không có bất kỳCOGS trênSO là đủ. Money output text giữ bigint.
 
 Standingautomaticcommission giữ snapshot nguồn và bounded cumulative rounding theo partial allocation release; unpaid phần đủ thì appendnegativeearning. Nếu hoa hồng đã trả/không đủunpaid, giữ oldfacts và sourcecase review, không tự recoup cash hay âmAP. Paidreview resolution/employee settlement vẫn cần triển khai/kiểm chứng; không đổi cấu hình thật. Manual commission dùng netprofit/costsource để tính mới, không rewriteapprovedsnapshot. GenericPRICE decrease chưa mở paid-credit-price workflow; giữ outstanding guard cũ.
+
+## G23 — phạm vi hiện thực
+
+Một phiếu giao thuộc một SO và một điểm lấy nguồn; các phiếu giữ lượng/công nợ/chi phí riêng. Nhu cầu gộp nhiều SO trong một chuyến chưa được cung cấp; không thêm nhóm chuyến hoặc nhân bản chi phí chung. Direct/warehouse mixedpickup phải táchnguồnphiếu, DBrejectunsupportedactions. CommercialCLOSED làđóngphần thươngmại, operationalcomplete chỉkhi verifiedexecution/cargo/returns/debt/refundoffset/commissionreview/work/docsourceexceptions đủđiềukiện. Phát hànhpháp lý làtrạngtháiriêngvàblockedthiếuprovider.

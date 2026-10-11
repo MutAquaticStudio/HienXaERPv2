@@ -1,0 +1,148 @@
+{
+  "scope": "G11_REAL_AUTH_FRESH_PENDING_BRANCH_POSTCOMMIT_INDEPENDENT_READ",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "productionAccess": "NONE",
+  "managedQaBusinessWrites": 0,
+  "cloudRolesChanged": false,
+  "tokensRecorded": false,
+  "checks": [
+    {
+      "name": "ACTUAL_AUTH_NEW_RECEIPT_DELIVERY_AND_PAYMENT_NO_OPENING_OR_ACTIVATION",
+      "status": "PASS",
+      "after": {
+        "state": "PENDING_OPENING",
+        "version": 0,
+        "activation": null,
+        "starts": 1,
+        "startaudits": 1,
+        "payments": 1,
+        "debt": "2920000",
+        "stockopening": 0,
+        "debtopening": 0,
+        "cashopening": 0
+      },
+      "state": {
+        "state": "PENDING_OPENING",
+        "version": 0,
+        "canActivate": false,
+        "postingAllowed": true,
+        "reconciliationId": null,
+        "historicalQuality": "UNRECONCILED",
+        "businessTotalVerified": false,
+        "recordedOperationsSince": "2026-10-11T14:11:46.302196+07:00"
+      },
+      "snapshot": {
+        "scope": {
+          "to": "2026-10-11T14:13:04.895008+07:00",
+          "from": "2000-01-01T07:00:00+07:00",
+          "as_of": "2026-10-11T14:13:04.895008+07:00",
+          "branch_id": "95b1b843-44fa-4c2f-8533-a4ea1f64749b",
+          "balance_scope": "RECORDED_TRANSACTIONS",
+          "historical_quality": "UNRECONCILED",
+          "business_total_verified": false,
+          "recorded_operations_since": "2026-10-11T14:11:46.302196+07:00"
+        },
+        "payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "revenue": {
+          "quality": "READY",
+          "value_vnd": "3220000"
+        },
+        "receivable": {
+          "quality": "READY",
+          "value_vnd": "2920000"
+        },
+        "direct_cost": {
+          "quality": "READY",
+          "value_vnd": "2100000"
+        },
+        "gross_profit": {
+          "quality": "READY",
+          "value_vnd": "1120000"
+        },
+        "salary_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_profit": {
+          "quality": "READY",
+          "value_vnd": "1120000"
+        },
+        "operating_expense": {
+          "quality": "READY",
+          "value_vnd": "0"
+        },
+        "commission_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_margin_bps": {
+          "value": 3478.2608695652175,
+          "quality": "READY"
+        }
+      }
+    },
+    {
+      "name": "RECORDING_START_STABLE_AND_UNAUTHORIZED_BRANCH_COST_DENIED",
+      "status": "PASS",
+      "start": "2026-10-11 14:11:46.302196+07",
+      "workerStatus": 403,
+      "warehouseReportStatus": 200,
+      "costQuality": "FORBIDDEN"
+    }
+  ],
+  "documents": {
+    "stock": {
+      "prefix": "RM4430A0F3",
+      "uom": "5dc9d9d9-67ff-4209-9504-691b22817c1b",
+      "material": "a9acdff6-4641-4f95-920e-705a4f342f34",
+      "price": "78b7b3f7-cc60-4a4e-bf44-8b372f796065",
+      "cost": "e46761cf-270c-43b8-8b11-542c22f9bf54",
+      "po": "90d6f27d-37f1-44a8-8667-be823dcda4e1",
+      "customer": "a56a5363-9b8e-4ccd-9922-60bc617c23a2",
+      "site": "8e9d49f2-a1f7-4ab3-9a4e-b494760ac01f",
+      "unitPriceVnd": "230000",
+      "common": {
+        "material_id": "a9acdff6-4641-4f95-920e-705a4f342f34",
+        "ordered_uom_id": "5dc9d9d9-67ff-4209-9504-691b22817c1b",
+        "quantity": "15.000000",
+        "conversion_numerator": "1.000000",
+        "conversion_denominator": "1.000000",
+        "rounding_mode": "HALF_UP"
+      }
+    },
+    "fixtures": {
+      "prefix": "H41EA1F6F",
+      "owner": "0d1d2134-5a21-40a4-9fcb-375898d3c133",
+      "confirmer": "d593fd7b-027e-4075-83b8-5f7253d64093",
+      "noConfirm": "654de2bf-cf27-4536-ad03-258c348e1f51",
+      "foreignConfirmer": "6b6ac4d8-b045-48eb-b9ac-94600ca7eaa3",
+      "revoked": "cbbc7d79-faf4-4846-93f6-ec97112c0e48",
+      "branch": "95b1b843-44fa-4c2f-8533-a4ea1f64749b",
+      "otherBranch": "e5deaf2f-b8c5-462c-acf4-ee3253f63ecc",
+      "customer": "7253d3b6-30f6-4ea3-860e-1d2d3ee221ce",
+      "site": "85e320d5-064b-4869-bc08-39ddebd86823",
+      "salesPrice": "9ad27c46-44ee-44fb-b3bc-aacfb7a8941b",
+      "purchasePrice": "a4ba9443-58a5-4a3a-a679-15ffa85c6ca0",
+      "supplier": "b643bf90-71c8-442b-8ab2-b798f45c5d3d",
+      "warehouse": "6b084b11-d4e4-47de-8632-562ff10175d8",
+      "material": "3a989ff8-e382-4006-9f8c-a0cff706f427",
+      "uom": "6aab6dc5-87dc-44ea-8580-d336dd53a0de"
+    },
+    "purchaseLine": "8393ed86-1b8e-4ae5-85b4-37e5679b3ba8",
+    "writerPid": null,
+    "so": "2484e7df-741f-49c4-bb9c-bfb00f354509",
+    "delivery": "496e50eb-0363-4930-9a72-7954bb518ef1",
+    "obligation": "47ea41f8-71ea-4d0e-a184-fd43af5ef78c",
+    "account": "8e71b410-7032-4a96-93c6-c73921b2daae",
+    "payment": "eed973ce-076c-4342-bc9a-04e5ed6f84a4",
+    "branch": "95b1b843-44fa-4c2f-8533-a4ea1f64749b",
+    "customer": "a56a5363-9b8e-4ccd-9922-60bc617c23a2",
+    "resumedExistingSource": true,
+    "originalWriterPid": "NOT_CAPTURED_AFTER_HARNESS_FAILURE"
+  },
+  "readerPid": 99105,
+  "status": "PASS_REAL_AUTH_G11_NEW_TRANSACTIONS_POSTCOMMIT"
+}
