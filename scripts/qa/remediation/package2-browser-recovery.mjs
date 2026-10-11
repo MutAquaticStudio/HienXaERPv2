@@ -3,6 +3,7 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { parseEnv } from "node:util";
 import { chromium } from "@playwright/test";
 import { argumentsForRun, openQA } from "./native-fixture.mjs";
+import { observeIntentionalResponseLoss } from "./browser-faults.mjs";
 const args = argumentsForRun();
 const env = parseEnv(await readFile(args["auth-env"], "utf8"));
 assert.equal(env.HX_QA_PROJECT_REF, "ffrwiglcrlumfvhubaxg");
@@ -13,7 +14,7 @@ const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
 const report = { scope: "REAL_BROWSER_LOST_RESPONSE_AFTER_ACTUAL_PAYMENT_COMMIT", origin: "http://127.0.0.1:3110",
   browserPlugin: "ABSENT", fallback: "Installed Playwright", productionAccess: "NONE", checks: [], expectedTransportErrors: [] };
-page.on("console", (message) => { if (message.type() === "error") report.expectedTransportErrors.push(message.text()); });
+const faults = observeIntentionalResponseLoss(page, report, "/admin/receivables");
 try {
   await page.goto(report.origin + "/login");
   await page.getByLabel("Thư điện tử").fill("hxqa-finance-employee@example.test");
@@ -36,6 +37,7 @@ try {
     const [facts] = await qa.sql`select count(*)::int n from public.payments where customer_id=${documents.customer}`;
     if (facts.n === 1) {
       lostResponse = true;
+      faults.markIntentionalLoss();
       await route.abort("failed");
     } else await route.fulfill({ response });
   });
@@ -61,6 +63,9 @@ try {
   const [two] = await qa.sql`select count(*)::int n,sum(amount_vnd)::text amount from public.payments where customer_id=${documents.customer}`;
   assert.deepEqual(two, { n: 2, amount: "2000000" });
   report.checks.push({ name: "DISTINCT_ACTUAL_RECEIPT_SAME_AMOUNT_ALLOWED", status: "PASS", facts: two });
+  await faults.assertHealthy();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({ path: args.screenshots + "/g15-payment-mobile.png", fullPage: true });
   report.status = "PASS_EXECUTED_BROWSER_PAYMENT_RECOVERY_SCOPE";
   await writeFile(args.out, JSON.stringify(report, null, 2));
   console.log(JSON.stringify({ status: report.status, checks: report.checks.length, actualLostResponseAfterCommit: true }));

@@ -51,6 +51,7 @@ try {
     report.status = "REPRODUCED_MIXED_COST_FALSE_READY";
   } else {
     assert.equal(missing.gross_profit.quality, "INCOMPLETE"); assert.equal(missing.gross_profit.value_vnd, null);
+    if (args.phase !== "seed") {
     await sql.begin(tx => rpc(tx, "verify_supplier_fulfillment", [documents.po,
       [{ purchase_order_line_id: documents.purchaseLine, supplier_quantity: "5" }], null, "NCC nguồn5 đơn vị đã khớp", randomUUID()]));
     const complete = await read(new Date(Date.now() + 86400000).toISOString());
@@ -59,6 +60,7 @@ try {
     const historical = await read(missingCutoff);
     assert.equal(historical.gross_profit.quality, "INCOMPLETE"); assert.equal(historical.gross_profit.value_vnd, null);
     report.complete = complete; report.historicalBeforeSupplierSource = historical; report.status = "PASS_MIXED_COST_SOURCE_COMPLETENESS";
+    } else report.status = "PASS_PENDING_COST_BROWSER_SOURCE";
   }
   report.documents = documents; report.readerPid = readerPid; report.missing = missing;
   await writeFile(args.out, JSON.stringify(report, null, 2));

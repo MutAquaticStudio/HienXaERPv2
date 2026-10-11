@@ -3,6 +3,7 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { parseEnv } from "node:util";
 import { chromium } from "@playwright/test";
 import { argumentsForRun, openQA } from "./native-fixture.mjs";
+import { observeIntentionalResponseLoss } from "./browser-faults.mjs";
 const args = argumentsForRun();
 const env = parseEnv(await readFile(args["auth-env"], "utf8"));
 assert.equal(env.HX_QA_PROJECT_REF, "ffrwiglcrlumfvhubaxg");
@@ -12,6 +13,7 @@ await mkdir(args.screenshots, { recursive: true });
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
 const report = { scope: "REAL_BROWSER_RECEIPT_AND_DIRECT_FULFILLMENT_LOST_RESPONSE_AFTER_COMMIT", browserPlugin: "ABSENT", productionAccess: "NONE", checks: [] };
+const faults = observeIntentionalResponseLoss(page, report, "/admin/purchase-orders/");
 try {
   await page.goto("http://127.0.0.1:3110/login");
   await page.getByLabel("Thư điện tử").fill("hxqa-warehouse-dispatch@example.test");
@@ -34,7 +36,7 @@ try {
       if (route.request().method() !== "POST" || aborted) return route.continue();
       const response = await route.fetch();
       const [fact] = await qa.sql.unsafe(`select count(*)::int n from public.${table} where purchase_order_id=$1`, [po]);
-      if (fact.n === 1) { aborted = true; await route.abort("failed"); }
+      if (fact.n === 1) { aborted = true; faults.markIntentionalLoss(); await route.abort("failed"); }
       else await route.fulfill({ response });
     });
     await page.getByRole("button", { name: submit, exact: true }).click();
@@ -49,6 +51,10 @@ try {
     assert.deepEqual(facts, { effects: 1, state: "CLOSED" });
     report.checks.push({ name: name.toUpperCase() + "_COMMIT_LOST_RESPONSE_RELOAD_ONE_EFFECT", status: "PASS", facts, expectedNotice: notice });
     await page.screenshot({ path: args.screenshots + "/g15-" + name + "-recovered.png", fullPage: true });
+    await faults.assertHealthy();
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.screenshot({ path: args.screenshots + "/g15-" + name + "-mobile.png", fullPage: true });
+    await page.setViewportSize({ width: 1280, height: 900 });
   }
   report.status = "PASS_EXECUTED_BROWSER_PURCHASE_RECOVERY_SCOPE";
   await writeFile(args.out, JSON.stringify(report, null, 2));
