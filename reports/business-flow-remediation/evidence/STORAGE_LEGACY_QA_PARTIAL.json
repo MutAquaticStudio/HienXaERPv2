@@ -1,0 +1,173 @@
+{
+  "scope": "APPROVED_QA_REAL_STORAGE_LEGACY_READ_ONLY",
+  "createdAt": "2026-10-11T18:34:44.845Z",
+  "sourceCommit": "9f099e5bb7a3cfe962bc70459cf9876321fbc7bd",
+  "projectRef": "ffrwiglcrlumfvhubaxg",
+  "schema": {
+    "migrations": 85,
+    "latest": "20261009224842"
+  },
+  "businessSnapshotAfterUnchanged": true,
+  "manifestHash": "d1528c97502170103b71041ded78d2896c9b1467c23f1b9e8b51e751dde3affd",
+  "processedThisRun": 10,
+  "completed": 10,
+  "total": 91,
+  "counts": {
+    "MATCH": 10
+  },
+  "results": [
+    {
+      "key": "PORTAL:009adb09-3413-4dba-ba8f-dd2ea42ddaec",
+      "metadataFingerprint": "3b23d558d2780d6083bd1f128bf932be207687de036dc2e64dcd7acf33a3509a",
+      "sources": [
+        {
+          "table": "payment_notices",
+          "column": "evidence_id",
+          "id": "4b37781e-a839-4388-8f07-27274f3b20f6",
+          "branchId": "a29d9f95-516a-4752-a67e-af3f5611d7bf"
+        }
+      ],
+      "actual": {
+        "byteSize": 68,
+        "checksumSha256": "2fc2621931f82a9cb505a92e47a525713d0c88265e2520b99844371250d14e72",
+        "mimeType": "image/png"
+      },
+      "classification": "MATCH",
+      "reason": "STORED_BYTES_MATCH_BASIS",
+      "eligibleForReverification": true
+    },
+    {
+      "key": "PORTAL:039e1cdb-6349-4f1a-aeae-d85617900aec",
+      "metadataFingerprint": "3510d2aca96eec8dad20931b479e2c76ebb6da6ae645bdc26fbca532ca4acd5d",
+      "sources": [],
+      "actual": {
+        "byteSize": 583,
+        "checksumSha256": "9818bd884d9d0ecb75ca2c9ef4d74e7a6e1bb03de8ca6eb898f13750fcf32d64",
+        "mimeType": "application/pdf"
+      },
+      "classification": "MATCH",
+      "reason": "STORED_BYTES_MATCH_BASIS",
+      "eligibleForReverification": true
+    },
+    {
+      "key": "PORTAL:0ad0a625-4a73-4350-bffe-526ee8a4f575",
+      "metadataFingerprint": "cfbf57adf22074b32b5bd980bfb6050efc0cbfd9b49fd8857e79aac92e7bc79f",
+      "sources": [],
+      "actual": {
+        "byteSize": 302933,
+        "checksumSha256": "bb8a612a8f7806830dafd5b2769717df97cba309c54d296bce04c97d8ea5d0a0",
+        "mimeType": "image/png"
+      },
+      "classification": "MATCH",
+      "reason": "STORED_BYTES_MATCH_BASIS",
+      "eligibleForReverification": true
+    },
+    {
+      "key": "PORTAL:0bbf0b78-d669-4d1f-aa37-4434dbca2c38",
+      "metadataFingerprint": "fe835b50a11f0ad17d059af2057f2cd191ed403e2104cedcd9cd6ba882f75fbb",
+      "sources": [],
+      "actual": {
+        "byteSize": 88328,
+        "checksumSha256": "5c1d262bb5fb2ddb55aa23f012ce75ab44f27800169b623eba540e47068b9bf2",
+        "mimeType": "image/jpeg"
+      },
+      "classification": "MATCH",
+      "reason": "STORED_BYTES_MATCH_BASIS",
+      "eligibleForReverification": true
+    },
+    {
+      "key": "PORTAL:0bddf007-bf7c-486a-8f39-f6acac2011c2",
+      "metadataFingerprint": "fe0ec4160e711b98ea52740c03991cf2a0eaf4fe137e12cccf4ae5f673b923ef",
+      "sources": [
+        {
+          "table": "payment_notices",
+          "column": "evidence_id",
+          "id": "77690081-ff06-4dd4-a7b2-7a469cef57dc",
+          "branchId": "990145a0-8fd8-4db7-a7ca-c67c0113184f"
+        }
+      ],
+      "actual": {
+        "byteSize": 68,
+        "checksumSha256": "0b0e4567ba520142241efbdd28070ff5f9bb716dcdad79c35f64f2c64bf638ec",
+        "mimeType": "image/png"
+      },
+      "classification": "MATCH",
+      "reason": "STORED_BYTES_MATCH_BASIS",
+      "eligibleForReverification": true
+    },
+    {
+      "key": "PORTAL:0dd838f2-e1eb-4cc3-a41a-f84cc48ba9fe",
+      "metadataFingerprint": "1a66cb29a234ee7cc4ff54cee6afffd49b4223fa8d56755a92c09b65f3160c4d",
+      "sources": [],
+      "actual": {
+        "byteSize": 583,
+        "checksumSha256": "9d8cb81b44a116735ca907b54e5d533203443399029dd8600d32bbad1d488f4d",
+        "mimeType": "application/pdf"
+      },
+      "classification": "MATCH",
+      "reason": "STORED_BYTES_MATCH_BASIS",
+      "eligibleForReverification": true
+    },
+    {
+      "key": "PORTAL:1192a333-61a7-4e69-ba92-f7642d3559af",
+      "metadataFingerprint": "6925bfd27f368c2004d737ba047113fdc1f717f540cda93fadf0ac23807dfdfc",
+      "sources": [
+        {
+          "table": "work_result_portal_evidence",
+          "column": "evidence_id",
+          "id": "0f7105c6-b80e-499e-a7ae-8da87e9e56c6",
+          "branchId": null
+        }
+      ],
+      "actual": {
+        "byteSize": 68,
+        "checksumSha256": "91f20cd79ab89a14964402ac68c5ba42f899992efaaa4e9895a0edd0f16990c5",
+        "mimeType": "image/png"
+      },
+      "classification": "MATCH",
+      "reason": "STORED_BYTES_MATCH_BASIS",
+      "eligibleForReverification": true
+    },
+    {
+      "key": "PORTAL:16ac86a5-1b80-4bdb-9704-ab2fd2f9ff1e",
+      "metadataFingerprint": "82de93aa6e02b2529f736d5393a8890806cfe12f88e645ff3287a76823e4319a",
+      "sources": [],
+      "actual": {
+        "byteSize": 583,
+        "checksumSha256": "1d9840422f6d3c23427cd2662877caef4fa42ad856941df34b086cd8374853be",
+        "mimeType": "application/pdf"
+      },
+      "classification": "MATCH",
+      "reason": "STORED_BYTES_MATCH_BASIS",
+      "eligibleForReverification": true
+    },
+    {
+      "key": "PORTAL:18a422d3-70fe-42e1-a792-75d5e503aa30",
+      "metadataFingerprint": "70717bd183cf4b2f0c287cc0c26ca6266fce4aba08762a8ae8e74bf389db41df",
+      "sources": [],
+      "actual": {
+        "byteSize": 68,
+        "checksumSha256": "bc5ab44378898573623820dc8154f19d71482c49dbb56cfb134da6d077a01fb3",
+        "mimeType": "image/png"
+      },
+      "classification": "MATCH",
+      "reason": "STORED_BYTES_MATCH_BASIS",
+      "eligibleForReverification": true
+    },
+    {
+      "key": "PORTAL:1b717d78-a80d-45e2-be5a-a13fc6cab2d6",
+      "metadataFingerprint": "d625e3a3fd594e27a4629eeb2f68263b7e764e938b87b9614bf8f86b987cf7f2",
+      "sources": [],
+      "actual": {
+        "byteSize": 300129,
+        "checksumSha256": "443ce3756810dd6c590c2e7121ca0db70c21326f0113f6c459fc28dc15d7b7fb",
+        "mimeType": "image/png"
+      },
+      "classification": "MATCH",
+      "reason": "STORED_BYTES_MATCH_BASIS",
+      "eligibleForReverification": true
+    }
+  ],
+  "mutatesBusinessData": false,
+  "attestsDatabase": false
+}

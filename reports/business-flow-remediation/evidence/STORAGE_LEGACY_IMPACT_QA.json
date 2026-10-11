@@ -1,0 +1,1789 @@
+{
+  "scope": "QA_LEGACY_IMPACT_ONLY_NOT_PRODUCTION",
+  "survey": "STORAGE_LEGACY_QA_COMPLETE.json",
+  "allBytesMatchedBasis": 91,
+  "serverReverifiedLegacyCount": 1,
+  "productionSurvey": "NOT_PERFORMED",
+  "items": [
+    {
+      "namespace": "PORTAL",
+      "id": "009adb09-3413-4dba-ba8f-dd2ea42ddaec",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/009adb09-3413-4dba-ba8f-dd2ea42ddaec-8e666f09-b759-43c0-b3dd-515998860b96.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [
+        {
+          "table": "payment_notices",
+          "column": "evidence_id",
+          "id": "4b37781e-a839-4388-8f07-27274f3b20f6",
+          "branchId": "a29d9f95-516a-4752-a67e-af3f5611d7bf"
+        }
+      ],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "039e1cdb-6349-4f1a-aeae-d85617900aec",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/039e1cdb-6349-4f1a-aeae-d85617900aec-bb8d6691-efd5-4700-86f8-c68bf2025d9a.pdf",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "0ad0a625-4a73-4350-bffe-526ee8a4f575",
+      "bucket": "portal-evidence",
+      "path": "work_result/0ad0a625-4a73-4350-bffe-526ee8a4f575-506088c8-59a4-4dde-ba18-eb007246c3ab.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "WORK_RESULT",
+        "workItemId": "f163280e-fd20-7368-4e24-1aad4a79a169",
+        "customerId": null,
+        "uploadedBy": "654de2bf-cf27-4536-ad03-258c348e1f51"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Điều hành giao nhận",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "0bbf0b78-d669-4d1f-aa37-4434dbca2c38",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/0bbf0b78-d669-4d1f-aa37-4434dbca2c38-4e0405e0-4ca4-4876-82ad-5d8e2b2207bd.jpg",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "0bddf007-bf7c-486a-8f39-f6acac2011c2",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/0bddf007-bf7c-486a-8f39-f6acac2011c2-3c1720e6-d4c3-4e63-b8c4-189e63cd0c71.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cbf86898-612a-40c7-af76-9f0c878fdbbe",
+        "uploadedBy": "d15b7188-25f8-4fc5-8d80-df455a1ef567"
+      },
+      "affectedSources": [
+        {
+          "table": "payment_notices",
+          "column": "evidence_id",
+          "id": "77690081-ff06-4dd4-a7b2-7a469cef57dc",
+          "branchId": "990145a0-8fd8-4db7-a7ca-c67c0113184f"
+        }
+      ],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "0dd838f2-e1eb-4cc3-a41a-f84cc48ba9fe",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/0dd838f2-e1eb-4cc3-a41a-f84cc48ba9fe-3ae4deec-afe1-493b-a3d0-8a5ffc00692f.pdf",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "1192a333-61a7-4e69-ba92-f7642d3559af",
+      "bucket": "portal-evidence",
+      "path": "work_result/1192a333-61a7-4e69-ba92-f7642d3559af-3aad9733-9ad4-4f02-a9d0-0c430166aa16.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "WORK_RESULT",
+        "workItemId": "244bb228-f7dc-4d05-bb22-348196306aff",
+        "customerId": null,
+        "uploadedBy": "654de2bf-cf27-4536-ad03-258c348e1f51"
+      },
+      "affectedSources": [
+        {
+          "table": "work_result_portal_evidence",
+          "column": "evidence_id",
+          "id": "0f7105c6-b80e-499e-a7ae-8da87e9e56c6",
+          "branchId": null
+        }
+      ],
+      "responsibleRole": "Điều hành giao nhận",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "16ac86a5-1b80-4bdb-9704-ab2fd2f9ff1e",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/16ac86a5-1b80-4bdb-9704-ab2fd2f9ff1e-68a48676-3a15-4bb6-9215-e427d2d8690c.pdf",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "18a422d3-70fe-42e1-a792-75d5e503aa30",
+      "bucket": "portal-evidence",
+      "path": "work_result/18a422d3-70fe-42e1-a792-75d5e503aa30-e6f63a97-89f5-4c90-adc5-bb052585f878.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "WORK_RESULT",
+        "workItemId": "80631b03-7f5c-4bf0-84ef-82925ba9da7e",
+        "customerId": null,
+        "uploadedBy": "654de2bf-cf27-4536-ad03-258c348e1f51"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Điều hành giao nhận",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "1b717d78-a80d-45e2-be5a-a13fc6cab2d6",
+      "bucket": "portal-evidence",
+      "path": "work_result/1b717d78-a80d-45e2-be5a-a13fc6cab2d6-e8116d54-a23c-4f8f-a8f5-738fef8f5a29.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "WORK_RESULT",
+        "workItemId": "f163280e-fd20-7368-4e24-1aad4a79a169",
+        "customerId": null,
+        "uploadedBy": "654de2bf-cf27-4536-ad03-258c348e1f51"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Điều hành giao nhận",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "1e4e6634-4214-41bf-91ec-52385af5fd73",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/1e4e6634-4214-41bf-91ec-52385af5fd73-399a3108-efa5-4b0f-b8b0-76dd81c35546.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "2170b2f9-961b-4761-95fd-58a1aeda6519",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/2170b2f9-961b-4761-95fd-58a1aeda6519-3deb8307-88f7-4984-b062-ec7a8bb169b4.jpg",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "2669e303-7230-4158-8c66-4833ddf89c47",
+      "bucket": "portal-evidence",
+      "path": "work_result/2669e303-7230-4158-8c66-4833ddf89c47-9446ac5b-d601-42a6-90d6-2efea8c0c750.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "WORK_RESULT",
+        "workItemId": "80631b03-7f5c-4bf0-84ef-82925ba9da7e",
+        "customerId": null,
+        "uploadedBy": "654de2bf-cf27-4536-ad03-258c348e1f51"
+      },
+      "affectedSources": [
+        {
+          "table": "work_result_portal_evidence",
+          "column": "evidence_id",
+          "id": "f8323794-2399-4104-8f52-b442bd004efe",
+          "branchId": null
+        }
+      ],
+      "responsibleRole": "Điều hành giao nhận",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "2769c4de-ad51-4473-92c3-8612037a2791",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/2769c4de-ad51-4473-92c3-8612037a2791-6297e488-0744-4e27-bbc9-f90caf43510b.jpg",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "27783551-42ff-4b35-b027-54baa7fc9321",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/27783551-42ff-4b35-b027-54baa7fc9321-068e199d-7b96-4d7a-af02-dbee72a39494.jpg",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "293981c8-9df9-4c14-8d3d-ab3f2f797537",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/293981c8-9df9-4c14-8d3d-ab3f2f797537-6c7b0435-ec80-4593-8b4e-e4c1549b8744.jpg",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "29a6f69d-b88e-4b77-b0a6-d8f438e01f4f",
+      "bucket": "portal-evidence",
+      "path": "work_result/29a6f69d-b88e-4b77-b0a6-d8f438e01f4f-5837b186-747f-4730-a89a-7ac9f1a6072d.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "WORK_RESULT",
+        "workItemId": "f163280e-fd20-7368-4e24-1aad4a79a169",
+        "customerId": null,
+        "uploadedBy": "654de2bf-cf27-4536-ad03-258c348e1f51"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Điều hành giao nhận",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "29b451c7-c3ed-461f-8cf4-c423802a9c13",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/29b451c7-c3ed-461f-8cf4-c423802a9c13-d3ea94af-5725-40fb-a277-b8ba6b5cf0d4.pdf",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cbf86898-612a-40c7-af76-9f0c878fdbbe",
+        "uploadedBy": "d15b7188-25f8-4fc5-8d80-df455a1ef567"
+      },
+      "affectedSources": [
+        {
+          "table": "payment_notices",
+          "column": "evidence_id",
+          "id": "880d153a-f90c-4069-8a55-f30fe057b06f",
+          "branchId": "990145a0-8fd8-4db7-a7ca-c67c0113184f"
+        }
+      ],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "2df46c38-a36f-4248-aef6-60f88fc07671",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/2df46c38-a36f-4248-aef6-60f88fc07671-c16f38fb-049f-44b2-8fdd-f585ffd3b936.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "3004a4b8-68b8-45d2-a681-ecfcd3c7f091",
+      "bucket": "portal-evidence",
+      "path": "work_result/3004a4b8-68b8-45d2-a681-ecfcd3c7f091-1c867b90-36a1-4b76-8100-c8f65edd011d.pdf",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "WORK_RESULT",
+        "workItemId": "80631b03-7f5c-4bf0-84ef-82925ba9da7e",
+        "customerId": null,
+        "uploadedBy": "654de2bf-cf27-4536-ad03-258c348e1f51"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Điều hành giao nhận",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "32451051-8e33-42f0-b07e-c017b7ba5385",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/32451051-8e33-42f0-b07e-c017b7ba5385-84224fee-880b-40f6-8593-e4d5ac9eaaff.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "37063639-e424-4b5a-ba1b-2dd9e3feba4d",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/37063639-e424-4b5a-ba1b-2dd9e3feba4d-62f12664-1380-4927-8d6b-b8bdbd264aa5.pdf",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "391e32b6-ba9c-45ac-bfa6-b1d59279d0ce",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/391e32b6-ba9c-45ac-bfa6-b1d59279d0ce-930ad019-3079-48e0-b0b1-c23094b6a050.pdf",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "399d6746-84df-4516-8c51-41a5e80491e9",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/399d6746-84df-4516-8c51-41a5e80491e9-610c43cc-9841-4312-a85a-7076f9f623f1.jpg",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "46fbd204-b63d-431a-ae87-8968eecb6806",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/46fbd204-b63d-431a-ae87-8968eecb6806-4744398b-d720-43f8-b9d8-e5d34772aea6.pdf",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cbf86898-612a-40c7-af76-9f0c878fdbbe",
+        "uploadedBy": "d15b7188-25f8-4fc5-8d80-df455a1ef567"
+      },
+      "affectedSources": [
+        {
+          "table": "payment_notices",
+          "column": "evidence_id",
+          "id": "987d6905-b033-4d2e-8b26-c3a13c377fc4",
+          "branchId": "990145a0-8fd8-4db7-a7ca-c67c0113184f"
+        }
+      ],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "495c5bd7-2893-4a0a-a421-b0b7edba877f",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/495c5bd7-2893-4a0a-a421-b0b7edba877f-e6fba5a4-5715-4066-b197-dd5b88c4b439.jpg",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "4a6095fe-27fa-4391-97e0-59d4eb6ec6b7",
+      "bucket": "portal-evidence",
+      "path": "work_result/4a6095fe-27fa-4391-97e0-59d4eb6ec6b7-0da1cd2f-2646-4606-88e7-c23b527f927e.pdf",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "WORK_RESULT",
+        "workItemId": "80631b03-7f5c-4bf0-84ef-82925ba9da7e",
+        "customerId": null,
+        "uploadedBy": "654de2bf-cf27-4536-ad03-258c348e1f51"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Điều hành giao nhận",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "4afd1b9e-7395-4003-b87c-62c0bfe775b5",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/4afd1b9e-7395-4003-b87c-62c0bfe775b5-2ac2c6f0-dc81-4f43-b274-e11aa0735968.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "54f69ed4-6649-4883-9a35-fd7b12c6ec33",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/54f69ed4-6649-4883-9a35-fd7b12c6ec33-069d5e5e-c95d-4e18-8fa5-38f6336ed3e9.jpg",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "5a81bc16-06f8-436c-b71f-3243d8ac1651",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/5a81bc16-06f8-436c-b71f-3243d8ac1651-7f8f90f2-15ea-4742-b14e-08b5bdfc22a3.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cbf86898-612a-40c7-af76-9f0c878fdbbe",
+        "uploadedBy": "d15b7188-25f8-4fc5-8d80-df455a1ef567"
+      },
+      "affectedSources": [
+        {
+          "table": "payment_notices",
+          "column": "evidence_id",
+          "id": "6b90675d-843f-48be-91a2-2c8fbc3576cd",
+          "branchId": "990145a0-8fd8-4db7-a7ca-c67c0113184f"
+        }
+      ],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "5ad260c2-bb59-437e-8424-3813f0d454aa",
+      "bucket": "portal-evidence",
+      "path": "work_result/5ad260c2-bb59-437e-8424-3813f0d454aa-a2e3b710-311f-4479-8438-e0f5a387b693.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "WORK_RESULT",
+        "workItemId": "58409f27-2d39-45ce-864a-85cb2bf3acc4",
+        "customerId": null,
+        "uploadedBy": "654de2bf-cf27-4536-ad03-258c348e1f51"
+      },
+      "affectedSources": [
+        {
+          "table": "work_result_portal_evidence",
+          "column": "evidence_id",
+          "id": "5ca4be3a-e79a-4741-ac51-3bd345c8aef3",
+          "branchId": null
+        }
+      ],
+      "responsibleRole": "Điều hành giao nhận",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "670698bb-f113-4676-b547-cf29f08244fa",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/670698bb-f113-4676-b547-cf29f08244fa-d66ed343-e1cb-40f0-adb1-29d05dca5f5c.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [
+        {
+          "table": "payment_notices",
+          "column": "evidence_id",
+          "id": "64f83de9-501a-497c-b217-9e39d7af3e3b",
+          "branchId": "a29d9f95-516a-4752-a67e-af3f5611d7bf"
+        }
+      ],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "69ede995-a6c9-4e46-a6dd-182fea7d87fe",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/69ede995-a6c9-4e46-a6dd-182fea7d87fe-57ed37f3-2b6b-40a8-9016-2f72706850f9.pdf",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "6d78257a-358c-40d7-8e42-bd85190e99c5",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/6d78257a-358c-40d7-8e42-bd85190e99c5-62951bdd-44fd-462f-a1f9-4b1c2cf51f12.pdf",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "6da90d99-eefc-40ad-b79f-9983824ad334",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/6da90d99-eefc-40ad-b79f-9983824ad334-ddc5a602-82d3-49b4-ab20-741bd67cd735.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "6dc9b784-243c-4244-9c5f-f84f5e9b5469",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/6dc9b784-243c-4244-9c5f-f84f5e9b5469-7b3b7827-6601-48a1-a7aa-34fb29ce0299.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "79b03d2d-63e7-4099-ae06-606087a3f8cf",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/79b03d2d-63e7-4099-ae06-606087a3f8cf-bb3c6585-27db-4683-a4a7-f3af8d892bd4.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "7b073967-bf81-4d3b-8126-cdeda36e82ef",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/7b073967-bf81-4d3b-8126-cdeda36e82ef-06abc77d-4976-4154-8929-67bae0d9d0f5.jpg",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "7d832166-642f-4496-a306-64c569c0746c",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/7d832166-642f-4496-a306-64c569c0746c-0a3deff2-2481-4132-aca5-0073bff90b4d.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "7e80215e-c716-4422-add9-7b51ee030f8e",
+      "bucket": "portal-evidence",
+      "path": "work_result/7e80215e-c716-4422-add9-7b51ee030f8e-6c88e2fa-3f34-4c6e-839e-9f0055e2cc0e.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "WORK_RESULT",
+        "workItemId": "f163280e-fd20-7368-4e24-1aad4a79a169",
+        "customerId": null,
+        "uploadedBy": "654de2bf-cf27-4536-ad03-258c348e1f51"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Điều hành giao nhận",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "80dd5096-d01d-418d-8d2c-2db60b296681",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/80dd5096-d01d-418d-8d2c-2db60b296681-a310dd58-6355-41cc-8b66-3e4132bd31b3.jpg",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "8ae15855-9318-452c-bd8d-9348bc596653",
+      "bucket": "portal-evidence",
+      "path": "work_result/8ae15855-9318-452c-bd8d-9348bc596653-917f6bb7-1841-41e5-8121-03a678978b26.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "WORK_RESULT",
+        "workItemId": "f163280e-fd20-7368-4e24-1aad4a79a169",
+        "customerId": null,
+        "uploadedBy": "654de2bf-cf27-4536-ad03-258c348e1f51"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Điều hành giao nhận",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "8ca1fc00-2a48-4835-bcac-70e381f5b267",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/8ca1fc00-2a48-4835-bcac-70e381f5b267-25c9c86f-cfa6-4e03-91c2-81c68b9f2279.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "8dad0eba-3f5f-41f6-8d4a-58d511405a20",
+      "bucket": "portal-evidence",
+      "path": "work_result/8dad0eba-3f5f-41f6-8d4a-58d511405a20-44b99821-4da5-4bcf-92c4-1640af34b820.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "WORK_RESULT",
+        "workItemId": "f163280e-fd20-7368-4e24-1aad4a79a169",
+        "customerId": null,
+        "uploadedBy": "654de2bf-cf27-4536-ad03-258c348e1f51"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Điều hành giao nhận",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "8f1d8698-9129-4877-af34-e83b876821f6",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/8f1d8698-9129-4877-af34-e83b876821f6-a13bc5f1-9752-413b-a212-75bfe7a979ab.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "92c7c7d9-8563-4e7a-87a8-cdca397864a8",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/92c7c7d9-8563-4e7a-87a8-cdca397864a8-d45bebdc-bacc-4147-83d7-549bc332bebf.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "973a8110-9397-4a9a-986b-7360c0fcf0da",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/973a8110-9397-4a9a-986b-7360c0fcf0da-5ea588a0-42ef-484c-bf6c-a0655af7d0ee.pdf",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "9b11663a-12bb-480b-9b0e-c8ec679dd00d",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/9b11663a-12bb-480b-9b0e-c8ec679dd00d-aeb19333-4e93-4ec6-b4dd-65c3a8ef8566.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cbf86898-612a-40c7-af76-9f0c878fdbbe",
+        "uploadedBy": "d15b7188-25f8-4fc5-8d80-df455a1ef567"
+      },
+      "affectedSources": [
+        {
+          "table": "payment_notices",
+          "column": "evidence_id",
+          "id": "2e340a45-0e0a-44ba-8e62-360161c57429",
+          "branchId": "990145a0-8fd8-4db7-a7ca-c67c0113184f"
+        }
+      ],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "9c277fac-9fb4-4921-ac21-7b7ba9a2c7df",
+      "bucket": "portal-evidence",
+      "path": "work_result/9c277fac-9fb4-4921-ac21-7b7ba9a2c7df-5cfa265e-b5af-4c75-9da0-e53a7290b987.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "WORK_RESULT",
+        "workItemId": "f163280e-fd20-7368-4e24-1aad4a79a169",
+        "customerId": null,
+        "uploadedBy": "654de2bf-cf27-4536-ad03-258c348e1f51"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Điều hành giao nhận",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "9dd42151-eef3-45df-b772-3335f94e58bf",
+      "bucket": "portal-evidence",
+      "path": "work_result/9dd42151-eef3-45df-b772-3335f94e58bf-10d52f0c-5a00-4617-9af5-dc4fa9aee975.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "WORK_RESULT",
+        "workItemId": "f163280e-fd20-7368-4e24-1aad4a79a169",
+        "customerId": null,
+        "uploadedBy": "654de2bf-cf27-4536-ad03-258c348e1f51"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Điều hành giao nhận",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "9ee16594-57e4-43e8-ac93-9a19c5b040c9",
+      "bucket": "portal-evidence",
+      "path": "work_result/9ee16594-57e4-43e8-ac93-9a19c5b040c9-9f2b237b-6c2b-4304-bed6-d9fd4667d0e8.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "WORK_RESULT",
+        "workItemId": "f163280e-fd20-7368-4e24-1aad4a79a169",
+        "customerId": null,
+        "uploadedBy": "654de2bf-cf27-4536-ad03-258c348e1f51"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Điều hành giao nhận",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "9f210c72-e81d-41e8-b54f-9611b1820d53",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/9f210c72-e81d-41e8-b54f-9611b1820d53-5412ce50-6f4a-4aed-bb8d-ab0c551e9b6e.pdf",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "ac0047eb-60f4-4f75-b6fc-33ac58716a31",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/ac0047eb-60f4-4f75-b6fc-33ac58716a31-ff749e19-c164-4d67-be27-93244da52472.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "b1c67613-79c6-4fb3-b0c3-ae7045f487e0",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/b1c67613-79c6-4fb3-b0c3-ae7045f487e0-8598a0bf-0610-4511-b68c-5091f3d9b730.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cbf86898-612a-40c7-af76-9f0c878fdbbe",
+        "uploadedBy": "d15b7188-25f8-4fc5-8d80-df455a1ef567"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "b2af5803-207f-4b1f-a6da-a51c859e81be",
+      "bucket": "portal-evidence",
+      "path": "work_result/b2af5803-207f-4b1f-a6da-a51c859e81be-0c01ca53-1bab-4bc2-81e7-3ba0b2f79ca0.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "WORK_RESULT",
+        "workItemId": "f163280e-fd20-7368-4e24-1aad4a79a169",
+        "customerId": null,
+        "uploadedBy": "654de2bf-cf27-4536-ad03-258c348e1f51"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Điều hành giao nhận",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "b3c9e627-e131-45f1-9617-32b6590dfaf0",
+      "bucket": "portal-evidence",
+      "path": "work_result/b3c9e627-e131-45f1-9617-32b6590dfaf0-47c9aca0-2929-4b8c-8083-8f11eb75395a.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "WORK_RESULT",
+        "workItemId": "17533b9f-3a19-416b-a426-8fded32b0efb",
+        "customerId": null,
+        "uploadedBy": "654de2bf-cf27-4536-ad03-258c348e1f51"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Điều hành giao nhận",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "b9886b09-83a9-4327-944f-28657cb34f53",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/b9886b09-83a9-4327-944f-28657cb34f53-f68e8097-b1e6-4b8d-a6ba-9147489836dc.jpg",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "baef9fbd-ec79-4db1-8c66-c8ca5768405a",
+      "bucket": "portal-evidence",
+      "path": "work_result/baef9fbd-ec79-4db1-8c66-c8ca5768405a-d8b8bb8e-8a64-47fd-8149-e9722c84b476.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "WORK_RESULT",
+        "workItemId": "153dfe90-8a21-40ce-822d-e67f5d4bb0bd",
+        "customerId": null,
+        "uploadedBy": "654de2bf-cf27-4536-ad03-258c348e1f51"
+      },
+      "affectedSources": [
+        {
+          "table": "work_result_portal_evidence",
+          "column": "evidence_id",
+          "id": "511563e8-5aae-497b-a8a9-214296244e0a",
+          "branchId": null
+        }
+      ],
+      "responsibleRole": "Điều hành giao nhận",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "c1ee2d2a-59e1-4759-97de-7f3ea3e549c6",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/c1ee2d2a-59e1-4759-97de-7f3ea3e549c6-92471f4d-2709-43c2-8f91-a73225a5a778.pdf",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "c6b06378-04fd-49ad-aea5-fda406f5a508",
+      "bucket": "portal-evidence",
+      "path": "work_result/c6b06378-04fd-49ad-aea5-fda406f5a508-661107dc-5cdc-4b6d-9410-a8a4922fba26.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "WORK_RESULT",
+        "workItemId": "ea3ad29e-159d-4e37-98a8-417f3cedeaa3",
+        "customerId": null,
+        "uploadedBy": "654de2bf-cf27-4536-ad03-258c348e1f51"
+      },
+      "affectedSources": [
+        {
+          "table": "work_result_portal_evidence",
+          "column": "evidence_id",
+          "id": "b84d12b7-6410-45d7-8fd6-8dd0856389bc",
+          "branchId": null
+        }
+      ],
+      "responsibleRole": "Điều hành giao nhận",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "cda46dc8-69aa-4b4c-915d-6ec40cb68397",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/cda46dc8-69aa-4b4c-915d-6ec40cb68397-23993aff-f7aa-47ca-82df-e9ca0eac23cd.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [
+        {
+          "table": "payment_notices",
+          "column": "evidence_id",
+          "id": "bda69baf-78ad-47a1-9b91-48011b9465a3",
+          "branchId": "a29d9f95-516a-4752-a67e-af3f5611d7bf"
+        }
+      ],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "ced382b3-9300-4b54-a280-3a3e9d3871bc",
+      "bucket": "portal-evidence",
+      "path": "work_result/ced382b3-9300-4b54-a280-3a3e9d3871bc-8e371401-b075-4ac1-9711-3d20f2f6e8bb.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "WORK_RESULT",
+        "workItemId": "f163280e-fd20-7368-4e24-1aad4a79a169",
+        "customerId": null,
+        "uploadedBy": "654de2bf-cf27-4536-ad03-258c348e1f51"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Điều hành giao nhận",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "d7815a07-b4ff-4a05-934c-b455688f8d21",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/d7815a07-b4ff-4a05-934c-b455688f8d21-11959d40-fb7b-4df2-a8ac-87cf3ccabb68.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "dc2a0c5c-9602-475b-bde5-54ae6b3bfb0f",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/dc2a0c5c-9602-475b-bde5-54ae6b3bfb0f-c892394d-30a3-4ad9-92de-e9b30c7f5359.pdf",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "de6c5edc-40d3-408c-b5f0-2366243251d3",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/de6c5edc-40d3-408c-b5f0-2366243251d3-4c3771d7-82d2-432e-80f5-60543c79e994.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cbf86898-612a-40c7-af76-9f0c878fdbbe",
+        "uploadedBy": "d15b7188-25f8-4fc5-8d80-df455a1ef567"
+      },
+      "affectedSources": [
+        {
+          "table": "payment_notices",
+          "column": "evidence_id",
+          "id": "162fc5f2-3401-42ca-a161-21d3ea2422a9",
+          "branchId": "990145a0-8fd8-4db7-a7ca-c67c0113184f"
+        }
+      ],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "e066a96a-f138-4d36-b5c3-10ae63c8c75b",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/e066a96a-f138-4d36-b5c3-10ae63c8c75b-41357416-cb35-4e89-aec0-919f8763fc01.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "e2aca801-ef61-45af-8825-731439a29b88",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/e2aca801-ef61-45af-8825-731439a29b88-ffe67f1f-2345-454f-870b-74b76cd2e741.jpg",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "e5778852-44d4-41df-8313-5bc56b1f5c1f",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/e5778852-44d4-41df-8313-5bc56b1f5c1f-a64e794e-4cd5-4902-879e-6c9fc4a1a433.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "e7e0bd21-3ee5-43ad-a2d8-535b917b69e6",
+      "bucket": "portal-evidence",
+      "path": "work_result/e7e0bd21-3ee5-43ad-a2d8-535b917b69e6-500e1edf-a3be-40dc-9ff6-1cdc93ac8443.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "WORK_RESULT",
+        "workItemId": "f163280e-fd20-7368-4e24-1aad4a79a169",
+        "customerId": null,
+        "uploadedBy": "654de2bf-cf27-4536-ad03-258c348e1f51"
+      },
+      "affectedSources": [
+        {
+          "table": "work_result_portal_evidence",
+          "column": "evidence_id",
+          "id": "2e880f1a-9ada-4aa5-8457-101a546d999c",
+          "branchId": null
+        }
+      ],
+      "responsibleRole": "Điều hành giao nhận",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "eb6665ec-d1d2-4d8a-88d6-e16eb59a301d",
+      "bucket": "portal-evidence",
+      "path": "work_result/eb6665ec-d1d2-4d8a-88d6-e16eb59a301d-3c123892-4331-4221-9874-f4b619bf632c.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "WORK_RESULT",
+        "workItemId": "f163280e-fd20-7368-4e24-1aad4a79a169",
+        "customerId": null,
+        "uploadedBy": "654de2bf-cf27-4536-ad03-258c348e1f51"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Điều hành giao nhận",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "f27fbbe0-e1bd-4cc2-97e6-2b1885722cb4",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/f27fbbe0-e1bd-4cc2-97e6-2b1885722cb4-a0dfdc31-a656-4bbe-82d0-8089b72d7db6.pdf",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "f2f226ac-916b-45b0-a1c2-c881125225d9",
+      "bucket": "portal-evidence",
+      "path": "work_result/f2f226ac-916b-45b0-a1c2-c881125225d9-b90019d8-c220-4cd2-9cd9-4e72cc455d37.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "WORK_RESULT",
+        "workItemId": "f163280e-fd20-7368-4e24-1aad4a79a169",
+        "customerId": null,
+        "uploadedBy": "654de2bf-cf27-4536-ad03-258c348e1f51"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Điều hành giao nhận",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "f3ca80d8-818c-49c6-8175-e28e66291c41",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/f3ca80d8-818c-49c6-8175-e28e66291c41-9e3d9652-7092-484a-9988-8e5a405f101f.jpg",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "f48352b9-c764-4841-8018-784b3fb73ab2",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/f48352b9-c764-4841-8018-784b3fb73ab2-92defe2f-453e-4820-a2f4-6bf2f8dc6f36.pdf",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "f75baff1-e5e0-44dd-8e18-28e8c8469a1d",
+      "bucket": "portal-evidence",
+      "path": "work_result/f75baff1-e5e0-44dd-8e18-28e8c8469a1d-cec002cf-8391-4b65-ab25-c81f0265ecd4.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "WORK_RESULT",
+        "workItemId": "b81b801c-2610-48b9-985e-64b10d859d74",
+        "customerId": null,
+        "uploadedBy": "654de2bf-cf27-4536-ad03-258c348e1f51"
+      },
+      "affectedSources": [
+        {
+          "table": "work_result_portal_evidence",
+          "column": "evidence_id",
+          "id": "aac00de9-63b6-4373-be28-3e6472f1fdf2",
+          "branchId": null
+        }
+      ],
+      "responsibleRole": "Điều hành giao nhận",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "fac44460-d579-4b8a-9552-bc5ead854c62",
+      "bucket": "portal-evidence",
+      "path": "work_result/fac44460-d579-4b8a-9552-bc5ead854c62-4ec48b4f-4928-4fee-8e84-36dc82aef8ca.png",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "WORK_RESULT",
+        "workItemId": "f163280e-fd20-7368-4e24-1aad4a79a169",
+        "customerId": null,
+        "uploadedBy": "654de2bf-cf27-4536-ad03-258c348e1f51"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Điều hành giao nhận",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "fad347c3-ead1-4482-a499-84add3ab72a6",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/fad347c3-ead1-4482-a499-84add3ab72a6-c636f20f-1d1d-4584-9eb4-b448d64ff3dd.pdf",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "fd40e5c2-f145-40ec-8129-b320beb54114",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/fd40e5c2-f145-40ec-8129-b320beb54114-86bdaf1a-18b9-4a73-ab10-e9d627e835d4.pdf",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cbf86898-612a-40c7-af76-9f0c878fdbbe",
+        "uploadedBy": "d15b7188-25f8-4fc5-8d80-df455a1ef567"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "PORTAL",
+      "id": "ffb68c26-88b6-4f4a-94e2-2434109692c7",
+      "bucket": "portal-evidence",
+      "path": "payment_notice/ffb68c26-88b6-4f4a-94e2-2434109692c7-b20545a2-1f60-4a3a-8999-7e10c5c2da58.jpg",
+      "metadataState": "READY",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "type": "PAYMENT_NOTICE",
+        "workItemId": null,
+        "customerId": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+        "uploadedBy": "4b99a47e-738a-4ee8-83f9-7df75ec9b257"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Tài chính",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "INTERNAL",
+      "id": "0ae742bd-9078-4f49-9fa3-0b32c5e4384d",
+      "bucket": "delivery-proofs",
+      "path": "a29d9f95-516a-4752-a67e-af3f5611d7bf/7d2a5e6d-7a52-4c7f-ab0c-d93e8e15eae9/58e799cb-7a24-4583-b724-68fff8fcbcc8-hxqa-delivery-arrived.png",
+      "metadataState": "VERIFIED",
+      "byteClassification": "MATCH",
+      "serverVerification": "VERIFIED",
+      "context": {
+        "branchId": "a29d9f95-516a-4752-a67e-af3f5611d7bf",
+        "audience": "INTERNAL",
+        "createdBy": "0d1d2134-5a21-40a4-9fcb-375898d3c133"
+      },
+      "affectedSources": [
+        {
+          "table": "delivery_results",
+          "column": "evidence_object_id",
+          "id": "910d6052-a084-4c75-ac77-a61277a223af",
+          "branchId": null
+        }
+      ],
+      "responsibleRole": "Kho / Mua hàng",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "INTERNAL",
+      "id": "1c009e24-17b0-44b3-99d6-e490cd00dbf2",
+      "bucket": "inventory-evidence",
+      "path": "a29d9f95-516a-4752-a67e-af3f5611d7bf/purchase-orders/bb408db5-6be7-4534-992d-9956db042274/314d20a5-737c-4a74-a369-9eaf82e1bc63.pdf",
+      "metadataState": "VERIFIED",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "branchId": "a29d9f95-516a-4752-a67e-af3f5611d7bf",
+        "audience": "INTERNAL",
+        "createdBy": "0d1d2134-5a21-40a4-9fcb-375898d3c133"
+      },
+      "affectedSources": [
+        {
+          "table": "supplier_fulfillments",
+          "column": "evidence_object_id",
+          "id": "fcc19f86-8669-42c9-9f18-2cd48f6d90b8",
+          "branchId": "a29d9f95-516a-4752-a67e-af3f5611d7bf"
+        }
+      ],
+      "responsibleRole": "Kho / Mua hàng",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "INTERNAL",
+      "id": "1d239300-de60-4958-9491-ea1151f82546",
+      "bucket": "inventory-evidence",
+      "path": "a29d9f95-516a-4752-a67e-af3f5611d7bf/purchase-orders/bae153f2-36f4-45eb-b99f-52d09df2e571/5327da02-d7f5-47ae-ad78-5db98f1044af.pdf",
+      "metadataState": "VERIFIED",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "branchId": "a29d9f95-516a-4752-a67e-af3f5611d7bf",
+        "audience": "INTERNAL",
+        "createdBy": "0d1d2134-5a21-40a4-9fcb-375898d3c133"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Kho / Mua hàng",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "INTERNAL",
+      "id": "9d28b5d1-b607-4cb1-97ec-714e1eb5838a",
+      "bucket": "inventory-evidence",
+      "path": "a29d9f95-516a-4752-a67e-af3f5611d7bf/purchase-orders/bb408db5-6be7-4534-992d-9956db042274/d35e250d-f327-4a4d-a2a6-26397286d376.pdf",
+      "metadataState": "VERIFIED",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "branchId": "a29d9f95-516a-4752-a67e-af3f5611d7bf",
+        "audience": "INTERNAL",
+        "createdBy": "0d1d2134-5a21-40a4-9fcb-375898d3c133"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Kho / Mua hàng",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "INTERNAL",
+      "id": "a8eab909-2d74-4150-a4de-cbf8cd7dd09c",
+      "bucket": "delivery-proofs",
+      "path": "a29d9f95-516a-4752-a67e-af3f5611d7bf/684395bf-21a7-462b-8ecd-83be6dae6dfa/39fc3aeb-df87-4cd5-ab3b-137fd8cbe060-hxqa-owner-delivery.png",
+      "metadataState": "VERIFIED",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "branchId": "a29d9f95-516a-4752-a67e-af3f5611d7bf",
+        "audience": "INTERNAL",
+        "createdBy": "0d1d2134-5a21-40a4-9fcb-375898d3c133"
+      },
+      "affectedSources": [
+        {
+          "table": "delivery_results",
+          "column": "evidence_object_id",
+          "id": "cdc96d39-d141-477e-b673-f0ff936fddd9",
+          "branchId": null
+        }
+      ],
+      "responsibleRole": "Kho / Mua hàng",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "INTERNAL",
+      "id": "b07d9f4f-b83a-4887-9c08-6f7429013da7",
+      "bucket": "delivery-proofs",
+      "path": "a29d9f95-516a-4752-a67e-af3f5611d7bf/8f58c04e-2a9d-4ed4-916d-b703b51ad1fc/29ce989e-d890-4f16-8843-57fc4468b575-HXQA-NOT-REAL-DELIVERY-20260928.png",
+      "metadataState": "VERIFIED",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "branchId": "a29d9f95-516a-4752-a67e-af3f5611d7bf",
+        "audience": "INTERNAL",
+        "createdBy": "0d1d2134-5a21-40a4-9fcb-375898d3c133"
+      },
+      "affectedSources": [
+        {
+          "table": "delivery_results",
+          "column": "evidence_object_id",
+          "id": "bbe5002b-bfe7-4d44-8afa-e1fe18039ebd",
+          "branchId": null
+        }
+      ],
+      "responsibleRole": "Kho / Mua hàng",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "INTERNAL",
+      "id": "e63612f3-cadb-45f8-8528-8c38e0b1ad73",
+      "bucket": "delivery-proofs",
+      "path": "a29d9f95-516a-4752-a67e-af3f5611d7bf/e04eb0a0-1d0a-4b9b-9e6f-750f5925afa3/715e6057-a94a-47e4-a7ab-8de22309da54-hxqa-delivery-proof.png",
+      "metadataState": "VERIFIED",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "branchId": "a29d9f95-516a-4752-a67e-af3f5611d7bf",
+        "audience": "INTERNAL",
+        "createdBy": "0d1d2134-5a21-40a4-9fcb-375898d3c133"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Kho / Mua hàng",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "INTERNAL",
+      "id": "e930edfe-4e77-4451-afbd-b7d038d8340a",
+      "bucket": "inventory-evidence",
+      "path": "a29d9f95-516a-4752-a67e-af3f5611d7bf/purchase-orders/bae153f2-36f4-45eb-b99f-52d09df2e571/7729dc07-c23e-4b0f-a651-178140b57900.pdf",
+      "metadataState": "VERIFIED",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "branchId": "a29d9f95-516a-4752-a67e-af3f5611d7bf",
+        "audience": "INTERNAL",
+        "createdBy": "0d1d2134-5a21-40a4-9fcb-375898d3c133"
+      },
+      "affectedSources": [
+        {
+          "table": "purchase_receipts",
+          "column": "evidence_object_id",
+          "id": "bcae878d-82fa-4490-b3fe-47d08d27c964",
+          "branchId": "a29d9f95-516a-4752-a67e-af3f5611d7bf"
+        }
+      ],
+      "responsibleRole": "Kho / Mua hàng",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "INTERNAL",
+      "id": "ec942400-9632-4d10-a377-a805ff97e449",
+      "bucket": "delivery-proofs",
+      "path": "a29d9f95-516a-4752-a67e-af3f5611d7bf/7d2a5e6d-7a52-4c7f-ab0c-d93e8e15eae9/fb8007ac-3e1a-480e-8015-df09c54d69b1-hxqa-delivery-proof.png",
+      "metadataState": "VERIFIED",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "branchId": "a29d9f95-516a-4752-a67e-af3f5611d7bf",
+        "audience": "INTERNAL",
+        "createdBy": "0d1d2134-5a21-40a4-9fcb-375898d3c133"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Kho / Mua hàng",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "INTERNAL",
+      "id": "f27e588d-cb6d-4f15-a746-3991cbb86acb",
+      "bucket": "inventory-evidence",
+      "path": "a29d9f95-516a-4752-a67e-af3f5611d7bf/purchase-orders/bae153f2-36f4-45eb-b99f-52d09df2e571/ea93deaf-aaee-40a9-938f-32611837fc03.pdf",
+      "metadataState": "VERIFIED",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "branchId": "a29d9f95-516a-4752-a67e-af3f5611d7bf",
+        "audience": "INTERNAL",
+        "createdBy": "0d1d2134-5a21-40a4-9fcb-375898d3c133"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Kho / Mua hàng",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "INTERNAL",
+      "id": "f3d3f206-806d-43f9-a624-65e8a2d10bd1",
+      "bucket": "inventory-evidence",
+      "path": "a29d9f95-516a-4752-a67e-af3f5611d7bf/purchase-orders/bae153f2-36f4-45eb-b99f-52d09df2e571/38ecf630-35f4-4d0e-aac1-0ad9f74010c8.pdf",
+      "metadataState": "VERIFIED",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "branchId": "a29d9f95-516a-4752-a67e-af3f5611d7bf",
+        "audience": "INTERNAL",
+        "createdBy": "0d1d2134-5a21-40a4-9fcb-375898d3c133"
+      },
+      "affectedSources": [],
+      "responsibleRole": "Kho / Mua hàng",
+      "accountableRole": "Owner chi nhánh"
+    },
+    {
+      "namespace": "INTERNAL",
+      "id": "f91a907e-15f5-4be7-962e-56e0ff1c9086",
+      "bucket": "delivery-proofs",
+      "path": "a29d9f95-516a-4752-a67e-af3f5611d7bf/e04eb0a0-1d0a-4b9b-9e6f-750f5925afa3/fe3ebf1d-dfb8-4c37-a722-5ad5884652b8-hxqa-delivery-proof-arrival.png",
+      "metadataState": "VERIFIED",
+      "byteClassification": "MATCH",
+      "serverVerification": "PENDING_REVERIFICATION",
+      "context": {
+        "branchId": "a29d9f95-516a-4752-a67e-af3f5611d7bf",
+        "audience": "INTERNAL",
+        "createdBy": "0d1d2134-5a21-40a4-9fcb-375898d3c133"
+      },
+      "affectedSources": [
+        {
+          "table": "delivery_results",
+          "column": "evidence_object_id",
+          "id": "36cf6c8e-92a0-4024-82ba-8db76173f4a6",
+          "branchId": null
+        }
+      ],
+      "responsibleRole": "Kho / Mua hàng",
+      "accountableRole": "Owner chi nhánh"
+    }
+  ]
+}

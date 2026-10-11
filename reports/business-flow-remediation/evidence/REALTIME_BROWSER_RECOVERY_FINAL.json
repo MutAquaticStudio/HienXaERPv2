@@ -1,0 +1,30 @@
+{
+  "scope": "T42_R1_ACTUAL_BROWSER_REFRESH_AND_RECONNECT_QUERY",
+  "projectRef": "ffrwiglcrlumfvhubaxg",
+  "conversation": "0aa9edb8-5a5f-4581-aa3e-19a903c04433",
+  "productionAccess": "NONE",
+  "financialWrites": 0,
+  "expectedOfflineErrors": [],
+  "unexpectedErrors": [],
+  "intents": {
+    "live": "967886db-2dd5-45b7-a216-4ba42e7845a6",
+    "offline": "1cfbbf27-918f-4812-900e-853ca0f7573b"
+  },
+  "browserWebsocketOrigins": [
+    "ws://127.0.0.1:3110",
+    "ws://127.0.0.1:3110",
+    "wss://ffrwiglcrlumfvhubaxg.supabase.co"
+  ],
+  "systemEvents": [
+    {
+      "extension": "postgres_changes",
+      "status": "ok",
+      "message": "Subscribed to PostgreSQL"
+    }
+  ],
+  "liveMessage": "ae148ed6-fbe1-4149-9958-b364dbff98e5",
+  "offlineMessage": "aea3ce1d-e140-4838-920d-77418438d8b3",
+  "status": "PASS",
+  "recoveredWithoutManualReload": true,
+  "newEventAfterReconnectRequired": false
+}

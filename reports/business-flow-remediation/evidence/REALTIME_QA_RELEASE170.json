@@ -1,0 +1,143 @@
+{
+  "scope": "REAL_QA_WEBSOCKET_MESSAGING_SAME_EFFECTIVE_CONTRACT",
+  "productionAccess": "NONE",
+  "financialWrites": 0,
+  "tokensRecorded": false,
+  "channels": [
+    {
+      "role": "participant",
+      "status": "SUBSCRIBED"
+    },
+    {
+      "role": "participant",
+      "extension": "postgres_changes",
+      "status": "ok"
+    },
+    {
+      "role": "nonparticipant",
+      "status": "SUBSCRIBED"
+    },
+    {
+      "role": "nonparticipant",
+      "extension": "postgres_changes",
+      "status": "ok"
+    },
+    {
+      "role": "participant",
+      "status": "CLOSED"
+    },
+    {
+      "role": "participant-reconnected",
+      "status": "SUBSCRIBED"
+    },
+    {
+      "role": "participant-reconnected",
+      "extension": "postgres_changes",
+      "status": "ok"
+    },
+    {
+      "role": "nonparticipant",
+      "status": "CLOSED"
+    },
+    {
+      "role": "participant-reconnected",
+      "status": "CLOSED"
+    }
+  ],
+  "contractParity": {
+    "functions": [
+      {
+        "schema": "private",
+        "name": "can_access_conversation",
+        "hash": "c0549b67d20e2a444bb6621c833984d0"
+      },
+      {
+        "schema": "private",
+        "name": "command_payload_hash",
+        "hash": "1ada9e62475864212617509f8bc8296a"
+      },
+      {
+        "schema": "private",
+        "name": "has_branch_access",
+        "hash": "76058bd98055f05175b8fb27885f38b9"
+      },
+      {
+        "schema": "private",
+        "name": "has_permission",
+        "hash": "2c4e501cacd4a8b089280f9ac0f96897"
+      },
+      {
+        "schema": "public",
+        "name": "conversation_list_for_scope",
+        "hash": "154b3e6c5126f17921d617c05f73d52b"
+      },
+      {
+        "schema": "public",
+        "name": "conversation_message_page",
+        "hash": "f1eed982847a07fbb5d8d65df5349596"
+      },
+      {
+        "schema": "public",
+        "name": "create_conversation",
+        "hash": "e5b3feaa564e0bca09e2d0facaed9cef"
+      },
+      {
+        "schema": "public",
+        "name": "send_message",
+        "hash": "e736fb18a207bf99b5dbeed0b9375da1"
+      }
+    ],
+    "policies": [
+      {
+        "tablename": "conversation_participants",
+        "policyname": "conversation_participants_select",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "( SELECT private.can_access_conversation(conversation_participants.conversation_id) AS can_access_conversation)",
+        "with_check": null
+      },
+      {
+        "tablename": "conversations",
+        "policyname": "conversations_select",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "( SELECT private.can_access_conversation(conversations.id) AS can_access_conversation)",
+        "with_check": null
+      },
+      {
+        "tablename": "messages",
+        "policyname": "messages_select",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "( SELECT private.can_access_conversation(messages.conversation_id) AS can_access_conversation)",
+        "with_check": null
+      }
+    ]
+  },
+  "schema": {
+    "migrations": 85,
+    "latest": "20261009224842"
+  },
+  "intents": {
+    "conversation": "be132fc9-c62b-4430-bda8-893d5232efbc",
+    "first": "53ae04bc-7a68-447f-bf90-b5664ca7bae7",
+    "offline": "14758162-b222-4707-a90a-a41cfff4236e",
+    "afterReconnect": "cd9e9aaa-dbe4-4228-9c14-190b44131042",
+    "readyProbe": "3ce27c03-1e84-4a25-9330-3d5ada512dde"
+  },
+  "status": "PASS",
+  "conversation": "0aa9edb8-5a5f-4581-aa3e-19a903c04433",
+  "messageIds": [
+    "4ad27c81-340b-4b5c-8361-d059491973ef",
+    "0172bfa6-fa40-4ad3-a054-dce00b9ea3e5",
+    "a07315b0-1271-41fa-9aa5-b70cf9459088"
+  ],
+  "eventsToNonparticipant": 0,
+  "missedEventRecoveredByQuery": true,
+  "reconnectedEventReceived": true,
+  "messageCount": 4,
+  "browserRefreshTested": false,
+  "qaMessagingWrites": 5,
+  "resumedConversation": true,
+  "firstAttemptMessagePreserved": true
+}

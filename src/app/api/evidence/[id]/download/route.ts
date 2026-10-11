@@ -1,4 +1,5 @@
 import "server-only";
+import { createHash } from "node:crypto";
 
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -21,6 +22,8 @@ type AuthorizedEvidence = {
   bucket_id: string;
   object_path: string;
   mime_type: string;
+  checksum_sha256: string;
+  byte_size: number;
 };
 
 function failure(status: number) {
@@ -40,15 +43,20 @@ export async function GET(_request: Request, route: { params: Promise<{ id: stri
       auth.supabase, "get_portal_evidence_for_signing", { target_evidence_id: id },
     );
     if (evidence?.id !== id || evidence.bucket_id !== "portal-evidence" ||
-        !evidence.object_path || !["image/png", "image/jpeg", "application/pdf"].includes(evidence.mime_type)) {
+        !evidence.object_path || !["image/png", "image/jpeg", "application/pdf"].includes(evidence.mime_type) ||
+        !/^[0-9a-f]{64}$/.test(evidence.checksum_sha256 ?? "") ||
+        !Number.isSafeInteger(evidence.byte_size) || evidence.byte_size < 1 || evidence.byte_size > 10 * 1024 * 1024) {
       return failure(404);
     }
 
     const { data, error } = await createPortalEvidenceStorage()
       .from(evidence.bucket_id).download(evidence.object_path);
     if (error || !data) return failure(503);
+    if (data.size !== evidence.byte_size) return failure(503);
+    const bytes = await data.arrayBuffer();
+    if (createHash("sha256").update(new Uint8Array(bytes)).digest("hex") !== evidence.checksum_sha256) return failure(503);
 
-    return new NextResponse(data.stream(), {
+    return new NextResponse(bytes, {
       headers: {
         ...privateHeaders,
         "Content-Type": evidence.mime_type,

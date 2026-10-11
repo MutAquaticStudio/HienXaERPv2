@@ -1,5 +1,7 @@
 # Khắc phục G01–G23
 
+> Cập nhật sau head9f099e5: [RELEASE_BLOCKERS.md](RELEASE_BLOCKERS.md) thay kết luận Storage/Realtime còn thiếu ở các ghi chú cũ. T39-S1..S4 và T42-R1/R2 đã đạt QA thật; T39-S5 đạt cơ chế/QA, còn dữ liệu thật; GPS thiết bị và phát hành pháp lý vẫn bị chặn. Schema canonical174, QA history175 gồm hotfix riêng đã giữ. Không chạy lại hai race ứng trước.
+
 Baseline PR41 8b693c2, Draft chưa merge. Nhánh codex/business-flow-remediation-g01-g23 phụ thuộc PR41. Một tác nhân; không Production/merge/deploy; giữ dirty work ban đầu. Evidence cũ không nghiệm thu bản sửa.
 
 | G | Vấn đề | Bằng chứng ban đầu | Nguyên nhân xác minh | Sửa/chính sách | Tệp/lệnh | Kiểm thử | Commit | Evidence mới | Trạng thái/phần thiếu |

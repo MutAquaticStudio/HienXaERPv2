@@ -39,8 +39,10 @@ export async function POST(request: Request) {
     });
     const bucket = createPortalEvidenceStorage().from(evidence.bucket_id);
     if (evidence.state !== "READY") {
-      const { error: uploadError } = await bucket.upload(evidence.object_path, bytes, { contentType: mimeType, upsert: true });
-      if (uploadError) throw new Error("Không thể tải minh chứng. Hãy thử lại.");
+      // A retry may have a stale PENDING receipt after the first upload committed.
+      // Never replace that object: a duplicate must pass the stored-byte check below.
+      const { error: uploadError } = await bucket.upload(evidence.object_path, bytes, { contentType: mimeType, upsert: false });
+      if (uploadError && String(uploadError.statusCode) !== "409") throw new Error("Không thể tải minh chứng. Hãy thử lại.");
     }
     const { data: stored, error: downloadError } = await bucket.download(evidence.object_path);
     if (downloadError || !stored) throw new Error("Chưa đọc được tệp đã tải. Hãy thử lại.");

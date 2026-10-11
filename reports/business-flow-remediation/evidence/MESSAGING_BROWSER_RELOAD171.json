@@ -1,0 +1,16 @@
+{
+  "scope": "NATIVE_REAL_JWT_BROWSER_RELOAD_WITHOUT_WEBSOCKET",
+  "schema": 171,
+  "businessWrites": 0,
+  "existingConversation": "75c4ab42-c9a1-4483-8edb-4e2a0ec6be40",
+  "existingMessage": "bd0d0873-0a4e-4028-83e5-a6e06e879ad7",
+  "browserTool": "Playwright",
+  "reason": "No Browser plugin API exposed; existing local Playwright QA harness reused",
+  "productionAccess": "NONE",
+  "unexpectedErrors": [],
+  "status": "PASS",
+  "websocketAttemptsBlocked": 2,
+  "reloadReadsMessage": true,
+  "messageHash": "b219342d3bb31c4b7816b2e5bdcfa89bd32a6fc1192e7f22ba915d3b6cf0e9da",
+  "realWebsocketTested": false
+}

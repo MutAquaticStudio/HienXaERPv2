@@ -1,5 +1,7 @@
 # T01–T42 — kết quả bản sửa
 
+> Cập nhật sau head9f099e5: [RELEASE_BLOCKERS.md](RELEASE_BLOCKERS.md) thay kết luận Storage/Realtime còn thiếu ở các ghi chú cũ. T39-S1..S4 và T42-R1/R2 đã đạt QA thật; T39-S5 đạt cơ chế/QA, còn dữ liệu thật; GPS thiết bị và phát hành pháp lý vẫn bị chặn. Schema canonical174, QA history175 gồm hotfix riêng đã giữ. Không chạy lại hai race ứng trước.
+
 ID/expected theo audit07. Bảng chính dưới đây là ánh xạ cuối; ghi chú gói ở dưới giữ lịch sử thực thi. PASS/SCOPED chỉ có hiệu lực trong phạm vi nêu, không nghiệm thu toàn bộ T01–T42. Bằng chứng cũ được giữ khi đường mã/bất biến không đổi; phần đổi được hồi quy chọn lọc trên schema164.
 
 | Test | G | DB | Auth HTTP | Browser | Đồng thời / sự cố | Bằng chứng | Kết luận / giới hạn |

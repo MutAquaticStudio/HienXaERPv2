@@ -1,0 +1,31 @@
+{
+  "scope": "T39_REAL_FORMATS_PENDING_SOURCE_AND_BRANCH_BOUNDARIES",
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "ACTUAL_PNG_RIGHT_CUSTOMER_B_OTHER_CUSTOMER_A_DENIED",
+      "status": "PASS",
+      "evidence": "2ec23c8a-0782-4e5e-a6f8-3f092d0645ce"
+    },
+    {
+      "name": "ACTUAL_JPEG_RIGHT_CUSTOMER_B_OTHER_CUSTOMER_A_DENIED",
+      "status": "PASS",
+      "evidence": "a7ea78aa-113d-4ab7-ab43-f0d13bfa6e3c"
+    },
+    {
+      "name": "ACTIVE_BRANCH_A_PO_B_AND_BRANCH_B_PROOF_A_DENIED",
+      "status": "PASS"
+    },
+    {
+      "name": "MISSING_PARTIAL_BYTES_AND_CLIENT_FINALIZE_CANNOT_BECOME_PROOF_OR_RECEIPT",
+      "status": "PASS",
+      "evidence": "0f4edf52-26d8-4591-9478-307415ce2a7d",
+      "facts": {
+        "state": "PENDING",
+        "attestations": 0,
+        "receipts": 1
+      }
+    }
+  ],
+  "status": "PASS"
+}

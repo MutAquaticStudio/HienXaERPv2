@@ -1,0 +1,19 @@
+{
+  "scope": "G15_G22_REAL_NOTICE_STORAGE_COMMIT_LOSS_RELOAD_SAME_INTENT",
+  "productionAccess": "NONE",
+  "unexpectedErrors": [],
+  "expectedTransportErrors": [
+    "Failed to load resource: net::ERR_FAILED"
+  ],
+  "operation": "1dd8dcbb-d9c5-4329-bf28-1c70f16b1121",
+  "evidence": "08691b1c-8f33-4ec8-bb3c-68943822889b",
+  "notice": "88742212-ffc6-4a85-a556-3225fc1d24d8",
+  "status": "PASS",
+  "facts": {
+    "receipts": 1,
+    "notices": 1,
+    "audits": 1
+  },
+  "customer": "cf25a565-fa5d-45ee-a75f-58f9c964e04a",
+  "sameIntentAfterReload": true
+}

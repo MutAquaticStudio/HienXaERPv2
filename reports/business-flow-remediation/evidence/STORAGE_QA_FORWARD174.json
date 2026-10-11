@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "canonicalSchema": 174,
+  "historyEntries": 175,
+  "migration": "supabase/migrations/20261011192422_remediation_retire_unused_identity_probe.sql",
+  "sha256": "fe39b4551ca57b8e66541733f7d74a001f15dcd29d0920eb24f10a5271c83486",
+  "dataUpdates": 0,
+  "productionAccess": "NONE"
+}

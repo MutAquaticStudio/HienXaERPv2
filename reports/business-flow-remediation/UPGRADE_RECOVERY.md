@@ -89,3 +89,13 @@ Mỗiforward đã cóbackup riêng600, hash/count toàncột public cũ giữ ng
 Trước mởtraffic: cấu hình private SUPABASE_SECRET_KEY trênserver vàbackendStorage thực/buckets/policies, xác minh quyềnservice-role, chạy T39-S1..S5. Kiểm assetlegacy actualdownload/hash vàthêmattestationquađườngtrustedserver cóquyền; mismatch/mấtfile không sửaSHA haygiảVerified, tạo hồsơ/nguồn minhchứng đúng cótruyvết. Source bắtbuộcminhchứng bịgiữ lại nếu assetkhôngđủ; nguồn optionalnull không thànhgate đầu kỳ. Chưa cóStorage đểdiễntậptrongtasknày, vìvậy đây làblockerphát hànhluồngfile.
 
 Rollbackbinary trước167 không được dùng đểfinalize/tiếpnhậnminhchứngsau169; phối hợpbackup/binary/migrationvàđóngwrite. Sauposts mới khôngDROP ledger/attestation đểrollback; giữsourceIDs vàđốichiếu, forwardfix hoặcrestorebản sao đãkiểm vàbảo toànphát sinh. NativeDBarchive khôngManagedAuth/Storage/PITR; phảidiễntậprecovery riêngtrênQA tươngứngtrướcProduction.
+
+## Bổ sung170–174 và Storage QA thật
+
+Đọc RELEASE_BLOCKERS để phân biệt QA đã đạt với điều kiện môi trường đích.170 thêm binding bất biến tới Storage object id/version, chặn authenticated replace/delete và dùng upload không upsert;171 thêm basis byte/hash vào reader để máy chủ so download;172 ghi attestation và audit ngay lần finalize nội bộ đầu.173–174 là chẩn đoán đã gỡ, không giữ API danh tính/quyền mới; các file đã apply được giữ bất biến.
+
+QA cloud đã backup riêng mode600, TLSverify-full;85→172 history sau87 file còn thiếu trong một TX giữ hash111 bảng public/private/Storage theo toàn cột cũ; thêm172–174 chỉ DDL. History cuối175 =174 canonical+một hotfix riêng20261002114730, không xóa/đổi tên history. Native main/fresh/bản sao136→164 chỉ thêm170–174, backup từng forward; không chạy lại migration đã hoàn tất.
+
+Trước triển khai thật: chặn traffic ghi, kiểm drift theo định nghĩa/hash và nguồn; backupDB cùng binary/schema và bản sao byte Storage có inventory id/version/hash. Không dùng DB dump để tuyên bố byte Storage đã backup. Kiểm actualserverkey/buckets private/policies và chế độ phục hồi; áp dụng đầy đủgói canonical phù hợp, reloadPostgREST rồi smoke test đúng quyền. Phải xử lý inventorylegacy theo MATCH/MISMATCH/MISSING/INCONCLUSIVE và Owner chi nhánh; không tựbackfill tất cả.
+
+Một file đổi sau xác minh làm binding cũ không còn hiệu lực. Không sửaSHA/metadata cũ hay đảo facts; tạo minh chứng mới theo hồ sơ xử lý. Lệnh đãcommit mấtresponse được lookup/retry cùngintent. Nếu cần rollback sau phát sinh, giữjournal/sourceIDs/fileversions và đối chiếu; ưu tiên forwardfix hoặc restore đã kiểm có bảo toàn phát sinh. Không downmigration/drop attestation/binding/ledger. Chưa diễn tậprestore byte/ManagedAuth/PITR ở môi trường đích; vẫn là điều kiện triển khai. Task không thực hiệnProduction.

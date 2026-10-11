@@ -1,0 +1,24 @@
+{
+  "scope": "G15_G21_FIRST_INTERNAL_FINALIZATION_ATOMIC_AND_AUDITED",
+  "productionAccess": "NONE",
+  "createOperationId": "f2ae5e95-a008-4385-8a63-3d7dda383550",
+  "finalizeOperationId": "44ae2400-d6f6-4c20-b706-b3ed32591cc2",
+  "receiveOperationId": "7b38ac8f-8c53-4ff3-871c-bf28a1f114da",
+  "evidence": "cda2e89f-cf5b-4d33-890c-fe8c8ad6fba7",
+  "status": "PASS",
+  "rolledBack": {
+    "state": "PENDING",
+    "attestation": 0,
+    "binding": 0,
+    "audit": 0,
+    "receipt": 0
+  },
+  "firstSuccessfulCall": {
+    "attestation": 1,
+    "binding": 1,
+    "audit": 1,
+    "actor": "0d1d2134-5a21-40a4-9fcb-375898d3c133"
+  },
+  "retryAuditCount": 1,
+  "sourceReceipt": "4b29868f-fa85-436e-8bbc-fb80ce358c62"
+}

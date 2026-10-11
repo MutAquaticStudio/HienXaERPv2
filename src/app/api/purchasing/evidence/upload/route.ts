@@ -8,6 +8,7 @@ import { AppError } from "@/lib/core/errors";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { finalizeVerifiedEvidence } from "@/modules/portal/evidence-storage";
 import { detectEvidenceMime } from "@/modules/portal/server";
+import { hasSameRequestOrigin } from "@/lib/core/request-origin";
 
 const bucket = "inventory-evidence";
 const maxBytes = 10 * 1024 * 1024;
@@ -26,8 +27,7 @@ function failure(error: string, status: number) {
 }
 
 function invalidRequest(request: Request) {
-  const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin) return failure("Nguồn yêu cầu không hợp lệ.", 403);
+  if (!hasSameRequestOrigin(request)) return failure("Nguồn yêu cầu không hợp lệ.", 403);
   if (Number(request.headers.get("content-length") ?? 0) > maxJsonBytes) return failure("Yêu cầu quá lớn.", 413);
   if (!request.headers.get("content-type")?.startsWith("application/json")) return failure("Định dạng yêu cầu không hợp lệ.", 415);
   return null;

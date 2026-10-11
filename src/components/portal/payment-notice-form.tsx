@@ -1,6 +1,8 @@
 "use client";
 import { userFacingError } from "@/lib/core/errors";
 import { FilePicker } from "@/components/ui/file-picker";
+import { createBrowserSupabase } from "@/lib/supabase/browser";
+import { rememberEvidenceIntent } from "@/lib/core/evidence-intent";
 
 import type { FormEvent } from "react";
 import { useRef, useState } from "react";
@@ -17,7 +19,6 @@ export function PaymentNoticeForm({ customerId }: { customerId: string }) {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!operationId.current) operationId.current = crypto.randomUUID();
     setBusy(true);
     setError(false);
     setMessage("Đang tải chứng từ và gửi thông báo để đối soát...");
@@ -26,6 +27,10 @@ export function PaymentNoticeForm({ customerId }: { customerId: string }) {
     const file = form.get("file");
     try {
       if (!(file instanceof File) || file.size === 0) throw new Error("Cần chọn chứng từ thanh toán");
+      const { data: actor, error: authError } = await createBrowserSupabase().auth.getUser();
+      if (authError || !actor.user) throw new Error("Phiên đăng nhập đã hết hạn.");
+      const intent = await rememberEvidenceIntent(actor.user.id, "notice:" + customerId, "pending-notice", localStorage);
+      operationId.current = intent.create;
       const upload = new FormData();
       upload.set("file", file);
       upload.set("context", "PAYMENT_NOTICE");
@@ -52,12 +57,13 @@ export function PaymentNoticeForm({ customerId }: { customerId: string }) {
       if (!response.ok) throw new Error(body.error ?? "Gửi thông báo thất bại");
       setMessage("Đã gửi thông báo. Công nợ chỉ thay đổi sau quy trình ghi nhận thanh toán riêng của nội bộ.");
       operationId.current = "";
+      localStorage.removeItem(intent.key);
       target.reset();
       router.refresh();
     } catch (submitError) {
       setError(true);
       setMessage(submitError instanceof TypeError || !navigator.onLine
-        ? "Mất kết nối. Thông tin và chứng từ vẫn trên biểu mẫu; hãy kết nối lại rồi gửi lần nữa."
+        ? "Mất kết nối. Mã thao tác đã được giữ; sau tải lại hãy chọn lại tệp, nhập lại thông tin và gửi cùng thao tác để kiểm tra kết quả."
         : submitError instanceof Error ? userFacingError(submitError.message) : "Gửi thông báo thất bại");
     } finally {
       setBusy(false);

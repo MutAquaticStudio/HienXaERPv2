@@ -902,6 +902,235 @@
       "file": "FINAL_REVIEW_LAST_LINT.log",
       "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
       "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "MESSAGING_BROWSER_RELOAD171.json",
+      "sha256": "465fa46b5cf76fdde749e731843f3228d35a6efbb9d960c1d1188553e35b37ab",
+      "status": "PASS",
+      "scope": "NATIVE_REAL_JWT_BROWSER_RELOAD_WITHOUT_WEBSOCKET",
+      "checks": 0
+    },
+    {
+      "file": "REALTIME_BROWSER_RECOVERY_FINAL.json",
+      "sha256": "2a24f055dd46af6c10f8dff3a3a7cbaf01d7d5834ecbad786beffbff30f0532d",
+      "status": "PASS",
+      "scope": "T42_R1_ACTUAL_BROWSER_REFRESH_AND_RECONNECT_QUERY",
+      "checks": 0
+    },
+    {
+      "file": "REALTIME_QA_RELEASE170.json",
+      "sha256": "4279d93abe5d0cbf0d51d883980a398bb0ef1dbef9933244c1d9eec83e45d978",
+      "status": "PASS",
+      "scope": "REAL_QA_WEBSOCKET_MESSAGING_SAME_EFFECTIVE_CONTRACT",
+      "checks": 0
+    },
+    {
+      "file": "RELEASE_EFFECTIVE174.json",
+      "sha256": "ca34867815e9103f4388ffd4565ab98d6b29072412d082519fb283f354f0f704",
+      "status": "PASS_RELEVANT_CONTRACT_PARITY",
+      "scope": "FINAL_CANONICAL174_EFFECTIVE_FUNCTIONS_ACL_NATIVE_CLOUD_QA_PARITY",
+      "checks": 0
+    },
+    {
+      "file": "STORAGE_BOUNDARIES172.json",
+      "sha256": "ee03341f9f802d86bc0251302159c01e504d507cd9a88bf02a7af9e3f24138ae",
+      "status": "PASS",
+      "scope": "T39_REAL_FORMATS_PENDING_SOURCE_AND_BRANCH_BOUNDARIES",
+      "checks": 4
+    },
+    {
+      "file": "STORAGE_FRESH_FORWARD170.json",
+      "sha256": "5155b8d8657b3371f1740656f5826e72a74ccc986b1bc4c5056fdf5e0531e232",
+      "status": "RECORDED",
+      "scope": "FORWARD_QA_UPGRADE",
+      "checks": 0
+    },
+    {
+      "file": "STORAGE_FRESH_FORWARD171.json",
+      "sha256": "73a3217fdac9c4afc0535abe667cad62dfaed6b8f55463fc53f940b18173c9ba",
+      "status": "RECORDED",
+      "scope": "FORWARD_QA_UPGRADE",
+      "checks": 0
+    },
+    {
+      "file": "STORAGE_FRESH_FORWARD172.json",
+      "sha256": "31a53daf990b54588d8c8f568aabb43de361b49f4fb323c05d1c3de761f30726",
+      "status": "RECORDED",
+      "scope": "FORWARD_QA_UPGRADE",
+      "checks": 0
+    },
+    {
+      "file": "STORAGE_FRESH_FORWARD173.json",
+      "sha256": "2f532e4fb8a2fb902c7f3c885ddf687350760849c1300fe3824cf3b87d45f533",
+      "status": "RECORDED",
+      "scope": "FORWARD_QA_UPGRADE",
+      "checks": 0
+    },
+    {
+      "file": "STORAGE_FRESH_FORWARD174.json",
+      "sha256": "c7de7a0018739fe84ffe6cf472d0648cf59f181459456958468d545339269e6d",
+      "status": "RECORDED",
+      "scope": "FORWARD_QA_UPGRADE",
+      "checks": 0
+    },
+    {
+      "file": "STORAGE_INTERNAL_FIRST173.json",
+      "sha256": "d459bb443ff993a089a377f61fdbd32297b3cd5df246fc43228f0ec759d076fb",
+      "status": "PASS",
+      "scope": "G15_G21_FIRST_INTERNAL_FINALIZATION_ATOMIC_AND_AUDITED",
+      "checks": 0
+    },
+    {
+      "file": "STORAGE_LEGACY_IMPACT_QA.json",
+      "sha256": "b2df77714541cd9d13489b6324c8518282e0dfa4bff9d19c99070d293df0c617",
+      "status": "RECORDED",
+      "scope": "QA_LEGACY_IMPACT_ONLY_NOT_PRODUCTION",
+      "checks": 0
+    },
+    {
+      "file": "STORAGE_LEGACY_QA_COMPLETE.json",
+      "sha256": "f5468c9afef8365fc9c8b4a74d6475786987ee695f3ac81a9b3195e8c110f32e",
+      "status": "RECORDED",
+      "scope": "APPROVED_QA_REAL_STORAGE_LEGACY_READ_ONLY",
+      "checks": 0
+    },
+    {
+      "file": "STORAGE_LEGACY_QA_PARTIAL.json",
+      "sha256": "a8af6ef04e2c4100aefe015fe2eb3cf8cfb84edbc96c51d0e6d4eff3629bb9d8",
+      "status": "RECORDED",
+      "scope": "APPROVED_QA_REAL_STORAGE_LEGACY_READ_ONLY",
+      "checks": 0
+    },
+    {
+      "file": "STORAGE_LEGACY_REVERIFY173.json",
+      "sha256": "82831b02e2957e608b96352c46a83d9626b93e7b2061732b099d08b436a368df",
+      "status": "PASS",
+      "scope": "T39_S5_QA_LEGACY_REVERIFICATION_AND_FOUR_REAL_CLASSIFICATIONS",
+      "checks": 2
+    },
+    {
+      "file": "STORAGE_MAIN_FORWARD171.json",
+      "sha256": "6dd7a21c17c2c7b5c067889b281f5126d7c03776e1ded8c781fd5ec8d87a8a8f",
+      "status": "RECORDED",
+      "scope": "FORWARD_QA_UPGRADE",
+      "checks": 0
+    },
+    {
+      "file": "STORAGE_MAIN_FORWARD172.json",
+      "sha256": "5417930cceb9c2ba2702c26e8b729b6fe9cc493da4b94396ec0d6cb3ffb43305",
+      "status": "RECORDED",
+      "scope": "FORWARD_QA_UPGRADE",
+      "checks": 0
+    },
+    {
+      "file": "STORAGE_MAIN_FORWARD173.json",
+      "sha256": "a29fa00c0b33df95cb9419e351b89182a0016ba27d713ee038509d9a8792a3e9",
+      "status": "RECORDED",
+      "scope": "FORWARD_QA_UPGRADE",
+      "checks": 0
+    },
+    {
+      "file": "STORAGE_MAIN_FORWARD174.json",
+      "sha256": "263a9161042d1c00c112e404ab7c71b9f68e91a2ac733bf09d461a5f1902619a",
+      "status": "RECORDED",
+      "scope": "FORWARD_QA_UPGRADE",
+      "checks": 0
+    },
+    {
+      "file": "STORAGE_NOTICE_RELOAD174.json",
+      "sha256": "e7d5b6e9c9c4f1525f7a74be699c1c97a95dcf77e04045481cd4fc3a66bde2ca",
+      "status": "PASS",
+      "scope": "G15_G22_REAL_NOTICE_STORAGE_COMMIT_LOSS_RELOAD_SAME_INTENT",
+      "checks": 0
+    },
+    {
+      "file": "STORAGE_QA_FORWARD172.json",
+      "sha256": "287f306644b6d26fe9e968a7305dea2f53775ce71d851ab6c5b596646572e701",
+      "status": "PASS",
+      "scope": null,
+      "checks": 0
+    },
+    {
+      "file": "STORAGE_QA_FORWARD173.json",
+      "sha256": "702f5d1654cb977b82a873fe1f6e66fda548a3658289a108292f3ff8fd6723f6",
+      "status": "PASS",
+      "scope": null,
+      "checks": 0
+    },
+    {
+      "file": "STORAGE_QA_FORWARD174.json",
+      "sha256": "2231657fa4e8e26e63d20c6bf1c5c0c0bd44f1959203e6dc9d2422ba2919f713",
+      "status": "PASS",
+      "scope": null,
+      "checks": 0
+    },
+    {
+      "file": "STORAGE_QA_MIGRATION_DRIFT.json",
+      "sha256": "fe0b1542aae49df891fcc9f6e6fe5de7327875c86b8e154347f898ab2177789b",
+      "status": "RECORDED",
+      "scope": null,
+      "checks": 0
+    },
+    {
+      "file": "STORAGE_QA_SCHEMA_UPGRADE171.json",
+      "sha256": "16bc9de5835a61b291e87fa212740ce04e28205cd9a98df57751f1fababb2e07",
+      "status": "PASS",
+      "scope": "APPROVED_ISOLATED_QA_SCHEMA_FOR_REAL_STORAGE",
+      "checks": 0
+    },
+    {
+      "file": "STORAGE_REAL_QA171.json",
+      "sha256": "0bd22821572c051c830e1822750d8569d8f9b627b78a3eebae09903e5fdeaf5d",
+      "status": "PASS_SCOPED_REAL_STORAGE",
+      "scope": "REAL_STORAGE_FULL_PR42_SOURCE171",
+      "checks": 7
+    },
+    {
+      "file": "STORAGE_REPRESENTATIVE_FORWARD170.json",
+      "sha256": "a23aa8084b0acc7277f0d57d639fe4842127905f7c959e16b656a4cdf1520d11",
+      "status": "RECORDED",
+      "scope": "FORWARD_QA_UPGRADE",
+      "checks": 0
+    },
+    {
+      "file": "STORAGE_REPRESENTATIVE_FORWARD171.json",
+      "sha256": "d4038c8882451d8caccb49e20689c8c3aea68192c1436a8d799b171de3276a62",
+      "status": "RECORDED",
+      "scope": "FORWARD_QA_UPGRADE",
+      "checks": 0
+    },
+    {
+      "file": "STORAGE_REPRESENTATIVE_FORWARD172.json",
+      "sha256": "24f51c8ed1662e7478a26a1e258634dc7c5021ddef54d9dd3714f7833fee6a5c",
+      "status": "RECORDED",
+      "scope": "FORWARD_QA_UPGRADE",
+      "checks": 0
+    },
+    {
+      "file": "STORAGE_REPRESENTATIVE_FORWARD173.json",
+      "sha256": "d1d0968797905ddc612fac1b84dd45586558ad6a06c1b66ff28b52ea11fc2f64",
+      "status": "RECORDED",
+      "scope": "FORWARD_QA_UPGRADE",
+      "checks": 0
+    },
+    {
+      "file": "STORAGE_REPRESENTATIVE_FORWARD174.json",
+      "sha256": "1910c7f84999c278e7eb57beaeb2e1a1253f1d621e532d90289819dc8643ec24",
+      "status": "RECORDED",
+      "scope": "FORWARD_QA_UPGRADE",
+      "checks": 0
+    },
+    {
+      "file": "messaging-reload171.png",
+      "sha256": "4c1799317208d90179bf386da155507c508663464a7daddce6619f6419b18419",
+      "status": "VIEWED",
+      "scope": "QA_BROWSER_SCREENSHOT"
+    },
+    {
+      "file": "realtime-browser-recovery-final.png",
+      "sha256": "4c932afa423cf8ffe47336cf2fc38c45b4153780249b335676500e41a235c264",
+      "status": "VIEWED",
+      "scope": "QA_BROWSER_SCREENSHOT"
     }
   ],
   "limits": [
@@ -915,5 +1144,60 @@
     "Storage real upload/read/RLS/recovery remains blocked by absent backend and private server credential; native/unit proof only fail-closed behavior."
   ],
   "finalReviewImplementationCommit": "e7f7bb69020c9e7b8a1b3cea3821f5edfd2d7f5f",
-  "finalReviewSchema": 169
+  "finalReviewSchema": 169,
+  "releaseBlockerReview": {
+    "baselineCommit": "9f099e5bb7a3cfe962bc70459cf9876321fbc7bd",
+    "canonicalSchema": 174,
+    "managedQaHistoryEntries": 175,
+    "managedQaExtraHistory": "20261002114730",
+    "sourceCommit": "PINNED_IN_RELEASE_HEAD_ARTIFACT",
+    "realStorageTested": true,
+    "realRealtimeTested": true,
+    "physicalGpsDeviceTested": false,
+    "legalInvoiceIssued": false,
+    "productionAccess": "NONE",
+    "newArtifacts": [
+      "MESSAGING_BROWSER_RELOAD171.json",
+      "REALTIME_BROWSER_RECOVERY_FINAL.json",
+      "REALTIME_QA_RELEASE170.json",
+      "RELEASE_EFFECTIVE174.json",
+      "STORAGE_BOUNDARIES172.json",
+      "STORAGE_FRESH_FORWARD170.json",
+      "STORAGE_FRESH_FORWARD171.json",
+      "STORAGE_FRESH_FORWARD172.json",
+      "STORAGE_FRESH_FORWARD173.json",
+      "STORAGE_FRESH_FORWARD174.json",
+      "STORAGE_INTERNAL_FIRST173.json",
+      "STORAGE_LEGACY_IMPACT_QA.json",
+      "STORAGE_LEGACY_QA_COMPLETE.json",
+      "STORAGE_LEGACY_QA_PARTIAL.json",
+      "STORAGE_LEGACY_REVERIFY173.json",
+      "STORAGE_MAIN_FORWARD171.json",
+      "STORAGE_MAIN_FORWARD172.json",
+      "STORAGE_MAIN_FORWARD173.json",
+      "STORAGE_MAIN_FORWARD174.json",
+      "STORAGE_NOTICE_RELOAD174.json",
+      "STORAGE_QA_FORWARD172.json",
+      "STORAGE_QA_FORWARD173.json",
+      "STORAGE_QA_FORWARD174.json",
+      "STORAGE_QA_MIGRATION_DRIFT.json",
+      "STORAGE_QA_SCHEMA_UPGRADE171.json",
+      "STORAGE_REAL_QA171.json",
+      "STORAGE_REPRESENTATIVE_FORWARD170.json",
+      "STORAGE_REPRESENTATIVE_FORWARD171.json",
+      "STORAGE_REPRESENTATIVE_FORWARD172.json",
+      "STORAGE_REPRESENTATIVE_FORWARD173.json",
+      "STORAGE_REPRESENTATIVE_FORWARD174.json",
+      "messaging-reload171.png",
+      "realtime-browser-recovery-final.png"
+    ],
+    "sourceFileSha256": {
+      "src/components/messaging/messaging-controls.tsx": "33003b8c84c657fb1bb05de39deaaf56421573a88d2b7ae5bca6f3a1f4caec73",
+      "src/components/portal/payment-notice-form.tsx": "92a9f29dbb3898fd923fe7cf484500166ffcc5b1e3aefe6ccf9b149a63a03935",
+      "src/components/purchasing/purchase-evidence-upload.tsx": "2407fd356aed43287457d65dc7a64cfd0d487dc11d722496d375d27420e1678f",
+      "src/app/api/portal/evidence/upload/route.ts": "d3b8b6cec6d43d8a8aebf449887eeb50a9286575d669da4978507eadf159bda5",
+      "src/app/api/purchasing/evidence/upload/route.ts": "e05addad476a581d6bd8b1268a600460bb168b3dc321a68b6b13e5ff13d92f52",
+      "src/app/api/evidence/[id]/download/route.ts": "ca3cb701491ab928b9115aff255da8145b2496b88b49f757f83a1330edc1b140"
+    }
+  }
 }

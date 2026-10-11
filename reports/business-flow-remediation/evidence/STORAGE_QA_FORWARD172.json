@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "canonicalSchema": 172,
+  "historyEntries": 173,
+  "migration": "supabase/migrations/20261011191208_remediation_internal_evidence_verification_audit.sql",
+  "sha256": "013cba32f80410dbae6679a902916edb3159bef1da5312defdff05ba4cb2268a",
+  "dataUpdates": 0,
+  "productionAccess": "NONE"
+}
