@@ -2,6 +2,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { expect, it, vi } from "vitest";
 
 vi.mock("@/lib/access/context", () => ({ requireInternalPermission: async () => ({ branchId: "branch", permissions: new Set(["inventory.adjust"]) }) }));
+// Static markup cannot execute an async RSC; scope rendering is covered by its runtime/browser checks.
+vi.mock("@/modules/operations/recording-scope-notice", () => ({ RecordingScopeNotice: () => null }));
 vi.mock("./actions", () => ({ saveInventoryThresholdAction: vi.fn() }));
 vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({
   from: (name: string) => {

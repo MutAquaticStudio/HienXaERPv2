@@ -10,6 +10,9 @@ export function inventoryMovementLabel(value: string) {
     STOCK_ADJUSTMENT: "Điều chỉnh kiểm kho",
     RETURN_TRANSFER: "Nhận hàng còn lại",
     CUSTOMER_RETURN: "Khách trả hàng",
+    WAREHOUSE_TRANSFER_DISPATCH: "Xuất chuyển kho",
+    WAREHOUSE_TRANSFER_RECEIPT: "Nhận chuyển kho",
+    WAREHOUSE_TRANSFER_LOSS: "Hao hụt chuyển kho đã duyệt",
     TRANSIT_LOSS: "Hao hụt đang giao",
   }, value, "Phát sinh kho");
 }

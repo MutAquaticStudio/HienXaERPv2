@@ -82,7 +82,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
 
   return <>
     <header className="page-heading"><div><p className="eyebrow">Kho hàng</p><h1>Tồn kho</h1><p className="lede">Theo dõi tồn đã ghi nhận, hàng đã giữ cho đơn bán và lượng còn khả dụng.</p></div><div className="form-actions">{access.permissions.has("roles.manage") && <ButtonLink href="/admin/inventory/warehouses" variant="secondary">Quản lý kho</ButtonLink>}<ButtonLink href="/admin/stock-counts" variant="secondary">Kiểm kho</ButtonLink></div></header>
-    <RecordingScopeNotice branchId={access.branchId} />
+    <Link className="button button-secondary" href="/admin/inventory/transfers">Chuyển kho</Link><RecordingScopeNotice branchId={access.branchId} />
     {query.notice === "threshold-saved" && <p className="form-message success" role="status">Đã lưu ngưỡng cảnh báo.</p>}
     {query.error && <p className="form-message" role="alert">Không thể lưu ngưỡng. Kiểm tra kho, vật tư và số lượng rồi thử lại.</p>}
     <form key={filterContextKey} className="card filter-bar" method="get">{materialId && <input type="hidden" name="material" value={materialId} />}<label>Kho<select name="warehouse" defaultValue={warehouseId ?? ""}><option value="">Tất cả kho</option>{[...warehouses].map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></label><label>Tìm vật tư<input name="q" defaultValue={term} placeholder="Tên vật tư" /></label><button className="button button-secondary" type="submit">Lọc</button></form>

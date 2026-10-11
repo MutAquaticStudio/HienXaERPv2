@@ -51,3 +51,9 @@ Schema119–121: each forward QAupgrade saved private600 nativebackup and old pu
 
 
 130–136: each private600 backup beforeforward keptold publiccolumns/rows hash+count. Legacyfundreconciliation happensonlyexplicitcommand againstvalidolddecision/sources; no migrationbackfillRA/cash/stock.132 quantitypolicy newcolumnNULL foroldrows, no historicalearningsrewrite.133unappliedsyntaxfailure fullyrolledback; correctedunappliedfile thenhistory133.134resolution+135existingADJOPEXcontract+136reliableintents allorderedforwards. NewpublicresolutiontableRLS/noauthwrite, immutabledecisions; oldearnedpaid161k preserved. Fresh136from0/RLS0. Latest136nativearchive restore finalstillpending; ManagedAuthStoragePITR notverified.
+
+## Gói9–10 /137–142
+
+Deploy all forwards together before opening newexpense/transfer forms. Preserve old facts; no backfill stock/cash/AP/cost, no opening gate or activation change. Expense links refer immutable assignment snapshots and vendor references, cannot rewrite approved expense. Transfers use their own source events and inventory movement references; do not substitute stock adjustments. One SKU/two same-branch warehouses, external transport fees one delivery attempt; multi-SO group/cross-branch transfers outside supported model and rejected by source scope.
+
+137 alias defect fixed138,139 source parameter ambiguity fixed140,141 recovery/outcomes,142 canonical numeric-text readers and approved loss OPEX. Migrations immutable after QA apply. Apply on representative schema136→142 kept every old public row/column hash/count; native archive pre142/schema141 restored113 tables and141 history exactly. Fresh142 from0/RLSmissing0 passed. These archives cover local application DB + AuthUID shim; no claim ManagedAuth/Storage/PITR recovery. After newsource events, do not drop columns/tables/down-migrate; restore isolated archive, reconcile new events and follow approved recovery plan. No Production write/deploy.

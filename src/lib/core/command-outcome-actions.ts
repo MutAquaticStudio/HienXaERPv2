@@ -6,7 +6,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import type { CommandOutcome } from "./command-outcome";
 import { creditCommandNames } from "@/modules/finance/credit-command";
 
-const commandSchema = z.enum(["post_payment", "receive_purchase_order", "verify_supplier_fulfillment", "allocate_payment", "resolve_commission_reconciliation", ...creditCommandNames]);
+const commandSchema = z.enum(["post_payment", "receive_purchase_order", "verify_supplier_fulfillment", "allocate_payment", "resolve_commission_reconciliation", "create_delivery_expense", "approve_expense", "create_warehouse_transfer", "record_warehouse_transfer_event", ...creditCommandNames]);
 
 export async function saveCommandDraftAction(operationId: string, command: string, entries: Array<[string, string]>): Promise<CommandOutcome> {
   const parsed = z.object({ operationId: z.uuid(), command: commandSchema, entries: z.array(z.tuple([z.string().max(100), z.string().max(20000)])).max(200) }).safeParse({ operationId, command, entries });
