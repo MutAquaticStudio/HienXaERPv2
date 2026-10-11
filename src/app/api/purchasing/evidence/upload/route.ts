@@ -68,7 +68,12 @@ export async function POST(request: Request) {
       .select("upload_state").eq("id", evidenceId).eq("branch_id", access.branchId).maybeSingle();
     if (evidenceError || !evidence) return failure("Không thể kiểm tra minh chứng.", 502);
     if (evidence.upload_state === "VERIFIED") {
-      return NextResponse.json({ evidenceId, objectPath, alreadyVerified: true }, { headers: { "cache-control": "private, no-store" } });
+      const { data: verified, error: statusError } = await supabase.rpc("evidence_verified_storage_status", { target_evidence_id: evidenceId });
+      if (statusError) return failure("Không thể kiểm tra tệp đã lưu.", 503);
+      if (verified) return NextResponse.json({ evidenceId, objectPath, alreadyVerified: true }, { headers: { "cache-control": "private, no-store" } });
+      // Legacy metadata needs a stored-byte check before it can be used as proof.
+      // PATCH downloads the existing object without replacing it.
+      return NextResponse.json({ evidenceId, objectPath, alreadyVerified: true, needsVerification: true }, { headers: { "cache-control": "private, no-store" } });
     }
     const { data: signed, error: signedError } = await supabase.storage.from(bucket).createSignedUploadUrl(objectPath);
     if (signedError || !signed?.token) return failure("Không thể chuẩn bị tải tệp.", 502);
