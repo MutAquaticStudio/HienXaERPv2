@@ -43,7 +43,7 @@ function listHref(path: string, params: Record<string, string | undefined>) {
   return query ? `${path}?${query}` : path;
 }
 function qualityText(quality: Quality) {
-  if (quality === "INCOMPLETE") return "Chưa đủ giá vốn/chi phí";
+  if (quality === "INCOMPLETE") return "Chưa đủ hoặc chưa khớp giá vốn theo dòng và nguồn";
   if (quality === "NOT_APPLICABLE") return "Chi phí chung chưa phân bổ theo bộ lọc này";
   if (quality === "FORBIDDEN") return "Không có quyền xem";
   if (quality === "UNAVAILABLE") return "Chưa tải được. Thử lại";

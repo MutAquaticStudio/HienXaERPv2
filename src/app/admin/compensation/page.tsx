@@ -39,11 +39,13 @@ export default async function CompensationPage({ searchParams }: { searchParams:
     supabase.from("compensation_manual_bases").select("id, employee_id, basis_type, basis_quantity, period_start, period_end, description").eq("branch_id", access.branchId).order("recorded_at", { ascending: false }),
     supabase.from("workforce_read").select("id, code, display_name").eq("branch_id", access.branchId).eq("active", true).order("display_name"),
     supabase.from("finance_accounts").select("id, code, name").eq("branch_id", access.branchId).eq("active", true).order("name"),
+    supabase.from("commission_reconciliation_cases").select("id, employee_id, original_earning_event_id, reduction_amount_vnd, reason, recorded_at")
+      .eq("branch_id", access.branchId).order("recorded_at", { ascending: false }).limit(25),
   ]);
   if (results.some((result) => result.error)) {
     throw new Error("Không tải được dữ liệu thu nhập. Vui lòng thử lại hoặc liên hệ quản trị viên.");
   }
-  const [{ data }, { data: rules }, { data: bases }, { data: workers }, { data: accounts }] = results;
+  const [{ data }, { data: rules }, { data: bases }, { data: workers }, { data: accounts }, { data: commissionReviews }] = results;
   const rows = (data ?? []) as Earning[];
   const workerOptions = [...new Map((workers ?? []).map((worker) => [worker.id, worker] as const)).values()];
   const { data: recognitionPolicies, error: recognitionError } = await supabase.from("compensation_recognition_policies").select("rule_id, recognition_kind, effective_at").eq("branch_id", access.branchId);
@@ -54,6 +56,11 @@ export default async function CompensationPage({ searchParams }: { searchParams:
   return <>
     <header className="page-heading"><div><p className="eyebrow">Sổ thu nhập nhân sự</p><h1>Thu nhập, lương và hoa hồng</h1><p className="lede">Mỗi khoản thu nhập lưu căn cứ tính, quy tắc áp dụng và lịch sử duyệt. Khoản chi trả được ghi nhận riêng.</p></div></header>
     <ActionNotice notice={query.notice} error={query.error} />
+    {!!commissionReviews?.length && <section className="card card-pad" id="commission-reconciliation"><h2>Hoa hồng cần đối chiếu theo nguồn</h2>
+      <p className="muted">Nguồn thu đã giảm nhưng hoa hồng đã chi hoặc không còn đủ phần chưa thanh toán. Giữ khoản đã duyệt và khoản chi thực tế; đối chiếu nghĩa vụ còn lại trước khi điều chỉnh hoặc chi tiếp.</p>
+      <ul className="clean-list">{commissionReviews.map(item => <li key={item.id}><strong>{workers?.find(worker => worker.id === item.employee_id)?.display_name ?? "Nhân viên theo nguồn"} · giảm theo nguồn {formatVnd(vnd(String(item.reduction_amount_vnd)))}</strong>
+        <small>{item.reason} · {formatBusinessDateTime(item.recorded_at)} · khoản thu nhập <span className="mono">{item.original_earning_event_id}</span></small></li>)}</ul>
+    </section>}
     {canManage && canApprove && <details className="card card-pad quick-create"><summary>Phê duyệt ghi nhận tự động theo sự kiện</summary>
       <p>Áp dụng cho nghiệp vụ phát sinh sau thời điểm hiệu lực. Quy tắc và lịch sử phê duyệt được lưu đầy đủ.</p>
       <form className="command-panel" action={configureRecognitionAction}>

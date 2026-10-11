@@ -77,11 +77,11 @@ export async function stockFixture(tx, qa, quantity = "45", options = {}) {
   return { prefix, uom, material, price, cost, po, common, cutoff: clock.now, customer, site, unitPriceVnd: options.unitPriceVnd ?? "230000" };
 }
 
-export async function salesFixture(tx, qa, stock) {
+export async function salesFixture(tx, qa, stock, uid = qa.fixtures.owner) {
   const { fixtures: f, rpc } = qa;
   const so = await rpc(tx, "create_sales_order_draft", [f.branch, stock.customer, stock.site, null, "QA khắc phục",
-    [{ ...stock.common, unit_price_vnd: stock.unitPriceVnd, pricing_rule_id: stock.price, pricing_rule_version: 1, price_source_type: "LIST" }], randomUUID()]);
-  await rpc(tx, "confirm_sales_order", [so, randomUUID()]);
+    [{ ...stock.common, unit_price_vnd: stock.unitPriceVnd, pricing_rule_id: stock.price, pricing_rule_version: 1, price_source_type: "LIST" }], randomUUID()], uid);
+  await rpc(tx, "confirm_sales_order", [so, randomUUID()], uid);
   const [line] = await tx`select id from public.sales_order_lines where sales_order_id=${so}`;
   return { so, line: line.id };
 }

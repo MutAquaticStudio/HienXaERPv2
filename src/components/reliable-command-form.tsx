@@ -4,10 +4,11 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { getCommandDraftAction, lookupCommandOutcomeAction, saveCommandDraftAction } from "@/lib/core/command-outcome-actions";
 import type { CommandOutcome } from "@/lib/core/command-outcome";
+import type { CreditCommand } from "@/modules/finance/credit-command";
 
 type Props = {
   action: (form: FormData) => Promise<CommandOutcome>;
-  command: "post_payment" | "receive_purchase_order" | "verify_supplier_fulfillment" | "allocate_payment";
+  command: "post_payment" | "receive_purchase_order" | "verify_supplier_fulfillment" | "allocate_payment" | CreditCommand;
   scope: string;
   operationId: string;
   children: ReactNode;

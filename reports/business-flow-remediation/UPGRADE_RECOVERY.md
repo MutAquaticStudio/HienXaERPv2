@@ -31,3 +31,11 @@ Loading legacy/actual khóa xe trước warehouse custody; tính cargo của veh
 Apply110/111/112 mỗi gói transactional, hash/count tất cả cột/dòng cũ giữ nguyên. Fresh112 từ0 PASS. Backup pre110109 restore104public tables +109history khớp; bổ sung này supersedes giới hạn restore109 ở đoạn trên, vẫn không Managed Auth/Storage/PITR. Scan existing QA phát hiện3xe giả20 vớicargo42/28/28 từ test cũ. Migration không tự sửa; bản nâng cấp cần đọc impact và xử lý nguồn/mức nhận/trả/loss bằng nghiệp vụ trước lấy thêm. Không gọi dataset cũ sạch bằng cách rewrite hàng đã ghi.
 
 Advisors111 và restored109 cùng11definer view ERROR/5permissive policy WARN; không có finding mới110/111 nhưng advisor chưa clean. Không đổi views sang invoker mù quáng vì masked/cost-column reader cần contract và negative role tests; broad cross-branch/cost sweep cuối còn chờ.
+
+## Tài chính113–118
+
+Customercredit nguồn immutable Return/ARadjustment +released allocation +fundlot; signedsettlements refund/offset/reversal. Drop pair reversal unique thành bounded aggregate guard để nhiều partial return dùng cùng original allocation hợp lệ. Paymentavailable trừ fundsreserved, refund không làm tiền gốc tự do dùng lại. Zero billable quyết định0 riêng không fakeAR/cash. Existing legacy return adjustments không tự tạo credit/funds; cần đối chiếu nguồn, UI không ghi giảm thêm. Before reproduction legacynegativeAR vẫn giữ facts.
+
+Fresh118 từ0 PASS; allforward apply oldcolumns/rows hash giữ nguyên. Native archive109 recovery104tables đã đạt trước khi clone dùng thêm G16 reproduction; certificate chỉ thời điểm restore. Chưa restore118/managedAuthStorage. New columns provenance/adjustment_kind không backfill quá khứ. Typedrevenue fact mới linkeduniqueARadjustment; reports oldreturn readthrough sourceFK chỉ khi không có typedrow, do đó không giảmhai lần hoặc rewriteposted. Financeperiod/cutoff vàcostgrain actualevidence đã có.
+
+Already-paid commissions giữ nghĩa vụ/cash/earning cũ và tạo reconciliation sourcecase; không tự salaryclawback hoặc gọi quyết định này complete. Reviewcase resolution/payrollsettlement chưa có. Source max/cumulative return and customer funds caps enforced; generic paidprice decrease còn outstanding guard cũ, không tự tạo credit-price. These limits remain in gap status before broader rollout. No Production apply/deploy.

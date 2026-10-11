@@ -40,6 +40,7 @@ function message(value?: string) {
   if (value?.includes("exceeds_payment")) return "Tổng phân bổ và tiền ứng vượt số tiền của phiếu.";
   if (value?.includes("exceeds_outstanding")) return "Phân bổ hoặc điều chỉnh vượt số dư hiện tại.";
   if (value?.includes("scope_mismatch")) return "Khoản được chọn không cùng đối tác hoặc chi nhánh.";
+  if (value?.includes("payment_funds_customer_credit_use_source_workflow")) return "Phiếu thu đang cấp nguồn cho khoản có của khách. Dùng hoàn hoặc cấn trừ theo khoản có; không đảo toàn phiếu thu để hoàn một phần.";
   if (value?.includes("version")) return "Dữ liệu đã thay đổi. Hãy tải lại trước khi duyệt.";
   if (value?.includes("reversed")) return "Phiếu đã đảo hoặc không còn cho phép thao tác này.";
   return "Không thể hoàn tất thao tác tài chính. Vui lòng thử lại.";
@@ -248,14 +249,17 @@ async function adjustmentAction(formData: FormData, side: "AR" | "AP") {
   const base = side === "AR" ? "/admin/receivables" : "/admin/payables";
   const target = parsed.success ? `${base}/${parsed.data.obligationId}` : base;
   if (!parsed.success) redirect(`${target}?error=invalid-adjustment`);
+  const kind = side === "AR" ? z.enum(["PRICE", "WRITE_OFF", "OTHER"]).safeParse(formData.get("adjustmentKind") ?? "OTHER") : null;
+  if (kind && !kind.success) redirect(`${target}?error=invalid-adjustment`);
   await requireInternalPermission(side === "AR" ? "finance.ar.adjust" : "finance.ap.adjust");
   const supabase = await createServerSupabase();
-  const { error } = await supabase.rpc(side === "AR" ? "record_receivable_adjustment" : "record_payable_adjustment", {
+  const { error } = await supabase.rpc(side === "AR" ? "record_receivable_adjustment_typed" : "record_payable_adjustment", {
     target_obligation_id: parsed.data.obligationId,
     amount_delta_vnd: parsed.data.amount,
     reason: parsed.data.reason,
     target_evidence_id: parsed.data.evidenceId || null,
     operation_id: parsed.data.operationId,
+    ...(kind?.success ? { adjustment_kind: kind.data } : {}),
   });
   if (error) redirect(`${target}?error=${encodeURIComponent(message(error.message))}`);
   revalidatePath("/admin");

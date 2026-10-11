@@ -39,3 +39,11 @@ Phân bổ tiền đã có dùng cả phần ứng trước chưa dùng, không 
 ## Tổng hàng thực trên xe
 
 Calendar không chứng minh xe đã hết hàng. Bàn giao mới cộng actual load với cargo còn theo xe của handoff nguồn, kể cả phiếu VERIFIED. Lấy từ kho dùng immutable custody ledger; direct dùng actual handoff−verified accepted−terminal physical return/loss, không giả inventory transit. Conversion có căn cứ phải có cho cả cargo cũ lẫn hàng mới; thiếu thì từ chối. Xe còn cargo giữ cap/UOM/active; không tự tăng cap để hợp thức hóa quá tải cũ. Những quyền hoàn tiền/NCC credit khi trả hàng vẫn là nghiệp vụ riêng G08/G19, physical return không tự giảm AP hoặc tạo cash.
+
+## Khoản có, doanh thu và hoa hồng
+
+Giảm tiền trả hàng trước vào debt chưa thanh toán; chỉ phần vượt debt được cấp nguồn từ allocation đã thu và giữ thành credit. Refund/offset consume cùng fundinglot, khóa credit/payment/obligation; refund payment khác originalreceipt, không fullreverseoriginal. Không giải phóng tiền đã dùng/earmarked lần nữa. Zero-billable decision0 không tạo money/AR giả. Legacynegative/returnadjustment không autowritefunds; UI yêu cầu đối chiếu nguồn, đây không phải opening/activation gate chung.
+
+RevenueRETURN/PRICE signedsource riêng; WRITE_OFF/OTHER không revenue. SourceFKlegacyReturn readthrough khi không typedrecord, không backfill hoặc giảmhai lần. Period theo approval/recordedAt từngfact; cutoff giữ nguồn thấy tại thời điểm. Warehousecost theo verifiedline; direct theo đúngPOline/SOline, sourceqty/cost và cutoff; không có bất kỳCOGS trênSO là đủ. Money output text giữ bigint.
+
+Standingautomaticcommission giữ snapshot nguồn và bounded cumulative rounding theo partial allocation release; unpaid phần đủ thì appendnegativeearning. Nếu hoa hồng đã trả/không đủunpaid, giữ oldfacts và sourcecase review, không tự recoup cash hay âmAP. Paidreview resolution/employee settlement vẫn cần triển khai/kiểm chứng; không đổi cấu hình thật. Manual commission dùng netprofit/costsource để tính mới, không rewriteapprovedsnapshot. GenericPRICE decrease chưa mở paid-credit-price workflow; giữ outstanding guard cũ.
