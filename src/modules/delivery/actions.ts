@@ -69,6 +69,8 @@ function message(value?: string) {
   if (value?.includes("schedule_collision")) return "Người giao hoặc xe đã được phân trong khung giờ này. Chọn lịch hoặc tài nguyên khác.";
   if (value?.includes("schedule_window")) return "Nhập giờ bắt đầu và giờ kết thúc sau giờ bắt đầu.";
   if (value?.includes("delivery_employee_cannot_report_work")) return "Người giao phải có tài khoản đang hoạt động và quyền nhận, báo kết quả công việc trong chi nhánh.";
+  if (value?.includes("vehicle_actual_cargo_capacity_exceeded")) return "Tổng hàng thực lấy và hàng còn trên xe vượt sức chứa đã xác minh. Xử lý hàng của phiếu trước hoặc chọn xe phù hợp trước khi bàn giao.";
+  if (value?.includes("vehicle_cargo_source_requires_reconciliation")) return "Dữ liệu hàng còn trên xe chưa khớp nguồn. Đối chiếu bàn giao, xác minh và xử lý hàng còn trước khi lấy thêm.";
   if (value?.includes("vehicle_capacity_exceeded")) return "Lượng kế hoạch vượt sức chứa đã khai báo của xe. Chọn xe phù hợp hoặc tách phiếu giao.";
   if (value?.includes("vehicle_capacity")) return "Chưa đủ dữ liệu kiểm tra tải xe. Kiểm tra sức chứa, đơn vị và căn cứ quy đổi trong danh mục.";
   if (value?.includes("delivery_loaded_quantity_exceeds_plan")) return "Lượng thực lấy vượt kế hoạch. Kiểm tra lại từng dòng trước khi bàn giao.";

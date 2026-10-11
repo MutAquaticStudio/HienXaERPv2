@@ -35,3 +35,7 @@ Giữ default lịch4giờ từ mã cũ, hiện rõ/editable trước assign, l�
 ## G07 — tiền đã ghi nhận
 
 Phân bổ tiền đã có dùng cả phần ứng trước chưa dùng, không ghi thu/chi lại. Tiêu phần chưa phân loại trước, rồi ghi consumption advance theo allocation thực. Partial allocations cùng payment/obligation bằng intent khác hợp lệ trong giới hạn nguồn/nợ; retry cùng intent không tạo hiệu lực thêm. Đảo toàn phiếu tiền thực giữ hành vi có quyền/lý do và đảo classification để khôi phục debt đúng, không dùng cơ chế đó để hoàn một phần sales return ở G08. Dữ liệu finance không lưu plaintext trong localStorage; chỉ opaque intent UUID, bản payload ở private actor/branch draft.
+
+## Tổng hàng thực trên xe
+
+Calendar không chứng minh xe đã hết hàng. Bàn giao mới cộng actual load với cargo còn theo xe của handoff nguồn, kể cả phiếu VERIFIED. Lấy từ kho dùng immutable custody ledger; direct dùng actual handoff−verified accepted−terminal physical return/loss, không giả inventory transit. Conversion có căn cứ phải có cho cả cargo cũ lẫn hàng mới; thiếu thì từ chối. Xe còn cargo giữ cap/UOM/active; không tự tăng cap để hợp thức hóa quá tải cũ. Những quyền hoàn tiền/NCC credit khi trả hàng vẫn là nghiệp vụ riêng G08/G19, physical return không tự giảm AP hoặc tạo cash.

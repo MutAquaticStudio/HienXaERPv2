@@ -67,6 +67,7 @@ export async function saveCatalogAction(_:CatalogState|undefined, form:FormData)
  }catch(error){
   const code=error instanceof PortalRpcError?error.code:'';
   if(error instanceof Error&&error.message.includes('vehicle_capacity_locked_by_assignment')) return {message:'Xe đang có phân giao chưa hoàn tất. Xử lý phân giao trước khi thay dữ liệu sức chứa.'};
+  if(error instanceof Error&&error.message.includes('vehicle_capacity_locked_by_cargo')) return {message:'Xe còn hàng đã bàn giao chưa được xử lý hết. Đối chiếu và xử lý hàng còn trước khi đổi sức chứa, đơn vị hoặc ngừng sử dụng xe.'};
   return {message:code==='40001'||code==='PT409'?'Dữ liệu đã thay đổi. Mở lại bản ghi trước khi lưu.':code==='23505'?'Mã hoặc bản ghi đã tồn tại. Tải lại danh sách trước khi thử lại.':code==='42501'?'Không có quyền với đối tượng/chi nhánh này.':'Không thể lưu. Kiểm tra mã, đơn vị, tỷ lệ và thông tin bắt buộc; dữ liệu chưa được xác nhận.'};
  }
 }
