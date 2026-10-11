@@ -15,8 +15,8 @@ describe("delivery assignment employee options", () => {
     const f = fixture([{ employees: { id: "worker-id", display_name: "Worker" } }]);
     expect((await listAssignmentEmployees(f.client, "trusted-branch")).data).toEqual([{ id: "worker-id", display_name: "Worker" }]);
     expect(f.from).toHaveBeenCalledWith("employee_branch_access");
-    expect(f.builder.select).toHaveBeenCalledWith("employees!inner(id, display_name), roles!inner(active)");
-    expect(f.builder.eq.mock.calls).toEqual([["branch_id", "trusted-branch"], ["active", true], ["employees.active", true], ["roles.active", true]]);
+    expect(f.builder.select).toHaveBeenCalledWith("employees!inner(id, display_name), roles!inner(active, role_permissions!inner(permission_code))");
+    expect(f.builder.eq.mock.calls).toEqual([["branch_id", "trusted-branch"], ["active", true], ["employees.active", true], ["roles.active", true], ["roles.role_permissions.permission_code", "work.claim"]]);
   });
   it("deduplicates active role memberships by actual employee identity", async () => {
     const f = fixture([{ employees: { id: "worker-id", display_name: "Worker" } }, { employees: [{ id: "worker-id", display_name: "Worker" }] }]);

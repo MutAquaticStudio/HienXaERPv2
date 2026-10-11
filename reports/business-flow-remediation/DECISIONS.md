@@ -25,3 +25,9 @@ G20 chưa có provider/API/sandbox được giao: nội bộ và đối chiếu/
 ## Kiểm chứng
 
 Mỗi default phải có code/UI/test/evidence. Pin commit/schema/environment. Không dùng CI/audit cũ làm PASS bản sửa.
+
+## Package3 — giới hạn và căn cứ thực hiện
+
+Một delivery của một SO, một điểm lấy nội bộ; nhiều kho tách delivery trước khi bàn giao (G14 cho phép mô hình tách phiếu). Lượng chưa lấy giải phóng giữ chỗ và giữ phần nguồn chưa dùng, không đổi kế hoạch. Zero line ghi quan sát lượng0 với cost NULL, không stock movement; dòng không bán có cost0 khi xác minh, không giả thiếu giá vốn của dòng có doanh thu.
+
+Giữ default lịch4giờ từ mã cũ, hiện rõ/editable trước assign, lưu start/end cùng intent. Xe nội bộ cần cap/UOM/căn cứ nguồn/người-thời điểm xác minh; chưa đủ thì từ chối có hướng dẫn, không mặc định mật độ. Xác minh lại cùng cap khi đang có phân công được; đổi cap/UOM hoặc tắt xe đang bận bị chặn. Chỉ assignee có tài khoản active + work.claim tại chi nhánh được chọn; không thay quyền để làm test đạt.

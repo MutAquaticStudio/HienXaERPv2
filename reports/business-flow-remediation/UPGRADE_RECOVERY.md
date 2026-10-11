@@ -11,3 +11,9 @@ Sau source refund/transfer/vendor-return mới, down migration/xóa bảng khôn
 89 migrations từ0 PASS trên native17 application schema + Auth shim; không phải managed Auth/Storage recovery. Upgrade86→89 giữ nguyên columns/rows business đã có; 3 forward files, gồm qualifier correction trước nghiệm thu. Archive native trước gói restore102 public tables/86 history, hash/count khớp. Không Production.
 
 Các87..89 phải triển khai như gói trước mở lưu lượng mới; không cho phép operator dùng chức năng giữa file87 và88. Source87 không sửa sau QA apply; correction88 giữ lịch sử forward. Old OPEN count phải ghi lại basis; old APPROVED không tính lại.
+
+## Package3 — dữ liệu đang mở
+
+Gói95–103 chỉ forward, old public columns/rows giữ nguyên per-apply manifests. Fresh103 từ0 PASS. File95–98 có sửa tiếp theo cho immutable assignment/zero load/read boundary; phải triển khai toàn gói trước mở lưu lượng. Không rewrite forward đã áp dụng QA.
+
+Existing vehicles giữ cap/UOM nhưng căn cứ xác minh mới NULL, không được tự gắn đã xác minh. Owner chủ động nhập căn cứ qua danh mục; cap/UOM không đổi được xác minh kể cả xe đang được phân. Người trên assignment cũ thiếu work.claim phải được rà: trước bắt đầu có thể reassign người đủ quyền; đã bắt đầu không đơn giản đổi, cần quyết định/bàn giao có căn cứ. Không tự đổi role, phiếu hoặc số dư lịch sử để thông qua. Nhiều warehouse trong một phiếu cũ phải review/tách trước xuất; không giả tất cả đã lấy cùng lúc.

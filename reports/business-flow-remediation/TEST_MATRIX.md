@@ -52,3 +52,15 @@ Expected/source ở audit07; không PASS từ evidence cũ.
 T28: stale/current/reservation, real two-approver and count/handoff lock races PASS; T40: count open/record/approve audit and fault-after-ledger rollback PASS; T05: real QA Auth/Sales/Finance/Worker cost boundaries and raw filter/order endpoints PASS. These are scoped, not full T05/T06/T07/T08/T13/T40 for all modules. Native5checks, AuthHTTP12checks, Browser4checks/5images1280+390/0consoleerrors, native2races with distinct actors/PIDs and observed blockers. Typecheck PASS;6files34affected tests PASS; targeted lint0issues. Build/full tests/CI final NOT_RUN.
 
 Evidence outside repo: /Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation. No token/password recorded. Browser plugin absent, installed Playwright used; real UI forms/login/actions/reload and independent DB readback.
+
+## Package3 — phạm vi mới được kiểm chứng
+
+T14/T15/T42: native pre-start reassignment, immutable assignment facts, old assignee denial/new eligible assignee, GPS old revoke/new session, after-start deny. Auth HTTP thật: old Worker403; new assigned Owner (có work.claim thực, không bypass is-current-assignee) start/report/retry một result. Warehouse là người điều phối/bàn giao thực; không cấp role/cloud quyền để test đạt.
+
+T13: hai actor/PID thật cạnh tranh employee/vehicle lock, observed pg_blocking_pids, chỉ một assignment. Trùng lịch bị chặn trước publish; negative max/missing conversion/window, khai căn cứ tải và xác minh lại cap không đổi trên phiếu đang mở.
+
+T20/T23/T40: native6 scenarios, actual14/plan15, release residual, zero unloaded line without movements or false cost, FULL15/accepted14 board until return resolved, fault after custody insert rolls all effects back and permits retry. AuthHTTP precision/missing/permission/nullversion/positive/retry/source read. Browser warehouse4 checks/6desktop+390 images/0consoleerrors final; reload/independent SQL readback.
+
+Package3 schema103 từ0 native/Auth shim PASS; upgrade95–103 giữ nguyên cột/dòng nghiệp vụ cũ. 7 files/67 affected unit tests, typecheck, targeted lint PASS. Package1 native5 và Package2 native3 regression PASS tại101; new102/103 eligibility/capacity không tác động các external-only cases đó. Full42 matrix, seven business scenarios, build/CI final vẫn NOT_RUN.
+
+Failure evidence được giữ: reader invoker mất dòng Warehouse đã sửa bằng forward100; screenshot caret style injection và lịch fixture trùng được phân loại harness, chạy fresh unique schedules + caret initial đạt. Không bỏ qua console errors.

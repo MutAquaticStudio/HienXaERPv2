@@ -8,6 +8,7 @@ import { catalogs } from './fields';
 import { catalogHref } from './ownership';
 import { z } from 'zod';
 import Decimal from 'decimal.js';
+import { isExactEntryQuantity } from '@/lib/core/quantity';
 export type CatalogState = {message:string;success?:boolean;recordId?:string;kind?:string};
 export async function saveCatalogAction(_:CatalogState|undefined, form:FormData):Promise<CatalogState> {
  const kind=String(form.get('kind')); const config=catalogs[kind];
@@ -50,7 +51,8 @@ export async function saveCatalogAction(_:CatalogState|undefined, form:FormData)
   if(kind==='machines'&&String(values.machine_type).length>60) return {message:'Loại máy tối đa 60 ký tự.'};
   if(kind==='vehicles'){
    if(Boolean(values.capacity_quantity)!==Boolean(values.capacity_uom_id)) return {message:'Sức chứa phải có cả số lượng và đơn vị, hoặc để trống cả hai.'};
-   if(values.capacity_quantity){const capacity=String(values.capacity_quantity);try{if(!/^\d+(?:\.\d+)?$/.test(capacity)||!new Decimal(capacity).isPositive()) return {message:'Sức chứa phải là số dương.'};}catch{return {message:'Sức chứa phải là số dương.'};}}
+   if(values.capacity_quantity&&!isExactEntryQuantity(String(values.capacity_quantity))) return {message:'Sức chứa phải là số dương hợp lệ, tối đa 6 chữ số thập phân.'};
+   if(values.capacity_quantity&&String(values.capacity_source_note??'').trim().length<3) return {message:'Nhập căn cứ đã xác minh sức chứa của xe.'};
   }
   const original=editing?JSON.parse(String(form.get('original'))):null;
   const expected=original?Object.fromEntries(fields.map(f=>[f.key,original[f.key]??null])):null;
@@ -64,6 +66,7 @@ export async function saveCatalogAction(_:CatalogState|undefined, form:FormData)
   return {success:true,message:'Đã lưu và ghi lịch sử thay đổi.',recordId,kind};
  }catch(error){
   const code=error instanceof PortalRpcError?error.code:'';
+  if(error instanceof Error&&error.message.includes('vehicle_capacity_locked_by_assignment')) return {message:'Xe đang có phân giao chưa hoàn tất. Xử lý phân giao trước khi thay dữ liệu sức chứa.'};
   return {message:code==='40001'||code==='PT409'?'Dữ liệu đã thay đổi. Mở lại bản ghi trước khi lưu.':code==='23505'?'Mã hoặc bản ghi đã tồn tại. Tải lại danh sách trước khi thử lại.':code==='42501'?'Không có quyền với đối tượng/chi nhánh này.':'Không thể lưu. Kiểm tra mã, đơn vị, tỷ lệ và thông tin bắt buộc; dữ liệu chưa được xác nhận.'};
  }
 }

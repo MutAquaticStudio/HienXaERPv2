@@ -6,11 +6,12 @@ type Membership = { employees: EmployeeOption | EmployeeOption[] | null };
 
 export async function listAssignmentEmployees(client: Pick<SupabaseClient, "from">, branchId: string) {
   const { data, error } = await client.from("employee_branch_access")
-    .select("employees!inner(id, display_name), roles!inner(active)")
+    .select("employees!inner(id, display_name), roles!inner(active, role_permissions!inner(permission_code))")
     .eq("branch_id", branchId)
     .eq("active", true)
     .eq("employees.active", true)
-    .eq("roles.active", true);
+    .eq("roles.active", true)
+    .eq("roles.role_permissions.permission_code", "work.claim");
   if (error) throw new AppError({ code: "DEPENDENCY_UNAVAILABLE", message: "Không tải được nhân viên có thể phân giao.", status: 503 });
   const employees = new Map<string, EmployeeOption>();
   for (const row of (data ?? []) as unknown as Membership[]) {
