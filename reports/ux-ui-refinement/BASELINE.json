@@ -1,0 +1,41 @@
+{
+  "repository": "MutAquaticStudio/HienXaERPv2",
+  "candidateBase": "e2a639324815f1c147c5b0744ec08d5d3e0dd885",
+  "branch": "codex/ux-ui-refinement",
+  "originalCheckout": "/Users/nox/Downloads/HienXaERP",
+  "originalHead": "79b0b918c7430bfd0e9d17e247ecba2be1fa0bf2",
+  "productionDeployment": "dpl_EBjgf4qEUdv3BjnfqwECN4A32V8v",
+  "productionCodeSha": "NOT_EXPOSED_BY_LIVE_HEALTH_OR_PROVIDER_METADATA",
+  "productionSchema": {
+    "count": 78,
+    "latest": "20261009224842"
+  },
+  "candidateCanonicalSchema": 187,
+  "qaBackend": "owned native PostgreSQL49760 + gateway3113 + actual QA Auth ffrwiglcrlumfvhubaxg",
+  "qaSchema": {
+    "count": 186,
+    "latest": "20261012110100",
+    "migrationAppliedInUiTask": false,
+    "compatibility": "UI and read/write contracts used by these cases match schema186; canonical187 opening retirement has not been applied to QA or Production in this UI task."
+  },
+  "browserPlugin": "ABSENT; installed Playwright fallback",
+  "singleAgent": true,
+  "excludedAdvanceRaceModes": [
+    "different-intents",
+    "same-intent"
+  ],
+  "skill": {
+    "name": "redesign-existing-projects",
+    "agent": "Codex",
+    "cliVersion": "1.7.2",
+    "source": "https://github.com/Leonxlnx/taste-skill",
+    "commit": "d237dd399d57524945c0c81327da5da19f7a468d",
+    "path": "/Users/nox/.agents/skills/redesign-existing-projects/SKILL.md",
+    "installedSha256": "a75d547d04595fe97a5d377dddf145d029d51487a4f2a0a5a9d3b532ca3b84cd",
+    "fullFileRead": true,
+    "byteMatchWithInspectedSource": true,
+    "skillOnly": true,
+    "existingSkillsOverwritten": false,
+    "userConstraintsOverrideFontPaletteNavigationMotionSuggestions": true
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "status": "PREPARED_ONCE_QA_PENDING_RESULT",
+  "schema": {
+    "count": 186,
+    "latest": "20261012110100"
+  },
+  "productionAccess": "NONE",
+  "schemaChanges": 0,
+  "excludedAdvanceRacesRun": false,
+  "source": {
+    "so": "aab98715-1df4-49b9-8cd0-ac907cc54bb4",
+    "po": "2a77bee7-0ad1-4330-a6fe-49702e3dadf0",
+    "material": "08528375-c064-435e-9e8a-13617b0c2961",
+    "uom": "fb1acfd3-8275-43e9-9316-4f3906fda454",
+    "delivery": "47e8ce35-d1d7-4e79-9f96-bb570d60e770",
+    "deliveryLine": "c7d0a0f0-8d7d-45da-ae46-12d77c63bf1f",
+    "work": "5952fce2-9388-41e7-9a35-6ad10223c075",
+    "vehicle": "a0997f1a-f398-479a-bf6b-85909fffa5df",
+    "branch": "474b60c5-cf95-4d11-b782-4f0eefcbb427",
+    "customer": "8f2de180-ff9b-44fe-929c-685ee8ef6077",
+    "site": "cb99bbf4-c2cc-4366-aef9-15628e87904a",
+    "account": "0a8592dc-875c-4d29-a649-5d4f80782d81",
+    "warehouse": "59ded449-38e8-4a63-ae1f-b64d6cbd3b6c",
+    "sourceFacts": {
+      "warehouse": "1.000000",
+      "cargo": "14.000000",
+      "revenues": 0
+    }
+  },
+  "actors": {
+    "sales": {
+      "subject": "d593fd7b-027e-4075-83b8-5f7253d64093",
+      "employee": "4a54bf5d-e868-434d-ae91-aa3d30684134",
+      "role": "d24380c9-8c80-4c87-9c94-51da6b5e3a5f",
+      "permissions": [
+        "dashboard.read",
+        "catalog.read",
+        "customers.read",
+        "pricing.read",
+        "orders.read",
+        "orders.create",
+        "orders.confirm",
+        "orders.cancel",
+        "quotation.read",
+        "quotation.create",
+        "quotation.send",
+        "quotation.accept",
+        "delivery.read",
+        "inventory.read",
+        "finance.ar.read"
+      ]
+    },
+    "purchasing": {
+      "subject": "fcd46a45-a0b9-4c9b-bd91-6592e8f38d43",
+      "employee": "e6c822a3-b79d-4bd9-974d-288d3474f105",
+      "role": "65fc9dcb-f78b-46be-905a-c3d711c342ed",
+      "permissions": [
+        "dashboard.read",
+        "catalog.read",
+        "suppliers.read",
+        "purchasing.read",
+        "purchasing.create",
+        "purchasing.confirm",
+        "purchasing.cancel",
+        "purchasing.price.read",
+        "purchasing.price.manage",
+        "delivery.read",
+        "inventory.read",
+        "finance.ap.read"
+      ]
+    },
+    "warehouse": {
+      "subject": "e04f1e5a-2a2d-4347-a506-1b6a35ea790f",
+      "employee": "76f470e0-0fbf-4617-9606-2576b2dcf4df",
+      "role": "e7d9e21e-c734-4adb-a010-97baada3c806",
+      "permissions": [
+        "dashboard.read",
+        "catalog.read",
+        "customers.read",
+        "suppliers.read",
+        "purchasing.read",
+        "inventory.read",
+        "inventory.reserve",
+        "inventory.receive",
+        "inventory.count",
+        "inventory.adjust",
+        "delivery.read",
+        "delivery.create",
+        "delivery.assign",
+        "delivery.handoff",
+        "delivery.submit",
+        "delivery.verify",
+        "delivery.exception",
+        "work.manage",
+        "workforce.read"
+      ]
+    },
+    "finance": {
+      "subject": "a89838c9-bb2d-4758-874c-b031f9655f49",
+      "employee": "ce459ae5-53f4-4bf5-95ba-5d98944ac277",
+      "role": "ac293a86-020e-4294-9423-0cb3c6c63fc7",
+      "permissions": [
+        "dashboard.read",
+        "catalog.read",
+        "customers.read",
+        "suppliers.read",
+        "delivery.read",
+        "inventory.read",
+        "inventory.cost.read",
+        "finance.ar.read",
+        "finance.ar.adjust",
+        "finance.ap.read",
+        "finance.ap.adjust",
+        "finance.account.manage",
+        "finance.payment.post",
+        "finance.payment.reverse",
+        "finance.payment_notice.review",
+        "finance.reconcile",
+        "finance.expense.read",
+        "finance.expense.manage",
+        "finance.profit.read",
+        "compensation.read",
+        "compensation.approve"
+      ]
+    },
+    "worker": {
+      "subject": "654de2bf-cf27-4536-ad03-258c348e1f51",
+      "employee": "7a29b908-578e-4d45-b408-70f7a93256a9",
+      "role": "8d7e075c-2268-4ae9-a8cf-ec68a4059e87",
+      "permissions": [
+        "work.claim",
+        "workforce.read"
+      ]
+    }
+  },
+  "portalSubjects": {
+    "receiver": "dbfead9b-f234-4948-9e54-d79f7826cbad",
+    "customerFinance": "4b99a47e-738a-4ee8-83f9-7df75ec9b257",
+    "otherCustomer": "d15b7188-25f8-4fc5-8d80-df455a1ef567"
+  }
+}

@@ -1,0 +1,14 @@
+{"name":"CASHBOOK_LABELS_KEYBOARD_AND_HORIZONTAL_TABLE","status":"PASS"}
+{"name":"MOBILE_MENU_DIALOG_AND_DRAFT_PRESERVED","status":"PASS"}
+{"name":"DISPATCH_RESULT_LABELS_AND_COST_SCOPE","status":"PASS"}
+{"name":"WORKER_SERVER_LIMIT_PRECISION_OFFLINE_AND_RELOAD","status":"PASS"}
+{"name":"WORKER_RESPONSE_LOSS_RETRY_EXACTLY_ONCE","status":"PASS"}
+{"name":"AUTHORIZED_VERIFY13_KEEPS_WORKER14_AND_CARGO1","status":"PASS"}
+file:///Users/nox/.codex/worktrees/ux-ui-refinement/HienXaERP/scripts/qa/ux-refinement-browser.mjs:160
+} catch (e) { r.status = "FAIL"; r.error = e.message.split("\n")[0]; await save(); throw new Error(r.error); }
+                                                                                         ^
+
+Error: locator.waitFor: Timeout 30000ms exceeded.
+    at file:///Users/nox/.codex/worktrees/ux-ui-refinement/HienXaERP/scripts/qa/ux-refinement-browser.mjs:160:90
+
+Node.js v24.18.0

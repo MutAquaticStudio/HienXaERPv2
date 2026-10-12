@@ -2,6 +2,7 @@ import { formatBusinessDate, formatBusinessDateTime } from "@/lib/core/business-
 import { Suspense, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import { DashboardDetails, type DashboardDetail } from "@/components/dashboard/dashboard-details";
+import { MetricNumber } from "@/components/ui/metric-number";
 import { requireInternalPermission } from "@/lib/access/context";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createServerSupabase } from "@/lib/supabase/server";
@@ -55,7 +56,7 @@ function moneyMetric(metric: Metric) {
 }
 function Kpi({ label, metric, children }: { label: string; metric: Metric; children?: ReactNode }) {
   if (metric.quality === "FORBIDDEN") return null;
-  return <article className="card metric-card"><span className="metric-label">{label}</span><strong className="metric-value">{children ?? moneyMetric(metric)}</strong>{qualityText(metric.quality) && <span className="metric-note">{qualityText(metric.quality)}</span>}</article>;
+  return <article className="card metric-card"><span className="metric-label">{label}</span><strong className="metric-value">{typeof children === "string" ? <MetricNumber value={children} /> : children ?? <MetricNumber value={moneyMetric(metric)} />}</strong>{qualityText(metric.quality) && <span className="metric-note">{qualityText(metric.quality)}</span>}</article>;
 }
 
 async function LowStockAlert({ access }: { access: DashboardAccess }) {

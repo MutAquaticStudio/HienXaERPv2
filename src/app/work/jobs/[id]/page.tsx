@@ -6,6 +6,7 @@ import { WorkResultDraftForm } from "@/components/portal/work-result-draft-form"
 import { ForegroundGpsControl } from "@/components/routing/foreground-gps-control";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { getWorkerPortalJob } from "@/modules/portal/actions";
+import { formatQuantity } from "@/lib/core/quantity";
 import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { GPS_DEVICE_AVAILABLE, GPS_DEVICE_UNAVAILABLE_MESSAGE } from "@/modules/routing/device-availability";
 
@@ -45,7 +46,7 @@ export default async function WorkJobPage({ params }: { params: Promise<{ id: st
             <strong>{job.delivery ? `${job.delivery.lines.length} dòng vật tư` : job.quantity ? job.quantity + " " + (job.unit ?? "") : "Theo xác nhận thực tế"}</strong>
           </div>
           {job.delivery?.lines.map((line) => <div className={styles.kv} key={line.id}>
-            <span>{line.material_name}</span><strong>Kế hoạch: {line.planned_base_quantity} · Thực lấy: {line.loaded_base_quantity ?? "Chưa ghi nhận"} · Còn được phép báo: {line.reportable_base_quantity} {line.unit}</strong>
+            <span>{line.material_name}</span><strong className={styles.quantityScope}><span>Kế hoạch: {formatQuantity(line.planned_base_quantity)} {line.unit}</span><span>Thực lấy: {line.loaded_base_quantity == null ? "Chưa ghi nhận" : formatQuantity(line.loaded_base_quantity)} {line.unit}</span><span>Còn được phép báo: {formatQuantity(line.reportable_base_quantity)} {line.unit}</span></strong>
           </div>)}
           {job.access_note ? <p className={styles.status}>{job.access_note}</p> : null}
           {available ? <ClaimJobButton version={job.version} workItemId={job.id} /> : null}

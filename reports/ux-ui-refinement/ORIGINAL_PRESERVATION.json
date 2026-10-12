@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "checkedAt": "2026-10-12T17:11:23.891759+00:00",
+  "head": "79b0b918c7430bfd0e9d17e247ecba2be1fa0bf2",
+  "branch": "codex/uat-role-navigation-20260923",
+  "filesChecked": 12534,
+  "contentDifferences": [],
+  "statusMatchesSnapshot": true,
+  "gitMetadataAction": "fetch origin main only; original files/index/HEAD not reset or cleaned"
+}
