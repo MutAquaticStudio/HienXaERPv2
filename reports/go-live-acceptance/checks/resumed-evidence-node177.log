@@ -1,0 +1,16 @@
+✔ measures actual bytes and preserves affected source identifiers (0.801166ms)
+✔ same-sized changed content cannot match client or legacy checksum (0.17275ms)
+✔ object without an old checksum stays inconclusive, never auto-verified (0.113833ms)
+✔ only authoritative absence establishes missing, not masked permission 404 (0.118583ms)
+✔ network failure remains inconclusive (0.096709ms)
+✔ wrong size, magic or declared portal size cannot verify (0.207458ms)
+✔ resumes after a partial checkpoint and reconciles without replaying completed downloads (17.625792ms)
+✔ inconclusive records can be retried explicitly without replaying matched records (13.265083ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 83.366417

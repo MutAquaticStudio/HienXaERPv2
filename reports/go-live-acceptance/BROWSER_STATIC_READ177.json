@@ -1,0 +1,377 @@
+{
+  "scope": "OWNER_STATIC_MODULE_SCREEN_READ_NOT_FULL_ACTION_ACCEPTANCE",
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "file": "src/app/admin/access/page.tsx",
+      "path": "/admin/access",
+      "finalPath": "/admin/access",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Nhân viên & quyền"
+    },
+    {
+      "file": "src/app/admin/audit/page.tsx",
+      "path": "/admin/audit",
+      "finalPath": "/admin/audit",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Nhật ký hoạt động"
+    },
+    {
+      "file": "src/app/admin/cashbook/page.tsx",
+      "path": "/admin/cashbook",
+      "finalPath": "/admin/cashbook",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Sổ tiền và đối soát"
+    },
+    {
+      "file": "src/app/admin/catalog/page.tsx",
+      "path": "/admin/catalog",
+      "finalPath": "/admin/products/manage",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Vật tư"
+    },
+    {
+      "file": "src/app/admin/compensation/page.tsx",
+      "path": "/admin/compensation",
+      "finalPath": "/admin/compensation",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Thu nhập, lương và hoa hồng"
+    },
+    {
+      "file": "src/app/admin/customers/manage/page.tsx",
+      "path": "/admin/customers/manage",
+      "finalPath": "/admin/customers/manage",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Khách hàng"
+    },
+    {
+      "file": "src/app/admin/customers/page.tsx",
+      "path": "/admin/customers",
+      "finalPath": "/admin/customers",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Khách hàng"
+    },
+    {
+      "file": "src/app/admin/dashboard/obligations/page.tsx",
+      "path": "/admin/dashboard/obligations",
+      "finalPath": "/admin/dashboard/obligations",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Công nợ phải thu tại thời điểm chốt"
+    },
+    {
+      "file": "src/app/admin/debts/page.tsx",
+      "path": "/admin/debts",
+      "finalPath": "/admin/receivables",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Phải thu khách hàng"
+    },
+    {
+      "file": "src/app/admin/deliveries/page.tsx",
+      "path": "/admin/deliveries",
+      "finalPath": "/admin/deliveries",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Giao hàng"
+    },
+    {
+      "file": "src/app/admin/dispatch/page.tsx",
+      "path": "/admin/dispatch",
+      "finalPath": "/admin/dispatch",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Bảng phân giao"
+    },
+    {
+      "file": "src/app/admin/dispatch/resources/page.tsx",
+      "path": "/admin/dispatch/resources",
+      "finalPath": "/admin/dispatch/resources",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Xe"
+    },
+    {
+      "file": "src/app/admin/expenses/page.tsx",
+      "path": "/admin/expenses",
+      "finalPath": "/admin/expenses",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Chi phí vận hành"
+    },
+    {
+      "file": "src/app/admin/inventory/page.tsx",
+      "path": "/admin/inventory",
+      "finalPath": "/admin/inventory",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Tồn kho"
+    },
+    {
+      "file": "src/app/admin/inventory/transfers/page.tsx",
+      "path": "/admin/inventory/transfers",
+      "finalPath": "/admin/inventory/transfers",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Chuyển kho"
+    },
+    {
+      "file": "src/app/admin/inventory/warehouses/page.tsx",
+      "path": "/admin/inventory/warehouses",
+      "finalPath": "/admin/inventory/warehouses",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Kho"
+    },
+    {
+      "file": "src/app/admin/invoices/page.tsx",
+      "path": "/admin/invoices",
+      "finalPath": "/admin/invoices",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Hồ sơ lập hóa đơn"
+    },
+    {
+      "file": "src/app/admin/invoices/purchases/matching/page.tsx",
+      "path": "/admin/invoices/purchases/matching",
+      "finalPath": "/admin/invoices/purchases/matching",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Đơn mua · nhận hàng · chứng từ nhà cung cấp"
+    },
+    {
+      "file": "src/app/admin/invoices/purchases/page.tsx",
+      "path": "/admin/invoices/purchases",
+      "finalPath": "/admin/invoices/purchases",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Sổ chứng từ nhà cung cấp"
+    },
+    {
+      "file": "src/app/admin/messages/page.tsx",
+      "path": "/admin/messages",
+      "finalPath": "/admin/messages",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Tin nhắn"
+    },
+    {
+      "file": "src/app/admin/operations/page.tsx",
+      "path": "/admin/operations",
+      "finalPath": "/admin/operations",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Phạm vi dữ liệu"
+    },
+    {
+      "file": "src/app/admin/orders/new/page.tsx",
+      "path": "/admin/orders/new",
+      "finalPath": "/admin/orders/new",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Tạo đơn bán"
+    },
+    {
+      "file": "src/app/admin/orders/page.tsx",
+      "path": "/admin/orders",
+      "finalPath": "/admin/orders",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Đơn bán"
+    },
+    {
+      "file": "src/app/admin/page.tsx",
+      "path": "/admin",
+      "finalPath": "/admin",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Tổng quan"
+    },
+    {
+      "file": "src/app/admin/payables/page.tsx",
+      "path": "/admin/payables",
+      "finalPath": "/admin/payables",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Phải trả nhà cung cấp"
+    },
+    {
+      "file": "src/app/admin/payment-notices/page.tsx",
+      "path": "/admin/payment-notices",
+      "finalPath": "/admin/payment-notices",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Báo chuyển tiền và đối chiếu"
+    },
+    {
+      "file": "src/app/admin/products/manage/page.tsx",
+      "path": "/admin/products/manage",
+      "finalPath": "/admin/products/manage",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Vật tư"
+    },
+    {
+      "file": "src/app/admin/products/page.tsx",
+      "path": "/admin/products",
+      "finalPath": "/admin/products",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Vật tư & quy cách"
+    },
+    {
+      "file": "src/app/admin/products/pricing/page.tsx",
+      "path": "/admin/products/pricing",
+      "finalPath": "/admin/products/pricing",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Chính sách giá"
+    },
+    {
+      "file": "src/app/admin/purchase-orders/new/page.tsx",
+      "path": "/admin/purchase-orders/new",
+      "finalPath": "/admin/purchase-orders/new",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Tạo đơn mua"
+    },
+    {
+      "file": "src/app/admin/purchase-orders/page.tsx",
+      "path": "/admin/purchase-orders",
+      "finalPath": "/admin/purchase-orders",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Đơn mua"
+    },
+    {
+      "file": "src/app/admin/purchases/returns/page.tsx",
+      "path": "/admin/purchases/returns",
+      "finalPath": "/admin/purchases/returns",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Trả nhà cung cấp"
+    },
+    {
+      "file": "src/app/admin/quotations/new/page.tsx",
+      "path": "/admin/quotations/new",
+      "finalPath": "/admin/quotations/new",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Tạo báo giá"
+    },
+    {
+      "file": "src/app/admin/quotations/page.tsx",
+      "path": "/admin/quotations",
+      "finalPath": "/admin/quotations",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Báo giá"
+    },
+    {
+      "file": "src/app/admin/receivables/page.tsx",
+      "path": "/admin/receivables",
+      "finalPath": "/admin/receivables",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Phải thu khách hàng"
+    },
+    {
+      "file": "src/app/admin/reports/page.tsx",
+      "path": "/admin/reports",
+      "finalPath": "/admin/reports",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Đang tổng hợp báo cáo"
+    },
+    {
+      "file": "src/app/admin/routes/page.tsx",
+      "path": "/admin/routes",
+      "finalPath": "/admin/routes",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Lộ trình & vị trí"
+    },
+    {
+      "file": "src/app/admin/service-jobs/page.tsx",
+      "path": "/admin/service-jobs",
+      "finalPath": "/admin/service-jobs",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Công việc dịch vụ"
+    },
+    {
+      "file": "src/app/admin/settings/branches/page.tsx",
+      "path": "/admin/settings/branches",
+      "finalPath": "/admin/settings/branches",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Chi nhánh"
+    },
+    {
+      "file": "src/app/admin/settings/page.tsx",
+      "path": "/admin/settings",
+      "finalPath": "/admin/settings",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Thiết lập hệ thống"
+    },
+    {
+      "file": "src/app/admin/settings/pricing/page.tsx",
+      "path": "/admin/settings/pricing",
+      "finalPath": "/admin/settings/pricing",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Chính sách giá"
+    },
+    {
+      "file": "src/app/admin/stock-counts/page.tsx",
+      "path": "/admin/stock-counts",
+      "finalPath": "/admin/stock-counts",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Kiểm kho"
+    },
+    {
+      "file": "src/app/admin/suppliers/manage/page.tsx",
+      "path": "/admin/suppliers/manage",
+      "finalPath": "/admin/suppliers/manage",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Nhà cung cấp"
+    },
+    {
+      "file": "src/app/admin/suppliers/page.tsx",
+      "path": "/admin/suppliers",
+      "finalPath": "/admin/suppliers",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Nhà cung cấp"
+    },
+    {
+      "file": "src/app/admin/suppliers/pricing/page.tsx",
+      "path": "/admin/suppliers/pricing",
+      "finalPath": "/admin/suppliers/pricing",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Bảng giá mua"
+    },
+    {
+      "file": "src/app/admin/workforce/page.tsx",
+      "path": "/admin/workforce",
+      "finalPath": "/admin/workforce",
+      "status": "PASS_READ",
+      "http": 200,
+      "heading": "Nhân sự và công việc"
+    }
+  ],
+  "failures": [],
+  "consoleErrors": [],
+  "status": "PASS_STATIC_READ_SCOPE"
+}

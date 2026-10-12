@@ -22,10 +22,12 @@ function JobCard({ job, label }: { job: WorkerJob | null; label: string }) {
   );
 }
 
-export default async function WorkHomePage() {
+export default async function WorkHomePage({ searchParams }: { searchParams: Promise<{ notice?: string }> }) {
   const snapshot = await getWorkerPortalSnapshot();
+  const query = await searchParams;
   return (
     <div className={styles.page}>
+      {query.notice === "work-unavailable" && <p className={styles.status} role="status">Công việc đã chuyển người phụ trách hoặc bạn không còn quyền mở. Hãy dùng danh sách công việc hiện tại hoặc liên hệ điều phối.</p>}
       <header className={styles.hero}>
         <p className={styles.heroEyebrow}>Ca làm việc của {snapshot.employee.display_name}</p>
         <h1>{snapshot.current ? "Tiếp tục việc đang làm" : "Sẵn sàng cho việc tiếp theo"}</h1>

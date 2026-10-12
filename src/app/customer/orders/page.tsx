@@ -5,10 +5,12 @@ import Link from "next/link";
 import styles from "@/components/portal/portal.module.css";
 import { getCustomerPortalSnapshot } from "@/modules/portal/actions";
 
-export default async function CustomerOrdersPage() {
+export default async function CustomerOrdersPage({ searchParams }: { searchParams: Promise<{ notice?: string }> }) {
   const snapshot = await getCustomerPortalSnapshot();
+  const query = await searchParams;
   return (
     <div className={styles.page}>
+      {query.notice === "order-unavailable" && <p className={styles.status} role="status">Đơn hàng không thuộc phạm vi truy cập của bạn. Hãy chọn đơn trong danh sách khách hàng hiện tại.</p>}
       <header className={styles.sectionHead}>
         <div><h1>Đơn hàng và giao nhận</h1><p>Theo dõi tiến trình giao nhận và thông tin đơn hàng của bạn.</p></div>
       </header>

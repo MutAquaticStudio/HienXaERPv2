@@ -1,0 +1,136 @@
+$ next build
+▲ Next.js 16.3.4 (Turbopack)
+✓ Running next.config.ts took 14ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 734ms
+  Running TypeScript ...
+  Finished TypeScript in 1873ms ...
+  Collecting page data using 7 workers ...
+  Generating static pages using 7 workers (0/85) ...
+  Generating static pages using 7 workers (21/85) 
+  Generating static pages using 7 workers (42/85) 
+  Generating static pages using 7 workers (63/85) 
+✓ Generating static pages using 7 workers (85/85) in 262ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ○ /_not-found
+├ ƒ /admin
+├ ƒ /admin/access
+├ ƒ /admin/audit
+├ ƒ /admin/cashbook
+├ ƒ /admin/catalog
+├ ƒ /admin/compensation
+├ ƒ /admin/customers
+├ ƒ /admin/customers/[id]
+├ ƒ /admin/customers/manage
+├ ƒ /admin/dashboard/obligations
+├ ƒ /admin/debts
+├ ƒ /admin/deliveries
+├ ƒ /admin/deliveries/[id]
+├ ƒ /admin/deliveries/[id]/cancel
+├ ƒ /admin/dispatch
+├ ƒ /admin/dispatch/resources
+├ ƒ /admin/expenses
+├ ƒ /admin/inventory
+├ ƒ /admin/inventory/transfers
+├ ƒ /admin/inventory/transfers/[id]
+├ ƒ /admin/inventory/warehouses
+├ ƒ /admin/invoices
+├ ƒ /admin/invoices/[id]
+├ ƒ /admin/invoices/purchases
+├ ƒ /admin/invoices/purchases/matching
+├ ƒ /admin/invoices/purchases/matching/[id]
+├ ƒ /admin/messages
+├ ƒ /admin/operations
+├ ƒ /admin/orders
+├ ƒ /admin/orders/[id]
+├ ƒ /admin/orders/[id]/edit
+├ ƒ /admin/orders/new
+├ ƒ /admin/payables
+├ ƒ /admin/payables/[id]
+├ ƒ /admin/payment-notices
+├ ƒ /admin/products
+├ ƒ /admin/products/[id]
+├ ƒ /admin/products/manage
+├ ƒ /admin/products/pricing
+├ ƒ /admin/purchase-orders
+├ ƒ /admin/purchase-orders/[id]
+├ ƒ /admin/purchase-orders/[id]/edit
+├ ƒ /admin/purchase-orders/new
+├ ƒ /admin/purchases/returns
+├ ƒ /admin/purchases/returns/[id]
+├ ƒ /admin/quotations
+├ ƒ /admin/quotations/[id]
+├ ƒ /admin/quotations/[id]/edit
+├ ƒ /admin/quotations/new
+├ ƒ /admin/receivables
+├ ƒ /admin/receivables/[id]
+├ ƒ /admin/reports
+├ ƒ /admin/routes
+├ ƒ /admin/service-jobs
+├ ƒ /admin/service-jobs/[id]
+├ ƒ /admin/settings
+├ ƒ /admin/settings/branches
+├ ƒ /admin/settings/pricing
+├ ƒ /admin/stock-counts
+├ ƒ /admin/stock-counts/[id]
+├ ƒ /admin/suppliers
+├ ƒ /admin/suppliers/[id]
+├ ƒ /admin/suppliers/manage
+├ ƒ /admin/suppliers/pricing
+├ ƒ /admin/workforce
+├ ƒ /api/access/context
+├ ƒ /api/customers/[id]/debt-statement/pdf
+├ ƒ /api/deliveries/[id]/note/pdf
+├ ƒ /api/evidence/[id]/download
+├ ƒ /api/evidence/[id]/signed
+├ ƒ /api/finance/obligations
+├ ƒ /api/gps/session/ping
+├ ƒ /api/gps/session/start
+├ ƒ /api/gps/session/stop
+├ ƒ /api/health
+├ ƒ /api/invoices/[id]/review/pdf
+├ ƒ /api/payments/[id]/voucher/pdf
+├ ƒ /api/portal/evidence/upload
+├ ƒ /api/portal/payment-notices
+├ ƒ /api/portal/work-items/claim
+├ ƒ /api/portal/work-items/start
+├ ƒ /api/portal/work-results
+├ ƒ /api/purchasing/evidence/[id]/signed
+├ ƒ /api/purchasing/evidence/upload
+├ ƒ /api/qa/environment
+├ ƒ /api/quotation-revisions/[id]/pdf
+├ ƒ /api/reports/customers
+├ ƒ /api/reports/export
+├ ƒ /api/supplier-documents/[id]/review/csv
+├ ƒ /auth/logout
+├ ƒ /customer
+├ ƒ /customer/debts
+├ ƒ /customer/login
+├ ƒ /customer/messages
+├ ƒ /customer/orders
+├ ƒ /customer/orders/[id]
+├ ƒ /customer/profile
+├ ƒ /customer/quotations
+├ ƒ /customer/quotations/[id]
+├ ○ /login
+├ ƒ /qa/candidate
+├ ƒ /recovery
+├ ƒ /recovery/confirm
+├ ƒ /select-branch
+├ ƒ /work
+├ ƒ /work/earnings
+├ ƒ /work/jobs/[id]
+├ ○ /work/login
+├ ƒ /work/messages
+├ ƒ /work/pool
+├ ƒ /work/profile
+└ ƒ /work/tracking
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

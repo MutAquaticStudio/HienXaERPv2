@@ -72,6 +72,7 @@ export function AppShell({ surface, children, permissions, actorName, branchName
   const [expandedGroups, setExpandedGroups] = useState<Record<string, { pathname: string; open: boolean }>>({});
   const menuButton = useRef<HTMLButtonElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
+  const restoreMenuFocus = useRef(false);
   const visibleItems = navigation[surface].filter((item) => item.permissionsAny
     ? item.permissionsAny.some((permission) => permissions?.includes(permission))
     : !item.permission || permissions?.includes(item.permission) || Boolean(item.managementPermission && permissions?.includes(item.managementPermission)))
@@ -81,9 +82,15 @@ export function AppShell({ surface, children, permissions, actorName, branchName
     .sort((left, right) => right.href.length - left.href.length)[0]?.href;
   const initials = actorName?.trim().split(/\s+/).filter(Boolean).slice(-2).map((part) => part[0]?.toLocaleUpperCase("vi-VN")).join("") ?? "";
 
-  useEffect(() => { if (open) closeButton.current?.focus(); }, [open]);
+  useEffect(() => {
+    if (open) closeButton.current?.focus();
+    else if (restoreMenuFocus.current) {
+      restoreMenuFocus.current = false;
+      menuButton.current?.focus();
+    }
+  }, [open]);
 
-  function closeMenu() { setOpen(false); menuButton.current?.focus(); }
+  function closeMenu() { restoreMenuFocus.current = true; setOpen(false); }
   function renderLink(item: NavigationItem, nested = false) {
     const Icon = item.icon;
     const active = item.href === activeHref;

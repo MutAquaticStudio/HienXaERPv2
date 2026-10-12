@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile, readdir, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
+import path from "node:path";
 import postgres from "postgres";
 import { argumentsForRun } from "./native-fixture.mjs";
 
@@ -14,7 +15,7 @@ const admin = postgres({ ...config, database: "postgres", max: 1, prepare: false
 let database;
 try {
   const [identity] = await admin`select current_setting('data_directory') directory`;
-  assert.match(identity.directory, /^\/private\/tmp\/hx-pr41-native\.[^/]+\/cluster-data$/);
+  assert.equal(identity.directory, path.join(path.dirname(args.credentials), "cluster-data"));
   const [existing] = await admin`select exists(select 1 from pg_database where datname=${args.database}) present`;
   assert.equal(existing.present, false, "Preserve existing databases; choose a fresh owned QA name");
   await admin.unsafe(`create database "${args.database}" template template0`);

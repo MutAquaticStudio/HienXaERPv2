@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "facts": {
+    "totalAmount": "9007199254740993",
+    "type": "string",
+    "originalDebt": "0",
+    "outstandingDebt": "0"
+  },
+  "rolledBack": true,
+  "productionAccess": "NONE"
+}

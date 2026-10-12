@@ -29,7 +29,9 @@ export type WorkerJob = {
     version: number;
     state: string;
     assignment_version: number | null;
-    lines: { id: string; material_name: string; unit: string; planned_base_quantity: string }[];
+    can_submit_result: boolean;
+    lines: { id: string; material_name: string; unit: string; planned_base_quantity: string;
+      loaded_base_quantity?: string | null; reportable_base_quantity: string }[];
   };
 };
 

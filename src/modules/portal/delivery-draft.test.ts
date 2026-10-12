@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { parseSafeWorkDraft, serializeSafeWorkDraft } from "./draft";
 const operationId = "11111111-1111-4111-8111-111111111111";
-const delivery = { id: "22222222-2222-4222-8222-222222222222", version: 4, assignment_version: 1, state: "ARRIVED", lines: [
-  { id: "33333333-3333-4333-8333-333333333333", material_name: "A", unit: "unit", planned_base_quantity: "2" },
-  { id: "44444444-4444-4444-8444-444444444444", material_name: "B", unit: "kg", planned_base_quantity: "3" },
+const delivery = { id: "22222222-2222-4222-8222-222222222222", version: 4, assignment_version: 1, state: "ARRIVED", can_submit_result: true, lines: [
+  { id: "33333333-3333-4333-8333-333333333333", material_name: "A", unit: "unit", planned_base_quantity: "2", loaded_base_quantity: "2", reportable_base_quantity: "2" },
+  { id: "44444444-4444-4444-8444-444444444444", material_name: "B", unit: "kg", planned_base_quantity: "3", loaded_base_quantity: "3", reportable_base_quantity: "3" },
 ] };
 describe("delivery draft", () => {
   it("restores per-line quantities, stale versions and the same retry intent without secrets", () => {

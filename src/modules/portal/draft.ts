@@ -6,6 +6,7 @@ export type SafeWorkDraft = {
   note: string;
   operationId: string;
   expectedVersion: number;
+  sourceRejected?: boolean;
   delivery?: {
     expectedVersion: number;
     expectedAssignmentVersion: number | null;
@@ -40,6 +41,7 @@ export function parseSafeWorkDraft(
       expectedVersion: Number.isInteger(value.expectedVersion) && Number(value.expectedVersion) > 0
         ? Number(value.expectedVersion)
         : expectedVersion,
+      ...(value.sourceRejected === true ? { sourceRejected: true } : {}),
     };
   } catch {
     parsed = createSafeWorkDraft(expectedVersion, fallbackOperationId);
@@ -72,6 +74,7 @@ export function serializeSafeWorkDraft(draft: SafeWorkDraft) {
     note: draft.note,
     operationId: draft.operationId,
     expectedVersion: draft.expectedVersion,
+    ...(draft.sourceRejected ? { sourceRejected: true } : {}),
     ...(draft.delivery ? { delivery: {
       expectedVersion: draft.delivery.expectedVersion,
       expectedAssignmentVersion: draft.delivery.expectedAssignmentVersion,

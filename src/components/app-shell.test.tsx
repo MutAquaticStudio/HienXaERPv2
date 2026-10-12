@@ -94,6 +94,16 @@ describe("grouped operational navigation", () => {
     expect(opener).toHaveFocus();
   });
 
+  it.each(["Đóng menu", "Đóng điều hướng"])("restores focus after %s removes the inert workspace", (label) => {
+    const { container } = render(shell());
+    const opener = screen.getByRole("button", { name: "Mở menu" });
+    fireEvent.click(opener);
+    expect(container.querySelector(".workspace")).toHaveAttribute("inert");
+    fireEvent.click(screen.getByRole("button", { name: label }));
+    expect(container.querySelector(".workspace")).not.toHaveAttribute("inert");
+    expect(opener).toHaveFocus();
+  });
+
   it("keeps Vietnamese labels and the authenticated actor/branch intact", () => {
     render(shell());
     const sidebar = screen.getByRole("complementary");

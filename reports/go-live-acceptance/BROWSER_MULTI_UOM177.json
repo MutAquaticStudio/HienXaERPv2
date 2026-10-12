@@ -1,0 +1,48 @@
+{
+  "scope": "T19_T25_MULTIMATERIAL_M3_KG_BAG25_BROWSER_PARTIAL_RECEIPTS",
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "PO_TWO_MATERIALS_PARTIAL30_10PLUS20_AND_KG50_20PLUS30",
+      "status": "PASS",
+      "receipts": [
+        {
+          "material_id": "04692a24-dff5-47e1-873f-f93962168dbe",
+          "quantity": "50.000000",
+          "base_quantity": "50.000000"
+        },
+        {
+          "material_id": "0d0a7530-087d-4b8d-acb6-495fef02d348",
+          "quantity": "30.000000",
+          "base_quantity": "30.000000"
+        }
+      ]
+    },
+    {
+      "name": "SO_DISTINCT_M3_AND_PACKAGING_BAG25_SNAPSHOTS_EXACT",
+      "status": "PASS",
+      "rows": [
+        {
+          "material_id": "0d0a7530-087d-4b8d-acb6-495fef02d348",
+          "quantity": "3.000000",
+          "conversion_numerator": "1.000000",
+          "conversion_denominator": "1.000000",
+          "line_total_vnd": "690000"
+        },
+        {
+          "material_id": "04692a24-dff5-47e1-873f-f93962168dbe",
+          "quantity": "2.000000",
+          "conversion_numerator": "25.000000",
+          "conversion_denominator": "1.000000",
+          "line_total_vnd": "50000"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    "reports/go-live-acceptance/screenshots/multi-material-uom-source.png"
+  ],
+  "po": "eccf5fc9-04d1-43c9-ac37-f04a8e882efd",
+  "so": "08fabe01-1cc2-40df-8a83-39acda4e879d",
+  "status": "PASS_PARTIAL_RECEIPT_AND_SO_UOM_SCOPE"
+}

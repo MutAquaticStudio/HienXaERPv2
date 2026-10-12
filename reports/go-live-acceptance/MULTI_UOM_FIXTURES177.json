@@ -1,0 +1,30 @@
+{
+  "documents": {
+    "prefix": "RMD8253946",
+    "uom": "f192800d-abe2-4587-9761-a7659c80d8e8",
+    "material": "0d0a7530-087d-4b8d-acb6-495fef02d348",
+    "price": "2cb5683a-155d-4854-bc3f-dea232f3cdac",
+    "cost": "e3349628-7387-4509-b5d0-010d8dd0a9c5",
+    "po": "2ee22fa8-d1bb-450f-9bac-32f1ac244ec5",
+    "common": {
+      "material_id": "0d0a7530-087d-4b8d-acb6-495fef02d348",
+      "ordered_uom_id": "f192800d-abe2-4587-9761-a7659c80d8e8",
+      "quantity": "30",
+      "conversion_numerator": "1",
+      "conversion_denominator": "1",
+      "rounding_mode": "HALF_UP"
+    },
+    "cutoff": "2026-10-12 04:28:24.539653+07",
+    "customer": "57202be1-3c1f-414f-a413-8a1759fe26e1",
+    "site": "604a48c9-a7f2-41c7-ad57-afb44aa83ab5",
+    "unitPriceVnd": "230000",
+    "branch": "474b60c5-cf95-4d11-b782-4f0eefcbb427",
+    "kg": "49d99711-6296-401b-a6ac-604478a0adb8",
+    "bag": "5ea212ff-b7bb-4e93-87b7-c65d815fd9a1",
+    "secondMaterial": "04692a24-dff5-47e1-873f-f93962168dbe",
+    "saleRule": "402100ee-a858-4a57-a66d-e5721ebd3647",
+    "buyRule": "0456b44e-b005-442d-8721-7d377db12e11"
+  },
+  "scope": "QA_MASTER_ONLY_MULTIMATERIAL_M3_KG_BAG25",
+  "productionAccess": "NONE"
+}

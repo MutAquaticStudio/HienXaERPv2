@@ -1,0 +1,75 @@
+{
+  "scope": "MULTI_MATERIAL_UOM_DELIVERY_WITH_REAL_LOST_RESPONSE_AND_SAME_INTENT_RETRY",
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "REAL_SAVE_LOST_RESPONSE_SAME_INTENT_RETRY_MULTILINE",
+      "status": "PASS",
+      "results": 1
+    },
+    {
+      "name": "MULTI_UOM_3M3_2BAGS50KG_STOCK_REVENUE_AR_SINGLE_VERIFICATION",
+      "status": "PASS",
+      "facts": {
+        "revenue": "740000",
+        "debt": "740000",
+        "cargo_value": "0",
+        "verifications": 1
+      },
+      "amounts": [
+        {
+          "material_id": "3fc33a6c-dd56-43cc-bdd3-e3a62bf558d4",
+          "quantity": "0.000000"
+        },
+        {
+          "material_id": "9a4b0445-9613-40a7-a497-b8066419d7d5",
+          "quantity": "0.000000"
+        }
+      ]
+    }
+  ],
+  "documents": {
+    "source": {
+      "prefix": "RMB3408ADB",
+      "uom": "e5cf6859-7fc9-465e-b25a-e5ccbb4256b2",
+      "material": "3fc33a6c-dd56-43cc-bdd3-e3a62bf558d4",
+      "price": "a2f5aa88-d703-4077-8f8d-3634cd46a393",
+      "cost": "13f67c73-4579-4367-8bd5-0602f301219a",
+      "po": "523bd1f6-521a-4bd5-acc0-30796caa3578",
+      "common": {
+        "material_id": "3fc33a6c-dd56-43cc-bdd3-e3a62bf558d4",
+        "ordered_uom_id": "e5cf6859-7fc9-465e-b25a-e5ccbb4256b2",
+        "quantity": "3",
+        "conversion_numerator": "1",
+        "conversion_denominator": "1",
+        "rounding_mode": "HALF_UP"
+      },
+      "cutoff": "2026-10-12 11:58:49.474864+07",
+      "customer": "ed5d9f1a-7524-484a-a237-751fc2322827",
+      "site": "7e75ac66-610f-4861-9c75-b6ae0ed2f964",
+      "unitPriceVnd": "230000",
+      "kg": "f8c9afc4-ccf8-4bb8-97fd-d3f1ba35653a",
+      "bag": "2d1d0173-30d3-4d7f-8cab-b74c9301ba72",
+      "secondMaterial": "9a4b0445-9613-40a7-a497-b8066419d7d5",
+      "secondPo": "a803c8d5-4ead-47be-9364-54b055bbdbca",
+      "vehicle": "f276bff0-98ed-413f-ab36-941ce610d0f0"
+    },
+    "so": "eadda1d9-3669-4d9d-90e4-2e807ce15910",
+    "delivery": "01767df3-91b7-47c8-b887-2132ba7ac41e",
+    "work": "0bd3bfb6-20bf-4465-b632-595b0c3a88df"
+  },
+  "lastFailure": "column \"sales_order_id\" does not exist",
+  "failures": [
+    {
+      "at": "2026-10-12T05:00:09.929Z",
+      "message": "column \"state\" does not exist"
+    },
+    {
+      "at": "2026-10-12T05:00:51.781Z",
+      "message": "column \"sales_order_id\" does not exist"
+    }
+  ],
+  "screenshot": "reports/go-live-acceptance/screenshots/multi-delivery-verified-retry.png",
+  "status": "PASS",
+  "checkedAt": "2026-10-12T05:01:24.426Z"
+}

@@ -1,0 +1,52 @@
+{
+  "scope": "T12_REAL_TWO_ACTOR_INVENTORY_RESERVATION15_TWO_REQUESTS10",
+  "status": "PASS",
+  "firstPid": 11064,
+  "secondPid": 11066,
+  "observedBlockers": [
+    11064
+  ],
+  "actors": [
+    "0d1d2134-5a21-40a4-9fcb-375898d3c133",
+    "e04f1e5a-2a2d-4347-a506-1b6a35ea790f"
+  ],
+  "facts": {
+    "stock": "15.000000",
+    "reserved": "10.000000",
+    "reservations": 1,
+    "rejectedreceipts": 0
+  },
+  "documents": {
+    "stock": {
+      "prefix": "RMF0EC5766",
+      "uom": "7d239961-6f9a-49db-9e29-f1c01c4e03d8",
+      "material": "2cc37d9f-1c71-4f26-b7b6-34d6dde20c7e",
+      "price": "a4c53a38-41cd-469d-b2dd-9ff46e7b57a3",
+      "cost": "f0dd6115-e724-46b4-b087-2b4f03464612",
+      "po": "aa8cfd26-b708-4369-a608-33b03476a5b4",
+      "common": {
+        "material_id": "2cc37d9f-1c71-4f26-b7b6-34d6dde20c7e",
+        "ordered_uom_id": "7d239961-6f9a-49db-9e29-f1c01c4e03d8",
+        "quantity": "15",
+        "conversion_numerator": "1",
+        "conversion_denominator": "1",
+        "rounding_mode": "HALF_UP"
+      },
+      "cutoff": "2026-10-12 04:25:13.069004+07",
+      "customer": "2941d4a8-93ce-4ee1-804b-b72e8fccc94f",
+      "site": "7552239b-badf-4ff0-8aef-3b6035afb25f",
+      "unitPriceVnd": "230000"
+    },
+    "saleA": {
+      "so": "523aa57c-b351-463e-9de9-b5fb83739fd8",
+      "line": "b3028579-3f30-4229-b3d8-623e3b91281c"
+    },
+    "saleB": {
+      "so": "7cb528ad-c644-4f59-bb87-36f91aec522c",
+      "line": "9355f0ce-49b6-4b34-9f5a-1dfd51746bd2"
+    }
+  },
+  "productionAccess": "NONE",
+  "excludedAdvanceRacesRun": false,
+  "cleanup": "Owned browser clone dropped only after evidence/readback"
+}

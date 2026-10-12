@@ -1,14 +1,10 @@
+import { formatPortalMoney as money } from "@/modules/portal/money";
 import { formatBusinessDate } from "@/lib/core/business-time";
 import { financeSourceLabel, financeStateLabel } from "@/modules/finance/presentation";
 import styles from "@/components/portal/portal.module.css";
 import { PaymentNoticeForm } from "@/components/portal/payment-notice-form";
 import { getCustomerPortalSnapshot } from "@/modules/portal/actions";
 
-const money = (value: string | number = 0) => new Intl.NumberFormat("vi-VN", {
-  style: "currency",
-  currency: "VND",
-  maximumFractionDigits: 0,
-}).format(Number(value));
 
 export default async function CustomerDebtsPage() {
   const snapshot = await getCustomerPortalSnapshot();

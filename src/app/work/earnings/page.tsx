@@ -1,22 +1,18 @@
+import { formatPortalMoney as money, sumPortalMoney } from "@/modules/portal/money";
 import { formatBusinessDate } from "@/lib/core/business-time";
 import { earningStateLabel, earningKindLabel } from "@/modules/portal/presentation";
 import styles from "@/components/portal/portal.module.css";
 import { getWorkerPortalSnapshot } from "@/modules/portal/actions";
 
-const money = (value?: string) => new Intl.NumberFormat("vi-VN", {
-  style: "currency",
-  currency: "VND",
-  maximumFractionDigits: 0,
-}).format(Number(value ?? 0));
 
 export default async function WorkEarningsPage() {
   const snapshot = await getWorkerPortalSnapshot();
-  const total = snapshot.earnings.reduce((sum, item) => sum + Number(item.amount_vnd ?? 0), 0);
+  const total = sumPortalMoney(snapshot.earnings.map((item) => item.amount_vnd));
   return (
     <div className={styles.page}>
       <header className={styles.hero}>
         <p className={styles.heroEyebrow}>Thu nhập đã ghi nhận</p>
-        <h1>{money(String(total))}</h1>
+        <h1>{money(total)}</h1>
         <p>Chỉ các khoản thu nhập của chính bạn; thanh toán thực tế được theo dõi riêng.</p>
       </header>
       <div className={styles.grid}>

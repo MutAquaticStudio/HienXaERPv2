@@ -1,0 +1,9 @@
+{
+  "scope": "T19_T25_MULTIMATERIAL_M3_KG_BAG25_BROWSER_PARTIAL_RECEIPTS",
+  "productionAccess": "NONE",
+  "checks": [],
+  "screenshots": [],
+  "po": "eccf5fc9-04d1-43c9-ac37-f04a8e882efd",
+  "status": "FAIL",
+  "error": "locator.fill: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('form').filter({ has: getByRole('button', { name: 'Xác nhận nhận hàng', exact: true }) }).locator('.field').filter({ has: locator('input[name=purchaseOrderLineId][value=\"369969b6-40db-42aa-84d5-a4534d9afbe1\"]') }).locator('input[name=quantity]')\u001b[22m\n\u001b[2m    - locator resolved to <input name=\"quantity\" inputmode=\"decimal\" placeholder=\"Tối đa 30\" id=\"receivedQuantity-369969b6-40db-42aa-84d5-a4534d9afbe1\"/>\u001b[22m\n\u001b[2m    - fill(\"20\")\u001b[22m\n\u001b[2m  - attempting fill action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and editable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying fill action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and editable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying fill action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    59 × waiting for element to be visible, enabled and editable\u001b[22m\n\u001b[2m       - element is not enabled\u001b[22m\n\u001b[2m     - retrying fill action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n"
+}

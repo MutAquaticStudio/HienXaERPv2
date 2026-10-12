@@ -1,3 +1,4 @@
+import { formatPortalMoney as money } from "@/modules/portal/money";
 import { salesStateLabel } from "@/modules/portal/presentation";
 import { randomUUID } from "node:crypto";
 
@@ -6,11 +7,6 @@ import Link from "next/link";
 import styles from "@/components/portal/portal.module.css";
 import { getCustomerPortalSnapshot, requestQuotationChangeAction } from "@/modules/portal/actions";
 
-const money = (value: string | number = 0) => new Intl.NumberFormat("vi-VN", {
-  style: "currency",
-  currency: "VND",
-  maximumFractionDigits: 0,
-}).format(Number(value));
 
 export default async function CustomerHomePage() {
   const snapshot = await getCustomerPortalSnapshot();

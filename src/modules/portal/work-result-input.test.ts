@@ -11,8 +11,16 @@ describe("portal work-result input", () => {
     expect(parsed).toMatchObject(delivery);
     expect("actualQuantity" in parsed).toBe(false);
   });
-  it.each(["", " ", "NaN", "Infinity", "-1"])("rejects invalid quantity %s", (quantity) => {
+  it.each(["", " ", "NaN", "Infinity", "-1", "1.0000001", "100000000000000"])("rejects invalid quantity %s", (quantity) => {
     expect(() => parseWorkResultInput({ ...delivery, deliveryLines: [{ ...delivery.deliveryLines[0], actualQuantity: quantity }] })).toThrow();
+  });
+  it("preserves supported scalar precision without a floating-point round trip", () => {
+    expect(parseWorkResultInput({ ...common, actualQuantity: "99999999999999.123456" }))
+      .toMatchObject({ actualQuantity: "99999999999999.123456" });
+  });
+  it("requires decimal text for scalar and delivery quantities at the JSON boundary", () => {
+    expect(() => parseWorkResultInput({ ...common, actualQuantity: 1 })).toThrow();
+    expect(() => parseWorkResultInput({ ...delivery, deliveryLines: [{ ...delivery.deliveryLines[0], actualQuantity: 1 }] })).toThrow();
   });
   it("rejects duplicate lines and missing assignment version", () => {
     expect(() => parseWorkResultInput({ ...delivery, deliveryLines: [delivery.deliveryLines[0], delivery.deliveryLines[0]] })).toThrow();

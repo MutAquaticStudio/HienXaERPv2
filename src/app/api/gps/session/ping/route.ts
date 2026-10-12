@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { GPS_DEVICE_AVAILABLE, GPS_DEVICE_UNAVAILABLE_MESSAGE } from "@/modules/routing/device-availability";
 
 type PingBody = {
   sessionId?: string;
@@ -14,6 +15,7 @@ type PingBody = {
 };
 
 export async function POST(request: Request) {
+  if (!GPS_DEVICE_AVAILABLE) return NextResponse.json({ error: GPS_DEVICE_UNAVAILABLE_MESSAGE }, { status: 501 });
   const body = await request.json().catch(() => null) as PingBody | null;
   if (!body?.sessionId || !Number.isSafeInteger(body.sequence) || !body.sequence || !body.capturedAt
     || !Number.isFinite(body.latitude) || !Number.isFinite(body.longitude) || !body.operationId) {

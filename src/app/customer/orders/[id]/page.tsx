@@ -1,3 +1,4 @@
+import { formatPortalMoney as money } from "@/modules/portal/money";
 import { customerDocumentKindLabel, customerDocumentStateLabel } from "@/modules/portal/presentation";
 import { financeSourceLabel, financeStateLabel } from "@/modules/finance/presentation";
 import { formatBusinessDate, formatBusinessDateTime } from "@/lib/core/business-time";
@@ -6,11 +7,6 @@ import { getCustomerPortalOrder } from "@/modules/portal/actions";
 import { salesStateLabel } from "@/modules/sales/presentation";
 import { deliveryStateLabel } from "@/modules/delivery/presentation";
 
-const money = (value: string | number = 0) => new Intl.NumberFormat("vi-VN", {
-  style: "currency",
-  currency: "VND",
-  maximumFractionDigits: 0,
-}).format(Number(value));
 
 export default async function CustomerOrderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

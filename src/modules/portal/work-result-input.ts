@@ -1,7 +1,9 @@
 import { z } from "zod";
+import { isExactEntryQuantity } from "@/lib/core/quantity";
 
-const quantity = z.union([z.string().trim().min(1), z.number()])
-  .refine((value) => Number.isFinite(Number(value)) && Number(value) >= 0, "Số lượng phải là số hữu hạn không âm");
+// JSON numbers can lose significant digits before validation; portal producers send decimal text.
+const quantity = z.string().trim().min(1)
+  .refine((value) => isExactEntryQuantity(value, true), "Số lượng phải là số hữu hạn không âm, tối đa 6 chữ số thập phân");
 const common = z.object({
   workItemId: z.uuid(), operationId: z.uuid(), expectedVersion: z.number().int().positive(),
   receiverName: z.string().trim().max(120).default(""),

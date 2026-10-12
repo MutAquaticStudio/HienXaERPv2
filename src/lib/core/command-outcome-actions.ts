@@ -4,6 +4,7 @@ import { z } from "zod";
 import { requireInternalAccess } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import type { CommandOutcome } from "./command-outcome";
+import { sameCommandFields } from "./command-fields";
 import { creditCommandNames } from "@/modules/finance/credit-command";
 
 import { documentCommands } from "@/modules/invoicing/document-commands";
@@ -44,7 +45,7 @@ export async function checkSavedCommandFieldsAction(form: FormData, command: str
   if (!entries) return null; // Direct canonical API/legacy callers retain their existing contract.
   const submitted: Array<[string, string]> = [];
   for (const [name, value] of form) if (typeof value === "string" && !name.startsWith("$")) submitted.push([name, value]);
-  if (JSON.stringify(submitted) !== JSON.stringify(entries)) return {
+  if (!sameCommandFields(submitted, entries)) return {
     status: "UNKNOWN", message: "Dữ liệu của thao tác đang phục hồi đã thay đổi. Hãy tra cứu thao tác cũ; chỉ bắt đầu lần mới sau khi kết quả đã rõ.",
   };
   return null;

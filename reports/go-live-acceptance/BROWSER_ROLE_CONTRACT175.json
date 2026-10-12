@@ -1,0 +1,22 @@
+{
+  "scope": "OWNED_BROWSER_CLONE_ONLY_ROLE_CONFIGURATION",
+  "changes": [
+    {
+      "role": "purchasing",
+      "requiredReadPermission": "orders.read",
+      "reason": "Read the SO source and follow permitted document links, matching current managed QA role contracts; no price/cost or write privilege added"
+    },
+    {
+      "role": "warehouse",
+      "requiredReadPermission": "orders.read",
+      "reason": "Read the SO source and follow permitted document links, matching current managed QA role contracts; no price/cost or write privilege added"
+    },
+    {
+      "role": "finance",
+      "requiredReadPermission": "orders.read",
+      "reason": "Read the SO source and follow permitted document links, matching current managed QA role contracts; no price/cost or write privilege added"
+    }
+  ],
+  "productionAccess": "NONE",
+  "originalQaRightsChanged": false
+}

@@ -18,7 +18,7 @@ export async function POST(request: Request) {
         expected_assignment_version: body.expectedAssignmentVersion, missing_arrival_reason: body.missingArrivalReason,
       })
       : await portalRpc<string>(context.supabase, "submit_portal_work_result", {
-        ...args, actual_quantity: Number(body.actualQuantity), expected_version: body.expectedVersion,
+        ...args, actual_quantity: String(body.actualQuantity), expected_version: body.expectedVersion,
       });
     return NextResponse.json({ resultId });
   } catch (error) {

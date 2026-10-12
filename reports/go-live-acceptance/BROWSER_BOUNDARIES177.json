@@ -1,0 +1,34 @@
+{
+  "scope": "REAL_BROWSER_ROLE_REASSIGNMENT_AND_CUSTOMER_BOUNDARIES",
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "REASSIGNED_OLD_WORKER_READ_REDIRECT_START_DENIED",
+      "status": "PASS",
+      "source": {
+        "delivery": "e4a250d0-2b58-41a3-a78d-66bf9aaeabcc"
+      },
+      "work": "e953535c-40d6-4191-8c37-55b52f2a22bf",
+      "sync": {
+        "delivery_employee": "bccb7cb3-b921-4878-8eaf-57493d046d04",
+        "work_employee": "bccb7cb3-b921-4878-8eaf-57493d046d04"
+      }
+    },
+    {
+      "name": "OTHER_CUSTOMER_ORDER_DENIED_NO_FINANCE_LEAK",
+      "status": "PASS"
+    },
+    {
+      "name": "MOBILE_CLOSE_RESTORES_FOCUS_AFTER_INERT_REMOVAL",
+      "status": "PASS"
+    }
+  ],
+  "consoleErrors": [],
+  "screenshots": [
+    "reports/go-live-acceptance/screenshots/boundary-worker-before-transfer.png",
+    "reports/go-live-acceptance/screenshots/boundary-old-worker-denied-current-list.png",
+    "reports/go-live-acceptance/screenshots/boundary-other-customer-denied.png",
+    "reports/go-live-acceptance/screenshots/mobile-focus-restored.png"
+  ],
+  "status": "PASS"
+}
