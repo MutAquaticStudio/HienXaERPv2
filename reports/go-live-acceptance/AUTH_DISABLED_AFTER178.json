@@ -1,0 +1,23 @@
+{
+  "scope": "QA_ONLY_NEW_ACCOUNT_REAL_AUTH_BAN_EXISTING_JWT_OBSERVATION",
+  "productionAccess": "NONE",
+  "messagesSent": 0,
+  "businessWrites": 0,
+  "checks": [
+    {
+      "name": "DEDICATED_REAL_AUTH_ACTIVE_EMPLOYEE_CAN_READ_OWN_WORK_SNAPSHOT",
+      "status": "PASS"
+    },
+    {
+      "name": "AUTH_BAN_WITH_PREEXISTING_JWT",
+      "authGetUserDenied": true,
+      "authErrorStatus": 403,
+      "directRpcDenied": true,
+      "rpcErrorCode": "42501"
+    }
+  ],
+  "status": "BAN_DENIAL_OBSERVED_REVIEW_SCOPE",
+  "newLoginBlocked": true,
+  "temporaryAccountAndConfigurationCleaned": true,
+  "checkedAt": "2026-10-12T06:04:04.157Z"
+}

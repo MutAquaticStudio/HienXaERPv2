@@ -127,3 +127,6 @@ Môi trường native trong thư mục tạm đã mất sau gián đoạn. Bản
 | `supabase/migrations/20261001182059_sales_order_confirmation_credit_override.sql` | TRÙNG | SHA nội dung local = candidate. |
 | `supabase/migrations/20261002071813_index_quotation_and_customer_credit_lookups.sql` | TRÙNG | SHA nội dung local = candidate. |
 | `supabase/migrations/20261002114730_acceptance_count_guard_and_direct_po_terms.sql` | ĐÃ THAY THẾ | Không thêm migration cũ ngoài thứ tự. Canonical20261003161428 reconcile hotfix/terms; G01/G02 forwards giữ count basis và finite/precision. QA giữ history riêng đã áp dụng; Production không tự repair history. |
+
+
+Sau7c62d9a: PR42 baseđãchuyểnmain, mainancestor vàmergetree bằngHEADtreeb54daede...;PR41changes đãtrongứng viên, khôngmergePR41riêng trướcgates. Bổ sung forwards178Auth/179workforce khi tìm lỗi qua QA; khôngchỉnh file đãapply. Source179cầnCIcommit mới. Checkoutgốc vẫn giữ; mọibackup/credential ởprivate ngoàiGit.

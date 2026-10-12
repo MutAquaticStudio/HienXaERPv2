@@ -1,0 +1,35 @@
+{
+  "scope": "T41_REAL_BROWSER_EXPORT1001_CANONICAL_AR_SOURCES_LOST_RESPONSE_RELOAD_AND_SCOPE",
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "DIRECT_GET_OVER1000_REQUIRES_JOB_NOT_TRUNCATED_DOWNLOAD",
+      "status": "PASS",
+      "http": 409
+    },
+    {
+      "name": "LOST_FIRST_BATCH_RESPONSE_RELOAD_SAME_JOB1001_IDS_NO_DUPLICATES_TOTAL_EXACT",
+      "status": "PASS",
+      "job": {
+        "id": "958e776a-ecad-4139-8b16-23274f85f073",
+        "state": "COMPLETED",
+        "processed_rows": 1001,
+        "rows": 1001,
+        "attempt": 3
+      },
+      "ids": 1001,
+      "total": "1001000",
+      "jobs": 1
+    },
+    {
+      "name": "WORKER_FORBIDDEN_AND_OTHER_SELECTED_BRANCH_NO_EXPORT",
+      "status": "PASS",
+      "worker": 403,
+      "otherBranch": 404
+    }
+  ],
+  "job": "958e776a-ecad-4139-8b16-23274f85f073",
+  "status": "PASS",
+  "checkedAt": "2026-10-12T05:36:13.997Z",
+  "csv": "reports/go-live-acceptance/large-export1001-qa.csv"
+}

@@ -1,0 +1,47 @@
+{
+  "scope": "T30_LITERAL_PREPAY10M_SERVICE_AR30M_TWO_NEW_RECEIPTS10M",
+  "productionAccess": "NONE",
+  "excludedAdvanceRacesRun": false,
+  "checks": [
+    {
+      "name": "FINANCE_UI_PREPAY10M_BEFORE_AR",
+      "status": "PASS",
+      "cashReceipts": 1
+    },
+    {
+      "name": "ALLOCATE_EXISTING10M_AR30M_WITHOUT_SECOND_CASH",
+      "status": "PASS",
+      "debt": "20000000",
+      "cashReceipts": 1
+    },
+    {
+      "name": "NEW_RECEIPT10M_NUMBER2",
+      "status": "PASS",
+      "debt": "10000000",
+      "cashReceipts": 2
+    },
+    {
+      "name": "NEW_RECEIPT10M_NUMBER3",
+      "status": "PASS",
+      "debt": "0",
+      "cashReceipts": 3
+    }
+  ],
+  "documents": {
+    "customer": "a780847a-26e3-486b-a8f0-1b3013a12229",
+    "site": "8efe8e7a-cc76-461a-8ae4-822f2a9dddae",
+    "job": "560abb77-a094-4fae-8633-a4403530ef43",
+    "work": "305beb42-b128-4751-a8e6-2df9b09895d0",
+    "verification": "c66c9408-15b8-43b6-b7b8-ff0ffc8e92ef",
+    "obligation": "78140e88-b057-452a-b1d8-a757104420a2"
+  },
+  "lastFailure": "Cannot read properties of undefined (reading 'job')",
+  "facts": {
+    "cash": "30000000",
+    "allocated": "30000000",
+    "debt": "0",
+    "cash_receipts": 3
+  },
+  "status": "PASS",
+  "checkedAt": "2026-10-12T05:31:41.150Z"
+}

@@ -36,7 +36,7 @@ export default async function WorkforcePage({ searchParams }: { searchParams: Pr
     <div className="two-column">
       <section className="card"><div className="section-head"><h2>Nhân sự theo chi nhánh</h2><span className="scope-chip">Không hiển thị lương</span></div>
         <div className="table-wrap"><table><thead><tr><th>Nhân viên</th><th>Vai trò</th><th>Việc hiện tại</th><th>Trạng thái</th></tr></thead><tbody>
-          {workers.map((worker) => <tr key={worker.id + "-" + (worker.work_item_id ?? "free")}><td>{worker.display_name}<small className="table-subline mono">{worker.code}</small></td><td>{roleLabel(worker.role_name)}</td><td>{worker.current_work ?? "Sẵn sàng"}</td><td><StatusBadge tone={worker.work_state ? "warning" : "success"}>{workStateLabel(worker.work_state ?? "AVAILABLE")}</StatusBadge></td></tr>)}
+          {workers.map((worker) => <tr key={worker.id + "-" + (worker.work_item_id ?? "free")}><td>{worker.display_name}<small className="table-subline mono">{worker.code}</small></td><td>{roleLabel(worker.role_name)}</td><td>{worker.current_work ?? "Không có việc đang mở tại chi nhánh"}</td><td><StatusBadge tone={!worker.active || worker.work_state ? "warning" : "success"}>{!worker.active ? "Ngừng hoạt động" : worker.work_state ? workStateLabel(worker.work_state) : "Chưa có việc đang mở"}</StatusBadge></td></tr>)}
         </tbody></table></div>
       </section>
       <section className="card card-pad"><div className="section-head"><h2>Công việc chờ nhận</h2><span className="scope-chip">Mỗi việc chỉ giao cho một người</span></div>

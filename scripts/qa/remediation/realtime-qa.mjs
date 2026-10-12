@@ -5,13 +5,14 @@ import { randomUUID } from 'node:crypto';
 import postgres from 'postgres';
 import { clients, database, guard, id } from '../core.mjs';
 
-const {values:args}=parseArgs({options:{env:{type:'string'},credentials:{type:'string'},out:{type:'string'},resume:{type:'string'}}});
+const {values:args}=parseArgs({options:{env:{type:'string'},credentials:{type:'string'},out:{type:'string'},resume:{type:'string'},database:{type:'string',default:'hx_remediation_g01_g23_upgrade'}}});
 for(const key of ['env','credentials','out'])assert.ok(args[key]);
 Object.assign(process.env,parseEnv(await readFile(args.env,'utf8')));
 assert.equal(guard().ref,'ffrwiglcrlumfvhubaxg');
 const nativeConfig=JSON.parse(await readFile(args.credentials,'utf8'));
 assert.equal(nativeConfig.host,'127.0.0.1');assert.equal(nativeConfig.port,49760);
-const native=postgres({...nativeConfig,database:'hx_remediation_g01_g23_upgrade',max:1,prepare:false,onnotice(){}});
+assert.match(args.database,/^hx_remediation_[a-z0-9_]+$/);
+const native=postgres({...nativeConfig,database:args.database,max:1,prepare:false,onnotice(){}});
 const sql=await database();
 const report={scope:'REAL_QA_WEBSOCKET_MESSAGING_SAME_EFFECTIVE_CONTRACT',productionAccess:'NONE',financialWrites:0,tokensRecorded:false,channels:[]};
 const sessions=[],channels=[];

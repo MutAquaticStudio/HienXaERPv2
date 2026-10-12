@@ -1,0 +1,19 @@
+{
+  "status": "PASS_WORKFORCE_READER_SCOPE",
+  "checkedAt": "2026-10-12T06:23:58.176Z",
+  "checks": [
+    {
+      "name": "1004_HISTORY_FREE_ROWS_COLLAPSE_TO_ONE_REAL_BRANCH_EMPLOYEE",
+      "status": "PASS",
+      "rows": 1
+    },
+    {
+      "name": "ACTIVE_ASSIGNMENTS_MATCH_ONLY_SELECTED_BRANCH_WITH_NO_PHANTOM_FREE_ROW",
+      "status": "PASS",
+      "ownWork": "c74a194e-5255-406d-ad57-1202e391c8a0",
+      "otherWork": "13559d03-4a61-4cee-95f8-f799e224bd55"
+    }
+  ],
+  "rolledBack": true,
+  "productionAccess": "NONE"
+}

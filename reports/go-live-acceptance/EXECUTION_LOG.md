@@ -29,3 +29,16 @@
 |2026-10-12|Native177/AuthQA thật|HTTP numeric-denial và retry exact payload cũ|Bộ chạy đầu thiếu cookiechi nhánh→select-branch; chưa gọi writer. Sửa bộ chạy chỉ đọc/retry, giữ source cũ và hash toàn122bảng|QUANTITY_HTTP177_RESUME.json khi hoàn tất|
 |2026-10-12|Native177/HTTP có AuthQA|Từ chối số JSON mấtprecision và exact retry|Đạt3checks:2HTTP409trướcwriter; exactdecimal/cùngintent trả kết quả cũ200;122bảng không đổi|QUANTITY_HTTP177_RESUME.json|
 |2026-10-12|Native177, rollback|Giữ semantics local finite/zero count và directPOterms|6negativefinite/cost,0count hợp lệ; helper chạyRPCthật theo2command; retry giữdraftversion2/terms/source; đổipayload bịchặn; legacy5args một signature. Không commit facts|LOCAL_DELTA_SEAMS177.json|
+
+
+|Thời điểm +07|Môi trường/version|Thao tác|Kết quả thực|Bằng chứng|
+|---|---|---|---|---|
+|12/10 12:22–12:24|Git/CI7c62d9a|Lưu/push/chuyểnPR42main|CI38207720754SUCCESS602unit+8Node/types/lint/build; mainancestor/mergetree=HEADtree;Draft/chưamerge|GitHubCI/runtimefingerprint|
+|12/10 12:31|Native177/FinanceUI|Literal tiền cònthiếu|Prepay10m/AR30m/allocateold10m/two10m;3cash,total30m,debt0. Attempt1 đọcmanagerrow khi cònworker role làharness,TXnguồnrollback|PAYMENT_LITERAL177/attempt1|
+|12/10 12:36|Native177/FinanceUI|Export/mấtphảnhồi/reload|1001nguồnchuẩn;500abort→samejob1001/3batches/uniqueIDs/total1001000;worker403/otherbranch404|LARGE_EXPORT_FIXTURES177/LARGE_EXPORT177/CSVQA|
+|12/10 12:42|CloudQA/Auth thật|Accountban/JWTcũ|Auth403/newloginblocked nhưngRPC200; xácnhậnlỗi; dọnownedaccount/config;0financialwrites/0email|AUTH_DISABLED_OBSERVATION177|
+|12/10 12:56–13:06|Native178/CloudQA179history|Authforward vàhồiquy|Hashcũgiữ;oldBearerRPC/table403/unban200;26seams/6noopening/HTTP3PASS. HUPdừngownedREST→gateway502;restartđúngconfig/HTTPPASS. Emptyforward chưaapplyđãxóa sauhypothesis sai,khôngđổi fileđãapply|FORWARD178/AUTH_DISABLED_FINAL178/NO_OPENING178/QUANTITY_HTTP178|
+|12/10|Native/fresh178;CloudQA|Effective/messaging|292func/ACLkhớp;23Storagefunc174giữ; actualWS/nonparticipant0/offline/reconnectPASS;0financialwrites|NATIVE_SCHEMA_PARITY178/REALTIME_REGRESSION178|
+|12/10 13:20|Native178|Workforcereader|Tái hiện1004free rows/React duplicate keys; không chỉ đổi UIkey|WORKFORCE_DUPLICATE_BEFORE178|
+|12/10|Native/fresh179/CloudQA180history|Readerforward|Hashcũgiữ;1free/active2branches đúng/noPhantomFree. Arrayprototype assertion làharness; rollback/recheckPASS|FORWARD179/WORKFORCE_READER179/NATIVE_SCHEMA_PARITY179|
+|12/10|AppCloud3110→QA thật|Storageimpact|Workerstream869bytes/SHAđúng,otherCustomer404,SDKdirectdenied;0newwrites|STORAGE_READ179|

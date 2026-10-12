@@ -21,3 +21,6 @@
 | GPS/hóa đơn hoãn thể hiện đúng | ĐẠT ứng viên |GPS chưa khả dụng/start-ping501; hóa đơn internal không issued |
 
 Hai race `package4-advance-race.mjs` modes`different-intents`/`same-intent` không chạy lại. Giữ600.000đ phân bổ/400.000đ còn/một phiếu tiền.
+
+
+Checkpoint179: AuthbannedJWT vàroster duplicate/crossbranch đãsửa cóproof thật; T30literal/T41largejobđạt. Type/lint/build179đạt, cầnCIhead mới. Native/fresh179292functions/ACL/view/policykhớp,CloudQA180history giữdata. Các điều kiệnProduction/đích/fullacceptance chưa thay đổi; CHƯA HOÀN TẤT.

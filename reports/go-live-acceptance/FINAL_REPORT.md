@@ -15,3 +15,8 @@ Local602unit/89tệp,8Node,typecheck,lint0lỗi/13cảnh báo nền,build đạt
 Còn thiếu: thao tác/phân hệ/biến thể trong matrix;T04/T05/T06/T21/T30/T37/T40/T41; xác nhận URL/đích; DBbackupTLS và secretmáy chủ thực; diễn tập Production78/phục hồi/so dữ liệu; cửa sổ/review; CIcommitmới/merge/artifact/deploy/postcheck. GPS thiết bị/hóa đơn pháp lý hoãn không chặn phạm vi lần này; UI/API đúng chưa khả dụng/internal.
 
 [DOD.md](DOD.md) ghi15cổng riêng. [RELEASE_AND_RECOVERY.md](RELEASE_AND_RECOVERY.md) ghi đầu vào/thứ tự/restore/trách nhiệmproof. [EXECUTION_LOG.md](EXECUTION_LOG.md) giữ lỗi bộ chạy và kết quả. Hai advance races không chạy lại; giữ600.000đ/400.000đ/một phiếu tiền.
+
+
+## Cập nhật179 sauCI7c62d9a
+
+CI7c62d9a đãSUCCESS; codeAuth/workforce179mới phải cóCIhead mới, không dùng CIcũ. AuthbannedJWT/RPCvàroster1004dòngrảnh đãsửa; genericfullunit602cũ chưa đại diện head179, type/lint/build179 đã chạy. T30literal vàT41largejob đãđóng đúngscope; RLS/Realtime/Storage impact cóproof mới. Canonical179/Cloud180; facts cũgiữ,292func/ACL/view/policyfresh-upgradekhoớp. DODvẫnCHƯA HOÀN TẤT; môi trườngđích/backupTLS/secretserver/review vàfullmatrix chưađạt. Khôngmerge/deploy hoặcghiProduction.

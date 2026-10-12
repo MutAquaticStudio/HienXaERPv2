@@ -22,7 +22,7 @@ const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 try {
   const [identity] = await database`select current_database() db,current_setting('data_directory') directory`;
   assert.equal(identity.db, args.database);
-  assert.match(identity.directory, /^\/private\/tmp\/hx-pr41-native\.[^/]+\/cluster-data$/);
+  assert.equal(identity.directory, path.join(path.dirname(args.credentials), "cluster-data"));
   const version = path.basename(migrationPath).split("_")[0];
   const [present] = await database`select exists(select 1 from supabase_migrations.schema_migrations where schema_migrations.version=${version}) value`;
   assert.equal(present.value, false, "Do not replay an applied migration");
@@ -46,11 +46,19 @@ try {
   }
   const before = await snapshot();
   const migration = await readFile(migrationPath, "utf8");
-  // The migration has its own BEGIN/COMMIT. A failure rolls its schema changes back.
-  await database.unsafe(migration).simple();
-  const after = await snapshot();
-  assert.deepEqual(after, before, "Existing business columns/rows changed; review the impact before recording acceptance");
-  await database`insert into supabase_migrations.schema_migrations(version) values(${version})`;
+  // Schema and ledger are committed together; an assertion failure preserves the prior schema.
+  await database.begin(async tx => {
+    await tx.unsafe(migration.replace(/^begin;\s*$/gmi, "").replace(/^commit;\s*$/gmi, "")).simple();
+    const after = [];
+    for (const table of tables) {
+      const [value] = await tx.unsafe(`select count(*)::int n,
+        md5(coalesce(string_agg(md5(to_jsonb(x)::text),',' order by to_jsonb(x)::text),'')) hash
+        from(select ${table.columns.map(quote).join(",")} from public.${quote(table.table_name)}) x`);
+      after.push({ table: table.table_name, ...value });
+    }
+    assert.deepEqual(after, before, "Existing business columns/rows changed; review before acceptance");
+    await tx`insert into supabase_migrations.schema_migrations(version) values(${version})`;
+  });
   const [history] = await database`select count(*)::int n from supabase_migrations.schema_migrations`;
   await writeFile(args.out, JSON.stringify({ name: "FORWARD_QA_UPGRADE", database: args.database,
     migration: path.basename(migrationPath), sha256: sha256(migration), backupSha256: sha256(await readFile(args.backup)),

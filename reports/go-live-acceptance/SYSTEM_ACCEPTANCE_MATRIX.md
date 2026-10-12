@@ -139,3 +139,8 @@ G01–G23/T01–T42: giữ bảng và checksum cũ trong../business-flow-remedia
 | Source/schema và restore | NATIVE_BACKUP_RECOVERY_RESUME.json; FRESH_SCHEMA177_RESUME.json; NATIVE_SCHEMA_PARITY177.json | QA122bảng/177migration/289hàm; không thay Productionrecovery |
 
 T04-E1 còn requiredfields/amendment trên mọi form được hỗ trợ; T05-E1/T06-E1 còn dedicated disabledAuth và scope ngoài các ca quyền đã chạy; T21-E1 còn amendment variants; T30-E1 còn literal10m/AR30m/2×10m (hai advance races vẫn loại); T37-E1 còn các policy lương thực có trong phiên bản; T40-E1/T41-E1 còn auditallowlist/export>1000/filter. G17–G23 giữ bằng chứng cũ theo GAP_STATUS/TEST_MATRIX và phạm vi mô hình mộtSO/một điểm lấy, không suy mọi màn hình/biến thể đã chạy. Các ca này chưa được chuyển thành PASS.
+
+
+## Đợt179
+
+T30literal10m/30m/2×10m đãđạt (PAYMENT_LITERAL177); T41export>1000/samejob/reload/scope đãđạt (LARGE_EXPORT177), chưa coi mọifilter/cutoff làđạt. T05disabledAuth đãcó oldBearer403/unban200 trên QA thật (AUTH_DISABLED_FINAL178), còn sweepportal/lifecycle theo từngcase. Workforce1004duplicates/crossbranch đãsửa/kiểm rollback179. RLS mới đãhồiquy46adminreads,26seams,6noopening,HTTP3,RealtimeQA thật và appStorage đọc thật. T04requiredfields/amendment, phầnT21/T37 vàT40/T41filter/audit còn thiếu. Không đổi các dòngchưa đủ thànhPASS.

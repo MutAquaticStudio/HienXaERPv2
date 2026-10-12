@@ -18,3 +18,12 @@
 |Thợ/RECEIVER/FINANCE_CONTACT|18 lượt đọc trang pool/earnings/messages/profile/tracking, đơn/báo giá/công nợ theo đúng vai trò|PASS_READ BROWSER_ROLE_LIFECYCLE177.json; không gọi đây là nghiệm thu mọi thao tác tại các trang|
 
 Cấu hìnhQAclone rolesPurchasing/Warehouse/Finance bổ sungorders.read theo hợp đồng màn hìnhnguồn như managedQA, không quyền tiền/vốn/ghi mới. Workerchỉwork.read/work.claim. OriginalQA/Production rights untouched. Matrix toàn màn hình vàca cấm/lifecycle thêm đang thực hiện.
+
+
+| Vai trò/ca bổ sung | Bằng chứng | Phạm vi đạt |
+|---|---|---|
+|Kế toán:ứngtrước10m/ARdịchvụ30m/thu2×10m|PAYMENT_LITERAL177.json|3phiếu,totalcash/alloc30m,debt0; tiềncũkhông ghi cash lần2. NguồnRPC chuẩn, tiền dùngUI|
+|Kế toán:export>1000/mấtphảnhồi/reload|LARGE_EXPORT177.json|1001ID/total1001000/cùngjob;worker403/khácbranch404|
+|Tài khoảnQA chuyên dụng bịbanAuth|AUTH_DISABLED_OBSERVATION177.json;AUTH_DISABLED_FINAL178.json|JWTcũRPC200 trước→RPC/table403sau;unban200cùngtoken;cleanup. Không suy mọi accountpolicy|
+|Quản lý:nhân sự nhiều lịch sử/hai branch|WORKFORCE_DUPLICATE_BEFORE178.json;WORKFORCE_READER179.json|1004free→1;activework đúngbranch/noPhantomFree;rollback|
+|Tin nhắn/Storage sauauthguard|REALTIME_REGRESSION178.json;STORAGE_READ179.json|WSQA thật/offline/reconnect/nonparticipant0;appstreambytes/SHA/sai khách404|

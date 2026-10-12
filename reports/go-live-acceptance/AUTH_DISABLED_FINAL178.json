@@ -1,0 +1,34 @@
+{
+  "scope": "QA_ONLY_NEW_ACCOUNT_REAL_AUTH_BAN_EXISTING_JWT_OBSERVATION",
+  "productionAccess": "NONE",
+  "messagesSent": 0,
+  "businessWrites": 0,
+  "checks": [
+    {
+      "name": "DEDICATED_REAL_AUTH_ACTIVE_EMPLOYEE_CAN_READ_OWN_WORK_SNAPSHOT",
+      "status": "PASS"
+    },
+    {
+      "name": "AUTH_BAN_WITH_PREEXISTING_JWT",
+      "authGetUserDenied": true,
+      "authErrorStatus": 403,
+      "directRpcDenied": true,
+      "rpcErrorCode": "42501"
+    },
+    {
+      "name": "ORIGINAL_BEARER_TOKEN_RPC_AND_TABLE_READ_DENIED_BY_PRE_REQUEST",
+      "status": "PASS",
+      "rpc": 403,
+      "table": 403
+    },
+    {
+      "name": "UNBAN_KEEPS_SAME_EMPLOYEE_SCOPE_AND_OLD_TOKEN_READ_VALID",
+      "status": "PASS",
+      "http": 200
+    }
+  ],
+  "status": "PASS_REAL_AUTH_DISABLED_EXISTING_TOKEN_AND_RESTORE",
+  "newLoginBlocked": true,
+  "temporaryAccountAndConfigurationCleaned": true,
+  "checkedAt": "2026-10-12T06:06:59.300Z"
+}

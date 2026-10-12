@@ -1,0 +1,142 @@
+{
+  "scope": "REAL_QA_WEBSOCKET_MESSAGING_SAME_EFFECTIVE_CONTRACT",
+  "productionAccess": "NONE",
+  "financialWrites": 0,
+  "tokensRecorded": false,
+  "channels": [
+    {
+      "role": "participant",
+      "status": "SUBSCRIBED"
+    },
+    {
+      "role": "participant",
+      "extension": "postgres_changes",
+      "status": "ok"
+    },
+    {
+      "role": "nonparticipant",
+      "status": "SUBSCRIBED"
+    },
+    {
+      "role": "nonparticipant",
+      "extension": "postgres_changes",
+      "status": "ok"
+    },
+    {
+      "role": "participant",
+      "status": "CLOSED"
+    },
+    {
+      "role": "participant-reconnected",
+      "status": "SUBSCRIBED"
+    },
+    {
+      "role": "participant-reconnected",
+      "extension": "postgres_changes",
+      "status": "ok"
+    },
+    {
+      "role": "nonparticipant",
+      "status": "CLOSED"
+    },
+    {
+      "role": "participant-reconnected",
+      "status": "CLOSED"
+    }
+  ],
+  "contractParity": {
+    "functions": [
+      {
+        "schema": "private",
+        "name": "can_access_conversation",
+        "hash": "0afddce76d2e21b360cb532954b61c7a"
+      },
+      {
+        "schema": "private",
+        "name": "command_payload_hash",
+        "hash": "1ada9e62475864212617509f8bc8296a"
+      },
+      {
+        "schema": "private",
+        "name": "has_branch_access",
+        "hash": "76058bd98055f05175b8fb27885f38b9"
+      },
+      {
+        "schema": "private",
+        "name": "has_permission",
+        "hash": "6314001f8545bf63eb48fe883896fcd9"
+      },
+      {
+        "schema": "public",
+        "name": "conversation_list_for_scope",
+        "hash": "154b3e6c5126f17921d617c05f73d52b"
+      },
+      {
+        "schema": "public",
+        "name": "conversation_message_page",
+        "hash": "f1eed982847a07fbb5d8d65df5349596"
+      },
+      {
+        "schema": "public",
+        "name": "create_conversation",
+        "hash": "e5b3feaa564e0bca09e2d0facaed9cef"
+      },
+      {
+        "schema": "public",
+        "name": "send_message",
+        "hash": "e736fb18a207bf99b5dbeed0b9375da1"
+      }
+    ],
+    "policies": [
+      {
+        "tablename": "conversation_participants",
+        "policyname": "conversation_participants_select",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.can_access_conversation(conversation_participants.conversation_id) AS can_access_conversation) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "tablename": "conversations",
+        "policyname": "conversations_select",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.can_access_conversation(conversations.id) AS can_access_conversation) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "tablename": "messages",
+        "policyname": "messages_select",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.can_access_conversation(messages.conversation_id) AS can_access_conversation) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      }
+    ]
+  },
+  "schema": {
+    "migrations": 179,
+    "latest": "20261012054843"
+  },
+  "intents": {
+    "conversation": "6b2cd391-2300-4e20-bbe2-a8408065c03c",
+    "first": "2479ac86-9e5e-4021-9c81-012ba11c2091",
+    "offline": "0fffaf90-7aac-4e90-8af2-e5b7f3a81d4d",
+    "afterReconnect": "e11198b2-af26-44d1-9994-294a6873d156"
+  },
+  "status": "PASS",
+  "conversation": "511394e7-828e-4829-940d-672ba9e87071",
+  "messageIds": [
+    "7121e74f-c981-4e00-bea4-c4aa18df9d9d",
+    "f1bb4040-8639-448a-b8ce-c1703274ddd9",
+    "312bca40-e964-4d1d-807e-c70a54e3b91e"
+  ],
+  "eventsToNonparticipant": 0,
+  "missedEventRecoveredByQuery": true,
+  "reconnectedEventReceived": true,
+  "messageCount": 3,
+  "browserRefreshTested": false,
+  "qaMessagingWrites": 4,
+  "resumedConversation": false,
+  "firstAttemptMessagePreserved": false
+}

@@ -31,3 +31,10 @@ Nếu chỉ app lỗi và DB/facts tương thích, promote artifact cũ đã ghi
 ## Minh chứng cũ
 
 Dùng quy trình`../business-flow-remediation/RELEASE_BLOCKERS.md`/công cụ`reverify-evidence.mjs` có checkpoint/resume. Bốn lớp MATCH/MISMATCH/MISSING/INCONCLUSIVE; không tự đánh dấu hàng loạt. Owner chi nhánh quyết định nguồn; Kho/Mua hàng xử lýreceipt/vendorreturn,Điều hành delivery,Tài chính notice. Thiếuproof không xóa chứng từ/đảo kho/nợ. Dự án hiện0metadata chưa kết luận hệ thống doanh nghiệp khác khi URL/DB chưa xác nhận.
+
+
+## Bổ sung tương thích179
+
+Ứng viên yêu cầu179,CloudQA180history(hotfix riêng). Auth178 thêm pre-request public.require_active_api_actor tại roleauthenticator; phải đọc hook hiện có trước upgrade. Migration từ chối ghi đè hook khác, giữ statement_timeout/lock_timeout và các cấu hình role khác. Native ownedPostgREST dùng db-pre-request tương ứng; chỉ NOTIFY/restart đúng dịch vụ, HUP có thể làm dừng16.4. Không cần/cấm cấp thêm quyền đọc private schema để vượt lỗi.
+
+Native/fresh179 đã so292functions/ACL và toàn publicviews/policies. Nativebackup179 gồm1001nguồnexport vàca30m lưu riêng/readable; khôngthay backup/restore đích. AuthUIDshim native không chứng minh ban thật; proofban/unban dùng Auth+DBQA thật. Forward178/179 khôngđổi facts cũ. Viewworkforce giữ columns/grants/security_invoker, sửa chỉ join.

@@ -11,7 +11,9 @@ try { await access(a.backup); throw new Error("Preserve existing backup"); }
 catch (error) { if (error.code !== "ENOENT") throw error; }
 try {
   const [schema] = await q.sql`select count(*)::int count,max(version) latest from supabase_migrations.schema_migrations`;
-  assert.equal(schema.count, 177);
+  const expectedSchema = Number(a.schema ?? 177);
+  assert.ok(Number.isInteger(expectedSchema) && expectedSchema > 0);
+  assert.equal(schema.count, expectedSchema);
   const tables = await q.sql`select c.relname name from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r' order by c.relname`;
   const facts = [];
   for (const table of tables) {
