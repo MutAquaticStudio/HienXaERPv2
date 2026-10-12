@@ -1,0 +1,319 @@
+{
+  "checkedAt": "2026-10-12T18:40:15.337Z",
+  "project": "nbwynrwkdbtfsitafsxa",
+  "status": "READ_ONLY",
+  "migrations": [
+    {
+      "version": "20260912101030",
+      "name": "identity_access"
+    },
+    {
+      "version": "20260912104433",
+      "name": "catalog_crm_pricing_credit"
+    },
+    {
+      "version": "20260912105455",
+      "name": "sales_quotes_orders"
+    },
+    {
+      "version": "20260912112432",
+      "name": "purchasing_sourcing"
+    },
+    {
+      "version": "20260912114625",
+      "name": "inventory_delivery"
+    },
+    {
+      "version": "20260912123357",
+      "name": "finance_dashboard"
+    },
+    {
+      "version": "20260912144349",
+      "name": "workforce_service_compensation"
+    },
+    {
+      "version": "20260913100000",
+      "name": "worker_customer_portals"
+    },
+    {
+      "version": "20260914060713",
+      "name": "grant_purchase_order_lines_select"
+    },
+    {
+      "version": "20260914095110",
+      "name": "fix_worker_snapshot_employee_scope"
+    },
+    {
+      "version": "20260914100407",
+      "name": "admin_catalog_worker_completion"
+    },
+    {
+      "version": "20260920064133",
+      "name": "customer_site_profile"
+    },
+    {
+      "version": "20260920070000",
+      "name": "customer_site_stale_conflict"
+    },
+    {
+      "version": "20260920080000",
+      "name": "customer_site_owner_credit"
+    },
+    {
+      "version": "20260920090000",
+      "name": "supplier_catalog_guard"
+    },
+    {
+      "version": "20260920100000",
+      "name": "operational_master_config"
+    },
+    {
+      "version": "20260920110000",
+      "name": "pricing_rule_config"
+    },
+    {
+      "version": "20260920113000",
+      "name": "pricing_version_boundary"
+    },
+    {
+      "version": "20260920150000",
+      "name": "commercial_draft_edit"
+    },
+    {
+      "version": "20260920160000",
+      "name": "purchase_draft_multiline"
+    },
+    {
+      "version": "20260920170000",
+      "name": "preserve_draft_manual_price"
+    },
+    {
+      "version": "20260920180000",
+      "name": "gc12_direct_multiline_edit"
+    },
+    {
+      "version": "20260921120000",
+      "name": "gc13_purchase_order_line_progress"
+    },
+    {
+      "version": "20260921130000",
+      "name": "gc14_delivery_multiline"
+    },
+    {
+      "version": "20260921140000",
+      "name": "gc14_return_line_guard"
+    },
+    {
+      "version": "20260921150000",
+      "name": "gc17_access_management"
+    },
+    {
+      "version": "20260921160000",
+      "name": "gc18_customer_order_portal"
+    },
+    {
+      "version": "20260921170000",
+      "name": "gc20_dashboard_detail"
+    },
+    {
+      "version": "20260921180000",
+      "name": "gc21_low_stock_alerts"
+    },
+    {
+      "version": "20260921200000",
+      "name": "r10_routing"
+    },
+    {
+      "version": "20260921200500",
+      "name": "r10_routing_apply_fix"
+    },
+    {
+      "version": "20260921210000",
+      "name": "r10_foreground_gps"
+    },
+    {
+      "version": "20260921211000",
+      "name": "r10_worker_gps_assignment"
+    },
+    {
+      "version": "20260921211500",
+      "name": "r10_worker_tracking_list"
+    },
+    {
+      "version": "20260921220000",
+      "name": "r10_messaging"
+    },
+    {
+      "version": "20260921220500",
+      "name": "r10_messaging_customer_name_fix"
+    },
+    {
+      "version": "20260921221000",
+      "name": "r10_message_scope"
+    },
+    {
+      "version": "20260921230000",
+      "name": "r11_invoice_neutral"
+    },
+    {
+      "version": "20260921231000",
+      "name": "r11_invoice_adjustment_registry"
+    },
+    {
+      "version": "20260921231500",
+      "name": "r11_direct_fulfillment_evidence"
+    },
+    {
+      "version": "20260921232000",
+      "name": "r11_purchase_registry_eligibility"
+    },
+    {
+      "version": "20260921233000",
+      "name": "r12_order_list_perf"
+    },
+    {
+      "version": "20260921234000",
+      "name": "r12_purchase_list_perf"
+    },
+    {
+      "version": "20260921235000",
+      "name": "r12_finance_list_perf"
+    },
+    {
+      "version": "20260921235500",
+      "name": "r12_delivery_list_indexes"
+    },
+    {
+      "version": "20260921235900",
+      "name": "r12_expense_list_indexes"
+    },
+    {
+      "version": "20260922000500",
+      "name": "r12_sales_lookup_indexes"
+    },
+    {
+      "version": "20260922000600",
+      "name": "r12_customer_portal_customer_boundary"
+    },
+    {
+      "version": "20260922000700",
+      "name": "r12_portal_line_projection"
+    },
+    {
+      "version": "20260923090000",
+      "name": "customer_portal_order_allocation"
+    },
+    {
+      "version": "20260923103009",
+      "name": "fix_gps_null_authorization"
+    },
+    {
+      "version": "20260925000100",
+      "name": "customer_sensitive_column_boundary"
+    },
+    {
+      "version": "20260927000100",
+      "name": "cashbook_full_scope_summary"
+    },
+    {
+      "version": "20260927000200",
+      "name": "dispatch_scheduled_lookup"
+    },
+    {
+      "version": "20260927000300",
+      "name": "report_export_jobs"
+    },
+    {
+      "version": "20260927000400",
+      "name": "report_export_retry_accounting"
+    },
+    {
+      "version": "20260927000500",
+      "name": "dashboard_dispatch_scoped_reads"
+    },
+    {
+      "version": "20260927000600",
+      "name": "cashbook_summary_permission"
+    },
+    {
+      "version": "20260927205002",
+      "name": "uat_earning_read_boundary"
+    },
+    {
+      "version": "20260930000100",
+      "name": "credit_exposure_net_allocations"
+    },
+    {
+      "version": "20260930101520",
+      "name": "custom_rpc_conflicts"
+    },
+    {
+      "version": "20261001084145",
+      "name": "fix_sales_order_payment_state"
+    },
+    {
+      "version": "20261001182059",
+      "name": "sales_order_confirmation_credit_override"
+    },
+    {
+      "version": "20261003063723",
+      "name": "fix_verified_delivery_rules"
+    },
+    {
+      "version": "20261003074122",
+      "name": "audit_worker_quantity_verification"
+    },
+    {
+      "version": "20261003161428",
+      "name": "reconcile_qa_count_guard_and_direct_po_contract"
+    },
+    {
+      "version": "20261004052921",
+      "name": "po_warehouse_address_policy"
+    },
+    {
+      "version": "20261004150000",
+      "name": "sales_order_reader_scope"
+    },
+    {
+      "version": "20261005043000",
+      "name": "purchase_cost_column_boundary"
+    },
+    {
+      "version": "20261007022921",
+      "name": "evidence_delivery_verifier_scope"
+    },
+    {
+      "version": "20261007022922",
+      "name": "preserve_return_case_supplier_direct_cost"
+    },
+    {
+      "version": "20261007022923",
+      "name": "freeze_delivered_allocation_source"
+    },
+    {
+      "version": "20261007111747",
+      "name": "employee_workforce_reader_correlation"
+    },
+    {
+      "version": "20261007183000",
+      "name": "close_sales_order_remaining"
+    },
+    {
+      "version": "20261008091836",
+      "name": "compensation_source_recognition"
+    },
+    {
+      "version": "20261009173806",
+      "name": "secure_operational_posting_gate"
+    },
+    {
+      "version": "20261009205945",
+      "name": "direct_purchase_draft_operational_gate"
+    },
+    {
+      "version": "20261009224842",
+      "name": "supplier_purchase_price_commands"
+    }
+  ]
+}

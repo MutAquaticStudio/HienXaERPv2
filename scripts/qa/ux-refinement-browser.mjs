@@ -1,12 +1,17 @@
 import assert from "node:assert/strict";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { parseEnv } from "node:util";
-import { createHash } from "node:crypto";
-import { execFileSync } from "node:child_process";
 import { chromium, expect } from "@playwright/test";
 import { argumentsForRun, openQA } from "./remediation/native-fixture.mjs";
+import { readSourceBinding, assertResumeSource } from "./source-binding.mjs";
 
-const a = argumentsForRun(), q = await openQA(a);
+const a = argumentsForRun();
+let r;
+try { r = JSON.parse(await readFile(a.out, "utf8")); } catch (e) { if (e.code !== "ENOENT") throw e; }
+assert.notEqual(r?.status, "PASS", "Never replay a completed source flow");
+const source = await readSourceBinding();
+assertResumeSource(r, source);
+const q = await openQA(a);
 assert.equal(a.database, "hx_remediation_ux_refinement186");
 const d = JSON.parse(await readFile(a.documents, "utf8")).documents;
 const f = JSON.parse(await readFile("reports/ux-ui-refinement/FIXTURES.json", "utf8")).source;
@@ -14,12 +19,7 @@ const env = parseEnv(await readFile(a["auth-env"], "utf8"));
 assert.equal(env.HX_QA_PROJECT_REF, "ffrwiglcrlumfvhubaxg");
 assert.equal(env.HX_QA_RUNTIME_APPROVED, "true");
 const origin = "http://127.0.0.1:3116", browser = await chromium.launch({ headless: true }), contexts = [];
-const digest = createHash("sha256");
-for (const file of execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "--", "src", "package.json", "pnpm-lock.yaml", "supabase/migrations"], { encoding: "utf8" }).trim().split("\n").sort()) digest.update(file + "\0").update(await readFile(file));
-let r;
-try { r = JSON.parse(await readFile(a.out, "utf8")); } catch (e) { if (e.code !== "ENOENT") throw e; }
-assert.notEqual(r?.status, "PASS", "Never replay a completed source flow");
-r ??= { scope: "UX_UI_ONLY_REAL_AUTH_BROWSER_AND_DISPOSABLE_NATIVE_QA", checkedAt: new Date().toISOString(), sourceCommit: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(), sourceSha256: digest.digest("hex"), database: a.database, productionAccess: "NONE", excludedAdvanceRacesRun: false, checks: [], screenshots: [], pageErrors: [] };
+r ??= { scope: "UX_UI_ONLY_REAL_AUTH_BROWSER_AND_DISPOSABLE_NATIVE_QA", checkedAt: new Date().toISOString(), ...source, database: a.database, productionAccess: "NONE", excludedAdvanceRacesRun: false, checks: [], screenshots: [], pageErrors: [] };
 if (r.pageErrors.length) { r.priorPageErrors = r.pageErrors; r.pageErrors = []; }
 await mkdir(a.screenshots, { recursive: true });
 const save = () => writeFile(a.out, JSON.stringify(r, null, 2) + "\n");
@@ -168,6 +168,6 @@ try {
   assert.deepEqual(facts, { warehouse: "1.000000", cargo: "1.000000", revenue: "2990000", debt: "1990000", receipts: 1, reported: "14.000000", accepted: "13.000000", activation: null, stock_opening: 0, debt_opening: 0, cash_opening: 0 });
   const ops = await q.sql.begin(tx => q.rpc(tx, "sales_order_operational_snapshot", [f.so], d.fixtures.owner)); assert.equal(ops.operational_complete, false); assert.equal(ops.exceptions.cargo_remaining, true);
   await record("INDEPENDENT15_14_13_LEDGER_NO_OPENING_AND_NOT_COMPLETE", { facts, operational: ops, counts: await resultCounts() });
-  assert.deepEqual(r.pageErrors, []); r.status = "PASS"; r.completedAt = new Date().toISOString(); delete r.error; await save();
+  assert.deepEqual(r.pageErrors, []); assertResumeSource(r, await readSourceBinding()); r.status = "PASS"; r.completedAt = new Date().toISOString(); delete r.error; await save();
 } catch (e) { r.status = "FAIL"; r.error = e.message.split("\n")[0]; await save(); throw new Error(r.error); }
 finally { for (const c of contexts) { for (const p of c.pages()) await p.unrouteAll({ behavior: "wait" }); await c.close(); } await browser.close(); await q.sql.end({ timeout: 3 }); }

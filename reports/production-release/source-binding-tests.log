@@ -1,0 +1,23 @@
+✔ measures actual bytes and preserves affected source identifiers (0.800459ms)
+✔ same-sized changed content cannot match client or legacy checksum (0.182917ms)
+✔ object without an old checksum stays inconclusive, never auto-verified (0.122041ms)
+✔ only authoritative absence establishes missing, not masked permission 404 (0.122625ms)
+✔ network failure remains inconclusive (0.100542ms)
+✔ wrong size, magic or declared portal size cannot verify (0.220042ms)
+✔ resumes after a partial checkpoint and reconciles without replaying completed downloads (18.957416ms)
+✔ inconclusive records can be retried explicitly without replaying matched records (13.001459ms)
+✔ new QA run accepts no existing report (0.516708ms)
+✔ unchanged incomplete run can resume without modifying previous evidence (0.448167ms)
+✔ changed commit rejects previous checks even when the content hash matches (0.655209ms)
+✔ uncommitted source changes reject previous checks even at the same HEAD (0.136584ms)
+✔ legacy evidence without a content hash cannot silently become current proof (0.114166ms)
+✔ source changed during execution cannot be finalized as PASS (0.097666ms)
+✔ the real source reader detects uncommitted app and QA harness edits (155.545708ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 207.642292
