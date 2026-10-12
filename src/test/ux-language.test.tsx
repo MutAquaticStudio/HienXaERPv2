@@ -19,7 +19,7 @@ import { deliveryStateLabel, sourceModeLabel, returnCaseKindLabel } from "@/modu
 import { activityKindLabel, financeSourceLabel, financeStateLabel, reportQualityLabel } from "@/modules/finance/presentation";
 import { inventoryMovementLabel, stockCountStateLabel } from "@/modules/inventory/presentation";
 import { invoiceStateLabel } from "@/modules/invoicing/presentation";
-import { operationalLabel } from "@/modules/operations/state";
+import { historicalScopeLabel } from "@/modules/operations/state";
 import { workStateLabel, workKindLabel, earningStateLabel, earningKindLabel, customerDocumentKindLabel, customerDocumentStateLabel } from "@/modules/portal/presentation";
 import { priceSourceLabel, pricingScopeLabel } from "@/modules/pricing/presentation";
 import { purchaseStateLabel } from "@/modules/purchasing/presentation";
@@ -40,7 +40,7 @@ describe("Vietnamese display boundaries", () => {
     ["source mode", sourceModeLabel], ["return case", returnCaseKindLabel],
     ["activity", activityKindLabel], ["finance source", financeSourceLabel], ["finance state", financeStateLabel],
     ["report quality", reportQualityLabel], ["inventory", inventoryMovementLabel], ["stock count", stockCountStateLabel],
-    ["invoice", invoiceStateLabel], ["operations", operationalLabel], ["work state", workStateLabel],
+    ["invoice", invoiceStateLabel], ["historical data scope", historicalScopeLabel], ["work state", workStateLabel],
     ["work kind", workKindLabel], ["earning state", earningStateLabel], ["earning kind", earningKindLabel],
     ["customer document kind", customerDocumentKindLabel],
     ["customer quote state", value => customerDocumentStateLabel("QUOTATION", value)],

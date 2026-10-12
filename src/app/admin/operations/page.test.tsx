@@ -66,3 +66,12 @@ it("does not ask for manual activation even when a legacy response advertises it
   expect(screen.getByText(/Thiếu lịch sử không có nghĩa số dư trước đây bằng 0/i)).toBeInTheDocument();
   expect(mocks.activate).not.toHaveBeenCalled();
 });
+
+// A legacy opening flag or an unavailable history reader never creates a setup gate.
+it.each([null, { state: "PENDING_OPENING", postingAllowed: false, historicalQuality: "UNRECONCILED" }])("history response %j does not block new transactions", async history => {
+ mocks.state.mockResolvedValue(history);
+ render(await OperationsPage({ searchParams: Promise.resolve({}) }));
+ expect(screen.getByText(/Có thể thực hiện giao dịch mới hợp lệ/i)).toBeInTheDocument();
+ expect(screen.getByText(/Thiếu lịch sử không có nghĩa số dư trước đây bằng 0/i)).toBeInTheDocument();
+ expect(screen.queryByRole("button", { name: "Kích hoạt vận hành" })).not.toBeInTheDocument();
+});

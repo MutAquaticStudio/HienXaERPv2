@@ -1,0 +1,15 @@
+{
+  "pr": "https://github.com/MutAquaticStudio/HienXaERPv2/pull/42",
+  "state": "closed",
+  "merged": true,
+  "headSha": "0ff55dba42e412771cf67d1b828d1a344625078b",
+  "mergeSha": "00cd82100df117f8e8403cad86d2ef764bd7a843",
+  "mergedAtUTC": "2026-10-12T14:59:26Z",
+  "userRequestedImmediateMergeWithoutFurtherChecksOrWaitingForCI": true,
+  "ciOnNewHead": "NOT_VERIFIED",
+  "productionApplicationDeployed": false,
+  "productionMigrationsApplied": false,
+  "goLiveDOD": "INCOMPLETE",
+  "singleAgent": true,
+  "receiptStorage": "LOCAL_REPO_FILE; merged SHA also recorded in GitHub PR body"
+}
