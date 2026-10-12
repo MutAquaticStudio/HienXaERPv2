@@ -15,3 +15,15 @@ Exact bundle attempt đầu bị harness từ chối “begin” trong chuỗi S
 Backup được chủ hệ thống miễn; không ghi ca chưa chạy thành đạt. Không đặt lại mật khẩu/đổi key từ sentinel/dùng QA làm Production. Hai race ứng trước không chạy lại, giữ600.000đ/400.000đ. Bằng chứng UI cũ giữ đúng source/timestamp/phạm vi.
 
 Merge,migration đích,deploy/readback sau deploy sẽ được ghi theo kết quả thực tế; chưa đánh dấu ở các hàng trên.
+
+## Sau checkpoint
+
+- 20:05 UTC:PR44 merge8f65d70,src/migrations/package/lock/vercel so với e4940b1 không khác; CI173 đúng merge SHA success.
+- 20:28:56 UTC:compact upgrade8574eadb… áp thành công nguyên tử. Readback181 history,101 canonical đuôi,304 hàm(303app+1platform),52view/127app policy/111trigger;0opening initializer/tiền/kho/AR/AP/opening phát sinh. Các settings authenticator cũ giữ và thêm hook active actor.
+- Production remote buildNext16.3.4/TypeScript/static routes đạt; dpl_G6k57Drjkh3cJuG9DHXFcY1rGKp1 READY,aliasnu. Health đúng8f65d70. Authenticated DB Owner đọc1customer/1employee;unassigned UID thật đọc0branch/customer/employee;read-only/rollback.
+- Post-deploy harness ban đầu đòi307 trên streamed page và401 trên API thiếu tham số:đối chiếu Next16 docs/route,đổi kỳ vọng đúng meta redirect/invalid_selection/307 login; không sửa app để làm test đạt.
+- BrowserIAB1280×900/390×844,nội dung/nhãn/focus/chuyển cổng/toggle rỗng đạt;console0. Screenshot viewport vật lý của panel ban đầu chưa khớp override:không giữ ảnh đó làm chứng minh;ảnh fullPage theo DOM dimensions được lưuJPG.
+- 21:10:58 UTC:align_business_api_table_privileges thực thi; tái hiện overgrant native,bảo toàn CRUD,thử default bảng mới đạt. Readback0DDL privilege thừa,Owner62,data giữ,hist182. CLI draftfile được đổi tên khớp version thực ghi; SQLbyte không đổi,không repair DBhistory.
+- Runtime500 log cho deploymentG6k không có bản ghi trong cửa sổ đọc; kiểm HTTP không có5xx. Đây là phạm vi truy vấn log,không suy mọi chức năng đã chạy.
+
+Sao lưu không chạy theo chỉ đạo mới. Không tạo giao dịch tài chính/kho,không chạy2 advance races,không gửi email/invite,không reset mật khẩu hoặc thay secret từ sentinel.

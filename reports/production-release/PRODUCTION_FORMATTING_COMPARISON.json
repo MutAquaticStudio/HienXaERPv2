@@ -1,0 +1,26 @@
+[
+  {
+    "function": "private.assign_employee_role",
+    "outsideQuotedTextWhitespaceOnly": true
+  },
+  {
+    "function": "private.current_employee_id",
+    "outsideQuotedTextWhitespaceOnly": true
+  },
+  {
+    "function": "private.has_branch_access",
+    "outsideQuotedTextWhitespaceOnly": true
+  },
+  {
+    "function": "private.has_customer_membership",
+    "outsideQuotedTextWhitespaceOnly": true
+  },
+  {
+    "function": "public.assign_employee_role",
+    "outsideQuotedTextWhitespaceOnly": true
+  },
+  {
+    "function": "public.register_invited_employee",
+    "outsideQuotedTextWhitespaceOnly": true
+  }
+]

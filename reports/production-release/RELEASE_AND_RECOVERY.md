@@ -17,3 +17,11 @@ Sau merge: so runtime với head nghiệm thu, deploy remote build bằng cấu 
 DDL lỗi: transaction rollback, giữ app, lưu lỗi/sửa/diễn tập lại. App lỗi và DB tương thích: xem xét promote artifact cũ, kiểm đường đọc. Không có bản sao DB đích đã thử restore theo quyết định bỏ sao lưu; không hứa rollback DB sau commit. Lỗi dữ liệu sau commit: dừng ghi và xử lý forward theo nguồn; không reset/xóa chứng từ thật hoặc tạo số dư bù.
 
 Sau deploy: health/version,Auth settings,query/RLS/RPC read-only,màn hình/log. Không tạo đơn/xuất kho/thu tiền/thông báo giả trên Production. QA ghi sổ giữ đúng source/phạm vi; GPS thiết bị/hóa đơn thật tiếp tục hoãn và không báo phát hành.
+
+## Trạng thái sau triển khai
+
+PR44 merge8f65d70/CI173 đạt và deployG6k READY. Gói3.27MB bị cổng từ chối trước SQL; compact1.44MB giảm ledger text trùng,giữ SQL thực thi,diễn tập đúng byte và áp thành công nguyên tử. Full SQL được lưu trong migration bundle quản trị;101 child version ghi tên thực,statementsNULL; source SHA trong manifest. Feature187/hist181.
+
+Migration188 thực20261012211058 thu hồi DDL quyền thừa anon/authenticated,bảo toànCRUD vàSourceOwner62. Feature188/hist182; không rewrite/fake8historicalversions. Source CLI draft đổi tên khớp version thực,SQLbyte giữ. Rollback cấp quyền phải dùng ACL snapshot kiểm được,không mở TRUNCATE để vượt điều kiện nghiệp vụ.
+
+Các artifacts8f/G6k là lần triển khai đầu. SHA/artifact sau PR45 được ghi ở kết quả cuối; không dùng sốfeature schema thay history hoặc nói phiên bản trước là mới. Không có backup/restore đích do chỉ đạo miễn sao lưu; giữ kế hoạch xử lý forward/ngừng ghi khi có lỗi.

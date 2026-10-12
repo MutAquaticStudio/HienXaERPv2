@@ -9,7 +9,8 @@
       "codex/business-flow-remediation-g01-g23": false,
       "codex/go-live-acceptance": false,
       "codex/remove-opening-pending": false,
-      "codex/ux-ui-refinement": false
+      "codex/ux-ui-refinement": false,
+      "codex/production-release-20261013": false
     }
   }
 }

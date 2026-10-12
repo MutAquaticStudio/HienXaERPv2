@@ -1,0 +1,14 @@
+{
+  "status": "READY_PRODUCTION",
+  "commit": "8f65d70f87703c54611487b828751a613a9e6ca6",
+  "deploymentId": "dpl_G6k57Drjkh3cJuG9DHXFcY1rGKp1",
+  "deploymentUrl": "https://hien-xa-erp-v2-a7uffped9-hienxa.vercel.app",
+  "productionAlias": "https://hien-xa-erp-v2-nu.vercel.app",
+  "target": "production",
+  "createdAt": 1791837272791,
+  "ciAfterMerge": "https://github.com/MutAquaticStudio/HienXaERPv2/actions/runs/38301932995",
+  "sourceEquivalentToTestedHead": "e4940b109b7899954e3ace7f88026b74c4da35b3",
+  "noRuntimeSourceDiffAfterMerge": true,
+  "remoteBuild": "Next16.3.4 compilation/typecheck/static pages/deploy completed",
+  "dbRef": "nbwynrwkdbtfsitafsxa"
+}
