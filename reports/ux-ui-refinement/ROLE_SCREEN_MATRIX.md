@@ -17,6 +17,6 @@
 
 Quyền thực: khách khác bị chuyển về danh sách với thông báo đơn không thuộc phạm vi; thợ đọc API công nợ nhận403. Kho/khách không có dữ liệu giá vốn mở thêm. Các phần permission/RLS/API không thay đổi, COMPARISON.json xác nhận phạm vi mã.
 
-Chuỗi tạo SO/PO, nhận và lấy hàng được chuẩn bị một lần qua RPC thật; lần này thực hiện báo giao → xác minh → thu/phân bổ → đối soát trên trình duyệt bằng từng tài khoản đúng quyền. Không diễn giải chuẩn bị RPC thành thao tác tạo SO/PO bằng UI lần này. Các biểu mẫu tạo được khảo sát và giữ nguyên; bằng chứng xuyên suốt cũ vẫn ở reports/go-live-acceptance/BROWSER_SOURCE_FLOW175-attempt2.json nếu cần đối chiếu tên thực tế trong repo.
+Chuỗi tạo SO/PO, nhận và lấy hàng được chuẩn bị một lần qua RPC thật; lần này thực hiện báo giao → xác minh → thu/phân bổ → đối soát trên trình duyệt bằng từng tài khoản đúng quyền. Không diễn giải chuẩn bị RPC thành thao tác tạo SO/PO bằng UI lần này. Các biểu mẫu tạo được khảo sát và giữ nguyên; bằng chứng xuyên suốt cũ vẫn ở reports/go-live-acceptance/BROWSER_SOURCE_FLOW175-attempt2.json đã đối chiếu phạm vi mã; không coi là đã chạy mới.
 
 Các luồng trả/hoàn/chi, Storage, Realtime và GPS không có logic thay đổi; không chạy lại bộ tích hợp cũ hoặc nhận là đã chạy mới. Unit liên quan quantity/money/credit/draft/API/no-opening được chạy lại. Không phát triển tích hợp hoặc cổng mới.

@@ -1,9 +1,9 @@
 {
   "phase": "after",
   "origin": "http://127.0.0.1:3116",
-  "sourceCommit": "e2a639324815f1c147c5b0744ec08d5d3e0dd885",
-  "workingTree": "M src/app/admin/cashbook/page.tsx\n M src/app/admin/deliveries/[id]/page.tsx\n M src/app/admin/page.tsx\n M src/app/globals.css\n M src/app/work/jobs/[id]/page.tsx\n M src/components/portal/portal.module.css\n M src/components/portal/work-result-draft-form.tsx\n?? src/components/ui/metric-number.tsx",
-  "checkedAt": "2026-10-12T16:59:32.844Z",
+  "sourceCommit": "543a93e5f2581ead5c6294a4cec4bdf5d42efc06",
+  "workingTree": "",
+  "checkedAt": "2026-10-12T17:24:34.762Z",
   "productionAccess": "NONE",
   "schemaChanges": 0,
   "browserPlugin": "ABSENT; installed Playwright1.63.0 fallback",

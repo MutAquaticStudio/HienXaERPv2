@@ -1,0 +1,107 @@
+{
+  "status": "PASS_CODE_COMMIT_CI",
+  "checkedAt": "2026-10-12T17:29:51.993Z",
+  "repository": "MutAquaticStudio/HienXaERPv2",
+  "commit": "543a93e5f2581ead5c6294a4cec4bdf5d42efc06",
+  "runId": 38283937185,
+  "url": "https://github.com/MutAquaticStudio/HienXaERPv2/actions/runs/38283937185",
+  "unitFiles": 91,
+  "unitTests": 619,
+  "evidenceNodeTests": 8,
+  "jobs": [
+    {
+      "id": 114927652151,
+      "name": "phase-gate",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Run pnpm install --frozen-lockfile",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Run pnpm lint",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6
+        },
+        {
+          "name": "Run pnpm typecheck",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Run pnpm test",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Run node --test scripts/qa/evidence-reverification.test.mjs",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        },
+        {
+          "name": "Run pnpm build",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18
+        },
+        {
+          "name": "Post Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21
+        }
+      ]
+    }
+  ],
+  "excludedAdvanceRaces": "Neither package4-advance-race mode is invoked by the CI workflow; no rerun",
+  "finalHeadVerification": "Final report-only head must separately pass CI; final evidence is in PR44 checks/description, never substituted with this code-commit run"
+}

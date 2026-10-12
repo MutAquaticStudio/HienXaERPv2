@@ -1,0 +1,20 @@
+{
+  "status": "PASS_LOCAL_PREVIEW_COMMITTED_UI",
+  "checkedAt": "2026-10-12T17:27:45.226Z",
+  "url": "http://127.0.0.1:3116",
+  "healthHttp": 200,
+  "health": {
+    "status": "ok",
+    "service": "hien-xa-erp-v2",
+    "buildSha": "543a93e5f2581ead5c6294a4cec4bdf5d42efc06",
+    "requiredMigration": "20261012155947",
+    "gpsDevice": "DEFERRED",
+    "legalInvoice": "DEFERRED"
+  },
+  "sourceCommit": "543a93e5f2581ead5c6294a4cec4bdf5d42efc06",
+  "runtimeSourceSha256": "789ca0f771cea763525d9a97e30e4193b63532135a46b5c68b04163be5c887de",
+  "browser": "24 authenticated screens on next start build, desktop1280x900/mobile390x844",
+  "schema": "QA186; canonical187 not applied in UI task",
+  "productionAccess": "NONE",
+  "autoDeployBranchDisabled": true
+}
