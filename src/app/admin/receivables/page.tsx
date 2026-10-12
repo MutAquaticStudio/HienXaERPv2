@@ -26,7 +26,7 @@ export default async function ReceivablesPage({ searchParams }: { searchParams: 
   const list = parseCoreListQuery(query);
   const customerId = /^[0-9a-f-]{36}$/i.test(query.customer ?? "") ? query.customer : undefined;
   const supabase = await createServerSupabase();
-  let request = supabase.from("receivable_read").select("id, customer_id, site_id, customer_name, site_name, source_label, original_amount_vnd, outstanding_amount_vnd, due_date, recorded_at, state").eq("branch_id", access.branchId).gt("outstanding_amount_vnd", 0);
+  let request = supabase.from("receivable_read").select("id, customer_id, site_id, customer_name, site_name, source_label, original_amount_vnd::text, outstanding_amount_vnd::text, due_date, recorded_at, state").eq("branch_id", access.branchId).gt("outstanding_amount_vnd", 0);
   if (list.q) request = request.or(`customer_name.ilike.${ilikePattern(list.q)},site_name.ilike.${ilikePattern(list.q)},source_label.ilike.${ilikePattern(list.q)}`);
   if (list.state) request = request.eq("state", list.state);
   if (customerId) request = request.eq("customer_id", customerId);
@@ -36,15 +36,15 @@ export default async function ReceivablesPage({ searchParams }: { searchParams: 
   const canPost = access.permissions.has("finance.payment.post");
   const [pageResult, selectedResult, accountResult, partyResult, sourceResult, creditResult, returnResult] = await Promise.all([
     request.order("due_date").order("id").range(list.from, list.to + 1),
-    customerId ? supabase.from("receivable_read").select("id, customer_id, customer_name, site_name, source_label, outstanding_amount_vnd, due_date").eq("branch_id", access.branchId).eq("customer_id", customerId).gt("outstanding_amount_vnd", 0).order("due_date").order("id").range(0, CORE_LIST_PAGE_SIZE) : Promise.resolve({ data: [], error: null }),
+    customerId ? supabase.from("receivable_read").select("id, customer_id, customer_name, site_name, source_label, outstanding_amount_vnd::text, due_date").eq("branch_id", access.branchId).eq("customer_id", customerId).gt("outstanding_amount_vnd", 0).order("due_date").order("id").range(0, CORE_LIST_PAGE_SIZE) : Promise.resolve({ data: [], error: null }),
     customerId && canPost ? supabase.from("finance_accounts").select("id, code, name").eq("branch_id", access.branchId).eq("active", true).order("code").limit(100) : Promise.resolve({ data: [] }),
     customerId ? supabase.from("customers").select("display_name").eq("id", customerId).eq("branch_id", access.branchId).maybeSingle() : Promise.resolve({ data: null }),
-    customerId && canPost ? supabase.from("payment_allocation_source_read").select("id, payment_number, available_amount_vnd, advance_remaining_vnd")
+    customerId && canPost ? supabase.from("payment_allocation_source_read").select("id, payment_number, available_amount_vnd::text, advance_remaining_vnd::text")
       .eq("branch_id", access.branchId).eq("direction", "RECEIPT").eq("customer_id", customerId).gt("available_amount_vnd", 0)
       .order("posted_at", { ascending: false }).order("id").range(paymentList.from, paymentList.to + 1) : Promise.resolve({ data: [], error: null }),
-    customerId ? supabase.from("customer_credit_read").select("id, return_case_id, delivery_number, order_number, approved_credit_vnd, amount_vnd, remaining_vnd, refunded_vnd, offset_vnd")
+    customerId ? supabase.from("customer_credit_read").select("id, return_case_id, delivery_number, order_number, approved_credit_vnd::text, amount_vnd::text, remaining_vnd::text, refunded_vnd::text, offset_vnd::text")
       .eq("branch_id", access.branchId).eq("customer_id", customerId).order("approved_at", { ascending: false }).order("id").range(creditList.from, creditList.to + 1) : Promise.resolve({ data: [], error: null }),
-    customerId ? supabase.from("customer_return_finance_read").select("id, delivery_number, order_number, material_name_snapshot, base_quantity, maximum_credit_vnd, legacy_adjustment_exists, legacy_credit_amount_vnd")
+    customerId ? supabase.from("customer_return_finance_read").select("id, delivery_number, order_number, material_name_snapshot, base_quantity, maximum_credit_vnd::text, legacy_adjustment_exists, legacy_credit_amount_vnd::text")
       .eq("branch_id", access.branchId).eq("customer_id", customerId).order("id").range(returnList.from, returnList.to + 1) : Promise.resolve({ data: [], error: null }),
   ]);
   if (pageResult.error || selectedResult.error || sourceResult.error || creditResult.error || returnResult.error) throw new Error("Không thể tải phải thu.");

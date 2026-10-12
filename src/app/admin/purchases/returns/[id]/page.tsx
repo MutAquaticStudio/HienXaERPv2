@@ -15,9 +15,9 @@ export default async function SupplierReturnDetail({ params }: { params: Promise
  const access = await requireInternalAccess(), { id } = await params; if (!/^[0-9a-f-]{36}$/i.test(id) || !["purchasing.read", "inventory.read", "finance.ap.read"].some(p => access.permissions.has(p))) notFound();
  const db = await createServerSupabase(), canFinanceRead = access.permissions.has("finance.ap.read");
  const [source, history, creditRows] = await Promise.all([
-  db.from("supplier_return_read").select("*").eq("id", id).eq("branch_id", access.branchId).maybeSingle(),
-  db.from("supplier_return_event_read").select("id, event_kind, base_quantity, source_value_vnd, supplier_reference, reason, recorded_by, recorded_at").eq("case_id", id).eq("branch_id", access.branchId).order("recorded_at").order("id"),
-  canFinanceRead ? db.from("supplier_return_credit_read").select("id, acceptance_event_id, approved_credit_vnd, amount_vnd, remaining_vnd, refunded_vnd, offset_vnd, retained_charge_vnd, inventory_valuation_difference_vnd, approved_at, reason").eq("case_id", id).eq("branch_id", access.branchId).order("approved_at") : Promise.resolve({ data: [], error: null }),
+  db.from("supplier_return_read").select("id,branch_id,supplier_id,return_number,supplier_name,source_receipt_line_id,source_fulfillment_line_id,source_return_case_id,source_payable_id,material_id,material_name,warehouse_id,requested_base_quantity,source_base_quantity,dispatch_closed,version,reason,created_at,created_by,physically_returned_base_quantity,supplier_accepted_base_quantity,source_value_vnd::text,vendor_pending_base_quantity,vendor_pending_value_vnd::text").eq("id", id).eq("branch_id", access.branchId).maybeSingle(),
+  db.from("supplier_return_event_read").select("id, event_kind, base_quantity, source_value_vnd::text, supplier_reference, reason, recorded_by, recorded_at").eq("case_id", id).eq("branch_id", access.branchId).order("recorded_at").order("id"),
+  canFinanceRead ? db.from("supplier_return_credit_read").select("id, acceptance_event_id, approved_credit_vnd::text, amount_vnd::text, remaining_vnd::text, refunded_vnd::text, offset_vnd::text, retained_charge_vnd::text, inventory_valuation_difference_vnd::text, approved_at, reason").eq("case_id", id).eq("branch_id", access.branchId).order("approved_at") : Promise.resolve({ data: [], error: null }),
  ]);
  if (source.error || history.error || creditRows.error) throw new Error("Không thể tải nguồn trả nhà cung cấp."); if (!source.data) notFound();
  const c = source.data, events = history.data ?? [], credits = creditRows.data ?? [];
@@ -25,7 +25,7 @@ export default async function SupplierReturnDetail({ params }: { params: Promise
  const canPay = access.permissions.has("finance.payment.post"), canApprove = access.permissions.has("finance.ap.adjust");
  const [accounts, payables] = await Promise.all([
   canPay ? db.from("finance_accounts").select("id, code, name").eq("branch_id", access.branchId).eq("active", true).order("code").limit(100) : Promise.resolve({ data: [], error: null }),
-  canPay ? db.from("payable_read").select("id, source_label, outstanding_amount_vnd").eq("branch_id", access.branchId).eq("supplier_id", c.supplier_id).gt("outstanding_amount_vnd", 0).order("due_date").limit(100) : Promise.resolve({ data: [], error: null }),
+  canPay ? db.from("payable_read").select("id, source_label, outstanding_amount_vnd::text").eq("branch_id", access.branchId).eq("supplier_id", c.supplier_id).gt("outstanding_amount_vnd", 0).order("due_date").limit(100) : Promise.resolve({ data: [], error: null }),
  ]);
  if (accounts.error || payables.error) throw new Error("Không thể tải nguồn hoàn hoặc bù trừ nhà cung cấp.");
  const accountOptions = (accounts.data ?? []).map(a => ({ id: a.id, label: `${a.code} · ${a.name}` }));

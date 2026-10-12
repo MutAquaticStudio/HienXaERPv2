@@ -23,7 +23,7 @@ export default async function CustomerQuotationDetailPage({ params, searchParams
   if (!quoteData) notFound();
   const quote = quoteData as Quote;
   const [revisionResult, lineResult] = await Promise.all([
-    supabase.from("quotation_revisions").select("id, revision_number, state, total_vnd, customer_name_snapshot, site_name_snapshot, delivery_address_snapshot, commercial_terms, expires_at").eq("id", quote.current_revision_id).maybeSingle(),
+    supabase.from("quotation_revisions").select("id, revision_number, state, total_vnd::text, customer_name_snapshot, site_name_snapshot, delivery_address_snapshot, commercial_terms, expires_at").eq("id", quote.current_revision_id).maybeSingle(),
     supabase.rpc("customer_safe_quotation_lines", { target_revision_id: quote.current_revision_id }),
   ]);
   if (!revisionResult.data || lineResult.error) notFound();

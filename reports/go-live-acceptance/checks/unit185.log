@@ -1,0 +1,14 @@
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+
+ RUN  v5.0.0 /Users/nox/.codex/worktrees/go-live-acceptance/HienXaERP
+
+
+ Test Files  91 passed (91)
+      Tests  621 passed (621)
+   Start at  20:35:30
+   Duration  21.35s (environment 60%, tests 20%, setup 11%, transform 4%, import 4%)
+
+Environment  jsdom was created 91 times · 81.31s total, 60% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+

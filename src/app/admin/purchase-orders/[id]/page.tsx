@@ -30,11 +30,11 @@ export default async function PurchaseOrderDetailPage({ params, searchParams }: 
   const { id } = await params;
   const supabase = await createServerSupabase();
   const [orderResult, lineResult, uomResult, receiptResult, fulfillmentResult, progressResult, termsResult] = await Promise.all([
-    supabase.from("purchase_order_read").select("id, purchase_order_number, supplier_name_snapshot, destination_type, destination_name_snapshot, destination_address_snapshot, source_sales_order_id, state, expected_at, total_cost_vnd").eq("id", id).eq("branch_id", access.branchId).maybeSingle(),
-    supabase.from("purchase_order_line_read").select("id, linked_sales_order_line_id, material_name_snapshot, quantity, ordered_uom_id, unit_cost_vnd, line_total_cost_vnd, price_source_type").eq("purchase_order_id", id).order("line_number"),
+    supabase.from("purchase_order_read").select("id, purchase_order_number, supplier_name_snapshot, destination_type, destination_name_snapshot, destination_address_snapshot, source_sales_order_id, state, expected_at, total_cost_vnd::text").eq("id", id).eq("branch_id", access.branchId).maybeSingle(),
+    supabase.from("purchase_order_line_read").select("id, linked_sales_order_line_id, material_name_snapshot, quantity, ordered_uom_id, unit_cost_vnd::text, line_total_cost_vnd::text, price_source_type").eq("purchase_order_id", id).order("line_number"),
     supabase.from("units_of_measure").select("id, symbol"),
-    supabase.from("purchase_receipt_read").select("id, receipt_number, received_at, received_base_quantity, payable_amount_vnd").eq("purchase_order_id", id).order("received_at", { ascending: false }),
-    supabase.from("supplier_fulfillment_read").select("id, supplier_reference, verified_at, supplier_base_quantity, payable_amount_vnd").eq("purchase_order_id", id).order("verified_at", { ascending: false }),
+    supabase.from("purchase_receipt_read").select("id, receipt_number, received_at, received_base_quantity, payable_amount_vnd::text").eq("purchase_order_id", id).order("received_at", { ascending: false }),
+    supabase.from("supplier_fulfillment_read").select("id, supplier_reference, verified_at, supplier_base_quantity, payable_amount_vnd::text").eq("purchase_order_id", id).order("verified_at", { ascending: false }),
     supabase.from("purchase_order_line_progress_read").select("purchase_order_line_id, received_quantity, supplier_quantity").eq("purchase_order_id", id),
     supabase.from("purchase_orders").select("commercial_terms").eq("id", id).eq("branch_id", access.branchId).maybeSingle(),
   ]);

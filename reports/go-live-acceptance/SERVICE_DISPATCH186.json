@@ -1,0 +1,422 @@
+{
+  "scope": "NEW_SERVICE_ASSIGN_HEARTBEAT_CANCEL_AND_DISPATCH_CONTACT_CANCEL",
+  "checkedAt": "2026-10-12T14:47:25.974Z",
+  "source": {
+    "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+    "sourceSha256": "15d7c3c1fcbfb977f1355be99012b60ecc2d0c456555e346da6275f9a8504c0f",
+    "uncommitted": true
+  },
+  "schema": {
+    "count": 186,
+    "latest": "20261012110100"
+  },
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [
+    {
+      "name": "UNSTARTED_SERVICE_CURRENT_RIGHTS_DENY_WITHOUT_MUTATION",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T14:47:31.354Z",
+      "source": {
+        "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "sourceSha256": "15d7c3c1fcbfb977f1355be99012b60ecc2d0c456555e346da6275f9a8504c0f",
+        "uncommitted": true
+      },
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "layer": "DIRECT_RPC_BROWSER_SESSION",
+        "http": 403,
+        "code": "42501",
+        "job": "f89692ce-5e0f-44ee-9177-e5e04c716f19",
+        "before": {
+          "id": "f89692ce-5e0f-44ee-9177-e5e04c716f19",
+          "execution_state": "SCHEDULED",
+          "version": 1
+        },
+        "sourceCommit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "workingDiffSha256": "8dc884420c49518c21b79bfd28235a97c63dcd6febec446943a2616cbddd7988"
+      }
+    },
+    {
+      "name": "UNSTARTED_SERVICE_STALE_VERSION_UI_REJECTS_WITHOUT_MUTATION",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T14:47:32.518Z",
+      "source": {
+        "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "sourceSha256": "15d7c3c1fcbfb977f1355be99012b60ecc2d0c456555e346da6275f9a8504c0f",
+        "uncommitted": true
+      },
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "layer": "BROWSER_UI",
+        "job": "f89692ce-5e0f-44ee-9177-e5e04c716f19",
+        "actualVersion": 1,
+        "submittedVersion": 2,
+        "versionInputFaultInjected": true,
+        "sourceCommit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "workingDiffSha256": "8dc884420c49518c21b79bfd28235a97c63dcd6febec446943a2616cbddd7988"
+      }
+    },
+    {
+      "name": "MANAGER_CANCELS_UNSTARTED_SERVICE_ONCE_WITHOUT_WORK_OR_AR",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T14:47:33.861Z",
+      "source": {
+        "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "sourceSha256": "15d7c3c1fcbfb977f1355be99012b60ecc2d0c456555e346da6275f9a8504c0f",
+        "uncommitted": true
+      },
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "layer": "BROWSER_UI",
+        "job": "f89692ce-5e0f-44ee-9177-e5e04c716f19",
+        "facts": {
+          "execution_state": "CANCELLED",
+          "work": 0,
+          "verifications": 0
+        },
+        "sourceCommit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "workingDiffSha256": "8dc884420c49518c21b79bfd28235a97c63dcd6febec446943a2616cbddd7988"
+      }
+    },
+    {
+      "name": "MANAGER_UI_ASSIGN_WORK_ITEM_CURRENT_WORKER_SOURCE_ONE_AUDIT",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T14:47:37.291Z",
+      "source": {
+        "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "sourceSha256": "15d7c3c1fcbfb977f1355be99012b60ecc2d0c456555e346da6275f9a8504c0f",
+        "uncommitted": true
+      },
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "layer": "BROWSER_UI",
+        "job": "585dc730-5d6e-47ea-8146-0f724b4dbb0a",
+        "work": "a75af713-33bc-4b5e-9fb1-eb2ea0886045",
+        "assignment": {
+          "id": "31ae995b-921e-49c8-a3a2-166f09c805b3",
+          "employee_id": "7a29b908-578e-4d45-b408-70f7a93256a9",
+          "assignment_kind": "DIRECT",
+          "execution_state": "CLAIMED",
+          "service_job_id": "585dc730-5d6e-47ea-8146-0f724b4dbb0a"
+        },
+        "sourceCommit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "workingDiffSha256": "8dc884420c49518c21b79bfd28235a97c63dcd6febec446943a2616cbddd7988"
+      }
+    },
+    {
+      "name": "ASSIGNED_WORKER_STARTS_SERVICE_THROUGH_PORTAL_UI",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T14:47:39.336Z",
+      "source": {
+        "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "sourceSha256": "15d7c3c1fcbfb977f1355be99012b60ecc2d0c456555e346da6275f9a8504c0f",
+        "uncommitted": true
+      },
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "layer": "BROWSER_UI",
+        "job": "585dc730-5d6e-47ea-8146-0f724b4dbb0a",
+        "work": "a75af713-33bc-4b5e-9fb1-eb2ea0886045",
+        "sourceCommit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "workingDiffSha256": "8dc884420c49518c21b79bfd28235a97c63dcd6febec446943a2616cbddd7988"
+      }
+    },
+    {
+      "name": "CURRENT_WORKER_HEARTBEAT_DIRECT_RPC_RETRY_ONE_ROW_NO_RESULT",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T14:47:39.409Z",
+      "source": {
+        "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "sourceSha256": "15d7c3c1fcbfb977f1355be99012b60ecc2d0c456555e346da6275f9a8504c0f",
+        "uncommitted": true
+      },
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "layer": "DIRECT_RPC_BROWSER_SESSION",
+        "job": "585dc730-5d6e-47ea-8146-0f724b4dbb0a",
+        "work": "a75af713-33bc-4b5e-9fb1-eb2ea0886045",
+        "heartbeat": "64c38eae-a8c5-4dc5-9caa-88fc7ae0da61",
+        "http": 200,
+        "facts": {
+          "execution_state": "IN_PROGRESS",
+          "last_heartbeat_at": "2026-10-12T14:47:39.341Z",
+          "lease_expires_at": "2026-10-12T16:47:39.341Z",
+          "heartbeats": 1,
+          "results": 0,
+          "verifications": 0,
+          "actor": "7a29b908-578e-4d45-b408-70f7a93256a9"
+        },
+        "foreignHttp": 403,
+        "sourceCommit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "workingDiffSha256": "8dc884420c49518c21b79bfd28235a97c63dcd6febec446943a2616cbddd7988"
+      }
+    },
+    {
+      "name": "STARTED_SERVICE_CURRENT_VERSION_CANCEL_DENIED_NO_MUTATION",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T14:47:39.759Z",
+      "source": {
+        "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "sourceSha256": "15d7c3c1fcbfb977f1355be99012b60ecc2d0c456555e346da6275f9a8504c0f",
+        "uncommitted": true
+      },
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "layer": "DIRECT_RPC_BROWSER_SESSION_PLUS_UI_GUARD",
+        "job": "585dc730-5d6e-47ea-8146-0f724b4dbb0a",
+        "actualVersion": 2,
+        "http": 409,
+        "code": "PT409",
+        "uiCancelPresent": false,
+        "sourceCommit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "workingDiffSha256": "8dc884420c49518c21b79bfd28235a97c63dcd6febec446943a2616cbddd7988"
+      }
+    },
+    {
+      "name": "DISPATCH_UI_CANCEL_PLANNED_DELIVERY_RELEASES_SAME_RESERVATION_ONCE",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T14:47:42.287Z",
+      "source": {
+        "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "sourceSha256": "15d7c3c1fcbfb977f1355be99012b60ecc2d0c456555e346da6275f9a8504c0f",
+        "uncommitted": true
+      },
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "layer": "BROWSER_UI",
+        "delivery": "7f762002-ff9c-433a-9353-bb74be1ae7ae",
+        "before": [
+          {
+            "id": "d2c298c6-eb16-49cb-8dbc-ada99b3e74c3",
+            "state": "ACTIVE",
+            "version": 1,
+            "quantity": "1.000000"
+          }
+        ],
+        "after": [
+          {
+            "id": "d2c298c6-eb16-49cb-8dbc-ada99b3e74c3",
+            "state": "RELEASED",
+            "version": 2,
+            "quantity": "1.000000",
+            "finalized_at": "2026-10-12T14:47:41.589Z"
+          }
+        ],
+        "facts": {
+          "state": "CANCELLED",
+          "commercial": "CONFIRMED",
+          "assignments": 0,
+          "cargo": 0,
+          "revenue": 0,
+          "active_reserved": "1.000000"
+        },
+        "sourceCommit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "workingDiffSha256": "8dc884420c49518c21b79bfd28235a97c63dcd6febec446943a2616cbddd7988"
+      }
+    },
+    {
+      "name": "DISPATCH_UI_UPDATES_RECEIVER_BEFORE_WORK_PUBLICATION",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T14:47:43.576Z",
+      "source": {
+        "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "sourceSha256": "15d7c3c1fcbfb977f1355be99012b60ecc2d0c456555e346da6275f9a8504c0f",
+        "uncommitted": true
+      },
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "layer": "BROWSER_UI",
+        "delivery": "ff0226a2-9a00-428b-b653-e8fb0a0387b5",
+        "facts": {
+          "receiver_name_snapshot": "QA-SD-78B88A18 người nhận đã xác minh",
+          "receiver_phone_snapshot": "0900000001",
+          "work": 0
+        },
+        "sourceCommit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "workingDiffSha256": "8dc884420c49518c21b79bfd28235a97c63dcd6febec446943a2616cbddd7988"
+      }
+    },
+    {
+      "name": "PUBLISHED_DELIVERY_RECEIVER_UI_AND_DIRECT_RPC_LOCK_KEEP_SOURCE",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T14:47:46.100Z",
+      "source": {
+        "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "sourceSha256": "15d7c3c1fcbfb977f1355be99012b60ecc2d0c456555e346da6275f9a8504c0f",
+        "uncommitted": true
+      },
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "layer": "BROWSER_UI_PLUS_DIRECT_RPC_BROWSER_SESSION",
+        "delivery": "ff0226a2-9a00-428b-b653-e8fb0a0387b5",
+        "work": "a744b21f-3dd2-47f3-bfd5-9ecf6aa70745",
+        "before": {
+          "receiver_name_snapshot": "QA-SD-78B88A18 người nhận đã xác minh",
+          "receiver_phone_snapshot": "0900000001",
+          "version": 3,
+          "execution_state": "ASSIGNED"
+        },
+        "after": {
+          "receiver_name_snapshot": "QA-SD-78B88A18 người nhận đã xác minh",
+          "receiver_phone_snapshot": "0900000001",
+          "version": 3,
+          "execution_state": "ASSIGNED"
+        },
+        "rawHttp": 500,
+        "rawCode": "55000",
+        "sourceCommit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "workingDiffSha256": "8dc884420c49518c21b79bfd28235a97c63dcd6febec446943a2616cbddd7988"
+      }
+    }
+  ],
+  "documents": {
+    "marker": "QA-SD-78B88A18",
+    "serviceDate": "2352-10-15",
+    "dispatchDate": "2352-10-16",
+    "operations": {
+      "cancelServiceCreate": "2c092be0-02b3-4ac7-a712-be9aaacb1066",
+      "serviceCancelDenied": "a4076bf6-bd59-4d58-87e8-3624a8743755",
+      "serviceCancelStale": "6022bbc8-f355-441f-97ec-90efd9e3de22",
+      "serviceCancel": "3ebb6af3-ad0e-461c-94f7-555ffeabe9fc",
+      "assignedServiceCreate": "f0b86cad-fbdb-41f8-860c-14576080bd37",
+      "servicePublish": "a86c9e78-88d6-43c1-ae5e-2b0c2e549f92",
+      "serviceAssign": "740e48fb-6003-45f1-aa8d-8f6a13886a46",
+      "workerHeartbeat": "31547214-1b3b-4854-9b0c-e765adb7384c",
+      "foreignHeartbeat": "d86cbe85-9758-4be5-85af-0df7e4247a49",
+      "startedServiceCancel": "bed42126-8a5e-4046-be88-5f824190f4e2",
+      "deliveryCancel": "8497b5a0-5fc5-4952-af19-329db01b1efa",
+      "receiverUpdate": "7f568aab-fc73-4d8f-b460-2fd5dbb0db31",
+      "deliveryAssign": "2892456b-9cb1-4bd1-a0c3-afcb51f98ef1",
+      "deliveryPublish": "143c39d6-501a-4445-8289-430990d02765",
+      "receiverLockedUI": "b5718a79-5352-488c-a4c4-04411f1d1db8",
+      "receiverLockedRpc": "20243c97-ee2a-4311-bda3-55aeae77c806"
+    },
+    "cancelService": {
+      "intent": "2c092be0-02b3-4ac7-a712-be9aaacb1066",
+      "title": "QA-SD-78B88A18 lịch chưa thực hiện",
+      "localDate": "2352-10-15",
+      "job": "f89692ce-5e0f-44ee-9177-e5e04c716f19"
+    },
+    "assignedService": {
+      "intent": "f0b86cad-fbdb-41f8-860c-14576080bd37",
+      "title": "QA-SD-78B88A18 giao trực tiếp và heartbeat",
+      "localDate": "2352-10-15",
+      "job": "585dc730-5d6e-47ea-8146-0f724b4dbb0a",
+      "work": "a75af713-33bc-4b5e-9fb1-eb2ea0886045"
+    },
+    "dispatch": {
+      "marker": "QA-SD-78B88A18",
+      "prefix": "RM2619E8C1",
+      "sale": "a01f598a-fbcd-42cc-8c6f-10f649939127",
+      "material": "24c1a9a4-08cf-465e-93ba-b5959b3b7353",
+      "vehicle": "6ce89ebc-d3ca-4424-9d50-163f8bedb67a",
+      "contactDelivery": "ff0226a2-9a00-428b-b653-e8fb0a0387b5",
+      "cancelDelivery": "7f762002-ff9c-433a-9353-bb74be1ae7ae",
+      "reservationBefore": [
+        {
+          "id": "d2c298c6-eb16-49cb-8dbc-ada99b3e74c3",
+          "state": "ACTIVE",
+          "version": 1,
+          "quantity": "1.000000"
+        }
+      ],
+      "work": "a744b21f-3dd2-47f3-bfd5-9ecf6aa70745"
+    }
+  },
+  "pageErrors": [],
+  "sourceProvenance": {
+    "sourceCommit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+    "workingDiffSha256": "8dc884420c49518c21b79bfd28235a97c63dcd6febec446943a2616cbddd7988",
+    "workingDiffScope": [
+      "src",
+      "supabase/migrations",
+      "scripts/qa/go-live/service-dispatch-browser.mjs"
+    ],
+    "untrackedSourceFiles": [
+      "scripts/qa/go-live/service-dispatch-browser.mjs",
+      "src/modules/catalog/command.ts",
+      "src/modules/portal/work-command-status.test.ts",
+      "src/modules/portal/work-command-status.ts",
+      "src/modules/workforce/compensation-rate.test.ts",
+      "src/modules/workforce/compensation-rate.ts",
+      "supabase/migrations/20261012074034_atomic_operating_command_audit.sql",
+      "supabase/migrations/20261012075211_compensation_rate_precision_guard.sql",
+      "supabase/migrations/20261012081213_recoverable_master_commands.sql",
+      "supabase/migrations/20261012082356_master_draft_command_constraint.sql",
+      "supabase/migrations/20261012085902_exact_dashboard_detail_money.sql",
+      "supabase/migrations/20261012093644_work_assignment_receipt_audit_source.sql",
+      "supabase/migrations/20261012110100_master_draft_current_field_permissions.sql"
+    ],
+    "schema": {
+      "count": 186,
+      "latest": "20261012110100"
+    }
+  },
+  "layers": {
+    "browserUI": "Manager/dispatch controls and worker start",
+    "directRpc": "Actual browser-issued Auth session through clone gateway; heartbeat has no worker UI control",
+    "setup": "Marked new native QA fixture only"
+  },
+  "completedSourceProvenance": {
+    "sourceCommit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+    "workingDiffSha256": "8dc884420c49518c21b79bfd28235a97c63dcd6febec446943a2616cbddd7988",
+    "workingDiffScope": [
+      "src",
+      "supabase/migrations",
+      "scripts/qa/go-live/service-dispatch-browser.mjs"
+    ],
+    "untrackedSourceFiles": [
+      "scripts/qa/go-live/service-dispatch-browser.mjs",
+      "src/modules/catalog/command.ts",
+      "src/modules/portal/work-command-status.test.ts",
+      "src/modules/portal/work-command-status.ts",
+      "src/modules/workforce/compensation-rate.test.ts",
+      "src/modules/workforce/compensation-rate.ts",
+      "supabase/migrations/20261012074034_atomic_operating_command_audit.sql",
+      "supabase/migrations/20261012075211_compensation_rate_precision_guard.sql",
+      "supabase/migrations/20261012081213_recoverable_master_commands.sql",
+      "supabase/migrations/20261012082356_master_draft_command_constraint.sql",
+      "supabase/migrations/20261012085902_exact_dashboard_detail_money.sql",
+      "supabase/migrations/20261012093644_work_assignment_receipt_audit_source.sql",
+      "supabase/migrations/20261012110100_master_draft_current_field_permissions.sql"
+    ],
+    "schema": {
+      "count": 186,
+      "latest": "20261012110100"
+    }
+  },
+  "status": "PASS",
+  "completedAt": "2026-10-12T14:47:46.392Z"
+}

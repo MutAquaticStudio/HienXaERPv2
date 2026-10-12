@@ -1,0 +1,117 @@
+{
+  "scope": "EXPLICIT_CURRENT_COLUMNS_PRESERVE_PREVIOUS_STAR_FIELDS_WITH_EXACT_MONEY",
+  "changes": [
+    {
+      "file": "src/app/admin/compensation/page.tsx",
+      "edits": [
+        {
+          "start": 2632,
+          "end": 2633,
+          "table": "earning_event_read",
+          "select": "id,branch_id,employee_id,employee_name,rule_id,rule_code_snapshot,rule_version_snapshot,earning_type,classification,source_key,basis_quantity::text,basis_amount_vnd::text,rate_vnd_per_unit_snapshot::text,rate_bps_snapshot,calculated_amount_vnd::text,approved_amount_vnd::text,approval_state,version,created_at,approved_at,service_verification_id,work_item_verification_id,sales_order_id,manual_basis_id,payable_obligation_id,outstanding_amount_vnd::text,payment_allocation_id,reverses_earning_event_id,payment_id,receivable_obligation_id,allocated_at,payment_number,payment_effective_at,work_item_result_id,work_item_id,work_verified_at,recognition_effective_at,delivery_id,basis_quantity_policy"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/inventory/transfers/[id]/page.tsx",
+      "edits": [
+        {
+          "start": 971,
+          "end": 972,
+          "table": "warehouse_transfer_read",
+          "select": "id,branch_id,transfer_number,from_warehouse_id,to_warehouse_id,material_id,base_uom_id,planned_base_quantity,dispatch_closed,version,reason,created_by,created_at,from_warehouse_name,to_warehouse_name,material_code,material_name,shipped_base_quantity,received_base_quantity,loss_base_quantity,in_transit_base_quantity,transfer_state,in_transit_value_vnd::text"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/invoices/[id]/page.tsx",
+      "edits": [
+        {
+          "start": 969,
+          "end": 970,
+          "table": "invoice_intent_read",
+          "select": "id,branch_id,source_obligation_id,source_type,source_id,source_amount_vnd::text,customer_name_snapshot,billing_verified_at,invoice_due_at,status,provider_state,legal_invoice_number,issued_at,created_at,version,policy_state,create_operation_id"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/invoices/purchases/matching/[id]/page.tsx",
+      "edits": [
+        {
+          "start": 865,
+          "end": 866,
+          "table": "supplier_document_line_read",
+          "select": "id,document_id,line_number,source_kind,source_id,purchase_order_line_id,material_id,material_name,document_uom_id,uom_symbol,source_quantity,document_quantity,source_unit_cost,document_unit_cost,source_value_vnd::text,document_value_vnd::text,approved_return_charge_vnd::text,match_result,covered"
+        },
+        {
+          "start": 753,
+          "end": 754,
+          "table": "supplier_document_read",
+          "select": "id,branch_id,supplier_id,supplier_name,document_kind,document_number,document_date,declared_value_vnd::text,source_value_vnd::text,match_state,business_state,legal_state,version,created_at,reviewed_at,review_reason"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/invoices/purchases/matching/page.tsx",
+      "edits": [
+        {
+          "start": 1223,
+          "end": 1224,
+          "table": "supplier_document_eligible_source_read",
+          "select": "branch_id,supplier_id,supplier_name,source_kind,source_id,source_number,material_name,uom_symbol,source_quantity,source_unit_cost,source_value_vnd::text,document_kind"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/payment-notices/page.tsx",
+      "edits": [
+        {
+          "start": 922,
+          "end": 923,
+          "table": "payment_notice_read",
+          "select": "id,branch_id,customer_id,customer_name,evidence_id,declared_amount_vnd::text,paid_on,payment_reference,customer_note,review_state,version,submitted_at,review_note,matched_amount_vnd::text,remaining_match_vnd::text,money_match_state"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/purchases/returns/[id]/page.tsx",
+      "edits": [
+        {
+          "start": 1512,
+          "end": 1513,
+          "table": "supplier_return_read",
+          "select": "id,branch_id,supplier_id,return_number,supplier_name,source_receipt_line_id,source_fulfillment_line_id,source_return_case_id,source_payable_id,material_id,material_name,warehouse_id,requested_base_quantity,source_base_quantity,dispatch_closed,version,reason,created_at,created_by,physically_returned_base_quantity,supplier_accepted_base_quantity,source_value_vnd::text,vendor_pending_base_quantity,vendor_pending_value_vnd::text"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/service-jobs/[id]/page.tsx",
+      "edits": [
+        {
+          "start": 2363,
+          "end": 2364,
+          "table": "service_job_read",
+          "select": "id,branch_id,job_number,customer_id,customer_name,site_id,site_name,sales_employee_id,service_type,description,scheduled_start,scheduled_end,planned_quantity::text,unit_label,vehicle_id,plate_number,machine_id,machine_name,execution_state,version,work_item_id,work_number,work_state,work_version,employee_id,operator_name,actual_quantity::text,billable_quantity::text,compensable_quantity::text,billable_amount_vnd::text,service_verification_id,receivable_obligation_id"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/supplier-documents/[id]/review/csv/route.ts",
+      "edits": [
+        {
+          "start": 1067,
+          "end": 1068,
+          "table": "supplier_document_line_read",
+          "select": "id,document_id,line_number,source_kind,source_id,purchase_order_line_id,material_id,material_name,document_uom_id,uom_symbol,source_quantity,document_quantity,source_unit_cost,document_unit_cost,source_value_vnd::text,document_value_vnd::text,approved_return_charge_vnd::text,match_result,covered"
+        },
+        {
+          "start": 816,
+          "end": 817,
+          "table": "supplier_document_read",
+          "select": "id,branch_id,supplier_id,supplier_name,document_kind,document_number,document_date,declared_value_vnd::text,source_value_vnd::text,match_state,business_state,legal_state,version,created_at,reviewed_at,review_reason"
+        }
+      ]
+    }
+  ],
+  "productionAccess": "NONE"
+}

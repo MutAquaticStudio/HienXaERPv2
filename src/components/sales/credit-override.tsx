@@ -21,7 +21,7 @@ export async function SalesOrderCreditOverride({ orderId }: { orderId: string })
   if (orderError || !order) return null;
   if (order.commercial_state !== "DRAFT") {
     const { data, error } = await supabase.from("sales_order_credit_overrides")
-      .select("reason, actor_auth_user_id, created_at, approved_limit_vnd, exposure_before_vnd, order_amount_vnd, exposure_after_vnd, overdue_vnd")
+      .select("reason, actor_auth_user_id, created_at, approved_limit_vnd::text, exposure_before_vnd::text, order_amount_vnd::text, exposure_after_vnd::text, overdue_vnd::text")
       .eq("sales_order_id", orderId).eq("branch_id", context.branchId).maybeSingle();
     if (error || !data) return null;
     return <section className="rounded-xl border border-amber-300 bg-amber-50 p-5" aria-label="Ngoại lệ tín dụng đã duyệt">

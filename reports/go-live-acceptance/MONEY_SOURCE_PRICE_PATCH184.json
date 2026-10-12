@@ -1,0 +1,38 @@
+{
+  "scope": "EXACT_SOURCE_PRICE_AND_RATE_PROJECTIONS_READ_ONLY",
+  "changes": [
+    {
+      "file": "src/app/admin/invoices/purchases/matching/[id]/page.tsx",
+      "edits": [
+        {
+          "start": 1078,
+          "end": 1374,
+          "before": "id,document_id,line_number,source_kind,source_id,purchase_order_line_id,material_id,material_name,document_uom_id,uom_symbol,source_quantity,document_quantity,source_unit_cost,document_unit_cost,source_value_vnd::text,document_value_vnd::text,approved_return_charge_vnd::text,match_result,covered",
+          "after": "id,document_id,line_number,source_kind,source_id,purchase_order_line_id,material_id,material_name,document_uom_id,uom_symbol,source_quantity,document_quantity,source_unit_cost::text,document_unit_cost::text,source_value_vnd::text,document_value_vnd::text,approved_return_charge_vnd::text,match_result,covered"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/invoices/purchases/matching/page.tsx",
+      "edits": [
+        {
+          "start": 1223,
+          "end": 1389,
+          "before": "branch_id,supplier_id,supplier_name,source_kind,source_id,source_number,material_name,uom_symbol,source_quantity,source_unit_cost,source_value_vnd::text,document_kind",
+          "after": "branch_id,supplier_id,supplier_name,source_kind,source_id,source_number,material_name,uom_symbol,source_quantity,source_unit_cost::text,source_value_vnd::text,document_kind"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/supplier-documents/[id]/review/csv/route.ts",
+      "edits": [
+        {
+          "start": 1280,
+          "end": 1576,
+          "before": "id,document_id,line_number,source_kind,source_id,purchase_order_line_id,material_id,material_name,document_uom_id,uom_symbol,source_quantity,document_quantity,source_unit_cost,document_unit_cost,source_value_vnd::text,document_value_vnd::text,approved_return_charge_vnd::text,match_result,covered",
+          "after": "id,document_id,line_number,source_kind,source_id,purchase_order_line_id,material_id,material_name,document_uom_id,uom_symbol,source_quantity,document_quantity,source_unit_cost::text,document_unit_cost::text,source_value_vnd::text,document_value_vnd::text,approved_return_charge_vnd::text,match_result,covered"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "scope": "EXACT_AP_EXPENSE_DASHBOARD_PO_SUPPLIER_CUSTOMER_LIMIT_CURRENT_ROLES",
+  "checkedAt": "2026-10-12T14:14:34.722Z",
+  "source": {
+    "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+    "sourceSha256": "5f35e32fe5faef37f42d0769cd16d50f2a16b3fb6e7acc7f410fb334d3380d21",
+    "uncommitted": true
+  },
+  "schema": {
+    "count": 186,
+    "latest": "20261012110100"
+  },
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [],
+  "documents": {
+    "customerIntent": "3484d459-f1a7-426a-b639-2ca2acf3f7c2"
+  },
+  "pageErrors": [],
+  "status": "FAIL",
+  "error": "The expression evaluated to a falsy value:",
+  "failurePages": [
+    {
+      "url": "http://127.0.0.1:3112/admin/customers?q=GCF1115FF9B64",
+      "title": "Hiền Xa ERP",
+      "body": "ĐANG TẢI DỮ LIỆU\n\nVui lòng chờ"
+    },
+    {
+      "url": "http://127.0.0.1:3112/admin",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA ERP\nĐiều hành\nTổng quan\nBán hàng\nNhà cung cấp\nKho hàng\nGiao hàng\nTài chính\nThu nhập\nBáo cáo\nTin nhắn\nĐăng xuất\nPhiên làm việc có phân quyền\nQA không đầu kỳ G119EE6ACBC\nQA khắc phục finance\nPF\n\nTỔNG QUAN KINH DOANH\n\nTổng quan\n\nDoanh thu theo kỳ và công nợ tại thời điểm đã chọn. Thu tiền không làm tăng doanh thu lần nữa.\n\nMở sổ tiền\nTừ ngày\nĐến trước ngày\nTìm khách hàng\nTìm khách\nKhách hàng\nTất cả\nKhách QA chi nhánh mới\nKhách kiểm thử khắc phục\nKhách kiểm thử khắc phục\nKhách kiểm thử khắc phục\nKhách kiểm thử khắc phục\nQA cấu hình khách GCF1115FF9B64\nQA thu nhiều lần và ứng trước\nCông trình\nTất cả\nCông trình QA phiếu tiền\nCông trình kiểm thử\nCông trình kiểm thử\nCông trình kiểm thử\nCông trình kiểm thử\nQA công trình GCF1115FF9B64\nNhân viên bán hàng\nTất cả\nNhân viên hoa hồng giả QA\nNhân viên hoa hồng giả QA\nNhân viên hoa hồng giả QA\nNhân viên kiểm thử confirmer\nNhân viên kiểm thử noConfirm\nNhân viên kiểm thử owner\nQA khắc phục finance\nQA khắc phục purchasing\nQA khắc phục warehouse\nHoạt động\nTất cả\nGiao hàng\nBán hàng\nDịch vụ\nHành chính\nLàm mới\n\nKỳ 01/10/2026 đến trước 01/11/2026 · số dư tính đến 12/10/2026 21:14\n\nTheo giao dịch đã ghi nhận; lịch sử chưa đối chiếu. Số liệu này chưa xác minh tổng số dư toàn doanh nghiệp.\n\nDoanh thu\n33.841.111 ₫\nLợi nhuận gộp quản trị\n31.391.111 ₫\nChi phí vận hành\n123.457 ₫\nLợi nhuận hoạt động\n31.267.654 ₫\nBiên lợi nhuận\n92,395%\nBiểu đồ kết quả kinh doanh\nCÙNG KỲ VÀ PHẠM VI\nDoanh thu\n33.841.111 ₫\nLN gộp quản trị\n31.391.111 ₫\nLN hoạt động\n31.267.654 ₫\n\nCHI PHÍ VẬN HÀNH\n\nPhân bổ theo nhóm\nChi phi nhan su van hanh\nThu nhập nhân sự\n123.457 ₫\n\nHOA HỒNG PHẢI TRẢ\n\nChi tiết theo nhân viên\n\nKhông có hoa hồng còn phải trả tại thời điểm đã chọn.\n\nKhách hàng phải thu\n2.841.111 ₫\nNhà cung cấp phải trả\n3.600.000 ₫\nLương phải chi\n100.000 ₫\nHoa hồng phải chi\n0 ₫\nKhách / công trình đang nợ\nTất cả\nKhách kiểm thử khắc phục\nCông trình kiểm thử · hạn 12/10/2026\n1.990.000 ₫\nKhách kiểm thử khắc phục\nCông trình kiểm thử · hạn 12/10/2026\n740.000 ₫\nKhách kiểm thử khắc phục\nCông trình kiểm thử · hạn 12/10/2026\n111.111 ₫\n\nCùng thời điểm chốt và bộ lọc với các chỉ số phía trên.\n\nNhà cung cấp đang phải trả\nTất cả\nNCC QA chi nhánh mới\nHạn 12/10/2026\n1.500.000 ₫\nNCC QA chi nhánh mới\nHạn 12/10/2026\n750.000 ₫\nNCC QA chi nhánh mới\nHạn 12/10/2026\n750.000 ₫\nNCC QA chi nhánh mới\nHạn 12/10/2026\n450.000 ₫\nNhân viên kiểm thử noConfirm\nHạn 12/10/2026\n100.000 ₫\nNCC QA chi nhánh mới\nHạn 12/10/2026\n50.000 ₫\n\nCùng thời điểm chốt với các chỉ số phía trên."
+    },
+    {
+      "url": "http://127.0.0.1:3112/admin",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA ERP\nĐiều hành\nTổng quan\nBán hàng\nKho hàng\nGiao hàng\nTài chính\nBáo cáo\nTin nhắn\nĐăng xuất\nPhiên làm việc có phân quyền\nQA không đầu kỳ G119EE6ACBC\nNhân viên kiểm thử confirmer\nTC\n\nTỔNG QUAN KINH DOANH\n\nTổng quan\n\nDoanh thu theo kỳ và công nợ tại thời điểm đã chọn. Thu tiền không làm tăng doanh thu lần nữa.\n\nMở sổ tiền\nTừ ngày\nĐến trước ngày\nTìm khách hàng\nTìm khách\nKhách hàng\nTất cả\nKhách QA chi nhánh mới\nKhách kiểm thử khắc phục\nKhách kiểm thử khắc phục\nKhách kiểm thử khắc phục\nKhách kiểm thử khắc phục\nQA cấu hình khách GCF1115FF9B64\nQA thu nhiều lần và ứng trước\nCông trình\nTất cả\nCông trình QA phiếu tiền\nCông trình kiểm thử\nCông trình kiểm thử\nCông trình kiểm thử\nCông trình kiểm thử\nQA công trình GCF1115FF9B64\nNhân viên bán hàng\nTất cả\nNhân viên kiểm thử confirmer\nHoạt động\nTất cả\nGiao hàng\nBán hàng\nDịch vụ\nHành chính\nLàm mới\n\nKỳ 01/10/2026 đến trước 01/11/2026 · số dư tính đến 12/10/2026 21:14\n\nTheo giao dịch đã ghi nhận; lịch sử chưa đối chiếu. Số liệu này chưa xác minh tổng số dư toàn doanh nghiệp.\n\nDoanh thu\n33.841.111 ₫\nBiểu đồ kết quả kinh doanh\nCÙNG KỲ VÀ PHẠM VI\nDoanh thu\n33.841.111 ₫\n\nCHI PHÍ VẬN HÀNH\n\nPhân bổ theo nhóm\n\nBạn không có quyền xem chi tiết này.\n\nHOA HỒNG PHẢI TRẢ\n\nChi tiết theo nhân viên\n\nBạn không có quyền xem chi tiết này.\n\nKhách hàng phải thu\n2.841.111 ₫\nKhách / công trình đang nợ\nTất cả\nKhách kiểm thử khắc phục\nCông trình kiểm thử · hạn 12/10/2026\n1.990.000 ₫\nKhách kiểm thử khắc phục\nCông trình kiểm thử · hạn 12/10/2026\n740.000 ₫\nKhách kiểm thử khắc phục\nCông trình kiểm thử · hạn 12/10/2026\n111.111 ₫\n\nCùng thời điểm chốt và bộ lọc với các chỉ số phía trên.\n\nNhà cung cấp đang phải trả\n\nKhông có khoản mở hoặc không có quyền xem.\n\nCùng thời điểm chốt với các chỉ số phía trên."
+    },
+    {
+      "url": "http://127.0.0.1:3112/admin",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA ERP\nĐiều hành\nTổng quan\nĐơn bán\nMua hàng\nKho hàng\nGiao hàng\nTài chính\nBáo cáo\nTin nhắn\nĐăng xuất\nPhiên làm việc có phân quyền\nQA không đầu kỳ G119EE6ACBC\nQA khắc phục purchasing\nPP\n\nTỔNG QUAN KINH DOANH\n\nTổng quan\n\nDoanh thu theo kỳ và công nợ tại thời điểm đã chọn. Thu tiền không làm tăng doanh thu lần nữa.\n\nTừ ngày\nĐến trước ngày\nTìm khách hàng\nTìm khách\nKhách hàng\nTất cả\nCông trình\nTất cả\nCông trình QA phiếu tiền\nCông trình kiểm thử\nCông trình kiểm thử\nCông trình kiểm thử\nCông trình kiểm thử\nQA công trình GCF1115FF9B64\nNhân viên bán hàng\nTất cả\nQA khắc phục purchasing\nHoạt động\nTất cả\nGiao hàng\nBán hàng\nDịch vụ\nHành chính\nLàm mới\n\nKỳ 01/10/2026 đến trước 01/11/2026 · số dư tính đến 12/10/2026 21:14\n\nTheo giao dịch đã ghi nhận; lịch sử chưa đối chiếu. Số liệu này chưa xác minh tổng số dư toàn doanh nghiệp.\n\nDoanh thu\n33.841.111 ₫\nBiểu đồ kết quả kinh doanh\nCÙNG KỲ VÀ PHẠM VI\nDoanh thu\n33.841.111 ₫\n\nCHI PHÍ VẬN HÀNH\n\nPhân bổ theo nhóm\n\nBạn không có quyền xem chi tiết này.\n\nHOA HỒNG PHẢI TRẢ\n\nChi tiết theo nhân viên\n\nBạn không có quyền xem chi tiết này.\n\nNhà cung cấp phải trả\n3.600.000 ₫\nKhách / công trình đang nợ\n\nKhông có khoản mở hoặc không có quyền xem.\n\nCùng thời điểm chốt và bộ lọc với các chỉ số phía trên.\n\nNhà cung cấp đang phải trả\nTất cả\nNCC QA chi nhánh mới\nHạn 12/10/2026\n1.500.000 ₫\nNCC QA chi nhánh mới\nHạn 12/10/2026\n750.000 ₫\nNCC QA chi nhánh mới\nHạn 12/10/2026\n750.000 ₫\nNCC QA chi nhánh mới\nHạn 12/10/2026\n450.000 ₫\nNhân viên kiểm thử noConfirm\nHạn 12/10/2026\n100.000 ₫\nNCC QA chi nhánh mới\nHạn 12/10/2026\n50.000 ₫\n\nCùng thời điểm chốt với các chỉ số phía trên."
+    }
+  ]
+}

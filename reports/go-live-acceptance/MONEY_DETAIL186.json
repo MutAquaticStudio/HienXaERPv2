@@ -1,0 +1,87 @@
+{
+  "scope": "EXACT_AP_EXPENSE_DASHBOARD_PO_SUPPLIER_CUSTOMER_LIMIT_CURRENT_ROLES",
+  "checkedAt": "2026-10-12T14:14:34.722Z",
+  "source": {
+    "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+    "sourceSha256": "5f35e32fe5faef37f42d0769cd16d50f2a16b3fb6e7acc7f410fb334d3380d21",
+    "uncommitted": true
+  },
+  "schema": {
+    "count": 186,
+    "latest": "20261012110100"
+  },
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [
+    {
+      "name": "MANAGER_PROFILE_FULL_EXPECTED_JSON_EXACT_CREDIT_LIMIT_AND_CURRENT_READER_RIGHTS",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T14:42:37.196Z",
+      "source": {
+        "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "sourceSha256": "15d7c3c1fcbfb977f1355be99012b60ecc2d0c456555e346da6275f9a8504c0f",
+        "uncommitted": true
+      },
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "customer": "f768428b-39ca-486e-95cc-5cd9ee8b5ad9",
+        "exact": "9007199254740993",
+        "salesCanReadCredit": true
+      }
+    },
+    {
+      "name": "APPROVED_EXACT_EXPENSE_AP_DETAIL_API_DASHBOARD_JSON_AND_REPORT",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T14:42:39.783Z",
+      "source": {
+        "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "sourceSha256": "15d7c3c1fcbfb977f1355be99012b60ecc2d0c456555e346da6275f9a8504c0f",
+        "uncommitted": true
+      },
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "expense": "680c63f6-cfc9-49f6-9cef-72b42ec025cc",
+        "ap": "a2a26be6-e441-455b-a996-b5a0be83a137",
+        "exact": "9007199254740993",
+        "detailAmount": "9007199254740993"
+      }
+    },
+    {
+      "name": "EXACT_PO_LIST_DETAIL_SUPPLIER_WITHOUT_STOCK_OR_AP",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T14:46:51.296Z",
+      "source": {
+        "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "sourceSha256": "15d7c3c1fcbfb977f1355be99012b60ecc2d0c456555e346da6275f9a8504c0f",
+        "uncommitted": true
+      },
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "po": "3f95abfe-730c-40ec-9b3a-dae6ce66466c",
+        "exact": "9007199254740993",
+        "receipts": 0,
+        "ap": 0
+      }
+    }
+  ],
+  "documents": {
+    "customerIntent": "3484d459-f1a7-426a-b639-2ca2acf3f7c2",
+    "approveIntent": "68bdc22b-ade8-4b28-8fd3-3976c6fa338d",
+    "ap": "a2a26be6-e441-455b-a996-b5a0be83a137",
+    "po": "3f95abfe-730c-40ec-9b3a-dae6ce66466c",
+    "supplier": "ab8e0f92-d8d7-4150-932a-7e1dd2baa6b8"
+  },
+  "pageErrors": [],
+  "status": "PASS",
+  "completedAt": "2026-10-12T14:46:51.297Z"
+}

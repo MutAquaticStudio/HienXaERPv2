@@ -1,0 +1,135 @@
+{
+  "scope": "OWNED_QA_LARGE_UNALLOCATED_CASH_TEXT_RPC_UI_AND_CUSTOMER_LIMIT_READERS",
+  "checkedAt": "2026-10-12T14:49:12.518Z",
+  "source": {
+    "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+    "sourceSha256": "15d7c3c1fcbfb977f1355be99012b60ecc2d0c456555e346da6275f9a8504c0f",
+    "uncommitted": true
+  },
+  "schema": 186,
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [
+    {
+      "name": "CUSTOMER_LIMIT_RPC_AND_LIST_DETAIL_EXACT_TEXT_NO_OTHER_FIELD_ACCESS",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T14:51:48.186Z",
+      "source": {
+        "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "sourceSha256": "15d7c3c1fcbfb977f1355be99012b60ecc2d0c456555e346da6275f9a8504c0f",
+        "uncommitted": true
+      },
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "customer": "b83cda6f-3c78-4226-9741-f0da35cedf1e",
+        "credit": "9007199254740993",
+        "projectedType": "string"
+      }
+    },
+    {
+      "name": "ONE_OWNED_LARGE_RECEIPT_SAME_INTENT_OUTCOME_READ_NO_ADVANCE_OR_DEBT_ALLOCATION",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T14:51:48.224Z",
+      "source": {
+        "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "sourceSha256": "15d7c3c1fcbfb977f1355be99012b60ecc2d0c456555e346da6275f9a8504c0f",
+        "uncommitted": true
+      },
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "payment": "4e50d956-23c8-40ba-978d-c5c67070466d",
+        "amount": "9007199254740994",
+        "outcome": "COMMITTED",
+        "payments": 1,
+        "receipts": 1,
+        "audits": 1,
+        "allocations": 0,
+        "advances": 0
+      }
+    },
+    {
+      "name": "CASHBOOK_TABLE_RPC_TEXT_AND_UI_NET_SUM_PAYMENT_ROW_RELOAD_EXACT",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T14:51:49.356Z",
+      "source": {
+        "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "sourceSha256": "15d7c3c1fcbfb977f1355be99012b60ecc2d0c456555e346da6275f9a8504c0f",
+        "uncommitted": true
+      },
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "sourceNet": "9007199285717537",
+        "rpcNet": "9007199285717537",
+        "rpcNetType": "string",
+        "payment": "REC-202610-000183",
+        "amount": "9007199254740994"
+      }
+    },
+    {
+      "name": "OWNED_LARGE_RECEIPT_REVERSED_ONCE_NET_RESTORED_NO_ADVANCE_RACE_REPLAY",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T14:51:49.485Z",
+      "source": {
+        "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "sourceSha256": "15d7c3c1fcbfb977f1355be99012b60ecc2d0c456555e346da6275f9a8504c0f",
+        "uncommitted": true
+      },
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "throughCanonicalRealAuthReversal": true,
+        "oldSourcesReplayed": false,
+        "originalReceiptPreserved": true,
+        "payments": 2,
+        "net": "0",
+        "allocations": 0,
+        "advances": 0,
+        "reversal_audits": 1
+      }
+    }
+  ],
+  "documents": {
+    "marker": "QMR5BBBD46A9A",
+    "customer": "b83cda6f-3c78-4226-9741-f0da35cedf1e",
+    "customerIntent": "a8029df6-4b35-4362-83ab-cc984050730b",
+    "paymentIntent": "37410406-86db-4093-891d-9eeac066d055",
+    "reverseIntent": "094a2cf9-3996-4cca-8240-cc1c82063a09",
+    "reference": "QMR5BBBD46A9A-UNALLOCATED-CASH",
+    "reverseReason": "QA đảo nguồn tiền lớn riêng sau đối chiếu transport QMR5BBBD46A9A",
+    "effectiveAt": "2026-10-12T14:49:13.118Z",
+    "account": "0a8592dc-875c-4d29-a649-5d4f80782d81",
+    "initialNet": "30976543",
+    "payment": "4e50d956-23c8-40ba-978d-c5c67070466d",
+    "reversal": "72aea329-1c76-4c44-862c-d8668366c895"
+  },
+  "pageErrors": [],
+  "actualInitialSchema": {
+    "count": 186,
+    "latest": "20261012110100"
+  },
+  "excludedAdvanceRacesRun": false,
+  "status": "PASS",
+  "cleanup": {
+    "throughCanonicalRealAuthReversal": true,
+    "oldSourcesReplayed": false,
+    "originalReceiptPreserved": true,
+    "payments": 2,
+    "net": "0",
+    "allocations": 0,
+    "advances": 0,
+    "reversal_audits": 1
+  },
+  "completedAt": "2026-10-12T14:51:49.485Z"
+}

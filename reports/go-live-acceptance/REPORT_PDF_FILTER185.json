@@ -1,0 +1,198 @@
+{
+  "scope": "REPORT_FILTERS_VOUCHER_DELIVERY_QUOTE_PDF_REAL_AUTH_AND_SOURCE_VALUES",
+  "checkedAt": "2026-10-12T09:42:39.877Z",
+  "baselineCommit": "73c3d17",
+  "schema": 179,
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [
+    {
+      "name": "PDF_SOURCE_CONTENT_AND_PARSE_quote-exact.pdf",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T09:42:46.463Z",
+      "schema": {
+        "count": 185,
+        "latest": "20261012093644"
+      },
+      "facts": {
+        "route": "/api/quotation-revisions/a327c6f4-d08e-4894-80e6-0bbe51f8558e/pdf",
+        "pages": 1,
+        "bytes": 303230,
+        "sha256": "da58c3a3dfac7fa2cc2ec31aa2f1cb914be190588e81dba0ecd7ab0362c65fd3",
+        "expectedText": [
+          "9.007.199.254.740.993",
+          "BÁO GIÁ"
+        ]
+      }
+    },
+    {
+      "name": "PDF_SOURCE_CONTENT_AND_PARSE_customer-quote-exact.pdf",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T09:42:46.820Z",
+      "schema": {
+        "count": 185,
+        "latest": "20261012093644"
+      },
+      "facts": {
+        "route": "/api/quotation-revisions/a327c6f4-d08e-4894-80e6-0bbe51f8558e/pdf",
+        "pages": 1,
+        "bytes": 303230,
+        "sha256": "da58c3a3dfac7fa2cc2ec31aa2f1cb914be190588e81dba0ecd7ab0362c65fd3",
+        "expectedText": [
+          "9.007.199.254.740.993"
+        ]
+      }
+    },
+    {
+      "name": "PDF_SOURCE_CONTENT_AND_PARSE_payroll-voucher.pdf",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T09:42:49.919Z",
+      "schema": {
+        "count": 185,
+        "latest": "20261012093644"
+      },
+      "facts": {
+        "route": "/api/payments/a0b944dd-8a49-4e3b-84d0-a94f399efc69/voucher/pdf",
+        "pages": 1,
+        "bytes": 303947,
+        "sha256": "dfd04ace724e9cd3e91253ea92d5197dfcff3887ee47e4da8d147e76667e784c",
+        "expectedText": [
+          "23.457"
+        ]
+      }
+    },
+    {
+      "name": "PDF_SOURCE_CONTENT_AND_PARSE_delivery15-14-13.pdf",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T09:42:51.519Z",
+      "schema": {
+        "count": 185,
+        "latest": "20261012093644"
+      },
+      "facts": {
+        "route": "/api/deliveries/2dd6acde-15db-48b0-92b2-7f248681bb52/note/pdf",
+        "pages": 1,
+        "bytes": 303879,
+        "sha256": "0e3fd1d98f5e478a814f3f9989a3a840a8475597802b7b355fc1e0e9739cb56d",
+        "expectedText": [
+          "15 m³",
+          "14 m³",
+          "13 m³",
+          "không phải hóa đơn"
+        ]
+      }
+    },
+    {
+      "name": "PDF_WRONG_ROLE_OR_CUSTOMER_DENIED",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T09:42:51.653Z",
+      "schema": {
+        "count": 185,
+        "latest": "20261012093644"
+      },
+      "facts": {
+        "url": "/api/quotation-revisions/a327c6f4-d08e-4894-80e6-0bbe51f8558e/pdf",
+        "status": 404
+      }
+    },
+    {
+      "name": "PDF_WRONG_ROLE_OR_CUSTOMER_DENIED",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T09:42:51.806Z",
+      "schema": {
+        "count": 185,
+        "latest": "20261012093644"
+      },
+      "facts": {
+        "url": "/api/payments/a0b944dd-8a49-4e3b-84d0-a94f399efc69/voucher/pdf",
+        "status": 404
+      }
+    },
+    {
+      "name": "PDF_WRONG_ROLE_OR_CUSTOMER_DENIED",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T09:42:53.407Z",
+      "schema": {
+        "count": 185,
+        "latest": "20261012093644"
+      },
+      "facts": {
+        "url": "/api/customers/8f2de180-ff9b-44fe-929c-685ee8ef6077/debt-statement/pdf",
+        "status": 404
+      }
+    },
+    {
+      "name": "REPORT_FILTER_AR_STANDARD_CUSTOMER_CURRENT",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T09:42:53.627Z",
+      "schema": {
+        "count": 185,
+        "latest": "20261012093644"
+      },
+      "facts": {
+        "total": "2101111",
+        "expected": null,
+        "source": "Independent current obligations or boundary before any source exists"
+      }
+    },
+    {
+      "name": "REPORT_FILTER_AR_STANDARD_CUSTOMER_PRIOR_ASOF",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T09:42:53.817Z",
+      "schema": {
+        "count": 185,
+        "latest": "20261012093644"
+      },
+      "facts": {
+        "total": "0",
+        "expected": "0",
+        "source": "Independent current obligations or boundary before any source exists"
+      }
+    },
+    {
+      "name": "REPORT_FILTER_AR_KNOWLEDGE_CUTOFF_BEFORE_NEW_SOURCES",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T09:42:54.006Z",
+      "schema": {
+        "count": 185,
+        "latest": "20261012093644"
+      },
+      "facts": {
+        "total": "0",
+        "expected": "0",
+        "source": "Independent current obligations or boundary before any source exists"
+      }
+    },
+    {
+      "name": "REPORT_FILTER_OPEX_PERIOD_BEFORE_NEW_SOURCE",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T09:42:54.182Z",
+      "schema": {
+        "count": 185,
+        "latest": "20261012093644"
+      },
+      "facts": {
+        "total": "0",
+        "expected": "0",
+        "source": "Independent current obligations or boundary before any source exists"
+      }
+    },
+    {
+      "name": "REPORT_WORKER_CANNOT_EXPORT_AP",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T09:42:54.325Z",
+      "schema": {
+        "count": 185,
+        "latest": "20261012093644"
+      },
+      "facts": {
+        "http": 403
+      }
+    }
+  ],
+  "documents": {},
+  "pageErrors": [],
+  "status": "PASS",
+  "completedAt": "2026-10-12T09:42:54.326Z"
+}

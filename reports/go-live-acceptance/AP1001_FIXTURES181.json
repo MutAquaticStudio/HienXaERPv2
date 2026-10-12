@@ -1,0 +1,4175 @@
+{
+  "status": "PREPARED_NOT_YET_EXPORT_ACCEPTED",
+  "checkedAt": "2026-10-12T07:58:19.036Z",
+  "documents": {
+    "prefix": "RME8501A2E",
+    "uom": "34c06cde-3bff-4fef-864b-a678e808edac",
+    "material": "e5a614a1-97fa-4e10-b687-3c689a715ffa",
+    "price": "251c6b44-f2b3-4b75-9c65-ad9a619971a2",
+    "cost": "e2cc81a2-a209-4229-b0b8-12beef1ae9c6",
+    "po": "19e5d9d6-d1c3-4946-91cd-13570df6ab64",
+    "common": {
+      "material_id": "e5a614a1-97fa-4e10-b687-3c689a715ffa",
+      "ordered_uom_id": "34c06cde-3bff-4fef-864b-a678e808edac",
+      "quantity": "15",
+      "conversion_numerator": "1",
+      "conversion_denominator": "1",
+      "rounding_mode": "HALF_UP"
+    },
+    "cutoff": "2026-10-12 03:52:29.921284+07",
+    "customer": "b26954f0-5da2-4be4-8960-d5c9739787bc",
+    "site": "cb99bbf4-c2cc-4366-aef9-15628e87904a",
+    "unitPriceVnd": "230000",
+    "fixtures": {
+      "prefix": "H41EA1F6F",
+      "owner": "0d1d2134-5a21-40a4-9fcb-375898d3c133",
+      "confirmer": "d593fd7b-027e-4075-83b8-5f7253d64093",
+      "noConfirm": "654de2bf-cf27-4536-ad03-258c348e1f51",
+      "foreignConfirmer": "6b6ac4d8-b045-48eb-b9ac-94600ca7eaa3",
+      "revoked": "cbbc7d79-faf4-4846-93f6-ec97112c0e48",
+      "branch": "972b14d8-aca5-4eda-afc6-9122d632a249",
+      "otherBranch": "e5deaf2f-b8c5-462c-acf4-ee3253f63ecc",
+      "customer": "b26954f0-5da2-4be4-8960-d5c9739787bc",
+      "site": "85e320d5-064b-4869-bc08-39ddebd86823",
+      "salesPrice": "9ad27c46-44ee-44fb-b3bc-aacfb7a8941b",
+      "purchasePrice": "a4ba9443-58a5-4a3a-a679-15ffa85c6ca0",
+      "supplier": "d06ba504-3a0c-405a-b76a-93f9e6d7ae19",
+      "warehouse": "6625ae78-aeb3-4c44-805d-edc8c54c0791",
+      "material": "3a989ff8-e382-4006-9f8c-a0cff706f427",
+      "uom": "6aab6dc5-87dc-44ea-8580-d336dd53a0de"
+    },
+    "personas": {
+      "sales": {
+        "subject": "d593fd7b-027e-4075-83b8-5f7253d64093",
+        "employee": "4a54bf5d-e868-434d-ae91-aa3d30684134",
+        "role": "d24380c9-8c80-4c87-9c94-51da6b5e3a5f",
+        "permissions": [
+          "dashboard.read",
+          "catalog.read",
+          "customers.read",
+          "pricing.read",
+          "orders.read",
+          "orders.create",
+          "orders.confirm",
+          "orders.cancel",
+          "quotation.read",
+          "quotation.create",
+          "quotation.send",
+          "quotation.accept",
+          "delivery.read",
+          "inventory.read",
+          "finance.ar.read"
+        ]
+      },
+      "purchasing": {
+        "subject": "fcd46a45-a0b9-4c9b-bd91-6592e8f38d43",
+        "employee": "e6c822a3-b79d-4bd9-974d-288d3474f105",
+        "role": "65fc9dcb-f78b-46be-905a-c3d711c342ed",
+        "permissions": [
+          "dashboard.read",
+          "catalog.read",
+          "suppliers.read",
+          "purchasing.read",
+          "purchasing.create",
+          "purchasing.confirm",
+          "purchasing.cancel",
+          "purchasing.price.read",
+          "purchasing.price.manage",
+          "delivery.read",
+          "inventory.read",
+          "finance.ap.read"
+        ]
+      },
+      "warehouse": {
+        "subject": "e04f1e5a-2a2d-4347-a506-1b6a35ea790f",
+        "employee": "76f470e0-0fbf-4617-9606-2576b2dcf4df",
+        "role": "e7d9e21e-c734-4adb-a010-97baada3c806",
+        "permissions": [
+          "dashboard.read",
+          "catalog.read",
+          "customers.read",
+          "suppliers.read",
+          "purchasing.read",
+          "inventory.read",
+          "inventory.reserve",
+          "inventory.receive",
+          "inventory.count",
+          "inventory.adjust",
+          "delivery.read",
+          "delivery.create",
+          "delivery.assign",
+          "delivery.handoff",
+          "delivery.submit",
+          "delivery.verify",
+          "delivery.exception",
+          "work.manage",
+          "workforce.read"
+        ]
+      },
+      "finance": {
+        "subject": "a89838c9-bb2d-4758-874c-b031f9655f49",
+        "employee": "ce459ae5-53f4-4bf5-95ba-5d98944ac277",
+        "role": "ac293a86-020e-4294-9423-0cb3c6c63fc7",
+        "permissions": [
+          "dashboard.read",
+          "catalog.read",
+          "customers.read",
+          "suppliers.read",
+          "delivery.read",
+          "inventory.read",
+          "inventory.cost.read",
+          "finance.ar.read",
+          "finance.ar.adjust",
+          "finance.ap.read",
+          "finance.ap.adjust",
+          "finance.account.manage",
+          "finance.payment.post",
+          "finance.payment.reverse",
+          "finance.payment_notice.review",
+          "finance.reconcile",
+          "finance.expense.read",
+          "finance.expense.manage",
+          "finance.profit.read",
+          "compensation.read",
+          "compensation.approve"
+        ]
+      },
+      "worker": {
+        "subject": "654de2bf-cf27-4536-ad03-258c348e1f51",
+        "employee": "7a29b908-578e-4d45-b408-70f7a93256a9",
+        "role": "8d7e075c-2268-4ae9-a8cf-ec68a4059e87",
+        "permissions": [
+          "work.claim",
+          "workforce.read"
+        ]
+      }
+    },
+    "vehicle": "7f5758c8-ae71-4f22-a3e1-f66ff9e1296d",
+    "account": "0a8592dc-875c-4d29-a649-5d4f80782d81",
+    "branch": "972b14d8-aca5-4eda-afc6-9122d632a249",
+    "portalSubjects": {
+      "receiver": "dbfead9b-f234-4948-9e54-d79f7826cbad",
+      "customerFinance": "4b99a47e-738a-4ee8-83f9-7df75ec9b257",
+      "otherCustomer": "d15b7188-25f8-4fc5-8d80-df455a1ef567"
+    },
+    "sourceSynthetic": true,
+    "productionAccess": "NONE",
+    "rows": [
+      {
+        "expense": "4fdcb850-3f3c-4750-8fdc-6da2389b23a1",
+        "obligation": "dd5e8f09-1c7c-4304-a716-c0a04a8cd25b"
+      },
+      {
+        "expense": "174c8b75-63d2-4530-8716-a8363711d5f0",
+        "obligation": "27eccf4c-480b-4582-ae1e-cac6abe81a00"
+      },
+      {
+        "expense": "772eef38-ad36-44ea-9891-9d6201ac9f58",
+        "obligation": "5e95110c-e4fa-441c-a1f9-b4370d39a216"
+      },
+      {
+        "expense": "1dc17909-cd20-4a97-af58-d5659b0026ed",
+        "obligation": "98280436-a264-442d-9840-aa6347e37965"
+      },
+      {
+        "expense": "95470c3f-4606-4001-b203-77637356e490",
+        "obligation": "c5a3d44c-2a2f-459b-92c5-e37a67014193"
+      },
+      {
+        "expense": "dd7a0001-9503-4130-95d9-f98339c582e4",
+        "obligation": "649deab9-f2bf-4798-9ac1-579ddace48f0"
+      },
+      {
+        "expense": "fb06be93-b2a1-480a-96d8-61fac061c459",
+        "obligation": "889f2f74-0b68-4a70-b48f-334aefe2cff9"
+      },
+      {
+        "expense": "5abe53e3-e0c8-444d-9fb3-4f5ea25081bf",
+        "obligation": "0000febe-6d3a-420d-ab1b-0791fe8ffd65"
+      },
+      {
+        "expense": "a1384d14-9413-4d65-a916-44b66769ad0a",
+        "obligation": "f5c441d2-3ea0-4c9b-adb3-3562b64f0aab"
+      },
+      {
+        "expense": "d631541c-f4da-4ee7-a386-427e5a937134",
+        "obligation": "a37b8201-836c-404d-a4ca-486086ee91e5"
+      },
+      {
+        "expense": "f92c5440-68dd-497f-b2ac-44b6a85b846b",
+        "obligation": "1589b960-476e-4026-a1c3-2e512810ae56"
+      },
+      {
+        "expense": "0c2d878e-2623-4ca4-95b1-42499decd312",
+        "obligation": "2e225435-a4dd-4cf4-9c1d-635bbbc6fdad"
+      },
+      {
+        "expense": "4a2eb32e-0aec-46a9-bbbb-582b3faba643",
+        "obligation": "4f326ba0-fde4-47f9-9efe-c3ffdff99ca2"
+      },
+      {
+        "expense": "9458754a-faec-4605-a8e1-b444431b2854",
+        "obligation": "c668360b-268d-4cdd-8f71-c0ef62c224b5"
+      },
+      {
+        "expense": "85dae90c-38f4-4b6e-8c2d-9fda6a8b6977",
+        "obligation": "35d16fbe-6066-43c5-aed1-9b776a5e6c55"
+      },
+      {
+        "expense": "aee7c9d6-164c-4cf9-9f27-401fcae64935",
+        "obligation": "f205a6c4-c69b-4e24-ac92-518e2636f2fb"
+      },
+      {
+        "expense": "53b7f8fd-2afd-4dff-a9f2-6aeb62da0982",
+        "obligation": "561eae4f-a3c7-4844-abbf-07c5ae813826"
+      },
+      {
+        "expense": "abca7926-9415-4590-84d2-e721e95b3791",
+        "obligation": "8e94357d-f9f2-45ef-85f0-ba7f85b179c4"
+      },
+      {
+        "expense": "b0edc28c-d601-44c7-bc29-13fc59c38701",
+        "obligation": "f3a7ab85-fb12-46e3-a874-e5a6b3a7f532"
+      },
+      {
+        "expense": "cf28b7c0-bae3-4244-a05a-8256f789bbbd",
+        "obligation": "d4dd0eb0-f1ba-4409-8fe8-ef52af5bc5a6"
+      },
+      {
+        "expense": "87aa9a21-5c02-4f15-8ab1-2b629a7fe2ab",
+        "obligation": "23d562e3-309f-45d9-83b3-d23213589045"
+      },
+      {
+        "expense": "d998f4e7-0ef4-4dec-8dc9-de08eb83160c",
+        "obligation": "c02aca82-6fe2-41b8-a885-b6eae9986c4b"
+      },
+      {
+        "expense": "de666a3d-0dd3-405b-8bcc-15a9dba698de",
+        "obligation": "e8efda62-c319-4bd9-9c48-759bb44c932f"
+      },
+      {
+        "expense": "69076d06-82c0-4123-8139-5a3d4456141a",
+        "obligation": "dd9569b4-1cc5-498c-bb4a-5e7a55dc7f2a"
+      },
+      {
+        "expense": "10f92e77-8c05-4130-af77-4f0fbf5c5254",
+        "obligation": "423bcfb9-e157-48ac-a690-dc6fd020d9c2"
+      },
+      {
+        "expense": "d0d3dff3-55ce-462b-8ad4-3505014218f4",
+        "obligation": "505c1ca7-5325-46fc-b907-27e5f83df220"
+      },
+      {
+        "expense": "258a25f8-f3c4-4104-979e-13dd11b58fd0",
+        "obligation": "bc00966e-aaef-410e-9484-66f226956dec"
+      },
+      {
+        "expense": "5268ce65-3ca8-44ee-b563-8bf48119f3f9",
+        "obligation": "94bae4ac-9d11-49d3-b4c1-df81247ff0e8"
+      },
+      {
+        "expense": "0f92b8ae-3bba-4089-b847-95a1a8782e34",
+        "obligation": "d96fdea1-46e3-41a7-9525-59353c11dfb1"
+      },
+      {
+        "expense": "1e0a8c8d-2fd8-40ec-91a0-146d1a99546c",
+        "obligation": "3768c744-0b18-42da-9c19-31253825c5e5"
+      },
+      {
+        "expense": "cb7c51ca-86c4-47c4-9dfe-2618e635faf2",
+        "obligation": "71d63ebc-2622-41ef-aec0-c4f06878ae93"
+      },
+      {
+        "expense": "7c893fd0-0530-4783-884d-a42ca7556e18",
+        "obligation": "1a9e33ec-20a0-45a9-b9ec-a556dbca8d3a"
+      },
+      {
+        "expense": "aea78fa0-8cd0-4cae-b73b-61bc5b4645a5",
+        "obligation": "15517332-2142-4fbc-ad7d-49b07bf31ee4"
+      },
+      {
+        "expense": "0a1d72d2-0c9f-4a15-a183-618087467abd",
+        "obligation": "b21a5dc0-9c20-4562-a5f2-81c4d9039f49"
+      },
+      {
+        "expense": "2189e502-c2ef-40d5-befd-44918a810f22",
+        "obligation": "dae31f88-05c8-489e-aa96-0bd582b815e1"
+      },
+      {
+        "expense": "ee16f065-1db7-4761-9372-4db660ba3c85",
+        "obligation": "73a5e49f-5c8d-4479-afe0-42e9c0f2a01c"
+      },
+      {
+        "expense": "a7d948e5-6ea7-4a4b-86b2-6f7920640886",
+        "obligation": "b9509972-6706-4f5c-9488-1ed329c394d8"
+      },
+      {
+        "expense": "3cdf88dc-d979-40a8-9403-b644949be71b",
+        "obligation": "5d715a22-657e-47d9-bd8b-bc2e2800f94e"
+      },
+      {
+        "expense": "31b634db-5d14-4cd4-99a5-1b13bbb5fbfa",
+        "obligation": "af9ea2e3-7cae-4ae3-bb25-ba432e4d8881"
+      },
+      {
+        "expense": "ea117a79-da58-4f54-9b9f-fc2cde36c55b",
+        "obligation": "9f505cdc-5510-4fe9-ac88-f6537bfc8b72"
+      },
+      {
+        "expense": "6012053a-ba39-4e5a-9d90-4f4c15381255",
+        "obligation": "acc78984-fce9-4ce4-b9b0-beb1adfeaffd"
+      },
+      {
+        "expense": "d0ef6805-c7c5-4d0f-bdf3-3b598e0fcaab",
+        "obligation": "eef4c7df-305a-46b7-8a16-2ed2223fed07"
+      },
+      {
+        "expense": "2da64d21-54ac-483b-8a5d-74d557a578eb",
+        "obligation": "7d686f6e-5f24-48e9-9f6e-ad51df6ba62e"
+      },
+      {
+        "expense": "32345362-3546-4478-bbdd-f60e34db0247",
+        "obligation": "13442c6e-e3a6-4278-b2b0-150f06e2c275"
+      },
+      {
+        "expense": "98730557-2f86-42b3-8adb-89cd5c858c18",
+        "obligation": "e7993969-209e-461d-baae-3d324939cfd3"
+      },
+      {
+        "expense": "f61a66a4-f365-4e1f-9737-70756bab4bea",
+        "obligation": "8d2dce33-88a9-4095-9ad6-1bdb3e6329e2"
+      },
+      {
+        "expense": "6ba21727-962f-45a6-814d-294d544273d1",
+        "obligation": "e103bfc1-20c8-440d-b227-9ab73df7ab3f"
+      },
+      {
+        "expense": "008b564b-68b4-41e2-8a1b-bb9880ec5a0d",
+        "obligation": "2395d466-2e95-4f16-b03c-feccda18f0c7"
+      },
+      {
+        "expense": "dbff469b-2464-42e2-94a5-0406771fd0d4",
+        "obligation": "6e47dd63-b435-4c9e-ba18-b9999e44bc90"
+      },
+      {
+        "expense": "b94942fb-2b88-49e2-b94a-18f7ddd5c30b",
+        "obligation": "68c81beb-3a05-4cbc-9adf-3c893779ccb9"
+      },
+      {
+        "expense": "edfccc03-20ba-4f3b-a791-a90340774355",
+        "obligation": "d7ad3a82-fa04-41e8-aa07-50f72501a83f"
+      },
+      {
+        "expense": "0cfb4f83-5d2a-43f5-a754-12f14e18273e",
+        "obligation": "3fe257b1-a024-4033-a899-86b23999bc4f"
+      },
+      {
+        "expense": "8448fc98-8404-49f8-96a5-e055467ce403",
+        "obligation": "2660f2de-11bf-4fb7-ae0e-60b4a317cdf4"
+      },
+      {
+        "expense": "97456d10-c2bb-47b4-b457-410c93001470",
+        "obligation": "b528c802-1a7c-4bcc-9b22-c06b6153803a"
+      },
+      {
+        "expense": "7ec92f78-938d-48e3-a4f1-3ac3aae3f4a5",
+        "obligation": "02b541e5-3b22-4fcd-9f1b-d232d6f56750"
+      },
+      {
+        "expense": "60487d26-8e59-40f7-a838-4602eb27a45c",
+        "obligation": "0554d0aa-24ba-4822-afec-b0e914cab886"
+      },
+      {
+        "expense": "a0156d50-38fd-44b7-954d-1752b0c2549f",
+        "obligation": "f11f90bd-8cbd-4947-b18f-02eddafcd581"
+      },
+      {
+        "expense": "bb6403b1-4618-4599-b23b-c9bf3a309f15",
+        "obligation": "43fb1029-ad1f-483a-8838-35546b7d6ab5"
+      },
+      {
+        "expense": "2d83f555-875c-4e12-a080-cab6e7b6b8e4",
+        "obligation": "1a5faefd-fd0e-4175-828e-10a3041cfac7"
+      },
+      {
+        "expense": "da6af47e-b620-41ca-9502-e8185a229143",
+        "obligation": "b255c418-9bba-42cf-90c3-90b044320b6a"
+      },
+      {
+        "expense": "ce8ed8ff-010b-4eec-bea9-04688b539d38",
+        "obligation": "1fccf20c-3012-4780-a471-7bcb9917119c"
+      },
+      {
+        "expense": "61c20424-adb9-4a0b-9530-f54fa7ca89df",
+        "obligation": "a18850cc-5f7d-4e13-b205-babaee17926e"
+      },
+      {
+        "expense": "1840974f-03ee-4082-b55e-2b8aad27521f",
+        "obligation": "b60b1f41-36a1-4a82-8f7c-0558b7250f18"
+      },
+      {
+        "expense": "2451edf0-d0a8-4830-8b6f-2c8aab8942b5",
+        "obligation": "a05e865d-7613-404d-9647-32d3defd7630"
+      },
+      {
+        "expense": "49a56dae-c4cf-468b-a96b-7e8c1dc8d861",
+        "obligation": "fb31bd3e-ecc3-4a78-8377-afb198c5999b"
+      },
+      {
+        "expense": "1d5884eb-47d5-4129-8020-bf7aa64b54ed",
+        "obligation": "9d11e8e6-eaf2-4038-be05-eeabbf2a965f"
+      },
+      {
+        "expense": "3b29eccd-6fe7-4d09-87e8-9c9809bca24e",
+        "obligation": "a777aa62-bcd9-48af-9eb6-ae9bfe34c0b9"
+      },
+      {
+        "expense": "85a0fd75-b930-42e3-8508-e72260d07e60",
+        "obligation": "aee4261a-c0e9-4e29-acb6-2b34b206f02b"
+      },
+      {
+        "expense": "eae49922-bcfe-4882-9055-6380be1593b7",
+        "obligation": "5118154e-b5ff-4dae-ab61-8786fc3bc796"
+      },
+      {
+        "expense": "4842d05f-292e-4b65-8f1b-6e4470eb067a",
+        "obligation": "fb215f2b-4ed9-4a03-a586-b60ac94a23af"
+      },
+      {
+        "expense": "265901ea-63e7-4c64-bbde-c6fcdd19e33a",
+        "obligation": "ed6ca22a-7818-4961-8bbe-ee239e3d47b0"
+      },
+      {
+        "expense": "20885a95-01a7-469d-b7a8-5ccccfdae774",
+        "obligation": "7e670095-6c7c-477f-8ef5-a730277f766a"
+      },
+      {
+        "expense": "863931a7-89fd-4cd3-a3b6-ec77e19323ab",
+        "obligation": "8d2749c9-5c1e-4486-950a-1cc6b9cc3bec"
+      },
+      {
+        "expense": "5ef0c001-686a-42a9-9043-0e21c52a5a8a",
+        "obligation": "1fd78ad7-3af1-4649-ba4d-642f9b4bd8c9"
+      },
+      {
+        "expense": "c7b6f2a5-500b-493c-85a2-cc9e5e86af80",
+        "obligation": "b50a45bd-e6b7-44c2-bf22-eac0f43203d2"
+      },
+      {
+        "expense": "3ff82855-7dc1-4e32-9c1a-55f5592fc7bb",
+        "obligation": "8a634150-5161-494e-a9df-a6b9ae69a6a1"
+      },
+      {
+        "expense": "93d4bdd1-9877-4423-92f0-c9aa7f74ace1",
+        "obligation": "ddd03f7f-501a-4a50-b087-2e5ce85a229b"
+      },
+      {
+        "expense": "4bcc6e88-b212-4831-b421-ee66154a0668",
+        "obligation": "0bbdc6c6-06a5-47fb-bf6c-d15d6eb9e512"
+      },
+      {
+        "expense": "04612854-ad88-4052-af6b-172fe6baad3f",
+        "obligation": "0e62c9fb-2030-41c1-91a1-3d9fad45c47d"
+      },
+      {
+        "expense": "63207e40-aef9-4466-90da-0ea3f5e0609a",
+        "obligation": "9ff7e9cd-385c-4288-b7b4-b95bbac7339d"
+      },
+      {
+        "expense": "d28d3c03-2aa7-4fb1-a521-c71602387e6a",
+        "obligation": "0589f365-8ff8-4c19-ac3d-4a933a87cbe0"
+      },
+      {
+        "expense": "17706095-ac85-44a8-82a0-9075013502bc",
+        "obligation": "8c4bd41c-88e8-4aa4-bf02-f4f00109f503"
+      },
+      {
+        "expense": "07da9ff6-b78e-4a93-840e-7ee622096873",
+        "obligation": "b771123b-e828-43fe-9fac-52aedc384a14"
+      },
+      {
+        "expense": "1702d9a9-d2a9-43c5-9950-e69012aa3fb9",
+        "obligation": "4c1a0842-58bb-49c3-8599-1e2753fd56a9"
+      },
+      {
+        "expense": "267e78cb-9dc2-4cb2-af9d-ae5b898d88f2",
+        "obligation": "f6e59bcf-4d4f-4e45-9949-5e4f30f7f315"
+      },
+      {
+        "expense": "0b1453ee-1d0b-478b-9bd2-7a6277c13451",
+        "obligation": "4653ea98-1acb-4a32-9401-2f4df233bb38"
+      },
+      {
+        "expense": "07953887-0992-47d9-8970-4a32d51c3225",
+        "obligation": "ce17331b-4133-4521-a790-aa672c6856d5"
+      },
+      {
+        "expense": "c3b90f6a-32e3-404b-9fe4-4fe47ff4df88",
+        "obligation": "60b146ed-7f2d-4056-b7ff-f69bba64e0c4"
+      },
+      {
+        "expense": "c9079d04-5191-4dd4-a50d-76494678105a",
+        "obligation": "44bd3af8-b099-48d8-94db-49ac510778b3"
+      },
+      {
+        "expense": "63fb5c53-2ecd-4a5d-9846-b0dd197f31fb",
+        "obligation": "9f96765d-52cd-4218-aa04-752d24225afc"
+      },
+      {
+        "expense": "1c98eb5a-ddb6-40fa-924a-1db6a3a5c148",
+        "obligation": "467958b4-145c-4d05-8aca-ac70bf829ce4"
+      },
+      {
+        "expense": "63ee7b02-30ea-4f17-9566-3165ab58571d",
+        "obligation": "3d343a44-83fc-4063-9a87-cb1db8abfbc8"
+      },
+      {
+        "expense": "f97d964b-fcf1-459a-a533-f5740bc8f158",
+        "obligation": "fdec87e0-8fbc-4214-8051-fd0c20650e27"
+      },
+      {
+        "expense": "c030aecf-7f18-41f5-8f6a-8167cc0badc4",
+        "obligation": "fd557a87-d210-43b6-bb72-eec011f5ba7b"
+      },
+      {
+        "expense": "94c1145f-d530-44e0-96e5-411c68a4e6d9",
+        "obligation": "2a97eed9-87a8-4b27-b115-b1ae950e5de2"
+      },
+      {
+        "expense": "fad9ae66-99d5-452d-92dd-c26f26e9f115",
+        "obligation": "7c3c91d2-6a61-4f65-9466-e4a3f735945a"
+      },
+      {
+        "expense": "cb48f289-7e60-4693-b12f-1f3d0d1e3818",
+        "obligation": "004d04e1-5090-4b73-b0d8-67902cec6666"
+      },
+      {
+        "expense": "8c5afa66-54ec-41bb-87ae-682df220300d",
+        "obligation": "b9f8c4fe-b583-4b36-b352-60b2f0f38718"
+      },
+      {
+        "expense": "0a9edf20-17fa-4a24-bdfe-07e69d682628",
+        "obligation": "774bc394-2343-4288-8e37-864ec472a3d4"
+      },
+      {
+        "expense": "c1e9f08b-050f-42d1-82e3-febf10b155b7",
+        "obligation": "c621f47a-9410-4fc3-828c-1fa3828ca49f"
+      },
+      {
+        "expense": "143ade17-5908-4b8d-a7bb-6cdcdf04a336",
+        "obligation": "ef5cde2e-c31f-48b0-9d7a-ae062c294fee"
+      },
+      {
+        "expense": "8e4b35dd-789a-46bd-a7b6-69c24e73f03f",
+        "obligation": "a0363d06-5ed7-41b0-b92a-ad820267dc45"
+      },
+      {
+        "expense": "77f4a05c-c69e-4649-a24c-658c686fcfa8",
+        "obligation": "58062341-344f-4d6c-98b4-8fd050bc330a"
+      },
+      {
+        "expense": "d8e7a383-660b-4ebc-93e1-f187fc3b7b64",
+        "obligation": "91588869-6223-4bff-be5c-bb612e576a15"
+      },
+      {
+        "expense": "ba71b319-9468-4894-b6a3-31b27f5278de",
+        "obligation": "1611da45-cb13-4d26-888e-f5764237ebb4"
+      },
+      {
+        "expense": "800e8904-6440-4511-bd5b-5e6d5f7bcefd",
+        "obligation": "78523111-d5cb-4a4d-abbe-d92c3ac0878b"
+      },
+      {
+        "expense": "5c6f58f8-f0ba-47eb-9d1e-7cd94d74789e",
+        "obligation": "d05e9b21-646f-4e1d-932a-ab8e5e570fcd"
+      },
+      {
+        "expense": "1c77736b-5d10-448d-a99d-0f48b8217804",
+        "obligation": "50af0dd1-4732-4da6-9b65-783f84ccb341"
+      },
+      {
+        "expense": "98628914-8746-42a1-b5c3-4dfd86c1f503",
+        "obligation": "281e54e5-2994-425c-b3ac-6efd3ca25884"
+      },
+      {
+        "expense": "73b373ce-2745-4209-a3e2-e7aa49a92a49",
+        "obligation": "43e0a9d2-931a-4b0f-9c6c-66f3b875d4a0"
+      },
+      {
+        "expense": "84751636-6fe0-4ca0-a180-92d1267524dc",
+        "obligation": "20d1c9ca-e594-42f8-8c4b-d82fae51bcc6"
+      },
+      {
+        "expense": "fdcfb65f-28b6-4de3-be1b-38745cdd8066",
+        "obligation": "9a7279ec-d830-4257-8049-be68bcba3fee"
+      },
+      {
+        "expense": "d303eaa5-5d22-456e-abee-8798467ca442",
+        "obligation": "7252626f-8a4a-452e-97a2-e38a091cd538"
+      },
+      {
+        "expense": "f85db73b-1d08-4458-9043-1c7fce864d9f",
+        "obligation": "036c0d2d-a22a-48b5-83d3-423e19123308"
+      },
+      {
+        "expense": "823c7332-4233-440c-99f4-83646a5fa32a",
+        "obligation": "f43356f8-beb8-4b7b-852c-de96e5b33987"
+      },
+      {
+        "expense": "47b97ee8-b9a1-4cf9-b73e-acc0fac39f7e",
+        "obligation": "f20609d2-513d-47d5-871b-ccf7dfc6b4e2"
+      },
+      {
+        "expense": "e1404ef8-be23-4fe0-a09e-4af2738af166",
+        "obligation": "41342f1d-513d-4eec-9c23-04ad673e107b"
+      },
+      {
+        "expense": "b8eba186-2bb0-4b62-811d-f35905609ef9",
+        "obligation": "7161d83d-8db5-4b1e-928d-af7844b1cddb"
+      },
+      {
+        "expense": "cbfb1a35-8655-4703-b8fb-02cf3b1503a7",
+        "obligation": "1fab73a5-39f9-4002-a2a8-6ef585b2ec57"
+      },
+      {
+        "expense": "e8748244-fc4b-48a1-8998-baffb17e87b9",
+        "obligation": "be8d8c75-81dc-4570-a470-c05e2ece641a"
+      },
+      {
+        "expense": "8bcd4637-ac55-4c62-839c-ff4fcaaee5e8",
+        "obligation": "d5c82280-7e96-43b8-886b-ea3ca8ea2c4c"
+      },
+      {
+        "expense": "a5011cc0-41a9-457d-8139-81f85cc4d2db",
+        "obligation": "d9247933-2d04-4d31-a2e7-84463c47ec2d"
+      },
+      {
+        "expense": "f036e1f4-374c-4dbb-a588-e6efdf493c45",
+        "obligation": "5a5b5d80-f8d7-4d6e-bda4-0b7ef6ce7e4d"
+      },
+      {
+        "expense": "b7498354-7d85-46e5-8d1b-3992c4687f2e",
+        "obligation": "2b89275c-617b-4f37-add6-8f7488f7de0a"
+      },
+      {
+        "expense": "8f7f5435-8e91-409f-9495-cebd99536d2e",
+        "obligation": "259522cf-a43a-4f49-b53a-2498b07ed76d"
+      },
+      {
+        "expense": "48efa6e1-380c-49fd-882e-b45a823f0aba",
+        "obligation": "7e3b82da-7e0c-4224-852e-b5a3d30181f6"
+      },
+      {
+        "expense": "8be68e09-23a7-4ca8-8109-61b34a8a1f85",
+        "obligation": "4ed8fc86-6b47-400c-aaec-094700b38474"
+      },
+      {
+        "expense": "4482c9db-6180-4cf5-870b-cbd7ebaebdc6",
+        "obligation": "26590d80-b854-4ac2-930a-bcaae3592388"
+      },
+      {
+        "expense": "d808c7b9-5604-4bb4-9459-95228c5e395c",
+        "obligation": "ad30eff7-4cd5-48f4-a4f1-3ad50ebaa3f0"
+      },
+      {
+        "expense": "4b6f3c33-6bc1-4b6d-b458-4155360f7b84",
+        "obligation": "65974190-f45e-431a-9e32-9adcf1798b19"
+      },
+      {
+        "expense": "de559028-d583-4d65-b775-1bf908237beb",
+        "obligation": "5e5c2f35-b3f5-419a-8d7f-da0847c2683e"
+      },
+      {
+        "expense": "f8762476-f830-433b-b3d7-48bc7522ff89",
+        "obligation": "249faaf6-ffea-40c3-8e3a-0bf69a7e42f4"
+      },
+      {
+        "expense": "fb95f868-338a-41a5-bf17-f1f4ac22429d",
+        "obligation": "f4b4ce64-16ea-4f2f-b6a8-d469a17d735a"
+      },
+      {
+        "expense": "0f87c609-8691-4d6a-a9fb-5e528d766d30",
+        "obligation": "92b4bbc4-7146-41f7-858a-dec84c8379ac"
+      },
+      {
+        "expense": "6be1e5cd-f9fe-4644-a639-5f3422b44f5d",
+        "obligation": "66c5a626-0c64-4847-b5a5-b60c1047b67d"
+      },
+      {
+        "expense": "f3b80fb9-e8e9-4e60-9e54-8f9dfc5ce891",
+        "obligation": "11c43130-4b0c-4550-bfa3-9da68accbe47"
+      },
+      {
+        "expense": "94806c8f-f7aa-45e0-9162-f480f052c087",
+        "obligation": "2276ed7b-28b2-4a7e-8101-c200f42b601a"
+      },
+      {
+        "expense": "dbd16d1c-27a5-42a4-9bbf-a3cd8590c971",
+        "obligation": "1ff487e9-07a4-49cf-b290-8214a47cbea9"
+      },
+      {
+        "expense": "eb5c2af9-63af-491b-9133-de836e187273",
+        "obligation": "408973a3-debf-4d6c-8eba-033fc0eae2d0"
+      },
+      {
+        "expense": "99d2ca47-d0df-4e9d-afb7-d7f297151b7a",
+        "obligation": "69af2dcd-41ed-4e5e-9bb4-6583ac87366c"
+      },
+      {
+        "expense": "4922795f-d1fc-4d8a-b017-0fc5ec0f5194",
+        "obligation": "c68b68fc-41d8-450c-be4c-6de16613902c"
+      },
+      {
+        "expense": "04f29f24-dca4-45b2-b675-e5f4e30517d6",
+        "obligation": "72fe9893-07a2-4643-9474-702ca957f1f2"
+      },
+      {
+        "expense": "f5b5446a-ee1c-4625-9f11-decffb810d94",
+        "obligation": "e0ca5198-a43e-498a-89c8-d88a814eee9b"
+      },
+      {
+        "expense": "899a0931-0c1a-4188-aa77-1c3aaac1dd62",
+        "obligation": "f30bb6a5-1809-4f3d-b890-646f79c9fc2f"
+      },
+      {
+        "expense": "99d57a10-7d4a-4ab4-b6b5-2f99e84d194a",
+        "obligation": "54e5a7d6-1249-41f5-84ce-f6b702fe5d00"
+      },
+      {
+        "expense": "82fc19f0-4a54-440e-8401-119be3a05501",
+        "obligation": "57908663-d969-4d21-ba0f-b7039a192e80"
+      },
+      {
+        "expense": "3ecf5e00-6025-43a7-bbcd-770f42c61ca7",
+        "obligation": "c90a19f9-084e-490e-ba97-58068c88a885"
+      },
+      {
+        "expense": "2674df00-c94b-449e-b49c-09b31340804a",
+        "obligation": "965dbb54-39bd-48d1-b2e4-58ec1e9e0b33"
+      },
+      {
+        "expense": "72967fe2-2ec2-4099-812c-1f84f7fb2efa",
+        "obligation": "3b98b701-4d0c-4352-beb8-133cb58686e0"
+      },
+      {
+        "expense": "20cd667a-aba9-4dd0-821d-e16562e94437",
+        "obligation": "a6a63ef0-d13e-44fe-897c-2004759889dc"
+      },
+      {
+        "expense": "f1f0f86f-6412-4db2-83d5-4805897aa56e",
+        "obligation": "2dc18f26-45af-41c8-9019-ede577199166"
+      },
+      {
+        "expense": "4ecc1fd2-7169-4237-8aa0-23ec52fbc47f",
+        "obligation": "ace0a0c9-9e6b-457a-9915-2358bb2decae"
+      },
+      {
+        "expense": "34d2de21-01d3-4495-8185-d99b8a57322b",
+        "obligation": "b827d599-0522-4e2b-b2d5-8e50b2aa30c5"
+      },
+      {
+        "expense": "2104612b-b9ba-4618-9f72-2ca4b276be7b",
+        "obligation": "0d461d78-378a-4f57-83f5-25a5e299f336"
+      },
+      {
+        "expense": "e4f89309-363d-4cf0-8913-72e8bdbd04d6",
+        "obligation": "0ef687f5-71aa-4a9e-a4be-05a2e165fddf"
+      },
+      {
+        "expense": "05d12a3c-eaf7-4f79-a537-6ef4ad5257c8",
+        "obligation": "6f09cf91-5b03-496b-af22-bd3da2aed23c"
+      },
+      {
+        "expense": "1f356710-b1f8-42f1-b002-1ad236042f8d",
+        "obligation": "3e1f4673-fb8f-4a61-8ce5-a3bddaa7613d"
+      },
+      {
+        "expense": "f605cb5f-47a6-4a30-bb54-08b36fc9e72b",
+        "obligation": "f6e60adc-49d9-4e65-a6db-b49abbdd5165"
+      },
+      {
+        "expense": "e59f5ad1-0586-40e7-bf33-ea691ed51ccb",
+        "obligation": "750fd02d-426d-45de-be8d-452bd58dc774"
+      },
+      {
+        "expense": "ea0f5f41-2c0f-4317-a8d4-6101109e9e50",
+        "obligation": "1849da4c-7378-4bf2-ab22-d66ed2997a16"
+      },
+      {
+        "expense": "377f8cda-d1d4-46de-a12c-ad0668d10bc4",
+        "obligation": "00110cad-3d38-48bf-af72-69b769b29de5"
+      },
+      {
+        "expense": "c27d1769-cbc6-48ee-9199-bb77a6477203",
+        "obligation": "3b26575c-8d4a-413e-9ebb-f63d89bd406c"
+      },
+      {
+        "expense": "35390d85-517d-4c5c-a466-e0e1da26f20e",
+        "obligation": "6b663666-a938-49cc-abac-9ea8dc467f72"
+      },
+      {
+        "expense": "c6a742e5-70ba-4a77-9c56-740fdb9b938f",
+        "obligation": "406b4839-4973-4a14-a948-fd4f7cb355d2"
+      },
+      {
+        "expense": "a6e9701e-d6dd-454b-aa7f-552caa881df9",
+        "obligation": "fc642dc9-b8b0-4953-b60f-4d77943bce75"
+      },
+      {
+        "expense": "6887de28-01b9-4102-bb8a-254bfe91f6c7",
+        "obligation": "abf71e06-65d9-449e-a5b2-447fbfaf8d88"
+      },
+      {
+        "expense": "1e3ca54c-dfed-49d8-94ef-5d14af68b2ca",
+        "obligation": "b1d12482-6646-434d-be41-639ef3fee024"
+      },
+      {
+        "expense": "6447cb9d-70ff-4dbc-9341-09a5da429848",
+        "obligation": "791a43ae-ce1b-4bea-bc48-d8088175cd86"
+      },
+      {
+        "expense": "2566ea09-d915-44f9-acb9-647eeeac88a7",
+        "obligation": "d40ad08c-b15a-45af-8ca4-8318e9bc79eb"
+      },
+      {
+        "expense": "79c9c84e-3a51-4209-8436-323d0a83475f",
+        "obligation": "c18afa50-6117-4f45-b1e3-b536af3df91f"
+      },
+      {
+        "expense": "01d17419-3a9e-4c33-beb3-f47d1b1619f8",
+        "obligation": "73c33004-93de-42fe-a4b1-a0dbca3e6772"
+      },
+      {
+        "expense": "f740a754-68b4-470d-86f0-6a8d47cd60d1",
+        "obligation": "098b6b3f-cfeb-4f22-b8b5-c750bb74dd0f"
+      },
+      {
+        "expense": "7eb9fb3c-1334-4883-bc67-ebc7e3ee6555",
+        "obligation": "95c9871b-1978-461d-a498-e04b6309f303"
+      },
+      {
+        "expense": "a4cfb891-5dd1-4817-834d-2c660a168314",
+        "obligation": "f3b01822-01b6-445d-bd9c-700985228ecd"
+      },
+      {
+        "expense": "f7c91c18-529d-4a55-9566-e27b1046ad45",
+        "obligation": "c3b42418-c88f-4c8a-a64c-10814b57827a"
+      },
+      {
+        "expense": "3e3f5bd1-c40d-46dc-a8e3-ab912e615730",
+        "obligation": "4ae5f834-606a-4b01-9549-b7cb248e2071"
+      },
+      {
+        "expense": "86e86f9d-7960-494b-8ef5-7e09141b6987",
+        "obligation": "e327a468-646f-496d-8ac9-8d0155ce5d67"
+      },
+      {
+        "expense": "9de0cd90-fa3b-4587-b31c-734a8dd69192",
+        "obligation": "40dfdf24-b6c9-45f9-b44a-b951b2631a75"
+      },
+      {
+        "expense": "859803d1-151c-48b5-b41d-4f8e4197031c",
+        "obligation": "5f1b7a41-78c3-4167-aebf-b098800cdd75"
+      },
+      {
+        "expense": "aca35438-20fb-4037-9937-47f4c29dc384",
+        "obligation": "ffb50722-ec04-43ea-a835-870e009ff2b0"
+      },
+      {
+        "expense": "49c0ea60-57cd-490d-9def-7ca64770a96d",
+        "obligation": "b3b7f651-c679-407d-bb9f-4c941bae7a18"
+      },
+      {
+        "expense": "4b98d7cf-445f-4f11-ba63-1c0c88eb6680",
+        "obligation": "941377fb-221c-4b67-b02a-67440d79ffb2"
+      },
+      {
+        "expense": "02464363-b8ad-49b0-9f2f-ee5f4c1e8dac",
+        "obligation": "238747f3-e073-4437-92d8-7ec4ec238ce3"
+      },
+      {
+        "expense": "9193263c-2bba-4253-87bd-d6f6e9dc3d56",
+        "obligation": "25b980fd-a8f1-4af0-94e6-63f0d1b38426"
+      },
+      {
+        "expense": "1f144f9a-325d-4562-888e-b4b476f2ff08",
+        "obligation": "9d617297-8cca-4f45-a578-de3f9dd8568f"
+      },
+      {
+        "expense": "0be16638-cd69-4253-8148-945cbeb3cd94",
+        "obligation": "26908574-9fac-4206-b8ed-cb28ee905a34"
+      },
+      {
+        "expense": "75018dfe-1348-437f-81c6-b60b10064be0",
+        "obligation": "2ed0ed42-8d3c-4cf9-86f7-23b3daf8a109"
+      },
+      {
+        "expense": "c87ce238-7ea2-4776-be81-b08700eed03d",
+        "obligation": "1e9516e6-25f6-4b8a-a7f0-d7779de87c6e"
+      },
+      {
+        "expense": "87e18492-8aab-4912-9ea4-396818044259",
+        "obligation": "ca6c458f-2e3e-4e57-beea-2130b7511b8d"
+      },
+      {
+        "expense": "0f6ca38d-ca35-4579-8d21-8636ca29f461",
+        "obligation": "b41826b9-f201-4fc5-abff-ed297127eac9"
+      },
+      {
+        "expense": "d600675d-5f26-48b3-bf60-8f1f2b851ede",
+        "obligation": "728f839d-9649-4d5c-8281-39748a53a897"
+      },
+      {
+        "expense": "45b73293-0c66-414f-b061-e676a4717c1c",
+        "obligation": "27bfdcfd-5d5a-4395-8001-8fcff4393258"
+      },
+      {
+        "expense": "59f41a82-a181-459c-9eb8-7319a572808a",
+        "obligation": "012f07b9-d3e3-4394-904a-fa3ddd66ad54"
+      },
+      {
+        "expense": "1abc9db4-41b3-4820-bf1c-9a55ee03185b",
+        "obligation": "ec53da06-0a7c-4f60-883e-101d5dc85808"
+      },
+      {
+        "expense": "0bbc5f0f-ba42-43b9-a9a7-15aac803341d",
+        "obligation": "c6a5593e-091c-4f72-9b7d-3202b1180d99"
+      },
+      {
+        "expense": "83b4747b-97e2-4f26-9fb2-127b58eb891c",
+        "obligation": "99667461-0f2a-4439-89fe-1b5d5cde25a7"
+      },
+      {
+        "expense": "5430111a-caef-4fd8-98b7-2c7fd4166a43",
+        "obligation": "f13785ce-03cd-42a7-a5dd-5818d13f0533"
+      },
+      {
+        "expense": "ca0def52-8e96-440f-9f9b-729e1ad7d2a4",
+        "obligation": "189f4da7-6a86-41ed-ac1a-88f377051607"
+      },
+      {
+        "expense": "36068fe0-d156-4e02-8241-5b89690f4da3",
+        "obligation": "4eab706e-dfd3-421e-aede-438770667b35"
+      },
+      {
+        "expense": "13a68cfa-d252-4b97-9128-9da3e600b9ba",
+        "obligation": "f11d7ffe-b766-4f2b-8148-51420e8bb76d"
+      },
+      {
+        "expense": "472ea3ea-ff75-4071-bf69-c051c89dbb92",
+        "obligation": "2b7b4d49-79f5-4bfe-ac4e-351eaaff6679"
+      },
+      {
+        "expense": "a53cc26e-c67c-41bf-a830-82d353e65b63",
+        "obligation": "78d90fee-d871-4007-8ccb-e979d0bdeb57"
+      },
+      {
+        "expense": "585f4fdc-e43c-4aa1-9c85-a85c0435cbc3",
+        "obligation": "bcf60342-3dec-409a-8f25-cd76c0dacb4f"
+      },
+      {
+        "expense": "5422c525-db9e-4e3c-bc45-feb37ee97b43",
+        "obligation": "46650e33-a596-4748-8fc4-b5194c4dc02a"
+      },
+      {
+        "expense": "bdad9ebf-a6de-4642-8d03-2e36fd960524",
+        "obligation": "ef2efaf5-32e8-4db4-9b6c-ce21a97a545d"
+      },
+      {
+        "expense": "bdc7874c-62bc-4bdb-b92c-2331f08ac202",
+        "obligation": "48a4e39f-2552-4ad7-a6f0-cb39cff4c27a"
+      },
+      {
+        "expense": "b8a45dab-bcd2-455b-9002-52b52089d351",
+        "obligation": "4c767d8a-d7dc-461b-8587-196542e8f546"
+      },
+      {
+        "expense": "f388da0b-fb56-4319-8175-07b74603cc2f",
+        "obligation": "60d3b844-7bb4-4bc0-b764-cef8f39cdebb"
+      },
+      {
+        "expense": "a78ea1c5-9501-4146-a4fe-c985993d1ad6",
+        "obligation": "9340a0b7-ba4c-48c1-9d92-73c85ed6e5a9"
+      },
+      {
+        "expense": "efcf10e6-a8ec-45d0-9db4-12c08e8c43ca",
+        "obligation": "489b5387-a6e0-4527-bc5c-68dbeb4a7a9a"
+      },
+      {
+        "expense": "f9dd1748-afed-4226-b68f-6d517497fb7d",
+        "obligation": "6596af4b-7e3c-43b1-bccd-a9b400320fb2"
+      },
+      {
+        "expense": "9bab63b0-4c35-4604-b0a6-9b3e9fde8cb9",
+        "obligation": "dc509614-a0ee-4e1d-9918-541a8fcd65c7"
+      },
+      {
+        "expense": "23664024-5882-4124-87bb-dbc63c8daf15",
+        "obligation": "b1f8245d-bb9f-4f1a-b808-f559447a5f9f"
+      },
+      {
+        "expense": "c90df1ae-f5bb-4656-a8fe-1b14f2b9d04a",
+        "obligation": "ea8207ee-1b64-431d-bbd5-b8dbe1916dbd"
+      },
+      {
+        "expense": "b87651e8-ab63-45dc-9688-6755836b3e4e",
+        "obligation": "df6a2d04-dcc8-4b48-9042-02e3bad52427"
+      },
+      {
+        "expense": "3c17191d-4141-4ded-aee6-d544cfdf037e",
+        "obligation": "b1bf95d7-abee-4dfa-be5b-0dbe0ba8fb64"
+      },
+      {
+        "expense": "13bfc7f7-09c2-481a-8b08-d752941cae15",
+        "obligation": "8720b418-929f-4f65-97f4-891351ec77ef"
+      },
+      {
+        "expense": "3a4770ea-0273-4e76-a08b-599b8bf5b838",
+        "obligation": "8adf7c80-2717-4469-8096-7c8f5a2809cb"
+      },
+      {
+        "expense": "456c464c-c0fa-4d3a-8c4a-0fa179284677",
+        "obligation": "343218e0-daa4-4641-945b-81cd34c7c3c9"
+      },
+      {
+        "expense": "46422e36-b5de-48be-8d6e-26c381d0d9a5",
+        "obligation": "4d15ab9c-1265-448a-8870-e03c2b503f9b"
+      },
+      {
+        "expense": "167b633d-5dbd-4d8e-9a85-18eee67ce000",
+        "obligation": "22419ab4-36a6-414d-816b-db3afecf2577"
+      },
+      {
+        "expense": "bb9eb25b-19a0-4505-a230-c01b45d4096f",
+        "obligation": "0790d4ce-7533-4a96-bc87-90d03ae9b5de"
+      },
+      {
+        "expense": "31d82acc-055b-4319-a0ea-f6321a496987",
+        "obligation": "231b9a30-3b81-4dfb-b013-b9098f5b838b"
+      },
+      {
+        "expense": "8ab2b1bf-73f5-4480-be5d-216b279801e3",
+        "obligation": "5307ebe5-a11a-44c1-a451-54ae7703d4e2"
+      },
+      {
+        "expense": "16b0b879-20a0-4c7a-aeee-ba348db2dd68",
+        "obligation": "361ccac9-4ad1-458a-a6ba-d48869f7c804"
+      },
+      {
+        "expense": "8aa0d1bf-b20c-4e1f-bdbc-81bcbaed53d7",
+        "obligation": "75a35298-0382-4767-9c80-7a1ca2b19262"
+      },
+      {
+        "expense": "e0552e20-01a8-4444-8a38-f01e7d24688c",
+        "obligation": "e7189036-200d-4dc2-823e-b63201d5a12d"
+      },
+      {
+        "expense": "5e757434-7a2b-474a-9740-541d1a64afb1",
+        "obligation": "ada82cdf-29f1-4f7c-9f25-1d0173d6a85f"
+      },
+      {
+        "expense": "cb56d15a-66b6-49d4-9ba6-99090e9704e5",
+        "obligation": "10ae4547-791b-40a0-bc6f-8458934c3268"
+      },
+      {
+        "expense": "07a2c975-d794-4ef2-99da-ca8b5d7d35f2",
+        "obligation": "8f98c879-3cdc-44ba-bacb-cb92295782d9"
+      },
+      {
+        "expense": "2e168ca2-ff86-4ee6-99ac-5b8bcbff8f0d",
+        "obligation": "89474120-2634-4361-8436-e15044c6a6d3"
+      },
+      {
+        "expense": "bb78ebdc-98b9-492f-abc5-f49165456b19",
+        "obligation": "fc0d40e9-77cf-4105-84ec-2f3348cbbe95"
+      },
+      {
+        "expense": "df34a62c-87e1-4ec0-aa04-cfb2e2ff0dd6",
+        "obligation": "3f0096f6-d232-4298-add7-f67d8048e6ff"
+      },
+      {
+        "expense": "eb607ba4-b184-474a-9f9d-6e9f3cca711a",
+        "obligation": "8222095e-0f28-487b-b249-2228711425e2"
+      },
+      {
+        "expense": "b2eb2b81-4a5f-4cab-844d-89f781edb6f7",
+        "obligation": "58861aab-574a-47d1-bdc1-0d210ade6450"
+      },
+      {
+        "expense": "4d1076b5-aac9-4da7-941f-e779bed3e13b",
+        "obligation": "8deaa97a-45e8-4f71-98b4-1ad02b562d97"
+      },
+      {
+        "expense": "0dc468ee-dd04-4b1f-a3af-bda4293e0cb5",
+        "obligation": "8a87cfdf-5bff-40a8-80e3-1f0854d5ee17"
+      },
+      {
+        "expense": "84f71c3d-f5a8-4fa9-84d1-ca33fcb46d29",
+        "obligation": "5d587400-5707-4aa3-90cd-61afc9aed195"
+      },
+      {
+        "expense": "75fb4795-442f-4daa-a61b-18a92b13eb89",
+        "obligation": "071c3aec-8ea8-4b38-b317-921503fe8656"
+      },
+      {
+        "expense": "a6764595-6bb2-48e1-9dee-58ca45f3342f",
+        "obligation": "cb2ae39e-7ec1-450b-ab9e-7acd71f696af"
+      },
+      {
+        "expense": "cf855aed-5938-4261-ab1c-c6aa38a6ec23",
+        "obligation": "a7d41ec2-d2e6-4204-8677-4eb04fc5859b"
+      },
+      {
+        "expense": "1c3fbcf8-93a1-4470-b0d8-bb8281a6e9c5",
+        "obligation": "beeac545-1d32-4575-92a7-7e40ce234c3f"
+      },
+      {
+        "expense": "55d22295-e90e-46d0-a329-1e6aa357ecca",
+        "obligation": "e1c28dba-51a4-46fb-be2d-93622975f321"
+      },
+      {
+        "expense": "a95e28eb-fafc-4304-b8ba-5a69a8610e7b",
+        "obligation": "ef0c0fd5-8ea8-4ae1-b96f-9f6b4260dafa"
+      },
+      {
+        "expense": "7e4523d6-cded-49c4-b978-f7815c6f2fef",
+        "obligation": "d971440c-c3d4-44d9-9d1f-53165b0f01b4"
+      },
+      {
+        "expense": "9015ecc1-2acd-49fe-8767-df11d7e669ee",
+        "obligation": "50eaec03-5408-421e-8f74-be68b046cb97"
+      },
+      {
+        "expense": "54c82ccd-133c-43c6-ac32-885aee5bd824",
+        "obligation": "f799a573-463d-4980-93f2-3de34e9bbb75"
+      },
+      {
+        "expense": "7ea2014a-bf71-4dc0-9516-b84aa6b6a3e0",
+        "obligation": "051fd939-a18a-4a75-858f-74aaf6bccad3"
+      },
+      {
+        "expense": "60bf767e-2a0b-49fb-9940-64e1264fe898",
+        "obligation": "19eb78f4-959d-4dc1-b18c-0787e7629621"
+      },
+      {
+        "expense": "213fcc90-ddfc-4c81-9514-2dfb9f422229",
+        "obligation": "030f0fa8-9464-438a-a00b-45a1383504c8"
+      },
+      {
+        "expense": "b5e19893-6411-4133-80f6-c69ffc11dc1c",
+        "obligation": "5f8838aa-2b81-4080-94c8-1ffa7c963804"
+      },
+      {
+        "expense": "568f9c39-f59d-4d25-81c9-863b4cb64481",
+        "obligation": "9c850adf-ae9c-4106-8d29-694e3eb130d6"
+      },
+      {
+        "expense": "bd1afd1c-7224-45e0-a9a4-146713d7270b",
+        "obligation": "e7807469-93c5-4393-9af3-1d69c1549af9"
+      },
+      {
+        "expense": "f4951698-290a-410c-8257-ca14e1254018",
+        "obligation": "480bd2e3-f4ee-4e90-9a40-f902a5876c46"
+      },
+      {
+        "expense": "32178558-c2fb-4846-845e-9b28aba27448",
+        "obligation": "b6226b5b-b12b-455f-b9d9-0e9952511c87"
+      },
+      {
+        "expense": "2cd988ee-4aab-43fd-911f-0e8d98e50162",
+        "obligation": "9fc9bb35-8b0d-408b-90e9-22237001cc6e"
+      },
+      {
+        "expense": "f048cbd8-fd0a-4fc0-9191-1740bdb2ecba",
+        "obligation": "807a0f19-ede0-44ac-a1ab-c1f92e229ad6"
+      },
+      {
+        "expense": "1be236ad-a1e8-4390-b6fb-55651ed277df",
+        "obligation": "982db64f-e29d-4169-9222-8bedcf69a2b6"
+      },
+      {
+        "expense": "68d07a1b-e17d-4f98-82e9-6a71ac07872f",
+        "obligation": "b0f33435-1de2-4179-9706-5042ddfac8b4"
+      },
+      {
+        "expense": "50f93dff-c781-4749-a579-aa8495d85dc2",
+        "obligation": "b8cdc02d-09c6-4280-94ff-48de959be637"
+      },
+      {
+        "expense": "d45770cb-44b9-41d5-9c0b-533bf99cf25b",
+        "obligation": "5f16bd38-896c-45e4-bfd9-b1704c717b23"
+      },
+      {
+        "expense": "14b8b078-9ad9-40c8-8f6c-e57cbb6e32df",
+        "obligation": "4dc4a51f-73b0-4920-b6fb-37018657a3b5"
+      },
+      {
+        "expense": "8227bd54-6b0c-49aa-9bca-bc8afae76405",
+        "obligation": "50f1e269-227d-4070-aaca-583d27c3f2bf"
+      },
+      {
+        "expense": "43a4d5c6-72ba-4a04-a736-bea988c0b0dd",
+        "obligation": "080c5b68-4e9d-40be-adb4-a6468aa79aed"
+      },
+      {
+        "expense": "b5b6fd82-4bd8-4308-ae7f-ff5b00634c6c",
+        "obligation": "0e99e6b0-a12d-4aaa-b6fc-953760ceae63"
+      },
+      {
+        "expense": "d4e02182-4632-4d54-b01d-9cdb44c1b826",
+        "obligation": "4834ed97-7ea2-4c3e-8841-f6750d02a7ca"
+      },
+      {
+        "expense": "1a5ccfff-7408-42b2-91f5-ef9cbbb209f0",
+        "obligation": "64911799-9428-4ba9-92a5-7e59eb2f65de"
+      },
+      {
+        "expense": "c72b1541-ae6c-4226-ab57-74710bfcc25d",
+        "obligation": "601a277a-b2f6-450e-925f-06b94ad2c435"
+      },
+      {
+        "expense": "6d38ee97-dec8-4a55-abde-07fe06df3e57",
+        "obligation": "b9be21f9-d76f-4eca-bdbe-1c0cdcb7b08a"
+      },
+      {
+        "expense": "08d23473-1ff7-44d3-b23d-87d8d53e7fe1",
+        "obligation": "6fe0b8d0-e50e-43c1-a62d-bd9b59e2247a"
+      },
+      {
+        "expense": "6b0e0bd8-9d96-464d-b757-e245ec9d20c6",
+        "obligation": "59dce65e-62ee-42ac-ad48-3cd0fc26effc"
+      },
+      {
+        "expense": "739888ee-b2a2-4124-9c83-f127ecb0e4c6",
+        "obligation": "89cf1f52-aad5-4a59-b330-7d8e9203264c"
+      },
+      {
+        "expense": "2a0e6843-b242-419e-ace5-a578bc694bcd",
+        "obligation": "cfab1c31-fbdb-4f46-9b82-4b6a88d2ff1a"
+      },
+      {
+        "expense": "6f25cc60-7cde-424e-9641-d3a772854207",
+        "obligation": "b39f5365-a9d2-4436-ac5b-e5ae79ec9a25"
+      },
+      {
+        "expense": "92e2a3a6-fb78-4d09-a407-d2dd0a5edd41",
+        "obligation": "832ae7e7-420e-41d6-b214-cbabe9fce19f"
+      },
+      {
+        "expense": "dede7093-ea84-4589-b153-d8f49807ac88",
+        "obligation": "502113b1-7fd0-4fe3-bbd2-3992fca9fb75"
+      },
+      {
+        "expense": "eb9cb1f6-265f-41c2-8c55-1b716595f7c3",
+        "obligation": "4f433134-3f16-4cf9-b83a-32688491a9f4"
+      },
+      {
+        "expense": "bb1c91f5-1b6e-4c85-abfe-b574656efcc1",
+        "obligation": "dc9c20e6-c94c-44e9-8e50-961a2dbd692b"
+      },
+      {
+        "expense": "961a8605-47e9-40a4-a658-24d1166b1f5f",
+        "obligation": "6cb6bc96-6f19-4200-b89c-ea29e480f91c"
+      },
+      {
+        "expense": "2e967181-8c3c-47e8-b61e-7177663177ed",
+        "obligation": "8874cfce-8fb2-4510-a4cf-8e0bcc512396"
+      },
+      {
+        "expense": "f50c417f-980f-482f-936b-27bf09eac990",
+        "obligation": "5ff4cefd-b769-40cf-815a-87838ba5e980"
+      },
+      {
+        "expense": "66b4a701-5970-4e49-aedd-527664691c4e",
+        "obligation": "1aae3ff1-06bc-44a7-9e2b-cd43f071797b"
+      },
+      {
+        "expense": "6c13103d-37d0-4153-9242-e6e351eab387",
+        "obligation": "98c39009-c1c3-4a1a-92fc-7536219fdb1c"
+      },
+      {
+        "expense": "5dbd11c4-add0-44c4-a486-62e423451545",
+        "obligation": "afc623d3-67c6-484b-9bf8-4b7ca40d843b"
+      },
+      {
+        "expense": "a526049d-5faa-43dc-93eb-d1199ed6042f",
+        "obligation": "f40fab5f-ec2b-42d9-8269-0947af337435"
+      },
+      {
+        "expense": "d5cb9a36-b343-4aa8-9eb7-05be01d0db86",
+        "obligation": "af47b699-9476-4ccf-8098-7503f32ec511"
+      },
+      {
+        "expense": "4d95cfd0-da53-4a94-8a4b-c28b5e7283c5",
+        "obligation": "238a75ed-2b7f-4ee4-b9ff-8e0a8b34bdda"
+      },
+      {
+        "expense": "aa52255c-3a56-42b6-8e73-ab92058f1b0a",
+        "obligation": "8b9b344d-4f45-40d8-bc09-3952ff7a2854"
+      },
+      {
+        "expense": "8b10dfa8-90f7-4e60-ba69-3fc07db88921",
+        "obligation": "6f01e0cc-b0fe-45fe-8641-eadf72c2fbe6"
+      },
+      {
+        "expense": "e74eac04-8bc2-430f-be84-f876f0376d48",
+        "obligation": "e8daf834-6145-4002-9796-7ec5bd892fbe"
+      },
+      {
+        "expense": "cb0584d6-155e-46e9-8681-c7ff71cf71ab",
+        "obligation": "9e5b60ad-41d5-49d0-a185-dd3df83a2156"
+      },
+      {
+        "expense": "dde64b34-cbec-46d9-9cf6-5d6e1cb125b1",
+        "obligation": "7a144f1c-befb-4851-8ab5-b36e421cd2a2"
+      },
+      {
+        "expense": "213f51cf-f21d-4e6e-b57a-2b7d25a515d5",
+        "obligation": "715fb226-5abe-4f7e-9515-15e991c842a6"
+      },
+      {
+        "expense": "f3aab92c-34a5-43c9-b7e0-a81463d45aaa",
+        "obligation": "b261e21e-e8dd-4947-b627-03d085cef1f1"
+      },
+      {
+        "expense": "a65272d9-922a-4a7f-b86d-755d50717cc9",
+        "obligation": "2acbee44-fb18-4506-a3cb-4e86b225ffde"
+      },
+      {
+        "expense": "daba562f-5280-4d28-a8df-6ca1888343ea",
+        "obligation": "65429f67-c110-4eb4-b8d9-d22a0e1b6e0e"
+      },
+      {
+        "expense": "5159f068-d298-42e3-8b0d-61c192133f9b",
+        "obligation": "456bf7c6-15c3-41e5-b272-9299c5fbf097"
+      },
+      {
+        "expense": "88b137da-f01e-41a9-869e-b657b5100095",
+        "obligation": "277f7a22-e995-47e0-9b85-411769e4e7a5"
+      },
+      {
+        "expense": "783d5e6e-7e99-4b03-99ba-4174415fbafd",
+        "obligation": "1a92ec1f-0214-4926-8c87-ad3148737a27"
+      },
+      {
+        "expense": "1f92a699-7a7b-45ed-9a06-260f22417ea9",
+        "obligation": "c5bba4fe-bcfd-4fe1-9067-e61b00e4cc75"
+      },
+      {
+        "expense": "333e2139-3941-4fe1-9fcd-cdd6336d49d8",
+        "obligation": "007f918f-4a5c-458b-b038-fa54ec26f97e"
+      },
+      {
+        "expense": "3e658922-5010-408c-a43c-3c99c44a129c",
+        "obligation": "4e26a472-3b7e-4b6c-91c6-1e3607de3779"
+      },
+      {
+        "expense": "f5e66975-1a39-49fe-9f6f-58c883471407",
+        "obligation": "fc7f15c6-37a9-4999-aa82-668a587d2ba4"
+      },
+      {
+        "expense": "f4621491-f418-459f-bb08-48956c3e3f5c",
+        "obligation": "aed68ef6-6f73-4e45-ab87-0718f20aaca9"
+      },
+      {
+        "expense": "1537284a-a754-4895-a1fc-2594473a28bd",
+        "obligation": "eef46093-2ac1-4f69-8efd-ed9cdca18800"
+      },
+      {
+        "expense": "f9d89e16-59a4-430a-8cbf-b897abfa8f27",
+        "obligation": "4224c544-df03-42d3-99b6-57948da9e061"
+      },
+      {
+        "expense": "d33b50ac-5460-474b-8736-18bf7c083ef3",
+        "obligation": "3227b78f-823b-49e1-94e0-b91098eff381"
+      },
+      {
+        "expense": "7755f925-1316-4178-8fa2-228efd532419",
+        "obligation": "fcd1bdf5-c0f8-4be9-b45e-4ad979d7d767"
+      },
+      {
+        "expense": "63663185-09a3-4093-af6e-e93327fcbd45",
+        "obligation": "7a3f3e2d-5440-4bba-82b8-f3e956c34f4d"
+      },
+      {
+        "expense": "79c3669c-41cb-411e-9e8d-5e60a5136b7f",
+        "obligation": "ddbf3e0a-ca80-4d72-ace1-9fc8ea44e63f"
+      },
+      {
+        "expense": "b2161ab6-fb02-4295-bd88-761c7e7957d0",
+        "obligation": "6dccce49-59b3-4a24-9471-21d11e476582"
+      },
+      {
+        "expense": "271262f5-07ed-4274-97f0-e17f933d7a42",
+        "obligation": "4647fe3e-9837-4158-a37d-61e4a417e421"
+      },
+      {
+        "expense": "a451f0b1-f046-442c-a7a7-a98428e67616",
+        "obligation": "5be80ff5-6a67-492f-85ea-2c29d7d42731"
+      },
+      {
+        "expense": "06b10149-06c2-4ef2-b8c7-3c4755275623",
+        "obligation": "25678f3f-9863-4c1c-953c-fb6bcd2faebe"
+      },
+      {
+        "expense": "afc9f665-a972-4572-980b-5f662d878dca",
+        "obligation": "b2a2f949-beb9-4405-9ed9-b3b3d6b83cf9"
+      },
+      {
+        "expense": "61882689-35a5-4b6f-be9b-72bdfa5141fa",
+        "obligation": "98ff374b-64d2-4ca2-ad62-7ec62e6e1b1f"
+      },
+      {
+        "expense": "403cfe27-4903-4269-8cae-72aef8d13510",
+        "obligation": "17616f98-dd4e-43f6-8d49-8782015fee35"
+      },
+      {
+        "expense": "e9224c96-3923-4f93-9a82-2e5891d7303d",
+        "obligation": "9d57b171-184f-41bb-90b7-560d37a6a5fb"
+      },
+      {
+        "expense": "d0b4039f-e66c-4c2d-97a5-0dbba6cca8bb",
+        "obligation": "1173d654-1504-4ef2-907b-9df14c32a7d7"
+      },
+      {
+        "expense": "88f34356-5a2b-4996-bc7c-02bbb8bc8a6d",
+        "obligation": "e5874760-f536-4900-9fdc-01043512ded9"
+      },
+      {
+        "expense": "ad1c7d0d-0fee-487e-ac13-b45389e2eab6",
+        "obligation": "33e954f2-2f73-411f-aa18-28cfba6780b4"
+      },
+      {
+        "expense": "b353a3b2-665a-4ef6-805f-ddf1fc61d770",
+        "obligation": "b6c06395-01ba-49bd-82e5-ae0e7b2a71bb"
+      },
+      {
+        "expense": "6eef7327-26ad-4deb-9b6e-b2b8c088843e",
+        "obligation": "06aa7b07-7c1e-4c67-8273-7f0a5b80dc8b"
+      },
+      {
+        "expense": "bc56b110-ea86-43fc-bef9-c3a57ae6d0d1",
+        "obligation": "f920de80-7890-420d-abe2-42328b82627c"
+      },
+      {
+        "expense": "0627fff2-0256-4332-8409-46aede8b14e8",
+        "obligation": "0cddfb3b-0fa3-4740-8d00-327e378ec4bb"
+      },
+      {
+        "expense": "909378cf-5c72-4bc4-a4e7-c8439631578d",
+        "obligation": "a3a6afd9-9b89-4ab6-ab46-299e15229aec"
+      },
+      {
+        "expense": "1d2d7c8c-74be-4112-849e-aedaf81ddcfc",
+        "obligation": "55dc8e80-5b8a-4f37-bba0-52e725c24b90"
+      },
+      {
+        "expense": "a7fd8a12-9bec-440e-ac9f-0c9d2530d893",
+        "obligation": "59640f95-5fcd-442b-90e8-c7fe3c017b06"
+      },
+      {
+        "expense": "931d3785-1436-4841-9df9-aa8b6c71e042",
+        "obligation": "649aeca3-3ad2-42fb-9697-74c0dd40483a"
+      },
+      {
+        "expense": "28a483b8-7780-4c88-91fd-a8eb68cfabce",
+        "obligation": "75a11cc4-9836-4524-928f-535bbc6a2dff"
+      },
+      {
+        "expense": "171a3377-6913-4e0c-9be1-22fc2edfed4a",
+        "obligation": "635df6c2-d550-497f-a011-c3f00ab939f8"
+      },
+      {
+        "expense": "88df99f3-a9f7-4046-b500-96a0f0fbc050",
+        "obligation": "160612df-c903-4595-b9d8-0b212c77b83b"
+      },
+      {
+        "expense": "d4fff168-f1b2-47d1-bcf1-8f2fdb0c383a",
+        "obligation": "8823f4b2-f3bf-40f4-9c5e-4bf7669123d1"
+      },
+      {
+        "expense": "d00a3613-f5d9-4477-b127-60c0394ecacc",
+        "obligation": "3552e941-667d-42d3-9a7d-fb9efd53764e"
+      },
+      {
+        "expense": "ad58ab21-23f3-438a-9616-3deef5e6b651",
+        "obligation": "a6ea7e65-a025-42b8-883b-2c6cbdf6c499"
+      },
+      {
+        "expense": "b3b048bd-f529-4137-9dbe-655140c7592b",
+        "obligation": "de3a8c3f-c3eb-42a4-9ded-f135964d1452"
+      },
+      {
+        "expense": "129deb78-c017-4f86-9e68-5e4fb53e77bf",
+        "obligation": "912a9829-61c2-4ccf-b077-caa9aa93a408"
+      },
+      {
+        "expense": "884dd4bd-5185-453f-b1e0-f02714cddbdd",
+        "obligation": "2b097291-e64f-43a4-acae-022811875f6c"
+      },
+      {
+        "expense": "45fd146d-9bc6-4c22-9b5f-02b6531a89b7",
+        "obligation": "063968c8-9b8a-4069-b023-95749d4b77d1"
+      },
+      {
+        "expense": "0312405a-488b-4aae-9810-4109f7dde608",
+        "obligation": "dce6e1ba-1347-4561-aab8-1cae59b2ed96"
+      },
+      {
+        "expense": "e2d68d97-8984-435c-a6b0-127ff10f0a9c",
+        "obligation": "f5084af8-43cf-476e-904b-d420d52f6820"
+      },
+      {
+        "expense": "54cfa57f-f35c-40cb-a199-f143367327f2",
+        "obligation": "351dbc1c-4de9-45c9-b6ce-3d78a23961f5"
+      },
+      {
+        "expense": "026e7f13-d46b-461a-b77a-432b5521fd20",
+        "obligation": "dbb7d420-b3d5-41c0-ae3e-48720eb03da3"
+      },
+      {
+        "expense": "7b873d92-697e-4426-80d6-897d1829b8d0",
+        "obligation": "c2df89c8-a491-46a2-b908-d922df4aec2b"
+      },
+      {
+        "expense": "84fa5546-9ee0-47db-8f40-5a3e057cf80a",
+        "obligation": "dbf529ca-c6c5-42ef-b7d1-ed3bdee7bbfe"
+      },
+      {
+        "expense": "23b5678d-f1ba-4684-96d5-13167b9e34b6",
+        "obligation": "578837eb-dfc8-4ccb-88d0-510dc14d85bc"
+      },
+      {
+        "expense": "4319f219-9c63-4d94-b9e1-ee7b971e7359",
+        "obligation": "3bc3d6ab-ac76-4c4a-853e-52bcd8a4748d"
+      },
+      {
+        "expense": "94af88f5-7625-42a8-acbc-a479916055f0",
+        "obligation": "128588c8-2775-4edc-84f1-512e76176c07"
+      },
+      {
+        "expense": "5c11a687-655a-4fc7-8df0-d64178a90d92",
+        "obligation": "b468d1a2-6202-4acd-a50d-0c218f6808df"
+      },
+      {
+        "expense": "06448214-8815-4391-a68e-ed5975ba538d",
+        "obligation": "863feda5-19d3-4fed-8cbc-ca9095fc8f66"
+      },
+      {
+        "expense": "6ef08a02-f5b2-4206-9faf-f60ef126542e",
+        "obligation": "f8304785-f412-493a-bfc1-d5a1a43503bf"
+      },
+      {
+        "expense": "03eaaf9e-1f82-45d4-b2a9-b29324ffb01c",
+        "obligation": "5d878f83-feda-4206-b991-ba1a877eac01"
+      },
+      {
+        "expense": "01167b38-6bfd-4f5d-95be-ccc29ec52bc2",
+        "obligation": "64080eba-d49b-4191-ba0c-f0f012ec85b5"
+      },
+      {
+        "expense": "ad9e0914-6ad6-4f96-a233-457926c40b7a",
+        "obligation": "80a4b66b-c5a8-4d16-ba4a-cea0333278ea"
+      },
+      {
+        "expense": "5060831f-1f5e-435d-8138-0d5ce60fda2d",
+        "obligation": "fa7f0a3a-1db9-43fb-9624-42921039f6f5"
+      },
+      {
+        "expense": "a3219bbd-566f-4cc0-8d9e-ba95b1b4ec12",
+        "obligation": "129d2ee3-72c0-44d6-8943-1733030fe6a4"
+      },
+      {
+        "expense": "e12252f8-4838-4dfa-a86d-7128cd29b14d",
+        "obligation": "92fe3983-36a4-4e1c-8398-fb8b3ffac30d"
+      },
+      {
+        "expense": "603024dd-eeb2-4f31-aef5-6c5fb5a2dca0",
+        "obligation": "73ac842c-4ee9-403d-babd-6bde2af49414"
+      },
+      {
+        "expense": "13cd98c3-d2f2-4e29-907d-a1c7f36f5afd",
+        "obligation": "21c5ad06-71d6-4fed-adc3-440bd1de4829"
+      },
+      {
+        "expense": "688d06a8-84e7-42b2-ba2a-1f2f8982032d",
+        "obligation": "abe1c945-3d3f-4058-8b1b-bd1aa4d3ab35"
+      },
+      {
+        "expense": "302c1070-4a26-4083-ba7d-efd536ca0b52",
+        "obligation": "d586459a-98f0-412e-affe-eea58df718dc"
+      },
+      {
+        "expense": "e828403c-244d-4ac9-8753-a8010f044f0e",
+        "obligation": "d09090db-62ed-454d-99a3-f6c5f1f9c8b3"
+      },
+      {
+        "expense": "4ff51790-c58d-4543-b804-7e9cf0a7500d",
+        "obligation": "3a6c9832-bb60-49ec-86e1-e016c16c86cb"
+      },
+      {
+        "expense": "974c708d-c4fb-4b4a-817b-1b505cc77433",
+        "obligation": "ff5d7b39-1789-45a6-9290-25d427101d7c"
+      },
+      {
+        "expense": "627b0895-ce15-4ba6-a145-7eaaf0f73e09",
+        "obligation": "84ef91ac-70db-407f-ab52-68bfe8e0f0de"
+      },
+      {
+        "expense": "3352e1d2-9126-4a1e-917c-eaf171f446da",
+        "obligation": "8ca15f70-c64f-46e5-8fe2-23b2bf3a3817"
+      },
+      {
+        "expense": "bb6ca10f-0d4c-43bc-8eb1-350845bfb290",
+        "obligation": "889b40fa-104b-40d0-8c67-5a1124c43e35"
+      },
+      {
+        "expense": "6a207b79-ce12-468c-bc65-b5f0c0c5a30b",
+        "obligation": "e2e1c1c2-0437-4018-963d-6b7402b7a701"
+      },
+      {
+        "expense": "c1057764-e277-4a95-9bd8-4cf28d181863",
+        "obligation": "d27dfc0d-c5ba-4da1-b222-4c893c963711"
+      },
+      {
+        "expense": "1c064789-fc17-4a03-b513-73ab6affc751",
+        "obligation": "da45d8fd-cc0b-41ee-b702-9351c065ad3a"
+      },
+      {
+        "expense": "ae4e2776-3311-458c-b72b-fa4ed74bc844",
+        "obligation": "b2c46edc-01f6-4865-bc4e-8881556c52e2"
+      },
+      {
+        "expense": "3775c88c-4126-4c1f-adee-dc1d041fa874",
+        "obligation": "0dce7821-ea96-46c4-82f2-1c6a7d1117c3"
+      },
+      {
+        "expense": "bbbee2ed-a46b-43a7-89f0-72af71fcae88",
+        "obligation": "2ecdc9ec-c54b-440c-8db7-8d28c2cb5a07"
+      },
+      {
+        "expense": "18b2464c-dc43-40d9-a1af-e64f6f456fbf",
+        "obligation": "9f32b4f8-58c7-4b0b-81d8-c59ccfa0aee2"
+      },
+      {
+        "expense": "e22fb22c-a746-40b3-b16e-efb644f531b6",
+        "obligation": "1cd11104-a453-4039-8c5e-86bf440bd3a5"
+      },
+      {
+        "expense": "f549e1d1-f5c2-4533-a046-a1ba1d9e50bd",
+        "obligation": "83740182-fe82-4957-8e82-e2d05042a933"
+      },
+      {
+        "expense": "dc23d7d1-93c1-4160-b34f-07e7d0a2125f",
+        "obligation": "61813bc1-80d0-41b7-9fa8-efc80a0d04c2"
+      },
+      {
+        "expense": "9b79fa3a-d434-4ce4-996d-6ec11abfabdf",
+        "obligation": "1dd4463a-9d3b-4fc7-8700-734f9ece26fd"
+      },
+      {
+        "expense": "40ad92af-b30f-418b-8431-004719a529df",
+        "obligation": "fbe3a034-9e25-4d94-9d94-b0df4c6b21ad"
+      },
+      {
+        "expense": "eda089f4-7dd3-40ce-8682-fac5d46b199b",
+        "obligation": "718b6d01-6422-4c61-a6e7-36f8c03d8c5f"
+      },
+      {
+        "expense": "75c9fe71-6eb4-4210-87e1-4ed9b856a0c4",
+        "obligation": "7c402df2-0952-4254-8a63-0df7b88e4b4d"
+      },
+      {
+        "expense": "aa108516-701c-4a54-abaf-8b15c56126c5",
+        "obligation": "b9a4e3e6-36fd-450f-ba76-81fe9a6e7aec"
+      },
+      {
+        "expense": "0e3c9459-4703-4e6e-9f77-8642a4f7a900",
+        "obligation": "8f3a0bcf-0e7d-4c38-a3a8-b8708df68733"
+      },
+      {
+        "expense": "0b2668c3-993d-4d05-84f2-d28a6c1ad6fa",
+        "obligation": "2fd850f5-a374-4a35-8e9f-34d521d1f75d"
+      },
+      {
+        "expense": "6e3aa5be-1ba5-4da1-b545-fcedfebb0652",
+        "obligation": "aeaa7d0f-eb78-4171-b456-65188d906040"
+      },
+      {
+        "expense": "ddc3eb92-0f13-4216-b29e-54efcb9e5853",
+        "obligation": "c1789418-e5f2-4b96-9a6c-50e42901ccbf"
+      },
+      {
+        "expense": "7209aa89-20a2-401d-b34a-a97ed3855aec",
+        "obligation": "8e77e70b-bdaf-4fd7-a38d-3140f6659045"
+      },
+      {
+        "expense": "1d00f594-4397-475c-88fb-808e565bfbcf",
+        "obligation": "1afd60e4-dda0-40c5-adf9-2e03479790f9"
+      },
+      {
+        "expense": "3387ba50-88b7-48e4-b4ab-243cb3c477ea",
+        "obligation": "c1344ddb-f122-4eb8-98c6-8f23b204751e"
+      },
+      {
+        "expense": "4d3ed51a-072e-4dd8-844c-c495b2c9e551",
+        "obligation": "c598a502-fb32-4a45-990f-309dbcde6622"
+      },
+      {
+        "expense": "7f718f96-d558-49db-a24a-a5170c67e4fa",
+        "obligation": "00c27bf2-679d-4ee1-99a8-7df6559fd54a"
+      },
+      {
+        "expense": "453dd955-a5ac-4c05-9ad7-dd3697f4c048",
+        "obligation": "3a467f95-7610-4e45-8a55-b4df0cadbd5a"
+      },
+      {
+        "expense": "054808c6-613b-419f-954b-8ca37025a2f7",
+        "obligation": "36be3aab-22a2-491b-bff3-85cddc95064f"
+      },
+      {
+        "expense": "f627e4b7-c5eb-46d3-a057-ea4ccd3c84fb",
+        "obligation": "a98e369d-1d18-4a5b-86b0-786064b22817"
+      },
+      {
+        "expense": "dc4f4b41-0a62-4b6c-84fc-ef82b5346ba3",
+        "obligation": "63227524-297a-4dee-8508-0be6f6788517"
+      },
+      {
+        "expense": "a3e51262-77a7-4631-8dbc-0df947823beb",
+        "obligation": "803911cc-ec8d-4af6-9226-756c8f24c96c"
+      },
+      {
+        "expense": "dbbc7411-4828-423c-98a6-db275270d97d",
+        "obligation": "8872a0ec-d9a3-4cf4-ac3b-a4b791fde694"
+      },
+      {
+        "expense": "95ef4a76-f9bc-47b9-bda0-5c9a88e27db5",
+        "obligation": "ca85c7f2-1f5e-48fd-afe2-707e803a2ec3"
+      },
+      {
+        "expense": "7a33a94b-6edb-49df-bf44-47e15c05680d",
+        "obligation": "00a63eee-d1fa-44ce-aea2-70df45699f45"
+      },
+      {
+        "expense": "f610bdac-baf9-4747-8a4f-c716e57f3fd6",
+        "obligation": "c8b38d00-ce7f-4708-93bc-7a4c2f196fbc"
+      },
+      {
+        "expense": "ef7e46ee-31aa-4721-bde0-01b9051406ee",
+        "obligation": "54552a2d-5fca-486b-bc81-7d7654e3116c"
+      },
+      {
+        "expense": "f3f4b860-3931-4661-95b0-12dcacf0fa26",
+        "obligation": "881e1a4a-d40d-46d7-b8a9-1f9f841e7462"
+      },
+      {
+        "expense": "6e840bc8-c6ea-457b-864e-717c99e4115b",
+        "obligation": "f1d6b491-8761-4e5c-8c6d-524ab56915c4"
+      },
+      {
+        "expense": "42e41d00-7825-46f2-a894-88d6e5d53f54",
+        "obligation": "ffb2e412-6dc6-4a08-a7b0-52f55d81c9ec"
+      },
+      {
+        "expense": "e8128061-b7df-4d84-a9d4-e298fbd35319",
+        "obligation": "d9454055-1367-467b-9f08-29c1243ec0f8"
+      },
+      {
+        "expense": "2e19e185-c8b8-4d96-b7d5-800e875596f4",
+        "obligation": "333ee040-acd1-44a9-9ac2-ac8fc5c750a6"
+      },
+      {
+        "expense": "b58e8de5-20b0-49a2-b8db-b6b7b33922b1",
+        "obligation": "f926c1f1-4b0f-436b-bf5b-1b6875621925"
+      },
+      {
+        "expense": "7054bfd6-80c9-4284-97ea-85678f8ec353",
+        "obligation": "afb58c3a-7f74-44c8-829e-11b0c6a32c3b"
+      },
+      {
+        "expense": "090c5f32-73aa-4ca5-a552-6af8ebef58f5",
+        "obligation": "d11fcada-3ce1-4abe-9a3f-45fcd173275a"
+      },
+      {
+        "expense": "1ac48024-7ef4-4748-aef3-3d4a2f3ee000",
+        "obligation": "91aff5e4-d596-45db-b8dd-0e3f5ab73011"
+      },
+      {
+        "expense": "6a88dde9-2b0c-41c1-99bb-0d023296ea98",
+        "obligation": "27106e51-4b55-46aa-a6e5-b828c0db9008"
+      },
+      {
+        "expense": "5b8d7038-bc2b-4784-82f5-f9774839aece",
+        "obligation": "0826ebea-5afe-448e-8053-9b8d950e35c0"
+      },
+      {
+        "expense": "b3ae62a5-11e5-439c-8c67-06f3730b3691",
+        "obligation": "3d98b78d-b6d2-4467-a806-ae062d638330"
+      },
+      {
+        "expense": "ede56b5b-f379-4575-81b4-dfbfdc87c1f6",
+        "obligation": "0d52d1a6-4435-4ddd-8ead-c3a6a06a0108"
+      },
+      {
+        "expense": "1c997afb-ee26-4fa2-b4e7-73c01ab7be1b",
+        "obligation": "4bb66e7e-82de-4827-a39b-5518a03c95ec"
+      },
+      {
+        "expense": "2b65f86f-963e-4da3-8773-d2f1fc7422e4",
+        "obligation": "0dc0ed7e-7605-4732-aee5-e34a53e34ef3"
+      },
+      {
+        "expense": "648a9ef7-e2a6-458a-bbfa-653125c9740b",
+        "obligation": "9fe0ecad-a212-499e-91f3-d2882cd86066"
+      },
+      {
+        "expense": "41d920cb-0a8b-41a5-8640-6a2e74eaef3b",
+        "obligation": "12322e50-10c9-4cc0-8d77-c8126b846486"
+      },
+      {
+        "expense": "a89dbb81-ef9b-4663-92ac-8d761c5a135f",
+        "obligation": "0a03df5b-c68f-4ca8-8262-83c133e1aed0"
+      },
+      {
+        "expense": "e36dc0b9-2fde-4c78-a4d8-69229f7b8bea",
+        "obligation": "864b8b1c-4fd0-45f0-8924-b585740076d9"
+      },
+      {
+        "expense": "3ee64e2d-8ef0-4838-8647-11d75722af37",
+        "obligation": "1e0bc1cc-620d-4dc8-887a-d6d6fb353261"
+      },
+      {
+        "expense": "0cb4df53-6415-4e87-be65-963b973e3d1a",
+        "obligation": "721827fe-91ac-4c61-949a-539c90b034d6"
+      },
+      {
+        "expense": "59700fc7-f63f-43d3-aa4c-2450c024e6ba",
+        "obligation": "1ec7303d-618f-46e7-8c80-15fb04b1a5a1"
+      },
+      {
+        "expense": "4fd0e234-590e-42e3-af5e-23a74b730611",
+        "obligation": "510b0048-8a2a-44cb-af8d-2f013edab1d3"
+      },
+      {
+        "expense": "dd1fbcdc-5c37-4eb3-8028-6ef9170d3a27",
+        "obligation": "1db57794-2b6b-4002-80ad-2e9fd6a457c4"
+      },
+      {
+        "expense": "e3da211d-7fa8-44c3-8a98-651b712d6cde",
+        "obligation": "b1834972-be31-4186-9873-239bb2577615"
+      },
+      {
+        "expense": "173af8f0-1e78-40d8-81b1-2a19f5410b5b",
+        "obligation": "0e665ae7-dc74-48bc-9bb1-e8240fd3d36c"
+      },
+      {
+        "expense": "0e7a8b60-df19-479d-9ad9-6ffc49ff5924",
+        "obligation": "24708294-1199-4acc-846b-d7bff42e1ace"
+      },
+      {
+        "expense": "38a14ee5-6124-4490-b464-da643d355854",
+        "obligation": "b44e6115-8138-4053-9798-fcd660bc2123"
+      },
+      {
+        "expense": "54a55a77-0cc1-412f-bca1-7604291c42f1",
+        "obligation": "46f61b66-5a2a-4d13-a2eb-9224e60fa539"
+      },
+      {
+        "expense": "69c1ab00-9714-455c-a26f-19ae55a7246d",
+        "obligation": "e27e8244-2d7c-4b8b-9a67-86169b71e651"
+      },
+      {
+        "expense": "29336a72-4db2-4b25-8ea5-02d3797bd86c",
+        "obligation": "137dcaf3-5c76-494f-81bf-6f303777c183"
+      },
+      {
+        "expense": "270208b2-4f9b-46b4-a493-c00915d69d2e",
+        "obligation": "eea37a88-a2ec-4a64-97d5-3267c96285d2"
+      },
+      {
+        "expense": "82305f61-6a3f-4e05-8afe-40bd9c9b0eaa",
+        "obligation": "e2a33769-58c0-4be9-9d95-db301b2ecd07"
+      },
+      {
+        "expense": "2ebe3b4c-59d5-47cd-9418-294a1e273955",
+        "obligation": "9cbc20be-5437-4227-8b52-cd89e0f3a70c"
+      },
+      {
+        "expense": "7d1c5134-f605-4257-81c0-9f3943bee0d3",
+        "obligation": "05a39ad9-a0c3-418d-ab2b-148c84aa81db"
+      },
+      {
+        "expense": "b9873eae-9e0a-41af-9e4b-d61c01927c4d",
+        "obligation": "94c647c5-f37d-422e-9607-3e10bd82fbbe"
+      },
+      {
+        "expense": "980035c5-69ed-46cf-a9b9-0adf212f1d9e",
+        "obligation": "10321452-79f1-4289-a247-e57c6bf90cd4"
+      },
+      {
+        "expense": "4390486b-55f8-401d-81e7-c5962b996808",
+        "obligation": "9822a5ad-c772-48d0-a1e3-9030cdfd81d3"
+      },
+      {
+        "expense": "3f2e4824-ff7d-4f8d-95e5-ce8caa9a72c5",
+        "obligation": "a64ebeec-25d5-4a56-80e7-7f872c968ad0"
+      },
+      {
+        "expense": "1024a7f2-8285-4e81-bd75-d60cdc351296",
+        "obligation": "c34f3172-fb04-4a66-9343-45da9be6cc88"
+      },
+      {
+        "expense": "4c3a4717-2aa4-45cc-b10b-81714ee5ed0f",
+        "obligation": "0dd5ed5c-31aa-4af8-b3c5-78eabc984454"
+      },
+      {
+        "expense": "01b7f7e2-d16f-47fe-8d70-7cdb8d9de333",
+        "obligation": "e8efd6a5-f65a-49da-b105-932b1d992cc8"
+      },
+      {
+        "expense": "caa1873d-6376-4df6-9194-2ceb648633f1",
+        "obligation": "7bc3f607-5239-499a-9cd5-6faae56952b5"
+      },
+      {
+        "expense": "ac420440-293d-4f26-b25f-de9135c15a27",
+        "obligation": "01148afd-0505-426c-9eeb-3bac4fa9f8a2"
+      },
+      {
+        "expense": "638f6f56-37ed-4582-b1d7-3b783cf4fb42",
+        "obligation": "78171db2-f413-43e0-80e8-927e8c9a4d58"
+      },
+      {
+        "expense": "059145f9-1a44-4a29-87e4-9b334e1d1954",
+        "obligation": "a8b3f05a-c3f8-4c1c-8afa-97c297c31f36"
+      },
+      {
+        "expense": "943c2ec0-d854-42f5-9262-0117c109084e",
+        "obligation": "50a985fa-24cb-4969-b747-7f5b0608011d"
+      },
+      {
+        "expense": "14b61c5b-4f83-4a0d-a5dd-c7d433539367",
+        "obligation": "9c468061-0857-4487-bdf7-42743724e953"
+      },
+      {
+        "expense": "f7292e03-21b3-4616-9ac5-c9ae3c837fd2",
+        "obligation": "b302218d-8071-497f-9432-2c1cd542ba82"
+      },
+      {
+        "expense": "3243a895-bdda-4f09-b01a-81f88728cf89",
+        "obligation": "436e38c1-034d-4a5d-ab19-4a6ea59e7046"
+      },
+      {
+        "expense": "137e1246-382b-45f6-a009-db4cb14abd85",
+        "obligation": "29cfcf1d-7ad3-4029-a6aa-9d8584549b7a"
+      },
+      {
+        "expense": "5f78e8fa-a43d-498e-b299-9d227967f6af",
+        "obligation": "cbba8059-8c2a-42ec-abbf-b52f51a1ca54"
+      },
+      {
+        "expense": "5c85fabc-927e-4292-b022-5a9785c5d3b2",
+        "obligation": "8a50afc0-876f-4de2-af39-e0f0531c9707"
+      },
+      {
+        "expense": "774d92e9-b8f0-457c-ad2e-9e5daaa54b3a",
+        "obligation": "7109b92e-aa50-406c-9589-5252d732217d"
+      },
+      {
+        "expense": "6c21efc6-ab59-4d75-bf4e-3ad9a7d6da33",
+        "obligation": "b34c269f-8d65-4ab4-98bd-0733c06cd5f9"
+      },
+      {
+        "expense": "dac1af8e-31a7-4ee1-9533-a9a14f39b6f9",
+        "obligation": "8e8ab95a-f9bc-4b25-b159-943ce4c34a4c"
+      },
+      {
+        "expense": "a5cdf5a9-2d2c-4787-ab3b-6f8b04c421f5",
+        "obligation": "d1778a2b-a6c8-477f-aa46-7f335efd0e69"
+      },
+      {
+        "expense": "32bda28c-fd5a-40b4-9dff-4ce301655b9f",
+        "obligation": "deab761a-38d1-44b7-bfbb-2cffdac5e446"
+      },
+      {
+        "expense": "c57d44b3-df8d-41cb-97ad-e2f1767f523d",
+        "obligation": "24331016-7774-49ea-9e98-552749ba8a26"
+      },
+      {
+        "expense": "0c3fc84c-51b9-41d4-a4f4-eabc705941ca",
+        "obligation": "cd571382-938a-41e9-9c84-f7354cb773f4"
+      },
+      {
+        "expense": "81d01a26-b40c-480a-b11f-19e24be08956",
+        "obligation": "699fc511-b7b3-469c-90af-9a24ef429795"
+      },
+      {
+        "expense": "c076505e-d7ed-45d2-b5c0-aeb0d7fc8882",
+        "obligation": "fe5e18ce-69e3-4fb3-9f25-9577475cce72"
+      },
+      {
+        "expense": "cfb03646-c6b7-4ee8-96f7-1f68c93755d8",
+        "obligation": "dcc9ba60-4872-482b-88f4-e19fa7bf98fb"
+      },
+      {
+        "expense": "de1bb46b-4484-4122-9549-09635b0a3225",
+        "obligation": "5beb4c86-2b37-48f3-9409-c965f1a415bb"
+      },
+      {
+        "expense": "7452ba92-b8f2-438d-a5d5-3efd899f04a0",
+        "obligation": "6f447210-107b-4069-8649-f2fd27710437"
+      },
+      {
+        "expense": "f13e7f4c-aba7-47eb-a4c3-2070804399ef",
+        "obligation": "7e53de5a-7094-4b43-a2bf-99336bf503a1"
+      },
+      {
+        "expense": "455d7c6e-3d78-412b-bb62-a2aa6cab0276",
+        "obligation": "04051c42-61d5-4e74-8292-c248e369ba94"
+      },
+      {
+        "expense": "902c0d4d-b76f-4788-8479-2998586f256d",
+        "obligation": "933c9172-1cc4-44b2-9d89-0f09077cc3b2"
+      },
+      {
+        "expense": "72931286-b7db-4176-b69f-d8fd7e109cf4",
+        "obligation": "645f4472-ee2f-4099-af12-0415dc78d079"
+      },
+      {
+        "expense": "e6403eff-6d44-457c-8841-75d10b44052f",
+        "obligation": "f4441ac7-d793-4b6a-8e5c-bf873e6b3882"
+      },
+      {
+        "expense": "58a4bb6c-3ce1-48e8-b468-4909582dd80d",
+        "obligation": "02806b3a-0202-49c1-ac30-01f98462800c"
+      },
+      {
+        "expense": "03c23901-4e64-48fa-850a-3bd777ad5c70",
+        "obligation": "f7e10868-9ca3-4b5c-8224-f2f67ba0a061"
+      },
+      {
+        "expense": "eee16c49-f162-46c8-a651-59edcda0c515",
+        "obligation": "878dc7d9-7c4c-48d2-a8e8-a21dae1f1c7d"
+      },
+      {
+        "expense": "31843105-c8eb-4c9e-a5d1-52f4d1488edf",
+        "obligation": "03f4c3fb-a280-44a8-8bf4-1a0916da00e2"
+      },
+      {
+        "expense": "fef76907-b0bd-4fa4-b9fc-d5174c534f76",
+        "obligation": "92ee06da-5698-4ecf-b74b-e79278ad18e4"
+      },
+      {
+        "expense": "e8456f3b-944e-4d68-ae58-906164d833bb",
+        "obligation": "aab5fa5d-ee40-4e05-b8b2-9572f9fa3e29"
+      },
+      {
+        "expense": "56612764-aa8a-4cee-b750-5d957abd3719",
+        "obligation": "b9e52c20-6a7e-48aa-b684-f3b95656fb0d"
+      },
+      {
+        "expense": "5d11b730-e69c-4c29-ac11-706804e80f59",
+        "obligation": "9ef984dd-cc00-43cd-a30e-ebf6d9f27199"
+      },
+      {
+        "expense": "b62dad5d-a58c-424b-a897-455848fe78dc",
+        "obligation": "c8ea09ab-7ff2-4a24-a5aa-216aefb2ac3e"
+      },
+      {
+        "expense": "90f157e9-6b39-4df7-9be3-0c9417be3d35",
+        "obligation": "d60a25ef-bcce-42f4-ad9f-5a2961c3d327"
+      },
+      {
+        "expense": "2a65120b-e938-4d0c-b470-a5c2da5c7ea7",
+        "obligation": "73d4964f-0659-4303-b789-6e790ee1de5e"
+      },
+      {
+        "expense": "4f454f2a-b66b-4da5-96e5-914cb0e66d02",
+        "obligation": "427b2143-0591-41c0-a110-6f1ce94d461b"
+      },
+      {
+        "expense": "9aad063d-31b0-4bef-a3d8-6de9c3db7707",
+        "obligation": "b0932dbd-8ce2-44af-8196-01c7079b87e3"
+      },
+      {
+        "expense": "f036828c-98a9-4ff9-9157-4540af220dbe",
+        "obligation": "2e40b026-4d07-496f-9803-1db86091ca5c"
+      },
+      {
+        "expense": "8ff40913-2a9f-441a-bb30-7fe513b10873",
+        "obligation": "29a55c0e-3596-4d43-9abf-ab5fff08edf0"
+      },
+      {
+        "expense": "8dbf548b-577a-4549-8655-b7f6828b2b80",
+        "obligation": "5ed74878-6ab6-41e4-b581-6cbad00d92c2"
+      },
+      {
+        "expense": "2b7b2676-d571-450f-aeb7-bf8404e097b8",
+        "obligation": "f1c303ff-564d-4a1d-8a24-0da12ea56e09"
+      },
+      {
+        "expense": "2f834079-ba0b-4b05-b809-df2ae786bad7",
+        "obligation": "d881567c-a4df-4534-9e6e-a9e0d431cad8"
+      },
+      {
+        "expense": "59c62b94-274d-4a81-8942-1fb292202920",
+        "obligation": "a8a8c432-6b3d-47bf-85f5-a79481231b26"
+      },
+      {
+        "expense": "4396f532-b0a7-4a7f-b15b-19fb2fb6602b",
+        "obligation": "5d02425c-69fa-45b1-9a95-ec6295942b57"
+      },
+      {
+        "expense": "2a51adc8-73fb-42e5-9d39-cbc60b6a09c2",
+        "obligation": "8f55a6ac-7ba0-4a33-99c2-e2eca99533f5"
+      },
+      {
+        "expense": "018ca8cd-d6fd-4209-8829-73c66b4a61ff",
+        "obligation": "34089d87-15d5-46e9-a692-e92943def613"
+      },
+      {
+        "expense": "baaa4e06-05ba-461b-bbb3-2f434bb6b49f",
+        "obligation": "cf7b6b1d-037c-4b4d-9d7b-f32a9ac99b83"
+      },
+      {
+        "expense": "f2780fde-4260-4113-9ce5-6ed38f5cd0e0",
+        "obligation": "6979b373-0131-4541-8fbd-82d79bdb81e6"
+      },
+      {
+        "expense": "c7b3ef73-c4b8-4f92-8e46-da35c687bc33",
+        "obligation": "de425b40-3c44-4a43-8d78-bf2f6d9d6c90"
+      },
+      {
+        "expense": "0af8cf19-dd1e-48bb-b516-5330b0d615f3",
+        "obligation": "b6eb846e-4ed1-4e24-82d0-c74f14bb7109"
+      },
+      {
+        "expense": "7d906f1d-5356-4869-8581-ea2b256e8b53",
+        "obligation": "2c9af86e-69b1-4704-8d2f-8e13dc6fa08e"
+      },
+      {
+        "expense": "06dc103f-4985-4af7-a870-3ce17c11ebcd",
+        "obligation": "73f57f28-9f3d-48be-b50c-7db0b9b01a43"
+      },
+      {
+        "expense": "0b661bc1-3452-4665-b159-d04f7e526b2b",
+        "obligation": "ae04fde1-8874-40a8-8f6d-32e17d9aa26d"
+      },
+      {
+        "expense": "ea0f4a69-ff55-475d-8229-11c00409302a",
+        "obligation": "2ed33453-05ad-4e01-93c3-d5902e52d859"
+      },
+      {
+        "expense": "97f02958-eb4d-4897-9812-6ad799384843",
+        "obligation": "97268029-642f-45e1-a81d-c04dc532b1e5"
+      },
+      {
+        "expense": "d2760374-7b7c-4408-886f-cabb3b6f5404",
+        "obligation": "011bb27f-f57d-4970-9172-7cf55b857b08"
+      },
+      {
+        "expense": "614fb68a-d2f5-4e4a-8e35-70ffa3492959",
+        "obligation": "182c30ee-3e3b-43d0-8418-efd1c3e40ba7"
+      },
+      {
+        "expense": "edcf93e8-3737-402e-a8fe-6105c08294b3",
+        "obligation": "a72cbfe6-0da8-4f07-871b-e99261b6d91b"
+      },
+      {
+        "expense": "4a428ca7-e78c-440f-b825-3323339ae32a",
+        "obligation": "26d1700b-b3f2-499b-b0f2-caa5f62945d5"
+      },
+      {
+        "expense": "49e4cbd7-0c02-4e13-8908-93c963e90d21",
+        "obligation": "685184f7-fa89-4ad9-bf8a-964d7ce67793"
+      },
+      {
+        "expense": "b911aad7-731d-40f4-8ed2-095ec1a1e1ff",
+        "obligation": "2e5114f3-f500-40cf-93cd-d495b3ceb4eb"
+      },
+      {
+        "expense": "68647764-a938-4b5d-bccc-252a68f9f618",
+        "obligation": "6ef84491-b067-41e5-b588-e6cc49c95694"
+      },
+      {
+        "expense": "108da43e-2c5b-44a7-b5aa-5606c782cc34",
+        "obligation": "c3af5e5a-b9ca-467c-a4cf-0676df2bf037"
+      },
+      {
+        "expense": "08fa4b2e-a563-4bd6-af2d-b0a520e47fee",
+        "obligation": "940d97fa-d0ff-43c6-baa6-41633b3a4ffc"
+      },
+      {
+        "expense": "dd0cd4c9-04e7-4dff-918a-adad97538a8c",
+        "obligation": "3b188adf-3d55-412f-ad46-198bfb2408b0"
+      },
+      {
+        "expense": "4f449647-68e2-4f43-8cb5-a48e50cd8ea9",
+        "obligation": "d8de6791-2ee1-4543-91ee-7bf85bb4bfbe"
+      },
+      {
+        "expense": "7cb775a5-ac27-442e-b80d-7ba16b4f598b",
+        "obligation": "075b6f34-391d-418b-a9b1-0e1c501d8119"
+      },
+      {
+        "expense": "5be946f2-478a-4633-a248-5516beb47a4a",
+        "obligation": "df1499bc-4edd-4bc6-a4d6-30d55e9b008f"
+      },
+      {
+        "expense": "e3cc8d2d-2a9e-4bb8-8707-f1689f4f3171",
+        "obligation": "cc45b88c-b18c-4c2e-88f2-a241375f0602"
+      },
+      {
+        "expense": "cff1d64f-c387-4467-855b-fc9196467c41",
+        "obligation": "c66315d8-b0ab-4a58-ab1f-a43cf0e50f3b"
+      },
+      {
+        "expense": "fdf6fdec-11bb-43ac-9099-e4ae3851acc2",
+        "obligation": "78e1b47d-376a-4fe1-a4a3-d11e4c85e426"
+      },
+      {
+        "expense": "0728b78c-a906-4ba3-83f3-ff73613a95a3",
+        "obligation": "d4f5da44-cb66-4fb1-81cb-41cb94dd58dc"
+      },
+      {
+        "expense": "d9efa798-b4fc-4abc-bec7-fbe3ac21ea1b",
+        "obligation": "d74cb9f4-1c45-4a60-be58-ae9fb0fa9990"
+      },
+      {
+        "expense": "62967726-1d26-4878-99f7-9e2fdccd2272",
+        "obligation": "f45437be-fb12-43cc-b8be-baa3668bd975"
+      },
+      {
+        "expense": "541514c9-be32-4f03-8ea9-e364000305b6",
+        "obligation": "597aa720-5c58-4913-adf4-4af642f059b3"
+      },
+      {
+        "expense": "2a1f838b-13c8-4fee-b7ed-c394955ebc7d",
+        "obligation": "e2591b21-01db-49a5-ad9c-3f3f76e6b737"
+      },
+      {
+        "expense": "90f4e3cc-7c09-4d58-bbfd-2671423eb918",
+        "obligation": "f75dc64b-d03a-44d3-b67a-e19742496369"
+      },
+      {
+        "expense": "4cc854cf-1784-4854-8511-5e130157ea20",
+        "obligation": "b3cabb7b-555e-4b69-a1f1-91074d337ed9"
+      },
+      {
+        "expense": "a6a4aec7-674b-484a-b779-0a89971d2e2a",
+        "obligation": "c6e92c1a-0cb5-4e4e-9aee-95b4eed6fc4d"
+      },
+      {
+        "expense": "b5183fb0-02d0-4383-a2dc-ecbf9f015750",
+        "obligation": "9683cd3e-9cea-4576-bef2-0419919132e9"
+      },
+      {
+        "expense": "a64180b8-78de-49c0-b999-5f7377b097c1",
+        "obligation": "4969e957-d664-4b48-a1ed-ba561fbd2fbc"
+      },
+      {
+        "expense": "12312dc0-daf0-418e-aa65-b9843b4d1806",
+        "obligation": "cf4b5c92-cd7b-4e11-814b-e0122925d2a0"
+      },
+      {
+        "expense": "95163dcb-ab16-450a-bdaf-c92a03675938",
+        "obligation": "41ec91a3-c391-4c29-b261-ae5c0f644600"
+      },
+      {
+        "expense": "e87c768b-28e7-43a8-94e8-69cec54e8246",
+        "obligation": "c7097641-0271-4c41-8437-bb969b8a48ca"
+      },
+      {
+        "expense": "d2aff574-3e3d-4ec6-8aa6-9d1371f08846",
+        "obligation": "0e0bf520-4e3a-4ea2-bcde-9e44055596e7"
+      },
+      {
+        "expense": "76627206-13a3-45df-a49e-6b8eca5bd504",
+        "obligation": "6c3b5f8e-db96-4442-bc21-3369d669a78d"
+      },
+      {
+        "expense": "fae57bcf-971f-43c2-b24a-cb7ee4afa732",
+        "obligation": "155d0ec5-4189-41d0-9d1f-a0bc01d8d4b1"
+      },
+      {
+        "expense": "47f7575c-6ac3-4506-9bea-74e71a6e1c26",
+        "obligation": "801066f6-cb18-4aa8-9464-3d337708e623"
+      },
+      {
+        "expense": "743a96ac-2833-4992-bf84-6fa2966e51ad",
+        "obligation": "32d30c53-86a7-4ab8-93df-591e5668d16d"
+      },
+      {
+        "expense": "d5d030cc-49c0-4882-bcf5-1b616762abfc",
+        "obligation": "3a61708d-89a7-4343-ba5b-1175de670934"
+      },
+      {
+        "expense": "36dc0909-0ad3-4d0c-b677-b87087f91e89",
+        "obligation": "32969f89-e122-4b9c-a74b-7a5f71eb9d78"
+      },
+      {
+        "expense": "2120a6b4-f9fc-4ac3-8bcb-c064e67641a7",
+        "obligation": "ba601aaa-5937-42eb-b4e3-8e5f0f630c0e"
+      },
+      {
+        "expense": "01c1bdf9-49d5-4ecc-a96d-165f33b5edea",
+        "obligation": "5e11be0a-3680-40f3-b4fa-7f98616c0406"
+      },
+      {
+        "expense": "bdd02d27-9908-48a0-b66c-0af084d8f30a",
+        "obligation": "53142ef5-f55a-4d97-9cf9-dc11622e680c"
+      },
+      {
+        "expense": "ce31ea78-a56f-4a9a-904b-17b8313b2bfd",
+        "obligation": "ba5ec25b-9cc1-4dbe-99c5-c1efec8d45ee"
+      },
+      {
+        "expense": "43f1c722-e058-4fa6-b89d-1c4e11c159bc",
+        "obligation": "b2d508cd-772f-4636-9f19-24c74c46c306"
+      },
+      {
+        "expense": "a8c2ae61-8248-4a44-b0e1-61f7d03d4d41",
+        "obligation": "e82f5ea7-c942-483d-8fd9-384a2ce7a41a"
+      },
+      {
+        "expense": "8fb48391-df01-4839-bb08-86f451fb820d",
+        "obligation": "73dffff0-71d6-49b0-b6ea-76c0104a7460"
+      },
+      {
+        "expense": "383dfc37-e957-46ab-b080-16f4f63c2fc5",
+        "obligation": "3da7c330-90b8-408b-a78d-99dbddd0423e"
+      },
+      {
+        "expense": "6072d644-a957-4b82-b8b1-b223d28fd2db",
+        "obligation": "0b2398f3-a7b3-4643-9a40-5bc1db9f2265"
+      },
+      {
+        "expense": "283ab6b9-64c3-4fab-990b-c7cc8486b468",
+        "obligation": "7a6ca4fb-7f8e-466b-881c-9571348c57a6"
+      },
+      {
+        "expense": "965850fd-ba88-43da-8996-2dc159740f48",
+        "obligation": "96cd42c1-0ab0-4f89-8dec-e4a6642f201a"
+      },
+      {
+        "expense": "d30e3b40-670a-41b5-abad-49f467bfee1a",
+        "obligation": "0ea417fb-8af8-4a29-9173-9d2dc031bc4f"
+      },
+      {
+        "expense": "3e16d713-caee-4c0a-8e53-8cee4c9fcf35",
+        "obligation": "f506bab9-f6d8-4bf9-81cb-fcf35d05ce93"
+      },
+      {
+        "expense": "eb67d3df-13bd-4eb3-aa1d-4a43a3d8c063",
+        "obligation": "9c2af331-c95c-40fa-a859-03b1fb9c1cda"
+      },
+      {
+        "expense": "960850d5-79db-403a-bc1c-ac37a97463cf",
+        "obligation": "7f09b4cb-a4e2-4a90-b264-279e023caec6"
+      },
+      {
+        "expense": "95a49782-2d3c-4def-9ddb-e3936acab84d",
+        "obligation": "55888ffa-8a21-445b-a4c4-c3dc0de7ee7c"
+      },
+      {
+        "expense": "fe7bc625-deb2-4bc3-824e-a2bf9afbbb47",
+        "obligation": "773b057a-941d-41a7-8b3a-0682616b59ea"
+      },
+      {
+        "expense": "e2344756-8857-4f5a-a844-1f47e0eef142",
+        "obligation": "8f7a040d-21ce-4680-a4a2-1047323efc28"
+      },
+      {
+        "expense": "c9612cd8-c7fe-47c3-8816-18df4b45220b",
+        "obligation": "009e31d9-2a3e-4971-b723-201ef88b69bb"
+      },
+      {
+        "expense": "dd88f8fd-2bbc-4b0e-b4e5-4fab273671f9",
+        "obligation": "c9e5cc53-588d-4767-adb4-e62d1b2f7aef"
+      },
+      {
+        "expense": "d8ed2f92-f575-41c9-b5c0-661856a63e32",
+        "obligation": "adb7ef5e-2d3b-4e66-af9c-8d2ae62127d9"
+      },
+      {
+        "expense": "f667e255-d163-4d45-9252-38575710bf6a",
+        "obligation": "6968f54f-a564-408f-8f8d-60a17c2bd4ff"
+      },
+      {
+        "expense": "9928dfb3-7ddf-4599-8ec5-b8d6102be54c",
+        "obligation": "9902d4e1-895f-411d-ac86-d7c4f12233c5"
+      },
+      {
+        "expense": "43d1b5be-09bd-43ee-906e-0894153edb6d",
+        "obligation": "474d0f0f-0a49-4b41-8121-a552c848fc80"
+      },
+      {
+        "expense": "50a0da51-4750-457b-a1df-b9c094c23857",
+        "obligation": "1aaec417-2de1-4d27-9055-38a4cf68746d"
+      },
+      {
+        "expense": "76aea906-7e3d-431e-9d4b-c6a128a3163c",
+        "obligation": "93571920-b41d-4c2b-8a17-40cbe8fc238d"
+      },
+      {
+        "expense": "efbae0b6-e6c5-442a-878c-517f3424eafb",
+        "obligation": "df525a3d-20f1-43b2-b079-68c30db938e6"
+      },
+      {
+        "expense": "6e152e26-1d0f-48df-a597-4613b996830f",
+        "obligation": "01522426-a72b-4982-ac9b-167e4f482d73"
+      },
+      {
+        "expense": "059b5d47-71fc-4dbd-b530-a97194c94df6",
+        "obligation": "925b8758-22ab-4367-a6ee-0c9cc07fbd9a"
+      },
+      {
+        "expense": "266e3b0e-d280-46fa-af8a-e40f0efb5260",
+        "obligation": "91b2a816-6f11-430a-ab35-ae5c20f0ec1a"
+      },
+      {
+        "expense": "f4d4489c-9086-4107-a575-ea9427a6d257",
+        "obligation": "c1b0f4c4-1305-4a84-9ac5-d8d945a1690f"
+      },
+      {
+        "expense": "9efa644e-5c5f-4831-bcd6-8d83ee64b83a",
+        "obligation": "9f629008-6d0f-43b7-a6ff-048ca4298c31"
+      },
+      {
+        "expense": "c0fd753b-a15e-4edd-a7e0-cf27369c94ca",
+        "obligation": "d0ff9194-74f8-4d10-af4b-2c56136028cf"
+      },
+      {
+        "expense": "fcb74e6f-2254-4c26-a1e4-889bb3b85857",
+        "obligation": "8679c5a4-5c74-4cae-b7db-9dce2421e40c"
+      },
+      {
+        "expense": "c1cf4d69-137f-4f3a-83fd-7277c101b1d5",
+        "obligation": "1d2a68fe-77d0-4feb-9d77-7f3e3488f0b0"
+      },
+      {
+        "expense": "91ca291d-965b-42e4-9a07-2e7d479fa996",
+        "obligation": "36d47ba5-faea-4227-abb6-0a44d1f5414d"
+      },
+      {
+        "expense": "70420de6-2470-400d-b3ff-9414a36d946e",
+        "obligation": "5cf8d661-e1d6-42c5-9476-142d1796d682"
+      },
+      {
+        "expense": "5b09da41-a6e3-4ae7-9568-4bfaf2073db4",
+        "obligation": "350ca16c-2c3f-49f6-b7b1-5df87d121cfa"
+      },
+      {
+        "expense": "57170796-e801-42db-98fe-ab388892a79c",
+        "obligation": "ffc3eb6d-a4c6-4a5d-ad33-74b75458567c"
+      },
+      {
+        "expense": "d7fb2efd-02d7-4910-bb5b-fc81ff08d86c",
+        "obligation": "f81b036d-a541-46a0-a9f9-a5caf1dbd5ad"
+      },
+      {
+        "expense": "b22e96c4-6f91-4204-9fe3-3a9916b7f663",
+        "obligation": "086d852d-aeaa-4170-885e-827040daf036"
+      },
+      {
+        "expense": "48421abc-fe19-4863-b77c-a81f0ea7c701",
+        "obligation": "f4dce643-7432-4254-a0e9-e0e2c2063add"
+      },
+      {
+        "expense": "7cbd266a-4407-46b9-8c2f-b74f586fb14e",
+        "obligation": "7d3afacc-e90c-410c-a18e-e94858b2845d"
+      },
+      {
+        "expense": "946893fb-9a99-41bb-b188-71908593d2d1",
+        "obligation": "81424906-d997-4203-84d0-5d3f3fd754f1"
+      },
+      {
+        "expense": "57957602-b00b-477b-b419-9baf96edc406",
+        "obligation": "d8117f88-c047-45de-aa37-15c2f63009de"
+      },
+      {
+        "expense": "ad6d038f-5bea-49f1-856d-26360d3f5541",
+        "obligation": "4f1aea73-f511-4259-a37d-6ae19b39fe70"
+      },
+      {
+        "expense": "246d1430-3e9c-4574-bfdf-4bd51b37deed",
+        "obligation": "15b7462e-5ddd-477c-8d6a-99226a7d5656"
+      },
+      {
+        "expense": "6d32cc45-fefe-469a-84a1-48b80ab9e311",
+        "obligation": "30d7b3ad-59dc-4ea8-9292-994e0fc91974"
+      },
+      {
+        "expense": "1bcbaba4-c8b6-4cc4-9a3d-146b0d4fcadf",
+        "obligation": "f257e41b-891f-491f-a48b-096c5ded3ab7"
+      },
+      {
+        "expense": "565b7584-9936-494b-b55a-8aeef53616bd",
+        "obligation": "242c0d7c-c016-4a34-825c-36bc2e06ad29"
+      },
+      {
+        "expense": "0423c969-3cb0-4957-bf3e-dd1844fdff4a",
+        "obligation": "a7e652cc-3ce7-4897-a8cd-89a8deb91ee3"
+      },
+      {
+        "expense": "a5b9d446-434a-4a93-a1f6-f97fa3459556",
+        "obligation": "9961fd1b-65f9-4210-aaab-cecf1c26976a"
+      },
+      {
+        "expense": "f7ce85d7-50ee-4138-8c3f-a382c02e05e5",
+        "obligation": "8d6fa5fb-b8f6-4f31-a3d4-f2ba7c8c4a81"
+      },
+      {
+        "expense": "3f813472-7762-4232-b51d-9a9fa7309e5f",
+        "obligation": "8bea0781-e12a-4082-917d-522f295828c1"
+      },
+      {
+        "expense": "e36b9492-3171-480a-9061-ca385ae04243",
+        "obligation": "23111c03-d7b3-4075-9498-6d649ccd150f"
+      },
+      {
+        "expense": "e5d0871f-2ccf-4d97-ae25-8d34697d14dd",
+        "obligation": "d64e74e9-ce9c-433d-a72e-cbc7590b4512"
+      },
+      {
+        "expense": "bb419d90-d7a1-489f-9b47-4f262c7df2d3",
+        "obligation": "7d06062f-e74e-4a81-85df-9af76459c5c8"
+      },
+      {
+        "expense": "9f230a63-e2ee-4b6d-ac2f-ae475187ba48",
+        "obligation": "b689522a-aaa8-4a78-8152-e0933f66c2ce"
+      },
+      {
+        "expense": "50ec1866-a58d-4219-bce9-0cc37143c78f",
+        "obligation": "18a1a91f-1847-4941-a361-a384f0eb4f31"
+      },
+      {
+        "expense": "03b51dba-7cd1-4ce3-afef-24af1eaaed93",
+        "obligation": "4e5527a3-8e0b-4218-9cc1-0bbd63155631"
+      },
+      {
+        "expense": "3a4e3230-e895-45ca-8b3d-b832354d916f",
+        "obligation": "ce1f3f14-1386-43d4-b1c9-e2b283cc656a"
+      },
+      {
+        "expense": "a05703dd-c3cc-4f39-8866-edce3313d819",
+        "obligation": "c148540f-fcea-40f9-a7bd-ed8156f469c8"
+      },
+      {
+        "expense": "5342eef5-7b81-4ba1-83ab-0bd8ba626b27",
+        "obligation": "3cba06ca-a72f-4f2f-8989-db7381cede89"
+      },
+      {
+        "expense": "f549e4a7-577e-490a-aa66-78ad44332241",
+        "obligation": "0752bc20-1ea8-441f-8fc3-557a336c2ec9"
+      },
+      {
+        "expense": "73c07888-587b-4471-a0b8-c4d07e70f772",
+        "obligation": "60281f64-fc2c-4a8e-b271-1bbb0e2fdbc8"
+      },
+      {
+        "expense": "10ce7a4e-1630-4399-8afe-d5173fd0d7a4",
+        "obligation": "da81be57-1040-49d8-9542-8704ab7df34b"
+      },
+      {
+        "expense": "291911ba-d1a1-4dff-8713-817d9e6ec3e8",
+        "obligation": "c5dc3763-c00e-4665-93b5-10241d1d4714"
+      },
+      {
+        "expense": "06cda305-b0b7-4095-b68a-08f5321371a0",
+        "obligation": "cdb3c5da-9f07-40e2-8431-e292d4f08dc5"
+      },
+      {
+        "expense": "e0b8e874-2f8c-4df7-a0dd-ac84d6468e57",
+        "obligation": "dddb0820-662e-4904-b8f4-66bdef72fb2c"
+      },
+      {
+        "expense": "7cef9741-faad-4836-b993-28771f10f4a4",
+        "obligation": "05af4d73-418e-4515-9b72-2db4999da82c"
+      },
+      {
+        "expense": "84a93c74-f2d6-4a62-bd45-299a764e294a",
+        "obligation": "8276f95f-8fca-473a-a623-f4a874371597"
+      },
+      {
+        "expense": "2ec473b9-37c3-4da8-a2d7-08fae92310dc",
+        "obligation": "55daacd3-6a38-49b6-bcd1-aad9fd7e7d1f"
+      },
+      {
+        "expense": "cf4ea2f4-f362-47ab-a674-55be6ee59d75",
+        "obligation": "e1e6141c-2e5a-4bf3-a745-fe6c83fba514"
+      },
+      {
+        "expense": "a2f09abe-bbeb-49a7-9311-0ed02028cee7",
+        "obligation": "1eda6009-892e-458e-8cbb-b140d6c910d4"
+      },
+      {
+        "expense": "8f0e1e7f-cc91-41d4-8500-e1d6098e118d",
+        "obligation": "8e9ca6d7-913c-4776-8431-235c9e7fe998"
+      },
+      {
+        "expense": "3bcc0d83-36c8-4bd8-808b-f679e0a004ae",
+        "obligation": "9f8166c7-a3c4-48ed-af53-0ec68401c886"
+      },
+      {
+        "expense": "ee7d1bee-0e75-41ac-83da-b8507b78628f",
+        "obligation": "19a89607-f60a-4bf8-b7c9-bb8a457b6195"
+      },
+      {
+        "expense": "24188718-12d3-4281-b644-1fcb6cd22a50",
+        "obligation": "c6625a40-ddc0-4d85-9234-498d191b1bd4"
+      },
+      {
+        "expense": "fb370026-94af-47af-8f8a-3cb315d3892e",
+        "obligation": "a134ae49-2701-45c4-bce6-13ade8293023"
+      },
+      {
+        "expense": "39d27ab2-1963-45e9-a8c5-28f2c6cdfa51",
+        "obligation": "4f7c7297-9cbe-427c-ac70-3cb183333c9b"
+      },
+      {
+        "expense": "8cfc14b5-f97a-43a0-acb0-cd410feab9b5",
+        "obligation": "cbe59d3d-6c56-47b9-a529-bde4153aa373"
+      },
+      {
+        "expense": "07ba2151-2b2c-4e01-83b5-2c14e3e746fa",
+        "obligation": "6426238a-03c2-4211-b290-25fcb2094c9b"
+      },
+      {
+        "expense": "351f704e-1be6-4964-bfcb-49809053fac6",
+        "obligation": "32e548fb-fbb5-413f-b5d7-5bea333cdef0"
+      },
+      {
+        "expense": "d033a116-dc35-4de4-a251-679aeb6ad8c0",
+        "obligation": "5730cf66-9d6f-4cf7-aed8-a74bc4a40e22"
+      },
+      {
+        "expense": "54ffa271-6d84-49e3-b3ea-7cd871179a23",
+        "obligation": "00ac0560-0119-49f0-8b3c-1686ebd7b593"
+      },
+      {
+        "expense": "5ef96b24-e358-4887-b4e1-b50c1239fb8f",
+        "obligation": "7fd87554-1188-486b-84ea-2f63db5b69d7"
+      },
+      {
+        "expense": "dbe0488b-90cb-4b79-b99f-3368e9242a60",
+        "obligation": "993b2d57-d4ff-470d-9f1f-a3966efd94f5"
+      },
+      {
+        "expense": "37044417-f2dd-49e0-92ba-c7e55a0402cf",
+        "obligation": "eeed0832-b792-4de9-8969-67123185231d"
+      },
+      {
+        "expense": "ca9bb4da-4b85-473f-9a6a-a3149cdf12a7",
+        "obligation": "6548ca45-3c0b-4dc8-9604-ae91173d87d6"
+      },
+      {
+        "expense": "b732995d-3b90-40ed-812d-5fbded73e8f6",
+        "obligation": "9305ee7d-60de-4998-b336-2eaf294b4009"
+      },
+      {
+        "expense": "fa01a425-5563-47d3-ab71-ae56ddba92ed",
+        "obligation": "1115b920-5ca3-4d03-a645-58c839695185"
+      },
+      {
+        "expense": "6fa680f7-8837-4918-ae3f-fda08feb4bbf",
+        "obligation": "bdba8d09-3265-4fa0-ad7a-a15ada37b9d2"
+      },
+      {
+        "expense": "49163c69-4fc5-4b07-af81-5d93ee4d38a7",
+        "obligation": "0577d1b0-d50a-4550-822f-3be3a854a182"
+      },
+      {
+        "expense": "3843a47a-2fb8-4c09-bf01-87e247154793",
+        "obligation": "5f0362e5-0b0c-4112-a048-bf63b7224893"
+      },
+      {
+        "expense": "b60bbe34-39ca-4f7b-9c4d-068c3c5dbdaf",
+        "obligation": "22c9664e-dc8e-41a6-acbe-7bf6b85381a6"
+      },
+      {
+        "expense": "09a7b4e3-b3db-4194-a96b-16ccb861c59a",
+        "obligation": "87d6b11a-9d9c-474c-83f8-9e86f914ff18"
+      },
+      {
+        "expense": "ba656101-3d38-4e16-a6ca-e0dd622b7e82",
+        "obligation": "bd405bb4-41fb-427f-8135-91b4dd31863b"
+      },
+      {
+        "expense": "87f463da-4594-4ccd-a448-72972945d85e",
+        "obligation": "1b199df3-ce50-4f3b-80e1-db52bbdf00bc"
+      },
+      {
+        "expense": "dcb7c69e-e01e-46a0-9e83-aa60a47de712",
+        "obligation": "76883774-e431-4c98-a64f-5e3ead9c6e1c"
+      },
+      {
+        "expense": "f2591550-3d29-46db-af8b-a55ce6655d39",
+        "obligation": "6fc529ed-d7ea-4408-9d63-37712054a169"
+      },
+      {
+        "expense": "04883c9e-2786-4582-b38f-7d71d0f7956f",
+        "obligation": "918dd730-2750-4c5d-bc67-6a001f499cef"
+      },
+      {
+        "expense": "96ea518a-327f-42fa-a5d8-d735722ca114",
+        "obligation": "ef4421b1-befe-4792-a75a-c401a08b38d3"
+      },
+      {
+        "expense": "0dcd6b55-fab0-46b5-b3ca-69cb0be14776",
+        "obligation": "c62200fe-f694-4833-bcb1-fe70889e4d7f"
+      },
+      {
+        "expense": "6dfdfdb8-7a02-4a46-a2c2-0f9264be94d1",
+        "obligation": "c2a28a19-a602-4061-bc69-00e3b45457ca"
+      },
+      {
+        "expense": "85e06d71-b8bf-41bd-aa75-dde7b821a15f",
+        "obligation": "7bd8f1db-6524-40bb-af45-531497f54602"
+      },
+      {
+        "expense": "ad7cb9e2-36c9-4865-8386-c83960d1b17b",
+        "obligation": "8309cdcb-8cc7-489d-9b2b-4a3d930e358c"
+      },
+      {
+        "expense": "90a413cb-1868-4ea6-9d3b-63142726f8a4",
+        "obligation": "6183271a-ee7d-4a47-89da-7621376ae5d2"
+      },
+      {
+        "expense": "236e6cf3-c14e-4b28-9902-61538640f7bc",
+        "obligation": "5bb93704-4a6c-48e2-aaf7-482e38777918"
+      },
+      {
+        "expense": "fd0d626c-ac77-4a09-a036-6e16fe63dd01",
+        "obligation": "b0492790-252c-45e7-85d8-80e43eacbec4"
+      },
+      {
+        "expense": "c60fae24-56c3-475e-9573-c55386ed4323",
+        "obligation": "52ebd510-5758-48b8-bd0a-cf1be1fb6aef"
+      },
+      {
+        "expense": "b1815bb8-73fc-4b17-a467-8cfb05931e21",
+        "obligation": "b59a97de-c434-4c8b-9d64-8e2fc749a607"
+      },
+      {
+        "expense": "2ef16da8-f20e-40e6-9384-02cdfa95f80a",
+        "obligation": "de05dd4a-0c03-403b-8d3c-bedde3155b48"
+      },
+      {
+        "expense": "c90491c6-bc11-4813-a6b0-e7a2f398e631",
+        "obligation": "6f933e6e-5a30-425f-bee3-358ec7591e76"
+      },
+      {
+        "expense": "60caa97f-4684-4e45-85d4-3ac58c259df4",
+        "obligation": "bc095e2c-b1db-4e5c-a27d-ae6115f6d9c9"
+      },
+      {
+        "expense": "62703e98-34b0-48c0-80a2-46dc47ea3ae1",
+        "obligation": "fda7a0ff-4a1f-44c2-8a5e-8dd0640fcab7"
+      },
+      {
+        "expense": "a80d3983-8700-46ba-af47-4f12061abe6c",
+        "obligation": "97c1aeb0-c5b4-45a8-a9ab-55641ad66f19"
+      },
+      {
+        "expense": "605f7038-9bc7-417f-9d8f-3c4606a982b7",
+        "obligation": "410516fc-b8a4-487e-ad9c-6203c171e87a"
+      },
+      {
+        "expense": "5a34b5d9-6068-42b2-a802-9a9fc8c61385",
+        "obligation": "ea3d6adb-5fe7-4e8e-9b18-7cd799be9765"
+      },
+      {
+        "expense": "1b1efcdd-dc60-4d0a-a90a-c0f4d05fdb30",
+        "obligation": "c4fe3dbf-0c06-44c3-9201-0499bbdd8537"
+      },
+      {
+        "expense": "d8285f3c-2c38-4444-b0da-015c80eccda2",
+        "obligation": "0cf90e93-a3dc-4469-b3cf-229f54be2804"
+      },
+      {
+        "expense": "8bd72d22-6684-4307-b112-8cd42d9fed00",
+        "obligation": "abcea97e-74ae-48ad-836c-2a308802343d"
+      },
+      {
+        "expense": "0bb74108-7902-40ca-b336-c09399dd3b13",
+        "obligation": "06aebaa9-3d13-4317-b71d-9f6663afe716"
+      },
+      {
+        "expense": "1449ed52-84cc-44e5-81b1-0810831cae3a",
+        "obligation": "25b6083a-d025-4155-96ad-eb50ebc88c98"
+      },
+      {
+        "expense": "fed6cccf-3cf7-4f9d-90f1-b3fefde0fc71",
+        "obligation": "c74906c8-2ce6-4e62-80e4-ca41f8c586aa"
+      },
+      {
+        "expense": "a401a0b7-f9c7-4baf-9ae4-fba267f80c54",
+        "obligation": "761bcf38-a0b4-4433-ba8b-a8b81be20c51"
+      },
+      {
+        "expense": "09b34f8f-0e4a-4a69-a1ed-4dac184227cb",
+        "obligation": "daca8651-5ca5-4fcc-9638-3e7ab148553e"
+      },
+      {
+        "expense": "18bbfe94-4435-48d7-b3c9-2cd75bcd4d26",
+        "obligation": "304c2702-465c-4e1f-8d4a-baa2bad7cb0d"
+      },
+      {
+        "expense": "377a0044-863e-42ed-9d34-ae9ff5eb1cc8",
+        "obligation": "cc7db148-97ce-4786-82a7-b5032b55d34e"
+      },
+      {
+        "expense": "3b068d2d-9ad3-4b24-9eb0-1adbf720208f",
+        "obligation": "6ce2933f-9a27-47af-8347-94f252cefba9"
+      },
+      {
+        "expense": "b75179ca-9aca-4a4c-a65a-be1ebad99c29",
+        "obligation": "a8713146-f36b-41ff-bfd6-f52437c28409"
+      },
+      {
+        "expense": "023c80da-c9b0-4a82-bc7d-a5e91da17f05",
+        "obligation": "4149dd09-4d7f-42bd-bfff-dfc6c95897d3"
+      },
+      {
+        "expense": "176801b7-d038-4874-bbe5-f472c9bc592b",
+        "obligation": "8bc7a86e-dde9-444d-8c3f-edc3bf8b930a"
+      },
+      {
+        "expense": "b801d41e-f22d-442b-b253-a9b753f30cf2",
+        "obligation": "2b6ecfec-c187-49f9-8935-40db4a404d94"
+      },
+      {
+        "expense": "8b747825-ff2a-4137-af93-0e6ea4641c7e",
+        "obligation": "ae7978cb-4ec6-42c4-88d3-367bba32d53b"
+      },
+      {
+        "expense": "b5986810-edb1-40e1-a07a-e82bdfb3f94d",
+        "obligation": "db319b11-7234-408e-9994-ecab80eec8ff"
+      },
+      {
+        "expense": "af2e426d-8b5e-41c2-916c-d889833c562d",
+        "obligation": "5e2d1fed-668c-4a03-a461-bbd2d703a510"
+      },
+      {
+        "expense": "ffdab6bb-97da-458d-ad17-5ecfaa0420ad",
+        "obligation": "12ede6a6-d590-406a-a693-9a868a97fd1a"
+      },
+      {
+        "expense": "dce2c908-1acc-4d78-a103-c0d45ff40d29",
+        "obligation": "82f56ff5-826d-4e15-81c3-607affc71b73"
+      },
+      {
+        "expense": "374bede9-8994-4a2e-b91b-d0febadc9fb1",
+        "obligation": "4179400e-0068-44db-9241-583eac630839"
+      },
+      {
+        "expense": "513e9b36-430f-4c3e-9c72-277de8a5aa06",
+        "obligation": "45d98f9f-ef03-41de-bf15-47e89fdef433"
+      },
+      {
+        "expense": "246d1f34-0531-4173-85f9-3f63a8ee2c21",
+        "obligation": "93d4db64-caa2-4c32-872f-5f32a3c352a7"
+      },
+      {
+        "expense": "a9612fdb-d761-4721-aded-2ecdbc9ec990",
+        "obligation": "99170010-0e04-4e39-811b-e16c72cd3fda"
+      },
+      {
+        "expense": "eff2a23c-9115-4150-859a-b06125f99ff4",
+        "obligation": "8d7cf1f4-ee07-4db7-b869-e5221fd5adb5"
+      },
+      {
+        "expense": "4c1f87cf-d3db-421d-a7ba-81cd383c5969",
+        "obligation": "6fa15655-cd5b-4f79-a999-d822ed1971d0"
+      },
+      {
+        "expense": "b7945c15-646f-417c-b4ab-8c439f83897c",
+        "obligation": "a4d6f996-1e71-4224-95c9-41e0ce3c3183"
+      },
+      {
+        "expense": "74d52304-3e28-4537-b0eb-b0f334d9434e",
+        "obligation": "a988957a-c664-4149-9fe8-c8c6e36e0fc4"
+      },
+      {
+        "expense": "0f31ebb4-1e13-4ebb-9058-093f60a02c3a",
+        "obligation": "45db6bff-5684-4013-b3f3-e7f13138ad47"
+      },
+      {
+        "expense": "c42b9354-8ed7-4001-8a6a-f93d601f4a21",
+        "obligation": "5c2a43b5-f90a-4b3a-9d72-3f96787080e4"
+      },
+      {
+        "expense": "6f360bff-f628-4d32-a810-6b662b69e3c7",
+        "obligation": "7a550b26-aaaf-4719-b5c0-8a3329c0641c"
+      },
+      {
+        "expense": "5cf7b399-6495-42da-b987-6569206a3a17",
+        "obligation": "db89a8ba-60e2-47ee-898e-9a931632095f"
+      },
+      {
+        "expense": "65a9ecd0-cf30-4456-beff-fccb2428d03b",
+        "obligation": "f020a716-7107-4915-8b75-d8945550132a"
+      },
+      {
+        "expense": "9cad7243-f4e2-4482-9767-f06555fe6c50",
+        "obligation": "f588db6d-a0c1-41e6-a415-1af641492e29"
+      },
+      {
+        "expense": "2a0e8d04-a788-4f72-8719-4b1ca40ebfc5",
+        "obligation": "0860a4bf-73f7-4057-8422-44ee1bde2529"
+      },
+      {
+        "expense": "c094187f-86ae-402d-902a-6c5779a293e6",
+        "obligation": "4371b8bc-7db7-49fd-ad8c-8f5eef98bcc6"
+      },
+      {
+        "expense": "632f9318-c779-445d-809f-c4219b823982",
+        "obligation": "2357fb9c-7021-4f01-8611-ebfd09fa7c5a"
+      },
+      {
+        "expense": "d5588708-aaa7-4060-a3b5-f70a9e24994e",
+        "obligation": "46364381-f316-44dc-aa9c-ae03702e1be7"
+      },
+      {
+        "expense": "26d0f98f-744c-497c-abe2-d0499960c77e",
+        "obligation": "c17db721-1d4d-4ee3-a17d-26b90da2bb45"
+      },
+      {
+        "expense": "4dffca8e-e8b5-482e-ac17-d73a4fe39813",
+        "obligation": "118f9e0e-56c0-4dc7-bd3d-2df43dbafa82"
+      },
+      {
+        "expense": "8b0f294c-49fa-4949-86b4-162b09aca8a9",
+        "obligation": "d1c294e0-6753-4cb1-acd1-15bfa8491894"
+      },
+      {
+        "expense": "04e82a8b-0087-4f22-a9ce-c7850cb0b747",
+        "obligation": "8c0d6f74-f2bc-4066-b80d-f2306b5ad229"
+      },
+      {
+        "expense": "d916f73f-4ac0-4551-941b-2dbfddefcf36",
+        "obligation": "00dd5cad-da1b-4802-8475-caddc61d6bd2"
+      },
+      {
+        "expense": "bdb7d57c-3b1c-467b-8ea2-3bb8bbd2e043",
+        "obligation": "d399b9e7-4b30-4dff-ba1c-270857da9544"
+      },
+      {
+        "expense": "eb50ea07-27cd-4541-baf1-77fedcd5deea",
+        "obligation": "5689fd44-a58b-4d57-81b8-19d1ba67bb64"
+      },
+      {
+        "expense": "e28fda94-5878-4b53-ae1b-345e80d0605d",
+        "obligation": "880da8b8-e4c6-46a1-b123-d96f0173e2e6"
+      },
+      {
+        "expense": "2d6c829b-5ab1-4717-9562-37c36f03c10e",
+        "obligation": "9dae73b2-9571-43b5-b5f8-993a6989bb75"
+      },
+      {
+        "expense": "54829e22-557c-49b4-80b2-d1ddd0fbaeff",
+        "obligation": "3493a4f6-3bdf-446b-a6ec-f9960adf6aeb"
+      },
+      {
+        "expense": "71094bd9-f1b7-4d38-9fe9-f39e0930d875",
+        "obligation": "a5e3609d-385e-40df-a6d5-e69184ccbf63"
+      },
+      {
+        "expense": "e6f47aee-a511-4fb2-894b-c4c678a4ffd2",
+        "obligation": "90c6f95a-1531-4b53-9a09-ce65bc280ed8"
+      },
+      {
+        "expense": "41330cf5-3b20-42cf-9fb4-68060ff6f25c",
+        "obligation": "9d7975da-4cd6-43b3-8df0-4583c5d8c6f9"
+      },
+      {
+        "expense": "708c2ea5-cabf-4083-b4de-c3fe24219f4e",
+        "obligation": "176988ee-aacf-4462-8bf9-462defd643ce"
+      },
+      {
+        "expense": "17f9c462-21f2-4a1f-9f37-1aea578755e2",
+        "obligation": "8a98a49a-5322-4ec3-8ad0-55e2653c364a"
+      },
+      {
+        "expense": "612d14d4-86a7-4122-83d9-fb3678bdd3e8",
+        "obligation": "65939323-4da0-41f9-ad2e-8e0716537d94"
+      },
+      {
+        "expense": "5d9562fd-8c84-4e0d-b75c-ee3b9c18759a",
+        "obligation": "d1355b85-719c-4b9e-b9f9-bbe25141ce82"
+      },
+      {
+        "expense": "6cbb2414-5770-4ffb-a9d4-0ca268b0cdd8",
+        "obligation": "530b93f6-e8d2-4a1c-9ed9-ce4fe22db3fc"
+      },
+      {
+        "expense": "b77766a4-67b2-455a-a054-392a14ca7d6a",
+        "obligation": "f79abd69-ab42-47e7-a848-d7cb5d1a3c1d"
+      },
+      {
+        "expense": "01a5050f-9698-4bc9-bc59-6fa777f0e857",
+        "obligation": "9ceba821-a6a8-463e-ba84-7753c3ee2bf6"
+      },
+      {
+        "expense": "b8b13b80-c7e6-4d3a-ba2f-7deec304c019",
+        "obligation": "b0a283cf-461c-47ef-a45e-bad66e623856"
+      },
+      {
+        "expense": "2b6867e5-6f24-4a9b-bcf8-7e729d4812e2",
+        "obligation": "2be25899-0d88-4301-86fd-4022ef7f88e6"
+      },
+      {
+        "expense": "616f3fdd-a531-47c6-8a27-ae2eda514175",
+        "obligation": "d76c2bbc-1b08-4d8e-abe3-8151e16ec66d"
+      },
+      {
+        "expense": "bda39159-6dcf-4db9-876c-8dc09cccd092",
+        "obligation": "52ed44a3-272d-4b16-be63-0f1f3084fce5"
+      },
+      {
+        "expense": "b44a29d8-d2a5-48a6-ab76-ba2a44cebe22",
+        "obligation": "21d5420c-c8ec-45af-8061-9a2c1acf814b"
+      },
+      {
+        "expense": "8b691b1d-b73b-4b92-a6a2-3da37a8c9263",
+        "obligation": "b36b06eb-a7b7-4bc0-907e-83717c651d87"
+      },
+      {
+        "expense": "2ccdf5b9-b398-4a05-b4df-b10c720f7534",
+        "obligation": "bb895547-b52a-4134-a18c-ea6f49a82a16"
+      },
+      {
+        "expense": "a6a48303-fa06-48e6-9816-43cd15efb226",
+        "obligation": "7b9ff3d4-b8e0-4bc2-b1d7-72071c39ff50"
+      },
+      {
+        "expense": "8a2b9ef2-6992-4116-b0b2-8276446257d9",
+        "obligation": "28a12834-431c-4f0e-890e-43df1b5c0511"
+      },
+      {
+        "expense": "497ad07e-3938-4e46-8b74-5370c7841eb9",
+        "obligation": "da4bd574-4c10-41d9-b216-a4f75bbea3cf"
+      },
+      {
+        "expense": "498dab50-4a95-485e-86a9-310198f8e6cb",
+        "obligation": "6255215a-0f85-4f0e-b8a4-ce8eda650675"
+      },
+      {
+        "expense": "58690482-d21f-48cb-bc0a-399027bd9432",
+        "obligation": "1891d9fe-30df-4157-9ea6-b3755973f18c"
+      },
+      {
+        "expense": "b21bd188-44f4-407e-bfc7-f3f86fbd70bb",
+        "obligation": "7c69f0e1-c2b7-4af8-83b1-3ac1b81598e1"
+      },
+      {
+        "expense": "338901f1-ae58-4949-9473-fbd86b620e6a",
+        "obligation": "911140c2-b12a-4614-bc34-34af34b4adf4"
+      },
+      {
+        "expense": "01ae83b0-cf35-4232-a4b8-9451d151577c",
+        "obligation": "4428892b-5059-4a6e-8af6-15f927d835d4"
+      },
+      {
+        "expense": "a9addb88-72ec-4895-849e-e620727cceef",
+        "obligation": "0b370b64-f3fa-4624-a7e3-54f013382ae2"
+      },
+      {
+        "expense": "b81ba7d0-f9ff-4b59-bf06-0a01e0348fa9",
+        "obligation": "665ec7e8-e800-4cdd-952e-254410542d37"
+      },
+      {
+        "expense": "5beb810a-40b5-4ac1-8630-2a7dd16bd594",
+        "obligation": "2416a7db-dbe4-4c24-aa72-91cd9a06ca90"
+      },
+      {
+        "expense": "de406183-3778-48be-9de3-96fc39676e6e",
+        "obligation": "8bf83c34-7ec0-4192-aa2c-212f783d58dd"
+      },
+      {
+        "expense": "fd8ab1d5-9051-4adf-8180-cefa78aac2e2",
+        "obligation": "72c713be-e622-4a55-a717-92f96d490c87"
+      },
+      {
+        "expense": "f01d5e97-a3b0-4b27-8075-7844ef445072",
+        "obligation": "627e819c-83fb-4ab8-af6f-1c2d0d189421"
+      },
+      {
+        "expense": "fda1d966-5e30-4ebf-be11-8d702b4ad9e0",
+        "obligation": "ef0b5739-2cc3-4d74-a933-33b714ece34a"
+      },
+      {
+        "expense": "f1b8ec15-fb2e-4f37-93d8-84951e57b5c6",
+        "obligation": "cb871d08-9b8d-4dd0-9ec4-83b7a14130ad"
+      },
+      {
+        "expense": "3beb3904-81a3-4bde-9122-a5aa7300496a",
+        "obligation": "bed206a1-da39-407f-8739-75b010bbefca"
+      },
+      {
+        "expense": "e38fa2b7-f284-4d51-a18e-3f7462b8e3f4",
+        "obligation": "86f8381d-5342-4753-8f4c-a7b98ad4eb0d"
+      },
+      {
+        "expense": "e3840930-5e12-43ae-b920-c2f68ef738d2",
+        "obligation": "0dc7fde2-04b1-402c-8605-98e76d2c1b98"
+      },
+      {
+        "expense": "55af3363-2091-4c2d-b1f5-df2c5b95ba6a",
+        "obligation": "91e6aeff-2df1-4926-b30d-abb51b82943f"
+      },
+      {
+        "expense": "189f90f1-083d-4d34-bc81-feb068283275",
+        "obligation": "db87353f-468b-46bd-b5e9-94fbd188b8c3"
+      },
+      {
+        "expense": "7e8fade0-44fd-4115-ab11-5cdd69aea9d0",
+        "obligation": "b5e3fa21-7da6-4d43-bd91-5c2239115001"
+      },
+      {
+        "expense": "480bd891-eff4-4078-b0c1-742b68a88a8e",
+        "obligation": "ce548fc6-701d-45fe-a042-37bcd71162d1"
+      },
+      {
+        "expense": "a85638e6-c222-49ce-8fc8-468ea12fe248",
+        "obligation": "86559e11-ac81-45ac-a221-62a881508fcc"
+      },
+      {
+        "expense": "56401e2f-c424-4116-bd26-bdc1de400cc6",
+        "obligation": "ebdf9146-9815-424a-9320-96eca3d2e118"
+      },
+      {
+        "expense": "9aa2913d-32e1-47ca-875b-1d5c4ec1e4e2",
+        "obligation": "01ef23b6-b0ef-4e2f-abb2-0433a1610759"
+      },
+      {
+        "expense": "e72c708c-f97b-4e77-af06-8da05899a2bf",
+        "obligation": "6e3f2494-2a7a-4224-b729-4a8026af069f"
+      },
+      {
+        "expense": "dbb1523b-5973-45ed-a67f-d040e7af03a7",
+        "obligation": "45fb733c-d187-4b0e-b885-3b502aadb915"
+      },
+      {
+        "expense": "b02b41fa-bad0-4048-bee2-76d3294591e9",
+        "obligation": "3453142b-8863-4db2-bd63-4b0d9e666165"
+      },
+      {
+        "expense": "c58c1caf-28a3-4071-9cf8-5e0f6b2ce3e1",
+        "obligation": "b2bbc2d8-27fc-4eaf-9ec6-b6cfa959271b"
+      },
+      {
+        "expense": "3d4a935a-4686-43c4-9797-7e8d1e5c24c3",
+        "obligation": "a13a9d6e-680e-42d9-a44b-18b01fc00a5c"
+      },
+      {
+        "expense": "c7ed9680-d518-49d5-828a-6231d50bc76b",
+        "obligation": "34f38b80-b1e3-4714-895d-978eda3293d7"
+      },
+      {
+        "expense": "ec0b910e-5b05-46c0-8d54-2fa50dfd2563",
+        "obligation": "4d9a217e-d4de-4366-91f4-1ef46e2dc1ba"
+      },
+      {
+        "expense": "b35f0d26-7ae0-4f11-86af-ac59fc65bec3",
+        "obligation": "10da0798-1d1a-477c-ab3d-2664473d8584"
+      },
+      {
+        "expense": "f6e3c7c0-ed0a-4399-bfd0-045ab689b6fc",
+        "obligation": "2a343a1d-cdec-4930-98c5-6b75cce97cf8"
+      },
+      {
+        "expense": "dc52ec8c-b4d7-452e-97aa-05f6cbbe217d",
+        "obligation": "84d42ae0-708c-4a6d-b1b9-f79115c34a23"
+      },
+      {
+        "expense": "2ff4b19c-3b66-48e4-aeab-f66e0020f498",
+        "obligation": "efafdc5d-ede7-44bf-9c8b-fdc1ef095080"
+      },
+      {
+        "expense": "0e1536ed-afbb-468b-b21e-73d37593338e",
+        "obligation": "ee8d670d-b738-414e-b531-3d3795030d36"
+      },
+      {
+        "expense": "5a32cfd8-2711-43ef-906a-6ee5422b4093",
+        "obligation": "f84105dd-4ba7-4a06-bc73-16c65b974d70"
+      },
+      {
+        "expense": "d89efc23-5a7d-4d5c-83d7-d63ab85bd7ee",
+        "obligation": "3e2ce691-4300-4fe8-8f1d-5eafa904a5f2"
+      },
+      {
+        "expense": "b4d9aae9-98c6-4317-82e8-e2793725923e",
+        "obligation": "3fa7b779-1e87-40fd-8460-f0b796d38044"
+      },
+      {
+        "expense": "0fc3aedc-ba87-4264-aac4-59536f2595ff",
+        "obligation": "a5f76591-bef1-4e23-9c2e-2e4b63733f3b"
+      },
+      {
+        "expense": "ddd2a637-cdd5-437c-a8a2-8d9a28fca963",
+        "obligation": "eb2ceff2-ed6c-4767-bb4a-c473832f1c67"
+      },
+      {
+        "expense": "8025a28d-8b81-4d55-ada5-dc0be64d6cd7",
+        "obligation": "f4b830ea-1ec3-406f-84bf-29860e6f52ae"
+      },
+      {
+        "expense": "e585468a-1942-4594-913b-f312e1996e56",
+        "obligation": "c55d5068-82be-4649-86e4-1327bbdd7d68"
+      },
+      {
+        "expense": "9938cfe1-9614-4a72-a1c3-23eb92e78f93",
+        "obligation": "83d685e0-9581-4f62-9902-2e3f30728078"
+      },
+      {
+        "expense": "c74049e7-740a-4725-a07b-bf6d3c0239b3",
+        "obligation": "e603242d-3219-4d19-af3e-e8b80893d7e0"
+      },
+      {
+        "expense": "93a180e6-8d4b-417b-9102-004d4e9fbb07",
+        "obligation": "58a6e37c-b2de-48ea-9b07-2962226a362c"
+      },
+      {
+        "expense": "3a74be36-9224-44a1-ae0c-34c88210465d",
+        "obligation": "c3d51095-75cf-4bfb-a5ae-1e6a57f51ba2"
+      },
+      {
+        "expense": "c841b332-8a0d-4177-85b5-342d7f97e101",
+        "obligation": "1bedb668-236b-4c79-8616-af8fb72946e8"
+      },
+      {
+        "expense": "51fff109-dae3-4ed5-bacd-b3bd143e8d2b",
+        "obligation": "a853a17b-95b6-4528-8088-001155731344"
+      },
+      {
+        "expense": "b50333d4-f9cc-4bca-94e7-f4db01bae6db",
+        "obligation": "0ecf09ba-fee8-41af-95bf-0fa6729ff47e"
+      },
+      {
+        "expense": "930125ba-36f1-4302-88f0-1fee7b0fa701",
+        "obligation": "5ae01b38-34d2-45f7-93c9-636daaf76caa"
+      },
+      {
+        "expense": "debb13f4-0408-429f-bf07-1fa06e2eac10",
+        "obligation": "b2733f75-9a0a-44d1-976a-644d0f147437"
+      },
+      {
+        "expense": "4015152b-65d6-4b63-8231-e02768a5f6f8",
+        "obligation": "738a8f6d-0ddb-4334-b1cb-dbd03cb2dcfa"
+      },
+      {
+        "expense": "0a2a85ef-d236-4de6-ab8f-5d1b872f0f9b",
+        "obligation": "637d1018-7ec2-4f7d-961e-8bd67b06de73"
+      },
+      {
+        "expense": "90fdeff8-a4fd-4c52-b453-b26c24cc35bd",
+        "obligation": "8ac5fb8a-9017-48f2-8ff6-249c738bf4a1"
+      },
+      {
+        "expense": "596eb529-54c9-486f-99dc-5fa2eda72052",
+        "obligation": "9e8d89cb-b863-4515-bbb0-bebef2cfa980"
+      },
+      {
+        "expense": "5b8fdc0e-514b-4547-bb1b-892286b32327",
+        "obligation": "6efdd3ea-e46e-4d00-9ae1-e8a3423ff1c7"
+      },
+      {
+        "expense": "8c7d9e1f-e2b1-4b8f-946b-ee3178d7e14f",
+        "obligation": "817ccd37-44b0-469b-bde7-e5221f063c0a"
+      },
+      {
+        "expense": "382c733d-b9e8-482c-a50c-36c59f37a412",
+        "obligation": "3c2732c2-b426-42c5-9a3e-951c0078e337"
+      },
+      {
+        "expense": "a6c4bc9a-a0ac-4387-9391-3875b5339c6c",
+        "obligation": "46ca82af-d926-4c66-9f96-6c8b7ab77b95"
+      },
+      {
+        "expense": "ca40454d-8faa-4bc0-bd13-87f8bc2e5796",
+        "obligation": "033558d0-dedc-49e7-9dbd-a1ebb3836cf7"
+      },
+      {
+        "expense": "ff954251-63d1-4ffd-91b0-b59dff2fa21b",
+        "obligation": "5731dd40-063f-4bb6-adc3-4945c8fbe722"
+      },
+      {
+        "expense": "4a837ec4-506d-445b-84d3-52832b907d74",
+        "obligation": "7e6ba843-1d89-44da-ad1c-5c679f79d273"
+      },
+      {
+        "expense": "5a2d241a-d2ae-4762-8c06-ef8f3b72425f",
+        "obligation": "3c3b9360-6d53-4233-9e85-efd5898263d8"
+      },
+      {
+        "expense": "89d64700-bafa-496c-bb56-6ea603622f9e",
+        "obligation": "460c3e74-d25c-4e93-a11c-f8b119c738fe"
+      },
+      {
+        "expense": "80f9649f-923d-4108-9a05-8c4ba3aad35c",
+        "obligation": "0f18ab60-67f6-466b-af29-9a288592e9fa"
+      },
+      {
+        "expense": "be481c41-3ec8-473b-a893-057867b52a83",
+        "obligation": "0ea8c682-cb26-4a40-b951-c7d1debcf399"
+      },
+      {
+        "expense": "10c6aed3-8bd2-492d-8d2e-8f636917f695",
+        "obligation": "5b8f20c3-98b8-4f00-8058-e640820b24d3"
+      },
+      {
+        "expense": "d58f7906-a6fd-4ade-a360-b83998926f79",
+        "obligation": "b3a30e8d-a601-40fb-9c82-e4b918361261"
+      },
+      {
+        "expense": "7774e5f9-ab22-4719-baf2-5023c5ebc50e",
+        "obligation": "2b97bed6-b61d-4e24-b772-a48f3e587426"
+      },
+      {
+        "expense": "dc7ef06b-9cbf-435e-bf23-dd7492ab0cbe",
+        "obligation": "2bae9937-7325-42cc-9c7b-4352c4c80627"
+      },
+      {
+        "expense": "164841ea-8022-48c4-a784-64f3b5653a5b",
+        "obligation": "f661973c-42b8-4297-8d84-8ca73f9f418a"
+      },
+      {
+        "expense": "54e9179e-0628-41fe-8b9c-d69822866149",
+        "obligation": "43756a48-1a06-4a78-a124-06cb3696b35e"
+      },
+      {
+        "expense": "1cf97a05-78e5-4750-b917-d62d4c9e1be4",
+        "obligation": "1b2d3d19-4d21-4e10-9c03-53937617afea"
+      },
+      {
+        "expense": "ef686ea8-9f78-42af-aa5d-d19622a8dc1e",
+        "obligation": "f7d004cd-8c83-4aef-85cc-e76e5491a221"
+      },
+      {
+        "expense": "28668cb1-c494-4ad9-b76d-326158f6b449",
+        "obligation": "33bfca96-eb10-48bc-be50-ffc48460d762"
+      },
+      {
+        "expense": "f9ba5a40-6c4a-4741-b974-21a5851a888c",
+        "obligation": "aaca0a24-9e6d-4583-8ef8-29bc7b3243b6"
+      },
+      {
+        "expense": "086e504c-c608-4af5-acab-5899d52ac405",
+        "obligation": "e5e90b67-0a62-430a-b022-58cd1a124f2c"
+      },
+      {
+        "expense": "33d960fc-b5fd-424b-9803-3208a57556c6",
+        "obligation": "2901410a-9b4f-40d4-959b-cd16713af866"
+      },
+      {
+        "expense": "6d58ea12-828f-4692-b427-22bc044bbbc1",
+        "obligation": "f8adda16-a5c4-4c78-beab-b638c2e5ad0e"
+      },
+      {
+        "expense": "1b5dea29-ac23-40ff-a62a-e39ae6845b58",
+        "obligation": "1dc601df-f96c-4db1-b4d6-381a5fa5c7b7"
+      },
+      {
+        "expense": "15497c23-a58b-45b2-9118-03a3724ec9d3",
+        "obligation": "74b8bf5b-e054-44f4-8f5a-e3cd62e954da"
+      },
+      {
+        "expense": "45546e46-97e7-4e22-985f-7abb9c07a66e",
+        "obligation": "230732ae-4489-49f3-b864-9bf82e48b0b1"
+      },
+      {
+        "expense": "d5027e7e-7528-4a06-9074-c44d019ed066",
+        "obligation": "7ad7a234-9198-4e8b-b1ec-bf7835217dd8"
+      },
+      {
+        "expense": "a6f3af43-f836-4707-a8b5-249e9b91a5b1",
+        "obligation": "debf3eed-9805-4aaf-810a-1d684b1a2e62"
+      },
+      {
+        "expense": "41e162f1-cc6e-4eb8-8a84-547e68320575",
+        "obligation": "705d63a0-8228-40eb-b9e3-2bed6fbc7545"
+      },
+      {
+        "expense": "31b6fa84-9ca0-4bde-bd35-6d2f0c615560",
+        "obligation": "66fad79e-f27a-4a49-9916-061adfae9f3a"
+      },
+      {
+        "expense": "c99fbac7-7612-4cc5-8941-e7f00f8628f9",
+        "obligation": "94518634-f341-4172-95f5-af61095e7f4c"
+      },
+      {
+        "expense": "5124d055-5a94-4e84-969f-59b4f7af46b2",
+        "obligation": "b1c74071-3640-4d2f-88e1-3f7cc0649282"
+      },
+      {
+        "expense": "85c272f2-3e3b-440a-bf30-4d2fd3326c21",
+        "obligation": "d184febf-cb5f-49a8-9dc5-4294ca1c3f88"
+      },
+      {
+        "expense": "23797c74-1ebe-46b4-a411-d9d0f7d2c8fa",
+        "obligation": "5f3ee523-966e-4d33-b925-2bafc8f820b3"
+      },
+      {
+        "expense": "6fa77a4b-f7cd-484f-b23b-9735ee66817d",
+        "obligation": "229689b9-b739-4924-bb54-9b71b1cdef1f"
+      },
+      {
+        "expense": "d3fbd3f6-4045-4e8c-9f40-48e3581b4053",
+        "obligation": "8c7607c4-a7f5-4b0f-9814-fec1c04dacdd"
+      },
+      {
+        "expense": "3eaba940-b1e6-483b-be44-7dcfa9b5e221",
+        "obligation": "0060747c-b400-41d3-b885-07ab1c77ce27"
+      },
+      {
+        "expense": "a73d25a1-3cda-4d24-b443-71c53e885e7f",
+        "obligation": "1d964e99-73d9-4963-8bac-3f574efe9802"
+      },
+      {
+        "expense": "ce5f32e1-3677-455d-9c3d-45881a476275",
+        "obligation": "1324700d-e960-4288-959e-714a4c414498"
+      },
+      {
+        "expense": "d0eca583-6568-4a35-97be-2ed8124b7f09",
+        "obligation": "f3fb3ce8-1bc7-4980-b2f2-1d51590cde14"
+      },
+      {
+        "expense": "50363c8a-1d21-43cb-a440-32bc5ef31583",
+        "obligation": "f2fd4b44-4336-41f5-b8a9-f39a3384b47d"
+      },
+      {
+        "expense": "fd0cee71-b53b-4d42-aaf5-8dddb79ad496",
+        "obligation": "cbc74791-8a7e-4a48-92c2-ee49ff28680f"
+      },
+      {
+        "expense": "6376a0e8-0adc-4bcd-8c67-3d7a1dfcd6e7",
+        "obligation": "eafb9324-c223-4f2d-aae7-c8c561cc5147"
+      },
+      {
+        "expense": "e391278e-a617-4d16-a441-f8e3a837c63d",
+        "obligation": "34ad019d-4b52-4943-bb2e-51c9fab2a892"
+      },
+      {
+        "expense": "4e8b9add-3020-43db-9897-ac59d7d6611e",
+        "obligation": "170daa91-a217-444b-bfa6-36be2f27c97b"
+      },
+      {
+        "expense": "45accc76-5fb7-4cb1-a1f1-6d76076a3b9c",
+        "obligation": "c9622d01-4877-455b-8ca6-eea4612cae64"
+      },
+      {
+        "expense": "e8aaf9a8-23d1-4634-a795-570fc6cbc387",
+        "obligation": "bf6f2d4d-cc56-4746-ab57-02a962c3d6c0"
+      },
+      {
+        "expense": "6d73686a-e90f-483a-a95b-dd6fbec314a0",
+        "obligation": "d10d9155-8645-469f-ac02-8046ea6f8deb"
+      },
+      {
+        "expense": "ac90aa4f-aaa7-4036-9460-36f870d81f7d",
+        "obligation": "6c04d736-ab45-4df3-853b-8efe774d9dba"
+      },
+      {
+        "expense": "a734a186-cd1f-453c-9176-e2404420e01c",
+        "obligation": "3e25494f-6fc4-4e34-ae54-95f5dba72628"
+      },
+      {
+        "expense": "a0da1d88-382a-45a4-a1b8-7602c3c41d11",
+        "obligation": "e05ea90d-6fd5-408b-a03d-ae5619916c48"
+      },
+      {
+        "expense": "eb39f64c-7bda-4ce7-9c88-83da25a8d160",
+        "obligation": "18314e49-efc1-404d-a1b1-81248e69db53"
+      },
+      {
+        "expense": "f0779d96-75d4-49db-9966-7c9b038bcec5",
+        "obligation": "2a7f4071-b390-46f1-b42f-f2433fc1b073"
+      },
+      {
+        "expense": "5419ff09-1cdd-44f5-8d46-969f548c1e30",
+        "obligation": "c44488eb-02f2-489d-9565-740bb1c38b82"
+      },
+      {
+        "expense": "81fea7d9-9a93-409b-8a8a-37b40231e4ea",
+        "obligation": "8479324d-2bff-4bce-acb6-87dc95e90360"
+      },
+      {
+        "expense": "5a524797-9419-4821-bea6-2ca672746f49",
+        "obligation": "866a8802-54a9-45cd-a1c2-02b714ec194a"
+      },
+      {
+        "expense": "7d868922-9796-4914-bb44-de5c6257a19e",
+        "obligation": "498a9f6a-0dfa-4ea1-87b0-6699064853c4"
+      },
+      {
+        "expense": "87eec848-6ef8-4779-acfc-6ff8c6803e78",
+        "obligation": "4fcd3157-ba14-43c4-bef2-49defffb3062"
+      },
+      {
+        "expense": "fe82c64d-71f5-4288-a57c-6130b49cbc1b",
+        "obligation": "da82f5b8-e8e3-4c5b-9749-1896bba63d1f"
+      },
+      {
+        "expense": "249cd892-fc06-450c-bf2e-40bcff8f6d05",
+        "obligation": "5a95d86d-dcb4-45f5-9507-9d4689f967e3"
+      },
+      {
+        "expense": "6032d9e4-aefe-4f12-a96f-e9d62cbc46bb",
+        "obligation": "f5c58e1d-f77e-44ca-9f3c-b165c527366e"
+      },
+      {
+        "expense": "ee498595-f19e-473d-9b6e-59453a6a34c8",
+        "obligation": "831bd5fe-a070-46eb-9c1a-237f27ec316b"
+      },
+      {
+        "expense": "3ff107a2-77be-4bee-a353-2703671ea3f9",
+        "obligation": "2ff49372-0aa1-4860-9257-7c58a09eb47b"
+      },
+      {
+        "expense": "45b187a4-75c2-4bdf-ac83-2a11db2962ba",
+        "obligation": "768636e1-a39d-4dd7-8496-c65ffffcc2f2"
+      },
+      {
+        "expense": "a48b3c79-a798-4d58-8b13-aa627a3a1abe",
+        "obligation": "dbff9921-4142-465e-a5e7-92579fde976f"
+      },
+      {
+        "expense": "9ece9fba-8ef9-44dc-9ee6-886c19c54ce6",
+        "obligation": "5df13101-4d6b-4c98-a709-bf6b1057419e"
+      },
+      {
+        "expense": "b4c2aaaf-7a70-4da7-96e8-1fad13f64174",
+        "obligation": "d209b174-446d-4e03-acfe-2b189da28f28"
+      },
+      {
+        "expense": "a0ea07a7-2b5b-45c9-bd3f-52d1e0769a62",
+        "obligation": "afebece8-4b05-494c-ae1e-e37dfaca701b"
+      },
+      {
+        "expense": "07c4fe68-c6a3-45c2-a2a5-a97f329e1b0c",
+        "obligation": "4da71b8d-83a5-4e3d-9f0d-68a7b2347c27"
+      },
+      {
+        "expense": "9d777399-c5d6-4598-ae51-89e43e929323",
+        "obligation": "5ae15e20-f27c-4c32-ab5b-182f3004ff86"
+      },
+      {
+        "expense": "b8f62403-b925-461f-9fc1-30c252077080",
+        "obligation": "dc05d6f8-a0c6-4405-a86c-095053220185"
+      },
+      {
+        "expense": "3dd688a0-cf0e-4ef4-9323-e12b3b545f54",
+        "obligation": "2433ce76-ca4c-4e54-81c3-0f042a5d0c38"
+      },
+      {
+        "expense": "d3b80485-772e-4fc1-972a-2eedd12cca02",
+        "obligation": "d0297141-95a3-4fb8-80f1-7e39421b8738"
+      },
+      {
+        "expense": "976e4af2-d7e9-4ded-a88b-a81e2f201c10",
+        "obligation": "ae4ad80c-b181-4f99-8d97-fb58ee7a2144"
+      },
+      {
+        "expense": "d11f641b-c1bf-4876-bbd8-1f6b06e74d35",
+        "obligation": "b6473f0e-38e4-475d-b93b-4817ea51ba74"
+      },
+      {
+        "expense": "179dbb10-9840-437d-a705-7f2badc2b59b",
+        "obligation": "521ad10c-3176-437e-b31d-5e6e9d8e59f9"
+      },
+      {
+        "expense": "20928442-9b8c-4f5b-ab72-4de7f7da6cde",
+        "obligation": "aba4d00d-e7a7-4671-b1d6-f4bf6f6dce57"
+      },
+      {
+        "expense": "d61836e8-6970-49d3-aa07-2a8b7012ec04",
+        "obligation": "19028060-3222-40af-8f18-daf956332c4d"
+      },
+      {
+        "expense": "21c5b8a4-b0b0-4069-92a2-737b6a5188eb",
+        "obligation": "a669fbbf-6727-4500-be6a-9bfa96697882"
+      },
+      {
+        "expense": "b792454e-7670-4974-86ed-4e55c0dcabbb",
+        "obligation": "1389ddc7-7d71-4d45-a7b3-e6388651675b"
+      },
+      {
+        "expense": "455432b2-8abc-4512-b1aa-ecb5aa88cfa2",
+        "obligation": "97154009-d675-4b35-a6dd-cb5b5dc61a6e"
+      },
+      {
+        "expense": "28582e43-d628-46fe-ac8d-253e9afbde92",
+        "obligation": "74eed68d-f1c5-444a-9bc9-7cde34d27503"
+      },
+      {
+        "expense": "a099d8c5-d749-4b95-88a5-c800973cf18d",
+        "obligation": "0e7232de-56d4-4a7d-889a-f8451cb3e107"
+      },
+      {
+        "expense": "c65fa225-d333-4cb1-a0ea-381a726f372b",
+        "obligation": "f06b434a-a4ca-423b-ae96-6ade4777a97c"
+      },
+      {
+        "expense": "e5f9c784-05da-45d7-822f-e319b34bacb3",
+        "obligation": "1fdc767a-60f6-4b40-a4a6-6e502996a48c"
+      },
+      {
+        "expense": "bb869e02-a9ff-4d5d-8bad-7e4886f9ebcb",
+        "obligation": "dbff8c61-7e71-4ca7-8363-18cf0099b93d"
+      },
+      {
+        "expense": "8496a38f-8cda-4962-b81a-c2b67643d61f",
+        "obligation": "f3548898-77bd-4b79-b33a-2d5308fbc1e9"
+      },
+      {
+        "expense": "132e4bcc-a6cd-4180-8d70-29f29f5f3e7a",
+        "obligation": "97874d0c-b481-441a-a394-e7935abd9866"
+      },
+      {
+        "expense": "4c31f87a-508b-431b-850f-4bcc615d565f",
+        "obligation": "fc28c1fd-f957-494a-99f1-5db4ae11d4bb"
+      },
+      {
+        "expense": "60a1d60f-6b5a-4097-b299-23b3de1a2956",
+        "obligation": "a7ebe820-573c-4f07-89f9-dc4f051af1fc"
+      },
+      {
+        "expense": "855a719b-1039-44a1-881b-e25d6f17c017",
+        "obligation": "1a7d7f64-0356-4c2c-b08e-48b383359496"
+      },
+      {
+        "expense": "deff6aa8-461f-4bf8-ab46-c67d65569473",
+        "obligation": "39da3de8-ef3a-4d79-b204-ffc7f2825ae6"
+      },
+      {
+        "expense": "a32a7cfc-7250-45c7-8d57-a27b735792bd",
+        "obligation": "4e4dad61-6173-4794-8ea4-9375ab54230c"
+      },
+      {
+        "expense": "41591c96-de3a-40e2-ab58-8a255dd4768d",
+        "obligation": "a9bed042-83bb-4145-836e-e04666729a6d"
+      },
+      {
+        "expense": "7f9658b7-0dfc-4c62-9511-cc332772d6a6",
+        "obligation": "591b7139-48a9-4135-8b6c-556878d7f2b4"
+      },
+      {
+        "expense": "f5f3bfea-105a-49db-a61c-4773e67c7068",
+        "obligation": "1f1d7e5a-ee17-4cad-895e-7b58a519cb58"
+      },
+      {
+        "expense": "e270c9e1-854e-4727-9080-4c61de620cb3",
+        "obligation": "3d1b4a3f-5f9b-4319-95d9-8fbbebbaf705"
+      },
+      {
+        "expense": "fa128a8b-0037-4614-9356-fb3dcff43826",
+        "obligation": "83315c9c-1dd5-4ab8-83e2-bd0a73b26abf"
+      },
+      {
+        "expense": "d12262a9-0e1b-4f9c-a3bc-00032edca7be",
+        "obligation": "8e66c13e-4468-4cd8-b9fd-aa23b8ff054e"
+      },
+      {
+        "expense": "613c6e54-91cc-4d9e-99a2-e00d0403f889",
+        "obligation": "e110167e-ccb2-49de-aa79-61e9445d12e1"
+      },
+      {
+        "expense": "0dc6f119-7616-4fc9-9e57-0c3eb7368fcd",
+        "obligation": "6f38d3ae-8a3f-4e4d-a7d8-c3653f96a8de"
+      },
+      {
+        "expense": "c4d52b53-6117-4d1e-9626-ed5a19b36fb2",
+        "obligation": "cce352ed-e8dc-452e-aa17-e2980d48a1da"
+      },
+      {
+        "expense": "559b3c87-f5eb-4626-9cb8-e4100d78f9ec",
+        "obligation": "da752013-ca6a-4e81-a3b5-3b0f91c429cb"
+      },
+      {
+        "expense": "97218bdc-f2a2-43f6-b06a-26193a797582",
+        "obligation": "94b5ebc2-91ca-43be-a475-593d77b89514"
+      },
+      {
+        "expense": "72d02b2f-d0b4-47d6-b091-45ab9d819288",
+        "obligation": "19ddf647-2c5a-4fcd-a536-e5e5c300affb"
+      },
+      {
+        "expense": "e11addd0-9789-432d-93e6-503dbaed2896",
+        "obligation": "1dbbda2f-e38c-4b2e-824f-066a79674ddc"
+      },
+      {
+        "expense": "6b861229-f255-4274-a8ef-2a53b6c6a7e0",
+        "obligation": "e32b9a09-7abc-4753-8476-c89b43cc1f6d"
+      },
+      {
+        "expense": "b7354663-178a-47c4-a4e8-dc79359be27b",
+        "obligation": "db290530-3d81-443b-bb11-c50d09a81240"
+      },
+      {
+        "expense": "e5ad8ec7-cf18-4bfc-8081-0514d2183857",
+        "obligation": "05632f84-eb79-44f3-8211-a4c60b1df805"
+      },
+      {
+        "expense": "84cd9b4a-5675-4f9a-9de5-f6ebfe7d7eea",
+        "obligation": "e834022b-4bbc-49ba-8708-fb8ff390d942"
+      },
+      {
+        "expense": "3740d359-1944-4d9e-b218-2c2a1b3e9f1f",
+        "obligation": "6c04999e-ef91-4c13-a12d-585758697d66"
+      },
+      {
+        "expense": "1fa2b72d-e1ea-4abd-bbd3-09513bfc41e2",
+        "obligation": "0651b259-5b0c-48cf-9ec1-ff2f412d5650"
+      },
+      {
+        "expense": "761b098b-a2db-4c27-b7e8-06cd1f8827b6",
+        "obligation": "1e9307a9-5546-4f42-90c8-f18aaa49d20f"
+      },
+      {
+        "expense": "28aa9cdb-05eb-448b-9129-12575f0a6f74",
+        "obligation": "6651dcee-5d13-4d78-8f33-d1802617fd81"
+      },
+      {
+        "expense": "f2095b29-cc63-4372-8506-1f457ea52708",
+        "obligation": "6020b4c6-82f5-41bf-946e-986d70c6dbde"
+      },
+      {
+        "expense": "57d954db-53ef-451b-8200-8e0b77c10e78",
+        "obligation": "eb84ba40-a04e-48f9-84f3-6fa6cbcf3a02"
+      },
+      {
+        "expense": "733ea56b-e863-455e-8da8-cedcdc95aa32",
+        "obligation": "a78aa992-4174-460e-be1d-2a6921d80d42"
+      },
+      {
+        "expense": "87a31418-3c4f-4e4f-baac-7b16e2857a97",
+        "obligation": "3b71b2c6-9558-47a3-a23a-1b45c83aa005"
+      },
+      {
+        "expense": "f56e443e-4a44-493e-b4c2-18dcbc426264",
+        "obligation": "1857e54f-8680-4268-88e7-fd7a5d23f2fa"
+      },
+      {
+        "expense": "9c2dac57-4d67-4ae6-8707-6a51ea093ba4",
+        "obligation": "e2724ebd-4d32-4fab-b9aa-d1461eff326a"
+      },
+      {
+        "expense": "b9cbb94c-0760-453b-b41e-3d6d0ca0ff52",
+        "obligation": "889d56aa-e372-49cb-81c5-8ec289f4dc5a"
+      },
+      {
+        "expense": "b536b443-c65a-4f87-9ae5-25c103478cae",
+        "obligation": "46584f89-2d4a-494c-abdf-ed67a2e840c6"
+      },
+      {
+        "expense": "dcfc08fc-5b19-4d2c-a616-fd0962ca6a53",
+        "obligation": "b290a3d7-2ec4-43f3-ba8c-18a2cb35a9fc"
+      },
+      {
+        "expense": "f1b6b104-a381-4f48-9ef9-f8bf7bd242d2",
+        "obligation": "155c3c78-81cc-46a7-8d05-e8e285833aab"
+      },
+      {
+        "expense": "4291e3d8-6092-4943-93e1-930700f05445",
+        "obligation": "3da204e9-278c-4fcc-a088-0ba28f58f092"
+      },
+      {
+        "expense": "08ff4468-eb28-479d-b7b1-b0e62113f684",
+        "obligation": "22375f4f-fa14-425b-b6f7-3f39733d84c0"
+      },
+      {
+        "expense": "0f50b457-02f4-4e1c-93c8-de874bbb86b8",
+        "obligation": "db026d0b-4b79-4a9a-8302-85b0972a9bc9"
+      },
+      {
+        "expense": "8704fc92-6697-47b2-94d5-f85312c4e324",
+        "obligation": "d987fc8c-b884-477a-b405-d4141d6b4503"
+      },
+      {
+        "expense": "c4ca4f01-08bb-45f4-91d5-558da59b291a",
+        "obligation": "90dbea60-ab3c-40b3-83d9-4ba3a880a3c4"
+      },
+      {
+        "expense": "0ccbecec-1eef-4898-9ffb-614d23d699e6",
+        "obligation": "1cabf86c-8e17-422a-be6f-bbab415beeff"
+      },
+      {
+        "expense": "4531557b-906a-49d0-9ed9-562be1520797",
+        "obligation": "c9359ddd-dcaf-4f8a-a123-dd04c5bf2da2"
+      },
+      {
+        "expense": "387734d8-915a-4dd2-895e-45d2d87dff52",
+        "obligation": "2232c2a5-7f7d-4172-8a9c-b067ffd7dc9c"
+      },
+      {
+        "expense": "b519e78c-de6b-4855-8952-b5f11e028aaa",
+        "obligation": "62136ed6-68a5-4c05-bdc7-8a315805dc20"
+      },
+      {
+        "expense": "190cc4a1-1139-49d7-9af7-116c7848100d",
+        "obligation": "1db76342-7a00-4408-b9fb-28421ceb5dbd"
+      },
+      {
+        "expense": "20ac0d2c-6348-4429-b0e8-582e2e6ec0ad",
+        "obligation": "1acc3132-b6a5-468b-bdd6-b7cf9b36e9e0"
+      },
+      {
+        "expense": "a7949a9c-04ff-471e-9611-b3215d96185c",
+        "obligation": "a6710fa0-98c8-41f4-b376-2c4fb4ce091e"
+      },
+      {
+        "expense": "ab488ec8-82ca-447d-ae82-e4b6a933efa4",
+        "obligation": "316cefea-8d99-49c3-80a9-d967464890fb"
+      },
+      {
+        "expense": "0d01de96-93c5-4e3e-863d-eebba63935b4",
+        "obligation": "371c0b5c-d461-460c-a208-bd6221fa08fe"
+      },
+      {
+        "expense": "82890afe-e39e-4286-9488-0b9ba3fea103",
+        "obligation": "a96ccabb-73b3-4379-b046-a1748ed2f905"
+      },
+      {
+        "expense": "e7c362f9-77b8-455e-aa5d-1da2346a3618",
+        "obligation": "dc865edd-db29-4ae1-b0c1-474d209a2458"
+      },
+      {
+        "expense": "405dd9d9-28d5-4289-81aa-9bf4ef38cfbb",
+        "obligation": "c4a9cbb5-de6c-494a-b0b1-3f6cef59f714"
+      },
+      {
+        "expense": "a3f7da38-8486-429d-a4c8-19a926152b52",
+        "obligation": "4a82885f-f869-457c-85a6-237c435bb333"
+      },
+      {
+        "expense": "1c6c93b9-2415-47fa-907e-a797109cb8d9",
+        "obligation": "1f43edd4-4b68-4d94-94fc-f194df4de394"
+      },
+      {
+        "expense": "769f7468-04dd-450a-a38a-d4f2d06658f2",
+        "obligation": "689052e3-e3a6-4860-a4c1-3d9273148ca7"
+      },
+      {
+        "expense": "6998914a-b471-4096-8f10-4b3345feb2b8",
+        "obligation": "50a2bedc-c2e0-4a63-82b6-a5b888590604"
+      },
+      {
+        "expense": "3a223581-2436-43fd-b340-1e503193b31c",
+        "obligation": "d19553be-24e8-49ef-b250-1bf163420329"
+      },
+      {
+        "expense": "4ac1c488-399f-4192-85cc-a88ace31379f",
+        "obligation": "369f08c2-160c-4cfd-99ac-4b8a69fd8bb1"
+      },
+      {
+        "expense": "8ecefe1b-2260-4bde-a661-ea3e377a8dbc",
+        "obligation": "3dd0d3ac-24b2-4cd3-baa0-0cc94213d612"
+      },
+      {
+        "expense": "100247d5-253b-4ba6-91f2-25e1798bc764",
+        "obligation": "23648c29-77d7-4b56-bf3d-fed4a428e17e"
+      },
+      {
+        "expense": "c4cbed59-c052-4548-beda-dfcc89bcce13",
+        "obligation": "b369d8e1-f08c-41f4-85de-590ee8f1593c"
+      },
+      {
+        "expense": "15b75d97-b1ea-4132-91b6-e73eb155e7ca",
+        "obligation": "5a3ea8c8-f7b7-44f1-8384-681f39a2afba"
+      },
+      {
+        "expense": "b7b2cbea-f551-43a8-9972-f0cebf615d04",
+        "obligation": "844415d4-e8bc-456f-9161-ea6198e8c28b"
+      },
+      {
+        "expense": "92c24e6e-890c-4bca-9b14-dcf7589bcad5",
+        "obligation": "c54ca687-e338-40e8-8e3c-af7feba64542"
+      },
+      {
+        "expense": "0e76d15f-51a7-4fe6-a6f7-b787119e0ed6",
+        "obligation": "62d2b403-f9fb-4221-b9f8-a926135f6829"
+      },
+      {
+        "expense": "1e0910ab-a9b8-4dd4-a5cf-00f6ccf2b46c",
+        "obligation": "050c0640-2e21-4e4a-8380-b2b3fad8542a"
+      },
+      {
+        "expense": "5a36b228-c515-4de3-b65e-fe7848b6dde7",
+        "obligation": "1d7c3274-835a-4819-ac1a-d6ee8fa383d0"
+      },
+      {
+        "expense": "8ac14a01-9f07-400b-aad6-b84131b0c3fe",
+        "obligation": "6a0a1e42-3289-4de4-807a-8afb4994626b"
+      },
+      {
+        "expense": "84f50c22-b80d-4eef-8b63-ce449cbcb175",
+        "obligation": "1bb25685-d427-4d40-ba3a-7a9ef9a3214f"
+      },
+      {
+        "expense": "eeff63b7-33bf-4f19-9e8a-4c2dcf5232d0",
+        "obligation": "e4105148-7997-4737-a409-e845d4a20e43"
+      },
+      {
+        "expense": "85e12ae4-74eb-4fc4-ab17-fb00fbd0d0a3",
+        "obligation": "b411ad2c-eac0-4ce6-b88c-72bed4e39df6"
+      },
+      {
+        "expense": "0fc71ae2-7073-48e4-8a97-c86d59a36e15",
+        "obligation": "5992647f-e853-4945-8c8a-0036013410ae"
+      },
+      {
+        "expense": "fa34968f-9b0a-4105-bcbe-ac730734ba4b",
+        "obligation": "00f19162-64e4-4d1f-ab22-e322651344fd"
+      },
+      {
+        "expense": "adc7ad33-2293-4685-b64c-1792a82f1ff0",
+        "obligation": "e641cc10-f232-4044-9053-a5b6a15f23d7"
+      },
+      {
+        "expense": "4576b187-6158-4436-bcc3-e25441a3e473",
+        "obligation": "98ff6ca2-3751-4e18-a283-c068ebe987d0"
+      },
+      {
+        "expense": "fa28d8c5-a6af-43fe-97d5-74f555af9738",
+        "obligation": "a1afb23f-9ebd-4b74-b7f0-e0f82adde9ba"
+      },
+      {
+        "expense": "2c02ed44-2fa8-4123-b318-f444b65c69ec",
+        "obligation": "27c0713a-e135-4e6c-845e-faa989b6d49d"
+      },
+      {
+        "expense": "cff9dce7-c206-49af-bda7-c18bbae13ddc",
+        "obligation": "0e2d5741-6cd5-402c-9a15-b0612ba64975"
+      },
+      {
+        "expense": "6cafcb26-af57-4ce5-9fbe-920f63d99ff9",
+        "obligation": "28dcb32f-6e70-4806-8ea2-d58b64a1fcd4"
+      },
+      {
+        "expense": "bd9670eb-df80-45b3-899e-e62cb8a9eb5e",
+        "obligation": "4d7900c2-24c4-4a13-be07-28f0febd0c6f"
+      },
+      {
+        "expense": "f16a5524-03e8-4af6-af90-8bc91ff31e1f",
+        "obligation": "68054e9a-8a1a-4cfe-9ca5-183487930dfb"
+      },
+      {
+        "expense": "a497fc99-cf6d-4953-94f6-c2fffe64d96f",
+        "obligation": "b5fa6a79-a8f7-48f0-9c92-ddd5e4dfa611"
+      },
+      {
+        "expense": "d56d84c5-e44e-4273-881e-3569a1eb5167",
+        "obligation": "a70993fc-aa2b-4fd4-97c3-8c9cf8b67caf"
+      },
+      {
+        "expense": "66fdd8bc-db69-4eb5-9706-478c31b6a719",
+        "obligation": "ae923f36-73aa-4755-a095-edd8c5d7a924"
+      },
+      {
+        "expense": "b00e8f6d-55ad-46a4-b531-3b18e32c418d",
+        "obligation": "66320f17-b1b9-43aa-9cd8-c3ea7155cada"
+      },
+      {
+        "expense": "351f28db-383f-4171-8535-63bf0e2a04dc",
+        "obligation": "cc983982-747e-4da4-8740-48ff1e05a659"
+      },
+      {
+        "expense": "1062ceaf-5dc6-4d97-b1f5-4e8238af37a2",
+        "obligation": "da8bf43b-dcd8-469a-8036-87533332665c"
+      },
+      {
+        "expense": "9a3b0944-d933-4c6c-b523-30e43e652db5",
+        "obligation": "d8d25b6c-b274-4c8a-827f-efba6f865540"
+      },
+      {
+        "expense": "a1fde98f-4174-4162-abab-e94fbe887e6f",
+        "obligation": "b2bece5f-dd27-48db-a491-8c323c9aaa13"
+      },
+      {
+        "expense": "87b909a3-48e5-4cb4-862a-2e44f7f2f825",
+        "obligation": "6b4446a8-97da-4f8c-9d61-bcff919d1b0a"
+      },
+      {
+        "expense": "8fb5e6d9-7dc1-4d5e-bca5-96c51ffe16b8",
+        "obligation": "7a057814-fb87-4f29-92f1-7f595b7e413b"
+      },
+      {
+        "expense": "979be99b-8ddf-4638-9d32-8e6a680d8101",
+        "obligation": "9e82055e-0c94-4936-90b3-9f9914d1d16b"
+      },
+      {
+        "expense": "393ae832-1976-4886-822b-ad6950b02439",
+        "obligation": "c4ffbe75-1cbb-4260-a2f1-aa27c19142b7"
+      },
+      {
+        "expense": "fb5ea8cb-8aca-4c52-9d6e-c452a21f02f5",
+        "obligation": "ff464429-3b24-475b-a22d-161ee9445f20"
+      },
+      {
+        "expense": "9fd38bda-092d-404f-9eec-d9dee87c3005",
+        "obligation": "ee840830-e500-4a82-800e-50e62ac7a8c3"
+      },
+      {
+        "expense": "15f9ac79-40db-407b-a22a-9fbc2dbd985e",
+        "obligation": "d54ccec4-c74d-423c-beb1-29f292d5ef40"
+      },
+      {
+        "expense": "dbf67be9-0277-43f9-b835-140aebb8e737",
+        "obligation": "39bb7855-a28e-4b36-897d-771ba8443649"
+      },
+      {
+        "expense": "8e7e4bce-d0f5-47b7-a960-99a73db3f290",
+        "obligation": "5398aa56-c539-4922-aec9-65df4eb150a0"
+      },
+      {
+        "expense": "ed2fc037-cee2-41a9-ba48-0a311480ab7e",
+        "obligation": "25a18a97-b2be-4a65-bb00-8a662d88c298"
+      },
+      {
+        "expense": "fb02e253-d305-4707-94bb-705db2a28d04",
+        "obligation": "dc639400-4318-4423-80fa-717b740401d4"
+      },
+      {
+        "expense": "f153b41b-b7db-4bd4-8ef4-ca808eb52c0f",
+        "obligation": "07c67c9e-1e6c-4ca8-a8e7-30b8c95294df"
+      },
+      {
+        "expense": "3bd747a9-cd61-4f68-b38e-ecf752d40275",
+        "obligation": "79960eb0-9a75-41f6-a87b-c90637cf7c90"
+      },
+      {
+        "expense": "54c3775f-6c45-4b1c-8c16-4ed3edec3063",
+        "obligation": "9a492a5d-7532-4f2a-b508-f1f990bbfac6"
+      },
+      {
+        "expense": "a8ac43bd-8fcc-436f-b3f5-42595a13a420",
+        "obligation": "8c3e3d5b-4467-4c27-944b-ad9e05a79257"
+      },
+      {
+        "expense": "e5279d84-fea5-417a-a2d4-65283e7ad295",
+        "obligation": "2adedea3-e3cd-4c7d-b55e-caee75456392"
+      },
+      {
+        "expense": "78079382-f113-4ea6-8381-93d4c6ec03c6",
+        "obligation": "18cd3ee6-1742-4a29-bfb8-35e7c3df2adc"
+      },
+      {
+        "expense": "76c84e78-cac0-468f-a955-ccfacb4bbd89",
+        "obligation": "ca862c4a-b477-4ab4-bb25-82c953fac1cf"
+      },
+      {
+        "expense": "e3e4f4c6-3793-488e-a21e-f4245f93eba6",
+        "obligation": "3b75b1de-e010-4d2b-b388-fe1e3bc3d590"
+      },
+      {
+        "expense": "2416f4f5-d01c-49e5-8d8c-de87d62de925",
+        "obligation": "a6654c4c-cdb4-4d5c-ae42-d1bd7d29d951"
+      },
+      {
+        "expense": "ceffedd6-a888-49cc-8d1b-ab1ca1278230",
+        "obligation": "61071e54-eb94-4134-8bc5-3463ba7abb91"
+      },
+      {
+        "expense": "a9c3639c-1d7e-4f4b-b63c-ef7318288d05",
+        "obligation": "4e3763bf-3869-41a1-afba-2f827ec3155a"
+      },
+      {
+        "expense": "a3cdac8b-e641-434e-b672-373cd82d8140",
+        "obligation": "157c0c06-67b7-4ca5-8009-825c48283a9d"
+      },
+      {
+        "expense": "a0e23a78-7dda-47d7-b2df-ef2627a7f16c",
+        "obligation": "1ebe7579-eb00-4616-88b4-b97fac21ac20"
+      },
+      {
+        "expense": "304f2300-15e8-4c12-a8d3-ce5474a81bb5",
+        "obligation": "113d21b6-c5cc-4524-8363-c7271b9e02e1"
+      },
+      {
+        "expense": "5b403eb1-9f80-4843-9fb1-d6c73fe7bfed",
+        "obligation": "28088843-272b-4f8f-9a4a-8aa5eb6f5e85"
+      },
+      {
+        "expense": "f00f0256-ae56-46d1-ba12-fb82951024f6",
+        "obligation": "2d4223c2-cb71-46f8-8962-f84abc19eac6"
+      },
+      {
+        "expense": "a81b43fe-41fa-47b1-8630-59534ff2afeb",
+        "obligation": "bd4c1bc8-0d8f-4c0a-b17b-76e115b36ca2"
+      },
+      {
+        "expense": "d25fc67a-b91a-4572-9af4-b1408c1e83c3",
+        "obligation": "dc9ffb16-16f2-4dea-901a-1e989ab1a670"
+      },
+      {
+        "expense": "ac811fef-3f99-4b7c-8432-a62c8aa84be9",
+        "obligation": "2b34042d-aba3-41d7-ac66-6203e2eea267"
+      },
+      {
+        "expense": "4a134233-0831-46f1-901c-a361de7a94e8",
+        "obligation": "08e4d8f4-4ec0-4e9f-b7f9-9036486e1346"
+      },
+      {
+        "expense": "25255e8b-ab63-4e14-82e7-a9695b5488fa",
+        "obligation": "f1998ab1-b7cf-4984-9687-c7dd47035177"
+      },
+      {
+        "expense": "22592d06-74cf-4799-9d48-7fee66fadea8",
+        "obligation": "91398c7c-ad09-4937-9791-7662c72145d0"
+      },
+      {
+        "expense": "91b45b92-2b2d-401c-a5ea-056c6cec7afd",
+        "obligation": "dc860838-5dd1-437b-8b3f-b719f27a4104"
+      },
+      {
+        "expense": "45a50ad7-5ace-40a5-a65d-928ba88c580e",
+        "obligation": "832d158f-daa3-47f0-9bfe-b39222ea2fc9"
+      },
+      {
+        "expense": "17b3fb06-a7d5-443e-b5de-50e7a1d8368c",
+        "obligation": "5998c927-b9e6-48fb-8068-acfa3ab6d7e1"
+      },
+      {
+        "expense": "da87aaed-bf19-45e7-92fd-e7ce0b01fda0",
+        "obligation": "d417d177-cb78-408c-86e6-bc87a162195c"
+      },
+      {
+        "expense": "a3be322b-6850-423e-94c7-d800c006fdf8",
+        "obligation": "a29432f6-9fd5-420b-9a37-701ab793981c"
+      },
+      {
+        "expense": "b4e7fb20-94cb-4503-a783-2b1bd0f70714",
+        "obligation": "6009b423-ad30-428a-b75d-70416eb8f312"
+      },
+      {
+        "expense": "e270c217-df34-48d5-99a9-e351b4d013da",
+        "obligation": "923945ef-00fa-4a3c-93fc-6446d72504cd"
+      },
+      {
+        "expense": "b463d46f-9c1b-4e8d-96d6-43322fafb1bb",
+        "obligation": "342c1b03-a38c-4e47-b205-25a3523f0017"
+      },
+      {
+        "expense": "649598ae-64a0-43d7-8e0a-758f69014fc2",
+        "obligation": "dfde9646-f203-4f6a-a554-950ee1ff6e7a"
+      },
+      {
+        "expense": "351fdf76-5242-423f-9899-f3cbbb744569",
+        "obligation": "a415aa5d-bc0e-4729-9030-77074bdb0dc6"
+      }
+    ],
+    "category": "61b8133a-1c07-4cbb-9c14-c673f1da8a64",
+    "facts": {
+      "count": 1001,
+      "amount": "1001000"
+    },
+    "history": {
+      "state": "PENDING_OPENING",
+      "activation_operation_id": null
+    },
+    "setup": "CANONICAL_EXPENSE_AND_APPROVAL_RPCS_NO_DIRECT_FINANCIAL_INSERT_NO_CASH"
+  },
+  "productionAccess": "NONE"
+}

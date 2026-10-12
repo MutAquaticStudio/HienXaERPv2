@@ -35,8 +35,8 @@ export default async function OrderDetailPage({ params, searchParams }: { params
   const { id } = await params;
   const supabase = await createServerSupabase();
   const [orderResult, lineResult, supplyResult, deliveryResult, warehouseResult] = await Promise.all([
-    supabase.from("sales_order_read").select("id, order_number, commercial_state, fulfillment_state, payment_state, customer_name_snapshot, site_name_snapshot, delivery_address_snapshot, total_vnd, requested_delivery_at, quotation_revision_id, created_at").eq("id", id).eq("branch_id", access.branchId).maybeSingle(),
-    supabase.from("sales_order_lines").select("id, material_id, base_uom_id, line_number, material_name_snapshot, quantity, unit_price_vnd, line_total_vnd, price_source_type, units_of_measure:ordered_uom_id(symbol)").eq("sales_order_id", id).order("line_number"),
+    supabase.from("sales_order_read").select("id, order_number, commercial_state, fulfillment_state, payment_state, customer_name_snapshot, site_name_snapshot, delivery_address_snapshot, total_vnd::text, requested_delivery_at, quotation_revision_id, created_at").eq("id", id).eq("branch_id", access.branchId).maybeSingle(),
+    supabase.from("sales_order_lines").select("id, material_id, base_uom_id, line_number, material_name_snapshot, quantity, unit_price_vnd::text, line_total_vnd::text, price_source_type, units_of_measure:ordered_uom_id(symbol)").eq("sales_order_id", id).order("line_number"),
     supabase.from("sales_line_supply_read").select("sales_order_line_id, allocated_base_quantity, remaining_base_quantity").eq("sales_order_id", id),
     access.permissions.has("delivery.read") ? supabase.from("delivery_read").select("id, delivery_number, execution_state").eq("sales_order_id", id) : Promise.resolve({ data: [] }),
     access.permissions.has("purchasing.create") ? supabase.from("warehouses").select("id, name").eq("branch_id", access.branchId).eq("active", true).order("name").limit(100) : Promise.resolve({ data: [], error: null }),

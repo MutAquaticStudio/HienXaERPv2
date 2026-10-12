@@ -1,0 +1,51 @@
+{
+  "scope": "MASTER_QUICK_CONFIG_BOOLEAN_DRAFT_RESTORE_THRESHOLD_UI",
+  "checkedAt": "2026-10-12T13:57:43.646Z",
+  "source": {
+    "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+    "sourceSha256": "a788e0bc16c1e561df1efce5716e629fc900f7ce4ad392f1829ee671a005ec23",
+    "uncommitted": true
+  },
+  "schema": {
+    "count": 186,
+    "latest": "20261012110100"
+  },
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [
+    {
+      "name": "SALES_WITHOUT_CUSTOMERS_MANAGE_CANNOT_OPEN_QUICK_CREATE",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T13:59:02.691Z",
+      "source": {
+        "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "sourceSha256": "a788e0bc16c1e561df1efce5716e629fc900f7ce4ad392f1829ee671a005ec23",
+        "uncommitted": true
+      },
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {}
+    }
+  ],
+  "documents": {
+    "marker": "GCF1115FF9B64"
+  },
+  "pageErrors": [],
+  "status": "FAIL",
+  "error": "locator.waitFor: Timeout 30000ms exceeded.",
+  "failurePages": [
+    {
+      "url": "http://127.0.0.1:3112/admin/orders/new",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA ERP\nĐiều hành\nTổng quan\nBán hàng\nĐơn bán\nBáo giá\nKhách hàng\nMua hàng\nKho hàng\nGiao hàng\nTài chính\nNhân công & dịch vụ\nQuản trị\nBáo cáo\nTin nhắn\nĐăng xuất\nPhiên làm việc có phân quyền\nQA không đầu kỳ G119EE6ACBC\nNhân viên kiểm thử owner\nTO\n\nBÁN HÀNG\n\nTạo đơn bán\n\nThêm nhiều dòng vật tư, xem giá và tổng trước khi lưu; hệ thống kiểm lại giá và thông tin khi tạo bản nháp.\n\nKhách hàng\n+ Thêm khách\nTìm khách\nChọn khách hàng...\nKhách QA chi nhánh mới\nKhách kiểm thử khắc phục\nKhách kiểm thử khắc phục\nKhách kiểm thử khắc phục\nKhách kiểm thử khắc phục\nQA thu nhiều lần và ứng trước\nQA cấu hình khách GCF1115FF9B64\nCông trình / điểm giao\n+ Thêm công trình\nTìm điểm\nChọn công trình...\nNgày giao dự kiến\nĐiều khoản / ghi chú\nTối đa 1.000 ký tự · 0/1.000\nDòng hàng\n1 / 50 dòng\nDòng 1\nXóa dòng\nVật tư *\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nQA giao vật tư bao25kg\nSynthetic cement\nSynthetic packaged goods\nĐơn vị bán *\nm³\nSố lượng *\nNhập số lượng lớn hơn 0, tối đa 6 chữ số thập phân.\nKho tham khảo (không giữ tồn)\nChọn kho để xem khả dụng\nKho QA mới không tồn đầu kỳ\nQA kho đã đối chiếu sau phục hồi\n\nĐơn bán nháp hoặc đã xác nhận chưa trừ kho. Hàng được giữ khi tạo phiếu giao và chuyển sang hàng đang giao khi bàn giao.\n\nGiá bán cuối (VND/ĐVT bán, tùy chọn)\nGhi chú ngoại lệ giá\n\nĐể trống dùng giá hệ thống. Hệ thống lưu lịch sử điều chỉnh giá bán và giá trước/sau; giữ nguyên giá mua và thông tin trên báo giá đã gửi.\n\nChưa xem trước giá dòng này.\n\n+ Thêm dòng\nTính giá và xem trước\n\nGiá được kiểm lại khi lưu. Nếu chính sách giá thay đổi sau khi xem trước, cần xem trước lại; không mặc định giá bằng 0.\n\nLưu bản nháp\n\nTẠO NHANH TRONG BÁN HÀNG\n\nThêm công trình\nĐóng\n\nBản nháp hiện tại được giữ nguyên. Sau khi tạo, bản ghi mới sẽ được chọn tự động.\n\nMã *\nTên công trình *\nĐịa chỉ giao hàng *\nNgười nhận\nĐiện thoại người nhận\nTạo công trình"
+    },
+    {
+      "url": "http://127.0.0.1:3112/admin/orders/new",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA ERP\nĐiều hành\nTổng quan\nBán hàng\nĐơn bán\nBáo giá\nKhách hàng\nKho hàng\nGiao hàng\nTài chính\nBáo cáo\nTin nhắn\nĐăng xuất\nPhiên làm việc có phân quyền\nQA không đầu kỳ G119EE6ACBC\nNhân viên kiểm thử confirmer\nTC\n\nBÁN HÀNG\n\nTạo đơn bán\n\nThêm nhiều dòng vật tư, xem giá và tổng trước khi lưu; hệ thống kiểm lại giá và thông tin khi tạo bản nháp.\n\nKhách hàng\nTìm khách\nChọn khách hàng...\nKhách QA chi nhánh mới\nKhách kiểm thử khắc phục\nKhách kiểm thử khắc phục\nKhách kiểm thử khắc phục\nKhách kiểm thử khắc phục\nQA thu nhiều lần và ứng trước\nCông trình / điểm giao\nTìm điểm\nChọn công trình...\nNgày giao dự kiến\nĐiều khoản / ghi chú\nTối đa 1.000 ký tự · 0/1.000\nDòng hàng\n1 / 50 dòng\nDòng 1\nXóa dòng\nVật tư *\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nQA giao vật tư bao25kg\nSynthetic cement\nSynthetic packaged goods\nĐơn vị bán *\nm³\nSố lượng *\nNhập số lượng lớn hơn 0, tối đa 6 chữ số thập phân.\nKho tham khảo (không giữ tồn)\nChọn kho để xem khả dụng\nKho QA mới không tồn đầu kỳ\nQA kho đã đối chiếu sau phục hồi\n\nĐơn bán nháp hoặc đã xác nhận chưa trừ kho. Hàng được giữ khi tạo phiếu giao và chuyển sang hàng đang giao khi bàn giao.\n\nChưa xem trước giá dòng này.\n\n+ Thêm dòng\nTính giá và xem trước\n\nGiá được kiểm lại khi lưu. Nếu chính sách giá thay đổi sau khi xem trước, cần xem trước lại; không mặc định giá bằng 0.\n\nLưu bản nháp"
+    }
+  ]
+}

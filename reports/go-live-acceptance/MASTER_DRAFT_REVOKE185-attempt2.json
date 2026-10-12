@@ -1,0 +1,8 @@
+{
+  "scope": "MASTER_CUSTOMER_DRAFT_CURRENT_FIELD_PERMISSIONS",
+  "phase": "before",
+  "productionAccess": "NONE",
+  "checks": [],
+  "status": "FAIL",
+  "error": "Expected values to be strictly equal:"
+}

@@ -1,0 +1,42 @@
+{
+  "scope": "DISPATCH_ROUTE_TWO_DELIVERY_SOURCES_CREATE_APPLY_RELOAD",
+  "checkedAt": "2026-10-12T09:50:06.374Z",
+  "baselineCommit": "73c3d17",
+  "schema": 179,
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [],
+  "documents": {
+    "sale": "1b332285-48bc-40e0-bd3b-3ceb405536e6",
+    "material": "57c9beb6-bbbb-4789-82a1-dfb1c0b13037",
+    "vehicle": "39d44583-6ed0-4847-a65a-dcd326b14cc4",
+    "deliveries": [
+      {
+        "id": "ac345322-296f-4e75-b0e6-61283f1835b6",
+        "number": "DL-2026-000603",
+        "quantity": "3"
+      },
+      {
+        "id": "70c8549d-94a8-4bd8-91b9-3154d62a48bc",
+        "number": "DL-2026-000604",
+        "quantity": "2"
+      }
+    ]
+  },
+  "pageErrors": [],
+  "status": "FAIL",
+  "error": "locator.waitFor: Timeout 30000ms exceeded.",
+  "failurePages": [
+    {
+      "url": "http://127.0.0.1:3112/admin/routes",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA ERP\nĐiều hành\nTổng quan\nBán hàng\nMua hàng\nKho hàng\nGiao hàng\nĐiều phối\nPhiếu giao\nLộ trình\nNhân sự & công việc\nTin nhắn\nĐăng xuất\nPhiên làm việc có phân quyền\nQA không đầu kỳ G119EE6ACBC\nQA khắc phục warehouse\nPW\n\nĐIỀU PHỐI\n\nLộ trình & vị trí\n\nLộ trình là bản đề xuất. Phân công chỉ thay đổi sau khi bạn bấm Áp dụng và phân giao.\n\nTạo đề xuất\nGiờ khởi hành thực tế (giờ địa phương)\nXe\nChọn xe\nRMAA9B7529\nRMB3408ADB\nRME8501A2E\nTài xế\nChọn nhân sự\nNhân viên kiểm thử confirmer\nNhân viên kiểm thử noConfirm\nNhân viên kiểm thử owner\nQA khắc phục finance\nQA khắc phục purchasing\nQA khắc phục warehouse\nCHỌN\tCHUYẾN GIAO\tCÔNG TRÌNH\tDỰ KIẾN\n\tDL-2026-000603\tCông trình kiểm thử\nĐịa chỉ QA độc lập\n\t01/03/2200 07:00\n\tDL-2026-000604\tCông trình kiểm thử\nĐịa chỉ QA độc lập\n\t01/03/2200 08:00\nThứ tự thủ công trước khi tạo đề xuất\n\nKhi dịch vụ bản đồ lỗi hoặc thiếu tọa độ, hệ thống giữ thứ tự này. Chỉ phân giao khi bạn xác nhận.\n\n1. DL-2026-000603 · Công trình kiểm thử↑ ↓\n2. DL-2026-000604 · Công trình kiểm thử↑ ↓\nTạo đề xuất lộ trình\nLộ trình gần đây\n\nChưa có lộ trình.\n\nVị trí đội xe hiện tại\n\nVị trí chỉ hỗ trợ theo dõi đội xe. Tín hiệu cũ không có nghĩa là chuyến giao thất bại.\n\nChưa có vị trí từ chuyến giao đang được phân công."
+    },
+    {
+      "url": "http://127.0.0.1:3112/work",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA\nCổng nhân sự\nCông việc\nNhận việc\nVị trí\nThu nhập\nTin nhắn\nHồ sơ\n Đăng xuất\n\nCA LÀM VIỆC CỦA NHÂN VIÊN KIỂM THỬ NOCONFIRM\n\nSẵn sàng cho việc tiếp theo\n\nƯu tiên hiện tại, hành động tiếp theo và thông tin hiện trường nằm trong một luồng ngắn.\n\nHIỆN TẠI\n\nChưa có công việc được phân công.\n\nTIẾP THEO\n\nChưa có công việc được phân công.\n\nHành động nhanh\n\nKhông cần mở màn hình ERP dày đặc.\n\nXem kho việc có thể nhận\nXem thu nhập của tôi"
+    }
+  ]
+}

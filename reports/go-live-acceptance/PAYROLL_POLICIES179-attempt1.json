@@ -1,0 +1,93 @@
+{
+  "scope": "T37_MANUAL_POLICIES_T40_ATOMIC_AUDIT",
+  "productionAccess": "NONE",
+  "schema": 179,
+  "checks": [
+    {
+      "name": "FIXED_MONTHLY_MANUAL_SOURCE_CALCULATE_APPROVE_PARTIAL_PAY_RETRY",
+      "status": "PASS",
+      "facts": {
+        "quantity": "1.234567",
+        "amount": "123457",
+        "outstanding": "100000",
+        "workerWriteDenied": true,
+        "nullableVersionDenied": true
+      }
+    },
+    {
+      "name": "PER_SHIFT_MANUAL_SOURCE_CALCULATE_APPROVE_PARTIAL_PAY_RETRY",
+      "status": "PASS",
+      "facts": {
+        "quantity": "1.234567",
+        "amount": "123457",
+        "outstanding": "100000",
+        "workerWriteDenied": true,
+        "nullableVersionDenied": true
+      }
+    },
+    {
+      "name": "PER_DAY_MANUAL_SOURCE_CALCULATE_APPROVE_PARTIAL_PAY_RETRY",
+      "status": "PASS",
+      "facts": {
+        "quantity": "1.234567",
+        "amount": "123457",
+        "outstanding": "100000",
+        "workerWriteDenied": true,
+        "nullableVersionDenied": true
+      }
+    },
+    {
+      "name": "BONUS_MANUAL_SOURCE_CALCULATE_APPROVE_PARTIAL_PAY_RETRY",
+      "status": "PASS",
+      "facts": {
+        "quantity": "1.234567",
+        "amount": "123457",
+        "outstanding": "100000",
+        "workerWriteDenied": true,
+        "nullableVersionDenied": true
+      }
+    },
+    {
+      "name": "ADJUSTMENT_SOURCE_REDUCES_ONLY_UNPAID_AP_WITHOUT_CHANGING_CASH",
+      "status": "PASS",
+      "facts": {
+        "value": "50000"
+      }
+    },
+    {
+      "name": "ADJUSTMENT_CANNOT_RECOVER_PAID_AMOUNT",
+      "status": "PASS",
+      "facts": {}
+    }
+  ],
+  "auditGaps": [
+    {
+      "command": "create_compensation_rule",
+      "actualAudits": 0,
+      "expected": 1
+    },
+    {
+      "command": "create_compensation_rule",
+      "actualAudits": 0,
+      "expected": 1
+    },
+    {
+      "command": "create_compensation_rule",
+      "actualAudits": 0,
+      "expected": 1
+    },
+    {
+      "command": "create_compensation_rule",
+      "actualAudits": 0,
+      "expected": 1
+    }
+  ],
+  "rolledBack": false,
+  "adjusts": {
+    "earning": "252cfe21-b32f-465e-a752-89dda2c19c8c",
+    "ap": "59b374b9-cca8-43b0-a7e8-2c54dbfac535"
+  },
+  "expenseCategorySignature": "target_branch_id uuid, category_code text, category_name text, operation_id uuid",
+  "status": "FAIL",
+  "error": "Ambiguous/missing RPC create_expense_category\n\n0 !== 1\n"
+}

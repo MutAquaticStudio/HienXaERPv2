@@ -53,7 +53,7 @@ export async function loadObligationRows(access: Access, filters: ReportFilters,
     target_customer_id: side === "AR" ? filters.customerId || null : null,
     target_site_id: null,
     target_sales_employee_id: null,
-  }).gt("outstanding_amount_vnd", 0).order("outstanding_amount_vnd", { ascending: false }).order("obligation_id").range(offset, offset + limit);
+  }).select("obligation_id,party_name,site_name,source_type,due_date,outstanding_amount_vnd::text").gt("outstanding_amount_vnd", 0).order("outstanding_amount_vnd", { ascending: false }).order("obligation_id").range(offset, offset + limit);
   if (error) throw new Error("report_query_failed");
   const obligations = (data ?? []) as Obligation[];
   const base = side === "AR" ? "/admin/receivables" : "/admin/payables";

@@ -1,0 +1,46 @@
+{
+  "scope": "BUYER_PO_EDIT_STALE_CONFIRM_CANCEL_NO_STOCK_AP_WITHOUT_RECEIPT",
+  "checkedAt": "2026-10-12T09:58:07.076Z",
+  "baselineCommit": "73c3d17",
+  "schema": 179,
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [
+    {
+      "name": "PO_TWO_TAB_EDIT_EXACT_QUANTITY_AND_PRICE_SNAPSHOT_STALE_DENIED",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T09:58:15.330Z",
+      "schema": {
+        "count": 185,
+        "latest": "20261012093644"
+      },
+      "facts": {
+        "quantity": "2.123456",
+        "price": "150000",
+        "amount": "318518",
+        "expected": "318518"
+      }
+    },
+    {
+      "name": "PO_CANCEL_UNRECEIVED_SOURCE_PRESERVES_HISTORY_NO_INVENTORY",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T10:01:11.718Z",
+      "schema": {
+        "count": 185,
+        "latest": "20261012093644"
+      },
+      "facts": {
+        "state": "CANCELLED",
+        "receipts": 0,
+        "movements": 0
+      }
+    }
+  ],
+  "documents": {
+    "po": "c7d3f2d8-116f-4a2c-b8c4-17c474f15f45"
+  },
+  "pageErrors": [],
+  "status": "PASS",
+  "completedAt": "2026-10-12T10:01:11.719Z"
+}

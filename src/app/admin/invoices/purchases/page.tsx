@@ -13,7 +13,7 @@ export default async function PurchaseInvoiceRegistryPage({ searchParams }: { se
   const page = Math.max(1, Math.min(10000, Number.parseInt(rawPage ?? "1", 10) || 1));
   const supabase = await createServerSupabase();
   const [{ data, error, count }, { data: eligible, error: eligibleError }] = await Promise.all([
-    supabase.from("purchase_invoice_registry_read").select("id,payable_obligation_id,supplier_name_snapshot,source_type,source_id,source_amount_vnd,supplier_document_number,supplier_document_date,document_state,evidence_object_id,created_at", { count: "exact" }).eq("branch_id", access.branchId).order("created_at", { ascending: false }).order("id", { ascending: false }).range((page - 1) * 25, page * 25 - 1),
+    supabase.from("purchase_invoice_registry_read").select("id,payable_obligation_id,supplier_name_snapshot,source_type,source_id,source_amount_vnd::text,supplier_document_number,supplier_document_date,document_state,evidence_object_id,created_at", { count: "exact" }).eq("branch_id", access.branchId).order("created_at", { ascending: false }).order("id", { ascending: false }).range((page - 1) * 25, page * 25 - 1),
     supabase.rpc("purchase_invoice_eligible_sources_exact", { target_branch_id: access.branchId, page_size: 25 }),
   ]);
   if (error || eligibleError) throw error ?? eligibleError;

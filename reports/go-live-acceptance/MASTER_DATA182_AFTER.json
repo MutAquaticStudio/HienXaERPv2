@@ -1,0 +1,102 @@
+{
+  "scope": "MASTER_ALL_CURRENT_CATALOG_KINDS_CREATE_EDIT_STALE_RIGHTS_AND_NO_LEDGER",
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "kind": "groups",
+      "status": "PASS",
+      "source": "material_groups",
+      "createRetryAudits": 1,
+      "staleCode": "PT409",
+      "workerDenied": true
+    },
+    {
+      "kind": "units",
+      "status": "PASS",
+      "source": "units_of_measure",
+      "createRetryAudits": 1,
+      "staleCode": "PT409",
+      "workerDenied": true
+    },
+    {
+      "kind": "materials",
+      "status": "PASS",
+      "source": "materials",
+      "createRetryAudits": 1,
+      "staleCode": "PT409",
+      "workerDenied": true
+    },
+    {
+      "kind": "conversions",
+      "status": "PASS",
+      "source": "material_uom_conversions",
+      "createRetryAudits": 1,
+      "staleCode": "PT409",
+      "workerDenied": true
+    },
+    {
+      "kind": "warehouses",
+      "status": "PASS",
+      "source": "warehouses",
+      "createRetryAudits": 1,
+      "staleCode": "PT409",
+      "workerDenied": true
+    },
+    {
+      "kind": "vehicles",
+      "status": "PASS",
+      "source": "vehicles",
+      "createRetryAudits": 1,
+      "staleCode": "PT409",
+      "workerDenied": true
+    },
+    {
+      "kind": "machines",
+      "status": "PASS",
+      "source": "machines",
+      "createRetryAudits": 1,
+      "staleCode": "PT409",
+      "workerDenied": true
+    },
+    {
+      "kind": "customers",
+      "status": "PASS",
+      "source": "customers",
+      "createRetryAudits": 2,
+      "staleCode": "PT409",
+      "workerDenied": true
+    },
+    {
+      "kind": "suppliers",
+      "status": "PASS",
+      "source": "suppliers",
+      "createRetryAudits": 1,
+      "staleCode": "PT409",
+      "workerDenied": true
+    },
+    {
+      "kind": "sites",
+      "status": "PASS",
+      "source": "customer_sites",
+      "createRetryAudits": 2,
+      "staleCode": "PT409",
+      "workerDenied": true
+    },
+    {
+      "kind": "branches",
+      "status": "PASS",
+      "source": "branches",
+      "createRetryAudits": 1,
+      "staleCode": "PT409",
+      "workerDenied": true
+    }
+  ],
+  "ledgerUnchanged": true,
+  "newBranchState": {
+    "state": "PENDING_OPENING",
+    "activation_operation_id": null
+  },
+  "status": "PASS",
+  "rolledBack": true,
+  "checkedAt": "2026-10-12T08:16:42.535Z"
+}

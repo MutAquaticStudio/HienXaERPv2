@@ -1,0 +1,68 @@
+{
+  "scope": "MANAGER_POOL_PUBLICATION_WORKER_CLAIM_START_REPORT_ROLE_HANDOFF",
+  "checkedAt": "2026-10-12T09:17:04.809Z",
+  "baselineCommit": "73c3d17",
+  "schema": 179,
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [
+    {
+      "name": "CUSTOMER_CANNOT_CLAIM_WORKER_POOL_JOB",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T09:30:31.589Z",
+      "schema": {
+        "count": 184,
+        "latest": "20261012085902"
+      },
+      "facts": {
+        "http": 403
+      }
+    },
+    {
+      "name": "CUSTOMER_CANNOT_CLAIM_WORKER_POOL_JOB",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T09:38:33.260Z",
+      "schema": {
+        "count": 185,
+        "latest": "20261012093644"
+      },
+      "facts": {
+        "http": 403
+      }
+    },
+    {
+      "name": "WORKER_UI_CLAIMS_EXACT_POOL_SOURCE_CURRENT_ASSIGNMENT",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T09:38:34.613Z",
+      "schema": {
+        "count": 185,
+        "latest": "20261012093644"
+      },
+      "facts": {
+        "assignment": "7a29b908-578e-4d45-b408-70f7a93256a9",
+        "state": "CLAIMED"
+      }
+    },
+    {
+      "name": "MANAGER_VERIFIES_POOL_RESULT_ONCE_AND_SOURCE_AR111111",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T09:41:14.037Z",
+      "schema": {
+        "count": 185,
+        "latest": "20261012093644"
+      },
+      "facts": {
+        "verifications": 1,
+        "ar": "111111"
+      }
+    }
+  ],
+  "documents": {
+    "job": "d925e623-5596-4619-b67c-86ab54121534",
+    "work": "d338362b-0979-48db-8379-378c1f8eb23b"
+  },
+  "pageErrors": [],
+  "status": "PASS",
+  "completedAt": "2026-10-12T09:41:14.038Z"
+}

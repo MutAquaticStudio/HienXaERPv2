@@ -21,8 +21,8 @@ export async function GET(request: Request) {
   const page = parseCoreListQuery({ q: params.get("q") ?? "", page: params.get("page") ?? "1" });
   const supabase = await createServerSupabase();
   const query = side === "AR"
-    ? supabase.from("receivable_read").select("id, source_label, due_date, outstanding_amount_vnd, site_name").eq("branch_id", access.branchId).eq("customer_id", partyId)
-    : supabase.from("payable_read").select("id, source_label, due_date, outstanding_amount_vnd").eq("branch_id", access.branchId).eq("supplier_id", partyId);
+    ? supabase.from("receivable_read").select("id, source_label, due_date, outstanding_amount_vnd::text, site_name").eq("branch_id", access.branchId).eq("customer_id", partyId)
+    : supabase.from("payable_read").select("id, source_label, due_date, outstanding_amount_vnd::text").eq("branch_id", access.branchId).eq("supplier_id", partyId);
   let filtered = query.gt("outstanding_amount_vnd", 0);
   if (page.q) filtered = filtered.ilike("source_label", ilikePattern(page.q));
   const { data, error } = await filtered.order("due_date").order("id").range(page.from, page.to + 1);

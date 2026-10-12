@@ -1,0 +1,828 @@
+{
+  "scope": "QA_ONLY_WORKER_READ_CONTRACT_FORWARD",
+  "status": "PASS",
+  "schemaHistory": 186,
+  "canonicalSchema": 185,
+  "productionAccess": "NONE",
+  "oldDataUnchanged": true,
+  "tables": [
+    {
+      "schema": "private",
+      "table": "branch_operational_states",
+      "n": 8,
+      "hash": "0baac308da98d9720dddfeab9aa343d3"
+    },
+    {
+      "schema": "private",
+      "table": "branch_recorded_operations",
+      "n": 1,
+      "hash": "852d3a3da7bd80d15343b6a6a4c935bb"
+    },
+    {
+      "schema": "private",
+      "table": "command_drafts",
+      "n": 1,
+      "hash": "aa66f041957ee1713e4585f68016dde8"
+    },
+    {
+      "schema": "private",
+      "table": "evidence_storage_attestations",
+      "n": 11,
+      "hash": "86ad88b32f8d48e5ddb6501e68c65cf0"
+    },
+    {
+      "schema": "private",
+      "table": "evidence_storage_bindings",
+      "n": 11,
+      "hash": "93b50dfe9f5f4aa16f6a992c594fe681"
+    },
+    {
+      "schema": "private",
+      "table": "master_command_contexts",
+      "n": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "schema": "private",
+      "table": "operational_import_receipts",
+      "n": 4,
+      "hash": "fbc66260417bb9c2e061bd5d43f8ab17"
+    },
+    {
+      "schema": "private",
+      "table": "operational_opening_executions",
+      "n": 4,
+      "hash": "f192c1d9866f66ed7edfd8ebc4e24883"
+    },
+    {
+      "schema": "private",
+      "table": "operational_opening_packages",
+      "n": 6,
+      "hash": "8cb890f7c477494c6ee9e2a9c91e2e39"
+    },
+    {
+      "schema": "private",
+      "table": "operational_opening_readbacks",
+      "n": 2,
+      "hash": "f930f1c5a28bdf14716d027f64d835e7"
+    },
+    {
+      "schema": "private",
+      "table": "operational_recovery_checkpoints",
+      "n": 2,
+      "hash": "6bce4234735c9eb165e5c464feba8688"
+    },
+    {
+      "schema": "private",
+      "table": "operational_state_events",
+      "n": 7,
+      "hash": "99511157986e016aa290001cdbf946fe"
+    },
+    {
+      "schema": "public",
+      "table": "advance_allocations",
+      "n": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "schema": "public",
+      "table": "advances",
+      "n": 5,
+      "hash": "e35435a37aeece0676f61fc5ff970ca7"
+    },
+    {
+      "schema": "public",
+      "table": "audit_events",
+      "n": 1363,
+      "hash": "d01906dca10de58f047e549d01802afa"
+    },
+    {
+      "schema": "public",
+      "table": "branches",
+      "n": 8,
+      "hash": "55a78728d4c4355e6403d5a5f549aaf3"
+    },
+    {
+      "schema": "public",
+      "table": "cash_opening_balances",
+      "n": 4,
+      "hash": "40362c88502354db95e5d12c4ee568b8"
+    },
+    {
+      "schema": "public",
+      "table": "command_receipts",
+      "n": 1653,
+      "hash": "304bb59b7d601b38d808db53645d992a"
+    },
+    {
+      "schema": "public",
+      "table": "commission_reconciliation_cases",
+      "n": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "schema": "public",
+      "table": "commission_review_resolutions",
+      "n": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "schema": "public",
+      "table": "compensation_manual_bases",
+      "n": 203,
+      "hash": "94efad50b4150fbdaab6d022986419d2"
+    },
+    {
+      "schema": "public",
+      "table": "compensation_recognition_policies",
+      "n": 2,
+      "hash": "99dac6e17074df34b15d5dbac044cdcc"
+    },
+    {
+      "schema": "public",
+      "table": "compensation_rules",
+      "n": 6,
+      "hash": "37596078d5eb6eb011f48182da9fe842"
+    },
+    {
+      "schema": "public",
+      "table": "conversation_participants",
+      "n": 14,
+      "hash": "5aca296220282ae45aea0f33cb9c6d2b"
+    },
+    {
+      "schema": "public",
+      "table": "conversations",
+      "n": 7,
+      "hash": "f9d26f1294348f76d9a40f955dad3239"
+    },
+    {
+      "schema": "public",
+      "table": "credit_commitments",
+      "n": 21,
+      "hash": "19d1581c298ec569656fbb9a48ee8faa"
+    },
+    {
+      "schema": "public",
+      "table": "customer_credit_funds",
+      "n": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "schema": "public",
+      "table": "customer_credit_settlements",
+      "n": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "schema": "public",
+      "table": "customer_credits",
+      "n": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "schema": "public",
+      "table": "customer_portal_memberships",
+      "n": 3,
+      "hash": "2519b30f0c1e8d4b6059156954ce51c3"
+    },
+    {
+      "schema": "public",
+      "table": "customer_sites",
+      "n": 20545,
+      "hash": "f740e82ee9bb33c2de7de5ddf59c4d59"
+    },
+    {
+      "schema": "public",
+      "table": "customers",
+      "n": 10042,
+      "hash": "b6dcd54489c64e3dccc8f18149edcfc6"
+    },
+    {
+      "schema": "public",
+      "table": "deliveries",
+      "n": 30171,
+      "hash": "e063057c32637c984e7ff911d90f898d"
+    },
+    {
+      "schema": "public",
+      "table": "delivery_assignments",
+      "n": 27,
+      "hash": "40d46a3cb3d90d02de1a058f90860d55"
+    },
+    {
+      "schema": "public",
+      "table": "delivery_expense_sources",
+      "n": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "schema": "public",
+      "table": "delivery_handoff_lines",
+      "n": 25,
+      "hash": "2bd7bc28f49aa4c28accdf58766a732d"
+    },
+    {
+      "schema": "public",
+      "table": "delivery_handoffs",
+      "n": 16,
+      "hash": "a0c3bcb49e29b6624b73fbd983d23b26"
+    },
+    {
+      "schema": "public",
+      "table": "delivery_lines",
+      "n": 34,
+      "hash": "5ab4179127af191d2c37a4e1ef26d040"
+    },
+    {
+      "schema": "public",
+      "table": "delivery_result_lines",
+      "n": 23,
+      "hash": "b98062db0387854cc1a461648f552b18"
+    },
+    {
+      "schema": "public",
+      "table": "delivery_results",
+      "n": 15,
+      "hash": "468bbb38a8e453333272201e81b70450"
+    },
+    {
+      "schema": "public",
+      "table": "delivery_verification_lines",
+      "n": 23,
+      "hash": "3751936c481b0eaed87aa0a54733a118"
+    },
+    {
+      "schema": "public",
+      "table": "delivery_verifications",
+      "n": 15,
+      "hash": "4bcbfaca61726cadc83c82e6f882546f"
+    },
+    {
+      "schema": "public",
+      "table": "direct_cost_entries",
+      "n": 27,
+      "hash": "7244df5d1a8ecad1c3e0c1f049a79726"
+    },
+    {
+      "schema": "public",
+      "table": "earning_events",
+      "n": 213,
+      "hash": "7ef01dbde0c767c4485257d7947789ef"
+    },
+    {
+      "schema": "public",
+      "table": "employee_branch_access",
+      "n": 38,
+      "hash": "7cf0625ad0ea86e55d3981822ec7d8a3"
+    },
+    {
+      "schema": "public",
+      "table": "employee_permission_grants",
+      "n": 4,
+      "hash": "b96a27abe6766c1afa84d79af75f3d13"
+    },
+    {
+      "schema": "public",
+      "table": "employees",
+      "n": 15,
+      "hash": "d8d1260662c04cb00ac8803f2e517de4"
+    },
+    {
+      "schema": "public",
+      "table": "evidence_objects",
+      "n": 15,
+      "hash": "93295fd635aea8b60027d579ec425ca7"
+    },
+    {
+      "schema": "public",
+      "table": "expense_categories",
+      "n": 3,
+      "hash": "03b666b24e4c80f38533c813743d5d29"
+    },
+    {
+      "schema": "public",
+      "table": "expenses",
+      "n": 20106,
+      "hash": "9888cc16682858734f65e2875fd43dec"
+    },
+    {
+      "schema": "public",
+      "table": "finance_accounts",
+      "n": 609,
+      "hash": "16abd81fdc2593ceb38883652699aea1"
+    },
+    {
+      "schema": "public",
+      "table": "gps_positions",
+      "n": 8,
+      "hash": "e061cac8b5eeaa5741455ee5e7407111"
+    },
+    {
+      "schema": "public",
+      "table": "gps_tracking_sessions",
+      "n": 8,
+      "hash": "74600f876474e0a799005b494583c897"
+    },
+    {
+      "schema": "public",
+      "table": "inventory_movements",
+      "n": 98,
+      "hash": "12b34f1299a7b7f507ae83001f4263d9"
+    },
+    {
+      "schema": "public",
+      "table": "inventory_opening_sources",
+      "n": 8,
+      "hash": "c373267ce0823c3452bf018253ba8602"
+    },
+    {
+      "schema": "public",
+      "table": "inventory_reservations",
+      "n": 17,
+      "hash": "cdbd6060bf3979387945b2b91c220136"
+    },
+    {
+      "schema": "public",
+      "table": "inventory_stock_thresholds",
+      "n": 1,
+      "hash": "a5703160b29a14b22dd07c1b89a565ec"
+    },
+    {
+      "schema": "public",
+      "table": "invoice_adjustment_drafts",
+      "n": 2,
+      "hash": "cd2867e2208a2c9facfd4c5769052f44"
+    },
+    {
+      "schema": "public",
+      "table": "invoice_coverage",
+      "n": 16,
+      "hash": "20b7f5ed670fbd4b340256f514d58994"
+    },
+    {
+      "schema": "public",
+      "table": "invoice_draft_lines",
+      "n": 18,
+      "hash": "5e36a46532b18096738a653502c906a6"
+    },
+    {
+      "schema": "public",
+      "table": "invoice_intents",
+      "n": 16,
+      "hash": "2666b4a9c4d86f154053ddc2cadb8e8b"
+    },
+    {
+      "schema": "public",
+      "table": "machines",
+      "n": 5,
+      "hash": "b44a891d15bbd70279003e83f6c9f4ca"
+    },
+    {
+      "schema": "public",
+      "table": "material_groups",
+      "n": 11,
+      "hash": "1a3ce2883ca48cb863f6d40eb0bcf507"
+    },
+    {
+      "schema": "public",
+      "table": "material_uom_conversions",
+      "n": 10,
+      "hash": "c473d81dc0738d309cf8f8121c0ecd76"
+    },
+    {
+      "schema": "public",
+      "table": "materials",
+      "n": 17,
+      "hash": "3ae8609747e6e13a5adab1252ee819d8"
+    },
+    {
+      "schema": "public",
+      "table": "messages",
+      "n": 23,
+      "hash": "fa5f4168b11319b8542d5c8e2af94d02"
+    },
+    {
+      "schema": "public",
+      "table": "opening_balance_sources",
+      "n": 20212,
+      "hash": "008bad8d178eae8b90cfba7bbfd6d2ec"
+    },
+    {
+      "schema": "public",
+      "table": "payable_adjustments",
+      "n": 1,
+      "hash": "642c426d986e3665fe83b01b342f52c9"
+    },
+    {
+      "schema": "public",
+      "table": "payable_obligations",
+      "n": 10165,
+      "hash": "dd7638baa131f968abf70cae4e67421a"
+    },
+    {
+      "schema": "public",
+      "table": "payment_allocations",
+      "n": 261,
+      "hash": "e7f43cd69d0577793a27582f2e022ec4"
+    },
+    {
+      "schema": "public",
+      "table": "payment_notice_match_reversals",
+      "n": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "schema": "public",
+      "table": "payment_notice_matches",
+      "n": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "schema": "public",
+      "table": "payment_notice_review_events",
+      "n": 16,
+      "hash": "ef78d995aa5a1e38b1fcaf5bf359ad12"
+    },
+    {
+      "schema": "public",
+      "table": "payment_notices",
+      "n": 11,
+      "hash": "8e49aca4cdc185141f79aa7aef9f29a2"
+    },
+    {
+      "schema": "public",
+      "table": "payment_reconciliation_matches",
+      "n": 7,
+      "hash": "b485ff2085191d446e80151a42372ac0"
+    },
+    {
+      "schema": "public",
+      "table": "payments",
+      "n": 262,
+      "hash": "209aa4fb371d236dc457f5a490d3f542"
+    },
+    {
+      "schema": "public",
+      "table": "permissions",
+      "n": 62,
+      "hash": "a4c6c34d752f58517898acbdcb1e01c9"
+    },
+    {
+      "schema": "public",
+      "table": "portal_evidence_objects",
+      "n": 87,
+      "hash": "c9585170ee7f5144b60674e9e3e55ab6"
+    },
+    {
+      "schema": "public",
+      "table": "pricing_rules",
+      "n": 27,
+      "hash": "ee2ecae6c9fdff6fc937b5726e64b7d7"
+    },
+    {
+      "schema": "public",
+      "table": "purchase_invoice_registry",
+      "n": 10,
+      "hash": "e8959d02348ede0861abbd1fc8c3b22b"
+    },
+    {
+      "schema": "public",
+      "table": "purchase_order_lines",
+      "n": 50081,
+      "hash": "a746c7c1fbbbc0b2fc546ff8f0c39192"
+    },
+    {
+      "schema": "public",
+      "table": "purchase_orders",
+      "n": 10048,
+      "hash": "23a82e1fe8471f20179c350884e5ac5e"
+    },
+    {
+      "schema": "public",
+      "table": "purchase_price_rules",
+      "n": 17,
+      "hash": "510fbb63b42b9610d66439a22a763b3d"
+    },
+    {
+      "schema": "public",
+      "table": "purchase_receipt_lines",
+      "n": 39,
+      "hash": "d8ec85bd38531eb2e8f18c11957633c0"
+    },
+    {
+      "schema": "public",
+      "table": "purchase_receipts",
+      "n": 30,
+      "hash": "9525d03424fa556e18867862b512c1a7"
+    },
+    {
+      "schema": "public",
+      "table": "quotation_acceptances",
+      "n": 12,
+      "hash": "0adfc7573c994a11daa7da553b9654c9"
+    },
+    {
+      "schema": "public",
+      "table": "quotation_change_requests",
+      "n": 2,
+      "hash": "e09730063c4fee316a82a6032bcc25cc"
+    },
+    {
+      "schema": "public",
+      "table": "quotation_lines",
+      "n": 50049,
+      "hash": "87fecb633a3fd8d7f36d4ca0918466fe"
+    },
+    {
+      "schema": "public",
+      "table": "quotation_pdf_artifacts",
+      "n": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "schema": "public",
+      "table": "quotation_revisions",
+      "n": 10030,
+      "hash": "a3f82bab95f0a201eec5989fb179eb9d"
+    },
+    {
+      "schema": "public",
+      "table": "quotations",
+      "n": 10024,
+      "hash": "d9a0a304c021a8c8d15739e7743b5a33"
+    },
+    {
+      "schema": "public",
+      "table": "receivable_adjustments",
+      "n": 2,
+      "hash": "d1a3c50bc94f6001b42b9313c65bc2bd"
+    },
+    {
+      "schema": "public",
+      "table": "receivable_obligations",
+      "n": 10126,
+      "hash": "4efffdab836d924e177fef48f31bfac2"
+    },
+    {
+      "schema": "public",
+      "table": "report_export_jobs",
+      "n": 17,
+      "hash": "b4aee8c6faf0029d7b1bb6cfa88c5d39"
+    },
+    {
+      "schema": "public",
+      "table": "return_cases",
+      "n": 9,
+      "hash": "13e5a4b7a9997d794af77d7071718b16"
+    },
+    {
+      "schema": "public",
+      "table": "revenue_adjustments",
+      "n": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "schema": "public",
+      "table": "revenue_entries",
+      "n": 14,
+      "hash": "28d7c7f3d16f57dfdb25f9444cb24823"
+    },
+    {
+      "schema": "public",
+      "table": "role_permissions",
+      "n": 170,
+      "hash": "afbad46293cd8c9511202763261b363e"
+    },
+    {
+      "schema": "public",
+      "table": "roles",
+      "n": 7,
+      "hash": "e5b8f148a51c8c3a0f1a09fcdb74b13d"
+    },
+    {
+      "schema": "public",
+      "table": "route_plan_stops",
+      "n": 14,
+      "hash": "7139d9e2c65579c83c3d34fac6c65589"
+    },
+    {
+      "schema": "public",
+      "table": "route_plans",
+      "n": 9,
+      "hash": "64fdf92d212e92fc177f27fbe02fb95f"
+    },
+    {
+      "schema": "public",
+      "table": "routing_settings",
+      "n": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "schema": "public",
+      "table": "sales_order_credit_overrides",
+      "n": 4,
+      "hash": "cdc3984a30c2841b151b603d73e2e690"
+    },
+    {
+      "schema": "public",
+      "table": "sales_order_lines",
+      "n": 100582,
+      "hash": "27790aae7e69903e245e1dd615985d51"
+    },
+    {
+      "schema": "public",
+      "table": "sales_orders",
+      "n": 20151,
+      "hash": "9be89d98c59908c5b63aad4b39d90ad9"
+    },
+    {
+      "schema": "public",
+      "table": "service_jobs",
+      "n": 10015,
+      "hash": "d15e71ec595255214018daf7ac17118b"
+    },
+    {
+      "schema": "public",
+      "table": "service_verifications",
+      "n": 10,
+      "hash": "b1d1a8a394495a410c509cf6e5aa54fa"
+    },
+    {
+      "schema": "public",
+      "table": "service_work_logs",
+      "n": 14,
+      "hash": "ea1e05e26508075184f39b4fca5a5952"
+    },
+    {
+      "schema": "public",
+      "table": "stock_count_lines",
+      "n": 10,
+      "hash": "03fb000ae29db61e3b9f7634a57bb6c7"
+    },
+    {
+      "schema": "public",
+      "table": "stock_count_observations",
+      "n": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "schema": "public",
+      "table": "stock_counts",
+      "n": 10,
+      "hash": "ce88a4318eecb61640598a6903c7b54e"
+    },
+    {
+      "schema": "public",
+      "table": "supplier_contacts",
+      "n": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "schema": "public",
+      "table": "supplier_credit_funds",
+      "n": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "schema": "public",
+      "table": "supplier_credit_settlements",
+      "n": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "schema": "public",
+      "table": "supplier_document_lines",
+      "n": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "schema": "public",
+      "table": "supplier_documents",
+      "n": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "schema": "public",
+      "table": "supplier_fulfillment_lines",
+      "n": 21,
+      "hash": "a4210e551a02c473450b1bd926b0d77c"
+    },
+    {
+      "schema": "public",
+      "table": "supplier_fulfillments",
+      "n": 15,
+      "hash": "841b5c2cc1792c2a5ff83c26476197ba"
+    },
+    {
+      "schema": "public",
+      "table": "supplier_return_cases",
+      "n": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "schema": "public",
+      "table": "supplier_return_credits",
+      "n": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "schema": "public",
+      "table": "supplier_return_events",
+      "n": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "schema": "public",
+      "table": "suppliers",
+      "n": 10021,
+      "hash": "1d8df8d467a44b38a9f3b05c32308cb5"
+    },
+    {
+      "schema": "public",
+      "table": "supply_allocations",
+      "n": 33,
+      "hash": "5542df76dea8e0e4806a7c539bcfb4a4"
+    },
+    {
+      "schema": "public",
+      "table": "units_of_measure",
+      "n": 23,
+      "hash": "9c4200e6182649bf1acdb1f3494f5c3e"
+    },
+    {
+      "schema": "public",
+      "table": "vehicles",
+      "n": 8,
+      "hash": "80b9e9201f2f20b3b7da389fac1ead8c"
+    },
+    {
+      "schema": "public",
+      "table": "warehouse_transfer_events",
+      "n": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "schema": "public",
+      "table": "warehouse_transfers",
+      "n": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "schema": "public",
+      "table": "warehouses",
+      "n": 26,
+      "hash": "6c81c92554fa2a4483cf9adc4f5a3e8e"
+    },
+    {
+      "schema": "public",
+      "table": "work_item_assignments",
+      "n": 20,
+      "hash": "5f910dd4a166854c93a4e6ab2fd98d23"
+    },
+    {
+      "schema": "public",
+      "table": "work_item_heartbeats",
+      "n": 1,
+      "hash": "e8a134be91a937c8ba1132538feae3cc"
+    },
+    {
+      "schema": "public",
+      "table": "work_item_results",
+      "n": 18,
+      "hash": "ec2c60c4ecb6a7cc6a8f85e6bf73ae48"
+    },
+    {
+      "schema": "public",
+      "table": "work_item_verifications",
+      "n": 14,
+      "hash": "2d5790c2786f253afe405bfb1805b4d7"
+    },
+    {
+      "schema": "public",
+      "table": "work_items",
+      "n": 20,
+      "hash": "8b303e3999faf924db3a3514efe66ad2"
+    },
+    {
+      "schema": "public",
+      "table": "work_result_portal_evidence",
+      "n": 8,
+      "hash": "ded795e4ccb959bcfaf09fb29d72a864"
+    },
+    {
+      "schema": "storage",
+      "table": "buckets",
+      "n": 3,
+      "hash": "ac095a0f5247d52d81802d8a0b6e30d9"
+    },
+    {
+      "schema": "storage",
+      "table": "objects",
+      "n": 101,
+      "hash": "6441d0f3ab3f7a23402031ac3a9a433e"
+    }
+  ],
+  "migrationSha256": "817a692ce22b7539ea1998556478103af0270231a93ffea038f6969b269eb4e1",
+  "backupSha256": "10df5f1eb85b02f8de9c392dd6caa94e471f11fd7ba904cd96d994cbe99bc7c7"
+}

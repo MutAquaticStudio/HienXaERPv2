@@ -1,0 +1,36 @@
+{
+  "scope": "CATALOG_OWNER_CREATE_LOST_RESPONSE_RELOAD_SAME_INTENT_NO_DUPLICATE",
+  "checkedAt": "2026-10-12T08:21:36.201Z",
+  "baselineCommit": "73c3d17",
+  "schema": 179,
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [],
+  "documents": {
+    "code": "GWH1D431A2627",
+    "intent": "24f63384-f9fa-4340-bbd9-4cd6aced8c7c"
+  },
+  "pageErrors": [],
+  "status": "FAIL",
+  "error": "Expected values to be strictly equal:\n\nfalse !== true\n",
+  "failurePages": [
+    {
+      "url": "http://127.0.0.1:3112/admin/inventory/warehouses?kind=warehouses",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA ERP\nĐiều hành\nTổng quan\nBán hàng\nMua hàng\nKho hàng\nVật tư\nGiá bán\nTồn kho\nKiểm kho\nGiao hàng\nTài chính\nNhân công & dịch vụ\nQuản trị\nBáo cáo\nTin nhắn\nĐăng xuất\nPhiên làm việc có phân quyền\nQA không đầu kỳ G119EE6ACBC\nNhân viên kiểm thử owner\nTO\n\nQUẢN LÝ · QA KHÔNG ĐẦU KỲ G119EE6ACBC\n\nKho\n\nNgừng sử dụng thay vì xóa; lịch sử chứng từ không thay đổi.\n\nKho\nTìm theo tên\nTìm\nThêm kho\nMã *\nTên *\nĐịa chỉ kho\nĐang sử dụng\nLý do thay đổi *\nLưu thay đổi\n\nChưa xác định được kết quả đã lưu. Hãy tra cứu hoặc thử lại cùng thao tác; không tạo lần mới khi chưa rõ kết quả.\n\nTra cứu kết quả\nThử lại cùng thao tác\n\nHiển thị tối đa 200 bản ghi. Dùng tìm kiếm để thu hẹp danh sách.\n\nG119EE6ACBC · Kho QA mới không tồn đầu kỳ · Đang dùng"
+    },
+    {
+      "url": "http://127.0.0.1:3112/admin",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA ERP\nĐiều hành\nTổng quan\nBán hàng\nKho hàng\nGiao hàng\nTài chính\nBáo cáo\nTin nhắn\nĐăng xuất\nPhiên làm việc có phân quyền\nQA không đầu kỳ G119EE6ACBC\nNhân viên kiểm thử confirmer\nTC\n\nTỔNG QUAN KINH DOANH\n\nTổng quan\n\nDoanh thu theo kỳ và công nợ tại thời điểm đã chọn. Thu tiền không làm tăng doanh thu lần nữa.\n\nMở sổ tiền\nTừ ngày\nĐến trước ngày\nTìm khách hàng\nTìm khách\nKhách hàng\nTất cả\nKhách QA chi nhánh mới\nKhách kiểm thử khắc phục\nKhách kiểm thử khắc phục\nQA thu nhiều lần và ứng trước\nCông trình\nTất cả\nCông trình QA phiếu tiền\nCông trình kiểm thử\nCông trình kiểm thử\nNhân viên bán hàng\nTất cả\nNhân viên kiểm thử confirmer\nHoạt động\nTất cả\nGiao hàng\nBán hàng\nDịch vụ\nHành chính\nLàm mới\n\nKỳ 01/10/2026 đến trước 01/11/2026 · số dư tính đến 12/10/2026 15:28\n\nTheo giao dịch đã ghi nhận; lịch sử chưa đối chiếu. Số liệu này chưa xác minh tổng số dư toàn doanh nghiệp.\n\nDoanh thu\n33.730.000 ₫\nBiểu đồ kết quả kinh doanh\nCÙNG KỲ VÀ PHẠM VI\nDoanh thu\n33.730.000 ₫\n\nCHI PHÍ VẬN HÀNH\n\nPhân bổ theo nhóm\n\nBạn không có quyền xem chi tiết này.\n\nHOA HỒNG PHẢI TRẢ\n\nChi tiết theo nhân viên\n\nBạn không có quyền xem chi tiết này.\n\nKhách hàng phải thu\n2.730.000 ₫\nKhách / công trình đang nợ\nTất cả\nKhách kiểm thử khắc phục\nCông trình kiểm thử · hạn 12/10/2026\n1.990.000 ₫\nKhách kiểm thử khắc phục\nCông trình kiểm thử · hạn 12/10/2026\n740.000 ₫\n\nCùng thời điểm chốt và bộ lọc với các chỉ số phía trên.\n\nNhà cung cấp đang phải trả\n\nKhông có khoản mở hoặc không có quyền xem.\n\nCùng thời điểm chốt với các chỉ số phía trên."
+    }
+  ],
+  "originalIntentDraftPreparedAfterConstraintRepair": true,
+  "undeliveredResponseConfirmedByIndependentReadback": {
+    "records": 1,
+    "receipts": 1,
+    "audits": 1,
+    "cause": "Harness request context disposed before route.fetch delivered the actual committed response; intentional aftercommit abort was not claimed for this first attempt."
+  }
+}

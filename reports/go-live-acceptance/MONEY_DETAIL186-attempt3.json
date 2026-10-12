@@ -1,0 +1,89 @@
+{
+  "scope": "EXACT_AP_EXPENSE_DASHBOARD_PO_SUPPLIER_CUSTOMER_LIMIT_CURRENT_ROLES",
+  "checkedAt": "2026-10-12T14:14:34.722Z",
+  "source": {
+    "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+    "sourceSha256": "5f35e32fe5faef37f42d0769cd16d50f2a16b3fb6e7acc7f410fb334d3380d21",
+    "uncommitted": true
+  },
+  "schema": {
+    "count": 186,
+    "latest": "20261012110100"
+  },
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [
+    {
+      "name": "MANAGER_PROFILE_FULL_EXPECTED_JSON_EXACT_CREDIT_LIMIT_AND_CURRENT_READER_RIGHTS",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T14:42:37.196Z",
+      "source": {
+        "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "sourceSha256": "15d7c3c1fcbfb977f1355be99012b60ecc2d0c456555e346da6275f9a8504c0f",
+        "uncommitted": true
+      },
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "customer": "f768428b-39ca-486e-95cc-5cd9ee8b5ad9",
+        "exact": "9007199254740993",
+        "salesCanReadCredit": true
+      }
+    },
+    {
+      "name": "APPROVED_EXACT_EXPENSE_AP_DETAIL_API_DASHBOARD_JSON_AND_REPORT",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T14:42:39.783Z",
+      "source": {
+        "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "sourceSha256": "15d7c3c1fcbfb977f1355be99012b60ecc2d0c456555e346da6275f9a8504c0f",
+        "uncommitted": true
+      },
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "expense": "680c63f6-cfc9-49f6-9cef-72b42ec025cc",
+        "ap": "a2a26be6-e441-455b-a996-b5a0be83a137",
+        "exact": "9007199254740993",
+        "detailAmount": "9007199254740993"
+      }
+    }
+  ],
+  "documents": {
+    "customerIntent": "3484d459-f1a7-426a-b639-2ca2acf3f7c2",
+    "approveIntent": "68bdc22b-ade8-4b28-8fd3-3976c6fa338d",
+    "ap": "a2a26be6-e441-455b-a996-b5a0be83a137",
+    "po": "3f95abfe-730c-40ec-9b3a-dae6ce66466c",
+    "supplier": "ab8e0f92-d8d7-4150-932a-7e1dd2baa6b8"
+  },
+  "pageErrors": [],
+  "status": "FAIL",
+  "error": "locator.waitFor: Timeout 30000ms exceeded.",
+  "failurePages": [
+    {
+      "url": "http://127.0.0.1:3112/admin",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA ERP\nĐiều hành\nTổng quan\nBán hàng\nMua hàng\nKho hàng\nGiao hàng\nTài chính\nNhân công & dịch vụ\nQuản trị\nBáo cáo\nTin nhắn\nĐăng xuất\nPhiên làm việc có phân quyền\nQA không đầu kỳ G119EE6ACBC\nNhân viên kiểm thử owner\nTO\n\nTỔNG QUAN KINH DOANH\n\nTổng quan\n\nDoanh thu theo kỳ và công nợ tại thời điểm đã chọn. Thu tiền không làm tăng doanh thu lần nữa.\n\nMở sổ tiền\nTừ ngày\nĐến trước ngày\nTìm khách hàng\nTìm khách\nKhách hàng\nTất cả\nKhách QA chi nhánh mới\nKhách kiểm thử khắc phục\nKhách kiểm thử khắc phục\nKhách kiểm thử khắc phục\nKhách kiểm thử khắc phục\nQA cấu hình khách GCF1115FF9B64\nQA thu nhiều lần và ứng trước\nCông trình\nTất cả\nCông trình QA phiếu tiền\nCông trình kiểm thử\nCông trình kiểm thử\nCông trình kiểm thử\nCông trình kiểm thử\nQA công trình GCF1115FF9B64\nNhân viên bán hàng\nTất cả\nNgười kiểm thử chi nhánh khác\nNhân viên hoa hồng giả QA\nNhân viên hoa hồng giả QA\nNhân viên hoa hồng giả QA\nNhân viên kiểm thử confirmer\nNhân viên kiểm thử foreignConfirmer\nNhân viên kiểm thử noConfirm\nNhân viên kiểm thử owner\nQA khắc phục finance\nQA khắc phục purchasing\nQA khắc phục warehouse\nHoạt động\nTất cả\nGiao hàng\nBán hàng\nDịch vụ\nHành chính\nLàm mới\n\nKỳ 01/10/2026 đến trước 01/11/2026 · số dư tính đến 12/10/2026 21:43\n\nTheo giao dịch đã ghi nhận; lịch sử chưa đối chiếu. Số liệu này chưa xác minh tổng số dư toàn doanh nghiệp.\n\nDoanh thu\n33.841.111 ₫\nLợi nhuận gộp quản trị\n31.391.111 ₫\nChi phí vận hành\n9.007.199.254.864.450 ₫\nLợi nhuận hoạt động\n-9.007.199.223.473.339 ₫\nBiên lợi nhuận\n-26.616.145.148,052%\nBiểu đồ kết quả kinh doanh\nCÙNG KỲ VÀ PHẠM VI\nDoanh thu\n33.841.111 ₫\nLN gộp quản trị\n31.391.111 ₫\nLN hoạt động\n-9.007.199.223.473.339 ₫\n\nCHI PHÍ VẬN HÀNH\n\nPhân bổ theo nhóm\nQA nhóm chi phí GFC5E266A209A\nChi phí\n9.007.199.254.740.993 ₫\nChi phi nhan su van hanh\nThu nhập nhân sự\n123.457 ₫\n\nHOA HỒNG PHẢI TRẢ\n\nChi tiết theo nhân viên\n\nKhông có hoa hồng còn phải trả tại thời điểm đã chọn.\n\nKhách hàng phải thu\n2.841.111 ₫\nNhà cung cấp phải trả\n9.007.199.258.340.993 ₫\nLương phải chi\n100.000 ₫\nHoa hồng phải chi\n0 ₫\nKhách / công trình đang nợ\nTất cả\nKhách kiểm thử khắc phục\nCông trình kiểm thử · hạn 12/10/2026\n1.990.000 ₫\nKhách kiểm thử khắc phục\nCông trình kiểm thử · hạn 12/10/2026\n740.000 ₫\nKhách kiểm thử khắc phục\nCông trình kiểm thử · hạn 12/10/2026\n111.111 ₫\n\nCùng thời điểm chốt và bộ lọc với các chỉ số phía trên.\n\nNhà cung cấp đang phải trả\nTất cả\nNCC QA chi nhánh mới\nHạn 12/10/2026\n9.007.199.254.740.993 ₫\nNCC QA chi nhánh mới\nHạn 12/10/2026\n1.500.000 ₫\nNCC QA chi nhánh mới\nHạn 12/10/2026\n750.000 ₫\nNCC QA chi nhánh mới\nHạn 12/10/2026\n750.000 ₫\nNCC QA chi nhánh mới\nHạn 12/10/2026\n450.000 ₫\nNhân viên kiểm thử noConfirm\nHạn 12/10/2026\n100.000 ₫\n\nCùng thời điểm chốt với các chỉ số phía trên."
+    },
+    {
+      "url": "http://127.0.0.1:3112/admin",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA ERP\nĐiều hành\nTổng quan\nBán hàng\nNhà cung cấp\nKho hàng\nGiao hàng\nTài chính\nThu nhập\nBáo cáo\nTin nhắn\nĐăng xuất\nPhiên làm việc có phân quyền\nQA không đầu kỳ G119EE6ACBC\nQA khắc phục finance\nPF\n\nTỔNG QUAN KINH DOANH\n\nTổng quan\n\nDoanh thu theo kỳ và công nợ tại thời điểm đã chọn. Thu tiền không làm tăng doanh thu lần nữa.\n\nMở sổ tiền\nTừ ngày\nĐến trước ngày\nTìm khách hàng\nTìm khách\nKhách hàng\nTất cả\nKhách QA chi nhánh mới\nKhách kiểm thử khắc phục\nKhách kiểm thử khắc phục\nKhách kiểm thử khắc phục\nKhách kiểm thử khắc phục\nQA cấu hình khách GCF1115FF9B64\nQA thu nhiều lần và ứng trước\nCông trình\nTất cả\nCông trình QA phiếu tiền\nCông trình kiểm thử\nCông trình kiểm thử\nCông trình kiểm thử\nCông trình kiểm thử\nQA công trình GCF1115FF9B64\nNhân viên bán hàng\nTất cả\nNhân viên hoa hồng giả QA\nNhân viên hoa hồng giả QA\nNhân viên hoa hồng giả QA\nNhân viên kiểm thử confirmer\nNhân viên kiểm thử noConfirm\nNhân viên kiểm thử owner\nQA khắc phục finance\nQA khắc phục purchasing\nQA khắc phục warehouse\nHoạt động\nTất cả\nGiao hàng\nBán hàng\nDịch vụ\nHành chính\nLàm mới\n\nKỳ 01/10/2026 đến trước 01/11/2026 · số dư tính đến 12/10/2026 21:43\n\nTheo giao dịch đã ghi nhận; lịch sử chưa đối chiếu. Số liệu này chưa xác minh tổng số dư toàn doanh nghiệp.\n\nDoanh thu\n33.841.111 ₫\nLợi nhuận gộp quản trị\n31.391.111 ₫\nChi phí vận hành\n9.007.199.254.864.450 ₫\nLợi nhuận hoạt động\n-9.007.199.223.473.339 ₫\nBiên lợi nhuận\n-26.616.145.148,052%\nBiểu đồ kết quả kinh doanh\nCÙNG KỲ VÀ PHẠM VI\nDoanh thu\n33.841.111 ₫\nLN gộp quản trị\n31.391.111 ₫\nLN hoạt động\n-9.007.199.223.473.339 ₫\n\nCHI PHÍ VẬN HÀNH\n\nPhân bổ theo nhóm\nQA nhóm chi phí GFC5E266A209A\nChi phí\n9.007.199.254.740.993 ₫\nChi phi nhan su van hanh\nThu nhập nhân sự\n123.457 ₫\n\nHOA HỒNG PHẢI TRẢ\n\nChi tiết theo nhân viên\n\nKhông có hoa hồng còn phải trả tại thời điểm đã chọn.\n\nKhách hàng phải thu\n2.841.111 ₫\nNhà cung cấp phải trả\n9.007.199.258.340.993 ₫\nLương phải chi\n100.000 ₫\nHoa hồng phải chi\n0 ₫\nKhách / công trình đang nợ\nTất cả\nKhách kiểm thử khắc phục\nCông trình kiểm thử · hạn 12/10/2026\n1.990.000 ₫\nKhách kiểm thử khắc phục\nCông trình kiểm thử · hạn 12/10/2026\n740.000 ₫\nKhách kiểm thử khắc phục\nCông trình kiểm thử · hạn 12/10/2026\n111.111 ₫\n\nCùng thời điểm chốt và bộ lọc với các chỉ số phía trên.\n\nNhà cung cấp đang phải trả\nTất cả\nNCC QA chi nhánh mới\nHạn 12/10/2026\n9.007.199.254.740.993 ₫\nNCC QA chi nhánh mới\nHạn 12/10/2026\n1.500.000 ₫\nNCC QA chi nhánh mới\nHạn 12/10/2026\n750.000 ₫\nNCC QA chi nhánh mới\nHạn 12/10/2026\n750.000 ₫\nNCC QA chi nhánh mới\nHạn 12/10/2026\n450.000 ₫\nNhân viên kiểm thử noConfirm\nHạn 12/10/2026\n100.000 ₫\n\nCùng thời điểm chốt với các chỉ số phía trên."
+    },
+    {
+      "url": "http://127.0.0.1:3112/admin",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA ERP\nĐiều hành\nTổng quan\nBán hàng\nKho hàng\nGiao hàng\nTài chính\nBáo cáo\nTin nhắn\nĐăng xuất\nPhiên làm việc có phân quyền\nQA không đầu kỳ G119EE6ACBC\nNhân viên kiểm thử confirmer\nTC\n\nTỔNG QUAN KINH DOANH\n\nTổng quan\n\nDoanh thu theo kỳ và công nợ tại thời điểm đã chọn. Thu tiền không làm tăng doanh thu lần nữa.\n\nMở sổ tiền\nTừ ngày\nĐến trước ngày\nTìm khách hàng\nTìm khách\nKhách hàng\nTất cả\nKhách QA chi nhánh mới\nKhách kiểm thử khắc phục\nKhách kiểm thử khắc phục\nKhách kiểm thử khắc phục\nKhách kiểm thử khắc phục\nQA cấu hình khách GCF1115FF9B64\nQA thu nhiều lần và ứng trước\nCông trình\nTất cả\nCông trình QA phiếu tiền\nCông trình kiểm thử\nCông trình kiểm thử\nCông trình kiểm thử\nCông trình kiểm thử\nQA công trình GCF1115FF9B64\nNhân viên bán hàng\nTất cả\nNhân viên kiểm thử confirmer\nHoạt động\nTất cả\nGiao hàng\nBán hàng\nDịch vụ\nHành chính\nLàm mới\n\nKỳ 01/10/2026 đến trước 01/11/2026 · số dư tính đến 12/10/2026 21:43\n\nTheo giao dịch đã ghi nhận; lịch sử chưa đối chiếu. Số liệu này chưa xác minh tổng số dư toàn doanh nghiệp.\n\nDoanh thu\n33.841.111 ₫\nBiểu đồ kết quả kinh doanh\nCÙNG KỲ VÀ PHẠM VI\nDoanh thu\n33.841.111 ₫\n\nCHI PHÍ VẬN HÀNH\n\nPhân bổ theo nhóm\n\nBạn không có quyền xem chi tiết này.\n\nHOA HỒNG PHẢI TRẢ\n\nChi tiết theo nhân viên\n\nBạn không có quyền xem chi tiết này.\n\nKhách hàng phải thu\n2.841.111 ₫\nKhách / công trình đang nợ\nTất cả\nKhách kiểm thử khắc phục\nCông trình kiểm thử · hạn 12/10/2026\n1.990.000 ₫\nKhách kiểm thử khắc phục\nCông trình kiểm thử · hạn 12/10/2026\n740.000 ₫\nKhách kiểm thử khắc phục\nCông trình kiểm thử · hạn 12/10/2026\n111.111 ₫\n\nCùng thời điểm chốt và bộ lọc với các chỉ số phía trên.\n\nNhà cung cấp đang phải trả\n\nKhông có khoản mở hoặc không có quyền xem.\n\nCùng thời điểm chốt với các chỉ số phía trên."
+    },
+    {
+      "url": "http://127.0.0.1:3112/admin/suppliers/ab8e0f92-d8d7-4150-932a-7e1dd2baa6b8",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA ERP\nĐiều hành\nTổng quan\nĐơn bán\nMua hàng\nĐơn mua\nNhà cung cấp\nKho hàng\nGiao hàng\nTài chính\nBáo cáo\nTin nhắn\nĐăng xuất\nPhiên làm việc có phân quyền\nQA không đầu kỳ G119EE6ACBC\nQA khắc phục purchasing\nPP\n\nNHÀ CUNG CẤP · G119EE6ACBC\n\nNCC QA chi nhánh mới\n\nChưa có điện thoại · Chưa có địa chỉ\n\nTạo đơn mua\nBảng giá mua\nĐang hoạt động\nHồ sơ\nĐơn mua\nNhập kho\nGiao thẳng\nPhải trả\nThanh toán\nĐơn mua gần nhất\n7\nPhiếu nhập / giao thẳng\n5 / 0\nCông nợ phải trả đang hiển thị\n9.007.199.258.240.993 ₫\nĐiều khoản\n0 ngày\nHồ sơ\nThư điện tử\nChưa có\nMã số thuế\nChưa có\nĐiều khoản\n0 ngày\nĐầu mối liên hệ\n\nChưa có đầu mối đang hoạt động.\n\nĐơn mua\n20 GẦN NHẤT\nPO-2026-000455\nBản nháp · Về kho · Kho QA mới không tồn đầu kỳ\nChưa hẹn · 9.007.199.254.740.993 ₫\nPO-2026-000454\nĐã ghi đủ nguồn nhận · Về kho · Kho QA mới không tồn đầu kỳ\nChưa hẹn · 750.000 ₫\nPO-2026-000453\nĐã hủy · Về kho · Kho QA mới không tồn đầu kỳ\nChưa hẹn · 318.518 ₫\nPO-2026-000444\nĐã ghi đủ nguồn nhận · Về kho · Kho QA mới không tồn đầu kỳ\nChưa hẹn · 50.000 ₫\nPO-2026-000443\nĐã ghi đủ nguồn nhận · Về kho · Kho QA mới không tồn đầu kỳ\nChưa hẹn · 450.000 ₫\nPO-2026-000441\nĐã ghi đủ nguồn nhận · Về kho · Kho QA mới không tồn đầu kỳ\nChưa hẹn · 2.250.000 ₫\nPO-2026-000440\nBản nháp · Về kho · Kho QA mới không tồn đầu kỳ\nChưa hẹn · 2.250.000 ₫\nNhập kho\n20 GẦN NHẤT\nPR-2026-000375\nPO-2026-000454 · 5 đơn vị cơ sở · 12/10/2026\nPR-2026-000371\nPO-2026-000444 · 50 đơn vị cơ sở · 12/10/2026\nPR-2026-000370\nPO-2026-000443 · 3 đơn vị cơ sở · 12/10/2026\nPR-2026-000369\nPO-2026-000441 · 5 đơn vị cơ sở · 12/10/2026\nPR-2026-000368\nPO-2026-000441 · 10 đơn vị cơ sở · 12/10/2026\nGiao thẳng\n20 GẦN NHẤT\n\nChưa có giao thẳng đã xác minh.\n\nPhải trả\nChi phí vận hành đã duyệt\nGốc 9.007.199.254.740.993 ₫ · còn 9.007.199.254.740.993 ₫\nĐến hạn 12/10/2026 · Còn hạn\nNhận hàng vào kho\nGốc 750.000 ₫ · còn 750.000 ₫\nĐến hạn 12/10/2026 · Còn hạn\nNhận hàng vào kho\nGốc 450.000 ₫ · còn 450.000 ₫\nĐến hạn 12/10/2026 · Còn hạn\nNhận hàng vào kho\nGốc 50.000 ₫ · còn 50.000 ₫\nĐến hạn 12/10/2026 · Còn hạn\nNhận hàng vào kho\nGốc 750.000 ₫ · còn 750.000 ₫\nĐến hạn 12/10/2026 · Còn hạn\nNhận hàng vào kho\nGốc 1.500.000 ₫ · còn 1.500.000 ₫\nĐến hạn 12/10/2026 · Còn hạn\nThanh toán\n20 GẦN NHẤT\n\nChưa có thanh toán."
+    }
+  ]
+}

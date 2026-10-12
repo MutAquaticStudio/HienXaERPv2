@@ -11,7 +11,7 @@ type Quote = { id: string; quotation_number: string; revision_number: number; st
 export default async function CustomerQuotationsPage({ searchParams }: { searchParams: Promise<{ notice?: string; error?: string }> }) {
   const membership = await requireCustomerAccess();
   const supabase = await createServerSupabase();
-  const { data, error } = await supabase.from("quotation_read").select("id, quotation_number, revision_number, state, total_vnd, site_name_snapshot, expires_at").eq("customer_id", membership.customerId).order("created_at", { ascending: false });
+  const { data, error } = await supabase.from("quotation_read").select("id, quotation_number, revision_number, state, total_vnd::text, site_name_snapshot, expires_at").eq("customer_id", membership.customerId).order("created_at", { ascending: false });
   if (error) throw new Error("Không thể tải báo giá của khách hàng.");
   const rows = data as Quote[];
   const query = await searchParams;

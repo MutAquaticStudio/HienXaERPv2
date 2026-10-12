@@ -21,10 +21,10 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
   const list = parseCoreListQuery({ page: query.page });
   const supabase = await createServerSupabase();
   const [paymentsResult, summaryResult, accountsResult, advancesResult] = await Promise.all([
-    supabase.from("payment_read").select("id, payment_number, direction, counterparty_name, account_code, amount_vnd, allocated_amount_vnd, advance_amount_vnd, unallocated_amount_vnd, effective_at, posting_state, reconciliation_state, reconciliation_difference_vnd, reversal_of_payment_id").eq("branch_id", access.branchId).order("effective_at", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1),
-    supabase.rpc("cashbook_summary", { target_branch_id: access.branchId }).single(),
+    supabase.from("payment_read").select("id, payment_number, direction, counterparty_name, account_code, amount_vnd::text, allocated_amount_vnd::text, advance_amount_vnd::text, unallocated_amount_vnd::text, effective_at, posting_state, reconciliation_state, reconciliation_difference_vnd::text, reversal_of_payment_id").eq("branch_id", access.branchId).order("effective_at", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1),
+    supabase.rpc("cashbook_summary", { target_branch_id: access.branchId }).select("net_cash_vnd::text,unmatched_count").single(),
     supabase.from("finance_accounts").select("id, code, name, account_kind, active").eq("branch_id", access.branchId).order("code"),
-    supabase.from("advance_position_read").select("advance_side, counterparty_name, balance_vnd").eq("branch_id", access.branchId),
+    supabase.from("advance_position_read").select("advance_side, counterparty_name, balance_vnd::text").eq("branch_id", access.branchId),
   ]);
   if (paymentsResult.error || summaryResult.error || accountsResult.error || advancesResult.error) throw new Error("Không thể tải sổ tiền đầy đủ.");
   const fetched = (paymentsResult.data ?? []) as Payment[];

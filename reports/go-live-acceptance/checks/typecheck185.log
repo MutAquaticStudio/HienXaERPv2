@@ -1,0 +1,13 @@
+$ next typegen && tsc --noEmit
+Generating route types...
+✓ Types generated successfully
+src/app/admin/customers/[id]/page.tsx(44,24): error TS7053: Element implicitly has an 'any' type because expression of type '0' can't be used to index type '{ customer_id: any; credit_limit_vnd: string; internal_note: any; } | { customer_id: any; credit_limit_vnd: string; internal_note: any; }[]'.
+  Property '0' does not exist on type '{ customer_id: any; credit_limit_vnd: string; internal_note: any; } | { customer_id: any; credit_limit_vnd: string; internal_note: any; }[]'.
+src/modules/catalog/actions.ts(85,109): error TS2322: Type '{ status: "SUCCESS" | "FAILED" | "UNKNOWN"; message: string; }' is not assignable to type 'CommandOutcome'.
+  Type '{ status: "SUCCESS" | "FAILED" | "UNKNOWN"; message: string; }' is not assignable to type '{ status: "FAILED" | "UNKNOWN"; message: string; }'.
+    Types of property 'status' are incompatible.
+      Type '"SUCCESS" | "FAILED" | "UNKNOWN"' is not assignable to type '"FAILED" | "UNKNOWN"'.
+        Type '"SUCCESS"' is not assignable to type '"FAILED" | "UNKNOWN"'.
+src/modules/catalog/module-page.tsx(24,426): error TS2339: Property 'map' does not exist on type '{ customer_id: any; credit_limit_vnd: string; internal_note: any; } | { customer_id: any; credit_limit_vnd: string; internal_note: any; }[]'.
+  Property 'map' does not exist on type '{ customer_id: any; credit_limit_vnd: string; internal_note: any; }'.
+[ELIFECYCLE] Command failed with exit code 2.

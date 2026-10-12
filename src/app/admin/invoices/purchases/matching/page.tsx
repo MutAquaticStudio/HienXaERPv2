@@ -10,8 +10,8 @@ import { SupplierDocumentForm, type DocumentSource } from "@/modules/invoicing/s
 export default async function SupplierDocumentMatchingPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
  const access = await requireInternalPermission("finance.ap.read"), db = await createServerSupabase(), list = parseCoreListQuery(await searchParams);
  const [documents, sources] = await Promise.all([
-  db.from("supplier_document_read").select("id, supplier_name, document_kind, document_number, declared_value_vnd, match_state, business_state, legal_state").eq("branch_id", access.branchId).order("created_at", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1),
-  access.permissions.has("finance.ap.adjust") ? db.from("supplier_document_eligible_source_read").select("*").eq("branch_id", access.branchId).order("source_number", { ascending: false }).limit(200) : Promise.resolve({ data: [], error: null }),
+  db.from("supplier_document_read").select("id, supplier_name, document_kind, document_number, declared_value_vnd::text, match_state, business_state, legal_state").eq("branch_id", access.branchId).order("created_at", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1),
+  access.permissions.has("finance.ap.adjust") ? db.from("supplier_document_eligible_source_read").select("branch_id,supplier_id,supplier_name,source_kind,source_id,source_number,material_name,uom_symbol,source_quantity,source_unit_cost::text,source_value_vnd::text,document_kind").eq("branch_id", access.branchId).order("source_number", { ascending: false }).limit(200) : Promise.resolve({ data: [], error: null }),
  ]);
  if (documents.error || sources.error) throw new Error("Không thể tải đối chiếu chứng từ nhà cung cấp.");
  const today = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());

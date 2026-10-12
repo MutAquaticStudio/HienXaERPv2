@@ -1,3 +1,23 @@
+## Trạng thái hiện hành — tích hợp GitHub ngày 12/10/2026
+
+Người dùng yêu cầu cập nhật PR42 và merge ngay, không chạy thêm kiểm thử và không chờ CI; chấp nhận sửa lỗi sau. Đây là quyết định tích hợp mã GitHub, không xác nhận nghiệm thu toàn hệ thống hoặc GO LIVE. Chỉ dùng single agent theo chỉ đạo mới; các sub-agent đã dừng.
+
+Nền GitHub trước tích hợp: PR42/codex/business-flow-remediation-g01-g23 `73c3d172124679ae1bcf6c6cb59b7446efb6a76d`, main `e3b3524d6da3ced2a8269f444721aa7fe91a1be8`. Phần mã mới gồm forward180–186 và các sửa giao diện/reader/draft. QA native186, managedQA187history=186canonical+hotfix riêng; không suy phiên bản Production từ QA.
+
+Các kiểm tra đã hoàn thành trước lệnh bỏ kiểm tra: 622 unit/91tệp,25Node,typecheck,build; lint0lỗi/13cảnh báo nền. CI của commit mới chưa được xác minh và không được thay bằng CI73c3d17. Vercel git deploymentEnabled.main=false; không triển khai ứng dụng/migration hoặc ghi dữ liệu doanh nghiệp trong bước này.
+
+Bằng chứng mới: `MONEY_DETAIL186.json`, `MONEY_READER186.json`, `ACCESS_MESSAGING186.json`, `SERVICE_DISPATCH186.json`, `CONFIGURATION186.json`, `FINANCE_CONFIG186.json`, `SOURCE_ROUTE_AUDIT186.json`, `MASTER_DRAFT_REVOKE186_AFTER.json`, `DOCUMENT_READ186.json`, `NATIVE_SCHEMA_PARITY186.json`, `ORIGINAL_PRESERVATION186.json`.
+
+Tiền lớn, cấp/thu hồi quyền trên phiên hiện hữu, giao/heartbeat/hủy việc, receiver trước/sau publish, hủy phiếu giải phóng reservation đã đạt đúng phạm vi artifact. Các lỗi harness cũ vẫn lưu tại attempt files; PASS cuối không xóa lịch sử lỗi. Không chạy lại hai race ứng trước; giữ600.000đ/400.000đ.
+
+Còn thiếu trước phát hành: ca invite/recovery Auth, một số biến thể override/quick supplier/recognition/request quote change và đọc nguồn động trong coverage review; URL doanh nghiệp, TLSDBbackup/restore, serversecret hợp lệ, bản sao dữ liệu/tệp đích và diễn tập phục hồi/giao dịch sau backup, triển khai và kiểm chứng sau triển khai. Không đánh dấu chúng PASS từ nguồn hoặc CI. GPS thiết bị/phát hành hóa đơn pháp lý vẫn hoãn.
+
+`TARGET_SCHEMA78_REHEARSAL.json` chứng minh reconstruction và bridge thử nghiệm có catalog khớp fresh186; raw replay8migration cũ FAIL. `TARGET_SCHEMA78_EXPERIMENTAL_BRIDGE.sql` có guard cụm native, không dùng trực tiếp ở Production, không tự repair ledger. QA restore101objects/26.126.312bytes không thay backup/restore doanh nghiệp.
+
+Các đoạn phía dưới là lịch sử theo từng phiên bản; phần hiện hành này có ưu tiên khi trạng thái cũ khác nhau.
+
+---
+
 # Kết quả phát hành
 
 **CHƯA HOÀN TẤT. Chưa merge, chưa triển khai, chưa GO LIVE.** Công việc đang tiếp tục; đây là trạng thái tại điểm lưu.

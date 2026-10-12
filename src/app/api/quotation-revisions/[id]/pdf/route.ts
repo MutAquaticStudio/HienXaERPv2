@@ -16,7 +16,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   const supabase = await createServerSupabase();
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) return new Response("Cần đăng nhập.", { status: 401 });
-  const { data: revisionData } = await supabase.from("quotation_revisions").select("id, quotation_id, revision_number, state, customer_name_snapshot, site_name_snapshot, delivery_address_snapshot, commercial_terms, total_vnd, expires_at").eq("id", id).maybeSingle();
+  const { data: revisionData } = await supabase.from("quotation_revisions").select("id, quotation_id, revision_number, state, customer_name_snapshot, site_name_snapshot, delivery_address_snapshot, commercial_terms, total_vnd::text, expires_at").eq("id", id).maybeSingle();
   if (!revisionData) return new Response("Không tìm thấy phiên bản báo giá.", { status: 404 });
   const revision = revisionData as Revision;
   const [quoteResult, lineResult] = await Promise.all([

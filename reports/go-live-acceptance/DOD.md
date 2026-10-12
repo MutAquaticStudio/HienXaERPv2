@@ -1,26 +1,23 @@
-# DOD phát hành
+# DOD hiện hành
 
-**CHƯA HOÀN TẤT. Chưa đủ cổng merge hoặc triển khai.** Checkpoint này sẽ cập nhật khi hoàn tất phần còn lại.
+**CHƯA HOÀN TẤT GO LIVE.** Người dùng đã yêu cầu merge GitHub ngay, không kiểm thử thêm hoặc chờ CI. Quyết định này không chuyển các mục chưa nghiệm thu/thực hiện bên dưới thành đạt.
 
-| Điều kiện | Trạng thái | Căn cứ/phần còn thiếu |
+| Điều kiện | Trạng thái | Bằng chứng/giới hạn |
 |---|---|---|
-| Checkout gốc và local được bảo toàn | ĐẠT hiện tại |79b0b91,61 tracked/67 untracked; bản sao riêng và tích hợp111 tệp |
-| Phiên bản thống nhất đã nghiệm thu | CHƯA |PR42+forward175–177 đã tích hợp; toàn bộ danh mục còn thiếu |
-| Lỗi đã nêu và lỗi mới được xử lý | ĐẠT các lỗi xác minh |Thực lấy, Finance reader, tiền portal, phục hồi FormData; tiếp tục ca còn lại |
-| Luồng chuẩn/ngoại lệ theo vai trò trên trình duyệt | ĐẠT phạm vi đã chạy |15→14→13; multi-UOM; service; đổi người; revoke/reactivate. Không suy toàn bộ biến thể |
-| Toàn bộ phân hệ phát hành được nghiệm thu | CHƯA |87page/24API;46admin và18portal lượt đọc không chứng minh mọi thao tác |
-| Kho/nguồn/vốn/nợ/thu chi khớp | ĐẠT phạm vi đã chạy |Standard/multi readback; G16/G09 cũ có phạm vi riêng |
-| Quyền/rollback/retry/phiên bản | ĐẠT phạm vi đã chạy |26seams; stockrace mới; saved-receipt retry; lost-response nhiều dòng; đổi người/revoke |
-| Bỏ đầu kỳ/kích hoạt và pending opening vận hành | ĐẠT ứng viên |PENDING,activationNULL,0opening; nhãn lịch sử chưa đối chiếu; chưa Production |
-| Không tạo số dư lịch sử giả | ĐẠT |Nguồn mới hợp lệ, không opening/activation để vượt gate |
-| Nâng cấp/phục hồi và bảo toàn dữ liệu | ĐẠT QA; CHƯA đích |Cloud forward giữ hash; native122 bảng;fresh177/289hàm. Chưa Production78→ứng viên |
-| CI đúng ứng viên và sau merge | CHƯA |Local602unit/8Node/type/lint/build đạt; cần CI commit mới; chưa merge |
-| Triển khai đúng môi trường/phiên bản | CHƯA |Chưa xác nhận URL, credentialbackupDB/secret máy chủ hợp lệ |
-| Kiểm chứng sau triển khai | CHƯA |Chưa artifact/schema mới trên doanh nghiệp |
-| Nhật ký/bằng chứng/phục hồi/bàn giao | ĐANG HOÀN THIỆN |Đã có tệp; kế hoạch không thay diễn tập đích |
-| GPS/hóa đơn hoãn thể hiện đúng | ĐẠT ứng viên |GPS chưa khả dụng/start-ping501; hóa đơn internal không issued |
+| Checkout gốc và local được bảo toàn | ĐẠT | ORIGINAL_PRESERVATION186:12.534file,0diff,HEAD79b0b91 |
+| Có phiên bản thống nhất đã nghiệm thu | CHƯA TOÀN BỘ | PR42 nguồn thống nhất; canonical186; coverage còn mục chưa chạy |
+| Các lỗi đã nêu và lỗi mới được xử lý | ĐẠT LỖI ĐÃ XÁC MINH | Quantity/rate,draft/recovery/audit/reader/access; không suy hết các ca chưa chạy |
+| Luồng chuẩn/ngoại lệ theo vai trò | ĐẠT CÁC CA ĐÃ CHẠY | Standard15→14→13,multi/service/lifecycle;186 thêm service/dispatch/rights/message |
+| Toàn bộ phân hệ phát hành nghiệm thu | CHƯA | 87page/24API đã ánh xạ; coverage review giữ các ca thiếu |
+| Kho/giao nhận/nguồn/vốn/nợ/thu chi khớp | ĐẠT PHẠM VI PROOF | Giữ G09/G16 và các nguồn chuẩn; không tuyên bố tổng doanh nghiệp đã đối chiếu |
+| Quyền/rollback/retry/phiên bản | ĐẠT PHẠM VI PROOF | Master/field revocation/audit fault/currentJWT/source route và bằng chứng cũ |
+| Bỏ chặn đầu kỳ/kích hoạt/pending opening vận hành | ĐẠT QA | PENDING/noactivation/0opening cho nguồn mới; chưa Production |
+| Không tạo số dư lịch sử giả | ĐẠT | Test có nguồn hợp lệ tại QA; không thay lịch sử doanh nghiệp |
+| Nâng cấp/phục hồi bảo toàn dữ liệu | ĐẠT QA; CHƯA ĐÍCH | Native/managedforward,Storagebyte101; structural78bridge chỉ thử nghiệm |
+| CI đúng ứng viên và sau merge | CHƯA XÁC MINH MÃ MỚI | Local622unit/25Node/type/lint/build đã hoàn thành; không chờCI theo yêu cầu mới |
+| Triển khai đúng môi trường/phiên bản | CHƯA | Không deploy hoặc migrateProduction; git auto-deploy main bị tắt |
+| Kiểm chứng sau triển khai | CHƯA | Chưa triển khai |
+| Nhật ký/bằng chứng/phục hồi/bàn giao | CÓ HỒ SƠ; CHƯA ĐỦ ĐÍCH | Log/attempt/proof/recoveryplan; thiếubackupTLS và diễn tập dữ liệu đích |
+| GPS/hóa đơn hoãn thể hiện đúng | ĐẠT ỨNG VIÊN | GPSunavailable; hồ sơ/internal/export không phải phát hành thật |
 
-Hai race `package4-advance-race.mjs` modes`different-intents`/`same-intent` không chạy lại. Giữ600.000đ phân bổ/400.000đ còn/một phiếu tiền.
-
-
-Checkpoint179: AuthbannedJWT vàroster duplicate/crossbranch đãsửa cóproof thật; T30literal/T41largejobđạt. Type/lint/build179đạt, cầnCIhead mới. Native/fresh179292functions/ACL/view/policykhớp,CloudQA180history giữdata. Các điều kiệnProduction/đích/fullacceptance chưa thay đổi; CHƯA HOÀN TẤT.
+Hai race `package4-advance-race.mjs --mode different-intents` và `--mode same-intent` không chạy lại: một phân bổ600.000đ,còn400.000đ,một phiếu tiền.

@@ -1,0 +1,3934 @@
+{
+  "checkedAt": "2026-10-12T13:47:12.480Z",
+  "status": "PASS_ALL_NATIVE_FUNCTIONS_AND_ACL",
+  "restoredCount": 302,
+  "freshCount": 302,
+  "differences": [],
+  "old174RelevantContractsUnchanged": [
+    {
+      "schema": "private",
+      "name": "assert_verified_evidence",
+      "signature": "target_evidence_id uuid, target_branch_id uuid"
+    },
+    {
+      "schema": "private",
+      "name": "can_read_internal_evidence_storage",
+      "signature": "target_bucket text, target_path text"
+    },
+    {
+      "schema": "private",
+      "name": "can_read_portal_evidence_object",
+      "signature": "target_object_path text"
+    },
+    {
+      "schema": "private",
+      "name": "can_write_internal_evidence_storage",
+      "signature": "target_bucket text, target_path text"
+    },
+    {
+      "schema": "private",
+      "name": "can_write_portal_evidence_object",
+      "signature": "target_object_path text"
+    },
+    {
+      "schema": "private",
+      "name": "evidence_actor_customer_role",
+      "signature": "actor_uuid uuid, target_customer_id uuid"
+    },
+    {
+      "schema": "private",
+      "name": "evidence_actor_has_permission",
+      "signature": "actor_uuid uuid, target_branch_id uuid, requested_permission text"
+    },
+    {
+      "schema": "private",
+      "name": "evidence_actor_is_assignee",
+      "signature": "actor_uuid uuid, target_work_item_id uuid"
+    },
+    {
+      "schema": "private",
+      "name": "evidence_actor_portal_access",
+      "signature": "actor_uuid uuid, target_evidence_id uuid, require_ready boolean"
+    },
+    {
+      "schema": "private",
+      "name": "evidence_storage_binding_current",
+      "signature": "kind text, eid uuid, bucket text, path text"
+    },
+    {
+      "schema": "private",
+      "name": "evidence_storage_identity",
+      "signature": "bucket text, path text"
+    },
+    {
+      "schema": "private",
+      "name": "evidence_storage_object_exists",
+      "signature": "target_bucket text, target_path text"
+    },
+    {
+      "schema": "private",
+      "name": "guard_evidence_storage_finalization",
+      "signature": ""
+    },
+    {
+      "schema": "private",
+      "name": "portal_evidence_access",
+      "signature": "target_evidence_id uuid, require_ready boolean"
+    },
+    {
+      "schema": "private",
+      "name": "record_storage_attestation",
+      "signature": "kind text, eid uuid, sha text, bytes bigint, actor uuid"
+    },
+    {
+      "schema": "public",
+      "name": "create_evidence_upload",
+      "signature": "target_branch_id uuid, bucket_name text, object_path text, audience text, operation_id uuid"
+    },
+    {
+      "schema": "public",
+      "name": "create_portal_evidence",
+      "signature": "target_context_type text, target_work_item_id uuid, target_customer_id uuid, target_mime_type text, target_byte_size bigint, operation_id uuid"
+    },
+    {
+      "schema": "public",
+      "name": "evidence_verified_storage_status",
+      "signature": "target_evidence_id uuid"
+    },
+    {
+      "schema": "public",
+      "name": "finalize_evidence_upload",
+      "signature": "target_evidence_id uuid, checksum_sha256 text, byte_size bigint, operation_id uuid"
+    },
+    {
+      "schema": "public",
+      "name": "finalize_evidence_upload_verified",
+      "signature": "actor_uuid uuid, target_evidence_id uuid, checksum_sha256 text, byte_size bigint, operation_id uuid"
+    },
+    {
+      "schema": "public",
+      "name": "finalize_portal_evidence",
+      "signature": "target_evidence_id uuid, target_checksum_sha256 text, target_byte_size bigint, operation_id uuid"
+    },
+    {
+      "schema": "public",
+      "name": "finalize_portal_evidence_verified",
+      "signature": "actor_uuid uuid, target_evidence_id uuid, target_checksum_sha256 text, target_byte_size bigint, operation_id uuid"
+    },
+    {
+      "schema": "public",
+      "name": "get_portal_evidence_for_signing",
+      "signature": "target_evidence_id uuid"
+    }
+  ],
+  "functions": [
+    {
+      "schema": "private",
+      "name": "advance_remaining",
+      "signature": "target_advance_id uuid",
+      "hash": "c239ce844422e856e3926c8c29267594",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "allocate_payment_lines",
+      "signature": "target_payment_id uuid, allocation_lines jsonb, actor_auth_user_id uuid",
+      "hash": "dcd32a2a14730302938450aefef29519",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "assert_allocation_capacity",
+      "signature": "target_sales_order_line_id uuid, requested_base_quantity numeric, excluded_allocation_id uuid",
+      "hash": "eba83e03671fa859375f3847c521c1e7",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "assert_commercial_line",
+      "signature": "target_branch_id uuid, target_customer_id uuid, line jsonb, actor_auth_user_id uuid",
+      "hash": "eb8f580f870e6e005d63e01870bcde35",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "assert_delivery_resources",
+      "signature": "target_delivery_id uuid, target_employee_id uuid, target_vehicle_id uuid, target_start timestamp with time zone, target_end timestamp with time zone",
+      "hash": "d86633a31266555e0e154ef4be150b87",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "assert_operational_opening_writers_protected",
+      "signature": "",
+      "hash": "d785f260db8cbcb67c2c721d0880509a",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "assert_preserved_commercial_line",
+      "signature": "line jsonb, original jsonb",
+      "hash": "fcb6c1f8576f02e53e1a99448b3eb38b",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "assert_preserved_manual_commercial_line",
+      "signature": "line jsonb, original jsonb",
+      "hash": "312a34a802630a48360df78b1295b4bb",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "assert_purchase_line",
+      "signature": "target_branch_id uuid, target_supplier_id uuid, line jsonb, actor_auth_user_id uuid",
+      "hash": "50a8ef6aac30eea44f138d08138b3b39",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "assert_vehicle_actual_load",
+      "signature": "target_delivery_id uuid, loaded_lines jsonb, load_basis_at timestamp with time zone",
+      "hash": "a0eccd2147424e906695a900471f7599",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "assert_verified_evidence",
+      "signature": "target_evidence_id uuid, target_branch_id uuid",
+      "hash": "7334f2a518369390ebb3973f4457372a",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "assert_work_resources_available",
+      "signature": "target_work_item_id uuid, target_branch_id uuid, target_employee_id uuid, target_vehicle_id uuid, target_machine_id uuid, target_start timestamp with time zone, target_end timestamp with time zone",
+      "hash": "42ad78624d1e411564635636a48477b5",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "assign_employee_role",
+      "signature": "target_employee_id uuid, target_branch_id uuid, target_role_id uuid, change_reason text, operation_id uuid",
+      "hash": "f57394bc949932338cb6ad57ad14d666",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "audit_source_command_receipt",
+      "signature": "",
+      "hash": "a96896ebb48fcddf53d01f21985d4d8b",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "auth_actor_active",
+      "signature": "",
+      "hash": "dfa02f8c6af90c1766650e3c99b8ac17",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "auth_identity_active",
+      "signature": "target_auth_user_id uuid",
+      "hash": "ee75e00dd1d3db997ab045ceacbaa6b9",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "begin_authorized_opening_import",
+      "signature": "package_id uuid, b uuid, run uuid, pkg jsonb, actor uuid",
+      "hash": "b25f57a1d9ebcce0305188afaeacd2c0",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "branch_recording_scope",
+      "signature": "b uuid",
+      "hash": "35b22ee200ce8380572a279b827ab590",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "branch_recording_scope",
+      "signature": "b uuid, known_at timestamp with time zone",
+      "hash": "16333c34f29b744ff38dad295c9421cc",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "can_access_conversation",
+      "signature": "target_conversation_id uuid",
+      "hash": "0afddce76d2e21b360cb532954b61c7a",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "can_read_internal_evidence_storage",
+      "signature": "target_bucket text, target_path text",
+      "hash": "822ea12cef62e0173478aa2414d54b1e",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "can_read_portal_evidence_object",
+      "signature": "target_object_path text",
+      "hash": "ff46482f95ac1f12c838b8c109ad555d",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "can_write_internal_evidence_storage",
+      "signature": "target_bucket text, target_path text",
+      "hash": "ea7484c5f5469674ec65e45ed80090ec",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "can_write_portal_evidence_object",
+      "signature": "target_object_path text",
+      "hash": "9af728f9f53ac1b6a9e3876f217fbbc6",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "canonical_get_command_draft",
+      "signature": "target_operation_id uuid, target_command text, target_branch_id uuid",
+      "hash": "bea057306788eb0e0b7efa80ce688959",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "canonical_lookup_command_outcome",
+      "signature": "target_operation_id uuid, target_command text, target_branch_id uuid",
+      "hash": "435626f80d7d67e4ed2538a328db270c",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "canonical_save_branch_config",
+      "signature": "target_id uuid, source_branch_id uuid, values_json jsonb, expected_json jsonb, change_reason text, operation_id uuid",
+      "hash": "9aa36c48b90d49492b30ea75bb38de76",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "canonical_save_catalog_record",
+      "signature": "kind text, target_id uuid, target_branch_id uuid, values_json jsonb, expected_json jsonb, change_reason text, operation_id uuid",
+      "hash": "95865d89cc21d7e58ca2f6a13416cbd6",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "canonical_save_command_draft",
+      "signature": "target_operation_id uuid, target_command text, target_branch_id uuid, target_entries jsonb",
+      "hash": "76cab9748da264233bc1bfca8d1f1af7",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "canonical_save_customer_site_profile",
+      "signature": "kind text, target_id uuid, target_branch_id uuid, values_json jsonb, expected_json jsonb, change_reason text, operation_id uuid",
+      "hash": "496773e59102cfbbfb59bbe7641cf61f",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "check_customer_credit_funded",
+      "signature": "",
+      "hash": "4659bad70d9bdab0445a146406dc9277",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "command_payload_hash",
+      "signature": "payload jsonb",
+      "hash": "1ada9e62475864212617509f8bc8296a",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "commercial_snapshot_matches",
+      "signature": "line jsonb, original jsonb",
+      "hash": "de48ab1365d96f9d2e156d58d0ca96ee",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "complete_authorized_opening_import",
+      "signature": "package_id uuid, result_value jsonb",
+      "hash": "bd9365f312804df566fffca467c5c31d",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "current_employee_id",
+      "signature": "",
+      "hash": "776ff5d9ad44fa2b856b07a1a2463a8f",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "current_payable_outstanding",
+      "signature": "target_obligation_id uuid",
+      "hash": "73b74e3a3b31022e6870e9ba866a759b",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "current_receivable_outstanding",
+      "signature": "target_obligation_id uuid",
+      "hash": "6d9c26bb3d3741f125481ca11cab3009",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "customer_credit_fund_remaining",
+      "signature": "target_fund_id uuid",
+      "hash": "c173e7f0259301e20c82b584cd9f88ae",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "customer_credit_remaining",
+      "signature": "target_credit_id uuid",
+      "hash": "927fc7675c4a76485228607d29361d6d",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "customer_delivery_payload",
+      "signature": "target_delivery_id uuid",
+      "hash": "451d16bba8d50153c850c684363a07d4",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "customer_order_payload",
+      "signature": "target_order_id uuid",
+      "hash": "e724c57c4dcd3d2c677a3b84af5cdf27",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "delivery_allocation_consumed",
+      "signature": "target_allocation_id uuid",
+      "hash": "fc491cf25840308efe210bca32723267",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "delivery_cost_sources_complete",
+      "signature": "target_verification_id uuid, cutoff timestamp with time zone",
+      "hash": "2d856128deba22e621fb71eec1f0aaa4",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "delivery_has_unresolved_exception",
+      "signature": "did uuid",
+      "hash": "9fc698ae0b545b25bf1f456454f88165",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "delivery_line_transit_position",
+      "signature": "target_line_id uuid",
+      "hash": "7b147e035915a50335c79a495609617a",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "delivery_loaded_quantity",
+      "signature": "target_line_id uuid",
+      "hash": "77ae1237d548e4b85e3ce6396233e68a",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "direct_source_retired_quantity",
+      "signature": "target_purchase_line_id uuid, target_sales_line_id uuid, known_at timestamp with time zone, target_kind text",
+      "hash": "6d037def9cbd894f6d8c25430b147bc6",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "earning_payable_outstanding",
+      "signature": "target_earning_id uuid",
+      "hash": "3380d681b7623b447aeaa03220cd8147",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "employee_can_report_work",
+      "signature": "target_employee_id uuid, target_branch_id uuid",
+      "hash": "46ed9c6b0993ad908478819f9081411f",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "enforce_operational_write",
+      "signature": "",
+      "hash": "a0ffd2a16531dde57689811e3e085243",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "evidence_actor_customer_role",
+      "signature": "actor_uuid uuid, target_customer_id uuid",
+      "hash": "e673720f8e48c12c6871c63804848ea4",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "evidence_actor_has_permission",
+      "signature": "actor_uuid uuid, target_branch_id uuid, requested_permission text",
+      "hash": "342d1c7a4ed690c4b3651e486252cb73",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "evidence_actor_is_assignee",
+      "signature": "actor_uuid uuid, target_work_item_id uuid",
+      "hash": "27d8c110411765b70ab807d35333f15b",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "evidence_actor_portal_access",
+      "signature": "actor_uuid uuid, target_evidence_id uuid, require_ready boolean",
+      "hash": "c856bf08be55e5eb8cc27bd7d0bfd876",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "evidence_storage_binding_current",
+      "signature": "kind text, eid uuid, bucket text, path text",
+      "hash": "64284bda4a0ae3c4b66d13d9aacb5f4c",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "evidence_storage_identity",
+      "signature": "bucket text, path text",
+      "hash": "60543e05fd69f6224e5fa79b733d93e7",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "evidence_storage_object_exists",
+      "signature": "target_bucket text, target_path text",
+      "hash": "7cb5e36e16084baf4e4261ce61aea982",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "execute_master_command",
+      "signature": "command text, kind text, target_id uuid, branch uuid, values_json jsonb, expected_json jsonb, reason text, intent uuid",
+      "hash": "856dfb7adfaa48cd1c31e26ce2b49181",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "guard_advance_allocation_source",
+      "signature": "",
+      "hash": "811a1b35fbaf3c12bb1420414b69c1bb",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "guard_credit_allocation_provenance",
+      "signature": "",
+      "hash": "9063f6a91c9110020910b1ca98defe70",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "guard_customer_credit_funding",
+      "signature": "",
+      "hash": "3ad2fa150118f868a98683b6b9558b56",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "guard_customer_credit_settlement",
+      "signature": "",
+      "hash": "4401d9e4eab7f8b036fc69d3d69d6672",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "guard_evidence_storage_finalization",
+      "signature": "",
+      "hash": "59bfba10980dd0f45fe9deab2a9d56cb",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "guard_expense_mutation",
+      "signature": "",
+      "hash": "36dafd7de42a759d14b5a2066c506cdb",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "guard_partial_allocation_reversal",
+      "signature": "",
+      "hash": "6e7637b4025f046d45b678392073227d",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "guard_posted_earning",
+      "signature": "",
+      "hash": "88494060213292ffffbf1def13c68162",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "guard_purchase_line_mutation",
+      "signature": "",
+      "hash": "4ce3df2b7c360f11696bba9840d82309",
+      "acl": null
+    },
+    {
+      "schema": "private",
+      "name": "guard_purchase_order_cancellation_with_fulfillment",
+      "signature": "",
+      "hash": "d2934e491dc13b9c1528cf3da2a452c8",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "guard_purchase_order_mutation",
+      "signature": "",
+      "hash": "dd36fd75fd99654234d0a8ee77e2a0a0",
+      "acl": null
+    },
+    {
+      "schema": "private",
+      "name": "guard_quote_line_mutation",
+      "signature": "",
+      "hash": "15f8f147463c67dec3e759518c4f0121",
+      "acl": null
+    },
+    {
+      "schema": "private",
+      "name": "guard_quote_revision_mutation",
+      "signature": "",
+      "hash": "b812d5ada6f338bc7db818ff0ce4aaef",
+      "acl": null
+    },
+    {
+      "schema": "private",
+      "name": "guard_sales_order_cancellation_with_delivery",
+      "signature": "",
+      "hash": "eaa7d94397694ad7dcc56de3baec0242",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "guard_supplier_credit_allocation",
+      "signature": "",
+      "hash": "95f1ad3d038aada30035a0c1c41f6dfa",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "guard_supplier_credit_fund",
+      "signature": "",
+      "hash": "52255c147f03fd154a69fe57697dd4a6",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "guard_supplier_credit_settlement",
+      "signature": "",
+      "hash": "f4ae81863d4dc42b74e4ff284fbfe5b5",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "guard_supplier_document_line",
+      "signature": "",
+      "hash": "c2401cfcffb0126b0c1eb20bd43c59b1",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "guard_vehicle_capacity_with_cargo",
+      "signature": "",
+      "hash": "3909468873127e81947d597b029d4f95",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "guard_work_assignment_supersession",
+      "signature": "",
+      "hash": "6549860a2b35dd52a2d98d00911a8f2f",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "has_any_permission",
+      "signature": "requested_permission text",
+      "hash": "913c6a1c55463467f4b6406327ea87de",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "has_branch_access",
+      "signature": "target_branch_id uuid",
+      "hash": "76058bd98055f05175b8fb27885f38b9",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "has_customer_membership",
+      "signature": "target_customer_id uuid, allowed_roles text[]",
+      "hash": "e8ad7400e0be63125f098e1035161c5d",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "has_permission",
+      "signature": "target_branch_id uuid, requested_permission text",
+      "hash": "6314001f8545bf63eb48fe883896fcd9",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "initialize_operational_branch",
+      "signature": "",
+      "hash": "4538c01a73a09b67477dc522865e3de3",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "install_operational_posting_gate",
+      "signature": "",
+      "hash": "115b4518c5a4bb06608d891b19d8f023",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "is_current_work_assignee",
+      "signature": "target_work_item_id uuid",
+      "hash": "e3dffecfeb262f8a4ad9ed496178f38b",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "lock_saved_command_intent",
+      "signature": "op uuid, cmd text",
+      "hash": "7400d9e04f49b4c1a7594a93305ec14f",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "mark_operational_ready",
+      "signature": "package_id uuid, readback_id uuid, expected_version integer",
+      "hash": "27ae4de7f10f111449bfeea4bffab84f",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "master_command_allowed",
+      "signature": "command text, kind text, branch uuid",
+      "hash": "a23e116254bfc3e4cf5daff89955af07",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "master_draft_fields_readable",
+      "signature": "branch uuid, kind text, entries jsonb",
+      "hash": "4a0fc9783f75e16034e6de5096a2f385",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "master_kind",
+      "signature": "entries jsonb",
+      "hash": "c20a5dc52249c0f8ca60bfa7673474be",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "normalize_po_warehouse_address",
+      "signature": "value text",
+      "hash": "9c8ad7d8de1dbf587d17d2009a614deb",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "operational_direct_purchase_draft_allocation_allowed",
+      "signature": "a jsonb",
+      "hash": "637e8cae9453eabda243411f1b2a0436",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "operational_owner",
+      "signature": "b uuid",
+      "hash": "54651e607cd70fe3bdf9dd2cde68bf49",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "payment_available",
+      "signature": "target_payment_id uuid",
+      "hash": "8e51dd1cf43fd7885bd3cfa962f9de96",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "portal_can_access_work_item",
+      "signature": "target_work_item_id uuid",
+      "hash": "6acb5b87bfad68f17bd83595d76954fd",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "portal_customer_role",
+      "signature": "target_customer_id uuid",
+      "hash": "5996d74adb7dbe74e02709352541bb64",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "portal_evidence_access",
+      "signature": "target_evidence_id uuid, require_ready boolean",
+      "hash": "486a2021a46c424bf67a43306e8f3523",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "post_cash_opening",
+      "signature": "p jsonb, actor uuid, operation uuid",
+      "hash": "9011b52fe3b6916a485deef3cd4aac18",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "post_finance_opening",
+      "signature": "p jsonb, actor uuid, operation uuid",
+      "hash": "fdcbaf95021df240c5345203201b1de5",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "post_inventory_opening",
+      "signature": "p jsonb, actor uuid, operation uuid",
+      "hash": "27d9e8f0455235d80f5d6a0ea7e08492",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "post_recognized_earning",
+      "signature": "target_rule uuid, source_key text, work_verification uuid, sales_order uuid, allocation uuid, basis_amount bigint, amount bigint, source_actor uuid, reversed_earning uuid",
+      "hash": "597238b2da01ee734e3c169c16968d43",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "post_typed_revenue_adjustment",
+      "signature": "",
+      "hash": "9e0024ce7d1f7d732a83ecd54b1966ca",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "preferred_commercial_price_rule",
+      "signature": "b uuid, c uuid, m uuid, u uuid",
+      "hash": "8210a381d99546f82b7c0f274a2f8c2b",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "protect_recording_start",
+      "signature": "",
+      "hash": "6cfb4f652a9f0fb99f41d87a5f87169a",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "purchase_order_visible_total_cost",
+      "signature": "target_purchase_order_id uuid",
+      "hash": "dce0faf996d4b1d76c09d98d202ec1c5",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "recognize_ar_allocation",
+      "signature": "",
+      "hash": "5b6e268f35b3719b6a630ca8a795fa1a",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "recognize_verified_work",
+      "signature": "",
+      "hash": "73aa1ae100be7c3595d5d0b15366b2bf",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "reconcile_legacy_return_credit",
+      "signature": "target_case uuid, requested_credit bigint, reason text, op uuid",
+      "hash": "89c00d2f45cbf49d209669d2f0aadb87",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "record_independent_opening_readback",
+      "signature": "package_id uuid",
+      "hash": "d221ea507b480b13d684a9cdc5fd2622",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "record_storage_attestation",
+      "signature": "kind text, eid uuid, sha text, bytes bigint, actor uuid",
+      "hash": "beeac4e55cdb3416531647810ede6e80",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "register_operational_opening_package",
+      "signature": "package_id uuid, b uuid, run uuid, pkg jsonb, source_bytes bytea, manifest jsonb, actor uuid, recovery uuid, expires timestamp with time zone, data_mode text",
+      "hash": "5d8cfdd8bfd299670e5433b8dd4f23cb",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "reject_append_only_workforce_mutation",
+      "signature": "",
+      "hash": "b354ba37dc1fcdd9cc53a8f00f0165fe",
+      "acl": null
+    },
+    {
+      "schema": "private",
+      "name": "reject_immutable_finance_mutation",
+      "signature": "",
+      "hash": "906e90c39633429d01f8ac95262fb2b0",
+      "acl": null
+    },
+    {
+      "schema": "private",
+      "name": "reject_r6_posted_mutation",
+      "signature": "",
+      "hash": "a91dbcfda3b23771f962bca9942fefad",
+      "acl": null
+    },
+    {
+      "schema": "private",
+      "name": "reject_r7_posted_mutation",
+      "signature": "",
+      "hash": "2e8c7f50119db3011b72d88aafb89f5d",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "require_active_operations",
+      "signature": "b uuid",
+      "hash": "bed2bfba0229ab3f191fde3397202ec4",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "require_authorized_opening",
+      "signature": "b uuid, kind text, p jsonb",
+      "hash": "47412c42e65736c7ba76776b7834e8f9",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "require_exact_quantity",
+      "signature": "q numeric, allow_zero boolean",
+      "hash": "4ed62ca9717e1131a196f537fea4ba88",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "require_quantity_lines",
+      "signature": "lines jsonb, fields text[], allow_zero boolean",
+      "hash": "f36ee59185aea127b38fdf78bf0a40ce",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "reserve_fixture_credit",
+      "signature": "target_customer_id uuid, target_branch_id uuid, requested_amount_vnd bigint, fixture_source_key text, actor_auth_user_id uuid",
+      "hash": "d6cfd84524d6f22a3674b126fc4114e2",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "reserve_inventory_for_line",
+      "signature": "target_sales_order_line_id uuid, target_delivery_line_id uuid, target_warehouse_id uuid, requested_base_quantity numeric, actor_auth_user_id uuid",
+      "hash": "9ece0c0c4a4e7fd896a691648f1b73e6",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "reserve_sales_order_credit",
+      "signature": "target_order_id uuid, actor_auth_user_id uuid",
+      "hash": "330b9412124f4b2a6d38edb38c9f07ed",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "return_cost_portion",
+      "signature": "target_case_id uuid",
+      "hash": "fb0202944100f62d2cea6cf1f4dcc164",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "return_credit_source_limit",
+      "signature": "target_case uuid",
+      "hash": "2740c7723a0e2906292c2598cd68d5ea",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "return_credit_source_limit_read",
+      "signature": "target_case uuid",
+      "hash": "30bd174284a0c8a0ebb6e2f51fc3c619",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "sales_order_credit_snapshot",
+      "signature": "target_order_id uuid",
+      "hash": "2473b8b5f9fda733d8019f88ec5d9f08",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "sales_order_net_revenue",
+      "signature": "target_order_id uuid, cutoff timestamp with time zone",
+      "hash": "4d1e12dc480886b1cf16c5a48636b226",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "sales_order_reader_scope",
+      "signature": "",
+      "hash": "9f7b6264933a38568df8a77bffa9b7ed",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "stock_count_basis",
+      "signature": "b uuid, w uuid, m uuid",
+      "hash": "774aa643a28bb8072306426916b15043",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "supplier_credit_fund_remaining",
+      "signature": "target_fund_id uuid",
+      "hash": "85671ebf7a8988b7d746f43fd4cd69ba",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "supplier_credit_remaining",
+      "signature": "target_credit_id uuid",
+      "hash": "a3ed36c6ec00146c03a3ec962df4cd98",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "supplier_document_source",
+      "signature": "target_kind text, target_id uuid, target_branch_id uuid, target_supplier_id uuid",
+      "hash": "62b5134845d318c6028fae9c5cdbc577",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "vehicle_cargo_lines",
+      "signature": "target_vehicle_id uuid",
+      "hash": "e31180bb4e6629aec34f40f2ad74e103",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "verify_opening_source_snapshot",
+      "signature": "package_id uuid",
+      "hash": "28436ff11eaee9cfa7c6006cdda0eb14",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "private",
+      "name": "worker_work_item_payload",
+      "signature": "target_work_item_id uuid",
+      "hash": "5dcb99f7dbe654992c41c56e38c7f9b3",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "accept_quote_revision",
+      "signature": "target_revision_id uuid, acceptance_channel text, confirmed_by_name text, evidence_object_path text, operation_id uuid",
+      "hash": "3122531a82234e3bba29d85d783ef424",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "activate_branch_operations",
+      "signature": "target_branch_id uuid, expected_version integer, recovery_accepted boolean, confirmation text, operation_id uuid",
+      "hash": "c781750b560e884da023732e3e1112ab",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "adjust_return_receivable",
+      "signature": "target_return_case_id uuid, credit_amount_vnd bigint, adjustment_reason text, operation_id uuid",
+      "hash": "bd887c697247fc29bcbc7d869271ef65",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "admin_payment_notice_snapshot",
+      "signature": "",
+      "hash": "1f6cdd1f4558e6aefa595c23aaf25b85",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "advance_report_export_job",
+      "signature": "target_job_id uuid",
+      "hash": "46d91873880802a356b87f65ccb1a890",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "allocate_payment",
+      "signature": "target_payment_id uuid, allocation_lines jsonb, operation_id uuid",
+      "hash": "5df00b4bdb7b91d0976beebbbc8cdc30",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "apply_route_plan",
+      "signature": "target_route_plan_id uuid, expected_version integer, operation_id uuid",
+      "hash": "951cd31fdcec14fe566d0f3d4eff7253",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "approve_earning_event",
+      "signature": "target_earning_event_id uuid, approved_amount_vnd bigint, due_date date, expected_version integer, operation_id uuid",
+      "hash": "6ddf3f3b3273b959c4b85ba7caadf5bf",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "approve_expense",
+      "signature": "target_expense_id uuid, expected_version integer, operation_id uuid",
+      "hash": "9eaf0100d6ae83f226d2f1b07e849a48",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "approve_invoice_business",
+      "signature": "target_invoice_id uuid, expected_version integer, review_reason text, operation_id uuid",
+      "hash": "8e22b9d9491a73d19eff00d4bd554247",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "approve_operational_opening_import",
+      "signature": "target_package_id uuid, expected_package_sha256 text, expected_state_version integer, recovery_accepted boolean, confirmation text, operation_id uuid",
+      "hash": "94e2ebd0b98c89c5d1abb6b3bfb9ea14",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "approve_stock_count",
+      "signature": "target_stock_count_id uuid, expected_count_version integer, operation_id uuid",
+      "hash": "87d524f666bb66fdc484863afd6da707",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "approve_supplier_return_credit",
+      "signature": "target_acceptance_event_id uuid, credit_amount_vnd bigint, approval_reason text, expected_case_version integer, operation_id uuid",
+      "hash": "ac06b7ca7d6132c64b96e504fa7d5539",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "assign_delivery",
+      "signature": "target_delivery_id uuid, target_employee_id uuid, target_vehicle_id uuid, external_carrier_name text, external_carrier_phone text, expected_version integer, operation_id uuid",
+      "hash": "0d9caa10574d08cf3d3c176677752063",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "assign_delivery_scheduled",
+      "signature": "target_delivery_id uuid, target_employee_id uuid, target_vehicle_id uuid, external_carrier_name text, external_carrier_phone text, expected_version integer, operation_id uuid, scheduled_start timestamp with time zone, scheduled_end timestamp with time zone",
+      "hash": "1698fc0eff0cd7b941c319c11080458e",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "assign_employee_role",
+      "signature": "target_employee_id uuid, target_branch_id uuid, target_role_id uuid, change_reason text, operation_id uuid",
+      "hash": "897d2280847324cde31bbfe26577f3ef",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "assign_work_item",
+      "signature": "target_work_item_id uuid, target_employee_id uuid, expected_version integer, operation_id uuid",
+      "hash": "64357a7133749f02a8e3b6daf27f6ed6",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "calculate_earning_event",
+      "signature": "target_rule_id uuid, source_kind text, source_id uuid, operation_id uuid",
+      "hash": "71dc37b6f8ac214cf850cc7f81e62ec8",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "cancel_invoice_draft",
+      "signature": "target_invoice_id uuid, expected_version integer, cancel_reason text, operation_id uuid",
+      "hash": "892328e5db3d488ef8b517759189f86e",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "cancel_planned_delivery",
+      "signature": "target_delivery_id uuid, expected_version integer, cancellation_reason text, operation_id uuid",
+      "hash": "b13678b29675e3d4b3aa58512420237c",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "cancel_purchase_order",
+      "signature": "target_purchase_order_id uuid, cancel_reason text, operation_id uuid",
+      "hash": "0930383ef29dd903f65aff915f6764a7",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "cancel_sales_order",
+      "signature": "target_order_id uuid, cancel_reason text, operation_id uuid",
+      "hash": "973b283dabdcd7bece954ee6b66a5a0f",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "cancel_scheduled_service_job",
+      "signature": "target_service_job_id uuid, expected_version integer, cancellation_reason text, operation_id uuid",
+      "hash": "de0ce18880c579bb7449a636a4c9f86a",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "cashbook_summary",
+      "signature": "target_branch_id uuid",
+      "hash": "9fe6e6ae1fef62d377f8a731e46cea25",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "claim_work_item",
+      "signature": "target_work_item_id uuid, expected_version integer, operation_id uuid",
+      "hash": "b10c8147d78fb4d2c9056db092c0dbfa",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "close_sales_order_remaining",
+      "signature": "target_order_id uuid, close_reason text, operation_id uuid",
+      "hash": "e5f05711576225cecc4382abbf0143be",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "configure_compensation_recognition",
+      "signature": "target_rule_id uuid, recognition_kind text, effective_at timestamp with time zone, operation_id uuid",
+      "hash": "a36b91026e6110d1b08ee295736f0ed8",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "confirm_purchase_order",
+      "signature": "target_purchase_order_id uuid, operation_id uuid",
+      "hash": "24c6fc8eaddc58d6552e31369b36f3ba",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "confirm_sales_order",
+      "signature": "target_order_id uuid, operation_id uuid",
+      "hash": "103b87048232bbbcaabe17290084775b",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "confirm_sales_order_with_credit_override",
+      "signature": "target_order_id uuid, override_reason text, expected_snapshot_hash text, operation_id uuid",
+      "hash": "0b6d192626e107b770442baf30ecf2cc",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "conversation_list_for_scope",
+      "signature": "target_branch_id uuid, target_customer_id uuid, before_updated_at timestamp with time zone, before_id uuid, page_size integer",
+      "hash": "154b3e6c5126f17921d617c05f73d52b",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "conversation_list_snapshot",
+      "signature": "page_size integer",
+      "hash": "6bce7263d54ba20b41971bf46423f596",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "conversation_message_page",
+      "signature": "target_conversation_id uuid, before_created_at timestamp with time zone, before_id uuid, page_size integer",
+      "hash": "f1eed982847a07fbb5d8d65df5349596",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "create_compensation_rule",
+      "signature": "target_branch_id uuid, rule_code text, rule_name text, target_employee_id uuid, earning_type text, calculation_kind text, rate_vnd_per_unit numeric, rate_bps integer, classification text, effective_from date, effective_to date, operation_id uuid",
+      "hash": "0fd2c984b8baf571957d20d0f06c0a01",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "create_conversation",
+      "signature": "target_branch_id uuid, target_audience text, target_customer_id uuid, target_subject text, target_entity_type text, target_entity_id uuid, target_participant_auth_user_ids uuid[], operation_id uuid",
+      "hash": "e5b3feaa564e0bca09e2d0facaed9cef",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "create_delivery_expense",
+      "signature": "target_branch_id uuid, target_assignment_id uuid, target_category_id uuid, target_supplier_id uuid, amount_vnd bigint, effective_at timestamp with time zone, due_date date, description text, cost_scope text, supplier_reference text, target_evidence_id uuid, expected_delivery_version integer, operation_id uuid",
+      "hash": "55af1b5674929e71b28d85e071b3bffc",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "create_delivery_from_allocation",
+      "signature": "target_supply_allocation_id uuid, planned_base_quantity numeric, scheduled_at timestamp with time zone, operation_id uuid",
+      "hash": "e5062a60a623c3fe8ce0687af7953e46",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "create_delivery_from_allocations",
+      "signature": "target_sales_order_id uuid, planned_lines jsonb, scheduled_at timestamp with time zone, operation_id uuid",
+      "hash": "f79ee9b0f8fa8b1dfcd416050bc79e2d",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "create_direct_purchase_from_sales_line",
+      "signature": "source_sales_order_line_id uuid, target_supplier_id uuid, requested_quantity numeric, purchase_line jsonb, expected_at timestamp with time zone, operation_id uuid",
+      "hash": "3d7ce31dad495455fc080225eb58177c",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "create_direct_purchase_from_sales_order",
+      "signature": "target_sales_order_id uuid, target_supplier_id uuid, purchase_lines jsonb, expected_at timestamp with time zone, operation_id uuid",
+      "hash": "eb00b61e35e344634e8788981b3cc695",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "create_evidence_upload",
+      "signature": "target_branch_id uuid, bucket_name text, object_path text, audience text, operation_id uuid",
+      "hash": "f05a7f7265b0c489d6d5b6e7a8bcb7aa",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "create_expense",
+      "signature": "target_branch_id uuid, target_category_id uuid, target_supplier_id uuid, amount_vnd bigint, effective_at timestamp with time zone, due_date date, description text, activity_kind text, target_sales_order_id uuid, target_evidence_id uuid, operation_id uuid",
+      "hash": "8ec858ddb88519ccae60e291f8f00170",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "create_expense_category",
+      "signature": "target_branch_id uuid, category_code text, category_name text, operation_id uuid",
+      "hash": "f84fb0608edbfe17bb78bdb0fce530c7",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "create_finance_account",
+      "signature": "target_branch_id uuid, account_code text, account_name text, account_kind text, operation_id uuid",
+      "hash": "9de52d400e296240f52e1031a8067ee2",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "create_invoice_adjustment_draft",
+      "signature": "target_invoice_id uuid, target_receivable_adjustment_id uuid, operation_id uuid",
+      "hash": "79e9c10d7679699843f592560601193b",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "create_invoice_draft",
+      "signature": "target_obligation_id uuid, operation_id uuid",
+      "hash": "0fc18add9d7575a02bec0782d310d39c",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "create_linked_direct_drafts",
+      "signature": "target_branch_id uuid, target_supplier_id uuid, target_customer_id uuid, target_site_id uuid, purchase_line jsonb, sales_line jsonb, expected_at timestamp with time zone, commercial_terms text, operation_id uuid",
+      "hash": "7b82213ec2e3b701f19ceedc88f6e1dc",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "create_portal_evidence",
+      "signature": "target_context_type text, target_work_item_id uuid, target_customer_id uuid, target_mime_type text, target_byte_size bigint, operation_id uuid",
+      "hash": "99f505149c9d6aa17e76d522d88ec281",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "create_purchase_order_draft",
+      "signature": "target_branch_id uuid, target_supplier_id uuid, target_warehouse_id uuid, expected_at timestamp with time zone, commercial_terms text, purchase_lines jsonb, operation_id uuid",
+      "hash": "5db8fd7fca65b9fafdcfa647cc6ad60a",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "create_quote_draft",
+      "signature": "target_branch_id uuid, target_customer_id uuid, target_site_id uuid, expires_at timestamp with time zone, commercial_terms text, quote_lines jsonb, operation_id uuid",
+      "hash": "438c58f22e6f14f3fbb538701ab9a23f",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "create_quote_revision",
+      "signature": "source_revision_id uuid, operation_id uuid",
+      "hash": "943bb63e01c380102eb333636c355a8f",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "create_report_export_job",
+      "signature": "target_branch_id uuid, target_side text, target_as_of date, target_cutoff timestamp with time zone, target_customer_id uuid",
+      "hash": "70e7cdc53cc58b396a807fb8f1d2aaad",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "create_route_plan",
+      "signature": "target_branch_id uuid, target_departure_at timestamp with time zone, target_vehicle_id uuid, target_driver_employee_id uuid, target_provider_state text, target_provider_distance_meters integer, target_provider_duration_seconds integer, target_provider_error_safe text, target_stops jsonb, operation_id uuid",
+      "hash": "08a90b6ddf5a8e4c496d40dd0a4a340c",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "create_sales_order_draft",
+      "signature": "target_branch_id uuid, target_customer_id uuid, target_site_id uuid, requested_delivery_at timestamp with time zone, commercial_terms text, order_lines jsonb, operation_id uuid",
+      "hash": "e9efaa6e60da1ad8c0557d1d680e38aa",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "create_sales_order_from_quote",
+      "signature": "source_revision_id uuid, requested_delivery_at timestamp with time zone, operation_id uuid",
+      "hash": "be8d4d7ee2e4af79cc4f2ee992f63fc7",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "create_service_job",
+      "signature": "target_branch_id uuid, target_customer_id uuid, target_site_id uuid, service_type text, description text, scheduled_start timestamp with time zone, scheduled_end timestamp with time zone, planned_quantity numeric, unit_label text, target_sales_employee_id uuid, target_vehicle_id uuid, target_machine_id uuid, operation_id uuid",
+      "hash": "6e48e0c29824227d62a9f4bdffa62776",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "create_supplier_quick",
+      "signature": "target_branch_id uuid, supplier_code text, supplier_name text, supplier_phone text, operation_id uuid",
+      "hash": "c5b0a41f3142a01409b4d8a33f5803a5",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "create_supplier_return",
+      "signature": "target_branch_id uuid, target_receipt_line_id uuid, target_fulfillment_line_id uuid, target_custody_case_id uuid, requested_base_quantity numeric, return_reason text, operation_id uuid",
+      "hash": "e52abc88c6f2e586c24935c6e1cc5053",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "create_warehouse_transfer",
+      "signature": "target_branch_id uuid, from_warehouse_id uuid, to_warehouse_id uuid, target_material_id uuid, planned_base_quantity numeric, transfer_reason text, operation_id uuid",
+      "hash": "5244059bfdf08f823882e3cd8037d924",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "customer_credit_balances",
+      "signature": "target_credit_id uuid",
+      "hash": "812145f91a7447cb2482cd753f140c0f",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "customer_portal_display_name",
+      "signature": "target_customer_id uuid",
+      "hash": "cefdf0468c2f92a10b4ca8bc54322afa",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "customer_portal_order",
+      "signature": "target_order_id uuid",
+      "hash": "d711d1ec876ae540b78151365d04864e",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "customer_portal_snapshot",
+      "signature": "target_customer_id uuid",
+      "hash": "1ea07d9aaa87424fa4d2e102351bfb88",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "customer_private_fields",
+      "signature": "target_customer_ids uuid[]",
+      "hash": "08d343f570085bc695a36aafd10f7b4b",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "customer_safe_quotation_lines",
+      "signature": "target_revision_id uuid",
+      "hash": "00e3105c65730b775aaac795719b19d7",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "customer_site_sales_owner_options",
+      "signature": "target_branch_id uuid",
+      "hash": "a84cb35eb6469d6d985957c7381087b2",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "dashboard_site_options",
+      "signature": "target_branch_id uuid",
+      "hash": "5a585092afb3bbed853554129239fc17",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "deactivate_pricing_rule",
+      "signature": "target_id uuid, target_branch_id uuid, expected_version integer, change_reason text, operation_id uuid",
+      "hash": "b5707cafed7334f3622b69556d57fc00",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "deactivate_purchase_price_rule",
+      "signature": "target_id uuid, target_branch_id uuid, expected_version integer, change_reason text, operation_id uuid",
+      "hash": "4154e9dae3f0cd2d366f3012f8760ea1",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "dispatch_board_page",
+      "signature": "target_branch_id uuid, target_bucket text, target_q text, target_offset integer, target_limit integer",
+      "hash": "9ce9afe263b3c2f0ba8c66fd23b2b64f",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "evidence_verified_storage_status",
+      "signature": "target_evidence_id uuid",
+      "hash": "5c7eb12277ad88aada92b6e61e2a5466",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "finalize_evidence_upload",
+      "signature": "target_evidence_id uuid, checksum_sha256 text, byte_size bigint, operation_id uuid",
+      "hash": "40c7becc779d1a966f81f6fcef4aead4",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "finalize_evidence_upload_verified",
+      "signature": "actor_uuid uuid, target_evidence_id uuid, checksum_sha256 text, byte_size bigint, operation_id uuid",
+      "hash": "93d3685d57337f0a58c273a63aa2f487",
+      "acl": "{postgres=X/postgres,service_role=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "finalize_portal_evidence",
+      "signature": "target_evidence_id uuid, target_checksum_sha256 text, target_byte_size bigint, operation_id uuid",
+      "hash": "051d2ee9e1373f794a02105dcc97e162",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "finalize_portal_evidence_verified",
+      "signature": "actor_uuid uuid, target_evidence_id uuid, target_checksum_sha256 text, target_byte_size bigint, operation_id uuid",
+      "hash": "89f8ec069ea8528083ffb7383a6d4afd",
+      "acl": "{postgres=X/postgres,service_role=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "finance_dashboard_detail",
+      "signature": "target_branch_id uuid, from_inclusive timestamp with time zone, to_exclusive timestamp with time zone, knowledge_cutoff timestamp with time zone, target_customer_id uuid, target_site_id uuid, target_sales_employee_id uuid, target_activity_kind text",
+      "hash": "aec4f997b7e2a4828b3c16befa69b052",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "finance_dashboard_snapshot",
+      "signature": "target_branch_id uuid, from_inclusive timestamp with time zone, to_exclusive timestamp with time zone, knowledge_cutoff timestamp with time zone, target_customer_id uuid, target_site_id uuid, target_sales_employee_id uuid, target_activity_kind text",
+      "hash": "4578a302cb15053ac7d378e66c31835d",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "finance_obligation_snapshot",
+      "signature": "target_branch_id uuid, target_side text, as_of timestamp with time zone, knowledge_cutoff timestamp with time zone, target_customer_id uuid, target_site_id uuid, target_sales_employee_id uuid",
+      "hash": "1b7ea77a59bcd93596f7d048502ad588",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "get_command_draft",
+      "signature": "target_operation_id uuid, target_command text, target_branch_id uuid",
+      "hash": "a81def31a475289448fd0d66869657b0",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "get_portal_evidence_for_signing",
+      "signature": "target_evidence_id uuid",
+      "hash": "2da8766d8ad1875b9f9a67a7c9fed128",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "gps_fleet_snapshot",
+      "signature": "target_branch_id uuid",
+      "hash": "d7219b9e0b4c0fa5911b7cf6cb934050",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "gps_position_history",
+      "signature": "target_session_id uuid, before_sequence bigint, page_size integer",
+      "hash": "879faa8bfa91498d9aa9000c457a7784",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "handoff_delivery",
+      "signature": "target_delivery_id uuid, expected_version integer, handed_off_at timestamp with time zone, operation_id uuid",
+      "hash": "3fc5bd3b2235456d480913b19ac52749",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "handoff_delivery_actual",
+      "signature": "target_delivery_id uuid, expected_version integer, handed_off_at timestamp with time zone, operation_id uuid, loaded_lines jsonb",
+      "hash": "c2c38b1e1ed533674ccaeed94adf0e4b",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "heartbeat_work_item",
+      "signature": "target_work_item_id uuid, status_note text, operation_id uuid",
+      "hash": "24d5fccff5c82cad82a6306b90f55881",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "invoice_eligible_sources",
+      "signature": "target_branch_id uuid, page_size integer",
+      "hash": "2f105c71ccc561e6321051a82e4b4ece",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "invoice_eligible_sources_exact",
+      "signature": "target_branch_id uuid, page_size integer",
+      "hash": "5f8c19d6d0d774f885ba9f26cf22a785",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "lookup_command_outcome",
+      "signature": "target_operation_id uuid, target_command text, target_branch_id uuid",
+      "hash": "c5e6b34c1c853a619e05d51b3e757a3d",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "mark_conversation_read",
+      "signature": "target_conversation_id uuid",
+      "hash": "35b61a9e22ead9b8a17a02b40fc09e44",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "mark_delivery_arrived",
+      "signature": "target_delivery_id uuid, expected_version integer, operation_id uuid",
+      "hash": "bb3192afbc723bddc1c8998f65f601b1",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "match_payment_notice",
+      "signature": "target_notice_id uuid, target_reconciliation_match_id uuid, match_amount_vnd bigint, match_reason text, expected_notice_version integer, operation_id uuid",
+      "hash": "e1bd9ae9251d21ae605f7b23760b8aab",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "messaging_participant_options",
+      "signature": "target_branch_id uuid, result_limit integer",
+      "hash": "4086d0f8dba1a7c5e85d9db8e664c5db",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "my_active_delivery_assignments",
+      "signature": "",
+      "hash": "4c0d2ed3cf953dbee48532aa5e250a31",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "my_active_gps_assignment",
+      "signature": "target_work_item_id uuid",
+      "hash": "e80f74370ee81cb230bcd4532c0dc6e9",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "offset_customer_credit",
+      "signature": "target_credit_id uuid, target_obligation_id uuid, offset_amount_vnd bigint, operation_id uuid",
+      "hash": "48e6195428dc9706d6286bab4f6c314a",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "offset_supplier_credit",
+      "signature": "target_credit_id uuid, target_obligation_id uuid, offset_amount_vnd bigint, operation_id uuid",
+      "hash": "02c25bdd73920600224501af53e0ff17",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "open_return_case",
+      "signature": "target_delivery_verification_line_id uuid, case_kind text, requested_base_quantity numeric, reason text, target_evidence_id uuid, operation_id uuid",
+      "hash": "1d6d08dfd599b56213d6ebfb6a046389",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "open_stock_count",
+      "signature": "target_branch_id uuid, target_warehouse_id uuid, cutoff_at timestamp with time zone, operation_id uuid",
+      "hash": "071b4ded71081be38065db85dd753493",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "operational_branch_state",
+      "signature": "target_branch_id uuid",
+      "hash": "ce92649176b34381b85c6333c3609b74",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "payment_allocation_balances",
+      "signature": "target_payment_id uuid",
+      "hash": "7840ccc1e30ba360dd5eb50ea0b428c7",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "post_payment",
+      "signature": "target_branch_id uuid, direction text, target_customer_id uuid, target_supplier_id uuid, target_account_id uuid, amount_vnd bigint, effective_at timestamp with time zone, method text, external_reference text, allocation_lines jsonb, advance_amount_vnd bigint, operation_id uuid, target_employee_id uuid",
+      "hash": "48f1ee8d28104309107cc58040249b72",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "preview_sales_order_credit_override",
+      "signature": "target_order_id uuid",
+      "hash": "f7335d217b6bc0de7c7087a80c6d7794",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "pricing_config_options",
+      "signature": "target_branch_id uuid",
+      "hash": "80d1a6e83c0d176e13a96e305efe1e5d",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "publish_work_item",
+      "signature": "target_branch_id uuid, source_kind text, source_id uuid, requested_assignment_mode text, target_employee_id uuid, operation_id uuid",
+      "hash": "6b317798e8e8e71da706b92057e0c882",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "purchase_invoice_eligible_sources",
+      "signature": "target_branch_id uuid, page_size integer",
+      "hash": "7b0949982d02e0bf2b450a0cc8bd84bb",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "purchase_invoice_eligible_sources_exact",
+      "signature": "target_branch_id uuid, page_size integer",
+      "hash": "cbfbc97c66180199ba3a9f44fa76017e",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "purchase_pricing_config_options",
+      "signature": "target_branch_id uuid",
+      "hash": "cca5df1d1d9a3113ea3b016b8934d2a5",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "reactivate_employee_access",
+      "signature": "target_access_id uuid, change_reason text, operation_id uuid",
+      "hash": "cd93862cc5370f61fca8691746479a6c",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "receive_purchase_order",
+      "signature": "target_purchase_order_id uuid, receipt_lines jsonb, target_evidence_id uuid, received_at timestamp with time zone, operation_id uuid",
+      "hash": "6a9d786483502b4d64513c7141a4e437",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "record_compensation_basis",
+      "signature": "target_branch_id uuid, target_employee_id uuid, basis_type text, basis_quantity numeric, period_start date, period_end date, description text, adjusts_earning_event_id uuid, target_evidence_id uuid, operation_id uuid",
+      "hash": "57eadefcdb144329abff5371d4d53e48",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "record_gps_ping",
+      "signature": "target_session_id uuid, target_sequence bigint, target_captured_at timestamp with time zone, target_latitude numeric, target_longitude numeric, target_accuracy_meters numeric, target_speed_mps numeric, target_heading_degrees numeric, operation_id uuid",
+      "hash": "276fcc4bd492cb81a575eb996475916c",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "record_payable_adjustment",
+      "signature": "target_obligation_id uuid, amount_delta_vnd bigint, reason text, target_evidence_id uuid, operation_id uuid",
+      "hash": "ab27e345ce67d82014e8e9dc0b371dab",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "record_payment_reconciliation",
+      "signature": "target_payment_id uuid, matched_amount_vnd bigint, statement_effective_at timestamp with time zone, statement_reference text, operation_id uuid",
+      "hash": "4c8a7545b29fa1fe842be16e3b226ca8",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "record_receivable_adjustment",
+      "signature": "target_obligation_id uuid, amount_delta_vnd bigint, reason text, target_evidence_id uuid, operation_id uuid",
+      "hash": "79fc6e6faf0fd6d46333d72eeabb2859",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "record_receivable_adjustment_typed",
+      "signature": "target_obligation_id uuid, amount_delta_vnd bigint, adjustment_kind text, reason text, target_evidence_id uuid, operation_id uuid",
+      "hash": "1b8a83df3f792dbc91ef34b9a67c4588",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "record_stock_count_line",
+      "signature": "target_stock_count_id uuid, target_material_id uuid, counted_base_quantity numeric, adjustment_unit_cost_vnd numeric, reason text, target_evidence_id uuid, expected_count_version integer, operation_id uuid",
+      "hash": "99854a50a238549cbec68006cf189e41",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "record_supplier_return_event",
+      "signature": "target_case_id uuid, target_event_kind text, actual_base_quantity numeric, target_supplier_reference text, event_reason text, expected_version integer, operation_id uuid",
+      "hash": "1517dd758d399ba3fb7b3748c2e91d66",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "record_warehouse_transfer_event",
+      "signature": "target_transfer_id uuid, event_kind text, source_dispatch_id uuid, source_issue_id uuid, actual_base_quantity numeric, event_reason text, expected_version integer, operation_id uuid",
+      "hash": "888b67001b94f5b4218c4a484596c54a",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "refund_customer_credit",
+      "signature": "target_credit_id uuid, target_account_id uuid, refund_amount_vnd bigint, refunded_at timestamp with time zone, refund_method text, refund_reference text, operation_id uuid",
+      "hash": "a3b30d69e3643b4342898a500346acf7",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "refund_supplier_credit",
+      "signature": "target_credit_id uuid, target_account_id uuid, refund_amount_vnd bigint, refunded_at timestamp with time zone, refund_method text, refund_reference text, operation_id uuid",
+      "hash": "dd24635f88a8ee453b401d6acefa9c20",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "register_invited_employee",
+      "signature": "invited_auth_user_id uuid, employee_code text, employee_name text, target_branch_id uuid, target_role_id uuid, change_reason text, operation_id uuid",
+      "hash": "0ddb2e85e999e413a28d6433e510c125",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "register_purchase_invoice_source",
+      "signature": "target_payable_obligation_id uuid, target_document_number text, target_document_date date, operation_id uuid",
+      "hash": "5b7068087a84b51df962a0776526d69f",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "register_supplier_document",
+      "signature": "target_branch_id uuid, target_supplier_id uuid, target_document_kind text, target_document_number text, target_document_date date, declared_total_vnd bigint, document_lines jsonb, operation_id uuid",
+      "hash": "28e2b845fec66c57ade8bbf37dc0b7dc",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "release_inventory_reservation",
+      "signature": "target_reservation_id uuid, expected_version integer, release_reason text, operation_id uuid",
+      "hash": "7900ac412235628ceba8f6ecfb8f5db5",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "request_quotation_change",
+      "signature": "target_revision_id uuid, reason text, operation_id uuid",
+      "hash": "25d85767c804683ff101c4bd8147f3e1",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "require_active_api_actor",
+      "signature": "",
+      "hash": "3e718aba30964f9a6439545966779110",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "reserve_inventory",
+      "signature": "target_sales_order_line_id uuid, target_warehouse_id uuid, requested_base_quantity numeric, operation_id uuid",
+      "hash": "c247b6285dd2fcc6393fb127d0792637",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "resolve_commission_reconciliation",
+      "signature": "target_case_id uuid, resolution_kind text, target_unpaid_earning_id uuid, target_adjustment_rule_id uuid, expected_earning_version integer, resolution_reason text, operation_id uuid",
+      "hash": "9b9174ff3cc2ebe547941571cdc040bd",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "resolve_return_case",
+      "signature": "target_return_case_id uuid, resolution text, target_warehouse_id uuid, resolution_reason text, target_evidence_id uuid, expected_version integer, operation_id uuid",
+      "hash": "947c2918481449ce448634f0bb7f4926",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "reverse_customer_credit_offset",
+      "signature": "target_offset_operation_id uuid, reversal_reason text, operation_id uuid",
+      "hash": "15cba1250498f17532f65717891abbc1",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "reverse_payment",
+      "signature": "target_payment_id uuid, reversal_reason text, operation_id uuid",
+      "hash": "18a6f74c217c584d6249cfd10ea9f69b",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "reverse_payment_notice_match",
+      "signature": "target_match_id uuid, reversal_reason text, expected_notice_version integer, operation_id uuid",
+      "hash": "71b1218e0a2cd874b5adca091923744f",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "review_payment_notice",
+      "signature": "target_payment_notice_id uuid, target_state text, target_review_note text, expected_version integer, operation_id uuid",
+      "hash": "b36bf40435dd6034d180182c131bb880",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "review_supplier_document",
+      "signature": "target_document_id uuid, review_decision text, review_reason text, expected_version integer, operation_id uuid",
+      "hash": "93605cec9eba91716e8581c41fe56102",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "revoke_employee_access",
+      "signature": "target_access_id uuid, change_reason text, operation_id uuid",
+      "hash": "b6c4f6ff889e8ccdf4b2154fb4110bb3",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "sales_order_operational_snapshot",
+      "signature": "target_order_id uuid",
+      "hash": "c4307dd940943899540b71cfc2092f47",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "save_branch_config",
+      "signature": "target_id uuid, source_branch_id uuid, values_json jsonb, expected_json jsonb, change_reason text, operation_id uuid",
+      "hash": "c7e9a85e1b2abafb858801287cb98ef2",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "save_catalog_record",
+      "signature": "kind text, target_id uuid, target_branch_id uuid, values_json jsonb, expected_json jsonb, change_reason text, operation_id uuid",
+      "hash": "6fb2d4078ff0a0121c6765ad86819632",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "save_command_draft",
+      "signature": "target_operation_id uuid, target_command text, target_branch_id uuid, target_entries jsonb",
+      "hash": "dcc36372f5d4a02557bd97e4fa8c299c",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "save_customer_site_profile",
+      "signature": "kind text, target_id uuid, target_branch_id uuid, values_json jsonb, expected_json jsonb, change_reason text, operation_id uuid",
+      "hash": "4323bdf634cc0fcba354dcfb5eabe9b4",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "save_pricing_rule",
+      "signature": "target_id uuid, target_branch_id uuid, supersedes_id uuid, expected_version integer, values_json jsonb, change_reason text, operation_id uuid",
+      "hash": "fcc1e98efc8c239bf33b1d34ea5ea6b9",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "save_purchase_price_rule",
+      "signature": "target_id uuid, target_branch_id uuid, supersedes_id uuid, expected_version integer, values_json jsonb, change_reason text, operation_id uuid",
+      "hash": "936c23c6d70c191c678cb3329829b85a",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "send_message",
+      "signature": "target_conversation_id uuid, target_body text, operation_id uuid",
+      "hash": "e736fb18a207bf99b5dbeed0b9375da1",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "send_quote_revision",
+      "signature": "target_revision_id uuid, operation_id uuid",
+      "hash": "f7ca6d1bf8bb6fa3477bcd0b1a090b84",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "set_employee_explicit_permissions",
+      "signature": "target_employee_id uuid, target_branch_id uuid, permission_codes text[], change_reason text, operation_id uuid",
+      "hash": "70678c831a04fd00d00f6b8d65113f4c",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "set_inventory_stock_threshold",
+      "signature": "target_branch_id uuid, target_warehouse_id uuid, target_material_id uuid, target_threshold_base_quantity numeric, target_active boolean",
+      "hash": "74a0773a794d6ef5e741b65b75c9974e",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "start_gps_tracking",
+      "signature": "target_delivery_id uuid, target_assignment_version integer, operation_id uuid",
+      "hash": "ad09a98d00899b2dcffda484d78d32ff",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "start_work_item",
+      "signature": "target_work_item_id uuid, expected_version integer, operation_id uuid",
+      "hash": "74bfb269d6a08af0ecbea8b22f111f59",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "stop_gps_tracking",
+      "signature": "target_session_id uuid, operation_id uuid",
+      "hash": "4341d80074d09261fc66eea27106cdde",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "submit_delivery_result",
+      "signature": "target_delivery_id uuid, result_kind text, result_lines jsonb, receiver_name text, note text, missing_arrival_reason text, target_evidence_id uuid, expected_version integer, operation_id uuid",
+      "hash": "312acf263d0e4df81fe8fd7ad325b4d5",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "submit_payment_notice",
+      "signature": "target_customer_id uuid, target_evidence_id uuid, declared_amount_vnd bigint, paid_on date, payment_reference text, customer_note text, operation_id uuid",
+      "hash": "3f655fccb74e36c8bc48de4e9dbb887c",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "submit_portal_delivery_result",
+      "signature": "target_work_item_id uuid, result_lines jsonb, receiver_name text, note text, target_evidence_id uuid, missing_arrival_reason text, expected_work_version integer, expected_delivery_version integer, expected_assignment_version integer, operation_id uuid",
+      "hash": "e0cdc72e2e53908c422fdbdb69e359d4",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "submit_portal_work_result",
+      "signature": "target_work_item_id uuid, actual_quantity numeric, note text, receiver_name text, target_evidence_id uuid, expected_version integer, operation_id uuid",
+      "hash": "79864d8f1af4ec10059834fd10307d1d",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "submit_work_result",
+      "signature": "target_work_item_id uuid, actual_quantity numeric, note text, receiver_name text, target_evidence_id uuid, expected_version integer, operation_id uuid",
+      "hash": "d259389d64a3d6ea407d49471c39e3ab",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "update_delivery_receiver",
+      "signature": "target_delivery_id uuid, receiver_name text, receiver_phone text, reason text, expected_version integer, operation_id uuid",
+      "hash": "3fe47081e65bcdbcb6a0814e84b69ecf",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "update_purchase_order_draft",
+      "signature": "target_purchase_order_id uuid, expected_version integer, expected_at timestamp with time zone, commercial_terms text, purchase_lines jsonb, operation_id uuid",
+      "hash": "8cc87352d4f7f482b8468fc1529f536a",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "update_purchase_order_warehouse",
+      "signature": "target_purchase_order_id uuid, expected_version integer, target_warehouse_id uuid, change_reason text, operation_id uuid",
+      "hash": "b9d2a2828b13ab9521a3e2be891d4f7c",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "update_quote_draft",
+      "signature": "target_revision_id uuid, expected_version integer, expires_at timestamp with time zone, commercial_terms text, quote_lines jsonb, operation_id uuid",
+      "hash": "3020bbd352051f17c6106433f8358d88",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "update_routing_settings",
+      "signature": "target_branch_id uuid, target_stale_after_seconds integer, target_retention_days integer, change_reason text, operation_id uuid",
+      "hash": "2fd5b7d3fd9d0822430839ff6aef727f",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "update_sales_order_draft",
+      "signature": "target_order_id uuid, expected_version integer, requested_delivery_at timestamp with time zone, commercial_terms text, order_lines jsonb, operation_id uuid",
+      "hash": "4ed9e34b3d127a646cfc857ea77fee2d",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "upsert_supply_allocation",
+      "signature": "target_sales_order_line_id uuid, supply_mode text, target_purchase_order_line_id uuid, target_warehouse_id uuid, requested_base_quantity numeric, target_allocation_id uuid, expected_version integer, operation_id uuid",
+      "hash": "8eee59299094224277ec665d2d2e306b",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "verify_delivery",
+      "signature": "target_delivery_result_id uuid, verification_lines jsonb, expected_delivery_version integer, operation_id uuid",
+      "hash": "3fead86a64f6cf49fd417991d7fd7dea",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "verify_delivery_work_item",
+      "signature": "target_work_item_id uuid, expected_version integer, operation_id uuid",
+      "hash": "9e45fc28e73c4a62167046ef77cb6c1d",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "verify_service_job",
+      "signature": "target_service_job_id uuid, billable_quantity numeric, compensable_quantity numeric, billable_amount_vnd bigint, due_date date, verification_note text, expected_job_version integer, expected_work_version integer, operation_id uuid",
+      "hash": "8a947619b2dc64680592536abbede05a",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "verify_supplier_fulfillment",
+      "signature": "target_purchase_order_id uuid, fulfillment_lines jsonb, target_evidence_id uuid, supplier_reference text, operation_id uuid",
+      "hash": "e04b0629d11f15e82023920e65674666",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "worker_portal_job",
+      "signature": "target_work_item_id uuid",
+      "hash": "8698ab50ec0b6dba09d59bb3310473de",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "name": "worker_portal_snapshot",
+      "signature": "",
+      "hash": "f789e29b9f44a2ddabf87a941019f1cf",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    }
+  ],
+  "readModels": {
+    "views": [
+      {
+        "name": "advance_position_read",
+        "hash": "8fbe44ffb8c5846afe9006e2b5a6ea6c",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "cash_opening_read",
+        "hash": "441c0fae45326128030d5fbc8d6f4d40",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "customer_credit_exposure",
+        "hash": "fed8ad3a857fd5b63e91ec4bb7c23ee9",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "customer_credit_read",
+        "hash": "edbd5d386a2b0241a01c0a57be914888",
+        "reloptions": [
+          "security_barrier=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "customer_return_finance_read",
+        "hash": "cf9d34baccb3cfb882771f27a922d945",
+        "reloptions": [
+          "security_barrier=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "delivery_expense_assignment_read",
+        "hash": "e6304541f72730b34d5fa385494b973c",
+        "reloptions": [
+          "security_barrier=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "delivery_expense_read",
+        "hash": "a70f23ab79c39ed7b6fe0a8da2e41a70",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "delivery_handoff_line_read",
+        "hash": "8ad69e135b2031c409748cb5b82f11da",
+        "reloptions": [
+          "security_barrier=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "delivery_line_read",
+        "hash": "0c9b816003c17ad4aa19e1ef0464e24e",
+        "reloptions": [
+          "security_invoker=false",
+          "security_barrier=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "delivery_read",
+        "hash": "a5db7abc43c8e7ed046c5e905a35c9cd",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "delivery_verification_line_read",
+        "hash": "7294c8957f5e7ac42a16cc3378f416f9",
+        "reloptions": [
+          "security_barrier=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "earning_event_read",
+        "hash": "37008b2257eae06f99a5d31ba3c9871a",
+        "reloptions": null,
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "expense_read",
+        "hash": "3738a079d9ba032e7002f540c72fc2a1",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "inventory_movement_read",
+        "hash": "e35f126dd2972d0fad1ec8632f03dbce",
+        "reloptions": [
+          "security_barrier=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "inventory_opening_transit_read",
+        "hash": "9ac9e014f3a28c00bb91eaa904e225e5",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "invoice_draft_line_read",
+        "hash": "67e71620ad9c659352e69866e87fc8d8",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "invoice_intent_read",
+        "hash": "4291d047fc93b2c5a47b32fb9e668e70",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "low_stock_alert_read",
+        "hash": "40e00c73bbf57d3a68e0867f49a437c9",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "payable_obligation_read",
+        "hash": "69f5fb051eb8615b739f2570628efc4a",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "payable_read",
+        "hash": "eb63256f4b2751befb5661532dba0ec3",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "payment_allocation_source_read",
+        "hash": "6a59bca7e8a2bbc853d1219dca208c22",
+        "reloptions": [
+          "security_barrier=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "payment_notice_read",
+        "hash": "fa4f3e13b940866f4631ac5c5cb0cdcd",
+        "reloptions": [
+          "security_barrier=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "payment_notice_reconciliation_source_read",
+        "hash": "c6b132a16780c81cc8814e0e6773d30f",
+        "reloptions": [
+          "security_barrier=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "payment_read",
+        "hash": "c5eaf3471b0fd706d1be8681ba8956ab",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "pricing_rule_read",
+        "hash": "1d1919a7bf810073eff96a94fcd9a7d4",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "purchase_invoice_registry_read",
+        "hash": "ab6d71080e3e90cbc55004984cdd1244",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "purchase_order_line_progress_read",
+        "hash": "72814b010f691e7ca8134757ee45a77c",
+        "reloptions": [
+          "security_barrier=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "purchase_order_line_read",
+        "hash": "2ee31891d7d1c1a133801d233f883a9f",
+        "reloptions": [
+          "security_barrier=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "purchase_order_read",
+        "hash": "5a971f3f73406e07876f467d3d333fb7",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "purchase_receipt_read",
+        "hash": "df4cbf6c4bea5d30c39e84dd7c28717e",
+        "reloptions": [
+          "security_barrier=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "quotation_read",
+        "hash": "109146210423a94edf9cfa0330834d00",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "receivable_obligation_read",
+        "hash": "c15a98b45015270797f424f60f1b9d44",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "receivable_read",
+        "hash": "4b2ae03cc42d471c8e48fd3ac29d2b24",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "sales_line_supply_read",
+        "hash": "a1da54714ff8fa87e71c7191029c2b5f",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "sales_order_read",
+        "hash": "b1f736f79fe9952a10493fabd540b1cb",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "service_job_read",
+        "hash": "0bb3c84e2a1824631636d45c64d4eca4",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "stock_count_line_read",
+        "hash": "2b0c452c9c0e7a7a13f95de0ccec762f",
+        "reloptions": [
+          "security_barrier=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "stock_count_read",
+        "hash": "0a7726a3c2d3a975d2ac855d8bbb7a72",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "supplier_document_eligible_source_read",
+        "hash": "c71b69079cc576664e0ab9aace89499a",
+        "reloptions": [
+          "security_barrier=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "supplier_document_line_read",
+        "hash": "aaea98ab75a17c0571bd576e2056adc6",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "supplier_document_read",
+        "hash": "37a4833c19e76397e063ca6b4e4c9ebb",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "supplier_fulfillment_read",
+        "hash": "6636191a1f61e43157352e30ac144d02",
+        "reloptions": [
+          "security_barrier=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "supplier_return_credit_read",
+        "hash": "257995ae9ba8d6a2506556fd2dc39975",
+        "reloptions": [
+          "security_barrier=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "supplier_return_eligible_source_read",
+        "hash": "795419c325bc4204724f51926a91e953",
+        "reloptions": [
+          "security_barrier=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "supplier_return_event_read",
+        "hash": "81dc84eb28020663ff14d6d47af39efa",
+        "reloptions": [
+          "security_barrier=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "supplier_return_operational_read",
+        "hash": "ec1bcfeafe6c504f045db130b1cf1463",
+        "reloptions": [
+          "security_barrier=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "supplier_return_read",
+        "hash": "88ab4c874f8f486f94ed41eac0586095",
+        "reloptions": [
+          "security_barrier=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "warehouse_inventory_read",
+        "hash": "b754d3e9ff394c7de05f54b46e8376a6",
+        "reloptions": [
+          "security_barrier=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "warehouse_transfer_event_read",
+        "hash": "2804711b4308fbffc5b60b282e295930",
+        "reloptions": [
+          "security_barrier=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "warehouse_transfer_read",
+        "hash": "3d9eacf7f5fbf502b816adc078be34f0",
+        "reloptions": [
+          "security_barrier=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "work_item_read",
+        "hash": "69c24477c23647dc9c6d916ade704926",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      },
+      {
+        "name": "workforce_read",
+        "hash": "3152a52891eef3f3d44bf3c097a694c1",
+        "reloptions": [
+          "security_invoker=true"
+        ],
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+      }
+    ],
+    "policies": [
+      {
+        "schemaname": "public",
+        "tablename": "advance_allocations",
+        "policyname": "advance_allocations_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM advances a\n  WHERE ((a.id = advance_allocations.advance_id) AND (((a.advance_side = 'CUSTOMER'::text) AND private.has_permission(advance_allocations.branch_id, 'finance.ar.read'::text)) OR ((a.advance_side = 'SUPPLIER'::text) AND private.has_permission(advance_allocations.branch_id, 'finance.ap.read'::text)))))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "advances",
+        "policyname": "advances_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((private.has_permission(branch_id, 'finance.ar.read'::text) OR private.has_permission(branch_id, 'finance.ap.read'::text)) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "audit_events",
+        "policyname": "audit_events_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((branch_id IS NOT NULL) AND ( SELECT private.has_permission(audit_events.branch_id, 'roles.manage'::text) AS has_permission) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "branches",
+        "policyname": "branches_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.has_branch_access(branches.id) AS has_branch_access) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "cash_opening_balances",
+        "policyname": "cash_opening_balances_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(private.has_permission(branch_id, 'finance.reconcile'::text) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "command_receipts",
+        "policyname": "command_receipts_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((actor_auth_user_id = ( SELECT auth.uid() AS uid)) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "commission_reconciliation_cases",
+        "policyname": "commission_reconciliation_cases_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(private.has_permission(branch_id, 'compensation.read'::text) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "commission_review_resolutions",
+        "policyname": "commission_review_resolution_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(private.has_permission(branch_id, 'compensation.read'::text) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "compensation_manual_bases",
+        "policyname": "compensation_bases_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(private.has_permission(branch_id, 'compensation.read'::text) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "compensation_recognition_policies",
+        "policyname": "compensation_recognition_policies_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(private.has_permission(branch_id, 'compensation.read'::text) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "compensation_rules",
+        "policyname": "compensation_rules_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(private.has_permission(branch_id, 'compensation.read'::text) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "conversation_participants",
+        "policyname": "conversation_participants_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.can_access_conversation(conversation_participants.conversation_id) AS can_access_conversation) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "conversations",
+        "policyname": "conversations_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.can_access_conversation(conversations.id) AS can_access_conversation) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "credit_commitments",
+        "policyname": "credit_commitments_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((( SELECT private.has_permission(credit_commitments.branch_id, 'finance.ar.read'::text) AS has_permission) OR ( SELECT private.has_customer_membership(credit_commitments.customer_id, ARRAY['OWNER'::text, 'FINANCE_CONTACT'::text]) AS has_customer_membership)) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "customer_credit_funds",
+        "policyname": "customer_credit_funds_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM customer_credits c\n  WHERE ((c.id = customer_credit_funds.credit_id) AND private.has_permission(c.branch_id, 'finance.ar.read'::text)))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "customer_credit_settlements",
+        "policyname": "customer_credit_settlements_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM (customer_credit_funds f\n     JOIN customer_credits c ON ((c.id = f.credit_id)))\n  WHERE ((f.id = customer_credit_settlements.credit_fund_id) AND private.has_permission(c.branch_id, 'finance.ar.read'::text)))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "customer_credits",
+        "policyname": "customer_credits_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(private.has_permission(branch_id, 'finance.ar.read'::text) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "customer_portal_memberships",
+        "policyname": "customer_memberships_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(((auth_user_id = ( SELECT auth.uid() AS uid)) OR (EXISTS ( SELECT 1\n   FROM customers c\n  WHERE ((c.id = customer_portal_memberships.customer_id) AND ( SELECT private.has_permission(c.branch_id, 'roles.manage'::text) AS has_permission))))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "customer_sites",
+        "policyname": "customer_sites_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM customers c\n  WHERE ((c.id = customer_sites.customer_id) AND (( SELECT private.has_permission(c.branch_id, 'customers.read'::text) AS has_permission) OR ( SELECT private.has_customer_membership(c.id, NULL::text[]) AS has_customer_membership))))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "customers",
+        "policyname": "customers_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.has_permission(customers.branch_id, 'customers.read'::text) AS has_permission) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "deliveries",
+        "policyname": "deliveries_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.has_permission(deliveries.branch_id, 'delivery.read'::text) AS has_permission) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "delivery_assignments",
+        "policyname": "delivery_assignments_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM deliveries d\n  WHERE (d.id = delivery_assignments.delivery_id))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "delivery_expense_sources",
+        "policyname": "delivery_expense_source_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(private.has_permission(branch_id, 'finance.expense.read'::text) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "delivery_handoff_lines",
+        "policyname": "delivery_handoff_lines_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM (delivery_handoffs h\n     JOIN deliveries d ON ((d.id = h.delivery_id)))\n  WHERE (h.id = delivery_handoff_lines.delivery_handoff_id))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "delivery_handoffs",
+        "policyname": "delivery_handoffs_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM deliveries d\n  WHERE (d.id = delivery_handoffs.delivery_id))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "delivery_lines",
+        "policyname": "delivery_lines_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM deliveries d\n  WHERE (d.id = delivery_lines.delivery_id))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "delivery_result_lines",
+        "policyname": "delivery_result_lines_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM (delivery_results r\n     JOIN deliveries d ON ((d.id = r.delivery_id)))\n  WHERE (r.id = delivery_result_lines.delivery_result_id))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "delivery_results",
+        "policyname": "delivery_results_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM deliveries d\n  WHERE (d.id = delivery_results.delivery_id))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "delivery_verification_lines",
+        "policyname": "delivery_verification_lines_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM (delivery_verifications v\n     JOIN deliveries d ON ((d.id = v.delivery_id)))\n  WHERE (v.id = delivery_verification_lines.delivery_verification_id))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "delivery_verifications",
+        "policyname": "delivery_verifications_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM deliveries d\n  WHERE (d.id = delivery_verifications.delivery_id))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "direct_cost_entries",
+        "policyname": "direct_cost_entries_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((private.has_permission(branch_id, 'inventory.cost.read'::text) OR private.has_permission(branch_id, 'finance.profit.read'::text)) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "earning_events",
+        "policyname": "earning_events_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((private.has_permission(branch_id, 'compensation.read'::text) OR ((employee_id = private.current_employee_id()) AND private.has_permission(branch_id, 'work.claim'::text))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "employee_branch_access",
+        "policyname": "employee_branch_access_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(((employee_id = ( SELECT private.current_employee_id() AS current_employee_id)) OR ( SELECT private.has_permission(employee_branch_access.branch_id, 'roles.manage'::text) AS has_permission)) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "employee_branch_access",
+        "policyname": "employee_branch_access_workforce_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((private.has_permission(branch_id, 'workforce.read'::text) OR private.has_permission(branch_id, 'compensation.read'::text)) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "employee_permission_grants",
+        "policyname": "employee_permission_grants_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(((employee_id = private.current_employee_id()) OR private.has_permission(branch_id, 'roles.manage'::text)) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "employees",
+        "policyname": "employees_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(((auth_user_id = ( SELECT auth.uid() AS uid)) OR ( SELECT private.has_any_permission('roles.manage'::text) AS has_any_permission)) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "employees",
+        "policyname": "employees_workforce_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM employee_branch_access a\n  WHERE ((a.employee_id = employees.id) AND a.active AND (private.has_permission(a.branch_id, 'workforce.read'::text) OR private.has_permission(a.branch_id, 'compensation.read'::text))))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "evidence_objects",
+        "policyname": "evidence_objects_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((( SELECT private.has_permission(evidence_objects.branch_id, 'evidence.manage'::text) AS has_permission) OR ( SELECT private.has_permission(evidence_objects.branch_id, 'delivery.read'::text) AS has_permission)) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "expense_categories",
+        "policyname": "expense_categories_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((private.has_permission(branch_id, 'finance.expense.read'::text) OR private.has_permission(branch_id, 'finance.expense.manage'::text)) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "expenses",
+        "policyname": "expenses_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((private.has_permission(branch_id, 'finance.expense.read'::text) OR private.has_permission(branch_id, 'finance.expense.manage'::text)) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "finance_accounts",
+        "policyname": "finance_accounts_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((private.has_permission(branch_id, 'finance.ar.read'::text) OR private.has_permission(branch_id, 'finance.ap.read'::text)) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "gps_positions",
+        "policyname": "gps_positions_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((( SELECT private.has_permission(gps_positions.branch_id, 'delivery.read'::text) AS has_permission) OR (EXISTS ( SELECT 1\n   FROM gps_tracking_sessions s\n  WHERE ((s.id = gps_positions.session_id) AND (s.employee_id = ( SELECT private.current_employee_id() AS current_employee_id)))))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "gps_tracking_sessions",
+        "policyname": "gps_tracking_sessions_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(((employee_id = ( SELECT private.current_employee_id() AS current_employee_id)) OR ( SELECT private.has_permission(gps_tracking_sessions.branch_id, 'delivery.read'::text) AS has_permission)) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "inventory_movements",
+        "policyname": "inventory_movements_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.has_permission(inventory_movements.branch_id, 'inventory.read'::text) AS has_permission) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "inventory_opening_sources",
+        "policyname": "inventory_opening_sources_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(private.has_permission(branch_id, 'inventory.cost.read'::text) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "inventory_reservations",
+        "policyname": "inventory_reservations_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((( SELECT private.has_permission(inventory_reservations.branch_id, 'inventory.read'::text) AS has_permission) OR ( SELECT private.has_permission(inventory_reservations.branch_id, 'delivery.read'::text) AS has_permission)) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "inventory_stock_thresholds",
+        "policyname": "inventory_stock_thresholds_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(private.has_permission(branch_id, 'inventory.read'::text) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "invoice_adjustment_drafts",
+        "policyname": "invoice_adjustment_drafts_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.has_permission(invoice_adjustment_drafts.branch_id, 'finance.ar.read'::text) AS has_permission) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "invoice_coverage",
+        "policyname": "invoice_coverage_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM invoice_intents i\n  WHERE (i.id = invoice_coverage.invoice_intent_id))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "invoice_draft_lines",
+        "policyname": "invoice_draft_lines_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM invoice_intents i\n  WHERE (i.id = invoice_draft_lines.invoice_intent_id))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "invoice_intents",
+        "policyname": "invoice_intents_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.has_permission(invoice_intents.branch_id, 'finance.ar.read'::text) AS has_permission) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "machines",
+        "policyname": "machines_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.has_branch_access(machines.branch_id) AS has_branch_access) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "machines",
+        "policyname": "machines_service_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(private.has_permission(branch_id, 'service.read'::text) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "material_groups",
+        "policyname": "material_groups_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((( SELECT private.current_employee_id() AS current_employee_id) IS NOT NULL) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "material_uom_conversions",
+        "policyname": "conversions_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((( SELECT private.current_employee_id() AS current_employee_id) IS NOT NULL) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "materials",
+        "policyname": "materials_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((( SELECT private.current_employee_id() AS current_employee_id) IS NOT NULL) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "messages",
+        "policyname": "messages_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.can_access_conversation(messages.conversation_id) AS can_access_conversation) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "opening_balance_sources",
+        "policyname": "opening_sources_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.has_permission(opening_balance_sources.branch_id,\n        CASE\n            WHEN (opening_balance_sources.side = 'RECEIVABLE'::text) THEN 'finance.ar.read'::text\n            ELSE 'suppliers.read'::text\n        END) AS has_permission) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "payable_adjustments",
+        "policyname": "payable_adjustments_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM payable_obligations o\n  WHERE (o.id = payable_adjustments.obligation_id))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "payable_obligations",
+        "policyname": "payable_obligations_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.has_permission(payable_obligations.branch_id, 'suppliers.read'::text) AS has_permission) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "payment_allocations",
+        "policyname": "payment_allocations_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM payments p\n  WHERE ((p.id = payment_allocations.payment_id) AND (private.has_permission(p.branch_id, 'finance.ar.read'::text) OR private.has_permission(p.branch_id, 'finance.ap.read'::text))))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "payment_notice_match_reversals",
+        "policyname": "notice_match_reversal_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(private.has_permission(branch_id, 'finance.payment_notice.review'::text) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "payment_notice_matches",
+        "policyname": "notice_match_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(private.has_permission(branch_id, 'finance.payment_notice.review'::text) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "payment_notice_review_events",
+        "policyname": "payment_notice_review_events_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM payment_notices n\n  WHERE ((n.id = payment_notice_review_events.payment_notice_id) AND ((private.portal_customer_role(n.customer_id) = ANY (ARRAY['OWNER'::text, 'FINANCE_CONTACT'::text])) OR private.has_permission(n.branch_id, 'finance.payment_notice.review'::text))))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "payment_notices",
+        "policyname": "payment_notices_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(((private.portal_customer_role(customer_id) = ANY (ARRAY['OWNER'::text, 'FINANCE_CONTACT'::text])) OR private.has_permission(branch_id, 'finance.payment_notice.review'::text)) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "payment_reconciliation_matches",
+        "policyname": "payment_reconciliation_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(private.has_permission(branch_id, 'finance.reconcile'::text) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "payments",
+        "policyname": "payments_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((((customer_id IS NOT NULL) AND private.has_permission(branch_id, 'finance.ar.read'::text)) OR ((customer_id IS NULL) AND private.has_permission(branch_id, 'finance.ap.read'::text))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "permissions",
+        "policyname": "permissions_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((( SELECT private.current_employee_id() AS current_employee_id) IS NOT NULL) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "portal_evidence_objects",
+        "policyname": "portal_evidence_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(private.portal_evidence_access(id, true) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "pricing_rules",
+        "policyname": "pricing_rules_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.has_permission(pricing_rules.branch_id, 'pricing.read'::text) AS has_permission) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "purchase_invoice_registry",
+        "policyname": "purchase_invoice_registry_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.has_permission(purchase_invoice_registry.branch_id, 'finance.ap.read'::text) AS has_permission) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "purchase_order_lines",
+        "policyname": "purchase_order_lines_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM purchase_orders p\n  WHERE (p.id = purchase_order_lines.purchase_order_id))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "purchase_orders",
+        "policyname": "purchase_orders_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.has_permission(purchase_orders.branch_id, 'purchasing.read'::text) AS has_permission) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "purchase_price_rules",
+        "policyname": "purchase_price_rules_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.has_permission(purchase_price_rules.branch_id, 'purchasing.price.read'::text) AS has_permission) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "purchase_receipt_lines",
+        "policyname": "purchase_receipt_lines_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM purchase_receipts r\n  WHERE (r.id = purchase_receipt_lines.purchase_receipt_id))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "purchase_receipts",
+        "policyname": "purchase_receipts_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((( SELECT private.has_permission(purchase_receipts.branch_id, 'purchasing.read'::text) AS has_permission) OR ( SELECT private.has_permission(purchase_receipts.branch_id, 'inventory.read'::text) AS has_permission)) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "quotation_acceptances",
+        "policyname": "quotation_acceptances_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM (quotation_revisions r\n     JOIN quotations q ON ((q.id = r.quotation_id)))\n  WHERE (r.id = quotation_acceptances.revision_id))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "quotation_change_requests",
+        "policyname": "quotation_change_requests_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(((private.portal_customer_role(customer_id) = ANY (ARRAY['OWNER'::text, 'FINANCE_CONTACT'::text])) OR private.has_permission(( SELECT c.branch_id\n   FROM customers c\n  WHERE (c.id = quotation_change_requests.customer_id)), 'quotation.read'::text)) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "quotation_lines",
+        "policyname": "quotation_lines_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM (quotation_revisions r\n     JOIN quotations q ON ((q.id = r.quotation_id)))\n  WHERE ((r.id = quotation_lines.revision_id) AND ( SELECT private.has_permission(q.branch_id, 'quotation.read'::text) AS has_permission)))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "quotation_pdf_artifacts",
+        "policyname": "quotation_artifacts_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM (quotation_revisions r\n     JOIN quotations q ON ((q.id = r.quotation_id)))\n  WHERE (r.id = quotation_pdf_artifacts.revision_id))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "quotation_revisions",
+        "policyname": "quotation_revisions_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM quotations q\n  WHERE (q.id = quotation_revisions.quotation_id))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "quotations",
+        "policyname": "quotations_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((( SELECT private.has_permission(quotations.branch_id, 'quotation.read'::text) AS has_permission) OR ( SELECT private.has_customer_membership(quotations.customer_id, NULL::text[]) AS has_customer_membership)) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "receivable_adjustments",
+        "policyname": "receivable_adjustments_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM receivable_obligations o\n  WHERE (o.id = receivable_adjustments.obligation_id))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "receivable_obligations",
+        "policyname": "receivable_obligations_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((( SELECT private.has_permission(receivable_obligations.branch_id, 'finance.ar.read'::text) AS has_permission) OR ( SELECT private.has_customer_membership(receivable_obligations.customer_id, ARRAY['OWNER'::text, 'FINANCE_CONTACT'::text]) AS has_customer_membership)) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "report_export_jobs",
+        "policyname": "report_export_jobs_owner_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((owner_user_id = ( SELECT auth.uid() AS uid)) AND private.has_permission(branch_id,\nCASE side\n    WHEN 'AR'::text THEN 'finance.ar.read'::text\n    ELSE 'finance.ap.read'::text\nEND) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "return_cases",
+        "policyname": "return_cases_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.has_permission(return_cases.branch_id, 'delivery.read'::text) AS has_permission) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "revenue_adjustments",
+        "policyname": "revenue_adjustments_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((private.has_permission(branch_id, 'finance.ar.read'::text) OR private.has_permission(branch_id, 'finance.profit.read'::text)) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "revenue_entries",
+        "policyname": "revenue_entries_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.has_permission(revenue_entries.branch_id, 'finance.ar.read'::text) AS has_permission) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "role_permissions",
+        "policyname": "role_permissions_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((( SELECT private.current_employee_id() AS current_employee_id) IS NOT NULL) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "roles",
+        "policyname": "roles_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((( SELECT private.current_employee_id() AS current_employee_id) IS NOT NULL) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "roles",
+        "policyname": "roles_workforce_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM employee_branch_access a\n  WHERE ((a.role_id = roles.id) AND a.active AND (private.has_permission(a.branch_id, 'workforce.read'::text) OR private.has_permission(a.branch_id, 'compensation.read'::text))))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "route_plan_stops",
+        "policyname": "route_plan_stops_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM route_plans p\n  WHERE ((p.id = route_plan_stops.route_plan_id) AND ( SELECT private.has_permission(p.branch_id, 'delivery.read'::text) AS has_permission)))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "route_plans",
+        "policyname": "route_plans_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.has_permission(route_plans.branch_id, 'delivery.read'::text) AS has_permission) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "routing_settings",
+        "policyname": "routing_settings_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.has_permission(routing_settings.branch_id, 'delivery.read'::text) AS has_permission) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "sales_order_credit_overrides",
+        "policyname": "sales_order_credit_overrides_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(private.has_permission(branch_id, 'orders.read'::text) AND private.has_permission(branch_id, 'finance.ar.adjust'::text) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "sales_order_lines",
+        "policyname": "sales_order_lines_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM sales_orders o\n  WHERE ((o.id = sales_order_lines.sales_order_id) AND ( SELECT private.has_permission(o.branch_id, 'orders.read'::text) AS has_permission)))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "sales_orders",
+        "policyname": "sales_orders_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(((branch_id = ANY (( SELECT scope.branch_ids\n   FROM private.sales_order_reader_scope() scope(branch_ids, customer_ids))::uuid[])) OR (customer_id = ANY (( SELECT scope.customer_ids\n   FROM private.sales_order_reader_scope() scope(branch_ids, customer_ids))::uuid[]))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "service_jobs",
+        "policyname": "service_jobs_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(private.has_permission(branch_id, 'service.read'::text) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "service_verifications",
+        "policyname": "service_verifications_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM service_jobs j\n  WHERE ((j.id = service_verifications.service_job_id) AND private.has_permission(j.branch_id, 'service.read'::text)))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "service_work_logs",
+        "policyname": "service_logs_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM service_jobs j\n  WHERE ((j.id = service_work_logs.service_job_id) AND private.has_permission(j.branch_id, 'service.read'::text)))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "stock_count_lines",
+        "policyname": "stock_count_lines_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM stock_counts c\n  WHERE (c.id = stock_count_lines.stock_count_id))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "stock_count_observations",
+        "policyname": "stock_count_observations_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM (stock_count_lines l\n     JOIN stock_counts c ON ((c.id = l.stock_count_id)))\n  WHERE ((l.id = stock_count_observations.stock_count_line_id) AND private.has_permission(c.branch_id, 'inventory.read'::text)))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "stock_counts",
+        "policyname": "stock_counts_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.has_permission(stock_counts.branch_id, 'inventory.read'::text) AS has_permission) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "supplier_contacts",
+        "policyname": "supplier_contacts_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM suppliers s\n  WHERE ((s.id = supplier_contacts.supplier_id) AND ( SELECT private.has_permission(s.branch_id, 'suppliers.read'::text) AS has_permission)))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "supplier_credit_funds",
+        "policyname": "supplier_credit_fund_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM supplier_return_credits c\n  WHERE ((c.id = supplier_credit_funds.credit_id) AND private.has_permission(c.branch_id, 'finance.ap.read'::text)))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "supplier_credit_settlements",
+        "policyname": "supplier_credit_settlement_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM (supplier_credit_funds f\n     JOIN supplier_return_credits c ON ((c.id = f.credit_id)))\n  WHERE ((f.id = supplier_credit_settlements.credit_fund_id) AND private.has_permission(c.branch_id, 'finance.ap.read'::text)))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "supplier_document_lines",
+        "policyname": "supplier_document_line_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM supplier_documents d\n  WHERE ((d.id = supplier_document_lines.document_id) AND private.has_permission(d.branch_id, 'finance.ap.read'::text)))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "supplier_documents",
+        "policyname": "supplier_document_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(private.has_permission(branch_id, 'finance.ap.read'::text) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "supplier_fulfillment_lines",
+        "policyname": "supplier_fulfillment_lines_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM supplier_fulfillments f\n  WHERE (f.id = supplier_fulfillment_lines.supplier_fulfillment_id))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "supplier_fulfillments",
+        "policyname": "supplier_fulfillments_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((( SELECT private.has_permission(supplier_fulfillments.branch_id, 'purchasing.read'::text) AS has_permission) OR ( SELECT private.has_permission(supplier_fulfillments.branch_id, 'delivery.read'::text) AS has_permission)) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "supplier_return_cases",
+        "policyname": "supplier_return_case_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((private.has_permission(branch_id, 'purchasing.read'::text) OR private.has_permission(branch_id, 'inventory.read'::text) OR private.has_permission(branch_id, 'finance.ap.read'::text)) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "supplier_return_credits",
+        "policyname": "supplier_credit_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(private.has_permission(branch_id, 'finance.ap.read'::text) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "supplier_return_events",
+        "policyname": "supplier_return_event_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((private.has_permission(branch_id, 'purchasing.read'::text) OR private.has_permission(branch_id, 'inventory.read'::text) OR private.has_permission(branch_id, 'finance.ap.read'::text)) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "suppliers",
+        "policyname": "suppliers_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.has_permission(suppliers.branch_id, 'suppliers.read'::text) AS has_permission) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "supply_allocations",
+        "policyname": "supply_allocations_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((( SELECT private.has_permission(supply_allocations.branch_id, 'purchasing.read'::text) AS has_permission) OR ( SELECT private.has_permission(supply_allocations.branch_id, 'orders.read'::text) AS has_permission)) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "units_of_measure",
+        "policyname": "uom_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((( SELECT private.current_employee_id() AS current_employee_id) IS NOT NULL) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "vehicles",
+        "policyname": "vehicles_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.has_branch_access(vehicles.branch_id) AS has_branch_access) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "vehicles",
+        "policyname": "vehicles_service_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(private.has_permission(branch_id, 'service.read'::text) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "warehouse_transfer_events",
+        "policyname": "warehouse_transfer_event_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((EXISTS ( SELECT 1\n   FROM warehouse_transfers t\n  WHERE ((t.id = warehouse_transfer_events.transfer_id) AND private.has_permission(t.branch_id, 'inventory.read'::text)))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "warehouse_transfers",
+        "policyname": "warehouse_transfer_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(private.has_permission(branch_id, 'inventory.read'::text) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "warehouses",
+        "policyname": "warehouses_select",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(( SELECT private.has_branch_access(warehouses.branch_id) AS has_branch_access) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "work_item_assignments",
+        "policyname": "work_assignments_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(((employee_id = private.current_employee_id()) OR (EXISTS ( SELECT 1\n   FROM work_items w\n  WHERE ((w.id = work_item_assignments.work_item_id) AND private.has_permission(w.branch_id, 'workforce.read'::text))))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "work_item_heartbeats",
+        "policyname": "work_heartbeats_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((private.is_current_work_assignee(work_item_id) OR (EXISTS ( SELECT 1\n   FROM work_items w\n  WHERE ((w.id = work_item_heartbeats.work_item_id) AND private.has_permission(w.branch_id, 'workforce.read'::text))))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "work_item_results",
+        "policyname": "work_results_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((private.is_current_work_assignee(work_item_id) OR (EXISTS ( SELECT 1\n   FROM work_items w\n  WHERE ((w.id = work_item_results.work_item_id) AND private.has_permission(w.branch_id, 'workforce.read'::text))))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "work_item_verifications",
+        "policyname": "work_verifications_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "((private.is_current_work_assignee(work_item_id) OR (EXISTS ( SELECT 1\n   FROM work_items w\n  WHERE ((w.id = work_item_verifications.work_item_id) AND private.has_permission(w.branch_id, 'workforce.read'::text))))) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "work_items",
+        "policyname": "work_items_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(private.portal_can_access_work_item(id) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "work_result_portal_evidence",
+        "policyname": "work_result_portal_evidence_read",
+        "permissive": "PERMISSIVE",
+        "roles": "{authenticated}",
+        "cmd": "SELECT",
+        "qual": "(private.portal_evidence_access(evidence_id, true) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+        "with_check": null
+      }
+    ]
+  },
+  "viewAndPolicyParity": true,
+  "productionAccess": "NONE",
+  "managedDatabaseParity": "NOT_CLAIMED_BY_NATIVE_COMPARISON"
+}

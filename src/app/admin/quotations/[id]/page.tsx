@@ -26,8 +26,8 @@ export default async function QuotationDetailPage({ params, searchParams }: { pa
   if (error || !quoteData) notFound();
   const quote = quoteData as Quote;
   const [revisionResult, lineResult] = await Promise.all([
-    supabase.from("quotation_revisions").select("id, revision_number, state, total_vnd, customer_name_snapshot, site_name_snapshot, delivery_address_snapshot, commercial_terms, expires_at, sent_at, accepted_at, supersedes_revision_id, created_at").eq("quotation_id", id).order("revision_number", { ascending: false }),
-    supabase.from("quotation_lines").select("id, material_name_snapshot, quantity, unit_price_vnd, line_total_vnd, price_source_type, units_of_measure:ordered_uom_id(symbol)").eq("revision_id", quote.current_revision_id).order("line_number"),
+    supabase.from("quotation_revisions").select("id, revision_number, state, total_vnd::text, customer_name_snapshot, site_name_snapshot, delivery_address_snapshot, commercial_terms, expires_at, sent_at, accepted_at, supersedes_revision_id, created_at").eq("quotation_id", id).order("revision_number", { ascending: false }),
+    supabase.from("quotation_lines").select("id, material_name_snapshot, quantity, unit_price_vnd::text, line_total_vnd::text, price_source_type, units_of_measure:ordered_uom_id(symbol)").eq("revision_id", quote.current_revision_id).order("line_number"),
   ]);
   const revisions = (revisionResult.data ?? []) as Revision[];
   const revision = revisions.find((item) => item.id === quote.current_revision_id);

@@ -17,7 +17,7 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
   const q = (params.q ?? "").trim().replace(/[%_]/g, "").slice(0, 80);
   const page = Math.max(1, Math.min(10000, Number.parseInt(params.page ?? "1", 10) || 1));
   let query = supabase.from("invoice_intent_read")
-    .select("id,source_obligation_id,customer_name_snapshot,source_type,source_id,source_amount_vnd,billing_verified_at,invoice_due_at,status,provider_state,legal_invoice_number,issued_at,created_at", { count: "exact" })
+    .select("id,source_obligation_id,customer_name_snapshot,source_type,source_id,source_amount_vnd::text,billing_verified_at,invoice_due_at,status,provider_state,legal_invoice_number,issued_at,created_at", { count: "exact" })
     .eq("branch_id", access.branchId);
   if (status) query = query.eq("status", status);
   if (q) query = query.ilike("customer_name_snapshot", `%${q}%`);

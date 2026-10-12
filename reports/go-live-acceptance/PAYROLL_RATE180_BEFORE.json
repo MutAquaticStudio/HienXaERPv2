@@ -1,0 +1,20 @@
+{
+  "scope": "REAL_NATIVE_RPC_ROLLBACK_NONFINITE_AND_OVERPRECISION_RATE",
+  "status": "REPRODUCED",
+  "productionAccess": "NONE",
+  "rolledBack": true,
+  "results": [
+    {
+      "input": "NaN",
+      "stored": "NaN",
+      "actual": "ACCEPTED",
+      "expected": "REJECTED"
+    },
+    {
+      "input": "1.0000001",
+      "stored": "1.000000",
+      "actual": "ACCEPTED",
+      "expected": "REJECTED"
+    }
+  ]
+}

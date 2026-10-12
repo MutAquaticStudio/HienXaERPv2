@@ -1,5 +1,4 @@
 'use server';
-import { randomUUID } from 'node:crypto';
 import { revalidatePath } from 'next/cache';
 import { requireInternalPermission } from '@/lib/access/context';
 import { createServerSupabase } from '@/lib/supabase/server';
@@ -9,12 +8,20 @@ import { catalogHref } from './ownership';
 import { z } from 'zod';
 import Decimal from 'decimal.js';
 import { isExactEntryQuantity } from '@/lib/core/quantity';
-export type CatalogState = {message:string;success?:boolean;recordId?:string;kind?:string};
+import { checkSavedCommandFieldsAction } from '@/lib/core/command-outcome-actions';
+import { isAuthoritativeRejection, type CommandOutcome } from '@/lib/core/command-outcome';
+import { AppError } from '@/lib/core/errors';
+import { masterCommand } from './command';
+export type CatalogState = {message:string;success?:boolean;recordId?:string;kind?:string;status?:CommandOutcome['status']};
 export async function saveCatalogAction(_:CatalogState|undefined, form:FormData):Promise<CatalogState> {
  const kind=String(form.get('kind')); const config=catalogs[kind];
  if(!config) return {message:'Danh mục không hợp lệ.'};
  const access=await requireInternalPermission(config.permission);
  try {
+  const intent = z.uuid().safeParse(form.get('operationId'));
+  if (!intent.success) return {message:'Mã thao tác chưa hợp lệ. Tải lại biểu mẫu trước khi lưu.',status:'FAILED'};
+  const recovery = await checkSavedCommandFieldsAction(form, masterCommand(kind));
+  if (recovery) return {message:recovery.message,status:recovery.status};
   const editing=form.get('editing')==='true';
   const fields=(kind==='conversions'&&editing?config.fields.filter(f=>f.key==='active'):config.fields).filter(f=>!f.permission||access.permissions.has(f.permission));
   const values:Record<string,string|boolean|null>={};
@@ -56,11 +63,11 @@ export async function saveCatalogAction(_:CatalogState|undefined, form:FormData)
   }
   const original=editing?JSON.parse(String(form.get('original'))):null;
   const expected=original?Object.fromEntries(fields.map(f=>[f.key,original[f.key]??null])):null;
-  const recordId=editing?String(form.get('id')):randomUUID();
-  const rpcName=kind==='branches'?'save_branch_config':kind==='customers'||kind==='sites'?'save_customer_site_profile':'save_catalog_record';
+  const recordId=editing?String(form.get('id')):intent.data;
+  const rpcName=masterCommand(kind);
   const payload=kind==='branches'
-   ? {target_id:recordId,source_branch_id:access.branchId,values_json:values,expected_json:expected,change_reason:String(form.get('reason')??''),operation_id:randomUUID()}
-   : {kind,target_id:recordId,target_branch_id:access.branchId,values_json:values,expected_json:expected,change_reason:String(form.get('reason')??''),operation_id:randomUUID()};
+   ? {target_id:recordId,source_branch_id:access.branchId,values_json:values,expected_json:expected,change_reason:String(form.get('reason')??''),operation_id:intent.data}
+   : {kind,target_id:recordId,target_branch_id:access.branchId,values_json:values,expected_json:expected,change_reason:String(form.get('reason')??''),operation_id:intent.data};
   await portalRpc(await createServerSupabase(),rpcName,payload);
   for(const path of ['/admin/catalog','/admin/products','/admin/customers','/admin/suppliers','/admin/inventory','/admin/dispatch',catalogHref(kind).split('?')[0]]) revalidatePath(path);
   return {success:true,message:'Đã lưu và ghi lịch sử thay đổi.',recordId,kind};
@@ -68,6 +75,16 @@ export async function saveCatalogAction(_:CatalogState|undefined, form:FormData)
   const code=error instanceof PortalRpcError?error.code:'';
   if(error instanceof Error&&error.message.includes('vehicle_capacity_locked_by_assignment')) return {message:'Xe đang có phân giao chưa hoàn tất. Xử lý phân giao trước khi thay dữ liệu sức chứa.'};
   if(error instanceof Error&&error.message.includes('vehicle_capacity_locked_by_cargo')) return {message:'Xe còn hàng đã bàn giao chưa được xử lý hết. Đối chiếu và xử lý hàng còn trước khi đổi sức chứa, đơn vị hoặc ngừng sử dụng xe.'};
-  return {message:code==='40001'||code==='PT409'?'Dữ liệu đã thay đổi. Mở lại bản ghi trước khi lưu.':code==='23505'?'Mã hoặc bản ghi đã tồn tại. Tải lại danh sách trước khi thử lại.':code==='42501'?'Không có quyền với đối tượng/chi nhánh này.':'Không thể lưu. Kiểm tra mã, đơn vị, tỷ lệ và thông tin bắt buộc; dữ liệu chưa được xác nhận.'};
+  return {status:isAuthoritativeRejection(code)?'FAILED':'UNKNOWN',message:code==='40001'||code==='PT409'?'Dữ liệu đã thay đổi. Mở lại bản ghi trước khi lưu.':code==='23505'?'Mã hoặc bản ghi đã tồn tại. Tải lại danh sách trước khi thử lại.':code==='42501'?'Không có quyền với đối tượng/chi nhánh này.':'Chưa xác định được kết quả. Tra cứu hoặc thử lại cùng thao tác; không tạo bản ghi lần nữa.'};
+ }
+}
+
+export async function saveCatalogWithOutcomeAction(form:FormData):Promise<CommandOutcome> {
+ try {
+  const result=await saveCatalogAction(undefined,form);
+  return result.success&&result.recordId?{status:'SUCCESS',resultId:result.recordId,message:result.message}:{status:result.status==='UNKNOWN'?'UNKNOWN':'FAILED',message:result.message};
+ } catch(error) {
+  if(error instanceof AppError&&[401,403,409,422].includes(error.status)) return {status:'FAILED',message:error.message};
+  throw error;
  }
 }

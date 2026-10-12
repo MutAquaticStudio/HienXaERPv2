@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { authenticatedPortalClient, portalRpc } from "@/modules/portal/server";
+import { workCommandHttpStatus } from "@/modules/portal/work-command-status";
 
 export async function POST(request: Request) {
   const context = await authenticatedPortalClient();
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Không thể bắt đầu công việc" },
-      { status: 409 },
+      { status: workCommandHttpStatus(error) },
     );
   }
 }

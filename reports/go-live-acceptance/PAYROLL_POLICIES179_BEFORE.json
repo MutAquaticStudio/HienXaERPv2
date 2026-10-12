@@ -1,0 +1,98 @@
+{
+  "scope": "T37_MANUAL_POLICIES_T40_ATOMIC_AUDIT",
+  "productionAccess": "NONE",
+  "schema": 179,
+  "checks": [
+    {
+      "name": "FIXED_MONTHLY_MANUAL_SOURCE_CALCULATE_APPROVE_PARTIAL_PAY_RETRY",
+      "status": "PASS",
+      "facts": {
+        "quantity": "1.234567",
+        "amount": "123457",
+        "outstanding": "100000",
+        "workerWriteDenied": true,
+        "nullableVersionDenied": true
+      }
+    },
+    {
+      "name": "PER_SHIFT_MANUAL_SOURCE_CALCULATE_APPROVE_PARTIAL_PAY_RETRY",
+      "status": "PASS",
+      "facts": {
+        "quantity": "1.234567",
+        "amount": "123457",
+        "outstanding": "100000",
+        "workerWriteDenied": true,
+        "nullableVersionDenied": true
+      }
+    },
+    {
+      "name": "PER_DAY_MANUAL_SOURCE_CALCULATE_APPROVE_PARTIAL_PAY_RETRY",
+      "status": "PASS",
+      "facts": {
+        "quantity": "1.234567",
+        "amount": "123457",
+        "outstanding": "100000",
+        "workerWriteDenied": true,
+        "nullableVersionDenied": true
+      }
+    },
+    {
+      "name": "BONUS_MANUAL_SOURCE_CALCULATE_APPROVE_PARTIAL_PAY_RETRY",
+      "status": "PASS",
+      "facts": {
+        "quantity": "1.234567",
+        "amount": "123457",
+        "outstanding": "100000",
+        "workerWriteDenied": true,
+        "nullableVersionDenied": true
+      }
+    },
+    {
+      "name": "ADJUSTMENT_SOURCE_REDUCES_ONLY_UNPAID_AP_WITHOUT_CHANGING_CASH",
+      "status": "PASS",
+      "facts": {
+        "value": "50000"
+      }
+    },
+    {
+      "name": "ADJUSTMENT_CANNOT_RECOVER_PAID_AMOUNT",
+      "status": "PASS",
+      "facts": {}
+    }
+  ],
+  "auditGaps": [
+    {
+      "command": "create_compensation_rule",
+      "actualAudits": 0,
+      "expected": 1
+    },
+    {
+      "command": "create_compensation_rule",
+      "actualAudits": 0,
+      "expected": 1
+    },
+    {
+      "command": "create_compensation_rule",
+      "actualAudits": 0,
+      "expected": 1
+    },
+    {
+      "command": "create_compensation_rule",
+      "actualAudits": 0,
+      "expected": 1
+    },
+    {
+      "command": "create_expense_category",
+      "actualAudits": 0,
+      "expected": 1
+    }
+  ],
+  "rolledBack": true,
+  "adjusts": {
+    "earning": "0b2e3285-ee2d-4d5a-bf01-1b512f4b8e9e",
+    "ap": "4d836ad4-b641-48d9-83de-c6e96a35a9aa"
+  },
+  "expenseCategorySignature": "target_branch_id uuid, category_code text, category_name text, operation_id uuid",
+  "status": "REPRODUCED_MISSING_ATOMIC_MASTER_AUDIT",
+  "checkedAt": "2026-10-12T07:41:20.660Z"
+}

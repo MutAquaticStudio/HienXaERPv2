@@ -1,0 +1,7 @@
+{
+  "scope": "MASTER_ALL_CURRENT_CATALOG_KINDS_CREATE_EDIT_STALE_RIGHTS_AND_NO_LEDGER",
+  "productionAccess": "NONE",
+  "checks": [],
+  "status": "FAIL",
+  "error": "record_already_exists"
+}

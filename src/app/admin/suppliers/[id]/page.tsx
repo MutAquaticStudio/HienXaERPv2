@@ -28,13 +28,13 @@ export default async function SupplierDetailPage({ params }: PageProps<"/admin/s
   const canCreatePurchase = access.permissions.has("purchasing.create");
   const canPostPayment = canReadFinance && access.permissions.has("finance.payment.post");
   const supabase = await createServerSupabase();
-  const purchaseFields = `id, purchase_order_number, state, destination_type, destination_name_snapshot, expected_at, created_at${canReadPurchasePrice ? ", total_cost_vnd" : ""}`;
+  const purchaseFields = `id, purchase_order_number, state, destination_type, destination_name_snapshot, expected_at, created_at${canReadPurchasePrice ? ", total_cost_vnd::text" : ""}`;
   const [supplierResult, contactsResult, purchaseResult, payableResult, paymentResult] = await Promise.all([
     supabase.from("suppliers").select("id, code, name, phone, email, tax_code, address_text, payment_terms_days, active").eq("id", id).eq("branch_id", access.branchId).maybeSingle(),
     supabase.from("supplier_contacts").select("id, name, phone, email, role_label, active").eq("supplier_id", id).eq("active", true).order("name").limit(50),
     canReadPurchasing ? supabase.from("purchase_order_read").select(purchaseFields).eq("branch_id", access.branchId).eq("supplier_id", id).order("created_at", { ascending: false }).limit(20) : Promise.resolve({ data: [] }),
-    canReadFinance ? supabase.from("payable_read").select("id, source_label, original_amount_vnd, outstanding_amount_vnd, due_date, state, recorded_at").eq("branch_id", access.branchId).eq("supplier_id", id).order("recorded_at", { ascending: false }).limit(20) : Promise.resolve({ data: [] }),
-    canReadFinance ? supabase.from("payment_read").select("id, payment_number, direction, amount_vnd, effective_at, posting_state, reconciliation_state").eq("branch_id", access.branchId).eq("supplier_id", id).order("effective_at", { ascending: false }).limit(20) : Promise.resolve({ data: [] }),
+    canReadFinance ? supabase.from("payable_read").select("id, source_label, original_amount_vnd::text, outstanding_amount_vnd::text, due_date, state, recorded_at").eq("branch_id", access.branchId).eq("supplier_id", id).order("recorded_at", { ascending: false }).limit(20) : Promise.resolve({ data: [] }),
+    canReadFinance ? supabase.from("payment_read").select("id, payment_number, direction, amount_vnd::text, effective_at, posting_state, reconciliation_state").eq("branch_id", access.branchId).eq("supplier_id", id).order("effective_at", { ascending: false }).limit(20) : Promise.resolve({ data: [] }),
   ]);
   if (!supplierResult.data) notFound();
   const supplier = supplierResult.data;

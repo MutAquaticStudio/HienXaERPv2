@@ -36,12 +36,12 @@ export default async function CompensationPage({ searchParams }: { searchParams:
   const query = await searchParams;
   const supabase = await createServerSupabase();
   const results = await Promise.all([
-    supabase.from("earning_event_read").select("*").eq("branch_id", access.branchId).order("created_at", { ascending: false }),
+    supabase.from("earning_event_read").select("id,branch_id,employee_id,employee_name,rule_id,rule_code_snapshot,rule_version_snapshot,earning_type,classification,source_key,basis_quantity::text,basis_amount_vnd::text,rate_vnd_per_unit_snapshot::text,rate_bps_snapshot,calculated_amount_vnd::text,approved_amount_vnd::text,approval_state,version,created_at,approved_at,service_verification_id,work_item_verification_id,sales_order_id,manual_basis_id,payable_obligation_id,outstanding_amount_vnd::text,payment_allocation_id,reverses_earning_event_id,payment_id,receivable_obligation_id,allocated_at,payment_number,payment_effective_at,work_item_result_id,work_item_id,work_verified_at,recognition_effective_at,delivery_id,basis_quantity_policy").eq("branch_id", access.branchId).order("created_at", { ascending: false }),
     supabase.from("compensation_rules").select("id, code, name, version, employee_id, earning_type, calculation_kind, classification, rate_vnd_per_unit::text, effective_from, effective_to").eq("branch_id", access.branchId).order("created_at", { ascending: false }),
     supabase.from("compensation_manual_bases").select("id, employee_id, basis_type, basis_quantity, period_start, period_end, description").eq("branch_id", access.branchId).order("recorded_at", { ascending: false }),
     supabase.from("workforce_read").select("id, code, display_name").eq("branch_id", access.branchId).eq("active", true).order("display_name"),
     supabase.from("finance_accounts").select("id, code, name").eq("branch_id", access.branchId).eq("active", true).order("name"),
-    supabase.from("commission_reconciliation_cases").select("id, employee_id, original_earning_event_id, reduction_amount_vnd, reason, recorded_at")
+    supabase.from("commission_reconciliation_cases").select("id, employee_id, original_earning_event_id, reduction_amount_vnd::text, reason, recorded_at")
       .eq("branch_id", access.branchId).order("recorded_at", { ascending: false }).limit(25),
   ]);
   if (results.some((result) => result.error)) {

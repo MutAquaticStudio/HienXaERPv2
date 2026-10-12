@@ -1,0 +1,64 @@
+{
+  "scope": "CATALOG_OWNER_CREATE_LOST_RESPONSE_RELOAD_SAME_INTENT_NO_DUPLICATE",
+  "checkedAt": "2026-10-12T08:21:36.201Z",
+  "baselineCommit": "73c3d17",
+  "schema": 179,
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [
+    {
+      "name": "CATALOG_RELOAD_RECOVERS_ONE_SOURCE_ONE_RECEIPT_ONE_AUDIT",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T08:36:24.461Z",
+      "schema": {
+        "count": 183,
+        "latest": "20261012082356"
+      },
+      "facts": {
+        "records": 1,
+        "receipts": 1,
+        "audits": 1
+      }
+    },
+    {
+      "name": "CATALOG_EDIT_HTTP_RESPONSE_LOST_AFTER_COMMIT_RELOAD_RECOVERS_ORIGINAL_INTENT",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T08:36:26.817Z",
+      "schema": {
+        "count": 183,
+        "latest": "20261012082356"
+      },
+      "facts": {
+        "name": "QA kho đã đối chiếu sau phục hồi",
+        "receipts": 1,
+        "audits": 1
+      }
+    },
+    {
+      "name": "SALES_CANNOT_OPEN_ROLE_ADMIN_WAREHOUSE_WRITE",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T08:36:27.246Z",
+      "schema": {
+        "count": 183,
+        "latest": "20261012082356"
+      },
+      "facts": {}
+    }
+  ],
+  "documents": {
+    "code": "GWH1D431A2627",
+    "intent": "24f63384-f9fa-4340-bbd9-4cd6aced8c7c",
+    "editIntent": "a2e18469-60a1-40b3-b6be-a8fc96e0aff3"
+  },
+  "pageErrors": [],
+  "status": "PASS",
+  "originalIntentDraftPreparedAfterConstraintRepair": true,
+  "undeliveredResponseConfirmedByIndependentReadback": {
+    "records": 1,
+    "receipts": 1,
+    "audits": 1,
+    "cause": "Harness request context disposed before route.fetch delivered the actual committed response; intentional aftercommit abort was not claimed for this first attempt."
+  },
+  "completedAt": "2026-10-12T08:36:27.366Z"
+}

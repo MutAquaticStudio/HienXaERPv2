@@ -18,7 +18,7 @@ export default async function QuotationsPage({ searchParams }: { searchParams: P
   const query = await searchParams;
   const list = parseCoreListQuery(query);
   const supabase = await createServerSupabase();
-  let request = supabase.from("quotation_read").select("id, quotation_number, revision_number, state, total_vnd, customer_name_snapshot, site_name_snapshot, expires_at, created_at").eq("branch_id", access.branchId);
+  let request = supabase.from("quotation_read").select("id, quotation_number, revision_number, state, total_vnd::text, customer_name_snapshot, site_name_snapshot, expires_at, created_at").eq("branch_id", access.branchId);
   if (list.q) request = request.or(`quotation_number.ilike.${ilikePattern(list.q)},customer_name_snapshot.ilike.${ilikePattern(list.q)},site_name_snapshot.ilike.${ilikePattern(list.q)}`);
   if (list.state) request = request.eq("state", list.state);
   const { data, error } = await request.order("created_at", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1);

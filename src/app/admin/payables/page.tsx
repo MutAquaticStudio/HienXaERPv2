@@ -25,7 +25,7 @@ export default async function PayablesPage({ searchParams }: { searchParams: Pro
   const list = parseCoreListQuery(query);
   const supplierId = /^[0-9a-f-]{36}$/i.test(query.supplier ?? "") ? query.supplier : undefined;
   const supabase = await createServerSupabase();
-  let request = supabase.from("payable_read").select("id, supplier_id, supplier_name, source_label, original_amount_vnd, outstanding_amount_vnd, due_date, recorded_at, state").eq("branch_id", access.branchId).gt("outstanding_amount_vnd", 0);
+  let request = supabase.from("payable_read").select("id, supplier_id, supplier_name, source_label, original_amount_vnd::text, outstanding_amount_vnd::text, due_date, recorded_at, state").eq("branch_id", access.branchId).gt("outstanding_amount_vnd", 0);
   if (list.q) request = request.or(`supplier_name.ilike.${ilikePattern(list.q)},source_label.ilike.${ilikePattern(list.q)}`);
   if (list.state) request = request.eq("state", list.state);
   if (supplierId) request = request.eq("supplier_id", supplierId);
@@ -33,10 +33,10 @@ export default async function PayablesPage({ searchParams }: { searchParams: Pro
   const canPost = access.permissions.has("finance.payment.post");
   const [pageResult, selectedResult, accountResult, partyResult, sourceResult] = await Promise.all([
     request.order("due_date").order("id").range(list.from, list.to + 1),
-    supplierId ? supabase.from("payable_read").select("id, supplier_id, supplier_name, source_label, outstanding_amount_vnd, due_date").eq("branch_id", access.branchId).eq("supplier_id", supplierId).gt("outstanding_amount_vnd", 0).order("due_date").order("id").range(0, CORE_LIST_PAGE_SIZE) : Promise.resolve({ data: [], error: null }),
+    supplierId ? supabase.from("payable_read").select("id, supplier_id, supplier_name, source_label, outstanding_amount_vnd::text, due_date").eq("branch_id", access.branchId).eq("supplier_id", supplierId).gt("outstanding_amount_vnd", 0).order("due_date").order("id").range(0, CORE_LIST_PAGE_SIZE) : Promise.resolve({ data: [], error: null }),
     supplierId && canPost ? supabase.from("finance_accounts").select("id, code, name").eq("branch_id", access.branchId).eq("active", true).order("code").limit(100) : Promise.resolve({ data: [] }),
     supplierId ? supabase.from("suppliers").select("name").eq("id", supplierId).eq("branch_id", access.branchId).maybeSingle() : Promise.resolve({ data: null }),
-    supplierId && canPost ? supabase.from("payment_allocation_source_read").select("id, payment_number, available_amount_vnd, advance_remaining_vnd")
+    supplierId && canPost ? supabase.from("payment_allocation_source_read").select("id, payment_number, available_amount_vnd::text, advance_remaining_vnd::text")
       .eq("branch_id", access.branchId).eq("direction", "DISBURSEMENT").eq("supplier_id", supplierId).gt("available_amount_vnd", 0)
       .order("posted_at", { ascending: false }).order("id").range(paymentList.from, paymentList.to + 1) : Promise.resolve({ data: [], error: null }),
   ]);

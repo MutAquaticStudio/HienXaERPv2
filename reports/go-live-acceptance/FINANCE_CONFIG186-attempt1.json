@@ -1,0 +1,68 @@
+{
+  "scope": "FINANCE_CONFIGURATION_RECONCILE_REVERSE_EXACT_MONEY_CURRENT_READERS",
+  "checkedAt": "2026-10-12T14:03:38.179Z",
+  "source": {
+    "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+    "sourceSha256": "a788e0bc16c1e561df1efce5716e629fc900f7ce4ad392f1829ee671a005ec23",
+    "uncommitted": true
+  },
+  "schema": {
+    "count": 186,
+    "latest": "20261012110100"
+  },
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [
+    {
+      "name": "MANAGER_ACCOUNT_CATEGORY_UI_CONFIGURATION_NO_FINANCIAL_EFFECT",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T14:03:42.707Z",
+      "source": {
+        "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "sourceSha256": "a788e0bc16c1e561df1efce5716e629fc900f7ce4ad392f1829ee671a005ec23",
+        "uncommitted": true
+      },
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "before": {
+          "cash": 5,
+          "ap": 6,
+          "ar": 4
+        },
+        "after": {
+          "cash": 5,
+          "ap": 6,
+          "ar": 4
+        }
+      }
+    }
+  ],
+  "documents": {
+    "marker": "GFC5E266A209A",
+    "accountIntent": "5b23ceb0-81f1-4d8f-889c-745467a210c0",
+    "account": "8d1b19ac-bcb7-4f5c-8c74-9bff7dfe7bd2",
+    "categoryIntent": "2a2c2b92-c268-437c-b554-fe6b7be4b5d7",
+    "category": "29ce8ab1-26f6-4bba-b91a-425e88ca3f3a",
+    "paymentIntent": "9307a1e1-25c8-4731-8a0c-460b3a52c8ec",
+    "payment": "ac60e552-c835-4937-802a-95d4d7a5096c"
+  },
+  "pageErrors": [],
+  "status": "FAIL",
+  "error": "locator.fill: Timeout 30000ms exceeded.",
+  "failurePages": [
+    {
+      "url": "http://127.0.0.1:3112/admin/expenses?notice=category-created",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA ERP\nĐiều hành\nTổng quan\nBán hàng\nMua hàng\nKho hàng\nGiao hàng\nTài chính\nCông nợ phải thu\nCông nợ phải trả\nSổ tiền\nChi phí\nBáo chuyển khoản\nHồ sơ hóa đơn bán\nChứng từ mua\nNhân công & dịch vụ\nQuản trị\nBáo cáo\nTin nhắn\nĐăng xuất\nPhiên làm việc có phân quyền\nQA không đầu kỳ G119EE6ACBC\nNhân viên kiểm thử owner\nTO\n\nCHI PHÍ VẬN HÀNH\n\nChi phí vận hành\n\nChi phí được đưa vào báo cáo sau khi duyệt. Chi trả sau đó làm giảm công nợ phải trả và số dư tiền.\n\nĐã tạo nhóm chi phí.\n\nTạo nhóm chi phí\nGhi chi phí chờ duyệt\nNhóm\nChọn nhóm\nGFC5E266A209AC · QA nhóm chi phí GFC5E266A209A\nNhà cung cấp\nChọn NCC\nG119EE6ACBC · NCC QA chi nhánh mới\nSố tiền\nNgày phát sinh\nHạn trả\nLoại hoạt động\nVận hành\nBán hàng\nGiao hàng\nDịch vụ\nHành chính\nĐơn bán liên quan\nChi phí chung chưa phân bổ\nSO-2026-000417 · Khách kiểm thử khắc phục / Công trình kiểm thử\nSO-2026-000416 · Khách kiểm thử khắc phục / Công trình kiểm thử\nSO-2026-000410 · Khách kiểm thử khắc phục / Công trình kiểm thử\nSO-2026-000409 · Khách kiểm thử khắc phục / Công trình kiểm thử\nMô tả\nMã minh chứng đã xác minh\nTạo chi phí nháp\nChi phí theo phiếu giao và xe\nTìm kiếm\nTrạng thái\nTất cả\nChờ duyệt\nĐã duyệt\nÁp dụng\n0 khoản chi phí trên trang này\nCHỈ TÍNH CHI PHÍ ĐÃ DUYỆT\nMÃ\tNGÀY\tNHÓM / MÔ TẢ\tNCC\tPHẠM VI\tSỐ TIỀN\tTRẠNG THÁI\t\n\nChưa có chi phí.\n\nTrang 1"
+    },
+    {
+      "url": "http://127.0.0.1:3112/admin/cashbook",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA ERP\nĐiều hành\nTổng quan\nBán hàng\nNhà cung cấp\nKho hàng\nGiao hàng\nTài chính\nCông nợ phải thu\nCông nợ phải trả\nSổ tiền\nChi phí\nBáo chuyển khoản\nHồ sơ hóa đơn bán\nChứng từ mua\nThu nhập\nBáo cáo\nTin nhắn\nĐăng xuất\nPhiên làm việc có phân quyền\nQA không đầu kỳ G119EE6ACBC\nQA khắc phục finance\nPF\n\nTIỀN MẶT VÀ NGÂN HÀNG\n\nSổ tiền và đối soát\n\nTheo dõi giao dịch thu chi đã ghi sổ, đối soát và giao dịch đảo.\n\nTheo giao dịch đã ghi nhận; lịch sử chưa đối chiếu. Số liệu này chưa xác minh tổng số dư toàn doanh nghiệp.\n\nDòng tiền ròng\n30.981.543 ₫\nChưa đối soát\n6\nTài khoản\n2\nVị thế ứng trước\n2\nTạo tài khoản tiền\nGiao dịch đã ghi sổ\nGIAO DỊCH THU CHI · 25 DÒNG/TRANG\nMÃ\tNGÀY\tĐỐI TÁC\tTÀI KHOẢN\tLOẠI\tSỐ TIỀN\tĐỐI SOÁT\tHÀNH ĐỘNG\nREC-202610-000181\t12/10/2026\tQA cấu hình khách GCF1115FF9B64\tGFC5E266A209AA\tThu\t5.000 ₫\tChưa đối soát\nLệch 5.000 ₫\n\tPhiếu thu\nXử lý\nGhi đối soát\nĐảo giao dịch\n\nPAY-202610-000180\t12/10/2026\tNhân viên kiểm thử noConfirm\tRME8501A2E\tChi\t23.457 ₫\tChưa đối soát\nLệch 23.457 ₫\n\tPhiếu chi\nXử lý\n\nREC-202610-000161\t12/10/2026\tQA thu nhiều lần và ứng trước\tRME8501A2E\tThu\t10.000.000 ₫\tChưa đối soát\nLệch 10.000.000 ₫\n\tPhiếu thu\nXử lý\n\nREC-202610-000162\t12/10/2026\tQA thu nhiều lần và ứng trước\tRME8501A2E\tThu\t10.000.000 ₫\tChưa đối soát\nLệch 10.000.000 ₫\n\tPhiếu thu\nXử lý\n\nREC-202610-000163\t12/10/2026\tQA thu nhiều lần và ứng trước\tRME8501A2E\tThu\t10.000.000 ₫\tChưa đối soát\nLệch 10.000.000 ₫\n\tPhiếu thu\nXử lý\n\nREC-202610-000160\t12/10/2026\tKhách kiểm thử khắc phục\tRME8501A2E\tThu\t1.000.000 ₫\tChưa đối soát\nLệch 1.000.000 ₫\n\tPhiếu thu\nXử lý\nTrang 1"
+    }
+  ]
+}

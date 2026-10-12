@@ -33,7 +33,7 @@ export default async function ServiceJobDetail({ params, searchParams }: { param
   const query = await searchParams;
   const supabase = await createServerSupabase();
   const [{ data }, { data: employees }, { data: rules }] = await Promise.all([
-    supabase.from("service_job_read").select("*").eq("id", id).eq("branch_id", access.branchId).maybeSingle(),
+    supabase.from("service_job_read").select("id,branch_id,job_number,customer_id,customer_name,site_id,site_name,sales_employee_id,service_type,description,scheduled_start,scheduled_end,planned_quantity::text,unit_label,vehicle_id,plate_number,machine_id,machine_name,execution_state,version,work_item_id,work_number,work_state,work_version,employee_id,operator_name,actual_quantity::text,billable_quantity::text,compensable_quantity::text,billable_amount_vnd::text,service_verification_id,receivable_obligation_id").eq("id", id).eq("branch_id", access.branchId).maybeSingle(),
     supabase.from("workforce_read").select("id, code, display_name").eq("branch_id", access.branchId).eq("active", true).order("display_name"),
     supabase.from("compensation_rules").select("id, code, name, version, earning_type").eq("branch_id", access.branchId).order("created_at", { ascending: false }),
   ]);

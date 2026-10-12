@@ -19,7 +19,7 @@ export default async function PurchaseOrdersPage({ searchParams }: { searchParam
   const query = await searchParams;
   const list = parseCoreListQuery(query);
   const canReadPrice = access.permissions.has("purchasing.price.read");
-  const fields = `id, purchase_order_number, supplier_name_snapshot, destination_type, destination_name_snapshot, source_sales_order_id, state, expected_at, created_at${canReadPrice ? ", total_cost_vnd" : ""}`;
+  const fields = `id, purchase_order_number, supplier_name_snapshot, destination_type, destination_name_snapshot, source_sales_order_id, state, expected_at, created_at${canReadPrice ? ", total_cost_vnd::text" : ""}`;
   const supabase = await createServerSupabase();
   let request = supabase.from("purchase_order_read").select(fields, { count: "exact" }).eq("branch_id", access.branchId);
   if (list.q) request = request.or(`purchase_order_number.ilike.${ilikePattern(list.q)},supplier_name_snapshot.ilike.${ilikePattern(list.q)},destination_name_snapshot.ilike.${ilikePattern(list.q)}`);

@@ -23,10 +23,10 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
     return new Response("Mã hồ sơ không hợp lệ", { status: 400 });
   }
   const supabase = await createServerSupabase();
-  const { data: invoice, error } = await supabase.from("invoice_intent_read").select("id,branch_id,customer_name_snapshot,source_obligation_id,source_type,source_id,source_amount_vnd,billing_verified_at,invoice_due_at,status,policy_state,provider_state,create_operation_id").eq("id", id).eq("branch_id", access.branchId).maybeSingle();
+  const { data: invoice, error } = await supabase.from("invoice_intent_read").select("id,branch_id,customer_name_snapshot,source_obligation_id,source_type,source_id,source_amount_vnd::text,billing_verified_at,invoice_due_at,status,policy_state,provider_state,create_operation_id").eq("id", id).eq("branch_id", access.branchId).maybeSingle();
   if (error) throw error;
   if (!invoice) return new Response("Không tìm thấy hồ sơ", { status: 404 });
-  const { data: lines, error: linesError } = await supabase.from("invoice_draft_line_read").select("line_number,source_line_id,description_snapshot,quantity_snapshot,source_amount_vnd").eq("invoice_intent_id", id).order("line_number").limit(100);
+  const { data: lines, error: linesError } = await supabase.from("invoice_draft_line_read").select("line_number,source_line_id,description_snapshot,quantity_snapshot,source_amount_vnd::text").eq("invoice_intent_id", id).order("line_number").limit(100);
   if (linesError) throw linesError;
   const money = (value: string | number) => formatVnd(vnd(String(value)));
   const bytes = await createStandardPdf({

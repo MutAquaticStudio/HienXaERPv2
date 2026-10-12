@@ -13,8 +13,8 @@ const Exact = Decimal.clone({ precision: 50 });
 export default async function WarehouseTransferDetail({ params }: { params: Promise<{ id: string }> }) {
  const access = await requireInternalPermission("inventory.read"), { id } = await params; if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
  const db = await createServerSupabase(); const [source, history] = await Promise.all([
-  db.from("warehouse_transfer_read").select("*").eq("id", id).eq("branch_id", access.branchId).maybeSingle(),
-  db.from("warehouse_transfer_event_read").select("id, event_kind, source_dispatch_id, source_issue_id, base_quantity, value_vnd, reason, recorded_by, recorded_at").eq("transfer_id", id).order("recorded_at").order("id"),
+  db.from("warehouse_transfer_read").select("id,branch_id,transfer_number,from_warehouse_id,to_warehouse_id,material_id,base_uom_id,planned_base_quantity,dispatch_closed,version,reason,created_by,created_at,from_warehouse_name,to_warehouse_name,material_code,material_name,shipped_base_quantity,received_base_quantity,loss_base_quantity,in_transit_base_quantity,transfer_state,in_transit_value_vnd::text").eq("id", id).eq("branch_id", access.branchId).maybeSingle(),
+  db.from("warehouse_transfer_event_read").select("id, event_kind, source_dispatch_id, source_issue_id, base_quantity, value_vnd::text, reason, recorded_by, recorded_at").eq("transfer_id", id).order("recorded_at").order("id"),
  ]);
  if (source.error || history.error) throw new Error("Không thể tải hồ sơ chuyển kho."); if (!source.data) notFound();
  const t = source.data, events = history.data ?? [];

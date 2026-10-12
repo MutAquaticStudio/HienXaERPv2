@@ -1,0 +1,69 @@
+{
+  "scope": "T37_RULE_RATE_REJECTION_AND_EXACT_STORAGE_SERVER_ACTION_BROWSER",
+  "checkedAt": "2026-10-12T08:02:24.326Z",
+  "baselineCommit": "73c3d17",
+  "schema": 179,
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [
+    {
+      "name": "INVALID_RATE_UI_SERVER_REJECTS_WITHOUT_EFFECT",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T08:02:26.698Z",
+      "schema": {
+        "count": 181,
+        "latest": "20261012075211"
+      },
+      "facts": {
+        "input": "NaN",
+        "effects": {
+          "rules": 0,
+          "receipts": 0,
+          "audits": 0
+        }
+      }
+    },
+    {
+      "name": "INVALID_RATE_UI_SERVER_REJECTS_WITHOUT_EFFECT",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T08:02:27.931Z",
+      "schema": {
+        "count": 181,
+        "latest": "20261012075211"
+      },
+      "facts": {
+        "input": "1.0000001",
+        "effects": {
+          "rules": 0,
+          "receipts": 0,
+          "audits": 0
+        }
+      }
+    },
+    {
+      "name": "EXACT_RATE_UI_DB_READBACK_WITH_ATOMIC_AUDIT",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T08:02:28.707Z",
+      "schema": {
+        "count": 181,
+        "latest": "20261012075211"
+      },
+      "facts": {
+        "input": "1.123456",
+        "rule": {
+          "id": "a1a306a5-73f5-44e7-a3f8-184513902acd",
+          "rate": "1.123456",
+          "audits": 1
+        }
+      }
+    }
+  ],
+  "documents": {
+    "code": "GRT114B7E9054",
+    "rule": "a1a306a5-73f5-44e7-a3f8-184513902acd"
+  },
+  "pageErrors": [],
+  "status": "PASS",
+  "completedAt": "2026-10-12T08:02:28.878Z"
+}

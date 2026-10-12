@@ -1,0 +1,69 @@
+{
+  "scope": "T41_AP1001_EXPORT_SAME_JOB_AND_ROLE_BRANCH_SCOPE",
+  "checkedAt": "2026-10-12T07:58:52.498Z",
+  "baselineCommit": "73c3d17",
+  "schema": 179,
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [
+    {
+      "name": "AP_OVER1000_REQUIRES_JOB_NOT_TRUNCATED",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T07:58:56.190Z",
+      "schema": {
+        "count": 181,
+        "latest": "20261012075211"
+      },
+      "facts": {
+        "http": 409
+      }
+    },
+    {
+      "name": "AP_FIRST500_COMMITTED_RESPONSE_LOST",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T07:58:57.579Z",
+      "schema": {
+        "count": 181,
+        "latest": "20261012075211"
+      },
+      "facts": {
+        "job": "47b49999-183e-4213-a1d4-1934fc4dccf7",
+        "processed": 500
+      }
+    },
+    {
+      "name": "AP_SAME_JOB_RELOAD1001_EXACT_IDS_TOTAL_AND_THREE_BATCHES",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T07:58:59.394Z",
+      "schema": {
+        "count": 181,
+        "latest": "20261012075211"
+      },
+      "facts": {
+        "state": "COMPLETED",
+        "processed_rows": 1001,
+        "attempt": 3
+      }
+    },
+    {
+      "name": "AP_WORKER_AND_OTHER_BRANCH_CANNOT_DOWNLOAD",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T07:58:59.747Z",
+      "schema": {
+        "count": 181,
+        "latest": "20261012075211"
+      },
+      "facts": {
+        "worker": 403,
+        "wrongBranch": 404
+      }
+    }
+  ],
+  "documents": {
+    "job": "47b49999-183e-4213-a1d4-1934fc4dccf7"
+  },
+  "pageErrors": [],
+  "status": "PASS",
+  "completedAt": "2026-10-12T07:58:59.747Z"
+}

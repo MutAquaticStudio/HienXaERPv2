@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { authenticatedPortalClient, portalRpc } from "@/modules/portal/server";
+import { workCommandHttpStatus } from "@/modules/portal/work-command-status";
 import { parseWorkResultInput } from "@/modules/portal/work-result-input";
 
 export async function POST(request: Request) {
@@ -22,6 +23,6 @@ export async function POST(request: Request) {
       });
     return NextResponse.json({ resultId });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Không thể gửi kết quả" }, { status: 409 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Không thể gửi kết quả" }, { status: workCommandHttpStatus(error) });
   }
 }

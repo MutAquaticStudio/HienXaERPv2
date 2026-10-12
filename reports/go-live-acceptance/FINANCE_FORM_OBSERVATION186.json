@@ -1,0 +1,89 @@
+{
+  "scope": "READ_ONLY_FINANCE_FORM_VISIBILITY",
+  "checkedAt": "2026-10-12T14:05:45.307Z",
+  "source": {
+    "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+    "sourceSha256": "a788e0bc16c1e561df1efce5716e629fc900f7ce4ad392f1829ee671a005ec23",
+    "uncommitted": true
+  },
+  "schema": {
+    "count": 186,
+    "latest": "20261012110100"
+  },
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [],
+  "documents": {},
+  "pageErrors": [],
+  "fields": [
+    {
+      "fields": [
+        {
+          "name": "$ACTION_ID_407889475ebd0d9e97d0fb6ab8b31de83a98750325",
+          "type": "hidden",
+          "visible": false
+        },
+        {
+          "name": "paymentId",
+          "type": "hidden",
+          "visible": false
+        },
+        {
+          "name": "operationId",
+          "type": "hidden",
+          "visible": false
+        },
+        {
+          "name": "amount",
+          "type": "text",
+          "visible": true
+        },
+        {
+          "name": "effectiveAt",
+          "type": "datetime-local",
+          "visible": true
+        },
+        {
+          "name": "reference",
+          "type": "text",
+          "visible": true
+        },
+        {
+          "name": "",
+          "type": "submit",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "fields": [
+        {
+          "name": "$ACTION_ID_409e594ebde382f27d0c85e88987df37a8c8bdea41",
+          "type": "hidden",
+          "visible": false
+        },
+        {
+          "name": "paymentId",
+          "type": "hidden",
+          "visible": false
+        },
+        {
+          "name": "operationId",
+          "type": "hidden",
+          "visible": false
+        },
+        {
+          "name": "reason",
+          "type": "text",
+          "visible": true
+        },
+        {
+          "name": "",
+          "type": "submit",
+          "visible": true
+        }
+      ]
+    }
+  ]
+}

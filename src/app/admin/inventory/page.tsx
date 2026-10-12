@@ -37,8 +37,8 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
   ]);
   const materialIds = (materialResult.data ?? []).map((row) => row.id);
 
-  let positionRequest = supabase.from("warehouse_inventory_read").select("warehouse_id, material_id, base_uom_id, on_hand_base_quantity, reserved_base_quantity, available_base_quantity, inventory_value_vnd, average_cost_vnd_per_base").eq("branch_id", access.branchId).order("warehouse_id").order("material_id").limit(200);
-  let movementRequest = supabase.from("inventory_movement_read").select("id, material_id, warehouse_id, delivery_id, movement_type, base_quantity_delta, inventory_value_delta_vnd, occurred_at").eq("branch_id", access.branchId).order("occurred_at", { ascending: false }).limit(30);
+  let positionRequest = supabase.from("warehouse_inventory_read").select("warehouse_id, material_id, base_uom_id, on_hand_base_quantity, reserved_base_quantity, available_base_quantity, inventory_value_vnd::text, average_cost_vnd_per_base").eq("branch_id", access.branchId).order("warehouse_id").order("material_id").limit(200);
+  let movementRequest = supabase.from("inventory_movement_read").select("id, material_id, warehouse_id, delivery_id, movement_type, base_quantity_delta, inventory_value_delta_vnd::text, occurred_at").eq("branch_id", access.branchId).order("occurred_at", { ascending: false }).limit(30);
   let alertRequest = supabase.from("low_stock_alert_read").select("threshold_id, warehouse_id, warehouse_name, material_id, material_name, base_uom_symbol, threshold_base_quantity, on_hand_base_quantity, reserved_base_quantity, available_base_quantity").eq("branch_id", access.branchId).order("available_base_quantity").limit(100);
   let thresholdRequest = supabase.from("inventory_stock_thresholds").select("id, warehouse_id, material_id, threshold_base_quantity, active, version").eq("branch_id", access.branchId).order("updated_at", { ascending: false }).limit(100);
 

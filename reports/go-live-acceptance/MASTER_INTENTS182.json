@@ -1,0 +1,7 @@
+{
+  "scope": "MASTER_DRAFT_OUTCOME_ACTOR_BRANCH_AND_FINANCIAL_DELEGATION",
+  "productionAccess": "NONE",
+  "checks": [],
+  "status": "FAIL",
+  "error": "new row for relation \"command_drafts\" violates check constraint \"command_drafts_command_name_check\""
+}

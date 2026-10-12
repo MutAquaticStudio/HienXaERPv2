@@ -9,16 +9,18 @@ import type { CreditCommand } from "@/modules/finance/credit-command";
 import type { DocumentCommand } from "@/modules/invoicing/document-commands";
 
 import type { NoticeCommand } from "@/modules/finance/notice-commands";
+import type { MasterCommand } from "@/modules/catalog/command";
 
 type Props = {
   action: (form: FormData) => Promise<CommandOutcome>;
-  command: "post_payment" | "receive_purchase_order" | "verify_supplier_fulfillment" | "allocate_payment" | "resolve_commission_reconciliation" | "create_delivery_expense" | "approve_expense" | "create_warehouse_transfer" | "record_warehouse_transfer_event" | "create_supplier_return" | "record_supplier_return_event" | "approve_supplier_return_credit" | "refund_supplier_credit" | "offset_supplier_credit" | CreditCommand | DocumentCommand | NoticeCommand;
+  command: "post_payment" | "receive_purchase_order" | "verify_supplier_fulfillment" | "allocate_payment" | "resolve_commission_reconciliation" | "create_delivery_expense" | "approve_expense" | "create_warehouse_transfer" | "record_warehouse_transfer_event" | "create_supplier_return" | "record_supplier_return_event" | "approve_supplier_return_credit" | "refund_supplier_credit" | "offset_supplier_credit" | CreditCommand | DocumentCommand | NoticeCommand | MasterCommand;
   scope: string;
   operationId: string;
   children: ReactNode;
   className?: string;
   onRestore?: (entries: Array<[string, string]>) => void;
   onNew?: () => void;
+  resultHref?: (id:string) => string;
 };
 const keyFor = (scope: string, command: string) => `hx-intent-v1:${scope}:${command}`;
 const validId = (value: string | null) => Boolean(value && /^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(value));
@@ -59,11 +61,22 @@ export function ReliableCommandForm(props: Props) {
           setCached(entries);
           if (entries) {
             restore.current?.(entries);
-            for (const [name, value] of entries) {
+            const names = new Set(entries.map(([name]) => name));
+            // Unchecked controls are absent from FormData. Restore that absence,
+            // rather than retaining the current row's checked default.
+            form.current?.querySelectorAll<HTMLInputElement>('input[type="checkbox"], input[type="radio"]').forEach(input => {
+              input.checked = entries.some(([name, value]) => name === input.name && value === input.value);
+            });
+            for (const name of names) {
               const matches = form.current?.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(`[name="${CSS.escape(name)}"]`);
               // Repeated PO line IDs/quantities retain their original pair ordering.
               const values = entries.filter(([field]) => field === name).map(([, entry]) => entry);
-              matches?.forEach((input, index) => { input.value = values[index] ?? value; });
+              matches?.forEach((input, index) => {
+                if (input instanceof HTMLInputElement && ["checkbox", "radio", "file"].includes(input.type)) return;
+                if (input instanceof HTMLSelectElement && input.multiple) {
+                  for (const option of input.options) option.selected = values.includes(option.value);
+                } else input.value = values[index] ?? values[0];
+              });
             }
           }
           setState(outcome);
@@ -122,7 +135,7 @@ export function ReliableCommandForm(props: Props) {
     <fieldset className="reliable-command-fields" disabled={loading || busy || state !== null}>
       {props.children}
     </fieldset>
-    {state && <p className={`form-message ${state.status === "SUCCESS" ? "success" : ""}`} role="status">{state.message}{state.status === "SUCCESS" && <> Mã chứng từ: <span className="mono">{state.resultId}</span>.</>}</p>}
+    {state && <p className={`form-message ${state.status === "SUCCESS" ? "success" : ""}`} role="status">{state.message}{state.status === "SUCCESS" && <> Mã chứng từ: <span className="mono">{state.resultId}</span>.{props.resultHref&&<a className="code-link" href={props.resultHref(state.resultId)}> Mở bản ghi</a>}</>}</p>}
     {state?.status === "UNKNOWN" && <div className="action-cluster">
       <button className="button button-secondary" type="button" disabled={busy} onClick={() => void lookup()}>Tra cứu kết quả</button>
       {cached && <button className="button button-secondary" type="button" disabled={busy} onClick={() => void execute(cached, operation)}>Thử lại cùng thao tác</button>}

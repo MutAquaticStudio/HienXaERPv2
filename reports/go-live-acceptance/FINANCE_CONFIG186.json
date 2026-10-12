@@ -1,0 +1,104 @@
+{
+  "scope": "FINANCE_CONFIGURATION_RECONCILE_REVERSE_EXACT_MONEY_CURRENT_READERS",
+  "checkedAt": "2026-10-12T14:03:38.179Z",
+  "source": {
+    "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+    "sourceSha256": "a788e0bc16c1e561df1efce5716e629fc900f7ce4ad392f1829ee671a005ec23",
+    "uncommitted": true
+  },
+  "schema": {
+    "count": 186,
+    "latest": "20261012110100"
+  },
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [
+    {
+      "name": "MANAGER_ACCOUNT_CATEGORY_UI_CONFIGURATION_NO_FINANCIAL_EFFECT",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T14:03:42.707Z",
+      "source": {
+        "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "sourceSha256": "a788e0bc16c1e561df1efce5716e629fc900f7ce4ad392f1829ee671a005ec23",
+        "uncommitted": true
+      },
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "before": {
+          "cash": 5,
+          "ap": 6,
+          "ar": 4
+        },
+        "after": {
+          "cash": 5,
+          "ap": 6,
+          "ar": 4
+        }
+      }
+    },
+    {
+      "name": "FINANCE_OWNED_BANK_RECEIPT_RECONCILIATION_REVERSAL_NO_ALLOCATION_NO_DUPLICATE",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T14:06:34.428Z",
+      "source": {
+        "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "sourceSha256": "a788e0bc16c1e561df1efce5716e629fc900f7ce4ad392f1829ee671a005ec23",
+        "uncommitted": true
+      },
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "sourceCustomer": "f768428b-39ca-486e-95cc-5cd9ee8b5ad9",
+        "payment": "ac60e552-c835-4937-802a-95d4d7a5096c",
+        "payments": 2,
+        "allocations": 0,
+        "net": "0",
+        "reversal_audits": 1,
+        "advanceRace": false
+      }
+    },
+    {
+      "name": "EXPENSE_SOURCE_GREATER_THAN2POW53_DISPLAY_EXACT",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T14:10:20.976Z",
+      "source": {
+        "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+        "sourceSha256": "528ac482e93bf911b4c32d2568544c1cbe0cee49143d82c518673cc3e0b686cb",
+        "uncommitted": true
+      },
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "amount": "9007199254740993"
+      }
+    }
+  ],
+  "documents": {
+    "marker": "GFC5E266A209A",
+    "accountIntent": "5b23ceb0-81f1-4d8f-889c-745467a210c0",
+    "account": "8d1b19ac-bcb7-4f5c-8c74-9bff7dfe7bd2",
+    "categoryIntent": "2a2c2b92-c268-437c-b554-fe6b7be4b5d7",
+    "category": "29ce8ab1-26f6-4bba-b91a-425e88ca3f3a",
+    "paymentIntent": "9307a1e1-25c8-4731-8a0c-460b3a52c8ec",
+    "payment": "ac60e552-c835-4937-802a-95d4d7a5096c",
+    "reconcileIntent": "3477a881-9f01-4187-a086-aae5f96c27df",
+    "reverseIntent": "8a492c27-6968-4cbe-82f8-7178a85e2c44",
+    "expenseIntent": "0e7219e2-92f0-4452-86e0-87da3c52b15b",
+    "expense": "680c63f6-cfc9-49f6-9cef-72b42ec025cc"
+  },
+  "pageErrors": [],
+  "status": "PASS",
+  "observedExpenseDisplay": {
+    "exact": true,
+    "rounded": false
+  },
+  "completedAt": "2026-10-12T14:10:20.978Z"
+}

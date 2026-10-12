@@ -16,9 +16,9 @@ export default async function PayableDetailPage({ params, searchParams }: { para
   const { id } = await params;
   const supabase = await createServerSupabase();
   const [{ data }, { data: allocations }, { data: adjustments }] = await Promise.all([
-    supabase.from("payable_read").select("id, supplier_name, source_label, source_id, purchase_order_id, expense_id, original_amount_vnd, adjustment_amount_vnd, allocated_amount_vnd, outstanding_amount_vnd, due_date, state").eq("id", id).eq("branch_id", access.branchId).maybeSingle(),
-    supabase.from("payment_allocations").select("id, payment_id, amount_delta_vnd, allocated_at").eq("payable_obligation_id", id).order("allocated_at", { ascending: false }),
-    supabase.from("payable_adjustments").select("id, amount_delta_vnd, reason, evidence_object_id, recorded_at").eq("obligation_id", id).order("recorded_at", { ascending: false }),
+    supabase.from("payable_read").select("id, supplier_name, source_label, source_id, purchase_order_id, expense_id, original_amount_vnd::text, adjustment_amount_vnd::text, allocated_amount_vnd::text, outstanding_amount_vnd::text, due_date, state").eq("id", id).eq("branch_id", access.branchId).maybeSingle(),
+    supabase.from("payment_allocations").select("id, payment_id, amount_delta_vnd::text, allocated_at").eq("payable_obligation_id", id).order("allocated_at", { ascending: false }),
+    supabase.from("payable_adjustments").select("id, amount_delta_vnd::text, reason, evidence_object_id, recorded_at").eq("obligation_id", id).order("recorded_at", { ascending: false }),
   ]);
   if (!data) notFound();
   const row = data as Row;

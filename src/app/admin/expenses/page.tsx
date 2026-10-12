@@ -25,7 +25,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
   const focusId = /^[0-9a-f-]{36}$/i.test(query.focus ?? "") ? query.focus : undefined;
   const canManage = access.permissions.has("finance.expense.manage");
   const supabase = await createServerSupabase();
-  const fields = "id, expense_number, category_name, supplier_name, amount_vnd, effective_at, due_date, description, activity_kind, approval_state, version";
+  const fields = "id, expense_number, category_name, supplier_name, amount_vnd::text, effective_at, due_date, description, activity_kind, approval_state, version";
   let request = supabase.from("expense_read").select(fields).eq("branch_id", access.branchId);
   if (list.q) request = request.or(`expense_number.ilike.${ilikePattern(list.q)},category_name.ilike.${ilikePattern(list.q)},supplier_name.ilike.${ilikePattern(list.q)},description.ilike.${ilikePattern(list.q)}`);
   if (state) request = request.eq("approval_state", state);

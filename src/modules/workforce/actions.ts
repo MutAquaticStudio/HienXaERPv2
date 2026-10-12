@@ -8,6 +8,7 @@ import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { earningCommandError } from "./earning-command-error";
+import { validCompensationRate } from "./compensation-rate";
 
 const optionalUuid = z.union([z.uuid(), z.literal("")]);
 const decimal = z.string().trim().regex(/^-?\d+(?:\.\d{1,6})?$/);
@@ -15,6 +16,7 @@ const positiveMoney = z.string().trim().regex(/^\d+$/).refine((value) => BigInt(
 const localDateTime = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
 const toInstant = (value: string) => new Date(value + ":00+07:00").toISOString();
 function workCommandMessage(message?: string) {
+  if (message === "invalid-compensation-rate") return "Mức tính phải là số dương chính xác, tối đa 6 chữ số thập phân; tỷ lệ phải là số nguyên từ 1 đến 10.000 điểm.";
   if (message === "service_not_cancelable" || message === "service_cancel_has_execution") return "Không thể hủy lịch dịch vụ vì đã phát sinh công việc hoặc kết quả xác minh.";
   if (message?.includes("version") || message?.includes("stale")) return "Dữ liệu công việc đã thay đổi. Vui lòng tải lại trước khi tiếp tục.";
   if (message === "forbidden") return "Bạn không có quyền thực hiện thao tác này.";
@@ -193,6 +195,7 @@ export async function createCompensationRuleAction(formData: FormData) {
     effectiveFrom: z.iso.date(), effectiveTo: z.union([z.iso.date(), z.literal("")]), operationId: z.uuid(),
   }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fail("/admin/compensation", "invalid-rule");
+  if (!validCompensationRate(parsed.data.calculationKind, parsed.data.rate)) return fail("/admin/compensation", "invalid-compensation-rate");
   const access = await requireInternalPermission("compensation.manage");
   const percentage = parsed.data.calculationKind === "PERCENT_BPS";
   const supabase = await createServerSupabase();

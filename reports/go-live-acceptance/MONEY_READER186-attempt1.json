@@ -1,0 +1,34 @@
+{
+  "scope": "OWNED_QA_LARGE_UNALLOCATED_CASH_TEXT_RPC_UI_AND_CUSTOMER_LIMIT_READERS",
+  "checkedAt": "2026-10-12T14:49:12.518Z",
+  "source": {
+    "commit": "73c3d172124679ae1bcf6c6cb59b7446efb6a76d",
+    "sourceSha256": "15d7c3c1fcbfb977f1355be99012b60ecc2d0c456555e346da6275f9a8504c0f",
+    "uncommitted": true
+  },
+  "schema": 186,
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [],
+  "documents": {
+    "marker": "QMR5BBBD46A9A",
+    "customer": "b83cda6f-3c78-4226-9741-f0da35cedf1e",
+    "customerIntent": "a8029df6-4b35-4362-83ab-cc984050730b",
+    "paymentIntent": "37410406-86db-4093-891d-9eeac066d055",
+    "reverseIntent": "094a2cf9-3996-4cca-8240-cc1c82063a09",
+    "reference": "QMR5BBBD46A9A-UNALLOCATED-CASH",
+    "reverseReason": "QA đảo nguồn tiền lớn riêng sau đối chiếu transport QMR5BBBD46A9A",
+    "effectiveAt": "2026-10-12T14:49:13.118Z",
+    "account": "0a8592dc-875c-4d29-a649-5d4f80782d81",
+    "initialNet": "30976543"
+  },
+  "pageErrors": [],
+  "actualInitialSchema": {
+    "count": 186,
+    "latest": "20261012110100"
+  },
+  "excludedAdvanceRacesRun": false,
+  "status": "FAIL",
+  "error": "Expected values to be strictly equal:"
+}

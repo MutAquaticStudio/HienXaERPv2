@@ -17,7 +17,7 @@ export default async function EditQuotationPage({ params }: { params: Promise<{ 
   const [revisionResult, lineResult] = await Promise.all([
     supabase.from("quotation_revisions").select("id, state, draft_version, expires_at, commercial_terms")
       .eq("id", quote.current_revision_id).eq("quotation_id", quote.id).maybeSingle(),
-    supabase.from("quotation_lines").select("id, material_id, ordered_uom_id, quantity, unit_price_vnd, price_source_type, override_reason")
+    supabase.from("quotation_lines").select("id, material_id, ordered_uom_id, quantity, unit_price_vnd::text, price_source_type, override_reason")
       .eq("revision_id", quote.current_revision_id).order("line_number"),
   ]);
   const revision = revisionResult.data;

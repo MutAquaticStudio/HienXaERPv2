@@ -40,6 +40,15 @@ try {
     const read = await fetch(process.env.NEXT_PUBLIC_SUPABASE_URL + "/rest/v1/employees?select=id,active&id=eq." + employee, { headers });
     assert.equal(read.status, 403); assert.equal((await read.json()).message, "account_inactive");
     report.checks.push({ name: "ORIGINAL_BEARER_TOKEN_RPC_AND_TABLE_READ_DENIED_BY_PRE_REQUEST", status: "PASS", rpc: raw.status, table: read.status });
+    const deniedWrite = await fetch(process.env.NEXT_PUBLIC_SUPABASE_URL + "/rest/v1/rpc/start_work_item", {
+      method: "POST", headers, body: JSON.stringify({ target_work_item_id: randomUUID(), expected_version: 1, operation_id: randomUUID() }),
+    });
+    assert.equal(deniedWrite.status, 403); assert.equal((await deniedWrite.json()).message, "account_inactive");
+    const deniedTableWrite = await fetch(process.env.NEXT_PUBLIC_SUPABASE_URL + "/rest/v1/units_of_measure", {
+      method: "POST", headers, body: JSON.stringify({ code: "qa_banned_" + marker, name: "QA blocked write", symbol: "QA", decimal_scale: 6 }),
+    });
+    assert.equal(deniedTableWrite.status, 403); assert.equal((await deniedTableWrite.json()).message, "account_inactive");
+    report.checks.push({ name: "ORIGINAL_BEARER_WRITE_RPC_AND_TABLE_INSERT_REJECTED_BEFORE_BUSINESS_EXECUTION", status: "PASS", rpc: deniedWrite.status, tableInsert: deniedTableWrite.status });
     const unban = await admin.auth.admin.updateUserById(subject, { ban_duration: "none" }); assert.equal(unban.error, null);
     const restored = await fetch(process.env.NEXT_PUBLIC_SUPABASE_URL + "/rest/v1/rpc/worker_portal_snapshot", { method: "POST", headers, body: "{}" });
     assert.equal(restored.status, 200); assert.equal((await restored.json()).employee.id, employee);

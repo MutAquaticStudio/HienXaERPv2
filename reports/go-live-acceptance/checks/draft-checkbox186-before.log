@@ -1,0 +1,35 @@
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+
+ RUN  v5.0.0 /Users/nox/.codex/worktrees/go-live-acceptance/HienXaERP
+
+ ❯ src/modules/catalog/editor.test.tsx (3 tests | 1 failed) 126ms
+   × restores an unchecked saved draft without showing the current row as active 32ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/modules/catalog/editor.test.tsx > restores an unchecked saved draft without showing the current row as active
+Error: expect(element).not.toBeChecked()
+
+Received element is checked:
+  <input
+  checked=""
+  id="_r_0_-active"
+  name="active"
+  type="checkbox"
+/>
+ ❯ src/modules/catalog/editor.test.tsx:18:53
+     16|   render(<CatalogEditor kind="warehouses" options={{}} record={{ id: i…
+     17|   await waitFor(() => expect(screen.getByLabelText("Tên *")).toHaveVal…
+     18|   expect(screen.getByLabelText("Đang sử dụng")).not.toBeChecked();
+       |                                                     ^
+     19|   expect(screen.getByLabelText("Đang sử dụng")).toBeDisabled();
+     20| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  20:42:21
+   Duration  668ms (environment 55%, tests 21%, setup 11%, transform 8%, import 4%)
+

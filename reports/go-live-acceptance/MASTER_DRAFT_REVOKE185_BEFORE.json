@@ -1,0 +1,14 @@
+{
+  "scope": "MASTER_CUSTOMER_DRAFT_CURRENT_FIELD_PERMISSIONS",
+  "phase": "before",
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "REPRODUCED_DRAFT_RETURNS_FINANCIAL_FIELD_AFTER_REVOCATION",
+      "status": "DEFECT_REPRODUCED"
+    }
+  ],
+  "status": "DEFECT_REPRODUCED",
+  "rolledBack": true,
+  "checkedAt": "2026-10-12T13:45:27.808Z"
+}

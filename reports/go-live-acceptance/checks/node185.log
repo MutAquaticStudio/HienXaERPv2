@@ -1,0 +1,33 @@
+✔ guard accepts exact QA URL and verified database (3.746042ms)
+✔ guard rejects production, ambiguous hosts, TLS bypass and capacity overrides (8.545042ms)
+✔ deterministic IDs and percentiles include failed/slow samples (2.081583ms)
+✔ measures actual bytes and preserves affected source identifiers (2.585167ms)
+✔ same-sized changed content cannot match client or legacy checksum (0.723416ms)
+✔ object without an old checksum stays inconclusive, never auto-verified (0.402625ms)
+✔ only authoritative absence establishes missing, not masked permission 404 (1.574375ms)
+✔ network failure remains inconclusive (0.449292ms)
+✔ wrong size, magic or declared portal size cannot verify (3.509667ms)
+✔ resumes after a partial checkpoint and reconciles without replaying completed downloads (48.829083ms)
+✔ inconclusive records can be retried explicitly without replaying matched records (18.575125ms)
+✔ legacy QA seed rejects unauthorized opening atomically on current migrations (10853.39825ms)
+✔ success extracts only the secret payload (1.768375ms)
+✔ success status metadata is not a secret (0.278208ms)
+✔ missing, empty and nonstring payloads fail closed (0.117083ms)
+✔ malformed response and invalid metadata types fail closed (0.099167ms)
+✔ nonzero operation status never returns a payload (1.580083ms)
+✔ JSON-like secret characters and whitespace remain unchanged (0.110333ms)
+✔ manifest validates exact statement bytes, not just count (427.982833ms)
+✔ missing or split SQL is explicitly unverifiable (513.31925ms)
+✔ only reviewed outer transaction envelopes are stripped (1.293667ms)
+✔ only declared JSON parameters are decoded and typed (1.572584ms)
+✔ SQL NULL, JSON null, empty object/array and JSON string stay distinct (0.153708ms)
+✔ nested JSON and Vietnamese quotation marks survive one decode (0.106958ms)
+✔ invalid JSON text, omitted JSON and mismatched metadata fail closed (6.8985ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 11075.432583

@@ -3,7 +3,9 @@ import { roleLabel } from "@/components/access/presentation";
 import { InviteEmployeeForm } from "@/components/access/invite-employee-form";
 import { ExplicitPermissionForm, ManageAccessForm, ReactivateAccessForm, RevokeAccessForm } from "@/components/access/manage-access-form";
 import { requireInternalPermission } from "@/lib/access/context";
+import { CORE_LIST_PAGE_SIZE, ilikePattern, parseCoreListQuery } from "@/lib/core-list";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { ListPager } from "@/components/ui/list-pager";
 
 type RoleRelation = { id: string; name: string; role_permissions: { permission_code: string }[] };
 type Assignment = { id: string; active: boolean; branch_id: string; branches: { id: string; name: string } | null; roles: RoleRelation | null };
@@ -12,11 +14,14 @@ type RoleRow = { id: string; name: string; role_permissions: { permission_code: 
 type PermissionRow = { code: string; name: string };
 type GrantRow = { employee_id: string; branch_id: string; permission_code: string };
 
-export default async function AccessManagementPage() {
+export default async function AccessManagementPage({ searchParams }: { searchParams: Promise<{ q?: string; page?: string }> }) {
   const actor = await requireInternalPermission("roles.manage");
+  const list = parseCoreListQuery(await searchParams);
   const supabase = await createServerSupabase();
+  let employeeQuery = supabase.from("employees").select("id, code, display_name, active, employee_branch_access(id, active, branch_id, branches(id, name), roles(id, name, role_permissions(permission_code)))", { count: "exact" });
+  if (list.q) employeeQuery = employeeQuery.or(`code.ilike.${ilikePattern(list.q)},display_name.ilike.${ilikePattern(list.q)}`);
   const [employees, branches, roles, permissions, grants] = await Promise.all([
-    supabase.from("employees").select("id, code, display_name, active, employee_branch_access(id, active, branch_id, branches(id, name), roles(id, name, role_permissions(permission_code)))").order("display_name").limit(100),
+    employeeQuery.order("display_name").order("id").range(list.from, list.to),
     supabase.from("branches").select("id, name").eq("id", actor.branchId).eq("active", true),
     supabase.from("roles").select("id, name, role_permissions(permission_code)").eq("active", true).order("name"),
     supabase.from("permissions").select("code, name").order("code"),
@@ -33,7 +38,8 @@ export default async function AccessManagementPage() {
   const permissionOptions = permissionRows.filter((permission) => actor.permissions.has(permission.code));
 
   return <>
-    <header className="page-heading"><div><p className="eyebrow">Quản trị truy cập</p><h1>Nhân viên & quyền</h1><p className="lede">Đang quản lý {actor.branchName}. Chuyển chi nhánh để quản lý phạm vi khác; không tự thay đổi quyền của chính mình.</p></div><span className="scope-chip">Tối đa 100 nhân viên</span></header>
+    <header className="page-heading"><div><p className="eyebrow">Quản trị truy cập</p><h1>Nhân viên & quyền</h1><p className="lede">Đang quản lý {actor.branchName}. Chuyển chi nhánh để quản lý phạm vi khác; không tự thay đổi quyền của chính mình.</p></div><span className="scope-chip">{CORE_LIST_PAGE_SIZE} nhân viên / trang</span></header>
+    <form className="filter-bar"><label>Tìm nhân viên<input name="q" defaultValue={list.q} placeholder="Mã hoặc tên nhân viên" /></label><button className="button button-secondary" type="submit">Tìm kiếm</button></form>
     <section className="card card-pad"><h2>Mời nhân viên</h2><InviteEmployeeForm branches={branches.data} roles={roleOptions} /></section>
     {employeeRows.map((employee) => {
       const hasActiveCurrentAccess = employee.employee_branch_access.some((assignment) => assignment.branch_id === actor.branchId && assignment.active);
@@ -49,5 +55,7 @@ export default async function AccessManagementPage() {
         {employee.active && employee.id !== actor.employeeId && <details><summary>Cấp / đổi vai trò tại {actor.branchName}</summary><ManageAccessForm employeeId={employee.id} branches={branches.data} roles={roleOptions} /></details>}
       </section>;
     })}
+    {!employeeRows.length && <p className="empty-inline">Không có nhân viên phù hợp trong phạm vi bạn được xem.</p>}
+    <ListPager page={list.page} total={employees.count ?? 0} params={{ q: list.q }} />
   </>;
 }

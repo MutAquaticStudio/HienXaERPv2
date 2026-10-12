@@ -10,8 +10,8 @@ import { NoticeForm } from "@/modules/finance/notice-forms";
 export default async function PaymentNoticesPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
  const access = await requireInternalPermission("finance.payment_notice.review"), db = await createServerSupabase(), list = parseCoreListQuery(await searchParams), reconcile = access.permissions.has("finance.reconcile");
  const [notices, sources, matches, reversals] = await Promise.all([
-  db.from("payment_notice_read").select("*").eq("branch_id", access.branchId).order("submitted_at", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1),
-  reconcile ? db.from("payment_notice_reconciliation_source_read").select("id, customer_id, payment_number, statement_reference, matching_available_vnd").eq("branch_id", access.branchId).gt("matching_available_vnd", 0).order("statement_effective_at", { ascending: false }).limit(100) : Promise.resolve({ data: [], error: null }),
+  db.from("payment_notice_read").select("id,branch_id,customer_id,customer_name,evidence_id,declared_amount_vnd::text,paid_on,payment_reference,customer_note,review_state,version,submitted_at,review_note,matched_amount_vnd::text,remaining_match_vnd::text,money_match_state").eq("branch_id", access.branchId).order("submitted_at", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1),
+  reconcile ? db.from("payment_notice_reconciliation_source_read").select("id, customer_id, payment_number, statement_reference, matching_available_vnd::text").eq("branch_id", access.branchId).gt("matching_available_vnd", 0).order("statement_effective_at", { ascending: false }).limit(100) : Promise.resolve({ data: [], error: null }),
   db.from("payment_notice_matches").select("id, notice_id, payment_id, reconciliation_match_id, matched_amount_vnd::text, matched_at, matched_by, match_reason").eq("branch_id", access.branchId).order("matched_at", { ascending: false }).limit(300),
   db.from("payment_notice_match_reversals").select("id, match_id, reason").eq("branch_id", access.branchId).limit(300),
  ]);

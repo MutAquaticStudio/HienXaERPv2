@@ -65,6 +65,7 @@ export default async function DashboardObligationsPage({
       target_site_id: site,
       target_sales_employee_id: sales,
     })
+    .select("obligation_id,party_id,party_name,site_id,site_name,source_type,source_id,due_date,outstanding_amount_vnd::text")
     .gt("outstanding_amount_vnd", 0)
     .order("outstanding_amount_vnd", { ascending: false })
     .order("obligation_id", { ascending: true })

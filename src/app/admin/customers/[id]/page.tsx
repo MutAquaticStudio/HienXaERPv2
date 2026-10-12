@@ -39,9 +39,9 @@ export default async function CustomerDetailPage({ params }: PageProps<"/admin/c
   const profileFields = "id, code, display_name, customer_type, phone, email, address_text, tax_code, tier_code, payment_terms_days, active";
   const { data: profile, error } = await supabase.from("customers").select(profileFields).eq("id", id).eq("branch_id", access.branchId).maybeSingle();
   if (error || !profile) notFound();
-  const { data: privateFields, error: privateFieldsError } = await supabase.rpc("customer_private_fields", { target_customer_ids: [id] });
+  const { data: privateFields, error: privateFieldsError } = await supabase.rpc("customer_private_fields", { target_customer_ids: [id] }).select("customer_id,credit_limit_vnd::text,internal_note");
   if (privateFieldsError) throw new Error("Không tải được thông tin riêng tư hồ sơ khách hàng.");
-  const privateField = privateFields?.[0];
+  const privateField = Array.isArray(privateFields) ? privateFields[0] : privateFields;
   const customer = {
     ...(profile as unknown as CustomerProfile),
     credit_limit_vnd: canReadFinance ? privateField?.credit_limit_vnd ?? null : undefined,
@@ -50,12 +50,12 @@ export default async function CustomerDetailPage({ params }: PageProps<"/admin/c
 
   const [siteResult, priceResult, quoteResult, orderResult, deliveryResult, receivableResult, paymentResult, materialResult, uomResult] = await Promise.all([
     supabase.from("customer_sites").select("id, code, name, address_text, receiver_name, receiver_phone, receiving_window, access_note, active").eq("customer_id", id).order("name").limit(50),
-    canReadPricing ? supabase.from("pricing_rule_read").select("id, scope_type, unit_price_vnd, version, source_type, material_id, price_uom_id").eq("branch_id", access.branchId).eq("customer_id", id).eq("active", true).order("effective_from", { ascending: false }).limit(50) : Promise.resolve({ data: [] }),
-    canReadQuotes ? supabase.from("quotation_read").select("id, quotation_number, revision_number, state, total_vnd, site_name_snapshot, created_at").eq("branch_id", access.branchId).eq("customer_id", id).order("created_at", { ascending: false }).limit(12) : Promise.resolve({ data: [] }),
-    canReadOrders ? supabase.from("sales_order_read").select("id, order_number, commercial_state, fulfillment_state, payment_state, total_vnd, site_name_snapshot, created_at").eq("branch_id", access.branchId).eq("customer_id", id).order("created_at", { ascending: false }).limit(12) : Promise.resolve({ data: [] }),
+    canReadPricing ? supabase.from("pricing_rule_read").select("id, scope_type, unit_price_vnd::text, version, source_type, material_id, price_uom_id").eq("branch_id", access.branchId).eq("customer_id", id).eq("active", true).order("effective_from", { ascending: false }).limit(50) : Promise.resolve({ data: [] }),
+    canReadQuotes ? supabase.from("quotation_read").select("id, quotation_number, revision_number, state, total_vnd::text, site_name_snapshot, created_at").eq("branch_id", access.branchId).eq("customer_id", id).order("created_at", { ascending: false }).limit(12) : Promise.resolve({ data: [] }),
+    canReadOrders ? supabase.from("sales_order_read").select("id, order_number, commercial_state, fulfillment_state, payment_state, total_vnd::text, site_name_snapshot, created_at").eq("branch_id", access.branchId).eq("customer_id", id).order("created_at", { ascending: false }).limit(12) : Promise.resolve({ data: [] }),
     canReadDeliveries ? supabase.from("delivery_read").select("id, delivery_number, execution_state, result_kind, site_name_snapshot, created_at").eq("branch_id", access.branchId).eq("customer_id", id).order("created_at", { ascending: false }).limit(12) : Promise.resolve({ data: [] }),
-    canReadFinance ? supabase.from("receivable_read").select("id, source_label, site_name, due_date, original_amount_vnd, outstanding_amount_vnd, state, recorded_at").eq("branch_id", access.branchId).eq("customer_id", id).order("recorded_at", { ascending: false }).limit(20) : Promise.resolve({ data: [] }),
-    canReadFinance ? supabase.from("payment_read").select("id, payment_number, direction, amount_vnd, effective_at, posting_state, reconciliation_state").eq("branch_id", access.branchId).eq("customer_id", id).order("effective_at", { ascending: false }).limit(20) : Promise.resolve({ data: [] }),
+    canReadFinance ? supabase.from("receivable_read").select("id, source_label, site_name, due_date, original_amount_vnd::text, outstanding_amount_vnd::text, state, recorded_at").eq("branch_id", access.branchId).eq("customer_id", id).order("recorded_at", { ascending: false }).limit(20) : Promise.resolve({ data: [] }),
+    canReadFinance ? supabase.from("payment_read").select("id, payment_number, direction, amount_vnd::text, effective_at, posting_state, reconciliation_state").eq("branch_id", access.branchId).eq("customer_id", id).order("effective_at", { ascending: false }).limit(20) : Promise.resolve({ data: [] }),
     canReadPricing ? supabase.from("materials").select("id, name").eq("active", true).order("name").limit(500) : Promise.resolve({ data: [] }),
     canReadPricing ? supabase.from("units_of_measure").select("id, symbol").eq("active", true).order("symbol").limit(100) : Promise.resolve({ data: [] }),
   ]);

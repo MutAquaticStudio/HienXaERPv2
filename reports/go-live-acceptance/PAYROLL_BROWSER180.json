@@ -1,0 +1,115 @@
+{
+  "scope": "T37_BONUS_RULE_BASIS_EARNING_APPROVAL_FINANCE_PAYMENT_WORKER_READ",
+  "checkedAt": "2026-10-12T07:47:36.848Z",
+  "baselineCommit": "73c3d17",
+  "schema": 179,
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [
+    {
+      "name": "OWNER_UI_CREATE_RULE",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T07:47:40.838Z",
+      "schema": {
+        "count": 180,
+        "latest": "20261012074034"
+      },
+      "facts": {
+        "rule": "0d57938c-2ea1-4b47-9b6d-b380da0a5d02"
+      }
+    },
+    {
+      "name": "OWNER_UI_RECORD_EXACT_BONUS_BASIS",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T07:47:41.564Z",
+      "schema": {
+        "count": 180,
+        "latest": "20261012074034"
+      },
+      "facts": {
+        "basis": "b66eeca0-0cbd-41a4-852d-aca3d26e9630"
+      }
+    },
+    {
+      "name": "OWNER_UI_CALCULATE_DRAFT_DOES_NOT_CREATE_PAYABLE",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T07:47:42.324Z",
+      "schema": {
+        "count": 180,
+        "latest": "20261012074034"
+      },
+      "facts": {
+        "qty": "1.234567",
+        "amount": "123457",
+        "approval_state": "DRAFT"
+      }
+    },
+    {
+      "name": "OWNER_APPROVE_FINANCE_PARTIAL_PAY_INDEPENDENT_AP_AND_CASH",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T07:47:43.758Z",
+      "schema": {
+        "count": 180,
+        "latest": "20261012074034"
+      },
+      "facts": {
+        "remaining": "100000",
+        "paid": "23457",
+        "audits": 1
+      }
+    },
+    {
+      "name": "OWNER_APPROVE_FINANCE_PARTIAL_PAY_INDEPENDENT_AP_AND_CASH",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T07:49:24.362Z",
+      "schema": {
+        "count": 180,
+        "latest": "20261012074034"
+      },
+      "facts": {
+        "remaining": "100000",
+        "paid": "23457",
+        "audits": 1
+      }
+    },
+    {
+      "name": "OWNER_APPROVE_FINANCE_PARTIAL_PAY_INDEPENDENT_AP_AND_CASH",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T07:51:07.065Z",
+      "schema": {
+        "count": 180,
+        "latest": "20261012074034"
+      },
+      "facts": {
+        "remaining": "100000",
+        "paid": "23457",
+        "audits": 1
+      }
+    },
+    {
+      "name": "WORKER_SEES_OWN_EARNING_CANNOT_READ_FINANCE_API_OR_APPROVE",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T07:51:07.700Z",
+      "schema": {
+        "count": 180,
+        "latest": "20261012074034"
+      },
+      "facts": {
+        "api": 403
+      }
+    }
+  ],
+  "documents": {
+    "code": "GB7D04911B73",
+    "rule": "0d57938c-2ea1-4b47-9b6d-b380da0a5d02",
+    "basis": "b66eeca0-0cbd-41a4-852d-aca3d26e9630",
+    "earning": "c41a6d1e-9cc3-4f02-8975-8e736676b98d",
+    "obligation": "facc70f0-b900-46a9-b619-ab6b0d800697",
+    "paymentIntent": "5c1d825a-b29d-4c6e-8d0e-a85dd3812a5d",
+    "payment": "a0b944dd-8a49-4e3b-84d0-a94f399efc69"
+  },
+  "pageErrors": [],
+  "status": "PASS",
+  "completedAt": "2026-10-12T07:51:07.921Z"
+}

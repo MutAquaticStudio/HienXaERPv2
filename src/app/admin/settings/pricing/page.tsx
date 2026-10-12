@@ -16,7 +16,7 @@ export default async function PricingSettingsPage({ searchParams }: { searchPara
   const access = await requireInternalPermission("pricing.read");
   const canManage = access.permissions.has("pricing.manage");
   const supabase = await createServerSupabase();
-  let request = supabase.from("pricing_rule_read").select("id,scope_type,customer_id,material_id,material_group_id,customer_tier_code,price_uom_id,unit_price_vnd,version,source_type,effective_from,effective_to,active").eq("branch_id", access.branchId).order("effective_from", { ascending: false }).order("id").limit(100);
+  let request = supabase.from("pricing_rule_read").select("id,scope_type,customer_id,material_id,material_group_id,customer_tier_code,price_uom_id,unit_price_vnd::text,version,source_type,effective_from,effective_to,active").eq("branch_id", access.branchId).order("effective_from", { ascending: false }).order("id").limit(100);
   if (query.state === "ACTIVE") request = request.eq("active", true).lte("effective_from", instant).or("effective_to.is.null,effective_to.gt." + instant);
   if (query.state === "FUTURE") request = request.eq("active", true).gt("effective_from", instant);
   if (query.state === "EXPIRED") request = request.eq("active", true).lte("effective_to", instant);

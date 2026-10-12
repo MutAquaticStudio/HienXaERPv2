@@ -35,7 +35,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       target_customer_id: id,
       target_site_id: null,
       target_sales_employee_id: null,
-    }).gt("outstanding_amount_vnd", 0).order("due_date").order("obligation_id").range(offset, offset + pageSize - 1);
+    }).select("obligation_id,party_name,site_name,source_type,source_id,due_date,outstanding_amount_vnd::text").gt("outstanding_amount_vnd", 0).order("due_date").order("obligation_id").range(offset, offset + pageSize - 1);
     if (error) return new Response("Không thể tạo bảng đối chiếu.", { status: 403 });
     const page = (data ?? []) as Obligation[];
     obligations.push(...page);

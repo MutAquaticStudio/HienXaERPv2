@@ -151,6 +151,7 @@ export async function applyRoutePlanAction(_previous: RouteActionState, formData
   });
   if (error) {
     const stale = error.message.includes("stale") || error.message.includes("version_conflict");
+    if (error.message.includes("schedule_collision")) return initialError("Khung giờ phân giao đang chồng lấn. Mở từng phiếu giao để chốt giờ bắt đầu và kết thúc, rồi tạo lại đề xuất lộ trình theo dữ liệu mới.");
     return initialError(stale ? "Dữ liệu giao hàng đã thay đổi. Tạo lại lộ trình trước khi áp dụng." : error.message);
   }
   revalidatePath("/admin/routes");

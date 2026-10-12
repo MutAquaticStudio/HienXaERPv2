@@ -14,8 +14,8 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) return new Response("Cần đăng nhập.", { status: 401 });
   const [paymentResult, allocationResult] = await Promise.all([
-    supabase.from("payment_read").select("id, payment_number, direction, counterparty_name, account_code, amount_vnd, allocated_amount_vnd, advance_amount_vnd, unallocated_amount_vnd, effective_at, posting_state, reconciliation_state, reversal_of_payment_id").eq("id", id).maybeSingle(),
-    supabase.from("payment_allocations").select("id, receivable_obligation_id, payable_obligation_id, amount_delta_vnd, allocated_at").eq("payment_id", id).order("allocated_at"),
+    supabase.from("payment_read").select("id, payment_number, direction, counterparty_name, account_code, amount_vnd::text, allocated_amount_vnd::text, advance_amount_vnd::text, unallocated_amount_vnd::text, effective_at, posting_state, reconciliation_state, reversal_of_payment_id").eq("id", id).maybeSingle(),
+    supabase.from("payment_allocations").select("id, receivable_obligation_id, payable_obligation_id, amount_delta_vnd::text, allocated_at").eq("payment_id", id).order("allocated_at"),
   ]);
   if (!paymentResult.data || allocationResult.error) return new Response("Không tìm thấy giao dịch tiền.", { status: 404 });
   const payment = paymentResult.data as Payment;

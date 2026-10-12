@@ -14,13 +14,13 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
   const { id } = await params;
   const access = await requireInternalPermission("finance.ar.read");
   const supabase = await createServerSupabase();
-  const { data: invoice, error } = await supabase.from("invoice_intent_read").select("*").eq("id", id).eq("branch_id", access.branchId).maybeSingle();
+  const { data: invoice, error } = await supabase.from("invoice_intent_read").select("id,branch_id,source_obligation_id,source_type,source_id,source_amount_vnd::text,customer_name_snapshot,billing_verified_at,invoice_due_at,status,provider_state,legal_invoice_number,issued_at,created_at,version,policy_state,create_operation_id").eq("id", id).eq("branch_id", access.branchId).maybeSingle();
   if (error) throw error;
   if (!invoice) notFound();
   const [{ data: lines, error: linesError }, { data: adjustments, error: adjustmentError }, { data: sourceAdjustments, error: sourceError }] = await Promise.all([
-    supabase.from("invoice_draft_line_read").select("id,line_number,source_line_id,description_snapshot,quantity_snapshot,source_amount_vnd").eq("invoice_intent_id", id).order("line_number").limit(100),
-    supabase.from("invoice_adjustment_drafts").select("id,receivable_adjustment_id,amount_delta_vnd,reason_snapshot,status,created_at").eq("invoice_intent_id", id).order("created_at", { ascending: false }).limit(50),
-    supabase.from("receivable_adjustments").select("id,amount_delta_vnd,reason,recorded_at").eq("obligation_id", invoice.source_obligation_id).order("recorded_at", { ascending: false }).limit(50),
+    supabase.from("invoice_draft_line_read").select("id,line_number,source_line_id,description_snapshot,quantity_snapshot,source_amount_vnd::text").eq("invoice_intent_id", id).order("line_number").limit(100),
+    supabase.from("invoice_adjustment_drafts").select("id,receivable_adjustment_id,amount_delta_vnd::text,reason_snapshot,status,created_at").eq("invoice_intent_id", id).order("created_at", { ascending: false }).limit(50),
+    supabase.from("receivable_adjustments").select("id,amount_delta_vnd::text,reason,recorded_at").eq("obligation_id", invoice.source_obligation_id).order("recorded_at", { ascending: false }).limit(50),
   ]);
   if (linesError || adjustmentError || sourceError) throw linesError ?? adjustmentError ?? sourceError;
   const existing = new Set((adjustments ?? []).map((row) => row.receivable_adjustment_id));

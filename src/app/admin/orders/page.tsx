@@ -29,7 +29,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   let rows: OrderRow[] = [];
   if (visibleIds.length) {
     const { data: orderData, error: orderError } = await supabase.from("sales_order_read")
-      .select("id, order_number, customer_name_snapshot, site_name_snapshot, commercial_state, fulfillment_state, payment_state, total_vnd, requested_delivery_at, created_at")
+      .select("id, order_number, customer_name_snapshot, site_name_snapshot, commercial_state, fulfillment_state, payment_state, total_vnd::text, requested_delivery_at, created_at")
       .eq("branch_id", access.branchId).in("id", visibleIds);
     if (orderError) throw new Error("Không thể tải chi tiết đơn bán.");
     const byId = new Map((orderData as OrderRow[]).map((row) => [row.id, row]));
