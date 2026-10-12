@@ -1,0 +1,53 @@
+{
+  "status": "PREPARED_NOT_APPLIED",
+  "legacyHistoricalVersionsNotFaked": true,
+  "supersededNotReplayed": [
+    "20260930023428",
+    "20260930081621"
+  ],
+  "sources": [
+    {
+      "version": "20260923162705",
+      "path": "supabase/migrations/20260923162705_revoke_uat_worker_compensation_read.sql",
+      "sourceSha256": "ca8bf947a0d3493dadf225042bf655341fbc3f7f13e6cd8a4547483ca2ab342d",
+      "executedSha256": "ca8bf947a0d3493dadf225042bf655341fbc3f7f13e6cd8a4547483ca2ab342d",
+      "preservePT409": false
+    },
+    {
+      "version": "20260930024101",
+      "path": "supabase/migrations/20260930024101_cancel_planned_delivery_release_reservations.sql",
+      "sourceSha256": "d9d8fe0a7fbe728952bc9bc4050e7d4bb08801454c885b1228fdc81523da5482",
+      "executedSha256": "63ae854aa7be404ca3ae38545e653a92b9328537591944badf93bb21e1661170",
+      "preservePT409": true
+    },
+    {
+      "version": "20260930025839",
+      "path": "supabase/migrations/20260930025839_audit_notice_quote_transitions.sql",
+      "sourceSha256": "e38d8b1e7f111e0faeb4ae7a28faf2f1fbfb1a7b02df0f7b2cef94acf6e25fc9",
+      "executedSha256": "0dc344bc08f787ea9476551f2f65a532ea933f90093dd5712fbac0d4f0b0004f",
+      "preservePT409": true
+    },
+    {
+      "version": "20260930050137",
+      "path": "supabase/migrations/20260930050137_cancel_scheduled_service_job.sql",
+      "sourceSha256": "72645a2905ae1a3f2ec5f52441066345f6eef627c384d1be9ac995758eedd7b0",
+      "executedSha256": "6095d8d395c6a7f623823b5ec80650b475213b0425f8449837b4ea5ba6bfefe1",
+      "preservePT409": true
+    },
+    {
+      "version": "20261002071813",
+      "path": "supabase/migrations/20261002071813_index_quotation_and_customer_credit_lookups.sql",
+      "sourceSha256": "cca7f71910a12e7e00e7a6e6d3cbe5bd67bcbf898b051d4ee75094ee2ed845a1",
+      "executedSha256": "cca7f71910a12e7e00e7a6e6d3cbe5bd67bcbf898b051d4ee75094ee2ed845a1",
+      "preservePT409": false
+    },
+    {
+      "version": "20261008224033",
+      "path": "supabase/migrations/20261008224033_operational_opening_sources.sql",
+      "sourceSha256": "5ea93da878981186fe6273ef887adcc052f04c35530cfa924ec9d144cebd9994",
+      "executedSha256": "da05d5b5dd054241fe328f587850bdac7b786d037a8892e1252ac4707481ce2f",
+      "preservePT409": false
+    }
+  ],
+  "sqlSha256": "b558a72d9fe48e4fc274aaf116df7e3113462c139abcc3c66fdf7f4429a88fbe"
+}

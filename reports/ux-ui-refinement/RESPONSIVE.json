@@ -1,0 +1,46 @@
+{
+  "checkedAt": "2026-10-12T17:42:41.090Z",
+  "codeBase": "1bb38abe0d7850ff6e913e77c017db62b01476cf",
+  "sourceDiff": "",
+  "productionAccess": "NONE",
+  "writes": 0,
+  "rows": [
+    {
+      "width": 320,
+      "documentOverflow": false,
+      "clipped": []
+    },
+    {
+      "width": 760,
+      "documentOverflow": false,
+      "clipped": []
+    },
+    {
+      "width": 1024,
+      "documentOverflow": false,
+      "clipped": []
+    },
+    {
+      "width": 1100,
+      "documentOverflow": false,
+      "clipped": []
+    },
+    {
+      "width": 1180,
+      "documentOverflow": false,
+      "clipped": []
+    },
+    {
+      "width": 1280,
+      "documentOverflow": false,
+      "clipped": []
+    },
+    {
+      "width": 1440,
+      "documentOverflow": false,
+      "clipped": []
+    }
+  ],
+  "valuesUnchangedAcrossViewports": true,
+  "status": "PASS"
+}

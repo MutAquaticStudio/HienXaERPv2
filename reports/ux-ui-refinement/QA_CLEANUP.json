@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "checkedAt": "2026-10-12T17:16:20.365Z",
+  "testDatabaseDropped": "hx_remediation_ux_refinement186",
+  "sourcePublicTables": 122,
+  "sourceAllPublicRowsUnchangedSincePretest": true,
+  "sourceDatabase": "hx_remediation_go_live_browser175",
+  "previewFixture": "Prepared source15/14 preserved in owned QA for UI review; no verification or cash effects from this test in the source DB",
+  "productionAccess": "NONE"
+}

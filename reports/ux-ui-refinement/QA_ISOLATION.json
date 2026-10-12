@@ -1,0 +1,15 @@
+{
+  "status": "PASS_RESTORED_IN_DISPOSABLE_QA",
+  "checkedAt": "2026-10-12T17:03:38.513Z",
+  "database": "hx_remediation_ux_refinement186",
+  "sourceDatabase": "hx_remediation_go_live_browser175",
+  "schema": {
+    "count": 186,
+    "latest": "20261012110100"
+  },
+  "archiveSha256": "00de65fe52d105c15479d49bbdb5504e6ef90859dedc7fed8b438944e9100eef",
+  "publicTables": 122,
+  "allPublicRowsMatch": true,
+  "productionAccess": "NONE",
+  "cleanup": "Stop owned test services and drop only hx_remediation_ux_refinement186 after evidence; original QA remains unchanged."
+}

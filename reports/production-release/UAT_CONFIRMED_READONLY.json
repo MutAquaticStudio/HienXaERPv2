@@ -1,0 +1,120 @@
+{
+  "status": "READ_ONLY_NOT_DELETED",
+  "project": "nbwynrwkdbtfsitafsxa",
+  "userDecision": "User explicitly confirmed SO-2026-000013 and PO-2026-000010–000012 are UAT and requested deletion.",
+  "checked_at": "2026-10-12 19:07:37.061006+00",
+  "counts": {
+    "payments": 0,
+    "storage_objects": 0,
+    "evidence_objects": 0,
+    "inventory_movements": 0,
+    "payable_obligations": 0,
+    "receivable_obligations": 0,
+    "portal_evidence_objects": 0,
+    "work_result_portal_evidence": 0
+  },
+  "sales_orders": [
+    {
+      "id": "de541c3c-8323-471f-9bd9-a3115ba0161c",
+      "state": "DRAFT",
+      "number": "SO-2026-000013",
+      "row_hash": "799be99b1f1182384e8e456e151febbf"
+    }
+  ],
+  "purchase_orders": [
+    {
+      "id": "d6375226-43a1-4ba6-9319-5c97c389eb5d",
+      "state": "CANCELLED",
+      "number": "PO-2026-000010",
+      "row_hash": "8acf0e402bed1056f44ec55188be5de5"
+    },
+    {
+      "id": "675eca7b-d53a-4f66-8b2f-15b06418eb53",
+      "state": "DRAFT",
+      "number": "PO-2026-000011",
+      "row_hash": "18fe2a0acd450a60b58ef81ff48cb739"
+    },
+    {
+      "id": "336c8008-e9a4-444d-bf98-64e3ec0f42cb",
+      "state": "DRAFT",
+      "number": "PO-2026-000012",
+      "row_hash": "108ad05f4f63eba7fcab0a8face2fede"
+    }
+  ],
+  "uat_audit_events": [
+    {
+      "id": 101,
+      "row_hash": "0392c224ea0554cc4fc222b4d40a2363",
+      "branch_id": "e6c81cc5-58ce-4620-a357-32a0a49790ad",
+      "entity_id": "87f8c9f7-f961-4cfa-b687-8ee2955e67d1"
+    },
+    {
+      "id": 102,
+      "row_hash": "f3cd6267aa1f496b46db30152559513e",
+      "branch_id": "e6c81cc5-58ce-4620-a357-32a0a49790ad",
+      "entity_id": "b348d983-92b1-4d9b-a230-53779709d55c"
+    },
+    {
+      "id": 103,
+      "row_hash": "50ae8cd70593a567564786de9b993571",
+      "branch_id": "e6c81cc5-58ce-4620-a357-32a0a49790ad",
+      "entity_id": "92a30559-ff72-409b-bdb0-9b6fda0460a2"
+    },
+    {
+      "id": 104,
+      "row_hash": "8afa1bef3e688ca89553468b0bda045c",
+      "branch_id": "e6c81cc5-58ce-4620-a357-32a0a49790ad",
+      "entity_id": "87f8c9f7-f961-4cfa-b687-8ee2955e67d1"
+    },
+    {
+      "id": 124,
+      "row_hash": "69b7087d29122be23547307201f83a16",
+      "branch_id": "1f048f09-d968-4266-8d4d-863ceecdce34",
+      "entity_id": "d6375226-43a1-4ba6-9319-5c97c389eb5d"
+    },
+    {
+      "id": 127,
+      "row_hash": "5e870e7492ccbe4a79677e5c8f0bec02",
+      "branch_id": "1f048f09-d968-4266-8d4d-863ceecdce34",
+      "entity_id": "336c8008-e9a4-444d-bf98-64e3ec0f42cb"
+    }
+  ],
+  "uat_command_receipts": [
+    {
+      "row_hash": "1055046fad56d87ad851fc2aeddd8783",
+      "command_name": "create_direct_purchase_from_sales_order",
+      "operation_id": "358f713f-62ef-4fd8-8a40-5c8bb1820e96",
+      "result_entity_id": "336c8008-e9a4-444d-bf98-64e3ec0f42cb"
+    },
+    {
+      "row_hash": "8a48aa093a1f3842ee8d59ebcccda675",
+      "command_name": "create_purchase_order_draft",
+      "operation_id": "45b5e52f-6d03-42db-908b-eec9aec9087e",
+      "result_entity_id": "675eca7b-d53a-4f66-8b2f-15b06418eb53"
+    },
+    {
+      "row_hash": "d7dab10336f73d4695efffd8bac55c39",
+      "command_name": "cancel_purchase_order",
+      "operation_id": "6353f28f-4a72-4126-baab-4163b66ee082",
+      "result_entity_id": "d6375226-43a1-4ba6-9319-5c97c389eb5d"
+    },
+    {
+      "row_hash": "40e9276ddc13cd8e45cb4ca9547604ba",
+      "command_name": "create_sales_order_draft",
+      "operation_id": "6d5b4e92-c485-406b-abbd-b4c016e4bf40",
+      "result_entity_id": "de541c3c-8323-471f-9bd9-a3115ba0161c"
+    },
+    {
+      "row_hash": "7d19b992a86cf2198836f1a4d35df377",
+      "command_name": "create_purchase_order_draft",
+      "operation_id": "b7f0fb2f-0bbb-4c00-a815-34870d8489bd",
+      "result_entity_id": "d6375226-43a1-4ba6-9319-5c97c389eb5d"
+    },
+    {
+      "row_hash": "07994962f7c4e35cb3c462a07b9c2452",
+      "command_name": "update_purchase_order_draft",
+      "operation_id": "e1c177c2-a86a-4b16-b7ee-4b7126895481",
+      "result_entity_id": "336c8008-e9a4-444d-bf98-64e3ec0f42cb"
+    }
+  ]
+}

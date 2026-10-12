@@ -1,0 +1,123 @@
+{
+  "scope": "UX_UI_ONLY_REAL_AUTH_BROWSER_AND_DISPOSABLE_NATIVE_QA",
+  "checkedAt": "2026-10-12T17:07:58.836Z",
+  "sourceCommit": "e2a639324815f1c147c5b0744ec08d5d3e0dd885",
+  "sourceSha256": "77ec81dba30138b8081a48f04571179ccf98443ae144f92228dd9e89cd33cf9a",
+  "database": "hx_remediation_ux_refinement186",
+  "productionAccess": "NONE",
+  "excludedAdvanceRacesRun": false,
+  "checks": [
+    {
+      "name": "CASHBOOK_LABELS_KEYBOARD_AND_HORIZONTAL_TABLE",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T17:08:02.337Z",
+      "facts": {
+        "fields": [
+          "Số tiền đối soát (VND)",
+          "Thời điểm đối soát",
+          "Mã dòng ngân hàng",
+          "Lý do đảo"
+        ],
+        "layout": {
+          "fieldInsideRegion": true,
+          "documentOverflow": false,
+          "inputFont": "16px"
+        },
+        "writes": 0
+      }
+    },
+    {
+      "name": "MOBILE_MENU_DIALOG_AND_DRAFT_PRESERVED",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T17:08:03.802Z",
+      "facts": {
+        "writes": 0,
+        "draftQuantity": "15",
+        "dialogFitsViewport": true
+      }
+    },
+    {
+      "name": "DISPATCH_RESULT_LABELS_AND_COST_SCOPE",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T17:08:05.500Z",
+      "facts": {
+        "labels": 3,
+        "noExtraCostAccess": true,
+        "writes": 0
+      }
+    },
+    {
+      "name": "WORKER_SERVER_LIMIT_PRECISION_OFFLINE_AND_RELOAD",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T17:08:07.814Z",
+      "facts": {
+        "plan": "15",
+        "loaded": "14",
+        "reportable": "14",
+        "inputMax": "14.000000",
+        "overLimitAndPrecision": "HTML validity; server contracts unchanged",
+        "offlineWrites": 0,
+        "restoredDraft": true
+      }
+    },
+    {
+      "name": "WORKER_RESPONSE_LOSS_RETRY_EXACTLY_ONCE",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T17:08:09.489Z",
+      "facts": {
+        "firstServerStatus": 200,
+        "operationId": "de007ca9-7104-4098-87c9-45755807d780",
+        "disabledDoubleClick": true,
+        "requests": 2,
+        "persistedResults": {
+          "delivery_results": 1,
+          "work_results": 1,
+          "verifications": 0
+        },
+        "sameIntent": true
+      }
+    },
+    {
+      "name": "AUTHORIZED_VERIFY13_KEEPS_WORKER14_AND_CARGO1",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T17:08:11.080Z",
+      "facts": {
+        "obligation": "7336ee48-14bc-4632-99fd-049f9aca8265"
+      }
+    },
+    {
+      "name": "FINANCE_RECEIPT1M_ALLOCATES_NEW_SOURCE_ONCE",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T17:10:23.229Z",
+      "facts": {
+        "receipt": "1000000",
+        "debt": "1990000",
+        "advance": "0"
+      }
+    }
+  ],
+  "screenshots": [
+    "reports/ux-ui-refinement/regression/cashbook-labels-mobile-keyboard.png",
+    "reports/ux-ui-refinement/regression/sales-dialog-mobile.png",
+    "reports/ux-ui-refinement/regression/worker-offline-draft-kept.png",
+    "reports/ux-ui-refinement/regression/worker-saved-response-lost-keeps-values.png",
+    "reports/ux-ui-refinement/regression/dispatch-accepted13-keeps-report14.png",
+    "reports/ux-ui-refinement/regression/finance-receipt1m-debt1990000.png"
+  ],
+  "pageErrors": [],
+  "schema": {
+    "count": 186,
+    "latest": "20261012110100"
+  },
+  "workIntent": "de007ca9-7104-4098-87c9-45755807d780",
+  "obligation": "7336ee48-14bc-4632-99fd-049f9aca8265",
+  "status": "FAIL",
+  "error": "locator.fill: Timeout 30000ms exceeded.",
+  "receiptSelection": {
+    "obligation": "7336ee48-14bc-4632-99fd-049f9aca8265",
+    "page": 1,
+    "index": 2,
+    "sourceLabel": "Giao hàng đã xác minh · Công trình kiểm thử"
+  },
+  "payment": "6674a682-365f-4c98-a937-7959d6a45b1e"
+}

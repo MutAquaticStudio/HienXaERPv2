@@ -1,0 +1,9 @@
+{"name":"FINANCE_RECEIPT1M_ALLOCATES_NEW_SOURCE_ONCE","status":"PASS"}
+file:///Users/nox/.codex/worktrees/ux-ui-refinement/HienXaERP/scripts/qa/ux-refinement-browser.mjs:168
+} catch (e) { r.status = "FAIL"; r.error = e.message.split("\n")[0]; await save(); throw new Error(r.error); }
+                                                                                         ^
+
+Error: locator.fill: Timeout 30000ms exceeded.
+    at file:///Users/nox/.codex/worktrees/ux-ui-refinement/HienXaERP/scripts/qa/ux-refinement-browser.mjs:168:90
+
+Node.js v24.18.0

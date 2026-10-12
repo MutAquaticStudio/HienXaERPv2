@@ -1,0 +1,4178 @@
+{
+  "phase": "after",
+  "origin": "http://127.0.0.1:3116",
+  "sourceCommit": "1bb38abe0d7850ff6e913e77c017db62b01476cf",
+  "workingTree": "",
+  "checkedAt": "2026-10-12T17:42:43.952Z",
+  "productionAccess": "NONE",
+  "schemaChanges": 0,
+  "browserPlugin": "ABSENT; installed Playwright1.63.0 fallback",
+  "screens": [
+    {
+      "name": "manager",
+      "role": "owner",
+      "surface": "admin",
+      "path": "/admin",
+      "size": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "file": "reports/ux-ui-refinement/after/manager-desktop.png",
+      "heading": "Tổng quan",
+      "documentWidth": 1280,
+      "viewportWidth": 1280,
+      "bodyFont": "\"Noto Sans\", sans-serif",
+      "primary": "#0866cc",
+      "visibleControls": [
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin",
+          "text": "Tổng quan"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Bán hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Mua hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Kho hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Giao hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tài chính"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Nhân công & dịch vụ"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Quản trị"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/reports",
+          "text": "Báo cáo"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/messages",
+          "text": "Tin nhắn"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đăng xuất"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/cashbook",
+          "text": "Mở sổ tiền"
+        },
+        {
+          "tag": "INPUT",
+          "name": "from",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "to",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "customerSearch",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tìm khách"
+        },
+        {
+          "tag": "SELECT",
+          "name": "customer",
+          "href": null,
+          "text": "Tất cảKhách QA chi nhánh mớiKhách kiểm thử khắc phụcKhách kiểm thử khắc phụcKhách kiểm thử khắc phụcKhách kiểm thử khắc "
+        },
+        {
+          "tag": "SELECT",
+          "name": "site",
+          "href": null,
+          "text": "Tất cảCông trình QA phiếu tiềnCông trình kiểm thửCông trình kiểm thửCông trình kiểm thửCông trình kiểm thửCông trình kiể"
+        },
+        {
+          "tag": "SELECT",
+          "name": "sales",
+          "href": null,
+          "text": "Tất cảNgười kiểm thử chi nhánh khácNhân viên hoa hồng giả QANhân viên hoa hồng giả QANhân viên hoa hồng giả QANhân viên "
+        },
+        {
+          "tag": "SELECT",
+          "name": "activity",
+          "href": null,
+          "text": "Tất cảGiao hàngBán hàngDịch vụHành chính"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Làm mới"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/dashboard/obligations?side=AR&to=2026-11-01",
+          "text": "Tất cả"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/receivables/8c3805f2-edb4-48ed-b18d-151f803b0e3b",
+          "text": "Khách kiểm thử khắc phụcCông trình kiểm thử · hạn 12/10/20261.990.000 ₫"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/receivables/602f19f0-603c-4bb1-b352-0d8f36cbc750",
+          "text": "Khách kiểm thử khắc phụcCông trình kiểm thử · hạn 12/10/2026740.000 ₫"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/receivables/a84adcce-f300-4a44-8e63-2a522e838034",
+          "text": "Khách kiểm thử khắc phụcCông trình kiểm thử · hạn 12/10/2026111.111 ₫"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/dashboard/obligations?side=AP&to=2026-11-01",
+          "text": "Tất cả"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/payables/a2a26be6-e441-455b-a996-b5a0be83a137",
+          "text": "NCC QA chi nhánh mớiHạn 12/10/20269.007.199.254.740.993 ₫"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/payables/6472b894-7011-4121-9f3e-1117e353a059",
+          "text": "NCC QA chi nhánh mớiHạn 12/10/20262.250.000 ₫"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/payables/1bdd2f7a-55a1-4001-a8ea-af372884188a",
+          "text": "NCC QA chi nhánh mớiHạn 12/10/20261.500.000 ₫"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/payables/a25232ce-b45b-48b5-b204-152f8d59721e",
+          "text": "NCC QA chi nhánh mớiHạn 12/10/2026750.000 ₫"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/payables/524bc334-7b53-4759-8832-497f730a956c",
+          "text": "NCC QA chi nhánh mớiHạn 12/10/2026750.000 ₫"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/payables/a61acf40-30b7-455e-ae1f-c204f9f4740c",
+          "text": "NCC QA chi nhánh mớiHạn 12/10/2026450.000 ₫"
+        }
+      ],
+      "clippedMetrics": [],
+      "unlabelledInputs": [],
+      "tableColumns": []
+    },
+    {
+      "name": "sales-order",
+      "role": "sales",
+      "surface": "admin",
+      "path": "/admin/orders/aab98715-1df4-49b9-8cd0-ac907cc54bb4",
+      "size": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "file": "reports/ux-ui-refinement/after/sales-order-desktop.png",
+      "heading": "SO-2026-000419",
+      "documentWidth": 1280,
+      "viewportWidth": 1280,
+      "bodyFont": "\"Noto Sans\", sans-serif",
+      "primary": "#0866cc",
+      "visibleControls": [
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin",
+          "text": "Tổng quan"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Bán hàng"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/orders",
+          "text": "Đơn bán"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/quotations",
+          "text": "Báo giá"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/customers",
+          "text": "Khách hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Kho hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Giao hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tài chính"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/reports",
+          "text": "Báo cáo"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/messages",
+          "text": "Tin nhắn"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đăng xuất"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/orders",
+          "text": "Về danh sách"
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "reason",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đóng phần còn lại"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/deliveries/47e8ce35-d1d7-4e79-9f96-bb570d60e770",
+          "text": "DL-2026-000607"
+        }
+      ],
+      "clippedMetrics": [],
+      "unlabelledInputs": [],
+      "tableColumns": [
+        "Vật tư",
+        "Số lượng",
+        "Đơn giá",
+        "Thành tiền",
+        "Nguồn giá",
+        "Phân nguồn"
+      ]
+    },
+    {
+      "name": "sales-form",
+      "role": "sales",
+      "surface": "admin",
+      "path": "/admin/orders/new",
+      "size": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "file": "reports/ux-ui-refinement/after/sales-form-desktop.png",
+      "heading": "Tạo đơn bán",
+      "documentWidth": 1280,
+      "viewportWidth": 1280,
+      "bodyFont": "\"Noto Sans\", sans-serif",
+      "primary": "#0866cc",
+      "visibleControls": [
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin",
+          "text": "Tổng quan"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Bán hàng"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/orders",
+          "text": "Đơn bán"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/quotations",
+          "text": "Báo giá"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/customers",
+          "text": "Khách hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Kho hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Giao hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tài chính"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/reports",
+          "text": "Báo cáo"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/messages",
+          "text": "Tin nhắn"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đăng xuất"
+        },
+        {
+          "tag": "INPUT",
+          "name": null,
+          "href": null,
+          "text": "Tìm khách hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tìm khách"
+        },
+        {
+          "tag": "SELECT",
+          "name": "customerId",
+          "href": null,
+          "text": "Chọn khách hàng...Khách QA chi nhánh mớiKhách kiểm thử khắc phụcKhách kiểm thử khắc phụcKhách kiểm thử khắc phụcKhách ki"
+        },
+        {
+          "tag": "INPUT",
+          "name": null,
+          "href": null,
+          "text": "Tìm công trình"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tìm điểm"
+        },
+        {
+          "tag": "SELECT",
+          "name": "siteId",
+          "href": null,
+          "text": "Chọn công trình..."
+        },
+        {
+          "tag": "INPUT",
+          "name": "effectiveAt",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "terms",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Xóa dòng"
+        },
+        {
+          "tag": "SELECT",
+          "name": "materialId",
+          "href": null,
+          "text": "Cát kiểm thử khắc phụcCát kiểm thử khắc phụcCát kiểm thử khắc phụcCát kiểm thử khắc phụcCát kiểm thử khắc phụcCát kiểm t"
+        },
+        {
+          "tag": "SELECT",
+          "name": "orderedUomId",
+          "href": null,
+          "text": "m³"
+        },
+        {
+          "tag": "INPUT",
+          "name": "quantity",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": null,
+          "href": null,
+          "text": "Chọn kho để xem khả dụngKho QA mới không tồn đầu kỳQA kho đã đối chiếu sau phục hồi"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "+ Thêm dòng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tính giá và xem trước"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Lưu bản nháp"
+        }
+      ],
+      "clippedMetrics": [],
+      "unlabelledInputs": [],
+      "tableColumns": []
+    },
+    {
+      "name": "purchasing-order",
+      "role": "purchasing",
+      "surface": "admin",
+      "path": "/admin/purchase-orders/2a77bee7-0ad1-4330-a6fe-49702e3dadf0",
+      "size": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "file": "reports/ux-ui-refinement/after/purchasing-order-desktop.png",
+      "heading": "PO-2026-000457",
+      "documentWidth": 1280,
+      "viewportWidth": 1280,
+      "bodyFont": "\"Noto Sans\", sans-serif",
+      "primary": "#0866cc",
+      "visibleControls": [
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin",
+          "text": "Tổng quan"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/orders",
+          "text": "Đơn bán"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Mua hàng"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/purchase-orders",
+          "text": "Đơn mua"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/suppliers",
+          "text": "Nhà cung cấp"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Kho hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Giao hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tài chính"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/reports",
+          "text": "Báo cáo"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/messages",
+          "text": "Tin nhắn"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đăng xuất"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/purchase-orders",
+          "text": "Về danh sách"
+        }
+      ],
+      "clippedMetrics": [],
+      "unlabelledInputs": [],
+      "tableColumns": [
+        "Vật tư",
+        "Số lượng",
+        "Giá mua",
+        "Thành tiền",
+        "Phân nguồn"
+      ]
+    },
+    {
+      "name": "purchasing-form",
+      "role": "purchasing",
+      "surface": "admin",
+      "path": "/admin/purchase-orders/new",
+      "size": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "file": "reports/ux-ui-refinement/after/purchasing-form-desktop.png",
+      "heading": "Tạo đơn mua",
+      "documentWidth": 1280,
+      "viewportWidth": 1280,
+      "bodyFont": "\"Noto Sans\", sans-serif",
+      "primary": "#0866cc",
+      "visibleControls": [
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin",
+          "text": "Tổng quan"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/orders",
+          "text": "Đơn bán"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Mua hàng"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/purchase-orders",
+          "text": "Đơn mua"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/suppliers",
+          "text": "Nhà cung cấp"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Kho hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Giao hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tài chính"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/reports",
+          "text": "Báo cáo"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/messages",
+          "text": "Tin nhắn"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đăng xuất"
+        },
+        {
+          "tag": "INPUT",
+          "name": "code",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "name",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "phone",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Thêm NCC"
+        },
+        {
+          "tag": "SELECT",
+          "name": null,
+          "href": null,
+          "text": "Kho Hiền XaGiao thẳng khách · tạo bản nháp bán liên kết"
+        },
+        {
+          "tag": "SELECT",
+          "name": "supplierId",
+          "href": null,
+          "text": "Chọn nhà cung cấpNCC QA chi nhánh mới"
+        },
+        {
+          "tag": "INPUT",
+          "name": null,
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tìm NCC"
+        },
+        {
+          "tag": "SELECT",
+          "name": "warehouseId",
+          "href": null,
+          "text": "Kho QA mới không tồn đầu kỳQA kho đã đối chiếu sau phục hồi"
+        },
+        {
+          "tag": "INPUT",
+          "name": "expectedAt",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "terms",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Xóa dòng"
+        },
+        {
+          "tag": "SELECT",
+          "name": "materialId",
+          "href": null,
+          "text": "Cát kiểm thử khắc phụcCát kiểm thử khắc phụcCát kiểm thử khắc phụcCát kiểm thử khắc phụcCát kiểm thử khắc phụcCát kiểm t"
+        },
+        {
+          "tag": "SELECT",
+          "name": "orderedUomId",
+          "href": null,
+          "text": "m³"
+        },
+        {
+          "tag": "INPUT",
+          "name": "quantity",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "manualCostVnd",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "manualCostReason",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "+ Thêm dòng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tính giá mua và xem trước"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Lưu nháp đơn mua"
+        }
+      ],
+      "clippedMetrics": [],
+      "unlabelledInputs": [],
+      "tableColumns": []
+    },
+    {
+      "name": "warehouse",
+      "role": "warehouse-dispatch",
+      "surface": "admin",
+      "path": "/admin/inventory?warehouse=59ded449-38e8-4a63-ae1f-b64d6cbd3b6c&material=08528375-c064-435e-9e8a-13617b0c2961",
+      "size": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "file": "reports/ux-ui-refinement/after/warehouse-desktop.png",
+      "heading": "Tồn kho",
+      "documentWidth": 1280,
+      "viewportWidth": 1280,
+      "bodyFont": "\"Noto Sans\", sans-serif",
+      "primary": "#0866cc",
+      "visibleControls": [
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin",
+          "text": "Tổng quan"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Bán hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Mua hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Kho hàng"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/products",
+          "text": "Vật tư"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/inventory",
+          "text": "Tồn kho"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/stock-counts",
+          "text": "Kiểm kho"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Giao hàng"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/workforce",
+          "text": "Nhân sự & công việc"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/messages",
+          "text": "Tin nhắn"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đăng xuất"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/stock-counts",
+          "text": "Kiểm kho"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/inventory/transfers",
+          "text": "Chuyển kho"
+        },
+        {
+          "tag": "SELECT",
+          "name": "warehouse",
+          "href": null,
+          "text": "Tất cả khoKho QA mới không tồn đầu kỳQA kho đã đối chiếu sau phục hồi"
+        },
+        {
+          "tag": "INPUT",
+          "name": "q",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Lọc"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/inventory?warehouse=59ded449-38e8-4a63-ae1f-b64d6cbd3b6c",
+          "text": "Xóa lọc vật tư"
+        },
+        {
+          "tag": "SELECT",
+          "name": "warehouseId",
+          "href": null,
+          "text": "Chọn khoKho QA mới không tồn đầu kỳQA kho đã đối chiếu sau phục hồi"
+        },
+        {
+          "tag": "SELECT",
+          "name": "materialId",
+          "href": null,
+          "text": "Chọn vật tưCát kiểm thử khắc phục"
+        },
+        {
+          "tag": "INPUT",
+          "name": "threshold",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "active",
+          "href": null,
+          "text": "Bật cảnh báoTắt cảnh báo"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Lưu ngưỡng"
+        }
+      ],
+      "clippedMetrics": [],
+      "unlabelledInputs": [],
+      "tableColumns": [
+        "Kho",
+        "Vật tư",
+        "Tồn đã ghi nhận",
+        "Đã giữ",
+        "Khả dụng",
+        "Giá trị / Giá vốn bình quân",
+        "Thời điểm",
+        "Loại",
+        "Vật tư",
+        "Vị trí",
+        "Tăng / giảm",
+        "Nguồn"
+      ]
+    },
+    {
+      "name": "dispatch",
+      "role": "warehouse-dispatch",
+      "surface": "admin",
+      "path": "/admin/deliveries/47e8ce35-d1d7-4e79-9f96-bb570d60e770",
+      "size": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "file": "reports/ux-ui-refinement/after/dispatch-desktop.png",
+      "heading": "DL-2026-000607",
+      "documentWidth": 1280,
+      "viewportWidth": 1280,
+      "bodyFont": "\"Noto Sans\", sans-serif",
+      "primary": "#0866cc",
+      "visibleControls": [
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin",
+          "text": "Tổng quan"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Bán hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Mua hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Kho hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Giao hàng"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/dispatch",
+          "text": "Điều phối"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/deliveries",
+          "text": "Phiếu giao"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/routes",
+          "text": "Lộ trình"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/workforce",
+          "text": "Nhân sự & công việc"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/messages",
+          "text": "Tin nhắn"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đăng xuất"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/api/deliveries/47e8ce35-d1d7-4e79-9f96-bb570d60e770/note/pdf",
+          "text": "Tải phiếu giao"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/deliveries",
+          "text": "Về danh sách"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/orders/aab98715-1df4-49b9-8cd0-ac907cc54bb4",
+          "text": "Mở đơn bán"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đã tới nơi giao"
+        },
+        {
+          "tag": "SELECT",
+          "name": "resultKind",
+          "href": null,
+          "text": "Giao đủGiao thiếuKhông giao được"
+        },
+        {
+          "tag": "INPUT",
+          "name": "actualQuantity",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "receiverName",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "note",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "missingArrivalReason",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Gửi kết quả để xác minh"
+        }
+      ],
+      "clippedMetrics": [],
+      "unlabelledInputs": [],
+      "tableColumns": [
+        "Vật tư",
+        "Nguồn",
+        "Kế hoạch",
+        "Thực lấy",
+        "Báo giao",
+        "Khách nhận",
+        "Tính tiền"
+      ]
+    },
+    {
+      "name": "finance-receivables",
+      "role": "finance-employee",
+      "surface": "admin",
+      "path": "/admin/receivables?customer=8f2de180-ff9b-44fe-929c-685ee8ef6077",
+      "size": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "file": "reports/ux-ui-refinement/after/finance-receivables-desktop.png",
+      "heading": "Phải thu khách hàng",
+      "documentWidth": 1280,
+      "viewportWidth": 1280,
+      "bodyFont": "\"Noto Sans\", sans-serif",
+      "primary": "#0866cc",
+      "visibleControls": [
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin",
+          "text": "Tổng quan"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Bán hàng"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/suppliers",
+          "text": "Nhà cung cấp"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Kho hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Giao hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tài chính"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/receivables",
+          "text": "Công nợ phải thu"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/payables",
+          "text": "Công nợ phải trả"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/cashbook",
+          "text": "Sổ tiền"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/expenses",
+          "text": "Chi phí"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/payment-notices",
+          "text": "Báo chuyển khoản"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/invoices",
+          "text": "Hồ sơ hóa đơn bán"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/invoices/purchases",
+          "text": "Chứng từ mua"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/compensation",
+          "text": "Thu nhập"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/reports",
+          "text": "Báo cáo"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/messages",
+          "text": "Tin nhắn"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đăng xuất"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/cashbook",
+          "text": "Mở sổ tiền"
+        },
+        {
+          "tag": "INPUT",
+          "name": "q",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "state",
+          "href": null,
+          "text": "Tất cả còn dưQuá hạn"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Áp dụng"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/receivables",
+          "text": "Xóa lọc"
+        },
+        {
+          "tag": "INPUT",
+          "name": "amount",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "accountId",
+          "href": null,
+          "text": "Chọn tài khoảnGFC5E266A209AA · QA tài khoản ngân hàng GFC5E266A209ARME8501A2E · Quỹ QA không đầu kỳ"
+        },
+        {
+          "tag": "SELECT",
+          "name": "method",
+          "href": null,
+          "text": "Chuyển khoảnTiền mặtThẻKhác"
+        },
+        {
+          "tag": "INPUT",
+          "name": "effectiveAt",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "reference",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "advanceAmount",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": null,
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tìm khoản"
+        },
+        {
+          "tag": "INPUT",
+          "name": null,
+          "href": null,
+          "text": "Phân bổ cho Giao hàng đã xác minh · Công trình kiểm thử"
+        },
+        {
+          "tag": "INPUT",
+          "name": null,
+          "href": null,
+          "text": "Phân bổ cho Dịch vụ đã xác minh · Công trình kiểm thử"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Ghi nhận thu tiền"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/receivables/8c3805f2-edb4-48ed-b18d-151f803b0e3b",
+          "text": "Chi tiết"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/receivables?customer=8f2de180-ff9b-44fe-929c-685ee8ef6077",
+          "text": "Ghi thu"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/receivables/a84adcce-f300-4a44-8e63-2a522e838034",
+          "text": "Chi tiết"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/receivables?customer=8f2de180-ff9b-44fe-929c-685ee8ef6077",
+          "text": "Ghi thu"
+        }
+      ],
+      "clippedMetrics": [],
+      "unlabelledInputs": [],
+      "tableColumns": [
+        "Khách / công trình",
+        "Nguồn",
+        "Phát sinh",
+        "Hạn",
+        "Gốc",
+        "Còn lại",
+        ""
+      ]
+    },
+    {
+      "name": "finance-cashbook",
+      "role": "finance-employee",
+      "surface": "admin",
+      "path": "/admin/cashbook",
+      "size": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "file": "reports/ux-ui-refinement/after/finance-cashbook-desktop.png",
+      "heading": "Sổ tiền và đối soát",
+      "documentWidth": 1280,
+      "viewportWidth": 1280,
+      "bodyFont": "\"Noto Sans\", sans-serif",
+      "primary": "#0866cc",
+      "visibleControls": [
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin",
+          "text": "Tổng quan"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Bán hàng"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/suppliers",
+          "text": "Nhà cung cấp"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Kho hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Giao hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tài chính"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/receivables",
+          "text": "Công nợ phải thu"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/payables",
+          "text": "Công nợ phải trả"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/cashbook",
+          "text": "Sổ tiền"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/expenses",
+          "text": "Chi phí"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/payment-notices",
+          "text": "Báo chuyển khoản"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/invoices",
+          "text": "Hồ sơ hóa đơn bán"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/invoices/purchases",
+          "text": "Chứng từ mua"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/compensation",
+          "text": "Thu nhập"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/reports",
+          "text": "Báo cáo"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/messages",
+          "text": "Tin nhắn"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đăng xuất"
+        },
+        {
+          "tag": "INPUT",
+          "name": "code",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "name",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "kind",
+          "href": null,
+          "text": "Ngân hàngTiền mặt"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tạo tài khoản"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/api/payments/72aea329-1c76-4c44-862c-d8668366c895/voucher/pdf",
+          "text": "Phiếu chi"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/api/payments/4e50d956-23c8-40ba-978d-c5c67070466d/voucher/pdf",
+          "text": "Phiếu thu"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/api/payments/56440e64-922e-4fed-9109-f15f46b989e8/voucher/pdf",
+          "text": "Phiếu chi"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/api/payments/ac60e552-c835-4937-802a-95d4d7a5096c/voucher/pdf",
+          "text": "Phiếu thu"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/api/payments/a0b944dd-8a49-4e3b-84d0-a94f399efc69/voucher/pdf",
+          "text": "Phiếu chi"
+        },
+        {
+          "tag": "INPUT",
+          "name": "amount",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "effectiveAt",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "reference",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Ghi đối soát"
+        },
+        {
+          "tag": "INPUT",
+          "name": "reason",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đảo giao dịch"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/api/payments/e506a1dc-ea0b-4809-9a22-e9942b012874/voucher/pdf",
+          "text": "Phiếu thu"
+        },
+        {
+          "tag": "INPUT",
+          "name": "amount",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "effectiveAt",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "reference",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Ghi đối soát"
+        },
+        {
+          "tag": "INPUT",
+          "name": "reason",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đảo giao dịch"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/api/payments/a4bce92e-9d2b-409c-ae68-10f45a01ae56/voucher/pdf",
+          "text": "Phiếu thu"
+        },
+        {
+          "tag": "INPUT",
+          "name": "amount",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "effectiveAt",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "reference",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Ghi đối soát"
+        },
+        {
+          "tag": "INPUT",
+          "name": "reason",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đảo giao dịch"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/api/payments/43868c2a-6a12-41e5-8644-f549658d2ec6/voucher/pdf",
+          "text": "Phiếu thu"
+        },
+        {
+          "tag": "INPUT",
+          "name": "amount",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "effectiveAt",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "reference",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Ghi đối soát"
+        },
+        {
+          "tag": "INPUT",
+          "name": "reason",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đảo giao dịch"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/api/payments/5fa0cbbd-7406-40ae-a5f8-16f0b45c4083/voucher/pdf",
+          "text": "Phiếu thu"
+        },
+        {
+          "tag": "INPUT",
+          "name": "amount",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "effectiveAt",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "reference",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Ghi đối soát"
+        },
+        {
+          "tag": "INPUT",
+          "name": "reason",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đảo giao dịch"
+        }
+      ],
+      "clippedMetrics": [],
+      "unlabelledInputs": [],
+      "tableColumns": [
+        "Mã",
+        "Ngày",
+        "Đối tác",
+        "Tài khoản",
+        "Loại",
+        "Số tiền",
+        "Đối soát",
+        "Hành động"
+      ]
+    },
+    {
+      "name": "worker",
+      "role": "worker",
+      "surface": "work",
+      "path": "/work/jobs/5952fce2-9388-41e7-9a35-6ad10223c075",
+      "size": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "file": "reports/ux-ui-refinement/after/worker-desktop.png",
+      "heading": "Giao hàng - DL-2026-000607",
+      "documentWidth": 1280,
+      "viewportWidth": 1280,
+      "bodyFont": "\"Noto Sans\", sans-serif",
+      "primary": "#0866cc",
+      "visibleControls": [
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/work",
+          "text": "Công việc"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/work/pool",
+          "text": "Nhận việc"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/work/tracking",
+          "text": "Vị trí"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/work/earnings",
+          "text": "Thu nhập"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/work/messages",
+          "text": "Tin nhắn"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/work/profile",
+          "text": "Hồ sơ"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đăng xuất"
+        },
+        {
+          "tag": "INPUT",
+          "name": null,
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": null,
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": null,
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": null,
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": null,
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tải minh chứng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Gửi kết quả công việc"
+        }
+      ],
+      "clippedMetrics": [],
+      "unlabelledInputs": [],
+      "tableColumns": []
+    },
+    {
+      "name": "customer",
+      "role": "finance",
+      "surface": "customer",
+      "path": "/customer/orders/aab98715-1df4-49b9-8cd0-ac907cc54bb4",
+      "size": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "file": "reports/ux-ui-refinement/after/customer-desktop.png",
+      "heading": "SO-2026-000419",
+      "documentWidth": 1280,
+      "viewportWidth": 1280,
+      "bodyFont": "\"Noto Sans\", sans-serif",
+      "primary": "#0866cc",
+      "visibleControls": [
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/customer",
+          "text": "Tổng quan"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/customer/quotations",
+          "text": "Báo giá"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/customer/orders",
+          "text": "Đơn hàng"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/customer/debts",
+          "text": "Công nợ"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/customer/messages",
+          "text": "Tin nhắn"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/customer/profile",
+          "text": "Hồ sơ"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đăng xuất"
+        }
+      ],
+      "clippedMetrics": [],
+      "unlabelledInputs": [],
+      "tableColumns": []
+    },
+    {
+      "name": "receiver",
+      "role": "receiver",
+      "surface": "customer",
+      "path": "/customer/orders/aab98715-1df4-49b9-8cd0-ac907cc54bb4",
+      "size": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "file": "reports/ux-ui-refinement/after/receiver-desktop.png",
+      "heading": "SO-2026-000419",
+      "documentWidth": 1280,
+      "viewportWidth": 1280,
+      "bodyFont": "\"Noto Sans\", sans-serif",
+      "primary": "#0866cc",
+      "visibleControls": [
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/customer",
+          "text": "Tổng quan"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/customer/quotations",
+          "text": "Báo giá"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/customer/orders",
+          "text": "Đơn hàng"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/customer/messages",
+          "text": "Tin nhắn"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/customer/profile",
+          "text": "Hồ sơ"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đăng xuất"
+        }
+      ],
+      "clippedMetrics": [],
+      "unlabelledInputs": [],
+      "tableColumns": []
+    },
+    {
+      "name": "manager",
+      "role": "owner",
+      "surface": "admin",
+      "path": "/admin",
+      "size": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "file": "reports/ux-ui-refinement/after/manager-mobile.png",
+      "heading": "Tổng quan",
+      "documentWidth": 390,
+      "viewportWidth": 390,
+      "bodyFont": "\"Noto Sans\", sans-serif",
+      "primary": "#0866cc",
+      "visibleControls": [
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đóng menu"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin",
+          "text": "Tổng quan"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Bán hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Mua hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Kho hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Giao hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tài chính"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Nhân công & dịch vụ"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Quản trị"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/reports",
+          "text": "Báo cáo"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/messages",
+          "text": "Tin nhắn"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đăng xuất"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Mở menu"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/cashbook",
+          "text": "Mở sổ tiền"
+        },
+        {
+          "tag": "INPUT",
+          "name": "from",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "to",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "customerSearch",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tìm khách"
+        },
+        {
+          "tag": "SELECT",
+          "name": "customer",
+          "href": null,
+          "text": "Tất cảKhách QA chi nhánh mớiKhách kiểm thử khắc phụcKhách kiểm thử khắc phụcKhách kiểm thử khắc phụcKhách kiểm thử khắc "
+        },
+        {
+          "tag": "SELECT",
+          "name": "site",
+          "href": null,
+          "text": "Tất cảCông trình QA phiếu tiềnCông trình kiểm thửCông trình kiểm thửCông trình kiểm thửCông trình kiểm thửCông trình kiể"
+        },
+        {
+          "tag": "SELECT",
+          "name": "sales",
+          "href": null,
+          "text": "Tất cảNgười kiểm thử chi nhánh khácNhân viên hoa hồng giả QANhân viên hoa hồng giả QANhân viên hoa hồng giả QANhân viên "
+        },
+        {
+          "tag": "SELECT",
+          "name": "activity",
+          "href": null,
+          "text": "Tất cảGiao hàngBán hàngDịch vụHành chính"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Làm mới"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/dashboard/obligations?side=AR&to=2026-11-01",
+          "text": "Tất cả"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/receivables/8c3805f2-edb4-48ed-b18d-151f803b0e3b",
+          "text": "Khách kiểm thử khắc phụcCông trình kiểm thử · hạn 12/10/20261.990.000 ₫"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/receivables/602f19f0-603c-4bb1-b352-0d8f36cbc750",
+          "text": "Khách kiểm thử khắc phụcCông trình kiểm thử · hạn 12/10/2026740.000 ₫"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/receivables/a84adcce-f300-4a44-8e63-2a522e838034",
+          "text": "Khách kiểm thử khắc phụcCông trình kiểm thử · hạn 12/10/2026111.111 ₫"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/dashboard/obligations?side=AP&to=2026-11-01",
+          "text": "Tất cả"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/payables/a2a26be6-e441-455b-a996-b5a0be83a137",
+          "text": "NCC QA chi nhánh mớiHạn 12/10/20269.007.199.254.740.993 ₫"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/payables/6472b894-7011-4121-9f3e-1117e353a059",
+          "text": "NCC QA chi nhánh mớiHạn 12/10/20262.250.000 ₫"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/payables/1bdd2f7a-55a1-4001-a8ea-af372884188a",
+          "text": "NCC QA chi nhánh mớiHạn 12/10/20261.500.000 ₫"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/payables/a25232ce-b45b-48b5-b204-152f8d59721e",
+          "text": "NCC QA chi nhánh mớiHạn 12/10/2026750.000 ₫"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/payables/524bc334-7b53-4759-8832-497f730a956c",
+          "text": "NCC QA chi nhánh mớiHạn 12/10/2026750.000 ₫"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/payables/a61acf40-30b7-455e-ae1f-c204f9f4740c",
+          "text": "NCC QA chi nhánh mớiHạn 12/10/2026450.000 ₫"
+        }
+      ],
+      "clippedMetrics": [],
+      "unlabelledInputs": [],
+      "tableColumns": []
+    },
+    {
+      "name": "sales-order",
+      "role": "sales",
+      "surface": "admin",
+      "path": "/admin/orders/aab98715-1df4-49b9-8cd0-ac907cc54bb4",
+      "size": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "file": "reports/ux-ui-refinement/after/sales-order-mobile.png",
+      "heading": "SO-2026-000419",
+      "documentWidth": 390,
+      "viewportWidth": 390,
+      "bodyFont": "\"Noto Sans\", sans-serif",
+      "primary": "#0866cc",
+      "visibleControls": [
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đóng menu"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin",
+          "text": "Tổng quan"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Bán hàng"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/orders",
+          "text": "Đơn bán"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/quotations",
+          "text": "Báo giá"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/customers",
+          "text": "Khách hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Kho hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Giao hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tài chính"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/reports",
+          "text": "Báo cáo"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/messages",
+          "text": "Tin nhắn"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đăng xuất"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Mở menu"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/orders",
+          "text": "Về danh sách"
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "reason",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đóng phần còn lại"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/deliveries/47e8ce35-d1d7-4e79-9f96-bb570d60e770",
+          "text": "DL-2026-000607"
+        }
+      ],
+      "clippedMetrics": [],
+      "unlabelledInputs": [],
+      "tableColumns": [
+        "Vật tư",
+        "Số lượng",
+        "Đơn giá",
+        "Thành tiền",
+        "Nguồn giá",
+        "Phân nguồn"
+      ]
+    },
+    {
+      "name": "sales-form",
+      "role": "sales",
+      "surface": "admin",
+      "path": "/admin/orders/new",
+      "size": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "file": "reports/ux-ui-refinement/after/sales-form-mobile.png",
+      "heading": "Tạo đơn bán",
+      "documentWidth": 390,
+      "viewportWidth": 390,
+      "bodyFont": "\"Noto Sans\", sans-serif",
+      "primary": "#0866cc",
+      "visibleControls": [
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đóng menu"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin",
+          "text": "Tổng quan"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Bán hàng"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/orders",
+          "text": "Đơn bán"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/quotations",
+          "text": "Báo giá"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/customers",
+          "text": "Khách hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Kho hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Giao hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tài chính"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/reports",
+          "text": "Báo cáo"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/messages",
+          "text": "Tin nhắn"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đăng xuất"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Mở menu"
+        },
+        {
+          "tag": "INPUT",
+          "name": null,
+          "href": null,
+          "text": "Tìm khách hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tìm khách"
+        },
+        {
+          "tag": "SELECT",
+          "name": "customerId",
+          "href": null,
+          "text": "Chọn khách hàng...Khách QA chi nhánh mớiKhách kiểm thử khắc phụcKhách kiểm thử khắc phụcKhách kiểm thử khắc phụcKhách ki"
+        },
+        {
+          "tag": "INPUT",
+          "name": null,
+          "href": null,
+          "text": "Tìm công trình"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tìm điểm"
+        },
+        {
+          "tag": "SELECT",
+          "name": "siteId",
+          "href": null,
+          "text": "Chọn công trình..."
+        },
+        {
+          "tag": "INPUT",
+          "name": "effectiveAt",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "terms",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Xóa dòng"
+        },
+        {
+          "tag": "SELECT",
+          "name": "materialId",
+          "href": null,
+          "text": "Cát kiểm thử khắc phụcCát kiểm thử khắc phụcCát kiểm thử khắc phụcCát kiểm thử khắc phụcCát kiểm thử khắc phụcCát kiểm t"
+        },
+        {
+          "tag": "SELECT",
+          "name": "orderedUomId",
+          "href": null,
+          "text": "m³"
+        },
+        {
+          "tag": "INPUT",
+          "name": "quantity",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": null,
+          "href": null,
+          "text": "Chọn kho để xem khả dụngKho QA mới không tồn đầu kỳQA kho đã đối chiếu sau phục hồi"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "+ Thêm dòng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tính giá và xem trước"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Lưu bản nháp"
+        }
+      ],
+      "clippedMetrics": [],
+      "unlabelledInputs": [],
+      "tableColumns": []
+    },
+    {
+      "name": "purchasing-order",
+      "role": "purchasing",
+      "surface": "admin",
+      "path": "/admin/purchase-orders/2a77bee7-0ad1-4330-a6fe-49702e3dadf0",
+      "size": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "file": "reports/ux-ui-refinement/after/purchasing-order-mobile.png",
+      "heading": "PO-2026-000457",
+      "documentWidth": 390,
+      "viewportWidth": 390,
+      "bodyFont": "\"Noto Sans\", sans-serif",
+      "primary": "#0866cc",
+      "visibleControls": [
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đóng menu"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin",
+          "text": "Tổng quan"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/orders",
+          "text": "Đơn bán"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Mua hàng"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/purchase-orders",
+          "text": "Đơn mua"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/suppliers",
+          "text": "Nhà cung cấp"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Kho hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Giao hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tài chính"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/reports",
+          "text": "Báo cáo"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/messages",
+          "text": "Tin nhắn"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đăng xuất"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Mở menu"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/purchase-orders",
+          "text": "Về danh sách"
+        }
+      ],
+      "clippedMetrics": [],
+      "unlabelledInputs": [],
+      "tableColumns": [
+        "Vật tư",
+        "Số lượng",
+        "Giá mua",
+        "Thành tiền",
+        "Phân nguồn"
+      ]
+    },
+    {
+      "name": "purchasing-form",
+      "role": "purchasing",
+      "surface": "admin",
+      "path": "/admin/purchase-orders/new",
+      "size": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "file": "reports/ux-ui-refinement/after/purchasing-form-mobile.png",
+      "heading": "Tạo đơn mua",
+      "documentWidth": 390,
+      "viewportWidth": 390,
+      "bodyFont": "\"Noto Sans\", sans-serif",
+      "primary": "#0866cc",
+      "visibleControls": [
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đóng menu"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin",
+          "text": "Tổng quan"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/orders",
+          "text": "Đơn bán"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Mua hàng"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/purchase-orders",
+          "text": "Đơn mua"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/suppliers",
+          "text": "Nhà cung cấp"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Kho hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Giao hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tài chính"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/reports",
+          "text": "Báo cáo"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/messages",
+          "text": "Tin nhắn"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đăng xuất"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Mở menu"
+        },
+        {
+          "tag": "INPUT",
+          "name": "code",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "name",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "phone",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Thêm NCC"
+        },
+        {
+          "tag": "SELECT",
+          "name": null,
+          "href": null,
+          "text": "Kho Hiền XaGiao thẳng khách · tạo bản nháp bán liên kết"
+        },
+        {
+          "tag": "SELECT",
+          "name": "supplierId",
+          "href": null,
+          "text": "Chọn nhà cung cấpNCC QA chi nhánh mới"
+        },
+        {
+          "tag": "INPUT",
+          "name": null,
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tìm NCC"
+        },
+        {
+          "tag": "SELECT",
+          "name": "warehouseId",
+          "href": null,
+          "text": "Kho QA mới không tồn đầu kỳQA kho đã đối chiếu sau phục hồi"
+        },
+        {
+          "tag": "INPUT",
+          "name": "expectedAt",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "terms",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Xóa dòng"
+        },
+        {
+          "tag": "SELECT",
+          "name": "materialId",
+          "href": null,
+          "text": "Cát kiểm thử khắc phụcCát kiểm thử khắc phụcCát kiểm thử khắc phụcCát kiểm thử khắc phụcCát kiểm thử khắc phụcCát kiểm t"
+        },
+        {
+          "tag": "SELECT",
+          "name": "orderedUomId",
+          "href": null,
+          "text": "m³"
+        },
+        {
+          "tag": "INPUT",
+          "name": "quantity",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "manualCostVnd",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "manualCostReason",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "+ Thêm dòng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tính giá mua và xem trước"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Lưu nháp đơn mua"
+        }
+      ],
+      "clippedMetrics": [],
+      "unlabelledInputs": [],
+      "tableColumns": []
+    },
+    {
+      "name": "warehouse",
+      "role": "warehouse-dispatch",
+      "surface": "admin",
+      "path": "/admin/inventory?warehouse=59ded449-38e8-4a63-ae1f-b64d6cbd3b6c&material=08528375-c064-435e-9e8a-13617b0c2961",
+      "size": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "file": "reports/ux-ui-refinement/after/warehouse-mobile.png",
+      "heading": "Tồn kho",
+      "documentWidth": 390,
+      "viewportWidth": 390,
+      "bodyFont": "\"Noto Sans\", sans-serif",
+      "primary": "#0866cc",
+      "visibleControls": [
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đóng menu"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin",
+          "text": "Tổng quan"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Bán hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Mua hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Kho hàng"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/products",
+          "text": "Vật tư"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/inventory",
+          "text": "Tồn kho"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/stock-counts",
+          "text": "Kiểm kho"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Giao hàng"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/workforce",
+          "text": "Nhân sự & công việc"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/messages",
+          "text": "Tin nhắn"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đăng xuất"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Mở menu"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/stock-counts",
+          "text": "Kiểm kho"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/inventory/transfers",
+          "text": "Chuyển kho"
+        },
+        {
+          "tag": "SELECT",
+          "name": "warehouse",
+          "href": null,
+          "text": "Tất cả khoKho QA mới không tồn đầu kỳQA kho đã đối chiếu sau phục hồi"
+        },
+        {
+          "tag": "INPUT",
+          "name": "q",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Lọc"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/inventory?warehouse=59ded449-38e8-4a63-ae1f-b64d6cbd3b6c",
+          "text": "Xóa lọc vật tư"
+        },
+        {
+          "tag": "SELECT",
+          "name": "warehouseId",
+          "href": null,
+          "text": "Chọn khoKho QA mới không tồn đầu kỳQA kho đã đối chiếu sau phục hồi"
+        },
+        {
+          "tag": "SELECT",
+          "name": "materialId",
+          "href": null,
+          "text": "Chọn vật tưCát kiểm thử khắc phục"
+        },
+        {
+          "tag": "INPUT",
+          "name": "threshold",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "active",
+          "href": null,
+          "text": "Bật cảnh báoTắt cảnh báo"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Lưu ngưỡng"
+        }
+      ],
+      "clippedMetrics": [],
+      "unlabelledInputs": [],
+      "tableColumns": [
+        "Kho",
+        "Vật tư",
+        "Tồn đã ghi nhận",
+        "Đã giữ",
+        "Khả dụng",
+        "Giá trị / Giá vốn bình quân",
+        "Thời điểm",
+        "Loại",
+        "Vật tư",
+        "Vị trí",
+        "Tăng / giảm",
+        "Nguồn"
+      ]
+    },
+    {
+      "name": "dispatch",
+      "role": "warehouse-dispatch",
+      "surface": "admin",
+      "path": "/admin/deliveries/47e8ce35-d1d7-4e79-9f96-bb570d60e770",
+      "size": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "file": "reports/ux-ui-refinement/after/dispatch-mobile.png",
+      "heading": "DL-2026-000607",
+      "documentWidth": 390,
+      "viewportWidth": 390,
+      "bodyFont": "\"Noto Sans\", sans-serif",
+      "primary": "#0866cc",
+      "visibleControls": [
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đóng menu"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin",
+          "text": "Tổng quan"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Bán hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Mua hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Kho hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Giao hàng"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/dispatch",
+          "text": "Điều phối"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/deliveries",
+          "text": "Phiếu giao"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/routes",
+          "text": "Lộ trình"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/workforce",
+          "text": "Nhân sự & công việc"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/messages",
+          "text": "Tin nhắn"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đăng xuất"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Mở menu"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/api/deliveries/47e8ce35-d1d7-4e79-9f96-bb570d60e770/note/pdf",
+          "text": "Tải phiếu giao"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/deliveries",
+          "text": "Về danh sách"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/orders/aab98715-1df4-49b9-8cd0-ac907cc54bb4",
+          "text": "Mở đơn bán"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đã tới nơi giao"
+        },
+        {
+          "tag": "SELECT",
+          "name": "resultKind",
+          "href": null,
+          "text": "Giao đủGiao thiếuKhông giao được"
+        },
+        {
+          "tag": "INPUT",
+          "name": "actualQuantity",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "receiverName",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "note",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "missingArrivalReason",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Gửi kết quả để xác minh"
+        }
+      ],
+      "clippedMetrics": [],
+      "unlabelledInputs": [],
+      "tableColumns": [
+        "Vật tư",
+        "Nguồn",
+        "Kế hoạch",
+        "Thực lấy",
+        "Báo giao",
+        "Khách nhận",
+        "Tính tiền"
+      ]
+    },
+    {
+      "name": "finance-receivables",
+      "role": "finance-employee",
+      "surface": "admin",
+      "path": "/admin/receivables?customer=8f2de180-ff9b-44fe-929c-685ee8ef6077",
+      "size": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "file": "reports/ux-ui-refinement/after/finance-receivables-mobile.png",
+      "heading": "Phải thu khách hàng",
+      "documentWidth": 390,
+      "viewportWidth": 390,
+      "bodyFont": "\"Noto Sans\", sans-serif",
+      "primary": "#0866cc",
+      "visibleControls": [
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đóng menu"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin",
+          "text": "Tổng quan"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Bán hàng"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/suppliers",
+          "text": "Nhà cung cấp"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Kho hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Giao hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tài chính"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/receivables",
+          "text": "Công nợ phải thu"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/payables",
+          "text": "Công nợ phải trả"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/cashbook",
+          "text": "Sổ tiền"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/expenses",
+          "text": "Chi phí"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/payment-notices",
+          "text": "Báo chuyển khoản"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/invoices",
+          "text": "Hồ sơ hóa đơn bán"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/invoices/purchases",
+          "text": "Chứng từ mua"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/compensation",
+          "text": "Thu nhập"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/reports",
+          "text": "Báo cáo"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/messages",
+          "text": "Tin nhắn"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đăng xuất"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Mở menu"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/cashbook",
+          "text": "Mở sổ tiền"
+        },
+        {
+          "tag": "INPUT",
+          "name": "q",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "state",
+          "href": null,
+          "text": "Tất cả còn dưQuá hạn"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Áp dụng"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/receivables",
+          "text": "Xóa lọc"
+        },
+        {
+          "tag": "INPUT",
+          "name": "amount",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "accountId",
+          "href": null,
+          "text": "Chọn tài khoảnGFC5E266A209AA · QA tài khoản ngân hàng GFC5E266A209ARME8501A2E · Quỹ QA không đầu kỳ"
+        },
+        {
+          "tag": "SELECT",
+          "name": "method",
+          "href": null,
+          "text": "Chuyển khoảnTiền mặtThẻKhác"
+        },
+        {
+          "tag": "INPUT",
+          "name": "effectiveAt",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "reference",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "advanceAmount",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": null,
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tìm khoản"
+        },
+        {
+          "tag": "INPUT",
+          "name": null,
+          "href": null,
+          "text": "Phân bổ cho Giao hàng đã xác minh · Công trình kiểm thử"
+        },
+        {
+          "tag": "INPUT",
+          "name": null,
+          "href": null,
+          "text": "Phân bổ cho Dịch vụ đã xác minh · Công trình kiểm thử"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Ghi nhận thu tiền"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/receivables/8c3805f2-edb4-48ed-b18d-151f803b0e3b",
+          "text": "Chi tiết"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/receivables?customer=8f2de180-ff9b-44fe-929c-685ee8ef6077",
+          "text": "Ghi thu"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/receivables/a84adcce-f300-4a44-8e63-2a522e838034",
+          "text": "Chi tiết"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/receivables?customer=8f2de180-ff9b-44fe-929c-685ee8ef6077",
+          "text": "Ghi thu"
+        }
+      ],
+      "clippedMetrics": [],
+      "unlabelledInputs": [],
+      "tableColumns": [
+        "Khách / công trình",
+        "Nguồn",
+        "Phát sinh",
+        "Hạn",
+        "Gốc",
+        "Còn lại",
+        ""
+      ]
+    },
+    {
+      "name": "finance-cashbook",
+      "role": "finance-employee",
+      "surface": "admin",
+      "path": "/admin/cashbook",
+      "size": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "file": "reports/ux-ui-refinement/after/finance-cashbook-mobile.png",
+      "heading": "Sổ tiền và đối soát",
+      "documentWidth": 390,
+      "viewportWidth": 390,
+      "bodyFont": "\"Noto Sans\", sans-serif",
+      "primary": "#0866cc",
+      "visibleControls": [
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đóng menu"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin",
+          "text": "Tổng quan"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Bán hàng"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/suppliers",
+          "text": "Nhà cung cấp"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Kho hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Giao hàng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tài chính"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/receivables",
+          "text": "Công nợ phải thu"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/payables",
+          "text": "Công nợ phải trả"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/cashbook",
+          "text": "Sổ tiền"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/expenses",
+          "text": "Chi phí"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/payment-notices",
+          "text": "Báo chuyển khoản"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/invoices",
+          "text": "Hồ sơ hóa đơn bán"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/invoices/purchases",
+          "text": "Chứng từ mua"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/compensation",
+          "text": "Thu nhập"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/reports",
+          "text": "Báo cáo"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/admin/messages",
+          "text": "Tin nhắn"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đăng xuất"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Mở menu"
+        },
+        {
+          "tag": "INPUT",
+          "name": "code",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "name",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "kind",
+          "href": null,
+          "text": "Ngân hàngTiền mặt"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tạo tài khoản"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/api/payments/72aea329-1c76-4c44-862c-d8668366c895/voucher/pdf",
+          "text": "Phiếu chi"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/api/payments/4e50d956-23c8-40ba-978d-c5c67070466d/voucher/pdf",
+          "text": "Phiếu thu"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/api/payments/56440e64-922e-4fed-9109-f15f46b989e8/voucher/pdf",
+          "text": "Phiếu chi"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/api/payments/ac60e552-c835-4937-802a-95d4d7a5096c/voucher/pdf",
+          "text": "Phiếu thu"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/api/payments/a0b944dd-8a49-4e3b-84d0-a94f399efc69/voucher/pdf",
+          "text": "Phiếu chi"
+        },
+        {
+          "tag": "INPUT",
+          "name": "amount",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "effectiveAt",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "reference",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Ghi đối soát"
+        },
+        {
+          "tag": "INPUT",
+          "name": "reason",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đảo giao dịch"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/api/payments/e506a1dc-ea0b-4809-9a22-e9942b012874/voucher/pdf",
+          "text": "Phiếu thu"
+        },
+        {
+          "tag": "INPUT",
+          "name": "amount",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "effectiveAt",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "reference",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Ghi đối soát"
+        },
+        {
+          "tag": "INPUT",
+          "name": "reason",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đảo giao dịch"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/api/payments/a4bce92e-9d2b-409c-ae68-10f45a01ae56/voucher/pdf",
+          "text": "Phiếu thu"
+        },
+        {
+          "tag": "INPUT",
+          "name": "amount",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "effectiveAt",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "reference",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Ghi đối soát"
+        },
+        {
+          "tag": "INPUT",
+          "name": "reason",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đảo giao dịch"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/api/payments/43868c2a-6a12-41e5-8644-f549658d2ec6/voucher/pdf",
+          "text": "Phiếu thu"
+        },
+        {
+          "tag": "INPUT",
+          "name": "amount",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "effectiveAt",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "reference",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Ghi đối soát"
+        },
+        {
+          "tag": "INPUT",
+          "name": "reason",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đảo giao dịch"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/api/payments/5fa0cbbd-7406-40ae-a5f8-16f0b45c4083/voucher/pdf",
+          "text": "Phiếu thu"
+        },
+        {
+          "tag": "INPUT",
+          "name": "amount",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "effectiveAt",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "reference",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Ghi đối soát"
+        },
+        {
+          "tag": "INPUT",
+          "name": "reason",
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đảo giao dịch"
+        }
+      ],
+      "clippedMetrics": [],
+      "unlabelledInputs": [],
+      "tableColumns": [
+        "Mã",
+        "Ngày",
+        "Đối tác",
+        "Tài khoản",
+        "Loại",
+        "Số tiền",
+        "Đối soát",
+        "Hành động"
+      ]
+    },
+    {
+      "name": "worker",
+      "role": "worker",
+      "surface": "work",
+      "path": "/work/jobs/5952fce2-9388-41e7-9a35-6ad10223c075",
+      "size": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "file": "reports/ux-ui-refinement/after/worker-mobile.png",
+      "heading": "Giao hàng - DL-2026-000607",
+      "documentWidth": 390,
+      "viewportWidth": 390,
+      "bodyFont": "\"Noto Sans\", sans-serif",
+      "primary": "#0866cc",
+      "visibleControls": [
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đăng xuất"
+        },
+        {
+          "tag": "INPUT",
+          "name": null,
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": null,
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": null,
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": null,
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": null,
+          "href": null,
+          "text": ""
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Tải minh chứng"
+        },
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Gửi kết quả công việc"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/work",
+          "text": "Công việc"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/work/pool",
+          "text": "Nhận việc"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/work/tracking",
+          "text": "Vị trí"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/work/earnings",
+          "text": "Thu nhập"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/work/messages",
+          "text": "Tin nhắn"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/work/profile",
+          "text": "Hồ sơ"
+        }
+      ],
+      "clippedMetrics": [],
+      "unlabelledInputs": [],
+      "tableColumns": []
+    },
+    {
+      "name": "customer",
+      "role": "finance",
+      "surface": "customer",
+      "path": "/customer/orders/aab98715-1df4-49b9-8cd0-ac907cc54bb4",
+      "size": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "file": "reports/ux-ui-refinement/after/customer-mobile.png",
+      "heading": "SO-2026-000419",
+      "documentWidth": 390,
+      "viewportWidth": 390,
+      "bodyFont": "\"Noto Sans\", sans-serif",
+      "primary": "#0866cc",
+      "visibleControls": [
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đăng xuất"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/customer",
+          "text": "Tổng quan"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/customer/quotations",
+          "text": "Báo giá"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/customer/orders",
+          "text": "Đơn hàng"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/customer/debts",
+          "text": "Công nợ"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/customer/messages",
+          "text": "Tin nhắn"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/customer/profile",
+          "text": "Hồ sơ"
+        }
+      ],
+      "clippedMetrics": [],
+      "unlabelledInputs": [],
+      "tableColumns": []
+    },
+    {
+      "name": "receiver",
+      "role": "receiver",
+      "surface": "customer",
+      "path": "/customer/orders/aab98715-1df4-49b9-8cd0-ac907cc54bb4",
+      "size": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "file": "reports/ux-ui-refinement/after/receiver-mobile.png",
+      "heading": "SO-2026-000419",
+      "documentWidth": 390,
+      "viewportWidth": 390,
+      "bodyFont": "\"Noto Sans\", sans-serif",
+      "primary": "#0866cc",
+      "visibleControls": [
+        {
+          "tag": "BUTTON",
+          "name": null,
+          "href": null,
+          "text": "Đăng xuất"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/customer",
+          "text": "Tổng quan"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/customer/quotations",
+          "text": "Báo giá"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/customer/orders",
+          "text": "Đơn hàng"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/customer/messages",
+          "text": "Tin nhắn"
+        },
+        {
+          "tag": "A",
+          "name": null,
+          "href": "/customer/profile",
+          "text": "Hồ sơ"
+        }
+      ],
+      "clippedMetrics": [],
+      "unlabelledInputs": [],
+      "tableColumns": []
+    }
+  ],
+  "errors": [],
+  "schema": {
+    "count": 186,
+    "latest": "20261012110100"
+  },
+  "businessBefore": {
+    "movements": 275,
+    "payments": 52,
+    "ar": 1054,
+    "ap": 1103,
+    "verified": 51
+  },
+  "businessAfter": {
+    "movements": 275,
+    "payments": 52,
+    "ar": 1054,
+    "ap": 1103,
+    "verified": 51
+  },
+  "status": "PASS_CAPTURE_READONLY"
+}

@@ -732,3 +732,12 @@ tbody tr:hover { background: #f8fbff; }
 }
 
 .reliable-command-fields { display: contents; border: 0; margin: 0; padding: 0; min-width: 0; }
+
+/* Focused refinements: preserve the existing palette, density and document layout. */
+.metric-value { max-width: 100%; overflow-wrap: anywhere; line-height: 1.35; }
+.metric-number { overflow-wrap: normal; }
+.metric-number-group { white-space: nowrap; }
+.button-secondary:hover:not(:disabled) { background: var(--surface-soft); border-color: #bdc7d5; }
+.mini-command .field { white-space: normal; }
+.mini-command .field input { font-size: var(--font-size-table); }
+.table-wrap:focus-visible { outline-offset: -3px; }

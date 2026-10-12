@@ -45,7 +45,7 @@ it("shows actual pickup and uses the server limit rather than the planned quanti
   const input = await screen.findByLabelText("Lượng thực tế · Material A (unit)");
   expect(input).toHaveAttribute("max", "14");
   expect(input).toHaveDisplayValue("");
-  expect(screen.getByText(/Kế hoạch: 15.*Thực lấy: 14.*Còn được phép báo: 14/)).toBeInTheDocument();
+  expect(input).toHaveAccessibleDescription(/Kế hoạch: 15.*Thực lấy: 14.*Còn được phép báo: 14/);
 });
 
 it("does not use plan as a fallback when pickup has not been recorded", async () => {

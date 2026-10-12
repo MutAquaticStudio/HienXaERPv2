@@ -1,0 +1,60 @@
+{
+  "status": "PASS_AUTHORIZED_UAT_CLEANUP_AND_INDEPENDENT_READBACK",
+  "project": "nbwynrwkdbtfsitafsxa",
+  "backup": "Explicitly waived by owner",
+  "removedRows": 34,
+  "retainedApplicationRows": "Compared in the same maintenance transaction across all public/private tables. Mismatch would roll back entire operation.",
+  "generatedIdsHardcoded": false,
+  "financialInventoryTestTransactionsCreated": false,
+  "advanceRacesRerun": false,
+  "checked_at": "2026-10-12 19:21:17.741093+00",
+  "counts": {
+    "ap": 0,
+    "ar": 0,
+    "po": 0,
+    "so": 0,
+    "all_po": 0,
+    "all_so": 0,
+    "payments": 0,
+    "uat_roles": 0,
+    "uat_branch": 0,
+    "storage_objects": 0,
+    "inventory_movements": 0
+  },
+  "retained": {
+    "branch_hx": 1,
+    "auth_users": 10,
+    "customer_mt": 1,
+    "supplier_bs": 1,
+    "employee_owner": 1
+  },
+  "history_count": 79,
+  "latest": "20261012192045",
+  "restored_guards": [
+    {
+      "table": "purchase_order_lines",
+      "enabled": "O",
+      "trigger": "purchase_line_guard"
+    },
+    {
+      "table": "purchase_orders",
+      "enabled": "O",
+      "trigger": "operational_posting_guard"
+    },
+    {
+      "table": "purchase_orders",
+      "enabled": "O",
+      "trigger": "purchase_order_guard"
+    },
+    {
+      "table": "sales_orders",
+      "enabled": "O",
+      "trigger": "operational_posting_guard"
+    },
+    {
+      "table": "supply_allocations",
+      "enabled": "O",
+      "trigger": "operational_posting_guard"
+    }
+  ]
+}

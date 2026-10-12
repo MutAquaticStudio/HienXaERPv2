@@ -1,4 +1,5 @@
 "use client";
+import { formatQuantity, isExactEntryQuantity } from "@/lib/core/quantity";
 import { userFacingError } from "@/lib/core/errors";
 import { FilePicker } from "@/components/ui/file-picker";
 
@@ -13,7 +14,6 @@ import {
   type SafeWorkDraft,
 } from "@/modules/portal/draft";
 import type { WorkerJob } from "@/modules/portal/types";
-import { isExactEntryQuantity } from "@/lib/core/quantity";
 
 export function WorkResultDraftForm({
   workItemId,
@@ -147,8 +147,8 @@ export function WorkResultDraftForm({
     <form className={styles.form} onSubmit={submit}>
       {delivery && draft.delivery ? delivery.lines.map((line) => <div className={styles.field} key={line.id}>
         <label htmlFor={"actual-" + line.id}>Lượng thực tế · {line.material_name} ({line.unit})</label>
-        <span className={styles.hint}>Kế hoạch: {line.planned_base_quantity} {line.unit}. Thực lấy: {line.loaded_base_quantity ?? "Chưa ghi nhận"}. Còn được phép báo: {line.reportable_base_quantity ?? "Chưa xác định"} {line.unit}. Nhập 0 nếu không giao được dòng này.</span>
-        <input id={"actual-" + line.id} inputMode="decimal" type="number" min="0" max={line.reportable_base_quantity}
+        <span id={"quantity-scope-" + line.id} className={`${styles.hint} ${styles.quantityScope}`}><span>Kế hoạch: {formatQuantity(line.planned_base_quantity)} {line.unit}</span><span>Thực lấy: {line.loaded_base_quantity == null ? "Chưa ghi nhận" : formatQuantity(line.loaded_base_quantity)} {line.unit}</span><span>Còn được phép báo: {line.reportable_base_quantity == null ? "Chưa xác định" : formatQuantity(line.reportable_base_quantity)} {line.unit}</span><span>Nhập 0 nếu không giao được dòng này.</span></span>
+        <input id={"actual-" + line.id} aria-describedby={"quantity-scope-" + line.id} inputMode="decimal" type="number" min="0" max={line.reportable_base_quantity}
           step="0.000001" required disabled={submitting || uploading || !deliveryReady}
           value={draft.delivery?.lines.find((item) => item.deliveryLineId === line.id)?.actualQuantity ?? ""}
           onChange={(event) => setDraft((current) => current?.delivery ? { ...current, delivery: { ...current.delivery,
