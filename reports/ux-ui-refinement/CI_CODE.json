@@ -1,16 +1,16 @@
 {
   "status": "PASS_CODE_COMMIT_CI",
-  "checkedAt": "2026-10-12T17:29:51.993Z",
+  "checkedAt": "2026-10-12T17:50:02.164776+00:00",
   "repository": "MutAquaticStudio/HienXaERPv2",
-  "commit": "543a93e5f2581ead5c6294a4cec4bdf5d42efc06",
-  "runId": 38283937185,
-  "url": "https://github.com/MutAquaticStudio/HienXaERPv2/actions/runs/38283937185",
+  "commit": "1bb38abe0d7850ff6e913e77c017db62b01476cf",
+  "runId": 38285885758,
+  "url": "https://github.com/MutAquaticStudio/HienXaERPv2/actions/runs/38285885758",
   "unitFiles": 91,
   "unitTests": 619,
   "evidenceNodeTests": 8,
   "jobs": [
     {
-      "id": 114927652151,
+      "id": 114934030054,
       "name": "phase-gate",
       "status": "completed",
       "conclusion": "success",
@@ -103,5 +103,5 @@
     }
   ],
   "excludedAdvanceRaces": "Neither package4-advance-race mode is invoked by the CI workflow; no rerun",
-  "finalHeadVerification": "Final report-only head must separately pass CI; final evidence is in PR44 checks/description, never substituted with this code-commit run"
+  "finalHeadVerification": "Final report-only head must independently pass CI; see PR44 checks and description. This result is for the final runtime code commit, not a substitute for a newer head."
 }

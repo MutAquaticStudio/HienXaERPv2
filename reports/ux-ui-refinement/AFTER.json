@@ -1,9 +1,9 @@
 {
   "phase": "after",
   "origin": "http://127.0.0.1:3116",
-  "sourceCommit": "af42bb5aadfa38f5e0641361284043ab1ff855d8",
-  "workingTree": "M src/components/ui/metric-number.tsx",
-  "checkedAt": "2026-10-12T17:40:06.604Z",
+  "sourceCommit": "1bb38abe0d7850ff6e913e77c017db62b01476cf",
+  "workingTree": "",
+  "checkedAt": "2026-10-12T17:42:43.952Z",
   "productionAccess": "NONE",
   "schemaChanges": 0,
   "browserPlugin": "ABSENT; installed Playwright1.63.0 fallback",

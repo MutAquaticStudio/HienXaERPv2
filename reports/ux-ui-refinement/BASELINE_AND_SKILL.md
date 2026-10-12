@@ -8,7 +8,7 @@ Kho: MutAquaticStudio/HienXaERPv2. Nhánh làm việc: `codex/ux-ui-refinement`,
 | Checkout gốc | `codex/uat-role-navigation-20260923`, `79b0b918c7430bfd0e9d17e247ecba2be1fa0bf2`; 61 mục tracked sửa, 67 mục untracked theo status thường |
 | Bảo toàn gốc | 12.534 tệp đối chiếu SHA-256, 0 khác biệt; HEAD, nhánh và status giữ nguyên. Chỉ fetch metadata Git để tạo worktree |
 | Nguồn được chụp trước | Worktree baseline riêng, HEAD e2a6393, không có thay đổi `src` |
-| Nguồn chụp sau và hồi quy | Commit mã543a93e5f2581ead5c6294a4cec4bdf5d42efc06; ảnh sau cuối đã chụp trên commit sạch bằng next start; COMPARISON.json ghi runtime hash. HEAD ảnh/tài liệu giữ cùng mã, CI cuối tại PR44 |
+| Nguồn chụp sau và hồi quy | Commit mã1bb38abe0d7850ff6e913e77c017db62b01476cf; ảnh sau cuối đã chụp trên commit sạch bằng next start; COMPARISON.json ghi runtime hash. HEAD ảnh/tài liệu giữ cùng mã, CI cuối tại PR44 |
 | QA cho ảnh và preview | Auth QA thật `ffrwiglcrlumfvhubaxg`, PostgREST và PostgreSQL 17.11 cục bộ có quyền/RPC thật; schema canonical186, max20261012110100 |
 | QA ghi sổ hồi quy | Bản sao riêng `hx_remediation_ux_refinement186`; đã đối chiếu 122 bảng public rồi dọn DB sau khi lưu bằng chứng |
 | Schema nguồn Git | Canonical187; migration187 có sẵn từ PR43, không chạy migration trong đợt UI. Các hợp đồng dùng trong ca này tương thích QA186 |

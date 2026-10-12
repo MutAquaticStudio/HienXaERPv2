@@ -41,3 +41,5 @@ Source của khảo sát là baseline e2a6393 hoặc e2a6393 cộng diff UI. Com
 Sau CI543a93e và af42bb5 đều đạt, kiểm viewport bổ sung phát hiện clipping phần trăm tại1024/1100/1180px. MetricNumber được sửa để cho phép ngắt ở dấu phẩy; chỉ thay hiển thị, không đổi formatter/tính toán. Cần CI mới; hai run trước không đại diện cho sửa này.
 
 Đã kiểm lại7 viewport:0 clipping,0 document overflow, text các chỉ số không đổi. Typecheck, lint, build sau sửa đều exit0 (LOCAL_CHECKS.json). Sau sửa MetricNumber chỉ chạy lại đọc/hiển thị và CI; không replay ca ghi sổ hoặc hai race bị loại.
+
+CI sau sửa1bb38ab đạt: run38285885758,91 tệp/619 unit,8 Node, typecheck/lint/build đều success. Đã restart preview với health SHA1bb38ab; chụp lại24 màn hình và7 viewport trên source sạch. Runtime hash `b56c4ace29f2690f5fb78bb9acfb9327861488346c43254d4fdcfd3dedbb600c` đóng dấu bản cuối. Commit kế tiếp chỉ chốt hồ sơ; CI HEAD mới phải thành công trước bàn giao và kết quả cuối được ghi trực tiếp trong mô tả PR44. Không chạy thêm ca ghi sổ.

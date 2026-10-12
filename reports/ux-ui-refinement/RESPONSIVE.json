@@ -1,7 +1,7 @@
 {
-  "checkedAt": "2026-10-12T17:40:03.898Z",
-  "codeBase": "af42bb5aadfa38f5e0641361284043ab1ff855d8",
-  "sourceDiff": "M src/components/ui/metric-number.tsx",
+  "checkedAt": "2026-10-12T17:42:41.090Z",
+  "codeBase": "1bb38abe0d7850ff6e913e77c017db62b01476cf",
+  "sourceDiff": "",
   "productionAccess": "NONE",
   "writes": 0,
   "rows": [

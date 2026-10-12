@@ -13,4 +13,4 @@
 
 Bản xem trước cục bộ: http://127.0.0.1:3116. Dùng tài khoản QA đã cấu hình; không đưa mật khẩu vào báo cáo. Nhánh này tắt tự triển khai Vercel để tránh dùng nhầm cấu hình doanh nghiệp cho bản review.
 
-[PR44](https://github.com/MutAquaticStudio/HienXaERPv2/pull/44) — commit mã543a93e. [CI của mã giao diện](CI_CODE.json); [CI của HEAD hiện hành](https://github.com/MutAquaticStudio/HienXaERPv2/pull/44/checks). [Phiên bản preview đã đọc lại](PREVIEW.json).
+[PR44](https://github.com/MutAquaticStudio/HienXaERPv2/pull/44) — commit mã1bb38ab. [CI của mã giao diện](CI_CODE.json); [CI của HEAD hiện hành](https://github.com/MutAquaticStudio/HienXaERPv2/pull/44/checks). [Phiên bản preview đã đọc lại](PREVIEW.json).

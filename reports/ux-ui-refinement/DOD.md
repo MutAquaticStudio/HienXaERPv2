@@ -11,10 +11,10 @@ Phạm vi: các thành phần được tinh chỉnh và 12 màn hình/8 loại t
 - [x] Ca thực15→14→13, mất mạng, mất phản hồi, gửi lại và quyền bị cấm đạt trên QA riêng.
 - [x] DB thử đã dọn; 122 bảng public của QA nguồn giữ nguyên sau hồi quy.
 - [x] 64 kiểm thử liên quan, typecheck, lint và build đạt cục bộ. Lint có13 cảnh báo có sẵn, 0 lỗi.
-- [ ] CI sau sửa phần thập phân ở màn hình hẹp cần kiểm tra trên HEAD mới. Bằng chứng trước sửa: commit543a93e đạt619/619 unit (91 tệp), 8/8 Node, typecheck, lint, build: [run38283937185](https://github.com/MutAquaticStudio/HienXaERPv2/actions/runs/38283937185). HEAD chốt ảnh/tài liệu giữ nguyên mã runtime; CI hiện hành tại [PR44 checks](https://github.com/MutAquaticStudio/HienXaERPv2/pull/44/checks) phải đạt trước bàn giao, không lấy run cũ đại diện head mới.
+- [x] CI mã giao diện cuối1bb38ab đạt619/619 unit (91 tệp),8/8 Node, typecheck,lint,build: [run38285885758](https://github.com/MutAquaticStudio/HienXaERPv2/actions/runs/38285885758). Commit hồ sơ sau đó giữ nguyên runtime hash; CI đúng HEAD cuối tại [PR44 checks](https://github.com/MutAquaticStudio/HienXaERPv2/pull/44/checks) phải đạt trước bàn giao, không dùng run trước đại diện head mới.
 - [x] Có ảnh trước/sau, nhật ký, giới hạn và danh mục vai trò/màn hình.
-- [x] Commit mã543a93e, [PR44](https://github.com/MutAquaticStudio/HienXaERPv2/pull/44), [preview cục bộ](http://127.0.0.1:3116), PREVIEW.json và ảnh sau được chụp trên mã đã commit bằng next start. Không merge hoặc triển khai.
+- [x] Commit mã1bb38ab, [PR44](https://github.com/MutAquaticStudio/HienXaERPv2/pull/44), [preview cục bộ](http://127.0.0.1:3116), PREVIEW.json và ảnh sau được chụp trên mã cuối đã commit bằng next start. Không merge hoặc triển khai.
 
 Hai race ứng trước không chạy lại: `package4-advance-race.mjs --mode different-intents` và `--mode same-intent`. Giữ bằng chứng một phân bổ600.000đ, còn400.000đ; không bỏ cả nhóm tài chính.
 
-Mã runtime được đóng dấu SHA-256 `b56c4ace29f2690f5fb78bb9acfb9327861488346c43254d4fdcfd3dedbb600c`. Sửa phần thập phân bổ sung đã được kiểm chứng hiển thị; CI mới đang chờ, không dùng run trước sửa làm kết luận. Kết quả CI cuối được ghi trong PR sau khi GitHub hoàn thành kiểm tra HEAD; hồ sơ không ghi ca chưa chạy thành đạt.
+Mã runtime được đóng dấu SHA-256 `b56c4ace29f2690f5fb78bb9acfb9327861488346c43254d4fdcfd3dedbb600c`. Sửa phần thập phân đã được kiểm chứng tại7 viewport và CI1bb38ab. Kết quả CI HEAD hồ sơ cuối được chốt trong PR trước bàn giao. Kết quả CI cuối được ghi trong PR sau khi GitHub hoàn thành kiểm tra HEAD; hồ sơ không ghi ca chưa chạy thành đạt.
