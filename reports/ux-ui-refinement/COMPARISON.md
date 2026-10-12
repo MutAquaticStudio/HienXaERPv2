@@ -13,3 +13,5 @@
 [BEFORE.json](BEFORE.json), [AFTER.json](AFTER.json) và [COMPARISON.json](COMPARISON.json) cung cấp đủ24 cặp. Kiểm tra tự động xác nhận cột, tên trường, nút, liên kết, phông và màu thương hiệu không đổi; không tràn viewport sau sửa. Giá trị ledger không đổi trong hai khảo sát chỉ đọc.
 
 Bằng chứng tương tác: [cuộn bảng và nhãn](regression/cashbook-labels-mobile-keyboard.png), [hộp thoại trên điện thoại](regression/sales-dialog-mobile.png), [mất mạng giữ bản nháp](regression/worker-offline-draft-kept.png), [đã lưu nhưng mất phản hồi](regression/worker-saved-response-lost-keeps-values.png).
+
+[Ca màn hình hẹp](RESPONSIVE.json) bao phủ320/760/1024/1100/1180/1280/1440px. [Lỗi trước sửa phần thập phân](RESPONSIVE_BEFORE_PATCH.json) và [ảnh1024px sau sửa](regression/manager1024-metric-groups.png).

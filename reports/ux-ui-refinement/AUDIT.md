@@ -13,3 +13,5 @@ Nền main e2a6393. Đã đối chiếu 24 cặp ảnh trước/sau: 12 màn hì
 Giữ nguyên: sidebar, nhóm/đườngdẫn, NotoSans, màu xanh admin và xanh portal, cột bảng/thứ tự, nút chính, quyền/serverguards, API/RPC/schema và cơ chế retry. Không áp dụng fontswap, bento, ảnh/motion/sidebar khác từ Taste. Không sửa phần đã tốt chỉ để tạo khác biệt.
 
 Quan sát ngoài phần sửa: nhãn nguồn công nợ hiện là “Giao hàng đã xác minh” cùng tên công trình, chưa chứa mã phiếu giao. Không thay hợp đồng đọc hoặc nguồn khoản tiền trong đợt UI. Kịch bản nghiệm thu chọn đúng ID khoản công nợ qua API có xác thực rồi đối chiếu thứ tự hiển thị; không chọn chỉ từ nhãn trùng.
+
+Kiểm tra thêm320/760/1024/1100/1180/1440px phát hiện phần `148,052%` vẫn bị cắt trong ô ở1024–1180px. Sửa điểm ngắt ở dấu phẩy thập phân, giữ nguyên chuỗi đã định dạng và nhóm chữ số. Không đổi số tiền hoặc cách tính biên lợi nhuận. RESPONSIVE_BEFORE_PATCH.json giữ kết quả lỗi thật; kiểm lại phần hiển thị, không chạy lại ca ghi sổ đã hoàn tất.

@@ -1,0 +1,56 @@
+{
+  "status": "FAIL_DISPLAY_CLIPPING_AT_NARROW_DESKTOP",
+  "checkedAt": "2026-10-12T17:37:37.622219+00:00",
+  "codeCommit": "543a93e5f2581ead5c6294a4cec4bdf5d42efc06",
+  "productionAccess": "NONE",
+  "rows": [
+    {
+      "width": 320,
+      "documentOverflow": false,
+      "clipped": []
+    },
+    {
+      "width": 760,
+      "documentOverflow": false,
+      "clipped": []
+    },
+    {
+      "width": 1024,
+      "documentOverflow": false,
+      "clipped": [
+        {
+          "value": "-26.616.145.148,052%",
+          "client": 80,
+          "scroll": 117
+        }
+      ]
+    },
+    {
+      "width": 1100,
+      "documentOverflow": false,
+      "clipped": [
+        {
+          "value": "-26.616.145.148,052%",
+          "client": 95,
+          "scroll": 117
+        }
+      ]
+    },
+    {
+      "width": 1180,
+      "documentOverflow": false,
+      "clipped": [
+        {
+          "value": "-26.616.145.148,052%",
+          "client": 111,
+          "scroll": 117
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "documentOverflow": false,
+      "clipped": []
+    }
+  ]
+}

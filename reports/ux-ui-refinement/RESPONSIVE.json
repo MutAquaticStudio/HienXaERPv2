@@ -1,0 +1,46 @@
+{
+  "checkedAt": "2026-10-12T17:40:03.898Z",
+  "codeBase": "af42bb5aadfa38f5e0641361284043ab1ff855d8",
+  "sourceDiff": "M src/components/ui/metric-number.tsx",
+  "productionAccess": "NONE",
+  "writes": 0,
+  "rows": [
+    {
+      "width": 320,
+      "documentOverflow": false,
+      "clipped": []
+    },
+    {
+      "width": 760,
+      "documentOverflow": false,
+      "clipped": []
+    },
+    {
+      "width": 1024,
+      "documentOverflow": false,
+      "clipped": []
+    },
+    {
+      "width": 1100,
+      "documentOverflow": false,
+      "clipped": []
+    },
+    {
+      "width": 1180,
+      "documentOverflow": false,
+      "clipped": []
+    },
+    {
+      "width": 1280,
+      "documentOverflow": false,
+      "clipped": []
+    },
+    {
+      "width": 1440,
+      "documentOverflow": false,
+      "clipped": []
+    }
+  ],
+  "valuesUnchangedAcrossViewports": true,
+  "status": "PASS"
+}

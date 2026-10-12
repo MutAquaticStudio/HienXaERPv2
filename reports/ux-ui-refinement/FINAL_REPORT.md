@@ -17,3 +17,5 @@ Nhãn công nợ hiện có thể trùng loại nguồn/công trình; giữ hợ
 Xem [ảnh](COMPARISON.md), [vai trò](ROLE_SCREEN_MATRIX.md), [nhật ký](EXECUTION_LOG.md), [bảng hoàn tất](DOD.md), [kiểm dữ liệu](UX_BROWSER.json), [dọn QA](QA_CLEANUP.json).
 
 Bản build phục vụ preview đã đối chiếu health SHA543a93e, chụp lại24 màn hình đăng nhập và giữ cùng runtime hash `789ca0f771cea763525d9a97e30e4193b63532135a46b5c68b04163be5c887de`. Ảnh trước là dev baseline sạch; ảnh sau cuối là next start, nên không còn biểu tượng phát triển.
+
+Sửa bổ sung: phần trăm rất dài không bị cắt tại1024–1180px; ngắt ở dấu phẩy giữ nguyên chuỗi. RESPONSIVE.json: cả7 kích thước320–1440px đạt, nội dung số không đổi. Runtime hash sau sửa: `b56c4ace29f2690f5fb78bb9acfb9327861488346c43254d4fdcfd3dedbb600c`. Các ca ghi sổ đã đạt vẫn còn hiệu lực vì không đổi hợp đồng/quyền/tính toán; không chạy lại. CI sau sửa phải được kiểm riêng.

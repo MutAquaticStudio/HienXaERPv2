@@ -37,3 +37,7 @@ pnpm build
 Source của khảo sát là baseline e2a6393 hoặc e2a6393 cộng diff UI. Commit mã543a93e đã push và [PR44](https://github.com/MutAquaticStudio/HienXaERPv2/pull/44) đã tạo/attach. CI mã đạt tại run38283937185. Bản preview dùng next start đã chụp lại24 màn hình trên SHA543a93e, source sạch; bản ghi PREVIEW.json xác minh health và runtime hash. Commit chốt ảnh/tài liệu không đổi runtime; kiểm CI đúng head cuối riêng, kết quả chốt trong mô tả PR trước bàn giao. Không dùng SHA baseline để nói thay đổi đã có trên Production.
 
 [CI_CODE.json](CI_CODE.json) ghi đầy đủ các bước CI đã thành công. Không có nâng cấp schema hoặc triển khai ứng dụng trong đợt này; vercel.json chỉ tắt tự triển khai nhánh UI. Checkout gốc vẫn giữ status/HEAD/nội dung.
+
+Sau CI543a93e và af42bb5 đều đạt, kiểm viewport bổ sung phát hiện clipping phần trăm tại1024/1100/1180px. MetricNumber được sửa để cho phép ngắt ở dấu phẩy; chỉ thay hiển thị, không đổi formatter/tính toán. Cần CI mới; hai run trước không đại diện cho sửa này.
+
+Đã kiểm lại7 viewport:0 clipping,0 document overflow, text các chỉ số không đổi. Typecheck, lint, build sau sửa đều exit0 (LOCAL_CHECKS.json). Sau sửa MetricNumber chỉ chạy lại đọc/hiển thị và CI; không replay ca ghi sổ hoặc hai race bị loại.
