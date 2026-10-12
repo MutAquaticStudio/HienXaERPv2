@@ -1,0 +1,53 @@
+{
+  "checkedFunctions": 303,
+  "differences": [
+    {
+      "function": "private.assign_employee_role",
+      "changes": {
+        "md5": {
+          "native": "f57394bc949932338cb6ad57ad14d666",
+          "production": "afa28ffe0a78ed89219e66947d25cb7c"
+        }
+      }
+    },
+    {
+      "function": "private.current_employee_id",
+      "changes": {
+        "md5": {
+          "native": "776ff5d9ad44fa2b856b07a1a2463a8f",
+          "production": "9539c265ac0b2203dddc5decaf556757"
+        }
+      }
+    },
+    {
+      "function": "private.has_branch_access",
+      "changes": {
+        "md5": {
+          "native": "76058bd98055f05175b8fb27885f38b9",
+          "production": "2a96aba87cdd1325b996906489b94cf0"
+        }
+      }
+    },
+    {
+      "function": "private.has_customer_membership",
+      "changes": {
+        "md5": {
+          "native": "e8ad7400e0be63125f098e1035161c5d",
+          "production": "0a78f315e0d79035257a1e33be372883"
+        }
+      }
+    },
+    {
+      "function": "public.register_invited_employee",
+      "changes": {
+        "md5": {
+          "native": "0ddb2e85e999e413a28d6433e510c125",
+          "production": "3f89c5fb467a243ea0fc2ff7bc1cf4fa"
+        }
+      }
+    }
+  ],
+  "extraPlatformFunctions": [
+    "public.rls_auto_enable"
+  ]
+}

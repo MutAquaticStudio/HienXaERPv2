@@ -1,0 +1,41 @@
+{
+  "status": "PASS_PRODUCTION_SCHEMA187_COMPACT_UPGRADE_READBACK",
+  "project": "nbwynrwkdbtfsitafsxa",
+  "mergeSha": "8f65d70f87703c54611487b828751a613a9e6ca6",
+  "artifactSha256": "8574eadb22ba9aea75c9f8819fd257d138714516e950be0060dbdfa5708af14d",
+  "canonicalFeatureSchema": 187,
+  "historyExplanation": "78 original canonical versions +1 UAT maintenance +101 actually executed tail versions +1 reviewed reconciliation bundle. Eight sparse historical versions not marked applied.",
+  "retainedBusinessData": "All fields and keys of existing public/private rows checked inside the successful transaction, including Owner roles/permission grants.",
+  "backup": "WAIVED_BY_OWNER",
+  "checked_at": "2026-10-12 20:31:01.631036+00",
+  "history_count": 181,
+  "canonical_tail_count": 101,
+  "latest": "20261012202856",
+  "functions_including_platform": 304,
+  "public_views": 52,
+  "application_policies": 127,
+  "application_triggers": 111,
+  "opening_pending_initializer": 0,
+  "facts": {
+    "ap": 0,
+    "ar": 0,
+    "po": 0,
+    "so": 0,
+    "payments": 0,
+    "movements": 0,
+    "cash_opening": 0,
+    "finance_opening": 0,
+    "inventory_opening": 0
+  },
+  "authenticator_settings": [
+    {
+      "role": "authenticator",
+      "settings": [
+        "session_preload_libraries=supautils, safeupdate",
+        "statement_timeout=8s",
+        "lock_timeout=8s",
+        "pgrst.db_pre_request=public.require_active_api_actor"
+      ]
+    }
+  ]
+}

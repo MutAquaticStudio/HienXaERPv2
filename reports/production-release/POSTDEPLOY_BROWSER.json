@@ -1,0 +1,28 @@
+{
+  "status": "PASS_PUBLIC_PRODUCTION_BROWSER_RENDER_AND_NAVIGATION",
+  "url": "https://hien-xa-erp-v2-nu.vercel.app/login",
+  "commit": "8f65d70f87703c54611487b828751a613a9e6ca6",
+  "browser": "Codex in-app Browser through cua_repl",
+  "desktop": {
+    "width": 1280,
+    "height": 900,
+    "scrollWidth": 1280,
+    "screenshot": "screenshots/production-login-desktop.jpg"
+  },
+  "mobile": {
+    "width": 390,
+    "height": 844,
+    "scrollWidth": 390,
+    "screenshot": "screenshots/production-login-mobile.jpg"
+  },
+  "checks": {
+    "meaningfulContent": true,
+    "errorOverlay": false,
+    "consoleErrorsOrWarnings": 0,
+    "passwordVisibilityToggle": "PASS_WITH_EMPTY_FIELD",
+    "officeToWorkLoginNavigation": "PASS",
+    "loginRoles": "Office and work entry surfaces only"
+  },
+  "authenticatedProductionBrowser": "UNVERIFIED_EXISTING_BUSINESS_LOGIN_REQUIRED",
+  "writes": "No login submission, business data or financial/inventory test created"
+}

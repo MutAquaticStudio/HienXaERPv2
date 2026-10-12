@@ -1,0 +1,22 @@
+{
+  "differences": {
+    "service_role": 171,
+    "authenticated": 37,
+    "anon": 37
+  },
+  "examples": {
+    "service_role": {
+      "native": null,
+      "production": "Dmtx"
+    },
+    "authenticated": {
+      "native": "r",
+      "production": "Dmrtx"
+    },
+    "anon": {
+      "native": null,
+      "production": "Dmtx"
+    }
+  },
+  "anonymousAndAuthenticatedUnchanged": false
+}

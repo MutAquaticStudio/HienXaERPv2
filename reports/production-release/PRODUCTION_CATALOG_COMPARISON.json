@@ -1,0 +1,3380 @@
+{
+  "groupsChecked": [
+    "views",
+    "columns",
+    "indexes",
+    "policies",
+    "triggers",
+    "relations",
+    "constraints"
+  ],
+  "differences": {
+    "policies": {
+      "productionOnly": [
+        {
+          "cmd": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "policyname": "r9_portal_evidence_server_read_only",
+          "qual": "((bucket_id <> 'portal-evidence'::text) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+          "roles": [
+            "authenticated"
+          ],
+          "schemaname": "storage",
+          "tablename": "objects",
+          "with_check": null
+        },
+        {
+          "cmd": "DELETE",
+          "permissive": "RESTRICTIVE",
+          "policyname": "evidence_no_authenticated_delete",
+          "qual": "((bucket_id <> ALL (ARRAY['portal-evidence'::text, 'inventory-evidence'::text, 'delivery-proofs'::text])) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+          "roles": [
+            "authenticated"
+          ],
+          "schemaname": "storage",
+          "tablename": "objects",
+          "with_check": null
+        },
+        {
+          "cmd": "SELECT",
+          "permissive": "PERMISSIVE",
+          "policyname": "r6_evidence_select",
+          "qual": "((bucket_id = ANY (ARRAY['delivery-proofs'::text, 'inventory-evidence'::text])) AND private.can_read_internal_evidence_storage(bucket_id, name) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+          "roles": [
+            "authenticated"
+          ],
+          "schemaname": "storage",
+          "tablename": "objects",
+          "with_check": null
+        },
+        {
+          "cmd": "INSERT",
+          "permissive": "PERMISSIVE",
+          "policyname": "r9_portal_evidence_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "schemaname": "storage",
+          "tablename": "objects",
+          "with_check": "((bucket_id = 'portal-evidence'::text) AND private.can_write_portal_evidence_object(name) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)"
+        },
+        {
+          "cmd": "UPDATE",
+          "permissive": "RESTRICTIVE",
+          "policyname": "evidence_no_authenticated_replace",
+          "qual": "((bucket_id <> ALL (ARRAY['portal-evidence'::text, 'inventory-evidence'::text, 'delivery-proofs'::text])) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)",
+          "roles": [
+            "authenticated"
+          ],
+          "schemaname": "storage",
+          "tablename": "objects",
+          "with_check": "((bucket_id <> ALL (ARRAY['portal-evidence'::text, 'inventory-evidence'::text, 'delivery-proofs'::text])) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)"
+        },
+        {
+          "cmd": "INSERT",
+          "permissive": "PERMISSIVE",
+          "policyname": "r6_evidence_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "schemaname": "storage",
+          "tablename": "objects",
+          "with_check": "((bucket_id = ANY (ARRAY['delivery-proofs'::text, 'inventory-evidence'::text])) AND private.can_write_internal_evidence_storage(bucket_id, name) AND\nCASE\n    WHEN (CURRENT_USER = 'authenticated'::name) THEN private.auth_actor_active()\n    ELSE true\nEND)"
+        }
+      ],
+      "nativeOnly": []
+    },
+    "relations": {
+      "productionOnly": [
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "credit_commitments",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "return_cases",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "invoice_draft_lines",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "pricing_rules",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "commission_reconciliation_cases",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "receivable_adjustments",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "purchase_orders",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "payable_obligations",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "compensation_rules",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "stock_count_observations",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "vehicles",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "purchase_receipts",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "warehouse_transfer_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "warehouse_transfer_event_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "role_permissions",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "supplier_document_line_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "material_uom_conversions",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "delivery_result_lines",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "quotation_lines",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "supplier_fulfillments",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "invoice_coverage",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "roles",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "delivery_expense_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "payment_allocation_source_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "messages",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "work_result_portal_evidence",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "payment_notice_reconciliation_source_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "quotation_change_requests",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=Dxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "supplier_return_events",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "inventory_movement_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "inventory_reservations",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "sales_orders",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "delivery_expense_sources",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "employee_branch_access",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "revenue_adjustments",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "work_item_heartbeats",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "service_work_logs",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "gps_positions",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "pricing_rule_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "quotation_pdf_artifacts",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "branches",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "purchase_order_line_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "purchase_receipt_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "supplier_return_event_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "employees",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=Dxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "warehouse_transfer_events",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "conversation_participants",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "payable_adjustments",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "quotations",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "payable_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "payment_allocations",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "delivery_verifications",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "direct_cost_entries",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "purchase_price_rules",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "payment_notice_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "inventory_movements",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "delivery_verification_lines",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "customer_portal_memberships",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "work_item_results",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "purchase_invoice_registry_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "supplier_documents",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "routing_settings",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "delivery_handoff_line_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "service_job_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "delivery_handoffs",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "machines",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "supplier_document_eligible_source_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "revenue_entries",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "low_stock_alert_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "permissions",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "purchase_receipt_lines",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "customer_credit_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "service_verifications",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "quotation_revisions",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "purchase_order_lines",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "inventory_stock_thresholds",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "customer_credit_funds",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "supplier_return_credits",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "payment_notice_review_events",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "purchase_order_line_progress_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "command_receipts",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "compensation_recognition_policies",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "inventory_opening_transit_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "customer_credit_exposure",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "compensation_manual_bases",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=Dxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "supplier_return_cases",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "payable_obligation_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "supplier_document_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "receivable_obligation_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "units_of_measure",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "employee_permission_grants",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "stock_count_lines",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "workforce_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "materials",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "sales_line_supply_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "supplier_return_credit_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "audit_events",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "payment_reconciliation_matches",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "supplier_contacts",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "purchase_order_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "earning_events",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "finance_accounts",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "route_plans",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "payment_notice_match_reversals",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "supplier_return_eligible_source_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "warehouse_inventory_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "customer_sites",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "invoice_draft_line_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "sales_order_credit_overrides",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "delivery_handoff_lines",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "invoice_intent_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "stock_count_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "sales_order_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "delivery_assignments",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "advances",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "delivery_line_read",
+          "reloptions": [
+            "security_invoker=false",
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "expense_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "opening_balance_sources",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "stock_count_line_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "expense_categories",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "supplier_return_operational_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "delivery_verification_line_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "supply_allocations",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "supplier_fulfillment_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "portal_evidence_objects",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "work_item_assignments",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "warehouse_transfers",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "service_jobs",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "delivery_expense_assignment_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "work_items",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "advance_allocations",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "earning_event_read",
+          "reloptions": null,
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "customer_credits",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=rDxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "customers",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "expenses",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "sales_order_lines",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "conversations",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "payment_notice_matches",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "invoice_intents",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "customer_return_finance_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "stock_counts",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "evidence_objects",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "warehouses",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "supplier_credit_funds",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "delivery_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "route_plan_stops",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "work_item_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "supplier_document_lines",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "work_item_verifications",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "supplier_fulfillment_lines",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "delivery_results",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "suppliers",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "receivable_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "customer_credit_settlements",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "delivery_lines",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "material_groups",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "supplier_credit_settlements",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "supplier_return_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "payments",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "deliveries",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "purchase_invoice_registry",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "payment_notices",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "cash_opening_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "gps_tracking_sessions",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "payment_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "quotation_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,anon=Dxtm/postgres,authenticated=rDxtm/postgres,service_role=Dxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "advance_position_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "invoice_adjustment_drafts",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "receivable_obligations",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "quotation_acceptances",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "report_export_jobs",
+          "reloptions": null,
+          "relrowsecurity": true
+        }
+      ],
+      "nativeOnly": [
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "sales_order_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "supply_allocations",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "audit_events",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "warehouse_inventory_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,service_role=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "customers",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "purchase_order_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "warehouses",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "inventory_opening_transit_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "delivery_result_lines",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "expense_categories",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "payable_obligation_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "work_item_assignments",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "commission_reconciliation_cases",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "delivery_verification_lines",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "warehouse_transfer_event_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "payment_allocations",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "conversation_participants",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "vehicles",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "workforce_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "direct_cost_entries",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "invoice_adjustment_drafts",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "finance_accounts",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "payable_obligations",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "expense_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "supplier_contacts",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "stock_count_lines",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "receivable_obligation_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "revenue_adjustments",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "materials",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "credit_commitments",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "branches",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "earning_events",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "quotation_lines",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "purchase_price_rules",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "compensation_rules",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "delivery_expense_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "purchase_receipt_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "delivery_line_read",
+          "reloptions": [
+            "security_invoker=false",
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "advance_allocations",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "delivery_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "customer_sites",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "material_uom_conversions",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "inventory_stock_thresholds",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "delivery_handoff_lines",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "invoice_draft_line_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "inventory_movements",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "revenue_entries",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "messages",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "supplier_return_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "invoice_intents",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "gps_tracking_sessions",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "customer_credit_settlements",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "pricing_rule_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "work_item_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "deliveries",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "purchase_invoice_registry",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "supplier_return_events",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "quotation_pdf_artifacts",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "work_item_results",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "customer_return_finance_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "machines",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "quotation_change_requests",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "supplier_fulfillment_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "receivable_obligations",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "supplier_fulfillments",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "work_items",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "invoice_coverage",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "payment_notice_matches",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "advance_position_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "work_result_portal_evidence",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "delivery_lines",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "quotation_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "material_groups",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "route_plans",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "compensation_recognition_policies",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "delivery_assignments",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "payable_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "role_permissions",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "route_plan_stops",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "supplier_document_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "payment_allocation_source_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "sales_orders",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "customer_credit_funds",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "supplier_return_credits",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "supplier_document_line_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "sales_line_supply_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "roles",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "stock_count_observations",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "purchase_orders",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "receivable_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "warehouse_transfer_events",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "stock_count_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "supplier_document_lines",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "purchase_order_line_progress_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "supplier_documents",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "work_item_heartbeats",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "compensation_manual_bases",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "warehouse_transfers",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "delivery_expense_sources",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "sales_order_credit_overrides",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "invoice_intent_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "supplier_document_eligible_source_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "advances",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "sales_order_lines",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "service_verifications",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "routing_settings",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "conversations",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "service_jobs",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "customer_credit_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "stock_count_line_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "payment_notices",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "gps_positions",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "payable_adjustments",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "low_stock_alert_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "report_export_jobs",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "delivery_results",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "command_receipts",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "supplier_return_operational_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "customer_credit_exposure",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "payment_notice_match_reversals",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "cash_opening_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "portal_evidence_objects",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "purchase_order_lines",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "employees",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "stock_counts",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "payment_notice_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "earning_event_read",
+          "reloptions": null,
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "supplier_credit_settlements",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "supplier_fulfillment_lines",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "quotation_acceptances",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "purchase_order_line_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "delivery_verification_line_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "quotations",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "supplier_credit_funds",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "payment_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "quotation_revisions",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "pricing_rules",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "employee_branch_access",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "supplier_return_eligible_source_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "evidence_objects",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "customer_credits",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "return_cases",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "invoice_draft_lines",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "employee_permission_grants",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "payment_notice_reconciliation_source_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "supplier_return_event_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "purchase_receipt_lines",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "service_job_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "payment_notice_review_events",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "opening_balance_sources",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "delivery_handoff_line_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "supplier_return_cases",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "delivery_expense_assignment_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "inventory_reservations",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "inventory_movement_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "payments",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "delivery_verifications",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "purchase_invoice_registry_read",
+          "reloptions": [
+            "security_invoker=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "permissions",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "delivery_handoffs",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "warehouse_transfer_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "work_item_verifications",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "expenses",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "purchase_receipts",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "units_of_measure",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "payment_reconciliation_matches",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "customer_portal_memberships",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "service_work_logs",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "receivable_adjustments",
+          "reloptions": null,
+          "relrowsecurity": true
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "v",
+          "relname": "supplier_return_credit_read",
+          "reloptions": [
+            "security_barrier=true"
+          ],
+          "relrowsecurity": false
+        },
+        {
+          "nspname": "public",
+          "relacl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}",
+          "relforcerowsecurity": false,
+          "relkind": "r",
+          "relname": "suppliers",
+          "reloptions": null,
+          "relrowsecurity": true
+        }
+      ]
+    }
+  }
+}

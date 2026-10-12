@@ -1,0 +1,18 @@
+{
+  "status": "PASS_API_TABLE_PRIVILEGES_ALIGNED_WITH_CANONICAL",
+  "canonicalFeatureSchema": 188,
+  "project": "nbwynrwkdbtfsitafsxa",
+  "migrationFile": "supabase/migrations/20261012211058_align_business_api_table_privileges.sql",
+  "rowCrudPrivileges": "SELECT/INSERT/UPDATE/DELETE identical before/after, asserted in the committed migration transaction.",
+  "dataChanges": "NONE",
+  "serverRpcAndRlsChanges": "NONE",
+  "checked_at": "2026-10-12 21:13:35.403996+00",
+  "extra_api_ddl_privileges": 0,
+  "owner_permissions": 62,
+  "customer_rows": 1,
+  "owner_employee": 1,
+  "history_count": 182,
+  "latest": "20261012211058",
+  "payments": 0,
+  "inventory_movements": 0
+}

@@ -1,0 +1,21 @@
+{
+  "status": "PASS_DATABASE_READONLY_ROLE_BOUNDARIES",
+  "scope": "SET LOCAL ROLE authenticated with real existing Auth UID claims in a read-only rolled-back DB transaction; this is not a browser/HTTP login proof.",
+  "owner": {
+    "customerRows": 1,
+    "employeeRows": 1,
+    "branchState": {
+      "postingAllowed": true,
+      "canActivate": false,
+      "historicalQuality": "UNRECONCILED",
+      "businessTotalVerified": false,
+      "recordedOperationsSince": null
+    }
+  },
+  "unassignedExistingUser": {
+    "customerRows": 0,
+    "employeeRows": 0,
+    "branchRows": 0
+  },
+  "businessWrites": false
+}
