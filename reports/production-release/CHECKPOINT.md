@@ -1,4 +1,6 @@
-# Trạng thái phát hành hiện hành — 13/10/2026
+# Checkpoint chuẩn bị — 13/10/2026
+
+**Đây là trạng thái trước merge/deploy. Kết quả hiện hành ở FINAL_REPORT.md,DOD.md và các readback sau triển khai.**
 
 Người dùng cho phép dọn UAT → merge PR44 → deploy Production và đã chỉ đạo **không cần sao lưu**. Quyết định này thay điều kiện sao lưu trước đó. Không đặt lại mật khẩu hoặc lấy bí mật QA dùng cho Production. Triển khai tiếp qua Supabase MCP và Vercel CLI có quyền hiện hữu; không cần mật khẩu pg_dump khi không sao lưu.
 
