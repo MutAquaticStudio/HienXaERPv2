@@ -1,0 +1,16 @@
+{
+  "scope": "G05_G15_G22_METADATA_WITHOUT_STORAGE_CANNOT_FINALIZE",
+  "phase": "before",
+  "status": "REPRODUCED_METADATA_ONLY_READY_WITHOUT_UPLOAD",
+  "facts": {
+    "states": {
+      "portal": "READY",
+      "internal": "VERIFIED"
+    },
+    "uploadedBytes": 0,
+    "sourceCommandsSubmitted": 0
+  },
+  "actualStorageTested": false,
+  "rolledBack": true,
+  "productionAccess": "NONE"
+}

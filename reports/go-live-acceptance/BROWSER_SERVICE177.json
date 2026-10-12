@@ -1,0 +1,23 @@
+{
+  "scope": "T36_REAL_SERVICE_BROWSER_MANAGER_WORKER_VERIFICATION",
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "SERVICE_MANAGER_CREATES_WORKER_STARTS_REPORTS_MANAGER_ACCEPTS_ONCE",
+      "status": "PASS",
+      "facts": {
+        "execution_state": "VERIFIED",
+        "work_state": "VERIFIED",
+        "verifications": 1,
+        "ar": "500000",
+        "cash": 1
+      }
+    }
+  ],
+  "screenshots": [
+    "reports/go-live-acceptance/screenshots/service-verified-real-source.png"
+  ],
+  "job": "023408cf-962d-425a-be69-d17f2befa2cc",
+  "work": "00658b4d-5a93-4b7a-a623-f7e75702bdf7",
+  "status": "PASS"
+}

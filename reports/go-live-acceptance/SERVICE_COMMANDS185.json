@@ -1,0 +1,21 @@
+{
+  "scope": "SERVICE_CANCEL_ASSIGN_START_HEARTBEAT_RIGHTS_RETRY",
+  "checks": [
+    {
+      "name": "UNSTARTED_SERVICE_CANCEL_RIGHTS_NULL_VERSION_RETRY",
+      "status": "PASS"
+    },
+    {
+      "name": "MANAGER_ASSIGN_WORK_ITEM_CURRENT_SOURCE_RETRY_ONE_AUDIT",
+      "status": "PASS"
+    },
+    {
+      "name": "CURRENT_WORKER_HEARTBEAT_FOREIGN_DENIAL_STARTED_SERVICE_CANCEL_REJECTED",
+      "status": "PASS"
+    }
+  ],
+  "productionAccess": "NONE",
+  "status": "PASS",
+  "rolledBack": true,
+  "checkedAt": "2026-10-12T10:23:55.350Z"
+}

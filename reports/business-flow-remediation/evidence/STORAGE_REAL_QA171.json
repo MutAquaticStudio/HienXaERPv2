@@ -1,0 +1,154 @@
+{
+  "scope": "REAL_STORAGE_FULL_PR42_SOURCE171",
+  "projectRef": "ffrwiglcrlumfvhubaxg",
+  "checks": [
+    {
+      "name": "T39-S1_NOTICE_REAL_BYTES_SOURCE_DOWNLOAD_SCOPES",
+      "status": "PASS",
+      "facts": {
+        "id": "5ae7aaf7-d1e2-46ba-8feb-2cbe5f0d35e3",
+        "object_state": "READY",
+        "checksum_sha256": "004b6a122c6be7ffdca5258b9b4046103f780e47c2d53dc97ecb81d70431547e",
+        "final_byte_size": "869",
+        "objects": 1,
+        "attestations": 1,
+        "bindings": 1,
+        "audits": 1
+      },
+      "notice": "c06fdca6-c51f-4e58-b785-0e3aecafa4e5",
+      "cashUnchanged": true,
+      "directPortalStorageReads": "Intentionally denied; authorized app stream passed"
+    },
+    {
+      "name": "T39-S4_UPLOAD",
+      "status": "PASS",
+      "interrupted": {
+        "id": "170f7695-7676-4a1b-9ca0-201347993969",
+        "object_state": "PENDING",
+        "checksum_sha256": null,
+        "final_byte_size": null,
+        "objects": 0,
+        "attestations": 0,
+        "bindings": 0,
+        "audits": 0
+      },
+      "recovered": {
+        "id": "170f7695-7676-4a1b-9ca0-201347993969",
+        "object_state": "READY",
+        "checksum_sha256": "004b6a122c6be7ffdca5258b9b4046103f780e47c2d53dc97ecb81d70431547e",
+        "final_byte_size": "869",
+        "objects": 1,
+        "attestations": 1,
+        "bindings": 1,
+        "audits": 1
+      },
+      "transport": "Real QA backend with one deliberate request/response interruption"
+    },
+    {
+      "name": "T39-S4_DOWNLOAD",
+      "status": "PASS",
+      "interrupted": {
+        "id": "e6d2a624-ce4c-423b-9d5d-c0013f73f8da",
+        "object_state": "PENDING",
+        "checksum_sha256": null,
+        "final_byte_size": null,
+        "objects": 1,
+        "attestations": 0,
+        "bindings": 0,
+        "audits": 0
+      },
+      "recovered": {
+        "id": "e6d2a624-ce4c-423b-9d5d-c0013f73f8da",
+        "object_state": "READY",
+        "checksum_sha256": "004b6a122c6be7ffdca5258b9b4046103f780e47c2d53dc97ecb81d70431547e",
+        "final_byte_size": "869",
+        "objects": 1,
+        "attestations": 1,
+        "bindings": 1,
+        "audits": 1
+      },
+      "transport": "Real QA backend with one deliberate request/response interruption"
+    },
+    {
+      "name": "T39-S4_FINALIZE-RESPONSE",
+      "status": "PASS",
+      "interrupted": {
+        "id": "65b24c12-c567-4315-89a5-2d92e5e096ac",
+        "object_state": "READY",
+        "checksum_sha256": "004b6a122c6be7ffdca5258b9b4046103f780e47c2d53dc97ecb81d70431547e",
+        "final_byte_size": "869",
+        "objects": 1,
+        "attestations": 1,
+        "bindings": 1,
+        "audits": 1
+      },
+      "recovered": {
+        "id": "65b24c12-c567-4315-89a5-2d92e5e096ac",
+        "object_state": "READY",
+        "checksum_sha256": "004b6a122c6be7ffdca5258b9b4046103f780e47c2d53dc97ecb81d70431547e",
+        "final_byte_size": "869",
+        "objects": 1,
+        "attestations": 1,
+        "bindings": 1,
+        "audits": 1
+      },
+      "transport": "Real QA backend with one deliberate request/response interruption"
+    },
+    {
+      "name": "T39-S1_WORK_RESULT_ATTACHED_REAL_FILE",
+      "status": "PASS",
+      "work": "38d8cec5-1f3a-41c9-a6a9-9eb66a35e144",
+      "result": "c22ab602-6a55-4c9c-837c-145d29337218",
+      "evidence": "2da9a845-666a-437d-8c70-8e981e007dcf"
+    },
+    {
+      "name": "T39-S2_S4_INTERNAL_UPLOAD_RELOAD_SOURCE_RECEIPT",
+      "status": "PASS",
+      "evidence": "5594ba66-536d-4c7f-891f-ed02b36eb9ad",
+      "receipt": "fc1b1208-0128-432b-815c-0dd8cf7e27fe",
+      "evidenceCount": 1,
+      "bindings": 1,
+      "lossAfterActualCommit": true
+    },
+    {
+      "name": "T39-S3_ADMIN_REPLACEMENT_INVALIDATES_PROOF_WITHOUT_UNPOSTING",
+      "status": "PASS",
+      "evidence": "5ae7aaf7-d1e2-46ba-8feb-2cbe5f0d35e3",
+      "affectedNotice": "c06fdca6-c51f-4e58-b785-0e3aecafa4e5",
+      "proofValid": false,
+      "documentUnchanged": true,
+      "newEvidenceRequired": true
+    }
+  ],
+  "sources": {
+    "noticeEvidence": "5ae7aaf7-d1e2-46ba-8feb-2cbe5f0d35e3",
+    "notice": "c06fdca6-c51f-4e58-b785-0e3aecafa4e5",
+    "fault-upload": "170f7695-7676-4a1b-9ca0-201347993969",
+    "fault-download": "e6d2a624-ce4c-423b-9d5d-c0013f73f8da",
+    "fault-finalize-response": "65b24c12-c567-4315-89a5-2d92e5e096ac",
+    "workEvidence": "2da9a845-666a-437d-8c70-8e981e007dcf",
+    "workResult": "c22ab602-6a55-4c9c-837c-145d29337218",
+    "po": "eff60292-1311-46d0-8ab9-dffab2c8bd3c",
+    "internalEvidence": "5594ba66-536d-4c7f-891f-ed02b36eb9ad"
+  },
+  "intents": {
+    "notice-upload": "54186897-cd94-46a3-8e20-9bddc7ab600e",
+    "notice-submit": "c8e55ab8-a991-48dd-bb83-8d42655ee0df",
+    "fault-upload": "75718fe7-c880-4c2f-8fe8-eb52f8eaca90",
+    "fault-download": "b51451e1-7389-452a-8860-94bd132065eb",
+    "fault-finalize-response": "8b2c9044-585f-453d-aba7-49098b2691e1",
+    "work-upload": "adc283a3-f839-4053-8112-2adb32e830c7",
+    "work-result": "859cb6e4-61c0-404f-ad62-73762b0a1978",
+    "po-create": "2a3dbe61-c963-4dd4-b4d5-005eca1a9eb4",
+    "po-confirm": "f9f88f85-23bf-4f8b-9d79-12048858f7b1"
+  },
+  "productionAccess": "NONE",
+  "tokensRecorded": false,
+  "schema": {
+    "canonicalMigrations": 171,
+    "historyEntries": 172,
+    "preservedExtra": "20261002114730"
+  },
+  "status": "PASS_SCOPED_REAL_STORAGE",
+  "lastInternalUploadError": "Không thể tải minh chứng. Vui lòng thử lại. Thử tải lại"
+}

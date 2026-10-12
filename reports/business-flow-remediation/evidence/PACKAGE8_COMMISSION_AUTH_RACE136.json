@@ -1,0 +1,72 @@
+{
+  "scope": "G09_REAL_AUTH_RECOVERY_VS_PAYOUT_SAME_UNPAID_COMMISSION",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "productionAccess": "NONE",
+  "managedQaBusinessWrites": 0,
+  "checks": [
+    {
+      "status": "PASS",
+      "actors": [
+        "0d1d2134-5a21-40a4-9fcb-375898d3c133",
+        "a89838c9-bb2d-4758-874c-b031f9655f49"
+      ],
+      "pidA": 31357,
+      "pidB": 31358,
+      "observedBlockingPids": [
+        31357
+      ],
+      "facts": {
+        "unpaid": "8500",
+        "resolutions": 1,
+        "employeepayments": 1,
+        "rejectedreceipts": 0,
+        "rejectedaudits": 0
+      },
+      "doc": {
+        "stock": {
+          "prefix": "RM8A63C826",
+          "uom": "3d792f79-b082-472b-b4c4-312bfc1ea116",
+          "material": "ef855528-c616-43a8-905f-264a8bb70b4f",
+          "price": "058e5a21-fc68-4a0f-a556-6ac64bfb8a09",
+          "cost": "d94220a0-c147-4721-9f94-6a33c3b89893",
+          "po": "5744949c-4ce9-4a74-b31e-3728c4a60ba7",
+          "common": {
+            "material_id": "ef855528-c616-43a8-905f-264a8bb70b4f",
+            "ordered_uom_id": "3d792f79-b082-472b-b4c4-312bfc1ea116",
+            "quantity": "14",
+            "conversion_numerator": "1",
+            "conversion_denominator": "1",
+            "rounding_mode": "HALF_UP"
+          },
+          "cutoff": "2026-10-11 16:00:56.323112+07",
+          "customer": "cceb13c5-1505-4e1d-adb8-9faa15bc9b18",
+          "site": "97e2361d-240b-4dfb-9833-880b96ca9b8e",
+          "unitPriceVnd": "230000"
+        },
+        "sale": {
+          "so": "c28eca10-fc92-4a87-8d57-95a89fa6b0bb",
+          "line": "4399d1cf-1407-43d5-a97b-34fbf72b9171"
+        },
+        "account": "1de0c0df-e30d-4bef-a7c6-a87f49c849f8",
+        "payment": "846d4c72-4fc4-4cc1-bc0d-914442853f14",
+        "obligation": "91f2f735-9db8-4fc0-ba1b-a497dd1fe912",
+        "returnCase": "09506ed5-dd40-4939-a23e-cb0edd2167fe",
+        "verificationLine": "0782261f-dfea-4ca8-abcb-73585ca66614",
+        "delivery": "eaf5e87d-e430-4539-a5d7-1f07fe64c95a",
+        "commissionRule": "308fc4ea-49fa-4d5d-a44e-9cb8e0939c2d",
+        "commissionEmployee": "373207ea-275b-4f7b-93dc-93bb9513e175",
+        "review": "c680ca7d-dc68-4ac2-967e-53c7f3c289da",
+        "reduction": "11500",
+        "originalEarning": "84d22ca8-f72c-45dc-b7a1-e18d77145c25",
+        "originalPayable": "705d5bbb-670e-437e-a17b-9b701d0e89b3",
+        "originalHash": "f70fee56d633824b9aa9efe4db7fc772",
+        "target": "da28b84a-fde3-40e6-b0c2-032cf476405d",
+        "targetVersion": 2,
+        "targetPayable": "df73645b-7593-4705-b522-1e13bd3f62e0",
+        "adjustmentRule": "a3a80664-fd0a-48e0-98b8-e90256bba9c7"
+      }
+    }
+  ],
+  "excludedAdvanceRacesReexecuted": false,
+  "status": "PASS_REAL_AUTH_COMMISSION_RECOVERY_PAYOUT_RACE"
+}

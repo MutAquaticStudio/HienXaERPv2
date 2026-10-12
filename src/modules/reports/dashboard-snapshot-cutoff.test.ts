@@ -15,7 +15,7 @@ describe("dashboard debt snapshot effective cutoff", () => {
     const afterMidnight = "2026-10-07T17:15:00.000Z";
     expect(dashboardSnapshotCutoff(undefined, afterMidnight)).toBe(afterMidnight);
     expect(formatBusinessDateTime(dashboardSnapshotCutoff(undefined, afterMidnight))).toContain("00:15");
-    expect(formatBusinessDateTime(dashboardSnapshotCutoff(undefined, afterMidnight))).toContain("8 thg 10");
+    expect(formatBusinessDateTime(dashboardSnapshotCutoff(undefined, afterMidnight))).toContain("08/10/2026");
   });
   it.each(["2026-02-30", "2026-13-01", "bad-date"])("rejects invalid date without silently reading another period: %s", (date) => {
     expect(() => dashboardSnapshotCutoff(date, now)).toThrow("invalid_snapshot_business_date");

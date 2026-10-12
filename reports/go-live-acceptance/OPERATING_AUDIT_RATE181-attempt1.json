@@ -1,0 +1,133 @@
+{
+  "scope": "T02_T37_T40_RULE_RATE_PRECISION_ATOMIC_AUDIT_ROLLBACK_RETRY",
+  "checks": [
+    {
+      "name": "RULE_BAD_RATE",
+      "input": "NaN",
+      "status": "PASS",
+      "error": {
+        "code": "22023",
+        "message": "quantity_invalid_or_out_of_range"
+      },
+      "effects": {
+        "receipts": 0,
+        "audits": 0
+      }
+    },
+    {
+      "name": "RULE_BAD_RATE",
+      "input": "Infinity",
+      "status": "PASS",
+      "error": {
+        "code": "22023",
+        "message": "quantity_invalid_or_out_of_range"
+      },
+      "effects": {
+        "receipts": 0,
+        "audits": 0
+      }
+    },
+    {
+      "name": "RULE_BAD_RATE",
+      "input": "-Infinity",
+      "status": "PASS",
+      "error": {
+        "code": "22023",
+        "message": "quantity_invalid_or_out_of_range"
+      },
+      "effects": {
+        "receipts": 0,
+        "audits": 0
+      }
+    },
+    {
+      "name": "RULE_BAD_RATE",
+      "input": "1.0000001",
+      "status": "PASS",
+      "error": {
+        "code": "22023",
+        "message": "quantity_precision_exceeds_six"
+      },
+      "effects": {
+        "receipts": 0,
+        "audits": 0
+      }
+    },
+    {
+      "name": "RULE_BAD_RATE",
+      "input": "100000000000000",
+      "status": "PASS",
+      "error": {
+        "code": "22023",
+        "message": "quantity_invalid_or_out_of_range"
+      },
+      "effects": {
+        "receipts": 0,
+        "audits": 0
+      }
+    },
+    {
+      "name": "RULE_BAD_RATE",
+      "input": "0",
+      "status": "PASS",
+      "error": {
+        "code": "22023",
+        "message": "quantity_invalid_or_out_of_range"
+      },
+      "effects": {
+        "receipts": 0,
+        "audits": 0
+      }
+    },
+    {
+      "name": "RULE_BAD_RATE",
+      "input": "-1",
+      "status": "PASS",
+      "error": {
+        "code": "22023",
+        "message": "quantity_invalid_or_out_of_range"
+      },
+      "effects": {
+        "receipts": 0,
+        "audits": 0
+      }
+    },
+    {
+      "name": "RULE_BAD_RATE",
+      "input": null,
+      "status": "PASS",
+      "error": {
+        "code": "22023",
+        "message": "quantity_invalid_or_out_of_range"
+      },
+      "effects": {
+        "receipts": 0,
+        "audits": 0
+      }
+    },
+    {
+      "name": "EXACT_RULE_RATE_RETRY_ONE_VERSION_ONE_AUDIT_PAYLOAD_CONFLICT",
+      "status": "PASS",
+      "rule": {
+        "rate": "1.123456",
+        "version": 1,
+        "audits": 1
+      }
+    },
+    {
+      "name": "create_compensation_rule_FAILURE_ROLLS_BACK_SOURCE_RECEIPT_AUDIT_SAME_INTENT_RECOVERS_ONCE",
+      "status": "PASS",
+      "effects": {
+        "receipts": 0,
+        "audits": 0,
+        "rules": 0,
+        "categories": 0
+      },
+      "retryAudits": 1
+    }
+  ],
+  "productionAccess": "NONE",
+  "excludedAdvanceRacesRun": false,
+  "status": "FAIL",
+  "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'invalid_expense_category'\n- 'qa_audit_fault'\n"
+}

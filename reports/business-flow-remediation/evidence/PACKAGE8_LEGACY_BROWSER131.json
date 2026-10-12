@@ -1,0 +1,85 @@
+{
+  "scope": "G08_REAL_FINANCE_BROWSER_RECONCILE_EXISTING_LEGACY_SOURCE_LOST_RESPONSE_RELOAD",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright; Browser plugin not available",
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "EXISTING_DECISION_UNCHANGED_ONE_FUNDED_CREDIT_AFTER_LOST_RESPONSE_RELOAD",
+      "status": "PASS",
+      "facts": {
+        "debt": "0",
+        "credit": "230000",
+        "available": "0",
+        "payments": 1,
+        "adjustments": 1,
+        "retained": "2990000",
+        "originalhash": "65758344281e068a8b569f0503261bf9"
+      }
+    },
+    {
+      "name": "NO_SECOND_REVENUE_ADJUSTMENT_EXISTING_GROSS1040K_RETAINED",
+      "status": "PASS",
+      "snapshot": {
+        "scope": {
+          "to": "2026-10-11T15:33:24.70745+07:00",
+          "from": "2000-01-01T07:00:00+07:00",
+          "as_of": "2026-10-11T15:33:24.70745+07:00",
+          "branch_id": "dd101b24-aa92-4fd0-a0e7-30a935c2724c",
+          "balance_scope": "RECORDED_TRANSACTIONS",
+          "historical_quality": "UNRECONCILED",
+          "business_total_verified": false,
+          "recorded_operations_since": "2026-10-10T23:34:07.728747+07:00"
+        },
+        "payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "revenue": {
+          "quality": "READY",
+          "value_vnd": "2990000"
+        },
+        "receivable": {
+          "quality": "READY",
+          "value_vnd": "0"
+        },
+        "direct_cost": {
+          "quality": "READY",
+          "value_vnd": "1950000"
+        },
+        "gross_profit": {
+          "quality": "READY",
+          "value_vnd": "1040000"
+        },
+        "salary_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_profit": {
+          "quality": "READY",
+          "value_vnd": "1040000"
+        },
+        "operating_expense": {
+          "quality": "READY",
+          "value_vnd": "0"
+        },
+        "commission_payable": {
+          "quality": "NOT_APPLICABLE",
+          "value_vnd": null
+        },
+        "operating_margin_bps": {
+          "value": 3478.2608695652175,
+          "quality": "READY"
+        }
+      }
+    }
+  ],
+  "expectedTransportErrors": [
+    {
+      "text": "Failed to load resource: net::ERR_FAILED",
+      "url": "http://127.0.0.1:3110/admin/receivables?customer=d16e388b-8f84-4cda-9396-e199b29a4c24"
+    }
+  ],
+  "unexpectedErrors": [],
+  "status": "PASS_LEGACY_RECONCILIATION_BROWSER_RECOVERY_AND_NET_REPORT"
+}

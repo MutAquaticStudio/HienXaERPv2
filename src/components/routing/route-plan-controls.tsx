@@ -1,4 +1,5 @@
 "use client";
+import { formatBusinessDateTime } from "@/lib/core/business-time";
 
 import Link from "next/link";
 import { useActionState, useRef, useState } from "react";
@@ -41,13 +42,13 @@ export function RoutePlanForm({ deliveries, vehicles, employees }: { deliveries:
       <input type="hidden" name="delivery_ids" value={JSON.stringify(selected)} />
       <input type="hidden" name="operation_id" defaultValue="" />
       <div className="table-wrap"><table><thead><tr><th>Chọn</th><th>Chuyến giao</th><th>Công trình</th><th>Dự kiến</th></tr></thead><tbody>
-        {deliveries.map((delivery) => <tr key={delivery.id}><td><input type="checkbox" aria-label={`Chọn ${delivery.delivery_number}`} checked={selected.includes(delivery.id)} onChange={(event) => setSelected((current) => event.target.checked ? [...current, delivery.id] : current.filter((id) => id !== delivery.id))} /></td><td><strong>{delivery.delivery_number}</strong></td><td>{delivery.site_name_snapshot}<div className="muted">{delivery.delivery_address_snapshot}</div></td><td>{delivery.scheduled_at ? new Date(delivery.scheduled_at).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" }) : "Chưa chốt"}</td></tr>)}
+        {deliveries.map((delivery) => <tr key={delivery.id}><td><input type="checkbox" aria-label={`Chọn ${delivery.delivery_number}`} checked={selected.includes(delivery.id)} onChange={(event) => setSelected((current) => event.target.checked ? [...current, delivery.id] : current.filter((id) => id !== delivery.id))} /></td><td><strong>{delivery.delivery_number}</strong></td><td>{delivery.site_name_snapshot}<div className="muted">{delivery.delivery_address_snapshot}</div></td><td>{delivery.scheduled_at ? formatBusinessDateTime(delivery.scheduled_at) : "Chưa chốt"}</td></tr>)}
       </tbody></table></div>
-      <div className="card card-pad"><h3>Thứ tự thủ công trước khi gọi provider</h3><p className="muted">Khi provider lỗi hoặc thiếu tọa độ, hệ thống giữ đúng thứ tự này, không tự phân giao.</p>
+      <div className="card card-pad"><h3>Thứ tự thủ công trước khi tạo đề xuất</h3><p className="muted">Khi dịch vụ bản đồ lỗi hoặc thiếu tọa độ, hệ thống giữ thứ tự này. Chỉ phân giao khi bạn xác nhận.</p>
         {selected.map((id, index) => { const delivery = deliveries.find((row) => row.id === id); return <div className="detail-item" key={id}><span>{index + 1}. {delivery?.delivery_number ?? id} · {delivery?.site_name_snapshot}</span><span><button className="button button-secondary" type="button" aria-label={`Đưa ${delivery?.delivery_number} lên`} disabled={index === 0} onClick={() => move(id, -1)}>↑</button> <button className="button button-secondary" type="button" aria-label={`Đưa ${delivery?.delivery_number} xuống`} disabled={index === selected.length - 1} onClick={() => move(id, 1)}>↓</button></span></div>; })}
       </div>
       <button className="button button-primary" type="submit" disabled={pending || selected.length === 0 || state.status === "success"}>{pending ? "Đang tạo đề xuất..." : "Tạo đề xuất lộ trình"}</button>
-      {state.message && <p role="status" className={state.status === "error" ? "error-message" : "muted"}>{state.message}{state.planId ? <Link className="code-link" href={`/admin/routes?plan=${state.planId}`}> Xem RoutePlan</Link> : null}</p>}
+      {state.message && <p role="status" className={state.status === "error" ? "error-message" : "muted"}>{state.message}{state.planId ? <Link className="code-link" href={`/admin/routes?plan=${state.planId}`}> Xem lộ trình</Link> : null}</p>}
     </form>
   );
 }
@@ -58,5 +59,5 @@ export function ApplyRoutePlanButton({ planId, version }: { planId: string; vers
   return <form action={action} className="form-actions" onSubmit={(event) => {
     operationId.current ??= crypto.randomUUID();
     (event.currentTarget.elements.namedItem("operation_id") as HTMLInputElement).value = operationId.current;
-  }}><input type="hidden" name="plan_id" value={planId} /><input type="hidden" name="expected_version" value={version} /><input type="hidden" name="operation_id" defaultValue="" /><button className="button button-primary" type="submit" disabled={pending || state.status === "success"}>{pending ? "Đang Apply..." : "Apply và phân giao"}</button>{state.message && <p role="status" className={state.status === "error" ? "error-message" : "muted"}>{state.message}</p>}</form>;
+  }}><input type="hidden" name="plan_id" value={planId} /><input type="hidden" name="expected_version" value={version} /><input type="hidden" name="operation_id" defaultValue="" /><button className="button button-primary" type="submit" disabled={pending || state.status === "success"}>{pending ? "Đang phân giao..." : "Áp dụng và phân giao"}</button>{state.message && <p role="status" className={state.status === "error" ? "error-message" : "muted"}>{state.message}</p>}</form>;
 }

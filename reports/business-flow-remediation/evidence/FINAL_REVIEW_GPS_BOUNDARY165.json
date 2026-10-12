@@ -1,0 +1,29 @@
+{
+  "scope": "G06_GPS_OLD_START_PING_RETRY_AND_NEW_SESSION_AUTHORIZATION",
+  "status": "PASS",
+  "facts": {
+    "state": {
+      "status": "REVOKED",
+      "stop_reason": "assignment_superseded",
+      "positions": 1
+    },
+    "oldStart": {
+      "code": "42501",
+      "message": "gps_assignment_not_active"
+    },
+    "oldPing": {
+      "code": "42501",
+      "message": "gps_session_not_active"
+    },
+    "oldSuccessfulIntentRetryAfterRevocation": {
+      "code": "42501",
+      "message": "gps_session_not_active"
+    },
+    "otherEmployeeCannotUseNewSession": true
+  },
+  "actualDeviceTested": false,
+  "managedAuthTested": false,
+  "coordinatesSynthetic": true,
+  "rolledBack": true,
+  "productionAccess": "NONE"
+}

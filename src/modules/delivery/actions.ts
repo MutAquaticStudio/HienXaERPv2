@@ -1,4 +1,6 @@
 "use server";
+import { operationalPostingError, quantityInputError } from "@/lib/core/errors";
+
 
 import Decimal from "decimal.js";
 import { revalidatePath } from "next/cache";
@@ -56,13 +58,30 @@ function verificationLines(formData: FormData) {
 }
 
 function message(value?: string) {
+  const postingError = operationalPostingError(value);
+  if (postingError) return postingError;
+  const quantityError = quantityInputError(value);
+  if (quantityError) return quantityError;
   if (value?.includes("worker_quantity_adjustment_reason_required")) return "Nhập lý do điều chỉnh số lượng thợ đã gửi (từ 3 đến 500 ký tự), rồi xác minh lại.";
   if (value?.includes("operation_payload_conflict")) return "Mã thao tác đã được dùng với dữ liệu khác. Hãy tải lại.";
+  if (value?.includes("delivery_reassignment_after_work_started_forbidden")) return "Công việc đã bắt đầu. Không thể đổi phân giao; cần xử lý bàn giao có căn cứ.";
+  if (value?.includes("delivery_external_assignment_with_work_forbidden")) return "Phiếu đã có công việc nội bộ. Không thể đổi sang xe ngoài bằng thao tác phân giao này.";
+  if (value?.includes("schedule_collision")) return "Người giao hoặc xe đã được phân trong khung giờ này. Chọn lịch hoặc tài nguyên khác.";
+  if (value?.includes("schedule_window")) return "Nhập giờ bắt đầu và giờ kết thúc sau giờ bắt đầu.";
+  if (value?.includes("delivery_employee_cannot_report_work")) return "Người giao phải có tài khoản đang hoạt động và quyền nhận, báo kết quả công việc trong chi nhánh.";
+  if (value?.includes("vehicle_actual_cargo_capacity_exceeded")) return "Tổng hàng thực lấy và hàng còn trên xe vượt sức chứa đã xác minh. Xử lý hàng của phiếu trước hoặc chọn xe phù hợp trước khi bàn giao.";
+  if (value?.includes("vehicle_cargo_source_requires_reconciliation")) return "Dữ liệu hàng còn trên xe chưa khớp nguồn. Đối chiếu bàn giao, xác minh và xử lý hàng còn trước khi lấy thêm.";
+  if (value?.includes("vehicle_capacity_exceeded")) return "Lượng kế hoạch vượt sức chứa đã khai báo của xe. Chọn xe phù hợp hoặc tách phiếu giao.";
+  if (value?.includes("vehicle_capacity")) return "Chưa đủ dữ liệu kiểm tra tải xe. Kiểm tra sức chứa, đơn vị và căn cứ quy đổi trong danh mục.";
+  if (value?.includes("delivery_loaded_quantity_exceeds_plan")) return "Lượng thực lấy vượt kế hoạch. Kiểm tra lại từng dòng trước khi bàn giao.";
+  if (value?.includes("delivery_loading")) return "Nhập lượng thực lấy cho đủ từng dòng; ít nhất một dòng phải có hàng.";
+  if (value?.includes("delivery_multiple_pickups_require_split")) return "Các kho hoặc điểm lấy khác nhau cần tách phiếu giao để ghi đúng từng lần lấy hàng.";
+  if (value?.includes("invalid_delivery_result_line")) return "Lượng báo giao không được vượt lượng thực đã lấy lên xe.";
   if (value?.includes("version")) return "Phiếu đã được người khác cập nhật. Hãy tải lại.";
-  if (value?.includes("inventory") || value?.includes("reservation")) return "Tồn khả dụng hoặc reservation không còn đủ.";
+  if (value?.includes("inventory") || value?.includes("reservation")) return "Tồn khả dụng hoặc lượng hàng đã giữ không còn đủ.";
   if (value?.includes("billing")) return "Lượng tính tiền khác lượng nhận cần quyền và lý do.";
   if (value?.includes("exceeds")) return "Số lượng vượt phần còn lại của nguồn.";
-  return "Không thể hoàn tất thao tác giao hàng. Không có hậu quả nào được ghi một phần.";
+  return "Không thể hoàn tất thao tác giao hàng. Vui lòng thử lại.";
 }
 
 export async function allocateWarehouseSourceAction(formData: FormData) {
@@ -87,9 +106,9 @@ export async function allocateWarehouseSourceAction(formData: FormData) {
     operation_id: parsed.data.operationId,
   });
   if (error) {
-    const reason = error.message.includes("supply_allocation_exceeds_need") ? "Lượng phân nguồn vượt phần còn thiếu."
+    const reason = operationalPostingError(error.message) ?? (error.message.includes("supply_allocation_exceeds_need") ? "Lượng phân nguồn vượt phần còn thiếu."
       : error.message.includes("warehouse_invalid") ? "Kho không còn hợp lệ trong chi nhánh."
-      : "Không thể phân nguồn kho. Kiểm tra dữ liệu và thử lại.";
+      : "Không thể phân nguồn kho. Kiểm tra dữ liệu và thử lại.");
     redirect(`${destination}?error=${encodeURIComponent(reason)}`);
   }
   revalidatePath(destination);
@@ -112,16 +131,23 @@ export async function createDeliveryAction(formData: FormData) {
 }
 
 export async function assignDeliveryAction(formData: FormData) {
-  const parsed = z.object({ deliveryId: z.uuid(), employeeId: z.string().optional(), vehicleId: z.string().optional(), externalCarrierName: z.string().trim().optional(), externalCarrierPhone: z.string().trim().optional(), version: z.coerce.number().int().positive(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ deliveryId: z.uuid(), employeeId: z.string().optional(), vehicleId: z.string().optional(), externalCarrierName: z.string().trim().optional(), externalCarrierPhone: z.string().trim().optional(), scheduledStart: z.string().trim().min(1), scheduledEnd: z.string().trim().min(1), version: z.coerce.number().int().positive(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect("/admin/deliveries?error=invalid-assignment");
   await requireInternalPermission("delivery.assign");
   const supabase = await createServerSupabase();
-  const { error } = await supabase.rpc("assign_delivery", {
+  const scheduledStart = parseBusinessDateTime(parsed.data.scheduledStart);
+  const scheduledEnd = parseBusinessDateTime(parsed.data.scheduledEnd);
+  if (!scheduledStart || !scheduledEnd || Date.parse(scheduledEnd) <= Date.parse(scheduledStart)) {
+    redirect(`/admin/deliveries/${parsed.data.deliveryId}?error=${encodeURIComponent("Nhập khung giờ giao hợp lệ; giờ kết thúc phải sau giờ bắt đầu.")}`);
+  }
+  const { error } = await supabase.rpc("assign_delivery_scheduled", {
     target_delivery_id: parsed.data.deliveryId,
     target_employee_id: parsed.data.employeeId || null,
     target_vehicle_id: parsed.data.vehicleId || null,
     external_carrier_name: parsed.data.externalCarrierName || "",
     external_carrier_phone: parsed.data.externalCarrierPhone || "",
+    scheduled_start: scheduledStart,
+    scheduled_end: scheduledEnd,
     expected_version: parsed.data.version,
     operation_id: parsed.data.operationId,
   });
@@ -152,7 +178,23 @@ async function simpleDeliveryCommand(formData: FormData, permission: string, rpc
 }
 
 export async function handoffDeliveryAction(formData: FormData) {
-  return simpleDeliveryCommand(formData, "delivery.handoff", "handoff_delivery", "dispatched");
+  const parsed = z.object({ deliveryId: z.uuid(), version: z.coerce.number().int().positive(), operationId: z.uuid(), occurredAt: z.string().optional() }).safeParse(Object.fromEntries(formData));
+  const lines = quantityLines(formData, "deliveryLineId", "loadedQuantity", "delivery_line_id", "loaded_base_quantity", false, nonNegative);
+  if (!parsed.success || !lines) redirect(`/admin/deliveries?error=${encodeURIComponent("Nhập lượng thực lấy hợp lệ cho từng dòng.")}`);
+  await requireInternalPermission("delivery.handoff");
+  const when = parsed.data.occurredAt ? parseBusinessDateTime(parsed.data.occurredAt) : new Date().toISOString();
+  if (!when) redirect(`/admin/deliveries/${parsed.data.deliveryId}?error=${encodeURIComponent("Thời điểm bàn giao chưa hợp lệ.")}`);
+  const supabase = await createServerSupabase();
+  const { error } = await supabase.rpc("handoff_delivery_actual", {
+    target_delivery_id: parsed.data.deliveryId, expected_version: parsed.data.version,
+    handed_off_at: when, operation_id: parsed.data.operationId, loaded_lines: lines,
+  });
+  const destination = `/admin/deliveries/${parsed.data.deliveryId}`;
+  if (error) redirect(`${destination}?error=${encodeURIComponent(message(error.message))}`);
+  revalidatePath("/admin/inventory");
+  revalidatePath(`/admin/orders/${String(formData.get("salesOrderId") ?? "")}`);
+  revalidatePath(destination);
+  redirect(`${destination}?notice=dispatched`);
 }
 
 export async function markDeliveryArrivedAction(formData: FormData) {

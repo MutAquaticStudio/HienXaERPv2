@@ -1,0 +1,9 @@
+{
+  "scope": "ISOLATED_NATIVE_DATABASE_ARCHIVE_RECOVERY",
+  "database": "hx_remediation_upgrade136_20261011_final",
+  "status": "PASS_NATIVE_DATA_RECOVERY",
+  "restoredTables": 110,
+  "migrationHistory": 136,
+  "managedAuthStoragePitrRecovery": "NOT_VERIFIED",
+  "productionAccess": "NONE"
+}

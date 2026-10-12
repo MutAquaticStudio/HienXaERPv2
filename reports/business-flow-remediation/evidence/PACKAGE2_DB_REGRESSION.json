@@ -1,0 +1,54 @@
+{
+  "scope": "NATIVE_EXACT_QUANTITY_CUMULATIVE_BILLING_VERSION_CONTRACTS",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "managedAuthTested": false,
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "G02_COMMERCIAL_AND_PURCHASE_PRECISION_BEFORE_MONEY",
+      "status": "PASS",
+      "salesError": {
+        "code": "22023",
+        "message": "quantity_precision_exceeds_six"
+      },
+      "quoteError": {
+        "code": "22023",
+        "message": "quantity_precision_exceeds_six"
+      },
+      "purchaseError": {
+        "code": "22023",
+        "message": "quantity_precision_exceeds_six"
+      },
+      "valid": {
+        "qty": "1.000001",
+        "amount": "2000002"
+      },
+      "invalidInputsRejected": 6
+    },
+    {
+      "name": "G03_FRACTIONAL_TRIPS_TOTAL_EXACT_AND_IDEMPOTENT",
+      "status": "PASS",
+      "amounts": [
+        "3450001",
+        "3450000",
+        "3449999"
+      ],
+      "facts": {
+        "consumed": "10350000",
+        "revenue": "10350000",
+        "verifications": 3
+      }
+    },
+    {
+      "name": "G12_NULL_STALE_VALID_AND_RETRY_VERSIONS",
+      "status": "PASS",
+      "nullAndStaleDenied": 5,
+      "facts": {
+        "version": 2,
+        "assignments": 1
+      }
+    }
+  ],
+  "status": "PASS_EXECUTED_DB_SCOPE",
+  "rolledBack": true
+}

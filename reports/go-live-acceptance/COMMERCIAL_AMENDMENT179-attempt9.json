@@ -1,0 +1,105 @@
+{
+  "scope": "T04_T21_QUOTE_SO_DRAFT_AMENDMENT_REAL_ROLE_BROWSER",
+  "checkedAt": "2026-10-12T07:35:56.609Z",
+  "baselineCommit": "73c3d17",
+  "schema": 179,
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [
+    {
+      "name": "QUOTE_MISSING_AND_SEVENTH_DECIMAL_CANNOT_SAVE_UI",
+      "status": "PASS",
+      "facts": {}
+    },
+    {
+      "name": "QUOTE_MISSING_AND_SEVENTH_DECIMAL_CANNOT_SAVE_UI",
+      "status": "PASS",
+      "facts": {}
+    },
+    {
+      "name": "QUOTE_TWO_TABS_STALE_EDIT_AND_EXACT_STORED_MONEY",
+      "status": "PASS",
+      "facts": {
+        "quantity": "2.123456",
+        "price": "230000",
+        "amount": "488395",
+        "expected": "488395"
+      }
+    },
+    {
+      "name": "SALES_SEND_QUOTE_DOES_NOT_CREATE_AR_OR_INVENTORY",
+      "status": "PASS",
+      "facts": {}
+    },
+    {
+      "name": "CUSTOMER_ROLE_QUOTE_READ_ACCEPT_SCOPE",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T07:48:25.362Z",
+      "schema": {
+        "count": 180,
+        "latest": "20261012074034"
+      },
+      "facts": {
+        "receiverRpcDenied": "42501",
+        "otherCustomerStreamingHTTP": 200,
+        "otherCustomerNotFound": true,
+        "otherCustomerPDF": 404
+      }
+    },
+    {
+      "name": "SO_EXACT_EDIT_STALE_TAB_CONFIRMED_EDIT_DENIED",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T07:50:11.996Z",
+      "schema": {
+        "count": 180,
+        "latest": "20261012074034"
+      },
+      "facts": {
+        "quantity": "1.000001",
+        "amount": "230000",
+        "expected": "230000"
+      }
+    },
+    {
+      "name": "NEW_REVISION_PRESERVES_OLD_ACCEPTED_SOURCE",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T07:50:12.751Z",
+      "schema": {
+        "count": 180,
+        "latest": "20261012074034"
+      },
+      "facts": {
+        "state": "SUPERSEDED",
+        "total": "488395"
+      }
+    }
+  ],
+  "documents": {
+    "quoteCreateIntent": "12055a12-1fe3-411e-8c48-928555a9ff7b",
+    "quote": "05104b11-a105-4ae7-a02a-61d1bb2d212a",
+    "revision": "a1a63228-b0d7-4b65-ab99-c93c538ccdc0",
+    "so": "3fe5ea78-61ea-4ea0-866e-9c82b4d851d1",
+    "newRevision": "f3c09e7a-a49f-43e8-9ef8-ced0e1d33283"
+  },
+  "pageErrors": [
+    {
+      "role": "other_customer",
+      "message": "Switched to client rendering because the server rendering errored:\n\nBạn không có quyền xem dữ liệu khách hàng này."
+    }
+  ],
+  "status": "FAIL",
+  "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   {\n+     message: 'Switched to client rendering because the server rendering errored:\\n' +\n+       '\\n' +\n+       'Bạn không có quyền xem dữ liệu khách hàng này.',\n+     role: 'other_customer'\n+   }\n+ ]\n- []\n",
+  "failurePages": [
+    {
+      "url": "http://127.0.0.1:3112/admin/quotations/05104b11-a105-4ae7-a02a-61d1bb2d212a",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA ERP\nĐiều hành\nTổng quan\nBán hàng\nĐơn bán\nBáo giá\nKhách hàng\nKho hàng\nGiao hàng\nTài chính\nBáo cáo\nTin nhắn\nĐăng xuất\nPhiên làm việc có phân quyền\nQA không đầu kỳ G119EE6ACBC\nNhân viên kiểm thử confirmer\nTC\n\nBÁO GIÁ · PHIÊN BẢN 1\n\nQT-2026-000010\n\nKhách kiểm thử khắc phục · Công trình kiểm thử\n\nTải PDF phiên bản này\nVề danh sách\nThông tin báo giá\nĐã chấp nhận\nGiá trị\n488.395 ₫\nHiệu lực đến\n01/01/2099 00:00\nĐịa chỉ giao\nĐịa chỉ QA độc lập\nĐiều khoản\nChưa ghi\nVẬT TƯ\tSỐ LƯỢNG\tĐƠN GIÁ\tTHÀNH TIỀN\tNGUỒN GIÁ\nCát kiểm thử khắc phục\t2,123456 m³\t230.000 ₫\t488.395 ₫\tBảng giá\nLịch sử phiên bản\nR1 · Đã chấp nhận\n12/10/2026 14:40\nHành động tiếp theo\nTạo phiên bản mới\nNgày giao dự kiến\nTạo đơn từ phiên bản này\n\nChấp nhận báo giá không tự xác nhận đơn và không tạo công nợ."
+    },
+    {
+      "url": "http://127.0.0.1:3112/admin/orders/3fe5ea78-61ea-4ea0-866e-9c82b4d851d1/edit",
+      "title": "404: This page could not be found.",
+      "body": "404\nThis page could not be found."
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "scope": "READ_ONLY_OLD_SOURCE_1000_VND_PRICE_AND_LINKED_INVENTORY_AP",
+  "facts": {
+    "inventory_value": "1000",
+    "payable_value": "1000",
+    "source_state": "CLOSED"
+  },
+  "originalDocument": "7f86038f-9265-4768-8cf6-3e0130cf303f",
+  "newBusinessWrites": 0
+}

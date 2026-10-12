@@ -1,0 +1,71 @@
+{
+  "scope": "G04_REAL_SALES_AUTH_SERVER_PRIORITY_AND_SAVED_PRICE_RETRY",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "productionAccess": "NONE",
+  "managedQaBusinessWrites": 0,
+  "tokensRecorded": false,
+  "checks": [
+    {
+      "name": "REAL_SALES_LOW_PRIORITY400_MANUAL403_CURRENT260K_VALID",
+      "status": "PASS",
+      "lowerStatus": 400,
+      "manualStatus": 403,
+      "newer": {
+        "price": "260000"
+      }
+    },
+    {
+      "name": "REAL_SALES_SAVED230K_QTY2_RETRY_ONE_UPDATE_AND_AUDIT",
+      "status": "PASS",
+      "saved": {
+        "qty": "2.000000",
+        "price": "230000",
+        "total": "460000"
+      },
+      "audit": {
+        "n": 1
+      }
+    }
+  ],
+  "documents": {
+    "stock": {
+      "prefix": "RM5B452444",
+      "uom": "56f8e4b2-1609-4cf9-8101-84b8300bad04",
+      "material": "01049386-1baf-4150-9cb2-25f564005c56",
+      "price": "2964da8a-bf88-475f-8a14-26826372d329",
+      "cost": "6ad5c383-6a75-441b-a827-4e9536d24678",
+      "po": "4cb29781-4707-4fff-a495-d53a00efebf2",
+      "common": {
+        "material_id": "01049386-1baf-4150-9cb2-25f564005c56",
+        "ordered_uom_id": "56f8e4b2-1609-4cf9-8101-84b8300bad04",
+        "quantity": "1",
+        "conversion_numerator": "1",
+        "conversion_denominator": "1",
+        "rounding_mode": "HALF_UP"
+      },
+      "cutoff": "2026-10-11 15:11:13.007811+07",
+      "customer": "6e1162d2-8d99-4750-8a86-c5d2c03a64ac",
+      "site": "d3705241-e1f0-466a-937f-d389366333e0",
+      "unitPriceVnd": "230000"
+    },
+    "branch": "dd101b24-aa92-4fd0-a0e7-30a935c2724c",
+    "saved": "417bbe08-8778-46aa-86c1-8f807a3802da",
+    "savedLine": "ba2ca81e-3445-4199-b9c8-1ca7a9099aea",
+    "preferred": "cda3133b-215a-49fd-90b5-2f031420c744",
+    "line": {
+      "material_id": "01049386-1baf-4150-9cb2-25f564005c56",
+      "ordered_uom_id": "56f8e4b2-1609-4cf9-8101-84b8300bad04",
+      "quantity": "1",
+      "conversion_numerator": "1",
+      "conversion_denominator": "1",
+      "rounding_mode": "HALF_UP",
+      "unit_price_vnd": "230000",
+      "pricing_rule_id": "2964da8a-bf88-475f-8a14-26826372d329",
+      "pricing_rule_version": 1,
+      "price_source_type": "LIST"
+    },
+    "writerPid": 15911
+  },
+  "status": "PASS_REAL_AUTH_PRICE_PRIORITY_AND_SNAPSHOT",
+  "readerPid": 15915
+}

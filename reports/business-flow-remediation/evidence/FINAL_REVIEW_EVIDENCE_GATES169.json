@@ -1,0 +1,16 @@
+{
+  "scope": "G05_G15_G22_METADATA_WITHOUT_STORAGE_CANNOT_FINALIZE",
+  "phase": "after",
+  "status": "PASS_FAIL_CLOSED_ONLY",
+  "facts": {
+    "states": {
+      "portal": "PENDING",
+      "internal": "PENDING"
+    },
+    "uploadedBytes": 0,
+    "sourceCommandsSubmitted": 0
+  },
+  "actualStorageTested": false,
+  "rolledBack": true,
+  "productionAccess": "NONE"
+}

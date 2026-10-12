@@ -1,0 +1,526 @@
+{
+  "pages": [
+    "src/app/admin/access/page.tsx",
+    "src/app/admin/audit/page.tsx",
+    "src/app/admin/cashbook/page.tsx",
+    "src/app/admin/catalog/page.tsx",
+    "src/app/admin/compensation/page.tsx",
+    "src/app/admin/customers/[id]/page.tsx",
+    "src/app/admin/customers/manage/page.tsx",
+    "src/app/admin/customers/page.tsx",
+    "src/app/admin/dashboard/obligations/page.tsx",
+    "src/app/admin/debts/page.tsx",
+    "src/app/admin/deliveries/[id]/cancel/page.tsx",
+    "src/app/admin/deliveries/[id]/page.tsx",
+    "src/app/admin/deliveries/page.tsx",
+    "src/app/admin/dispatch/page.tsx",
+    "src/app/admin/dispatch/resources/page.tsx",
+    "src/app/admin/expenses/page.tsx",
+    "src/app/admin/inventory/page.tsx",
+    "src/app/admin/inventory/transfers/[id]/page.tsx",
+    "src/app/admin/inventory/transfers/page.tsx",
+    "src/app/admin/inventory/warehouses/page.tsx",
+    "src/app/admin/invoices/[id]/page.tsx",
+    "src/app/admin/invoices/page.tsx",
+    "src/app/admin/invoices/purchases/matching/[id]/page.tsx",
+    "src/app/admin/invoices/purchases/matching/page.tsx",
+    "src/app/admin/invoices/purchases/page.tsx",
+    "src/app/admin/messages/page.tsx",
+    "src/app/admin/operations/page.tsx",
+    "src/app/admin/orders/[id]/edit/page.tsx",
+    "src/app/admin/orders/[id]/page.tsx",
+    "src/app/admin/orders/new/page.tsx",
+    "src/app/admin/orders/page.tsx",
+    "src/app/admin/page.tsx",
+    "src/app/admin/payables/[id]/page.tsx",
+    "src/app/admin/payables/page.tsx",
+    "src/app/admin/payment-notices/page.tsx",
+    "src/app/admin/products/[id]/page.tsx",
+    "src/app/admin/products/manage/page.tsx",
+    "src/app/admin/products/page.tsx",
+    "src/app/admin/products/pricing/page.tsx",
+    "src/app/admin/purchase-orders/[id]/edit/page.tsx",
+    "src/app/admin/purchase-orders/[id]/page.tsx",
+    "src/app/admin/purchase-orders/new/page.tsx",
+    "src/app/admin/purchase-orders/page.tsx",
+    "src/app/admin/purchases/returns/[id]/page.tsx",
+    "src/app/admin/purchases/returns/page.tsx",
+    "src/app/admin/quotations/[id]/edit/page.tsx",
+    "src/app/admin/quotations/[id]/page.tsx",
+    "src/app/admin/quotations/new/page.tsx",
+    "src/app/admin/quotations/page.tsx",
+    "src/app/admin/receivables/[id]/page.tsx",
+    "src/app/admin/receivables/page.tsx",
+    "src/app/admin/reports/page.tsx",
+    "src/app/admin/routes/page.tsx",
+    "src/app/admin/service-jobs/[id]/page.tsx",
+    "src/app/admin/service-jobs/page.tsx",
+    "src/app/admin/settings/branches/page.tsx",
+    "src/app/admin/settings/page.tsx",
+    "src/app/admin/settings/pricing/page.tsx",
+    "src/app/admin/stock-counts/[id]/page.tsx",
+    "src/app/admin/stock-counts/page.tsx",
+    "src/app/admin/suppliers/[id]/page.tsx",
+    "src/app/admin/suppliers/manage/page.tsx",
+    "src/app/admin/suppliers/page.tsx",
+    "src/app/admin/suppliers/pricing/page.tsx",
+    "src/app/admin/workforce/page.tsx",
+    "src/app/customer/debts/page.tsx",
+    "src/app/customer/login/page.tsx",
+    "src/app/customer/messages/page.tsx",
+    "src/app/customer/orders/[id]/page.tsx",
+    "src/app/customer/orders/page.tsx",
+    "src/app/customer/page.tsx",
+    "src/app/customer/profile/page.tsx",
+    "src/app/customer/quotations/[id]/page.tsx",
+    "src/app/customer/quotations/page.tsx",
+    "src/app/login/page.tsx",
+    "src/app/page.tsx",
+    "src/app/recovery/confirm/page.tsx",
+    "src/app/recovery/page.tsx",
+    "src/app/select-branch/page.tsx",
+    "src/app/work/earnings/page.tsx",
+    "src/app/work/jobs/[id]/page.tsx",
+    "src/app/work/login/page.tsx",
+    "src/app/work/messages/page.tsx",
+    "src/app/work/page.tsx",
+    "src/app/work/pool/page.tsx",
+    "src/app/work/profile/page.tsx",
+    "src/app/work/tracking/page.tsx"
+  ],
+  "api": [
+    "src/app/api/access/context/route.ts",
+    "src/app/api/customers/[id]/debt-statement/pdf/route.ts",
+    "src/app/api/deliveries/[id]/note/pdf/route.ts",
+    "src/app/api/evidence/[id]/download/route.ts",
+    "src/app/api/evidence/[id]/signed/route.ts",
+    "src/app/api/finance/obligations/route.ts",
+    "src/app/api/gps/session/ping/route.ts",
+    "src/app/api/gps/session/start/route.ts",
+    "src/app/api/gps/session/stop/route.ts",
+    "src/app/api/health/route.ts",
+    "src/app/api/invoices/[id]/review/pdf/route.ts",
+    "src/app/api/payments/[id]/voucher/pdf/route.ts",
+    "src/app/api/portal/evidence/upload/route.ts",
+    "src/app/api/portal/payment-notices/route.ts",
+    "src/app/api/portal/work-items/claim/route.ts",
+    "src/app/api/portal/work-items/start/route.ts",
+    "src/app/api/portal/work-results/route.ts",
+    "src/app/api/purchasing/evidence/[id]/signed/route.ts",
+    "src/app/api/purchasing/evidence/upload/route.ts",
+    "src/app/api/qa/environment/route.ts",
+    "src/app/api/quotation-revisions/[id]/pdf/route.ts",
+    "src/app/api/reports/customers/route.ts",
+    "src/app/api/reports/export/route.ts",
+    "src/app/api/supplier-documents/[id]/review/csv/route.ts"
+  ],
+  "rpcConsumers": {
+    "dashboard_site_options": [
+      "src/app/admin/page.tsx"
+    ],
+    "finance_dashboard_detail": [
+      "src/app/admin/page.tsx",
+      "src/modules/reports/server.ts"
+    ],
+    "finance_obligation_snapshot": [
+      "src/app/admin/page.tsx",
+      "src/app/admin/page.tsx",
+      "src/app/admin/dashboard/obligations/page.tsx",
+      "src/app/api/customers/[id]/debt-statement/pdf/route.ts",
+      "src/modules/reports/server.ts"
+    ],
+    "finance_dashboard_snapshot": [
+      "src/app/admin/page.tsx",
+      "src/modules/reports/server.ts",
+      "src/modules/reports/server.ts"
+    ],
+    "customer_private_fields": [
+      "src/app/admin/customers/page.tsx",
+      "src/app/admin/customers/[id]/page.tsx",
+      "src/modules/catalog/module-page.tsx"
+    ],
+    "pricing_config_options": [
+      "src/app/admin/settings/pricing/page.tsx"
+    ],
+    "purchase_pricing_config_options": [
+      "src/app/admin/suppliers/pricing/page.tsx"
+    ],
+    "invoice_eligible_sources_exact": [
+      "src/app/admin/invoices/page.tsx"
+    ],
+    "purchase_invoice_eligible_sources_exact": [
+      "src/app/admin/invoices/purchases/page.tsx"
+    ],
+    "cashbook_summary": [
+      "src/app/admin/cashbook/page.tsx"
+    ],
+    "dispatch_board_page": [
+      "src/app/admin/dispatch/page.tsx"
+    ],
+    "activate_branch_operations": [
+      "src/app/admin/operations/actions.ts"
+    ],
+    "set_inventory_stock_threshold": [
+      "src/app/admin/inventory/actions.ts"
+    ],
+    "my_active_delivery_assignments": [
+      "src/app/work/tracking/page.tsx"
+    ],
+    "my_active_gps_assignment": [
+      "src/app/work/jobs/[id]/page.tsx"
+    ],
+    "submit_portal_delivery_result": [
+      "src/app/api/portal/work-results/route.ts"
+    ],
+    "submit_portal_work_result": [
+      "src/app/api/portal/work-results/route.ts"
+    ],
+    "create_portal_evidence": [
+      "src/app/api/portal/evidence/upload/route.ts"
+    ],
+    "submit_payment_notice": [
+      "src/app/api/portal/payment-notices/route.ts"
+    ],
+    "start_work_item": [
+      "src/app/api/portal/work-items/start/route.ts"
+    ],
+    "claim_work_item": [
+      "src/app/api/portal/work-items/claim/route.ts"
+    ],
+    "record_gps_ping": [
+      "src/app/api/gps/session/ping/route.ts"
+    ],
+    "start_gps_tracking": [
+      "src/app/api/gps/session/start/route.ts"
+    ],
+    "stop_gps_tracking": [
+      "src/app/api/gps/session/stop/route.ts"
+    ],
+    "create_evidence_upload": [
+      "src/app/api/purchasing/evidence/upload/route.ts",
+      "src/modules/delivery/actions.ts"
+    ],
+    "evidence_verified_storage_status": [
+      "src/app/api/purchasing/evidence/upload/route.ts"
+    ],
+    "customer_safe_quotation_lines": [
+      "src/app/api/quotation-revisions/[id]/pdf/route.ts",
+      "src/app/customer/quotations/[id]/page.tsx"
+    ],
+    "advance_report_export_job": [
+      "src/app/api/reports/export/route.ts"
+    ],
+    "create_report_export_job": [
+      "src/app/api/reports/export/route.ts"
+    ],
+    "customer_portal_snapshot": [
+      "src/app/customer/layout.tsx",
+      "src/modules/portal/actions.ts"
+    ],
+    "preview_sales_order_credit_override": [
+      "src/components/sales/credit-override.tsx"
+    ],
+    "save_command_draft": [
+      "src/lib/core/command-outcome-actions.ts"
+    ],
+    "get_command_draft": [
+      "src/lib/core/command-outcome-actions.ts"
+    ],
+    "lookup_command_outcome": [
+      "src/lib/core/command-outcome-actions.ts"
+    ],
+    "customer_portal_display_name": [
+      "src/lib/access/context.ts"
+    ],
+    "assign_employee_role": [
+      "src/lib/auth/actions.ts"
+    ],
+    "register_invited_employee": [
+      "src/lib/auth/actions.ts"
+    ],
+    "revoke_employee_access": [
+      "src/lib/auth/actions.ts"
+    ],
+    "reactivate_employee_access": [
+      "src/lib/auth/actions.ts"
+    ],
+    "set_employee_explicit_permissions": [
+      "src/lib/auth/actions.ts"
+    ],
+    "save_customer_site_profile": [
+      "src/modules/customers/actions.ts",
+      "src/modules/customers/actions.ts"
+    ],
+    "worker_portal_snapshot": [
+      "src/modules/portal/actions.ts"
+    ],
+    "worker_portal_job": [
+      "src/modules/portal/actions.ts"
+    ],
+    "customer_portal_order": [
+      "src/modules/portal/actions.ts"
+    ],
+    "admin_payment_notice_snapshot": [
+      "src/modules/portal/actions.ts"
+    ],
+    "request_quotation_change": [
+      "src/modules/portal/actions.ts"
+    ],
+    "review_payment_notice": [
+      "src/modules/portal/actions.ts"
+    ],
+    "confirm_sales_order_with_credit_override": [
+      "src/modules/sales/credit-override-actions.ts"
+    ],
+    "sales_order_operational_snapshot": [
+      "src/modules/sales/operational-completion.tsx"
+    ],
+    "update_sales_order_draft": [
+      "src/modules/sales/actions.ts"
+    ],
+    "update_quote_draft": [
+      "src/modules/sales/actions.ts"
+    ],
+    "create_sales_order_draft": [
+      "src/modules/sales/actions.ts"
+    ],
+    "create_quote_draft": [
+      "src/modules/sales/actions.ts"
+    ],
+    "accept_quote_revision": [
+      "src/modules/sales/actions.ts"
+    ],
+    "create_sales_order_from_quote": [
+      "src/modules/sales/actions.ts"
+    ],
+    "create_supplier_return": [
+      "src/modules/purchasing/supplier-return-actions.ts"
+    ],
+    "record_supplier_return_event": [
+      "src/modules/purchasing/supplier-return-actions.ts"
+    ],
+    "approve_supplier_return_credit": [
+      "src/modules/purchasing/supplier-return-actions.ts"
+    ],
+    "update_purchase_order_draft": [
+      "src/modules/purchasing/finish-direct-draft.ts",
+      "src/modules/purchasing/actions.ts"
+    ],
+    "create_purchase_order_draft": [
+      "src/modules/purchasing/actions.ts"
+    ],
+    "create_direct_purchase_from_sales_order": [
+      "src/modules/purchasing/actions.ts"
+    ],
+    "create_linked_direct_drafts": [
+      "src/modules/purchasing/actions.ts"
+    ],
+    "confirm_purchase_order": [
+      "src/modules/purchasing/actions.ts"
+    ],
+    "cancel_purchase_order": [
+      "src/modules/purchasing/actions.ts"
+    ],
+    "create_supplier_quick": [
+      "src/modules/purchasing/actions.ts"
+    ],
+    "save_catalog_record": [
+      "src/modules/purchasing/actions.ts"
+    ],
+    "update_purchase_order_warehouse": [
+      "src/modules/purchasing/actions.ts"
+    ],
+    "customer_site_sales_owner_options": [
+      "src/modules/catalog/module-page.tsx"
+    ],
+    "publish_work_item": [
+      "src/modules/workforce/delivery-actions.ts",
+      "src/modules/workforce/actions.ts"
+    ],
+    "verify_delivery_work_item": [
+      "src/modules/workforce/delivery-actions.ts"
+    ],
+    "configure_compensation_recognition": [
+      "src/modules/workforce/recognition-action.ts"
+    ],
+    "create_service_job": [
+      "src/modules/workforce/actions.ts"
+    ],
+    "cancel_scheduled_service_job": [
+      "src/modules/workforce/actions.ts"
+    ],
+    "heartbeat_work_item": [
+      "src/modules/workforce/actions.ts"
+    ],
+    "submit_work_result": [
+      "src/modules/workforce/actions.ts"
+    ],
+    "verify_service_job": [
+      "src/modules/workforce/actions.ts"
+    ],
+    "create_compensation_rule": [
+      "src/modules/workforce/actions.ts"
+    ],
+    "record_compensation_basis": [
+      "src/modules/workforce/actions.ts"
+    ],
+    "calculate_earning_event": [
+      "src/modules/workforce/actions.ts"
+    ],
+    "approve_earning_event": [
+      "src/modules/workforce/actions.ts"
+    ],
+    "post_payment": [
+      "src/modules/workforce/actions.ts",
+      "src/modules/finance/actions.ts"
+    ],
+    "resolve_commission_reconciliation": [
+      "src/modules/workforce/commission-review-action.ts"
+    ],
+    "operational_branch_state": [
+      "src/modules/operations/server.ts"
+    ],
+    "receive_purchase_order": [
+      "src/modules/inventory/actions.ts"
+    ],
+    "verify_supplier_fulfillment": [
+      "src/modules/inventory/actions.ts"
+    ],
+    "open_stock_count": [
+      "src/modules/inventory/actions.ts"
+    ],
+    "record_stock_count_line": [
+      "src/modules/inventory/actions.ts"
+    ],
+    "approve_stock_count": [
+      "src/modules/inventory/actions.ts"
+    ],
+    "create_warehouse_transfer": [
+      "src/modules/inventory/transfer-actions.ts"
+    ],
+    "record_warehouse_transfer_event": [
+      "src/modules/inventory/transfer-actions.ts"
+    ],
+    "upsert_supply_allocation": [
+      "src/modules/delivery/actions.ts"
+    ],
+    "create_delivery_from_allocations": [
+      "src/modules/delivery/actions.ts"
+    ],
+    "assign_delivery_scheduled": [
+      "src/modules/delivery/actions.ts"
+    ],
+    "handoff_delivery_actual": [
+      "src/modules/delivery/actions.ts"
+    ],
+    "submit_delivery_result": [
+      "src/modules/delivery/actions.ts"
+    ],
+    "finalize_evidence_upload": [
+      "src/modules/delivery/actions.ts"
+    ],
+    "verify_delivery": [
+      "src/modules/delivery/actions.ts"
+    ],
+    "open_return_case": [
+      "src/modules/delivery/actions.ts"
+    ],
+    "resolve_return_case": [
+      "src/modules/delivery/actions.ts"
+    ],
+    "cancel_planned_delivery": [
+      "src/modules/delivery/cancel-planned-action.ts"
+    ],
+    "update_delivery_receiver": [
+      "src/modules/delivery/receiver-actions.ts"
+    ],
+    "create_delivery_expense": [
+      "src/modules/finance/delivery-expense-actions.ts"
+    ],
+    "approve_expense": [
+      "src/modules/finance/delivery-expense-actions.ts",
+      "src/modules/finance/actions.ts"
+    ],
+    "create_finance_account": [
+      "src/modules/finance/actions.ts"
+    ],
+    "reverse_payment": [
+      "src/modules/finance/actions.ts"
+    ],
+    "record_payment_reconciliation": [
+      "src/modules/finance/actions.ts"
+    ],
+    "create_expense_category": [
+      "src/modules/finance/actions.ts"
+    ],
+    "create_expense": [
+      "src/modules/finance/actions.ts"
+    ],
+    "allocate_payment": [
+      "src/modules/finance/actions.ts"
+    ],
+    "create_route_plan": [
+      "src/modules/routing/actions.ts"
+    ],
+    "apply_route_plan": [
+      "src/modules/routing/actions.ts"
+    ],
+    "gps_fleet_snapshot": [
+      "src/modules/routing/server.ts"
+    ],
+    "gps_position_history": [
+      "src/modules/routing/server.ts"
+    ],
+    "create_conversation": [
+      "src/modules/messaging/actions.ts"
+    ],
+    "send_message": [
+      "src/modules/messaging/actions.ts"
+    ],
+    "mark_conversation_read": [
+      "src/modules/messaging/actions.ts"
+    ],
+    "conversation_list_for_scope": [
+      "src/modules/messaging/server.ts"
+    ],
+    "conversation_message_page": [
+      "src/modules/messaging/server.ts"
+    ],
+    "messaging_participant_options": [
+      "src/modules/messaging/server.ts"
+    ],
+    "create_invoice_draft": [
+      "src/modules/invoicing/actions.ts"
+    ],
+    "approve_invoice_business": [
+      "src/modules/invoicing/actions.ts"
+    ],
+    "cancel_invoice_draft": [
+      "src/modules/invoicing/actions.ts"
+    ],
+    "create_invoice_adjustment_draft": [
+      "src/modules/invoicing/actions.ts"
+    ],
+    "register_purchase_invoice_source": [
+      "src/modules/invoicing/actions.ts"
+    ],
+    "register_supplier_document": [
+      "src/modules/invoicing/document-actions.ts"
+    ],
+    "review_supplier_document": [
+      "src/modules/invoicing/document-actions.ts"
+    ],
+    "deactivate_pricing_rule": [
+      "src/modules/pricing/actions.ts"
+    ],
+    "save_pricing_rule": [
+      "src/modules/pricing/actions.ts"
+    ],
+    "deactivate_purchase_price_rule": [
+      "src/modules/pricing/purchase-actions.ts"
+    ],
+    "save_purchase_price_rule": [
+      "src/modules/pricing/purchase-actions.ts"
+    ]
+  }
+}

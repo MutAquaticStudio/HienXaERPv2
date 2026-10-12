@@ -24,4 +24,5 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
+      - run: node --test scripts/qa/evidence-reverification.test.mjs
       - run: pnpm build

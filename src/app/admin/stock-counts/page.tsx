@@ -1,3 +1,4 @@
+import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { randomUUID } from "node:crypto";
 import Link from "next/link";
 import { ActionNotice } from "@/components/sales/action-notice";
@@ -20,9 +21,9 @@ export default async function StockCountsPage({ searchParams }: { searchParams: 
   const counts = (countResult.data ?? []) as Count[];
   const query = await searchParams;
   return <>
-    <header className="page-heading"><div><p className="eyebrow">Đối chiếu tồn</p><h1>Kiểm kho</h1><p className="lede">Chênh lệch được duyệt thành movement mới; không sửa balance lịch sử.</p></div></header>
+    <header className="page-heading"><div><p className="eyebrow">Đối chiếu tồn</p><h1>Kiểm kho</h1><p className="lede">Chênh lệch được ghi nhận sau khi duyệt. Số dư và lịch sử tồn kho được lưu đầy đủ.</p></div></header>
     <ActionNotice notice={query.notice} error={query.error} />
     {access.permissions.has("inventory.count") && <form className="card card-pad inline-create" action={openStockCountAction}><div className="field"><label htmlFor="warehouseId">Mở đợt kiểm tại kho</label><select id="warehouseId" name="warehouseId" required><option value="">Chọn kho</option>{[...warehouses].map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></div><input type="hidden" name="cutoffAt" value={new Date().toISOString()} /><input type="hidden" name="operationId" value={randomUUID()} /><button className="button button-primary" type="submit">Tạo đợt kiểm</button></form>}
-    <section className="card"><div className="section-head"><h2>Các đợt kiểm</h2><StatusBadge tone="info">{counts.length}</StatusBadge></div><div className="table-wrap"><table><thead><tr><th>Mã</th><th>Kho</th><th>Cutoff</th><th>Dòng</th><th>Chênh lệch</th><th>Trạng thái</th></tr></thead><tbody>{counts.map((row) => <tr key={row.id}><td><Link className="code-link mono" href={`/admin/stock-counts/${row.id}`}>{row.count_number}</Link></td><td>{warehouses.get(row.warehouse_id)}</td><td>{new Intl.DateTimeFormat("vi-VN", { dateStyle: "short", timeStyle: "short" }).format(new Date(row.cutoff_at))}</td><td>{row.line_count}</td><td>{row.variance_count}</td><td><StatusBadge tone={row.state === "APPROVED" ? "success" : "warning"}>{stockCountStateLabel(row.state)}</StatusBadge></td></tr>)}</tbody></table>{counts.length === 0 && <p className="empty-inline">Chưa có đợt kiểm kho.</p>}</div></section>
+    <section className="card"><div className="section-head"><h2>Các đợt kiểm</h2><StatusBadge tone="info">{counts.length}</StatusBadge></div><div className="table-wrap"><table><thead><tr><th>Mã</th><th>Kho</th><th>Thời điểm chốt</th><th>Dòng</th><th>Chênh lệch</th><th>Trạng thái</th></tr></thead><tbody>{counts.map((row) => <tr key={row.id}><td><Link className="code-link mono" href={`/admin/stock-counts/${row.id}`}>{row.count_number}</Link></td><td>{warehouses.get(row.warehouse_id)}</td><td>{formatBusinessDateTime(row.cutoff_at)}</td><td>{row.line_count}</td><td>{row.variance_count}</td><td><StatusBadge tone={row.state === "APPROVED" ? "success" : "warning"}>{stockCountStateLabel(row.state)}</StatusBadge></td></tr>)}</tbody></table>{counts.length === 0 && <p className="empty-inline">Chưa có đợt kiểm kho.</p>}</div></section>
   </>;
 }

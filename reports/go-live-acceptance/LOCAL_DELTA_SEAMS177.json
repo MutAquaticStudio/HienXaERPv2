@@ -1,0 +1,26 @@
+{
+  "status": "PASS_NATIVE_LOCAL_DELTA_SEAMS",
+  "checkedAt": "2026-10-12T05:20:58.998Z",
+  "checks": [
+    {
+      "name": "LOCAL_FINITE_COUNT_RULE_AND_VALID_PHYSICAL_ZERO_PRESERVED",
+      "status": "PASS",
+      "rejectedValues": 6,
+      "quantity": "0.000000"
+    },
+    {
+      "name": "DIRECT_PO_TERMS_SOURCE_IDENTITY_TWO_COMMANDS_RETRY_AND_FIVE_ARGUMENT_COMPATIBILITY",
+      "status": "PASS",
+      "terms": {
+        "draft_version": 2,
+        "commercial_terms": "QA điều khoản nguồn được giữ"
+      },
+      "signatures": 1,
+      "changedIntentPayloadRejected": true
+    }
+  ],
+  "rolledBack": true,
+  "helperAndRpcIntegrated": true,
+  "authHTTP": false,
+  "productionAccess": "NONE"
+}

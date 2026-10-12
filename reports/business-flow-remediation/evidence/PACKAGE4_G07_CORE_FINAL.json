@@ -1,0 +1,26 @@
+{
+  "scope": "G07_ADVANCE_SOURCE_ALLOCATION_NO_NEW_CASH",
+  "phase": "after",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "productionAccess": "NONE",
+  "excessRejected": {
+    "code": "23514",
+    "message": "allocation_exceeds_outstanding"
+  },
+  "advance": {
+    "remaining": "0"
+  },
+  "reverseRegression": {
+    "remaining": "0",
+    "debt": "1000000"
+  },
+  "facts": {
+    "payments": 1,
+    "cash": "1000000",
+    "allocated": "1000000",
+    "debt": "0",
+    "available": "0"
+  },
+  "status": "PASS_G07_CORE_AND_PARTIAL_SOURCE_ALLOCATIONS",
+  "rolledBack": true
+}

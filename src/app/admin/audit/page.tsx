@@ -1,9 +1,17 @@
+import { formatBusinessDateTime } from "@/lib/core/business-time";
 import Link from "next/link";
 import { loadAuditPage, type AuditEvent, type AuditFilters } from "@/modules/audit/server";
 
 type SearchValue = string | string[] | undefined;
 
 const entityLabels: Record<string, string> = {
+  branch: "chi nhánh",
+  operational_opening_import: "nhập số dư đầu kỳ",
+  operational_reconciliation: "đối chiếu số dư đầu kỳ",
+  compensation_rule: "quy tắc thu nhập",
+  earning_event: "khoản thu nhập",
+  invoice_intent: "hồ sơ lập hóa đơn",
+  route_plan: "lộ trình",
   customers: "khách hàng",
   customer_sites: "công trình",
   materials: "vật tư",
@@ -35,6 +43,14 @@ const entityLabels: Record<string, string> = {
 };
 
 const actionLabels: Record<string, string> = {
+  reconciled: "đối soát",
+  activated: "kích hoạt vận hành",
+  remaining_closed: "đóng phần còn lại",
+  resolved: "hoàn tất xử lý",
+  recorded: "ghi nhận",
+  imported: "nhập dữ liệu",
+  calculated: "tính thu nhập",
+  recognition_configured: "cấu hình ghi nhận thu nhập",
   save: "lưu",
   create: "tạo",
   update: "cập nhật",
@@ -69,20 +85,16 @@ function clean(value: SearchValue, length: number) {
 }
 
 function formatTime(value: string) {
-  return new Intl.DateTimeFormat("vi-VN", {
-    dateStyle: "short",
-    timeStyle: "short",
-    timeZone: "Asia/Ho_Chi_Minh",
-  }).format(new Date(value));
+  return formatBusinessDateTime(value);
 }
 
 function readableEntity(value: string) {
-  return entityLabels[value] ?? value.replaceAll("_", " ");
+  return entityLabels[value] ?? "đối tượng nghiệp vụ";
 }
 
 function readableAction(value: string) {
   const suffix = value.split(".").at(-1) ?? value;
-  return actionLabels[suffix] ?? suffix.replaceAll("_", " ");
+  return actionLabels[suffix] ?? "thực hiện thao tác trên";
 }
 
 function summary(event: AuditEvent) {
@@ -131,15 +143,15 @@ export default async function AuditPage({
         <form className="filter-grid" method="get">
           <label className="field">
             <span>Người thực hiện</span>
-            <input name="actor" defaultValue={filters.actor} placeholder="Tên hoặc UUID" />
+            <input name="actor" defaultValue={filters.actor} placeholder="Tên hoặc mã người thực hiện" />
           </label>
           <label className="field">
             <span>Đối tượng</span>
-            <input name="entity" defaultValue={filters.entity} placeholder="Ví dụ: payment" />
+            <input name="entity" defaultValue={filters.entity} placeholder="Mã loại đối tượng cần tra cứu" />
           </label>
           <label className="field">
             <span>Hành động</span>
-            <input name="action" defaultValue={filters.action} placeholder="Ví dụ: approved" />
+            <input name="action" defaultValue={filters.action} placeholder="Mã hành động cần tra cứu" />
           </label>
           <label className="field">
             <span>Từ ngày</span>
@@ -181,10 +193,10 @@ export default async function AuditPage({
                       <details>
                         <summary>Xem dữ liệu kỹ thuật</summary>
                         <dl className="detail-grid">
-                          <div className="detail-item"><dt>Action</dt><dd className="mono">{event.action}</dd></div>
-                          <div className="detail-item"><dt>Entity</dt><dd className="mono">{event.entityType}</dd></div>
-                          <div className="detail-item"><dt>Actor</dt><dd className="mono">{event.actorId}</dd></div>
-                          <div className="detail-item"><dt>Trace</dt><dd className="mono">{event.traceId}</dd></div>
+                          <div className="detail-item"><dt>Hành động</dt><dd className="mono">{event.action}</dd></div>
+                          <div className="detail-item"><dt>Đối tượng</dt><dd className="mono">{event.entityType}</dd></div>
+                          <div className="detail-item"><dt>Người thực hiện</dt><dd className="mono">{event.actorId}</dd></div>
+                          <div className="detail-item"><dt>Mã truy vết</dt><dd className="mono">{event.traceId}</dd></div>
                           <div className="detail-item"><dt>Trường thay đổi</dt><dd className="mono">{event.changedFields.join(", ") || "—"}</dd></div>
                         </dl>
                       </details>

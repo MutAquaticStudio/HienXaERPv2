@@ -1,0 +1,55 @@
+{
+  "checkedAt": "2026-10-12T05:22:30.059Z",
+  "runtimeFingerprint": "9779f66efef02b205d142b8f021b07d323613181a065e69587d7a3d80ba0eb5f",
+  "canonicalSchema": 177,
+  "tests": 602,
+  "testFiles": 89,
+  "nodeTests": 8,
+  "checks": [
+    {
+      "name": "unit",
+      "status": "PASS",
+      "artifact": "checks/final-unit177.log",
+      "sha256": "29671c7327d444d93e47ac2080765177e06c37603852dc92d84e2f6ef3169d03"
+    },
+    {
+      "name": "typecheck",
+      "status": "PASS",
+      "artifact": "checks/final-typecheck177.log",
+      "sha256": "99d7c2179cdd316467c51f37901025a0753453664d741214ba56fc631fa6c0bc"
+    },
+    {
+      "name": "lint",
+      "status": "PASS",
+      "artifact": "checks/final-lint177.log",
+      "sha256": "f5f5da2fa8444503b547b822ec5c7d2429b737280add909fbbda68a7f17639ed"
+    },
+    {
+      "name": "build",
+      "status": "PASS",
+      "artifact": "checks/final-build177.log",
+      "sha256": "4cf0013d936282006e245e7b878990a0b2183ab5f4818c6e269360f78f888081"
+    },
+    {
+      "name": "node",
+      "status": "PASS",
+      "artifact": "checks/resumed-evidence-node177.log",
+      "sha256": "a5acd94ce3c6eb3d58c416df0a612c044b23d5280b77aea5b6289aa3221eb9b0"
+    },
+    {
+      "name": "quantity-red",
+      "status": "EXPECTED_FAILURE_BEFORE_FIX",
+      "artifact": "checks/numeric-json-red177.log",
+      "sha256": "a1f480ba61b44bc74f923c061ce53a73d960330a38c7253faa6734ee1927942c"
+    },
+    {
+      "name": "quantity-green",
+      "status": "PASS",
+      "artifact": "checks/numeric-json-green177.log",
+      "sha256": "f727fffae549072d2a51e8f2db4b4b25af7dcc5562a87bd5c624318bc5d070c5"
+    }
+  ],
+  "productionAccess": "NONE",
+  "ci": "MUST_VERIFY_NEW_COMMIT",
+  "excludedAdvanceRacesRun": false
+}

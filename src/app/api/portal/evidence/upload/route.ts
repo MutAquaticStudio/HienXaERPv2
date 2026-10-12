@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 
 import { NextResponse } from "next/server";
-import { createPortalEvidenceStorage } from "@/modules/portal/evidence-storage";
+import { createPortalEvidenceStorage, finalizeVerifiedEvidence } from "@/modules/portal/evidence-storage";
 
 import {
   authenticatedPortalClient,
@@ -10,7 +10,7 @@ import {
   portalRpc,
 } from "@/modules/portal/server";
 
-type CreatedEvidence = { id: string; bucket_id: string; object_path: string };
+type CreatedEvidence = { id: string; bucket_id: string; object_path: string; state: string };
 
 export async function POST(request: Request) {
   const context = await authenticatedPortalClient();
@@ -37,15 +37,23 @@ export async function POST(request: Request) {
       target_byte_size: file.size,
       operation_id: createOperationId,
     });
-    const { error: uploadError } = await createPortalEvidenceStorage()
-      .from(evidence.bucket_id)
-      .upload(evidence.object_path, bytes, { contentType: mimeType, upsert: true });
-    if (uploadError) throw new Error(uploadError.message);
-    await portalRpc<string>(context.supabase, "finalize_portal_evidence", {
-      target_evidence_id: evidence.id,
-      target_checksum_sha256: checksum,
-      target_byte_size: file.size,
-      operation_id: finalizeOperationId,
+    const bucket = createPortalEvidenceStorage().from(evidence.bucket_id);
+    if (evidence.state !== "READY") {
+      // A retry may have a stale PENDING receipt after the first upload committed.
+      // Never replace that object: a duplicate must pass the stored-byte check below.
+      const { error: uploadError } = await bucket.upload(evidence.object_path, bytes, { contentType: mimeType, upsert: false });
+      if (uploadError && String(uploadError.statusCode) !== "409") throw new Error("Không thể tải minh chứng. Hãy thử lại.");
+    }
+    const { data: stored, error: downloadError } = await bucket.download(evidence.object_path);
+    if (downloadError || !stored) throw new Error("Chưa đọc được tệp đã tải. Hãy thử lại.");
+    const storedBytes = new Uint8Array(await stored.arrayBuffer());
+    if (storedBytes.length !== file.size || detectEvidenceMime(storedBytes) !== mimeType ||
+      createHash("sha256").update(storedBytes).digest("hex") !== checksum) {
+      throw new Error("Tệp đã lưu không khớp minh chứng đã chọn.");
+    }
+    await finalizeVerifiedEvidence("PORTAL", {
+      actorUuid: context.user.id, evidenceId: evidence.id, checksum,
+      byteSize: storedBytes.length, operationId: finalizeOperationId,
     });
     return NextResponse.json({ evidenceId: evidence.id });
   } catch (error) {

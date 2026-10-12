@@ -1,3 +1,6 @@
+import { formatBusinessDateTime } from "@/lib/core/business-time";
+import { workStateLabel } from "@/modules/portal/presentation";
+import { roleLabel } from "@/components/access/presentation";
 import Link from "next/link";
 import { randomUUID } from "node:crypto";
 import { ActionNotice } from "@/components/sales/action-notice";
@@ -28,16 +31,16 @@ export default async function WorkforcePage({ searchParams }: { searchParams: Pr
   const canManage = access.permissions.has("work.manage");
   const canClaim = access.permissions.has("work.claim");
   return <>
-    <header className="page-heading"><div><p className="eyebrow">Workforce orchestration</p><h1>Nhân sự và WorkItem</h1><p className="lede">WorkItem điều phối người/tài nguyên; Delivery và ServiceJob vẫn là nguồn nghiệp vụ.</p></div></header>
+    <header className="page-heading"><div><p className="eyebrow">Điều phối nhân sự</p><h1>Nhân sự và công việc</h1><p className="lede">Theo dõi phân công nhân sự, xe và máy cho công việc giao hàng và dịch vụ.</p></div></header>
     <ActionNotice notice={query.notice} error={query.error} />
     <div className="two-column">
       <section className="card"><div className="section-head"><h2>Nhân sự theo chi nhánh</h2><span className="scope-chip">Không hiển thị lương</span></div>
         <div className="table-wrap"><table><thead><tr><th>Nhân viên</th><th>Vai trò</th><th>Việc hiện tại</th><th>Trạng thái</th></tr></thead><tbody>
-          {workers.map((worker) => <tr key={worker.id + "-" + (worker.work_item_id ?? "free")}><td>{worker.display_name}<small className="table-subline mono">{worker.code}</small></td><td>{worker.role_name}</td><td>{worker.current_work ?? "Sẵn sàng"}</td><td><StatusBadge tone={worker.work_state ? "warning" : "success"}>{worker.work_state ?? "AVAILABLE"}</StatusBadge></td></tr>)}
+          {workers.map((worker) => <tr key={worker.id + "-" + (worker.work_item_id ?? "free")}><td>{worker.display_name}<small className="table-subline mono">{worker.code}</small></td><td>{roleLabel(worker.role_name)}</td><td>{worker.current_work ?? "Không có việc đang mở tại chi nhánh"}</td><td><StatusBadge tone={!worker.active || worker.work_state ? "warning" : "success"}>{!worker.active ? "Ngừng hoạt động" : worker.work_state ? workStateLabel(worker.work_state) : "Chưa có việc đang mở"}</StatusBadge></td></tr>)}
         </tbody></table></div>
       </section>
-      <section className="card card-pad"><div className="section-head"><h2>Pool chờ nhận</h2><span className="scope-chip">Atomic claim</span></div>
-        <ul className="clean-list">{pool.map((work) => <li key={work.id}><strong>{work.work_number} · {work.title}</strong><small>{new Intl.DateTimeFormat("vi-VN", { dateStyle: "short", timeStyle: "short" }).format(new Date(work.scheduled_start))}</small>
+      <section className="card card-pad"><div className="section-head"><h2>Công việc chờ nhận</h2><span className="scope-chip">Mỗi việc chỉ giao cho một người</span></div>
+        <ul className="clean-list">{pool.map((work) => <li key={work.id}><strong>{work.work_number} · {work.title}</strong><small>{formatBusinessDateTime(work.scheduled_start)}</small>
           <div className="inline-actions">
             {work.service_job_id && <Link className="button button-secondary" href={"/admin/service-jobs/" + work.service_job_id}>Mở nguồn</Link>}
             {canClaim && work.service_job_id && <form action={claimWorkItemAction}><input type="hidden" name="workItemId" value={work.id} /><input type="hidden" name="serviceJobId" value={work.service_job_id} /><input type="hidden" name="version" value={work.version} /><input type="hidden" name="operationId" value={randomUUID()} /><button className="button button-primary" type="submit">Nhận việc</button></form>}

@@ -1,0 +1,365 @@
+{
+  "scope": "G02_INPUT_AND_CONVERSION_SEAMS_G12_VERSION_G21_ATOMIC_AUDIT",
+  "database": "hx_remediation_go_live_browser175",
+  "productionAccess": "NONE",
+  "managedAuthTested": false,
+  "checks": [
+    {
+      "name": "update_sales_order_draft_PRECISION_BEFORE_EFFECT",
+      "status": "PASS",
+      "error": {
+        "code": "22023",
+        "message": "quantity_precision_exceeds_six"
+      },
+      "fact": {
+        "receipts": 0,
+        "audits": 0
+      }
+    },
+    {
+      "name": "update_quote_draft_PRECISION_BEFORE_EFFECT",
+      "status": "PASS",
+      "error": {
+        "code": "22023",
+        "message": "quantity_precision_exceeds_six"
+      },
+      "fact": {
+        "receipts": 0,
+        "audits": 0
+      }
+    },
+    {
+      "name": "update_purchase_order_draft_PRECISION_BEFORE_EFFECT",
+      "status": "PASS",
+      "error": {
+        "code": "22023",
+        "message": "quantity_precision_exceeds_six"
+      },
+      "fact": {
+        "receipts": 0,
+        "audits": 0
+      }
+    },
+    {
+      "name": "update_sales_order_draft_NULL_STALE_VERSION",
+      "status": "PASS",
+      "failures": [
+        {
+          "version": null,
+          "code": "PT409",
+          "message": "draft_version_conflict"
+        },
+        {
+          "version": 0,
+          "code": "PT409",
+          "message": "draft_version_conflict"
+        },
+        {
+          "version": 999,
+          "code": "PT409",
+          "message": "draft_version_conflict"
+        }
+      ]
+    },
+    {
+      "name": "update_quote_draft_NULL_STALE_VERSION",
+      "status": "PASS",
+      "failures": [
+        {
+          "version": null,
+          "code": "PT409",
+          "message": "draft_version_conflict"
+        },
+        {
+          "version": 0,
+          "code": "PT409",
+          "message": "draft_version_conflict"
+        },
+        {
+          "version": 999,
+          "code": "PT409",
+          "message": "draft_version_conflict"
+        }
+      ]
+    },
+    {
+      "name": "update_purchase_order_draft_NULL_STALE_VERSION",
+      "status": "PASS",
+      "failures": [
+        {
+          "version": null,
+          "code": "PT409",
+          "message": "draft_version_conflict"
+        },
+        {
+          "version": 0,
+          "code": "PT409",
+          "message": "draft_version_conflict"
+        },
+        {
+          "version": 999,
+          "code": "PT409",
+          "message": "draft_version_conflict"
+        }
+      ]
+    },
+    {
+      "name": "update_purchase_order_warehouse_NULL_STALE_VERSION",
+      "status": "PASS",
+      "failures": [
+        {
+          "version": null,
+          "code": "PT409",
+          "message": "draft_version_conflict"
+        },
+        {
+          "version": 0,
+          "code": "PT409",
+          "message": "draft_version_conflict"
+        },
+        {
+          "version": 999,
+          "code": "PT409",
+          "message": "draft_version_conflict"
+        }
+      ]
+    },
+    {
+      "name": "update_sales_order_draft_VALID_RETRY_OLD_VERSION",
+      "status": "PASS"
+    },
+    {
+      "name": "update_quote_draft_VALID_RETRY_OLD_VERSION",
+      "status": "PASS"
+    },
+    {
+      "name": "update_purchase_order_draft_VALID_RETRY_OLD_VERSION",
+      "status": "PASS"
+    },
+    {
+      "name": "receive_purchase_order_PRECISION_BEFORE_EFFECT",
+      "status": "PASS",
+      "error": {
+        "code": "22023",
+        "message": "quantity_precision_exceeds_six"
+      },
+      "fact": {
+        "receipts": 0,
+        "audits": 0
+      }
+    },
+    {
+      "name": "verify_supplier_fulfillment_PRECISION_BEFORE_EFFECT",
+      "status": "PASS",
+      "error": {
+        "code": "22023",
+        "message": "quantity_precision_exceeds_six"
+      },
+      "fact": {
+        "receipts": 0,
+        "audits": 0
+      }
+    },
+    {
+      "name": "upsert_supply_allocation_PRECISION_BEFORE_EFFECT",
+      "status": "PASS",
+      "error": {
+        "code": "22023",
+        "message": "quantity_precision_exceeds_six"
+      },
+      "fact": {
+        "receipts": 0,
+        "audits": 0
+      }
+    },
+    {
+      "name": "reserve_inventory_PRECISION_BEFORE_EFFECT",
+      "status": "PASS",
+      "error": {
+        "code": "22023",
+        "message": "quantity_precision_exceeds_six"
+      },
+      "fact": {
+        "receipts": 0,
+        "audits": 0
+      }
+    },
+    {
+      "name": "create_delivery_from_allocations_PRECISION_BEFORE_EFFECT",
+      "status": "PASS",
+      "error": {
+        "code": "22023",
+        "message": "quantity_precision_exceeds_six"
+      },
+      "fact": {
+        "receipts": 0,
+        "audits": 0
+      }
+    },
+    {
+      "name": "RECEIPT_DIRECT_STORED_QTY_PRICE_AND_RETRY_AUDIT_ONCE",
+      "status": "PASS",
+      "receiptFact": {
+        "quantity": "1.000001",
+        "money": "150000",
+        "expected": "150000"
+      },
+      "directFact": {
+        "quantity": "1.000001",
+        "money": "150000",
+        "expected": "150000"
+      },
+      "auditFact": {
+        "audits": 1
+      }
+    },
+    {
+      "name": "create_service_job_PRECISION_BEFORE_EFFECT",
+      "status": "PASS",
+      "error": {
+        "code": "22023",
+        "message": "quantity_precision_exceeds_six"
+      },
+      "fact": {
+        "receipts": 0,
+        "audits": 0
+      }
+    },
+    {
+      "name": "start_work_item_NULL_STALE_VERSION",
+      "status": "PASS",
+      "failures": [
+        {
+          "version": null,
+          "code": "PT409",
+          "message": "stale_work_version"
+        },
+        {
+          "version": 0,
+          "code": "PT409",
+          "message": "stale_work_version"
+        },
+        {
+          "version": 999,
+          "code": "PT409",
+          "message": "stale_work_version"
+        }
+      ]
+    },
+    {
+      "name": "submit_work_result_PRECISION_BEFORE_EFFECT",
+      "status": "PASS",
+      "error": {
+        "code": "22023",
+        "message": "quantity_precision_exceeds_six"
+      },
+      "fact": {
+        "receipts": 0,
+        "audits": 0
+      }
+    },
+    {
+      "name": "submit_work_result_NULL_STALE_VERSION",
+      "status": "PASS",
+      "failures": [
+        {
+          "version": null,
+          "code": "PT409",
+          "message": "stale_work_version"
+        },
+        {
+          "version": 0,
+          "code": "PT409",
+          "message": "stale_work_version"
+        },
+        {
+          "version": 999,
+          "code": "PT409",
+          "message": "stale_work_version"
+        }
+      ]
+    },
+    {
+      "name": "verify_service_job_PRECISION_BEFORE_EFFECT",
+      "status": "PASS",
+      "error": {
+        "code": "22023",
+        "message": "quantity_precision_exceeds_six"
+      },
+      "fact": {
+        "receipts": 0,
+        "audits": 0
+      }
+    },
+    {
+      "name": "verify_service_job_PRECISION_BEFORE_EFFECT",
+      "status": "PASS",
+      "error": {
+        "code": "22023",
+        "message": "quantity_precision_exceeds_six"
+      },
+      "fact": {
+        "receipts": 0,
+        "audits": 0
+      }
+    },
+    {
+      "name": "verify_service_job_NULL_STALE_VERSION",
+      "status": "PASS",
+      "failures": [
+        {
+          "version": null,
+          "code": "PT409",
+          "message": "stale_service_version"
+        },
+        {
+          "version": 0,
+          "code": "PT409",
+          "message": "stale_service_version"
+        },
+        {
+          "version": 999,
+          "code": "PT409",
+          "message": "stale_service_version"
+        }
+      ]
+    },
+    {
+      "name": "verify_service_job_NULL_STALE_VERSION",
+      "status": "PASS",
+      "failures": [
+        {
+          "version": null,
+          "code": "PT409",
+          "message": "stale_service_version"
+        },
+        {
+          "version": 0,
+          "code": "PT409",
+          "message": "stale_service_version"
+        },
+        {
+          "version": 999,
+          "code": "PT409",
+          "message": "stale_service_version"
+        }
+      ]
+    },
+    {
+      "name": "SERVICE_SOURCE_VALID_RETRY_AFTER_VERSION_ADVANCES",
+      "status": "PASS"
+    },
+    {
+      "name": "AUDIT_FAULT_ROLLS_BACK_SOURCE_RECEIPT_AND_HISTORY_RETRY_ONCE",
+      "status": "PASS",
+      "rolled": {
+        "receipts": 0,
+        "audits": 0,
+        "effects": 0
+      },
+      "retryAudits": 1
+    }
+  ],
+  "status": "PASS_EXECUTED_DB_SEAMS",
+  "rolledBack": true
+}

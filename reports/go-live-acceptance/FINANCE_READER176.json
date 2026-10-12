@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "checks": {
+    "financeViewRows": 0,
+    "financeLimit": "230000",
+    "internalStillPrivate": {
+      "code": "42501",
+      "message": "permission denied for function return_credit_source_limit"
+    },
+    "workerDenied": {
+      "code": "42501",
+      "message": "return_credit_read_forbidden"
+    },
+    "customerDenied": {
+      "code": "42501",
+      "message": "return_credit_read_forbidden"
+    }
+  },
+  "productionAccess": "NONE",
+  "businessWrites": 0
+}

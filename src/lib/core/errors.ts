@@ -9,6 +9,35 @@ export type AppErrorCode =
 
 export type AppErrorStatus = 401 | 403 | 404 | 409 | 422 | 429 | 503;
 
+export function quantityInputError(message: unknown): string | null {
+  if (typeof message !== "string") return null;
+  if (message.includes("quantity_precision_exceeds_six")) return "Số lượng chỉ hỗ trợ tối đa 6 chữ số sau dấu thập phân. Vui lòng nhập lại; hệ thống không tự làm tròn.";
+  if (/quantity_(?:invalid_or_out_of_range|format_invalid|line_invalid|lines_required)/.test(message)) return "Vui lòng nhập số lượng hợp lệ trong giới hạn hỗ trợ và đầy đủ các dòng vật tư.";
+  if (message.includes("billing_source_requires_reconciliation")) return "Giá trị đã ghi theo dòng nguồn cần được đối chiếu trước khi ghi nhận đợt tiếp theo. Vui lòng liên hệ kế toán.";
+  return null;
+}
+
+/** Presentation only: the database remains the authority that rejects posting. */
+export function operationalPostingError(message: unknown,
+  context: "posting" | "sales-order-confirmation" | "purchase-order-confirmation" = "posting"): string | null {
+  if (typeof message !== "string" || !/\bbranch_not_operational\b/.test(message)) return null;
+  if (context === "posting") return "Chưa thể ghi sổ: chưa xác minh được điều kiện vận hành của chi nhánh. Người quản trị cần kiểm tra phiên bản hệ thống và phạm vi truy cập.";
+  const document = context === "sales-order-confirmation" ? "đơn bán" : "đơn mua";
+  return `Chưa thể xác nhận ${document}: chưa xác minh được điều kiện vận hành của chi nhánh. Người quản trị cần kiểm tra phiên bản hệ thống và phạm vi truy cập.`;
+}
+
+/** Keep clear Vietnamese validation details, without displaying unmapped backend errors. */
+export function userFacingError(message: string | undefined | null, fallback = "Có lỗi xảy ra. Vui lòng thử lại"): string {
+  const quantity = quantityInputError(message);
+  if (quantity) return quantity;
+  const posting = operationalPostingError(message);
+  if (posting) return posting;
+  const value = message?.trim();
+  if (!value || !/[À-ỹĐđ]/u.test(value) || /\b[a-z][a-z0-9]*_[a-z0-9_]+\b/.test(value)
+    || /\b(?:PENDING_OPENING|READY_FOR_ACTIVATION|NOT_VERIFIED|PT\d{3})\b/.test(value)) return fallback;
+  return value;
+}
+
 export class AppError extends Error {
   readonly code: AppErrorCode;
   readonly status: AppErrorStatus;

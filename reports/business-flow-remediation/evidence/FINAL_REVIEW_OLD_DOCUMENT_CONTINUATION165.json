@@ -1,0 +1,30 @@
+{
+  "scope": "RESTORED136_DOCUMENT_CONTINUES_AFTER165_WITH_UNCHANGED_SOURCE_AND_SINGLE_EFFECT",
+  "status": "PASS",
+  "source": {
+    "id": "7f86038f-9265-4768-8cf6-3e0130cf303f",
+    "branch_id": "dd101b24-aa92-4fd0-a0e7-30a935c2724c",
+    "state": "CONFIRMED",
+    "line": "dd65fd8f-6aba-4820-9193-30542b5c9a71",
+    "quantity": "1.000000",
+    "price": "1000"
+  },
+  "before": {
+    "source_hash": "392f20a3ef923af36ab57a494cdcc6a1"
+  },
+  "after": {
+    "source_hash": "392f20a3ef923af36ab57a494cdcc6a1",
+    "receipts": 1,
+    "received_quantity": "1.000000",
+    "payables": 1,
+    "movements": 1,
+    "intents": 1,
+    "audits": 1
+  },
+  "receipt": "2869398e-cdae-4e0d-82e0-ea57834edcae",
+  "separateConnections": true,
+  "nativeAuthenticatedUid": "0d1d2134-5a21-40a4-9fcb-375898d3c133",
+  "managedAuthTested": false,
+  "productionAccess": "NONE",
+  "newDocumentsFabricated": false
+}

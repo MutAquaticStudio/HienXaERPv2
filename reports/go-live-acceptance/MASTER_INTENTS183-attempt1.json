@@ -1,0 +1,12 @@
+{
+  "scope": "MASTER_DRAFT_OUTCOME_ACTOR_BRANCH_AND_FINANCIAL_DELEGATION",
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "MASTER_DRAFT_PERSIST_GET_RETRY_CHANGE_CONFLICT_AND_WORKER_DENIAL",
+      "status": "PASS"
+    }
+  ],
+  "status": "FAIL",
+  "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   result_id: '4ac1c2b9-af6e-409b-ab7d-bd068f661c53',\n+   status: 'COMMITTED'\n-   status: 'UNKNOWN'\n  }\n"
+}

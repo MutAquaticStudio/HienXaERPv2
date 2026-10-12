@@ -1,0 +1,61 @@
+{
+  "scope": "G18_REAL_AUTH_TWO_ACTORS_RECEIVE_SAME_SOURCE",
+  "productionAccess": "NONE",
+  "managedQaBusinessWrites": 0,
+  "excludedAdvanceRacesReexecuted": false,
+  "documents": {
+    "branch": "4809207f-aef2-4d3c-af6a-a40141629d7b",
+    "from": "238e6738-37fb-4b81-ab1c-4524dfc5b4c2",
+    "to": "26224d0d-22f1-4d40-a79b-b92b5acf64de",
+    "stock": {
+      "prefix": "RM233D8803",
+      "uom": "d005e9c3-c591-40cb-8254-9a4b9d1c9f56",
+      "material": "78344bca-27c7-4ce6-a25a-f0b6cb5d4c7c",
+      "price": "a7a1979d-3a90-4e9e-878e-3164dc8fdf47",
+      "cost": "56adc9cd-c622-4da8-8da6-9d4765fe07da",
+      "po": "f005a144-db29-44ff-becc-56b4ec200527",
+      "common": {
+        "material_id": "78344bca-27c7-4ce6-a25a-f0b6cb5d4c7c",
+        "ordered_uom_id": "d005e9c3-c591-40cb-8254-9a4b9d1c9f56",
+        "quantity": "10",
+        "conversion_numerator": "1",
+        "conversion_denominator": "1",
+        "rounding_mode": "HALF_UP"
+      },
+      "cutoff": "2026-10-11 17:10:08.402811+07",
+      "customer": "517238f0-dd4b-478c-9ce0-8a1a0a9d7fd4",
+      "site": "a7698348-5f7e-4aca-93a3-82a39e212edf",
+      "unitPriceVnd": "230000"
+    },
+    "transfer": "e07fc8da-a946-44d2-ae93-d48b8c69fda2",
+    "lot": "6389a527-02e7-433c-a0cb-675b0473532e",
+    "version": 3
+  },
+  "race": {
+    "actors": [
+      "0d1d2134-5a21-40a4-9fcb-375898d3c133",
+      "e04f1e5a-2a2d-4347-a506-1b6a35ea790f"
+    ],
+    "pidA": 51466,
+    "pidB": 51467,
+    "observedBlockingPids": [
+      51466
+    ],
+    "firstStatus": 200,
+    "secondStatus": 409,
+    "facts": {
+      "receipts": 1,
+      "transit": "2.000000",
+      "value": "300000",
+      "loser_receipts": 0,
+      "loser_audits": 0
+    }
+  },
+  "mode": "same-intent",
+  "status": "PASS",
+  "costPrivacy": {
+    "masked": true,
+    "raw403": true,
+    "salesQuantityReadCostMasked": true
+  }
+}

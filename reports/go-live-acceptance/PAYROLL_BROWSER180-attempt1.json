@@ -1,0 +1,92 @@
+{
+  "scope": "T37_BONUS_RULE_BASIS_EARNING_APPROVAL_FINANCE_PAYMENT_WORKER_READ",
+  "checkedAt": "2026-10-12T07:47:36.848Z",
+  "baselineCommit": "73c3d17",
+  "schema": 179,
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [
+    {
+      "name": "OWNER_UI_CREATE_RULE",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T07:47:40.838Z",
+      "schema": {
+        "count": 180,
+        "latest": "20261012074034"
+      },
+      "facts": {
+        "rule": "0d57938c-2ea1-4b47-9b6d-b380da0a5d02"
+      }
+    },
+    {
+      "name": "OWNER_UI_RECORD_EXACT_BONUS_BASIS",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T07:47:41.564Z",
+      "schema": {
+        "count": 180,
+        "latest": "20261012074034"
+      },
+      "facts": {
+        "basis": "b66eeca0-0cbd-41a4-852d-aca3d26e9630"
+      }
+    },
+    {
+      "name": "OWNER_UI_CALCULATE_DRAFT_DOES_NOT_CREATE_PAYABLE",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T07:47:42.324Z",
+      "schema": {
+        "count": 180,
+        "latest": "20261012074034"
+      },
+      "facts": {
+        "qty": "1.234567",
+        "amount": "123457",
+        "approval_state": "DRAFT"
+      }
+    },
+    {
+      "name": "OWNER_APPROVE_FINANCE_PARTIAL_PAY_INDEPENDENT_AP_AND_CASH",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T07:47:43.758Z",
+      "schema": {
+        "count": 180,
+        "latest": "20261012074034"
+      },
+      "facts": {
+        "remaining": "100000",
+        "paid": "23457",
+        "audits": 1
+      }
+    }
+  ],
+  "documents": {
+    "code": "GB7D04911B73",
+    "rule": "0d57938c-2ea1-4b47-9b6d-b380da0a5d02",
+    "basis": "b66eeca0-0cbd-41a4-852d-aca3d26e9630",
+    "earning": "c41a6d1e-9cc3-4f02-8975-8e736676b98d",
+    "obligation": "facc70f0-b900-46a9-b619-ab6b0d800697",
+    "paymentIntent": "5c1d825a-b29d-4c6e-8d0e-a85dd3812a5d",
+    "payment": "a0b944dd-8a49-4e3b-84d0-a94f399efc69"
+  },
+  "pageErrors": [],
+  "status": "FAIL",
+  "error": "locator.waitFor: Error: strict mode violation: getByText('123.457 ₫', { exact: true }) resolved to 2 elements:\n    1) <h1>123.457 ₫</h1> aka locator('h1').filter({ hasText: '₫' })\n    2) <p class=\"portal-module__1g8gFq__amount\">123.457 ₫</p> aka locator('article').getByText('₫')\n\nCall log:\n\u001b[2m  - waiting for getByText('123.457 ₫', { exact: true }) to be visible\u001b[22m\n",
+  "failurePages": [
+    {
+      "url": "http://127.0.0.1:3112/admin/compensation?notice=earning-approved",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA ERP\nĐiều hành\nTổng quan\nBán hàng\nMua hàng\nKho hàng\nGiao hàng\nTài chính\nNhân công & dịch vụ\nNhân sự & công việc\nThu nhập\nDịch vụ\nQuản trị\nBáo cáo\nTin nhắn\nĐăng xuất\nPhiên làm việc có phân quyền\nQA không đầu kỳ G119EE6ACBC\nNhân viên kiểm thử owner\nTO\n\nSỔ THU NHẬP NHÂN SỰ\n\nThu nhập, lương và hoa hồng\n\nMỗi khoản thu nhập lưu căn cứ tính, quy tắc áp dụng và lịch sử duyệt. Khoản chi trả được ghi nhận riêng.\n\nĐã duyệt thu nhập và ghi nghĩa vụ phải trả.\n\nPhê duyệt ghi nhận tự động theo sự kiện\nTạo phiên bản quy tắc\nGhi căn cứ tính thủ công\nCăn cứ tính thủ công\nCHỌN CÁCH TÍNH PHÙ HỢP\nThưởng · 1,234567\nQA thưởng theo căn cứ GB7D04911B73 · 12/10/2026 → 12/10/2026\nQuy tắc cùng loại căn cứ\nGB7D04911B73 · Phiên bản 1\nTính thu nhập\n1 khoản thu nhập\nLƯU ĐẦY ĐỦ LỊCH SỬ\nNHÂN VIÊN / NGUỒN\tQUY TẮC\tCĂN CỨ TÍNH\tTÍNH TOÁN\tDUYỆT\tPHẢI TRẢ\tTHAO TÁC\nNhân viên kiểm thử noConfirm\nCăn cứ tính thủ công\nMã nguồn: b66eeca0-0cbd-41a4-852d-aca3d26e9630\nĐã duyệt: 12/10/2026 14:47\n\tGB7D04911B73 · Phiên bản 1\nThưởng · Chi phí vận hành\n\t1,234567\t123.457 ₫\tĐã duyệt\t123.457 ₫\t\nChi trả"
+    },
+    {
+      "url": "http://127.0.0.1:3112/admin/compensation?notice=earning-paid",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA ERP\nĐiều hành\nTổng quan\nBán hàng\nNhà cung cấp\nKho hàng\nGiao hàng\nTài chính\nThu nhập\nBáo cáo\nTin nhắn\nĐăng xuất\nPhiên làm việc có phân quyền\nQA không đầu kỳ G119EE6ACBC\nQA khắc phục finance\nPF\n\nSỔ THU NHẬP NHÂN SỰ\n\nThu nhập, lương và hoa hồng\n\nMỗi khoản thu nhập lưu căn cứ tính, quy tắc áp dụng và lịch sử duyệt. Khoản chi trả được ghi nhận riêng.\n\nĐã ghi sổ chi tiền và phân bổ vào nghĩa vụ nhân sự.\n\n1 khoản thu nhập\nLƯU ĐẦY ĐỦ LỊCH SỬ\nNHÂN VIÊN / NGUỒN\tQUY TẮC\tCĂN CỨ TÍNH\tTÍNH TOÁN\tDUYỆT\tPHẢI TRẢ\tTHAO TÁC\nNhân viên kiểm thử noConfirm\nCăn cứ tính thủ công\nMã nguồn: b66eeca0-0cbd-41a4-852d-aca3d26e9630\nĐã duyệt: 12/10/2026 14:47\n\tGB7D04911B73 · Phiên bản 1\nThưởng · Chi phí vận hành\n\t1,234567\t123.457 ₫\tĐã duyệt\t100.000 ₫\t\nChi trả"
+    },
+    {
+      "url": "http://127.0.0.1:3112/work/earnings",
+      "title": "Hiền Xa ERP",
+      "body": "ĐANG TẢI DỮ LIỆU\n\nVui lòng chờ"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "scope": "T04_T21_QUOTE_SO_DRAFT_AMENDMENT_REAL_ROLE_BROWSER",
+  "checkedAt": "2026-10-12T07:35:56.609Z",
+  "baselineCommit": "73c3d17",
+  "schema": 179,
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [
+    {
+      "name": "QUOTE_MISSING_AND_SEVENTH_DECIMAL_CANNOT_SAVE_UI",
+      "status": "PASS",
+      "facts": {}
+    },
+    {
+      "name": "QUOTE_MISSING_AND_SEVENTH_DECIMAL_CANNOT_SAVE_UI",
+      "status": "PASS",
+      "facts": {}
+    },
+    {
+      "name": "QUOTE_TWO_TABS_STALE_EDIT_AND_EXACT_STORED_MONEY",
+      "status": "PASS",
+      "facts": {
+        "quantity": "2.123456",
+        "price": "230000",
+        "amount": "488395",
+        "expected": "488395"
+      }
+    },
+    {
+      "name": "SALES_SEND_QUOTE_DOES_NOT_CREATE_AR_OR_INVENTORY",
+      "status": "PASS",
+      "facts": {}
+    }
+  ],
+  "documents": {
+    "quoteCreateIntent": "12055a12-1fe3-411e-8c48-928555a9ff7b",
+    "quote": "05104b11-a105-4ae7-a02a-61d1bb2d212a",
+    "revision": "a1a63228-b0d7-4b65-ab99-c93c538ccdc0"
+  },
+  "pageErrors": [],
+  "status": "FAIL",
+  "error": "Expected values to be strictly equal:\n\n200 !== 404\n"
+}

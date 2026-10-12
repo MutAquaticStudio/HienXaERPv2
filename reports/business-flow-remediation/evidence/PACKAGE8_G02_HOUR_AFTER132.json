@@ -1,0 +1,15 @@
+{
+  "scope": "G02_DERIVED_HOUR_STORAGE_AND_PRICING_SAME_QUANTITY",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "productionAccess": "NONE",
+  "managedAuthTested": false,
+  "controlledClockFixture": "Synthetic work timestamps set before immutable result/log creation; no historic logged facts changed",
+  "status": "PASS_HOUR_BASIS_NORMALIZED_BEFORE_PRICE",
+  "fact": {
+    "quantity": "0.208333",
+    "amount": "416666",
+    "expected": "416666",
+    "audits": 1
+  },
+  "rolledBack": true
+}

@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "canonicalSchema": 173,
+  "historyEntries": 174,
+  "migration": "supabase/migrations/20261011191806_remediation_current_employee_identity.sql",
+  "sha256": "bb74b8e4c2a210d516551bf03f19115b5eaddc74fa3e5b1b69f5a998006b6734",
+  "dataUpdates": 0,
+  "productionAccess": "NONE"
+}

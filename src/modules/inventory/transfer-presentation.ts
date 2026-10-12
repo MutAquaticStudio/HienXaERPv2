@@ -1,0 +1,1 @@
+export const transferEventLabel = { DISPATCH: "Xuất thực tế", RECEIVE: "Nhận thực tế", REPORT_SHORTAGE: "Ghi hồ sơ thiếu / hỏng", APPROVE_LOSS: "Duyệt hao hụt theo hồ sơ", CLOSE_DISPATCH: "Đóng phần chưa xuất" } as const;

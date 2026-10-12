@@ -1,6 +1,10 @@
 "use server";
+import { operationalPostingError, quantityInputError } from "@/lib/core/errors";
+
 
 import { revalidatePath } from "next/cache";
+import { isAuthoritativeRejection, type CommandOutcome } from "@/lib/core/command-outcome";
+import { checkSavedCommandFieldsAction } from "@/lib/core/command-outcome-actions";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
@@ -28,13 +32,18 @@ function withQuery(target: string, values: Record<string, string>) {
 }
 
 function message(value?: string) {
+  const postingError = operationalPostingError(value);
+  if (postingError) return postingError;
+  const quantityError = quantityInputError(value);
+  if (quantityError) return quantityError;
   if (value?.includes("operation_payload_conflict")) return "Mã thao tác đã được dùng với dữ liệu khác. Hãy tải lại.";
   if (value?.includes("exceeds_payment")) return "Tổng phân bổ và tiền ứng vượt số tiền của phiếu.";
   if (value?.includes("exceeds_outstanding")) return "Phân bổ hoặc điều chỉnh vượt số dư hiện tại.";
   if (value?.includes("scope_mismatch")) return "Khoản được chọn không cùng đối tác hoặc chi nhánh.";
+  if (value?.includes("payment_funds_customer_credit_use_source_workflow")) return "Phiếu thu đang cấp nguồn cho khoản có của khách. Dùng hoàn hoặc cấn trừ theo khoản có; không đảo toàn phiếu thu để hoàn một phần.";
   if (value?.includes("version")) return "Dữ liệu đã thay đổi. Hãy tải lại trước khi duyệt.";
   if (value?.includes("reversed")) return "Phiếu đã đảo hoặc không còn cho phép thao tác này.";
-  return "Không thể hoàn tất thao tác tài chính. Không có hậu quả nào được ghi một phần.";
+  return "Không thể hoàn tất thao tác tài chính. Vui lòng thử lại.";
 }
 
 export async function createFinanceAccountAction(formData: FormData) {
@@ -59,7 +68,7 @@ export async function createFinanceAccountAction(formData: FormData) {
   redirect("/admin/cashbook?notice=account-created");
 }
 
-export async function postPaymentAction(formData: FormData) {
+export async function submitPaymentWithOutcomeAction(formData: FormData): Promise<CommandOutcome> {
   const parsed = z.object({
     direction: z.enum(["RECEIPT", "DISBURSEMENT"]),
     partyId: z.uuid(),
@@ -72,17 +81,18 @@ export async function postPaymentAction(formData: FormData) {
     allocationsJson: z.string(),
     operationId: z.uuid(),
   }).safeParse(Object.fromEntries(formData));
-  const target = destination(formData.get("redirectTo"), "/admin/cashbook");
-  if (!parsed.success) redirect(withQuery(target, { error: "invalid-payment" }));
+  if (!parsed.success) return { status: "FAILED", message: "Vui lòng nhập đầy đủ thông tin phiếu thu/chi hợp lệ." };
 
   let allocations: Array<{ obligation_id: string; amount_vnd: string }>;
   try {
     allocations = z.array(z.object({ obligation_id: z.uuid(), amount_vnd: money })).parse(JSON.parse(parsed.data.allocationsJson));
   } catch {
-    redirect(withQuery(target, { error: "invalid-allocations" }));
+    return { status: "FAILED", message: "Vui lòng kiểm tra các khoản được phân bổ." };
   }
 
   const access = await requireInternalPermission("finance.payment.post");
+  const changedIntent = await checkSavedCommandFieldsAction(formData, "post_payment");
+  if (changedIntent) return changedIntent;
   const supabase = await createServerSupabase();
   const { data, error } = await supabase.rpc("post_payment", {
     target_branch_id: access.branchId,
@@ -98,12 +108,22 @@ export async function postPaymentAction(formData: FormData) {
     advance_amount_vnd: parsed.data.advanceAmount || "0",
     operation_id: parsed.data.operationId,
   });
-  if (error || !data) redirect(withQuery(target, { error: message(error?.message) }));
+  if (error || !data) return {
+    status: isAuthoritativeRejection(error?.code) ? "FAILED" : "UNKNOWN",
+    message: isAuthoritativeRejection(error?.code) ? message(error?.message) : "Chưa xác định được kết quả lưu phiếu. Hãy tra cứu và thử lại cùng thao tác, không ghi một phiếu mới.",
+  };
   revalidatePath("/admin");
   revalidatePath("/admin/receivables");
   revalidatePath("/admin/payables");
   revalidatePath("/admin/cashbook");
-  redirect(withQuery(target, { notice: "payment-posted", payment: String(data) }));
+  return { status: "SUCCESS", resultId: String(data), message: "Đã ghi nhận thu/chi và các phân bổ đúng nguồn." };
+}
+
+export async function postPaymentAction(formData: FormData) {
+  const result = await submitPaymentWithOutcomeAction(formData);
+  const target = destination(formData.get("redirectTo"), "/admin/cashbook");
+  if (result.status !== "SUCCESS") redirect(withQuery(target, { error: result.message }));
+  redirect(withQuery(target, { notice: "payment-posted", payment: result.resultId }));
 }
 
 export async function reversePaymentAction(formData: FormData) {
@@ -229,14 +249,17 @@ async function adjustmentAction(formData: FormData, side: "AR" | "AP") {
   const base = side === "AR" ? "/admin/receivables" : "/admin/payables";
   const target = parsed.success ? `${base}/${parsed.data.obligationId}` : base;
   if (!parsed.success) redirect(`${target}?error=invalid-adjustment`);
+  const kind = side === "AR" ? z.enum(["PRICE", "WRITE_OFF", "OTHER"]).safeParse(formData.get("adjustmentKind") ?? "OTHER") : null;
+  if (kind && !kind.success) redirect(`${target}?error=invalid-adjustment`);
   await requireInternalPermission(side === "AR" ? "finance.ar.adjust" : "finance.ap.adjust");
   const supabase = await createServerSupabase();
-  const { error } = await supabase.rpc(side === "AR" ? "record_receivable_adjustment" : "record_payable_adjustment", {
+  const { error } = await supabase.rpc(side === "AR" ? "record_receivable_adjustment_typed" : "record_payable_adjustment", {
     target_obligation_id: parsed.data.obligationId,
     amount_delta_vnd: parsed.data.amount,
     reason: parsed.data.reason,
     target_evidence_id: parsed.data.evidenceId || null,
     operation_id: parsed.data.operationId,
+    ...(kind?.success ? { adjustment_kind: kind.data } : {}),
   });
   if (error) redirect(`${target}?error=${encodeURIComponent(message(error.message))}`);
   revalidatePath("/admin");
@@ -251,4 +274,30 @@ export async function recordReceivableAdjustmentAction(formData: FormData) {
 
 export async function recordPayableAdjustmentAction(formData: FormData) {
   return adjustmentAction(formData, "AP");
+}
+
+export async function allocateExistingPaymentAction(form: FormData): Promise<CommandOutcome> {
+  const parsed = z.object({ paymentId: z.uuid(), direction: z.enum(["RECEIPT", "DISBURSEMENT"]), partyId: z.uuid(),
+    allocationsJson: z.string(), operationId: z.uuid() }).safeParse(Object.fromEntries(form));
+  if (!parsed.success) return { status: "FAILED", message: "Chọn phiếu tiền và các khoản công nợ hợp lệ." };
+  let raw: unknown;
+  try { raw = JSON.parse(parsed.data.allocationsJson); } catch { return { status: "FAILED", message: "Các khoản phân bổ chưa hợp lệ." }; }
+  const lines = z.array(z.object({ obligation_id: z.uuid(), amount_vnd: money })).min(1).max(50).safeParse(raw);
+  if (!lines.success) return { status: "FAILED", message: "Chọn từ 1 đến 50 khoản và nhập số tiền VND nguyên hợp lệ." };
+  const access = await requireInternalPermission("finance.payment.post");
+  const changed = await checkSavedCommandFieldsAction(form, "allocate_payment");
+  if (changed) return changed;
+  const supabase = await createServerSupabase();
+  const { data: source, error: sourceError } = await supabase.from("payments").select("branch_id, direction, customer_id, supplier_id")
+    .eq("id", parsed.data.paymentId).eq("branch_id", access.branchId).maybeSingle();
+  if (sourceError || !source || source.direction !== parsed.data.direction
+    || (parsed.data.direction === "RECEIPT" ? source.customer_id : source.supplier_id) !== parsed.data.partyId) {
+    return { status: "FAILED", message: "Phiếu được chọn không thuộc đối tác hoặc chi nhánh này." };
+  }
+  const { data, error } = await supabase.rpc("allocate_payment", { target_payment_id: parsed.data.paymentId,
+    allocation_lines: lines.data, operation_id: parsed.data.operationId });
+  if (error || !data) return { status: isAuthoritativeRejection(error?.code) ? "FAILED" : "UNKNOWN",
+    message: error && isAuthoritativeRejection(error.code) ? message(error.message) : "Chưa xác định được kết quả phân bổ. Giữ thao tác để tra cứu hoặc thử lại." };
+  for (const path of ["/admin/receivables", "/admin/payables", "/admin/cashbook", "/admin"]) revalidatePath(path);
+  return { status: "SUCCESS", resultId: String(data), message: "Đã phân bổ tiền đã có; không ghi thu/chi lần nữa." };
 }

@@ -1,0 +1,33 @@
+{
+  "scope": "G19_PHYSICAL_AND_VENDOR_ACCEPTANCE_SEPARATE_FROM_AP_CASH",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "productionAccess": "NONE",
+  "managedAuthTested": false,
+  "checks": [
+    {
+      "name": "WAREHOUSE_RETURN_AND_VENDOR_ACCEPTANCE_NO_AP_REDUCTION_YET",
+      "status": "PASS",
+      "fact": {
+        "warehouse": "14.000000",
+        "value": "2100000",
+        "debt": "2250000",
+        "audit": 1
+      }
+    },
+    {
+      "name": "DIRECT_PHYSICAL_TO_SUPPLIER_CUSTODY_CLOSED_COST_ONCE_NO_FAKE_WAREHOUSE_AP_UNCHANGED",
+      "status": "PASS",
+      "fact": {
+        "fake_inventory": 0,
+        "fake_customer_inventory": 0,
+        "destination": "SUPPLIER",
+        "warehouse": null,
+        "state": "RETURNED",
+        "cost": "600000",
+        "ap": "750000"
+      }
+    }
+  ],
+  "status": "PASS",
+  "rolledBack": true
+}

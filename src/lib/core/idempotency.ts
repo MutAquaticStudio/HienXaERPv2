@@ -20,6 +20,6 @@ export function payloadHash(payload: unknown): string {
 
 export function assertIdempotentReplay(existingHash: string, incomingPayload: unknown): void {
   if (existingHash !== payloadHash(incomingPayload)) {
-    throw new AppError({ code: "CONFLICT", message: "Idempotency key đã được dùng với payload khác.", status: 409 });
+    throw new AppError({ code: "CONFLICT", message: "Thao tác này đã được gửi với nội dung khác. Vui lòng tải lại và kiểm tra kết quả.", status: 409 });
   }
 }

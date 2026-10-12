@@ -1,3 +1,6 @@
+import { recordingScopeText } from "@/modules/operations/state";
+import { formatBusinessDate } from "@/lib/core/business-time";
+import { financeSourceLabel } from "@/modules/finance/presentation";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 export type ReportKind = "receivables" | "payables" | "expenses";
@@ -50,12 +53,12 @@ export async function loadObligationRows(access: Access, filters: ReportFilters,
     target_customer_id: side === "AR" ? filters.customerId || null : null,
     target_site_id: null,
     target_sales_employee_id: null,
-  }).gt("outstanding_amount_vnd", 0).order("outstanding_amount_vnd", { ascending: false }).order("obligation_id").range(offset, offset + limit);
+  }).select("obligation_id,party_name,site_name,source_type,due_date,outstanding_amount_vnd::text").gt("outstanding_amount_vnd", 0).order("outstanding_amount_vnd", { ascending: false }).order("obligation_id").range(offset, offset + limit);
   if (error) throw new Error("report_query_failed");
   const obligations = (data ?? []) as Obligation[];
   const base = side === "AR" ? "/admin/receivables" : "/admin/payables";
   return {
-    rows: obligations.slice(0, limit).map((row) => ({ id: row.obligation_id, label: row.party_name, context: `${row.site_name ?? row.source_type} · ${row.source_type}`, date: row.due_date, amountVnd: String(row.outstanding_amount_vnd), href: `${base}/${row.obligation_id}` })),
+    rows: obligations.slice(0, limit).map((row) => ({ id: row.obligation_id, label: row.party_name, context: [row.site_name, financeSourceLabel(row.source_type)].filter(Boolean).join(" · "), date: row.due_date, amountVnd: String(row.outstanding_amount_vnd), href: `${base}/${row.obligation_id}` })),
     hasNext: obligations.length > limit,
   };
 }
@@ -85,7 +88,7 @@ export async function loadFixedReport(access: Access, filters: ReportFilters): P
       supabase.rpc("finance_dashboard_detail", dashboardArgs),
     ]);
     if (snapshotResult.error || detailResult.error) throw new Error("report_query_failed");
-    const snapshot = snapshotResult.data as { operating_expense: { value_vnd: string | number | null; quality: string } };
+    const snapshot = snapshotResult.data as { scope?: { historical_quality?: string }; operating_expense: { value_vnd: string | number | null; quality: string } };
     const detail = detailResult.data as { expense_breakdown: { quality: string; items: DetailItem[] } };
     const quality = snapshot.operating_expense.quality;
     const items = quality === "READY" && detail.expense_breakdown.quality === "READY" ? detail.expense_breakdown.items : [];
@@ -97,7 +100,7 @@ export async function loadFixedReport(access: Access, filters: ReportFilters): P
       quality,
       rows,
       chart: rows.slice(0, 8).map((row) => ({ label: row.label, amountVnd: row.amountVnd })),
-      scopeText: `Kỳ ${filters.from} đến trước ${filters.to}`,
+      scopeText: `Kỳ ${formatBusinessDate(filters.from)} đến trước ${formatBusinessDate(filters.to)} · ${recordingScopeText(snapshot.scope?.historical_quality)}`,
       hasNext: false,
       cutoff,
     };
@@ -110,7 +113,7 @@ export async function loadFixedReport(access: Access, filters: ReportFilters): P
     page === 1 ? Promise.resolve(null) : loadObligationRows(access, filters, cutoff, 0, 8),
   ]);
   if (snapshotResult.error) throw new Error("report_query_failed");
-  const snapshot = snapshotResult.data as { receivable: { value_vnd: string | number | null; quality: string }; payable: { value_vnd: string | number | null; quality: string } };
+  const snapshot = snapshotResult.data as { scope?: { historical_quality?: string }; receivable: { value_vnd: string | number | null; quality: string }; payable: { value_vnd: string | number | null; quality: string } };
   const metric = filters.report === "receivables" ? snapshot.receivable : snapshot.payable;
   const rows = metric.quality === "READY" ? obligationPage.rows : [];
   const chartRows = metric.quality === "READY" ? (chartPage?.rows ?? rows) : [];
@@ -121,7 +124,7 @@ export async function loadFixedReport(access: Access, filters: ReportFilters): P
     quality: metric.quality,
     rows,
     chart: chartRows.slice(0, 8).map((row) => ({ label: row.label, amountVnd: row.amountVnd })),
-    scopeText: `Số dư đến hết ${filters.asOf}`,
+    scopeText: `Số dư đến hết ${formatBusinessDate(filters.asOf)} · ${recordingScopeText(snapshot.scope?.historical_quality)}`,
     hasNext: metric.quality === "READY" && obligationPage.hasNext,
     cutoff,
   };

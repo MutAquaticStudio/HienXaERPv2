@@ -1,0 +1,32 @@
+{
+  "scope": "G08_PARTIAL_REFUND_AND_OFFSET_SHARED_CREDIT_G09_MANUAL_NET_PROFIT_COMMISSION",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "managedAuthTested": false,
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "PARTIAL_REFUND100K_OFFSET130K_RETRY_ONE_CREDIT_AND_KEPT_GOODS_RECEIPT",
+      "status": "PASS",
+      "facts": {
+        "remaining": "0",
+        "reusablereceipt": "0",
+        "nextdebt": "100000",
+        "payments": 2,
+        "settled": "230000"
+      },
+      "originalRetainedAllocation": "2990000"
+    },
+    {
+      "name": "MANUAL_PROFIT_COMMISSION_USES_NET1040K_AFTER_RETURN_AND_RETRY_ONCE",
+      "status": "PASS",
+      "commission": {
+        "basis": "1040000",
+        "amount": "52000",
+        "events": 1,
+        "audits": 1
+      }
+    }
+  ],
+  "status": "PASS_EXECUTED_CREDIT_AND_MANUAL_COMMISSION",
+  "rolledBack": true
+}

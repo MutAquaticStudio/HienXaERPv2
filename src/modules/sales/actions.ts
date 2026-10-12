@@ -6,10 +6,13 @@ import { isPositiveSalesQuantity } from "./quantity-input";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { AppError } from "@/lib/core/errors";
+import { AppError, operationalPostingError, quantityInputError } from "@/lib/core/errors";
+import { isExactBaseQuantity } from "@/lib/core/quantity";
 import { requireCustomerAccess, requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { resolvePrice, type PriceRule } from "@/modules/pricing/resolve-price";
+
+const CommercialDecimal = Decimal.clone({ precision: 50 });
 
 export type SalesActionState = { message: string; success?: boolean; outcomeUnknown?: boolean } | undefined;
 
@@ -34,7 +37,16 @@ export type PricePreviewLine = z.infer<typeof previewLineSchema>;
 export type PricePreviewResult = { success: boolean; message: string; lines?: PricePreviewLine[]; totalVnd?: string };
 const commandSchema = z.object({ entityId: z.uuid(), operationId: z.uuid() });
 
-function commandError(message: string) {
+function commandError(message: string, confirmingOrder = false) {
+  const postingError = operationalPostingError(message, confirmingOrder ? "sales-order-confirmation" : "posting");
+  if (postingError) return postingError;
+  const quantityError = quantityInputError(message);
+  if (quantityError) return quantityError;
+  if (message.includes("pricing_rule_priority_mismatch") || message.includes("pricing_source_snapshot_mismatch")) return "Bảng giá hoặc nguồn giá đã thay đổi. Tải lại và xem trước giá, hoặc dùng giá thủ công được phê duyệt kèm lý do.";
+  if (message.includes("pricing_priority_ambiguous")) return "Có nhiều bảng giá cùng mức ưu tiên và phiên bản. Cần đối chiếu bảng giá hoặc dùng giá thủ công được phê duyệt.";
+  if (message.includes("sales_order_not_confirmable")) return "Đơn bán không còn ở trạng thái có thể xác nhận. Hãy tải lại để kiểm tra.";
+  if (message.includes("order_lines_required")) return "Vui lòng thêm ít nhất một dòng vật tư cho đơn bán.";
+  if (confirmingOrder && message.includes("forbidden")) return "Bạn không có quyền xác nhận đơn bán tại chi nhánh này.";
   if (message.includes("sales_order_unresolved_execution")) return "Còn giao hàng, việc hoặc hàng đang vận chuyển chưa xử lý. Hãy hoàn tất trước khi đóng phần còn lại.";
   if (message.includes("sales_order_has_no_remaining")) return "Đơn không còn số lượng chưa giao để đóng.";
   if (message.includes("sales_order_not_closeable")) return "Đơn không còn ở trạng thái có thể đóng phần còn lại. Hãy tải lại.";
@@ -56,12 +68,12 @@ function toIso(value?: string) {
   return date.toISOString();
 }
 
-type OriginalManualLine = { id: string; material_id: string; ordered_uom_id: string; unit_price_vnd: number | string;
+type OriginalCommercialLine = { id: string; material_id: string; ordered_uom_id: string; unit_price_vnd: number | string;
   conversion_numerator: number | string; conversion_denominator: number | string; rounding_mode: string;
-  price_source_type: string; override_reason: string | null };
+  price_source_type: string; override_reason: string | null; pricing_rule_id: string | null; pricing_rule_version: number | null };
 
-async function loadEditableManualLines(kind: "order" | "quote", documentId: string, expectedVersion: number,
-  input: z.infer<typeof documentSchema>, branchId: string): Promise<Map<string, OriginalManualLine>> {
+async function loadEditableCommercialLines(kind: "order" | "quote", documentId: string, expectedVersion: number,
+  input: z.infer<typeof documentSchema>, branchId: string): Promise<Map<string, OriginalCommercialLine>> {
   const supabase = await createServerSupabase();
   let table: "sales_order_lines" | "quotation_lines";
   let parentColumn: "sales_order_id" | "revision_id";
@@ -90,14 +102,14 @@ async function loadEditableManualLines(kind: "order" | "quote", documentId: stri
     parentColumn = "revision_id";
   }
   const { data: originals, error } = await supabase.from(table)
-    .select("id, material_id, ordered_uom_id, unit_price_vnd::text, conversion_numerator, conversion_denominator, rounding_mode, price_source_type, override_reason")
+    .select("id, material_id, ordered_uom_id, unit_price_vnd::text, conversion_numerator::text, conversion_denominator::text, rounding_mode, price_source_type, override_reason, pricing_rule_id, pricing_rule_version")
     .eq(parentColumn, documentId);
   if (error) throw new AppError({ code: "DEPENDENCY_UNAVAILABLE", message: "Không thể đọc dòng bản nháp.", status: 503 });
-  return new Map((originals ?? []).map((line) => [line.id, line as OriginalManualLine]));
+  return new Map((originals ?? []).map((line) => [line.id, line as OriginalCommercialLine]));
 }
 
 async function createCommercialLines(input: z.infer<typeof documentSchema>, branchId: string, canManagePrice: boolean,
-  originals?: Map<string, OriginalManualLine>) {
+  originals?: Map<string, OriginalCommercialLine>) {
   const supabase = await createServerSupabase();
   const materialIds = [...new Set(input.lines.map((line) => line.materialId))];
   const uomIds = [...new Set(input.lines.map((line) => line.orderedUomId))];
@@ -114,7 +126,7 @@ async function createCommercialLines(input: z.infer<typeof documentSchema>, bran
   const now = new Date();
   const timestamp = now.toISOString();
   const [conversionResult, priceResult] = await Promise.all([
-    supabase.from("material_uom_conversions").select("material_id, from_uom_id, to_uom_id, numerator, denominator, effective_from, effective_to")
+    supabase.from("material_uom_conversions").select("material_id, from_uom_id, to_uom_id, numerator::text, denominator::text, effective_from, effective_to")
       .in("material_id", materialIds).in("from_uom_id", uomIds).eq("active", true).eq("settlement_allowed", true)
       .lte("effective_from", timestamp).or(`effective_to.is.null,effective_to.gt.${timestamp}`).order("effective_from", { ascending: false }),
     supabase.from("pricing_rules")
@@ -134,15 +146,29 @@ async function createCommercialLines(input: z.infer<typeof documentSchema>, bran
   const conversions = conversionResult.data ?? [];
   return input.lines.map((inputLine, index) => {
     const material = materials.get(inputLine.materialId)!;
-    const conversion = inputLine.orderedUomId === material.base_uom_id ? null : conversions.find((row) => row.material_id === inputLine.materialId && row.from_uom_id === inputLine.orderedUomId && row.to_uom_id === material.base_uom_id);
-    if (inputLine.orderedUomId !== material.base_uom_id && !conversion) throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: không có quy đổi quyết toán hợp lệ.`, status: 422 });
-    const manualPriceVnd = inputLine.manualPriceVnd?.trim() ?? "";
     const original = originals?.get(inputLine.sourceLineId ?? "");
+    const manualPriceVnd = inputLine.manualPriceVnd?.trim() ?? "";
     let manualReason = inputLine.manualReason?.trim() ?? "";
     if (!manualReason && original?.price_source_type === "MANUAL_APPROVED" && original.material_id === inputLine.materialId && original.ordered_uom_id === inputLine.orderedUomId && String(original.unit_price_vnd) === manualPriceVnd) manualReason = original.override_reason ?? "";
+    const sameSource = original?.material_id === inputLine.materialId && original.ordered_uom_id === inputLine.orderedUomId;
+    const preserve = !!original && sameSource && (original.price_source_type === "MANUAL_APPROVED"
+      ? String(original.unit_price_vnd) === manualPriceVnd && (original.override_reason ?? "") === manualReason
+      : !manualPriceVnd && !manualReason && !!original.pricing_rule_id && original.pricing_rule_version != null);
+    if (preserve) {
+      const numerator = String(original.conversion_numerator), denominator = String(original.conversion_denominator);
+      if (!isExactBaseQuantity(inputLine.quantity, numerator, denominator)) throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: lượng sau quy đổi vượt độ chính xác hoặc giới hạn hỗ trợ.`, status: 422 });
+      return { material_id: inputLine.materialId, ordered_uom_id: inputLine.orderedUomId, quantity: inputLine.quantity,
+        source_line_id: original.id, conversion_numerator: numerator, conversion_denominator: denominator,
+        rounding_mode: original.rounding_mode, unit_price_vnd: String(original.unit_price_vnd),
+        pricing_rule_id: original.pricing_rule_id ?? null, pricing_rule_version: original.pricing_rule_version ?? null,
+        price_source_type: original.price_source_type, override_reason: original.override_reason };
+    }
+    const conversion = inputLine.orderedUomId === material.base_uom_id ? null : conversions.find((row) => row.material_id === inputLine.materialId && row.from_uom_id === inputLine.orderedUomId && row.to_uom_id === material.base_uom_id);
+    if (inputLine.orderedUomId !== material.base_uom_id && !conversion) throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: không có quy đổi quyết toán hợp lệ.`, status: 422 });
     const conversionNumerator = conversion?.numerator.toString() ?? "1";
     const conversionDenominator = conversion?.denominator.toString() ?? "1";
     const conversionRounding = "HALF_UP";
+    if (!isExactBaseQuantity(inputLine.quantity, conversionNumerator, conversionDenominator)) throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: lượng sau quy đổi vượt độ chính xác hoặc giới hạn hỗ trợ.`, status: 422 });
     const preserveApprovedPrice = !!original && original.price_source_type === "MANUAL_APPROVED" &&
       original.material_id === inputLine.materialId && original.ordered_uom_id === inputLine.orderedUomId &&
       String(original.unit_price_vnd) === manualPriceVnd && (original.override_reason ?? "") === manualReason &&
@@ -160,7 +186,7 @@ async function createCommercialLines(input: z.infer<typeof documentSchema>, bran
         throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: giá thủ công phải dương và có lý do từ 3 đến 500 ký tự.`, status: 422 });
       }
     } else if (manualReason) {
-      throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: cần nhập giá khi ghi lý do override.`, status: 422 });
+      throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: cần nhập giá khi ghi lý do ngoại lệ.`, status: 422 });
     }
     let selected: PriceRule | null = null;
     if (!manualPriceVnd) {
@@ -184,7 +210,7 @@ async function createCommercialLines(input: z.infer<typeof documentSchema>, bran
 
 function pricePreview(input: z.infer<typeof documentSchema>, lines: Awaited<ReturnType<typeof createCommercialLines>>) {
   const previewLines: PricePreviewLine[] = lines.map((line, index) => {
-    const lineTotal = new Decimal(line.quantity).mul(line.unit_price_vnd).toDecimalPlaces(0, Decimal.ROUND_HALF_UP);
+    const lineTotal = new CommercialDecimal(line.quantity).mul(line.unit_price_vnd).toDecimalPlaces(0, Decimal.ROUND_HALF_UP);
     if (!lineTotal.isFinite() || lineTotal.gt("9223372036854775807")) throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: thành tiền vượt giới hạn.`, status: 422 });
     return { materialId: input.lines[index].materialId, orderedUomId: input.lines[index].orderedUomId,
       quantity: input.lines[index].quantity, unitPriceVnd: line.unit_price_vnd,
@@ -204,7 +230,7 @@ export async function previewCommercialDocumentAction(input: unknown): Promise<P
   try {
     if (Boolean(parsed.data.documentId) !== Boolean(parsed.data.expectedVersion)) return { success: false, message: "Thông tin bản nháp chưa hợp lệ." };
     const originals = parsed.data.documentId && parsed.data.expectedVersion
-      ? await loadEditableManualLines(parsed.data.kind, parsed.data.documentId, parsed.data.expectedVersion, parsed.data, access.branchId)
+      ? await loadEditableCommercialLines(parsed.data.kind, parsed.data.documentId, parsed.data.expectedVersion, parsed.data, access.branchId)
       : undefined;
     const lines = await createCommercialLines(parsed.data, access.branchId, access.permissions.has("pricing.manage"), originals);
     return { success: true, message: "Giá đã được xem trước. Kiểm tra từng dòng trước khi lưu.", ...pricePreview(parsed.data, lines) };
@@ -268,7 +294,7 @@ async function saveDocument(kind: "order" | "quote", mode: "create" | "edit", fo
   let effectiveAt;
   try {
     const originals = edit?.success
-      ? await loadEditableManualLines(kind, edit.data.documentId, edit.data.expectedVersion, parsed.data, access.branchId)
+      ? await loadEditableCommercialLines(kind, edit.data.documentId, edit.data.expectedVersion, parsed.data, access.branchId)
       : undefined;
     lines = await createCommercialLines(parsed.data, access.branchId, access.permissions.has("pricing.manage"), originals);
     const actual = pricePreview(parsed.data, lines).lines;
@@ -302,7 +328,7 @@ async function internalCommand(permission: string, rpc: string, args: Record<str
   await requireInternalPermission(permission);
   const supabase = await createServerSupabase();
   const { error } = await supabase.rpc(rpc, args);
-  if (error) redirect(`${destination}?error=${encodeURIComponent(commandError(error.message))}`);
+  if (error) redirect(`${destination}?error=${encodeURIComponent(commandError(error.message, rpc === "confirm_sales_order"))}`);
   revalidatePath(destination);
   if (rpc === "cancel_sales_order") revalidatePath("/admin/orders");
   redirect(`${destination}?notice=${notice}`);

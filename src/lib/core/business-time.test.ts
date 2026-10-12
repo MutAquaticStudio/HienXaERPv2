@@ -16,7 +16,7 @@ describe("business document display", () => {
     expect(parseBusinessDateTime(value)).toBeNull();
   });
   it("keeps Vietnam midnight on the correct business date on a UTC server", () => {
-    expect(formatBusinessDate("2026-09-27T20:15:00Z")).toBe("28/9/2026");
+    expect(formatBusinessDate("2026-09-27T20:15:00Z")).toBe("28/09/2026");
     const result = formatBusinessDateTime("2026-10-27T20:19:00Z");
     expect(result).toContain("03:19");
     expect(result).toContain("28");
@@ -28,12 +28,20 @@ describe("business document display", () => {
         process.env.TZ = timezone;
         const result = formatBusinessDateTime("2026-10-07T09:00:00Z");
         expect(result).toContain("16:00");
-        expect(result).toContain("7 thg 10, 2026");
+        expect(result).toBe("07/10/2026 16:00");
       }
     } finally {
       if (previous === undefined) delete process.env.TZ;
       else process.env.TZ = previous;
     }
+  });
+  it("formats date-only values and missing dates without changing the input", () => {
+    const source = "2026-01-02";
+    expect(formatBusinessDate(source)).toBe("02/01/2026");
+    expect(source).toBe("2026-01-02");
+    expect(formatBusinessDate("invalid")).toBe("Chưa có dữ liệu");
+    expect(formatBusinessDateTime("invalid")).toBe("Chưa có dữ liệu");
+    expect(formatBusinessDateTime("2026-01-01T17:00:00Z")).toBe("02/01/2026 00:00");
   });
   it("removes database quantity padding without rounding away stored precision", () => {
     expect(formatQuantity("1.000000")).toBe("1");

@@ -1,0 +1,37 @@
+{
+  "scope": "REAL_BROWSER_RECEIPT_AND_DIRECT_FULFILLMENT_LOST_RESPONSE_AFTER_COMMIT",
+  "browserPlugin": "ABSENT",
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "RECEIPT_COMMIT_LOST_RESPONSE_RELOAD_ONE_EFFECT",
+      "status": "PASS",
+      "facts": {
+        "effects": 1,
+        "state": "CLOSED"
+      },
+      "expectedNotice": "received"
+    },
+    {
+      "name": "DIRECT_COMMIT_LOST_RESPONSE_RELOAD_ONE_EFFECT",
+      "status": "PASS",
+      "facts": {
+        "effects": 1,
+        "state": "CLOSED"
+      },
+      "expectedNotice": "supplier-verified"
+    }
+  ],
+  "expectedTransportErrors": [
+    {
+      "text": "Failed to load resource: net::ERR_FAILED",
+      "url": "http://127.0.0.1:3110/admin/purchase-orders/21d1e8f7-db72-461c-9b9a-66bc3678e3dd"
+    },
+    {
+      "text": "Failed to load resource: net::ERR_FAILED",
+      "url": "http://127.0.0.1:3110/admin/purchase-orders/eee01973-3c4a-4cfe-aab4-f9cc6034c8a2"
+    }
+  ],
+  "unexpectedErrors": [],
+  "status": "PASS_EXECUTED_BROWSER_PURCHASE_RECOVERY_SCOPE"
+}

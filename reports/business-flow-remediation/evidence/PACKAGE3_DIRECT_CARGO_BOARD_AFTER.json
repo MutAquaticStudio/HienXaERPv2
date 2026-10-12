@@ -1,0 +1,15 @@
+{
+  "scope": "G10_DIRECT_UNREPORTED_CARGO_BOARD",
+  "phase": "after",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "productionAccess": "NONE",
+  "beforeResolution": {
+    "flagged": true
+  },
+  "afterResolution": {
+    "flagged": false,
+    "synthetictransitrows": 0
+  },
+  "status": "PASS_DIRECT_CARGO_BOARD",
+  "rolledBack": true
+}

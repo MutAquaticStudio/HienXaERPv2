@@ -1,0 +1,31 @@
+{
+  "scope": "G19_PAID_SOURCE_CREDIT_REFUND_AND_OFFSET_BOUND_CAPS_AND_ATOMICITY",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "productionAccess": "NONE",
+  "managedAuthTested": false,
+  "facts": {
+    "fault": {
+      "credits": 0,
+      "adjustments": 0,
+      "releases": 0
+    },
+    "before": {
+      "debt": "0",
+      "reusable": "0",
+      "credit": "150000",
+      "adjustments": 1
+    },
+    "after": {
+      "original_debt": "0",
+      "next_debt": "50000",
+      "original_reusable": "0",
+      "refund_reusable": "0",
+      "remaining": "0",
+      "cash_events": 2,
+      "retained_original": "2100000",
+      "refund_audits": 1
+    }
+  },
+  "status": "PASS",
+  "rolledBack": true
+}

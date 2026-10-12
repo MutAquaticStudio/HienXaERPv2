@@ -72,8 +72,8 @@ it("opens accessible confirmation with identity, exact cost, version and consequ
   expect(screen.getByRole("dialog",{name:"Xác nhận ngừng sử dụng giá"})).toBeInTheDocument();
   expect(screen.getByText("NCC QA · Vật tư · Bao")).toBeInTheDocument();
   expect(screen.getByText(/Mã quy tắc: old.*Phiên bản: 7/)).toBeInTheDocument();
-  expect(screen.getByText("Giá hiện tại: 9007199254740993 VND")).toBeInTheDocument();
-  expect(screen.getByText(/snapshot chứng từ đã chốt không thay đổi/)).toBeInTheDocument();
+  expect(screen.getByText("Giá hiện tại: 9.007.199.254.740.993 ₫")).toBeInTheDocument();
+  expect(screen.getByText(/thông tin trên chứng từ đã chốt không thay đổi/)).toBeInTheDocument();
   expect(screen.getByLabelText("Lý do ngừng sử dụng *")).toHaveFocus();
   expect(savePurchasePricingRuleAction).not.toHaveBeenCalled();
 });
@@ -92,7 +92,12 @@ it("rejects missing or whitespace reason without dispatching even with formNoVal
 it("confirms exactly one deactivation without requiring creation fields",async()=>{
   confirmation();fireEvent.change(screen.getByLabelText("Lý do ngừng sử dụng *"),{target:{value:"QA ngừng giá"}});
   fireEvent.click(screen.getByRole("button",{name:"Xác nhận ngừng sử dụng"}));
-  await waitFor(()=>expect(savePurchasePricingRuleAction).toHaveBeenCalledTimes(1));
+  await waitFor(()=>{
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("Đã tạo giá mua.");
+    expect(screen.getByRole("status")).toHaveFocus();
+  });
+  expect(savePurchasePricingRuleAction).toHaveBeenCalledTimes(1);
   const payload=vi.mocked(savePurchasePricingRuleAction).mock.calls[0][1];
   expect(Object.fromEntries(payload)).toEqual({mode:"deactivate",supersedesId:"old",expectedVersion:"7",operationId:"stable-operation",reason:"QA ngừng giá"});
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();

@@ -1,0 +1,119 @@
+{
+  "scope": "ASSIGNMENT_SCHEDULE_CAPACITY_ACTUAL_LOADING",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "managedAuthTested": false,
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "G06_REASSIGN_PUBLISHED_WORK_AND_REVOKE_OLD_ASSIGNEE",
+      "status": "PASS",
+      "facts": {
+        "delivery_version": 3,
+        "work_version": 2,
+        "work_state": "CLAIMED",
+        "delivery_employee": "bccb7cb3-b921-4878-8eaf-57493d046d04",
+        "work_employee": "bccb7cb3-b921-4878-8eaf-57493d046d04",
+        "assignments": 2
+      },
+      "oldActor": {
+        "code": "42501",
+        "message": "not_current_assignee"
+      },
+      "afterStart": {
+        "code": "PT409",
+        "message": "delivery_reassignment_after_work_started_forbidden"
+      },
+      "gpsState": {
+        "status": "REVOKED",
+        "stop_reason": "assignment_superseded"
+      },
+      "newAssigneeGpsSession": "PASS"
+    },
+    {
+      "name": "G13_COLLISION_BEFORE_PUBLISH_CAPACITY_AND_WINDOW",
+      "status": "PASS",
+      "collision": {
+        "code": "23P01",
+        "message": "work_resource_schedule_collision"
+      },
+      "badWindow": {
+        "code": "22023",
+        "message": "delivery_schedule_window_required"
+      },
+      "overload": {
+        "code": "23514",
+        "message": "vehicle_capacity_exceeded"
+      },
+      "missingConversion": {
+        "code": "23514",
+        "message": "vehicle_capacity_conversion_missing"
+      },
+      "lockedChange": {
+        "code": "PT409",
+        "message": "vehicle_capacity_locked_by_assignment"
+      },
+      "existingEvidenceConfirmation": "PASS",
+      "nonOverlappingAssignment": "PASS"
+    },
+    {
+      "name": "G14_ACTUAL14_PLAN15_CUSTODY_REMAINING_SOURCE_AND_G10_BOARD",
+      "status": "PASS",
+      "facts": {
+        "planned": "15.000000",
+        "loaded": "14.000000",
+        "warehouse": "31.000000",
+        "transit": "14.000000",
+        "reservation": "CONSUMED",
+        "consumed": "14.000000"
+      },
+      "overReported": {
+        "code": "22023",
+        "message": "invalid_delivery_result_line"
+      },
+      "remainingDelivery": "4c5f4b5f-cec1-4a50-a24a-ba72de852749",
+      "exceptionVisible": true,
+      "boardRpcExecuted": true
+    },
+    {
+      "name": "G10_FULL15_ACCEPTED14_EXCEPTION_UNTIL_RETURN_RESOLVED",
+      "status": "PASS",
+      "originalResultKept": "FULL",
+      "exceptionBeforeAndWhileOpen": true,
+      "resolvedDisappeared": true
+    },
+    {
+      "name": "G14_ONE_UNLOADED_LINE_NO_FALSE_STOCK_OR_COST",
+      "status": "PASS",
+      "facts": {
+        "ar": "3220000",
+        "cost": "2100000"
+      },
+      "zero": {
+        "loaded": "0.000000",
+        "state": "RELEASED",
+        "movements": 0
+      },
+      "planPreserved": "15 per line"
+    },
+    {
+      "name": "G14_FAULT_AFTER_CUSTODY_INSERT_ROLLS_BACK_ALL_EFFECTS",
+      "status": "PASS",
+      "failure": {
+        "code": "PT500",
+        "message": "package3_injected_after_custody"
+      },
+      "rolledBackFacts": {
+        "execution_state": "ASSIGNED",
+        "version": 2,
+        "handoffs": 0,
+        "receipts": 0,
+        "audit": 0,
+        "warehouse": "45.000000",
+        "reservation": "ACTIVE"
+      },
+      "sameIntentAfterAuthoritativeRollback": "PASS"
+    }
+  ],
+  "status": "PASS_EXECUTED_DB_SCOPE",
+  "rolledBack": true
+}

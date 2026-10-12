@@ -24,10 +24,11 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
   if (error) throw new Error("Không thể tải danh sách khách hàng.");
   const rows = data as unknown as CustomerRow[];
   const privateResult = canReadFinance && rows.length
-    ? await supabase.rpc("customer_private_fields", { target_customer_ids: rows.map((customer) => customer.id) })
+    ? await supabase.rpc("customer_private_fields", { target_customer_ids: rows.map((customer) => customer.id) }).select("customer_id,credit_limit_vnd::text,internal_note")
     : { data: [], error: null };
   if (privateResult.error) throw new Error("Không tải được hạn mức khách hàng.");
-  const privateLimits = new Map<string, string | number | null>((privateResult.data ?? []).map((field: { customer_id: string; credit_limit_vnd: string | number | null }) => [field.customer_id, field.credit_limit_vnd] as const));
+  const privateRows = Array.isArray(privateResult.data) ? privateResult.data : privateResult.data ? [privateResult.data] : [];
+  const privateLimits = new Map<string, string | number | null>(privateRows.map((field: { customer_id: string; credit_limit_vnd: string | number | null }) => [field.customer_id, field.credit_limit_vnd] as const));
   const customers = rows.map((customer) => ({ ...customer, credit_limit_vnd: privateLimits.get(customer.id) ?? null }));
   return <><header className="page-heading"><div><p className="eyebrow">Quan hệ khách hàng</p><h1>Khách hàng</h1>{access.permissions.has("customers.manage") && <div className="form-actions"><Link className="button button-secondary" href="/admin/customers/manage?kind=customers">Thêm / sửa khách hàng</Link><Link className="button button-secondary" href="/admin/customers/manage?kind=sites">Công trình</Link></div>}<p className="lede">Hồ sơ và phạm vi tài chính được trả về đúng quyền tại {access.branchName}.</p></div></header>
     <form className="filter-bar"><label>Tìm kiếm<input name="q" defaultValue={list.q} placeholder="Mã, tên, điện thoại" /></label><label>Trạng thái<select name="state" defaultValue={list.state}><option value="">Tất cả</option><option value="ACTIVE">Đang hoạt động</option><option value="INACTIVE">Ngừng giao dịch</option></select></label><button className="button button-secondary" type="submit">Áp dụng</button>{(list.q || list.state) && <Link className="code-link" href="/admin/customers">Xóa lọc</Link>}</form>

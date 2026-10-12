@@ -9,11 +9,11 @@ describe("earning recognition presentation", () => {
   it("shows allocation, canonical AR/SO, rate and reversal source without commands", () => {
     const source = { source_key: "AR_PAYMENT_ALLOCATION:allocation", payment_allocation_id: "allocation", payment_id: "payment", receivable_obligation_id: "obligation", sales_order_id: "sales-order", basis_amount_vnd: "2000000", rate_bps_snapshot: 100, reverses_earning_event_id: "original" };
     const html = renderToStaticMarkup(<EarningSourceTrace source={source} />);
-    for (const value of ["allocation", "payment", "obligation", "sales-order", "2000000", "1.00%", "original"]) expect(html).toContain(value);
+    for (const value of ["allocation", "payment", "obligation", "sales-order", "2.000.000", "1,00%", "original"]) expect(html).toContain(value);
     expect(html).not.toMatch(/<form|<button/);
   });
   it("keeps Worker verification source distinct from allocation", () => {
     const html = renderToStaticMarkup(<EarningSourceTrace source={{ source_key: "WORK_ITEM_VERIFICATION:v", work_item_verification_id: "verification" }} />);
-    expect(html).toContain("Owner verification: verification"); expect(html).not.toContain("AR allocation");
+    expect(html).toContain("Xác minh của chủ doanh nghiệp: verification"); expect(html).not.toContain("Phân bổ tiền thu");
   });
 });

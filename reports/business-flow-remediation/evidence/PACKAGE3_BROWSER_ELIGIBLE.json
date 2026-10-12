@@ -1,0 +1,61 @@
+{
+  "scope": "REAL_WAREHOUSE_BROWSER_ASSIGNMENT_LOADING_EXCEPTION",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "browser": "Chromium",
+  "browserPlugin": "ABSENT",
+  "fallbackReason": "Browser plugin and browser skill not available; installed Playwright used",
+  "origin": "http://127.0.0.1:3110",
+  "consoleErrors": [],
+  "screenshots": [
+    "/Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation/browser/package3-eligible/g14-plan15-before-loading.png",
+    "/Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation/browser/package3-eligible/g14-actual14-saved-reloaded.png",
+    "/Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation/browser/package3-eligible/g13-schedule-conflict-rejected.png",
+    "/Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation/browser/package3-eligible/g06-published-work-reassignment-synced.png",
+    "/Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation/browser/package3-eligible/g10-full-result-accepted14-exception-visible.png",
+    "/Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation/browser/package3-eligible/g14-mobile-actual-loading-readback.png"
+  ],
+  "checks": [
+    {
+      "name": "G14_REAL_UI_ACTUAL14_PLAN15_RELOAD_INDEPENDENT_READBACK",
+      "status": "PASS",
+      "facts": {
+        "execution_state": "DISPATCHED",
+        "planned": "15.000000",
+        "loaded": "14.000000",
+        "transit": "14.000000",
+        "warehouse": "91.000000"
+      }
+    },
+    {
+      "name": "G06_G13_REAL_UI_CONFLICT_RECOVERY_PUBLISH_REASSIGN_RELOAD",
+      "status": "PASS",
+      "denied": {
+        "execution_state": "PLANNED",
+        "version": 1
+      },
+      "synced": {
+        "delivery_employee": "bccb7cb3-b921-4878-8eaf-57493d046d04",
+        "work_employee": "bccb7cb3-b921-4878-8eaf-57493d046d04",
+        "work": "da556018-f96f-4805-9dd0-e5cb7e32c984",
+        "work_version": 2,
+        "delivery_version": 3
+      }
+    },
+    {
+      "name": "G10_REAL_UI_FULL_RESULT_DIFFERENCE_VISIBLE_ON_BOARD_RELOAD",
+      "status": "PASS",
+      "exception": {
+        "delivery_number": "DL-2026-000331",
+        "result_kind": "FULL",
+        "execution_state": "VERIFIED"
+      }
+    },
+    {
+      "name": "PACKAGE3_MOBILE_DELIVERY_READ",
+      "status": "PASS",
+      "viewport": "390x844"
+    }
+  ],
+  "productionAccess": "NONE",
+  "status": "PASS_EXECUTED_BROWSER_SCOPE"
+}

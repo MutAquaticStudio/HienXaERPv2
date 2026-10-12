@@ -1,0 +1,109 @@
+{
+  "scope": "G19_G16_G14_REAL_JWT_DIRECT_VENDOR_RETURN_NO_WAREHOUSE_RETIRED_SOURCE",
+  "productionAccess": "NONE",
+  "managedQaBusinessWrites": 0,
+  "documents": {
+    "branch": "2df206db-4e89-40bc-aa0b-d4e59e8327b2",
+    "supplier": "7215764d-d08a-44cc-a44e-37d143c4359d",
+    "stock": {
+      "prefix": "RM3EED603B",
+      "uom": "88bb3a57-c783-49b1-a151-4235c6d99956",
+      "material": "aba4a258-2c9e-4e6c-be5f-b0546821ea0b",
+      "price": "44e6dd03-97a1-4742-b8a6-8338f62ca262",
+      "cost": "1e948039-2537-4f43-93e8-1b42ae11eee2",
+      "po": "702ce7b3-583a-4d21-93d4-a145e8d491a7",
+      "common": {
+        "material_id": "aba4a258-2c9e-4e6c-be5f-b0546821ea0b",
+        "ordered_uom_id": "88bb3a57-c783-49b1-a151-4235c6d99956",
+        "quantity": "5",
+        "conversion_numerator": "1",
+        "conversion_denominator": "1",
+        "rounding_mode": "HALF_UP"
+      },
+      "cutoff": "2026-10-11 20:36:48.818817+07",
+      "customer": "8ab55533-d137-42cc-ad6f-b7c4e3b855ad",
+      "site": "94ee22ac-854a-4ef8-8edf-1b44c06504f1",
+      "unitPriceVnd": "230000"
+    },
+    "sale": {
+      "so": "5eb504b8-285b-49d5-97ee-f6dd0a3a2639",
+      "line": "08197339-ba5e-4cef-a3fd-b664ab41d3f8"
+    },
+    "po": "adeebee3-4403-407b-bb42-8ac34b088874",
+    "fulfillmentLine": "09f5b67e-0ac8-4012-bad0-11b8d80c0db3",
+    "obligation": "937d2b49-e693-4356-9b62-59e68327ad30",
+    "allocation": "b297b7bc-f367-44b7-80d6-2c3cee9a3a91",
+    "delivery": "56847f0f-f759-4878-b49d-7a948d2091e7",
+    "verification": "0387864f-3511-474e-b028-bf2bc6fdd4f0",
+    "custody": "3984b2f9-8ebc-4414-b761-9ae9f07d36a8",
+    "account": "8125425f-9149-4ee8-941e-1a3ad956487b",
+    "payment": "813d0633-e91d-4e6d-9402-d2aabb1fc741",
+    "caseId": "e7e1c079-c22e-4127-9dae-702104f5aeef",
+    "acceptance": "355ef87e-16a1-479b-b434-9cd93524dff3",
+    "credit": "22ed6366-1759-437a-bd6f-ebd433c799cb"
+  },
+  "facts": {
+    "warehouse_or_transit_moves": 0,
+    "destination": "SUPPLIER",
+    "warehouse": null,
+    "cost": "600000",
+    "payable": "0",
+    "reusable": "0",
+    "credit": "150000"
+  },
+  "snapshot": {
+    "scope": {
+      "to": "2026-10-11T20:36:49.027869+07:00",
+      "from": "2000-01-01T00:00:00+07:00",
+      "as_of": "2026-10-11T20:36:49.027869+07:00",
+      "branch_id": "2df206db-4e89-40bc-aa0b-d4e59e8327b2",
+      "balance_scope": "RECORDED_TRANSACTIONS",
+      "historical_quality": "UNRECONCILED",
+      "business_total_verified": false,
+      "recorded_operations_since": "2026-10-11T20:36:48.872618+07:00"
+    },
+    "payable": {
+      "quality": "READY",
+      "value_vnd": "0"
+    },
+    "revenue": {
+      "quality": "READY",
+      "value_vnd": "920000"
+    },
+    "receivable": {
+      "quality": "READY",
+      "value_vnd": "920000"
+    },
+    "direct_cost": {
+      "quality": "READY",
+      "value_vnd": "600000"
+    },
+    "gross_profit": {
+      "quality": "READY",
+      "value_vnd": "320000"
+    },
+    "salary_payable": {
+      "quality": "READY",
+      "value_vnd": "0"
+    },
+    "operating_profit": {
+      "quality": "READY",
+      "value_vnd": "320000"
+    },
+    "operating_expense": {
+      "quality": "READY",
+      "value_vnd": "0"
+    },
+    "commission_payable": {
+      "quality": "READY",
+      "value_vnd": "0"
+    },
+    "operating_margin_bps": {
+      "value": 3478.2608695652175,
+      "quality": "READY"
+    }
+  },
+  "blockedBeforePickupSourceOveruse": "delivery_exceeds_allocation",
+  "blockedAfterVendorRetirement": "direct_source_retired_requires_replacement",
+  "status": "PASS"
+}

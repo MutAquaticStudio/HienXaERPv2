@@ -14,7 +14,7 @@ beforeEach(() => fixture.action.mockReset());
 function fill() {
   fireEvent.change(screen.getByLabelText("Dòng giao cần xử lý"), { target: { value: "line-2" } });
   fireEvent.change(screen.getByLabelText("Vấn đề"), { target: { value: "CUSTOMER_RETURN" } });
-  fireEvent.change(screen.getByLabelText("Số lượng base"), { target: { value: "3" } });
+  fireEvent.change(screen.getByLabelText("Số lượng theo đơn vị cơ sở"), { target: { value: "3" } });
   fireEvent.change(screen.getByLabelText("Lý do"), { target: { value: "QA return reason" } });
 }
 function submit() {
@@ -28,9 +28,9 @@ it("keeps every draft field and the operation identifier after rejection and ret
   await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("Số lượng vượt"));
   expect(screen.getByLabelText("Dòng giao cần xử lý")).toHaveValue("line-2");
   expect(screen.getByLabelText("Vấn đề")).toHaveValue("CUSTOMER_RETURN");
-  expect(screen.getByLabelText("Số lượng base")).toHaveValue("3");
+  expect(screen.getByLabelText("Số lượng theo đơn vị cơ sở")).toHaveValue("3");
   expect(screen.getByLabelText("Lý do")).toHaveValue("QA return reason");
-  fireEvent.change(screen.getByLabelText("Số lượng base"), { target: { value: "1" } });
+  fireEvent.change(screen.getByLabelText("Số lượng theo đơn vị cơ sở"), { target: { value: "1" } });
   submit();
   await waitFor(() => expect(fixture.action).toHaveBeenCalledTimes(2));
   expect(fixture.action.mock.calls.map((call) => call[1].get("operationId"))).toEqual([props.operationId, props.operationId]);
@@ -44,7 +44,7 @@ it("clears the completed draft and creates a new intent only after success", asy
   render(<OpenReturnCaseForm {...props} />);
   fill(); submit();
   await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Đã mở hồ sơ"));
-  expect(screen.getByLabelText("Số lượng base")).toHaveValue("");
+  expect(screen.getByLabelText("Số lượng theo đơn vị cơ sở")).toHaveValue("");
   expect(screen.getByLabelText("Lý do")).toHaveValue("");
   expect(screen.getByLabelText("Vấn đề")).toHaveValue("TRANSIT_REMAINDER");
   expect(screen.getByLabelText("Dòng giao cần xử lý")).toHaveValue("line-2");
@@ -59,9 +59,9 @@ it("disables submission while pending and retains inputs when that request fails
   render(<OpenReturnCaseForm {...props} />);
   fill(); submit();
   await waitFor(() => expect(screen.getByRole("button", { name: "Đang mở hồ sơ..." })).toBeDisabled());
-  expect(screen.getByLabelText("Số lượng base")).toBeDisabled();
+  expect(screen.getByLabelText("Số lượng theo đơn vị cơ sở")).toBeDisabled();
   expect(fixture.action).toHaveBeenCalledTimes(1);
   await act(async () => finish({ success: false, error: "Không thể lưu." }));
-  expect(screen.getByLabelText("Số lượng base")).toHaveValue("3");
+  expect(screen.getByLabelText("Số lượng theo đơn vị cơ sở")).toHaveValue("3");
   expect(screen.getByRole("button", { name: "Mở hồ sơ xử lý" })).toBeEnabled();
 });

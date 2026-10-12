@@ -8,5 +8,5 @@ const copy = {
 
 export function AuthScreen({ surface }: { surface: keyof typeof copy }) {
   const content = copy[surface];
-  return <main className="auth-screen"><section className="auth-story"><span className="brand-mark">HX</span><p className="eyebrow">HIỀN XA ERP</p><h1>Một nguồn dữ liệu.<br />Ba không gian làm việc.</h1><p>Bán hàng, nguồn cung, giao nhận và công nợ được nối bằng định danh có kiểm quyền.</p></section><section className="auth-panel"><div className="auth-card"><p className="eyebrow">{content.eyebrow}</p><h2>{content.title}</h2><p className="muted">{content.detail}</p><LoginForm surface={surface} /><a className="auth-switch" href={content.switchHref}>{content.switchLabel}</a></div></section></main>;
+  return <main className="auth-screen"><section className="auth-story"><span className="brand-mark">HX</span><p className="eyebrow">HIỀN XA ERP</p><h1>Một nguồn dữ liệu.<br />Ba không gian làm việc.</h1><p>Quản lý bán hàng, mua hàng, giao nhận và công nợ theo quyền của từng nhân viên.</p></section><section className="auth-panel"><div className="auth-card"><p className="eyebrow">{content.eyebrow}</p><h2>{content.title}</h2><p className="muted">{content.detail}</p><LoginForm surface={surface} /><a className="auth-switch" href={content.switchHref}>{content.switchLabel}</a></div></section></main>;
 }

@@ -1,0 +1,128 @@
+{
+  "scope": "REAL_BROWSER_ROLE_PAGES_AND_REVOCATION_WITH_EXISTING_SESSION",
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "OWNER_UI_REVOKE_STALE_WORKER_SESSION_CANNOT_READ_OR_START",
+      "status": "PASS",
+      "deniedStatus": 409
+    },
+    {
+      "name": "OWNER_UI_REACTIVATE_SAME_ACCESS_SOURCE_AND_READ_AGAIN",
+      "status": "PASS"
+    }
+  ],
+  "pages": [
+    {
+      "role": "worker",
+      "url": "/work",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "worker",
+      "url": "/work/pool",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "worker",
+      "url": "/work/earnings",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "worker",
+      "url": "/work/messages",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "worker",
+      "url": "/work/profile",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "worker",
+      "url": "/work/tracking",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "worker",
+      "url": "/work/jobs/617060ea-12ab-4ba5-bf9a-c328058969e6",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "receiver",
+      "url": "/customer",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "receiver",
+      "url": "/customer/orders",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "receiver",
+      "url": "/customer/orders/f40687ff-a634-469d-9f0a-19256f7bbbdc",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "receiver",
+      "url": "/customer/quotations",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "receiver",
+      "url": "/customer/messages",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "receiver",
+      "url": "/customer/profile",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "customer-finance",
+      "url": "/customer",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "customer-finance",
+      "url": "/customer/orders/f40687ff-a634-469d-9f0a-19256f7bbbdc",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "customer-finance",
+      "url": "/customer/debts",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "customer-finance",
+      "url": "/customer/profile",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "worker-restored",
+      "url": "/work/jobs/617060ea-12ab-4ba5-bf9a-c328058969e6",
+      "status": "PASS_READ",
+      "http": 200
+    }
+  ],
+  "failures": [],
+  "status": "PASS_ROLE_PAGE_READ_AND_BRANCH_ACCESS_LIFECYCLE",
+  "checkedAt": "2026-10-12T05:04:46.525Z"
+}

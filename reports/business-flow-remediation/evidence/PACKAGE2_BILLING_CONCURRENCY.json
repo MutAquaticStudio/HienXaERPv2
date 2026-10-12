@@ -1,0 +1,26 @@
+{
+  "scope": "REAL_NATIVE_SOURCE_LINE_LOCK_RACE",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "status": "PASS_EXECUTED_CONCURRENT_BILLING",
+  "actorA": "0d1d2134-5a21-40a4-9fcb-375898d3c133",
+  "actorB": "e04f1e5a-2a2d-4347-a506-1b6a35ea790f",
+  "pidA": 36722,
+  "pidB": 36723,
+  "observedBlockingPids": [
+    36722
+  ],
+  "amounts": [
+    {
+      "amount": "3450000"
+    },
+    {
+      "amount": "3450001"
+    }
+  ],
+  "facts": {
+    "revenue": "6900001",
+    "effects": 2
+  },
+  "managedAuthTestedInRace": false,
+  "productionAccess": "NONE"
+}

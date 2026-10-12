@@ -1,0 +1,22 @@
+{
+  "scope": "MASTER_CUSTOMER_DRAFT_CURRENT_FIELD_PERMISSIONS",
+  "phase": "after",
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "CUSTOMER_MANAGE_RETAINED_CREDIT_FIELD_DRAFT_DENIED_AFTER_FINANCE_REVOCATION",
+      "status": "PASS"
+    },
+    {
+      "name": "SAFE_CUSTOMER_DRAFT_REMAINS_READABLE_WITH_CUSTOMERS_MANAGE",
+      "status": "PASS"
+    },
+    {
+      "name": "REGRANTED_FIELD_RIGHT_RECOVERS_IDENTICAL_PAYLOAD_AND_INTENT",
+      "status": "PASS"
+    }
+  ],
+  "status": "PASS",
+  "rolledBack": true,
+  "checkedAt": "2026-10-12T13:46:12.050Z"
+}

@@ -9,15 +9,15 @@ import { createServerSupabase } from "@/lib/supabase/server";
 type Revision = { id: string; quotation_id: string; revision_number: number; state: string; customer_name_snapshot: string; site_name_snapshot: string; delivery_address_snapshot: string; commercial_terms: string | null; total_vnd: string; expires_at: string | null };
 type Line = { material_name_snapshot: string; quantity: string; unit_price_vnd: string; line_total_vnd: string; uom_symbol: string | null };
 const money = (value: string) => `${new Intl.NumberFormat("vi-VN").format(BigInt(value))} VND`;
-const stateLabel = (value: string) => ({ DRAFT: "Bản nháp", SENT: "Đã gửi", ACCEPTED: "Đã chấp nhận", SUPERSEDED: "Đã thay thế", CANCELLED: "Đã hủy" } as Record<string, string>)[value] ?? value;
+const stateLabel = (value: string) => ({ DRAFT: "Bản nháp", SENT: "Đã gửi", ACCEPTED: "Đã chấp nhận", SUPERSEDED: "Đã thay thế", CANCELLED: "Đã hủy" } as Record<string, string>)[value] ?? "Chưa xác định";
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createServerSupabase();
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) return new Response("Cần đăng nhập.", { status: 401 });
-  const { data: revisionData } = await supabase.from("quotation_revisions").select("id, quotation_id, revision_number, state, customer_name_snapshot, site_name_snapshot, delivery_address_snapshot, commercial_terms, total_vnd, expires_at").eq("id", id).maybeSingle();
-  if (!revisionData) return new Response("Không tìm thấy revision.", { status: 404 });
+  const { data: revisionData } = await supabase.from("quotation_revisions").select("id, quotation_id, revision_number, state, customer_name_snapshot, site_name_snapshot, delivery_address_snapshot, commercial_terms, total_vnd::text, expires_at").eq("id", id).maybeSingle();
+  if (!revisionData) return new Response("Không tìm thấy phiên bản báo giá.", { status: 404 });
   const revision = revisionData as Revision;
   const [quoteResult, lineResult] = await Promise.all([
     supabase.from("quotations").select("quotation_number").eq("id", revision.quotation_id).maybeSingle(),

@@ -1,0 +1,59 @@
+{
+  "scope": "EXISTING_PO_ROUTE_SOURCE_READBACK_AND_ASSIGNMENT_AUDIT_FAULT",
+  "productionAccess": "NONE",
+  "advanceRaces": false,
+  "checks": [
+    {
+      "name": "EXISTING_CANCELLED_UNRECEIVED_PO_AP_AND_PAYMENT_SOURCE_NEUTRAL",
+      "status": "PASS",
+      "source": "c7d3f2d8-116f-4a2c-b8c4-17c474f15f45",
+      "facts": {
+        "state": "CANCELLED",
+        "receipts": 0,
+        "fulfillments": 0,
+        "ap": 0,
+        "allocations": 0
+      }
+    },
+    {
+      "name": "WORKER_REAL_JWT_DIRECT_ROUTE_WRITER_FORBIDDEN",
+      "status": "PASS",
+      "http": 403
+    },
+    {
+      "name": "ALREADY_APPLIED_ROUTE_SAME_INTENT_RETRY_NO_ASSIGNMENT_RECEIPT_AUDIT_DUPLICATION",
+      "status": "PASS",
+      "facts": {
+        "assignments": 4,
+        "audits": 1,
+        "receipts": 1
+      }
+    },
+    {
+      "name": "ORIGINAL_ROUTE_PLAN_SOURCE_CHANGED_STALE_APPLY_ATOMICALLY_DENIED",
+      "status": "PASS"
+    },
+    {
+      "name": "ASSIGNMENT185_AUDIT_SOURCE_FAULT_ROLLBACK_AND_SAME_INTENT_RECOVERY_ONE_EFFECT",
+      "status": "PASS",
+      "rolledBackSource": {
+        "assignments": 0,
+        "receipts": 0,
+        "audits": 0,
+        "state": "AVAILABLE"
+      },
+      "recovered": {
+        "assignments": 1,
+        "receipts": 1,
+        "audits": 1
+      }
+    }
+  ],
+  "status": "PASS",
+  "rollback": true,
+  "checkedAt": "2026-10-12T13:51:17.234Z",
+  "schema": {
+    "count": 186,
+    "latest": "20261012110100"
+  }
+}

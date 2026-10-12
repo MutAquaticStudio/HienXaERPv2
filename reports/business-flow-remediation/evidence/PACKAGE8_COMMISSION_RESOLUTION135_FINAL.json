@@ -1,0 +1,34 @@
+{
+  "scope": "ACTUAL_EXECUTED_RECOVERY_AND_WAIVER_CHECKPOINTS",
+  "status": "PASS_BOTH_EXECUTED_COMMISSION_RESOLUTION_METHODS",
+  "checks": [
+    {
+      "method": "RECOVER_UNPAID_COMMISSION",
+      "status": "PASS",
+      "facts": {
+        "resolutions": 1,
+        "audits": 1,
+        "originalhash": "4205982d1c70ab2b5cb0416ef2fa76f6",
+        "olddebt": "0",
+        "employeepayments": 1
+      },
+      "afterUnpaid": "8500",
+      "faultRolledBack": true
+    },
+    {
+      "method": "WAIVE",
+      "status": "PASS",
+      "facts": {
+        "resolutions": 1,
+        "audits": 1,
+        "originalhash": "8d20e73ae9361b4e60c0296a39c2e48f",
+        "olddebt": "0",
+        "employeepayments": 1
+      },
+      "afterUnpaid": null,
+      "faultRolledBack": true
+    }
+  ],
+  "partialFailure": "Initial second-method harness expected a later Owner guard; Finance already denied compensation.manage before that guard. Recovery succeeded and was preserved; only unfinished waiver method rerun.",
+  "productionAccess": "NONE"
+}

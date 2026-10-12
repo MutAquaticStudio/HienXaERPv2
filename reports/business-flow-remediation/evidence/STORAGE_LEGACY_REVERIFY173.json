@@ -1,0 +1,100 @@
+{
+  "scope": "T39_S5_QA_LEGACY_REVERIFICATION_AND_FOUR_REAL_CLASSIFICATIONS",
+  "projectRef": "ffrwiglcrlumfvhubaxg",
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "OLD_MATCH_REVERIFIED_ONCE",
+      "status": "PASS",
+      "evidence": "0ae742bd-9078-4f49-9fa3-0b32c5e4384d",
+      "sources": [
+        {
+          "table": "delivery_results",
+          "column": "evidence_object_id",
+          "id": "910d6052-a084-4c75-ac77-a61277a223af",
+          "branchId": null
+        }
+      ],
+      "metadataUnchanged": true,
+      "paymentsUnchanged": true,
+      "receipts": 1,
+      "audits": 1
+    },
+    {
+      "name": "FOUR_CLASSIFICATIONS_REAL_QA",
+      "status": "PASS",
+      "counts": {
+        "MATCH": 1,
+        "MISMATCH": 1,
+        "MISSING": 1,
+        "INCONCLUSIVE": 1
+      },
+      "missingFixtureBusinessSources": 0
+    }
+  ],
+  "preexistingVerification": true,
+  "operationId": "6a74ee8e-3818-435a-9c5e-026d224b9886",
+  "legacyEvidence": "0ae742bd-9078-4f49-9fa3-0b32c5e4384d",
+  "classifications": [
+    {
+      "key": "INTERNAL:0ae742bd-9078-4f49-9fa3-0b32c5e4384d",
+      "metadataFingerprint": "7d128e732c8bfb0857c5897b3acc688c17a70cffd0b0fcdb0446492edbd5c66a",
+      "sources": [
+        {
+          "table": "delivery_results",
+          "column": "evidence_object_id",
+          "id": "910d6052-a084-4c75-ac77-a61277a223af",
+          "branchId": null
+        }
+      ],
+      "actual": {
+        "byteSize": 68,
+        "checksumSha256": "91f20cd79ab89a14964402ac68c5ba42f899992efaaa4e9895a0edd0f16990c5",
+        "mimeType": "image/png"
+      },
+      "classification": "MATCH",
+      "reason": "STORED_BYTES_MATCH_BASIS",
+      "eligibleForReverification": true
+    },
+    {
+      "key": "PORTAL:5ae7aaf7-d1e2-46ba-8feb-2cbe5f0d35e3",
+      "metadataFingerprint": "86858c82e71f5a4ba56e8684d8790538f22b4f2e9b18d472072e0863184c7d54",
+      "sources": [
+        {
+          "table": "payment_notices",
+          "id": "c06fdca6-c51f-4e58-b785-0e3aecafa4e5"
+        }
+      ],
+      "actual": {
+        "byteSize": 869,
+        "checksumSha256": "dea34a28a53d0483452d9053de7474544c915b7f027e150a4eb82cbf92b9afff",
+        "mimeType": "application/pdf"
+      },
+      "classification": "MISMATCH",
+      "reason": "STORED_BYTES_DISAGREE_WITH_BASIS",
+      "eligibleForReverification": false
+    },
+    {
+      "key": "PORTAL:170f7695-7676-4a1b-9ca0-201347993969",
+      "metadataFingerprint": "be97b690969f021b110f2dd8b089253168e43d5b6c687165aaf442dcc8a38f32",
+      "sources": [],
+      "classification": "MISSING",
+      "reason": "OBJECT_NOT_FOUND"
+    },
+    {
+      "key": "PORTAL:5ae7aaf7-d1e2-46ba-8feb-2cbe5f0d35e3",
+      "metadataFingerprint": "86858c82e71f5a4ba56e8684d8790538f22b4f2e9b18d472072e0863184c7d54",
+      "sources": [
+        {
+          "table": "payment_notices",
+          "id": "c06fdca6-c51f-4e58-b785-0e3aecafa4e5"
+        }
+      ],
+      "classification": "INCONCLUSIVE",
+      "reason": "CONNECTION_OR_PERMISSION"
+    }
+  ],
+  "status": "PASS",
+  "onlyOneLegacyEvidenceAttested": true,
+  "noProductionInventoryPerformed": true
+}

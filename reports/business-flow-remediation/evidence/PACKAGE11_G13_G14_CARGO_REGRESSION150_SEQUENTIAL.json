@@ -1,0 +1,130 @@
+{
+  "scope": "G13_ACTUAL_CARGO_ACROSS_NONOVERLAPPING_DELIVERIES",
+  "phase": "after",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "productionAccess": "NONE",
+  "managedAuthTested": false,
+  "checks": [
+    {
+      "name": "WAREHOUSE_ACTUAL_TOTAL_AND_VERIFIED_RESIDUAL",
+      "status": "PASS",
+      "actualRejected": {
+        "code": "23514",
+        "message": "vehicle_actual_cargo_capacity_exceeded"
+      },
+      "legacyRejected": {
+        "code": "23514",
+        "message": "vehicle_actual_cargo_capacity_exceeded"
+      },
+      "residualRejected": {
+        "code": "23514",
+        "message": "vehicle_actual_cargo_capacity_exceeded"
+      },
+      "catalogRejected": {
+        "code": "PT409",
+        "message": "vehicle_capacity_locked_by_assignment"
+      },
+      "verifiedCargoChange": {
+        "code": "PT409",
+        "message": "vehicle_capacity_locked_by_cargo"
+      },
+      "untouched": {
+        "execution_state": "ASSIGNED",
+        "version": 2,
+        "handoffs": 0
+      },
+      "returnFault": {
+        "code": "P0001",
+        "message": "QA_AFTER_PHYSICAL_CARGO_RETURN"
+      },
+      "returnRollback": {
+        "state": "OPEN",
+        "movements": 0,
+        "receipts": 0,
+        "audits": 0
+      },
+      "directSource": {
+        "transit": 1,
+        "returned": "1.000000",
+        "costcorrection": null
+      },
+      "lossSource": {
+        "movements": 1,
+        "costs": 1
+      },
+      "retryOneEffect": true,
+      "permitsAfterPhysicalResolution": true,
+      "permitsCapacityChangeAfterNoCargo": true
+    },
+    {
+      "name": "SUPPLIER_DIRECT_ACTUAL_TOTAL_AND_VERIFIED_RESIDUAL",
+      "status": "PASS",
+      "actualRejected": {
+        "code": "23514",
+        "message": "vehicle_actual_cargo_capacity_exceeded"
+      },
+      "legacyRejected": {
+        "code": "23514",
+        "message": "vehicle_actual_cargo_capacity_exceeded"
+      },
+      "residualRejected": {
+        "code": "23514",
+        "message": "vehicle_actual_cargo_capacity_exceeded"
+      },
+      "catalogRejected": {
+        "code": "PT409",
+        "message": "vehicle_capacity_locked_by_assignment"
+      },
+      "verifiedCargoChange": {
+        "code": "PT409",
+        "message": "vehicle_capacity_locked_by_cargo"
+      },
+      "untouched": {
+        "execution_state": "ASSIGNED",
+        "version": 2,
+        "handoffs": 0
+      },
+      "returnFault": {
+        "code": "P0001",
+        "message": "QA_AFTER_PHYSICAL_CARGO_RETURN"
+      },
+      "returnRollback": {
+        "state": "OPEN",
+        "movements": 0,
+        "receipts": 0,
+        "audits": 0
+      },
+      "directSource": {
+        "transit": 0,
+        "returned": "1.000000",
+        "costcorrection": "-150000"
+      },
+      "lossSource": {
+        "movements": 0,
+        "costs": 0
+      },
+      "retryOneEffect": true,
+      "permitsAfterPhysicalResolution": true,
+      "permitsCapacityChangeAfterNoCargo": true
+    },
+    {
+      "name": "MIXED_UNITS_USE_RECORDED_MEASUREMENT_AND_REQUIRE_EXISTING_CARGO_BASIS",
+      "status": "PASS",
+      "measuredOverload": {
+        "code": "23514",
+        "message": "vehicle_actual_cargo_capacity_exceeded"
+      },
+      "missingCargoBasis": {
+        "code": "23514",
+        "message": "vehicle_capacity_conversion_missing"
+      },
+      "totalExcess": {
+        "code": "23514",
+        "message": "vehicle_actual_cargo_capacity_exceeded"
+      },
+      "acceptedQuantity": "14 A + 3 B at 2:1 = 20 A"
+    }
+  ],
+  "rolledBack": true,
+  "status": "PASS_G13_TOTAL_CARGO"
+}

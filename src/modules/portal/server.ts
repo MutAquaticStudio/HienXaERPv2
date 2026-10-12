@@ -3,6 +3,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 
 import { createServerSupabase } from "@/lib/supabase/server";
+import { operationalPostingError } from "@/lib/core/errors";
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createServerSupabase>>;
 type RpcFailure = { code?: string; message: string };
@@ -10,11 +11,13 @@ type RpcResponse<T> = Promise<{ data: T | null; error: RpcFailure | null }>;
 
 export class PortalRpcError extends Error {
   code?: string;
+  readonly rawMessage: string;
 
   constructor(error: RpcFailure) {
-    super(error.message);
+    super(operationalPostingError(error.message) ?? error.message);
     this.name = "PortalRpcError";
     this.code = error.code;
+    this.rawMessage = error.message;
   }
 }
 

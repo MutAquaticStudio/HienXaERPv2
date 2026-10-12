@@ -1,0 +1,31 @@
+{
+  "scope": "G15_MULTILINE_SAME_INTENT_RECOVERY_AFTER_FIELD_GROUPING_FIX",
+  "productionAccess": "NONE",
+  "po": "eccf5fc9-04d1-43c9-ac37-f04a8e882efd",
+  "intent": "f2048227-8401-4ecd-9f61-700cadb55c87",
+  "checks": [
+    {
+      "name": "ORIGINAL_UNKNOWN_INTENT_RETRY_ONE_RECEIPT",
+      "status": "PASS",
+      "receipts": 1
+    },
+    {
+      "name": "SECOND_PARTIAL_RECEIPT30_10PLUS20_KG50_20PLUS30",
+      "status": "PASS",
+      "rows": [
+        {
+          "material_id": "04692a24-dff5-47e1-873f-f93962168dbe",
+          "quantity": "50.000000",
+          "base": "50.000000"
+        },
+        {
+          "material_id": "0d0a7530-087d-4b8d-acb6-495fef02d348",
+          "quantity": "30.000000",
+          "base": "30.000000"
+        }
+      ]
+    }
+  ],
+  "screenshot": "reports/go-live-acceptance/screenshots/multi-receipt-recovered-source-closed.png",
+  "status": "PASS"
+}

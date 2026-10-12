@@ -1,0 +1,91 @@
+{
+  "scope": "G23_INDEPENDENT_COMMERCIAL_DELIVERY_PAYMENT_RETURN_EXCEPTION_COMPLETION",
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "PAID_DELIVERY_RETURN_DECISION_AND_REFUND_MUST_COMPLETE_BEFORE_OPERATIONAL_TRUE",
+      "status": "PASS",
+      "before": {
+        "exceptions": {
+          "work_item_open": false,
+          "cargo_remaining": false,
+          "physical_return_open": false,
+          "customer_refund_offset_pending": false,
+          "paid_commission_review_pending": false,
+          "supplier_document_variance_open": false,
+          "customer_credit_decision_pending": true,
+          "supplier_return_or_money_pending": false,
+          "legacy_debt_reconciliation_required": false
+        },
+        "payment_state": "PAID",
+        "delivery_model": "ONE_SALES_ORDER_ONE_PICKUP_PER_DELIVERY",
+        "delivery_state": "FULFILLED",
+        "commercial_state": "CONFIRMED",
+        "operational_complete": false,
+        "trip_grouping_supported": false
+      },
+      "funded": {
+        "exceptions": {
+          "work_item_open": false,
+          "cargo_remaining": false,
+          "physical_return_open": false,
+          "customer_refund_offset_pending": true,
+          "paid_commission_review_pending": false,
+          "supplier_document_variance_open": false,
+          "customer_credit_decision_pending": false,
+          "supplier_return_or_money_pending": false,
+          "legacy_debt_reconciliation_required": false
+        },
+        "payment_state": "PAID",
+        "delivery_model": "ONE_SALES_ORDER_ONE_PICKUP_PER_DELIVERY",
+        "delivery_state": "FULFILLED",
+        "commercial_state": "CONFIRMED",
+        "operational_complete": false,
+        "trip_grouping_supported": false
+      },
+      "settled": {
+        "exceptions": {
+          "work_item_open": false,
+          "cargo_remaining": false,
+          "physical_return_open": false,
+          "customer_refund_offset_pending": false,
+          "paid_commission_review_pending": false,
+          "supplier_document_variance_open": false,
+          "customer_credit_decision_pending": false,
+          "supplier_return_or_money_pending": false,
+          "legacy_debt_reconciliation_required": false
+        },
+        "payment_state": "PAID",
+        "delivery_model": "ONE_SALES_ORDER_ONE_PICKUP_PER_DELIVERY",
+        "delivery_state": "FULFILLED",
+        "commercial_state": "CONFIRMED",
+        "operational_complete": true,
+        "trip_grouping_supported": false
+      }
+    },
+    {
+      "name": "INDEPENDENT_EXISTING_DIRECT_VENDOR_CREDIT150_PENDING_BLOCKS_OPERATIONS",
+      "status": "PASS",
+      "pending": {
+        "exceptions": {
+          "work_item_open": false,
+          "cargo_remaining": false,
+          "physical_return_open": false,
+          "customer_refund_offset_pending": false,
+          "paid_commission_review_pending": false,
+          "supplier_document_variance_open": false,
+          "customer_credit_decision_pending": false,
+          "supplier_return_or_money_pending": true,
+          "legacy_debt_reconciliation_required": false
+        },
+        "payment_state": "UNPAID",
+        "delivery_model": "ONE_SALES_ORDER_ONE_PICKUP_PER_DELIVERY",
+        "delivery_state": "PARTIAL",
+        "commercial_state": "CONFIRMED",
+        "operational_complete": false,
+        "trip_grouping_supported": false
+      }
+    }
+  ],
+  "status": "PASS"
+}

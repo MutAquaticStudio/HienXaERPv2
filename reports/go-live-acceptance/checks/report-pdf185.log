@@ -1,0 +1,12 @@
+{"name":"PDF_SOURCE_CONTENT_AND_PARSE_quote-exact.pdf","status":"PASS"}
+{"name":"PDF_SOURCE_CONTENT_AND_PARSE_customer-quote-exact.pdf","status":"PASS"}
+{"name":"PDF_SOURCE_CONTENT_AND_PARSE_payroll-voucher.pdf","status":"PASS"}
+{"name":"PDF_SOURCE_CONTENT_AND_PARSE_delivery15-14-13.pdf","status":"PASS"}
+{"name":"PDF_WRONG_ROLE_OR_CUSTOMER_DENIED","status":"PASS"}
+{"name":"PDF_WRONG_ROLE_OR_CUSTOMER_DENIED","status":"PASS"}
+{"name":"PDF_WRONG_ROLE_OR_CUSTOMER_DENIED","status":"PASS"}
+{"name":"REPORT_FILTER_AR_STANDARD_CUSTOMER_CURRENT","status":"PASS"}
+{"name":"REPORT_FILTER_AR_STANDARD_CUSTOMER_PRIOR_ASOF","status":"PASS"}
+{"name":"REPORT_FILTER_AR_KNOWLEDGE_CUTOFF_BEFORE_NEW_SOURCES","status":"PASS"}
+{"name":"REPORT_FILTER_OPEX_PERIOD_BEFORE_NEW_SOURCE","status":"PASS"}
+{"name":"REPORT_WORKER_CANNOT_EXPORT_AP","status":"PASS"}

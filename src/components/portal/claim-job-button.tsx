@@ -1,4 +1,5 @@
 "use client";
+import { userFacingError } from "@/lib/core/errors";
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -27,7 +28,7 @@ export function ClaimJobButton({ workItemId, version }: { workItemId: string; ve
       router.refresh();
     } catch (error) {
       setStatus("error");
-      setMessage(error instanceof Error ? error.message : "Không thể nhận việc");
+      setMessage(error instanceof Error ? userFacingError(error.message) : "Không thể nhận việc");
     }
   }
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { authenticatedPortalClient, portalRpc } from "@/modules/portal/server";
+import { workCommandHttpStatus } from "@/modules/portal/work-command-status";
 import { parseWorkResultInput } from "@/modules/portal/work-result-input";
 
 export async function POST(request: Request) {
@@ -18,10 +19,10 @@ export async function POST(request: Request) {
         expected_assignment_version: body.expectedAssignmentVersion, missing_arrival_reason: body.missingArrivalReason,
       })
       : await portalRpc<string>(context.supabase, "submit_portal_work_result", {
-        ...args, actual_quantity: Number(body.actualQuantity), expected_version: body.expectedVersion,
+        ...args, actual_quantity: String(body.actualQuantity), expected_version: body.expectedVersion,
       });
     return NextResponse.json({ resultId });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Không thể gửi kết quả" }, { status: 409 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Không thể gửi kết quả" }, { status: workCommandHttpStatus(error) });
   }
 }

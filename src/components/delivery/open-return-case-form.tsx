@@ -55,7 +55,7 @@ export function OpenReturnCaseForm({ deliveryId, operationId: initialOperationId
         </select>
       </div>
       <div className="field">
-        <label htmlFor="returnQuantity">Số lượng base</label>
+        <label htmlFor="returnQuantity">Số lượng theo đơn vị cơ sở</label>
         <input id="returnQuantity" name="quantity" inputMode="decimal" required disabled={pending} value={draft.quantity}
           onChange={(event) => setDraft({ ...draft, quantity: event.target.value })} />
       </div>

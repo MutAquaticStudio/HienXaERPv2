@@ -1,0 +1,50 @@
+{
+  "scope": "NATIVE_DISTINCT_ACTORS_BACKENDS_OBSERVED_LOCK_OVERLAP",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "productionAccess": "NONE",
+  "managedAuthTestedInRace": false,
+  "checks": [
+    {
+      "name": "T28_TWO_DISTINCT_APPROVERS",
+      "status": "PASS",
+      "actorA": "0d1d2134-5a21-40a4-9fcb-375898d3c133",
+      "actorB": "e04f1e5a-2a2d-4347-a506-1b6a35ea790f",
+      "pidA": 16926,
+      "pidB": 16928,
+      "observedBlockingPids": [
+        16926
+      ],
+      "secondError": {
+        "code": "PT409",
+        "message": "stock_count_not_approvable"
+      },
+      "facts": {
+        "adjustments": 1,
+        "qty": "15.000000",
+        "audit": 1
+      }
+    },
+    {
+      "name": "T28_COUNT_APPROVAL_OVERLAPS_WAREHOUSE_HANDOFF",
+      "status": "PASS",
+      "actorA": "0d1d2134-5a21-40a4-9fcb-375898d3c133",
+      "actorB": "e04f1e5a-2a2d-4347-a506-1b6a35ea790f",
+      "pidA": 16926,
+      "pidB": 16928,
+      "observedBlockingPids": [
+        16926
+      ],
+      "secondError": {
+        "code": "PT409",
+        "message": "stock_count_basis_changed_recount_required"
+      },
+      "facts": {
+        "state": "OPEN",
+        "adjustments": 0,
+        "qty": "0.000000",
+        "transit": "45.000000"
+      }
+    }
+  ],
+  "status": "PASS_EXECUTED_TRUE_CONCURRENCY_SCOPE"
+}

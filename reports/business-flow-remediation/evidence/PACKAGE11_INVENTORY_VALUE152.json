@@ -1,0 +1,75 @@
+{
+  "scope": "G19_WAREHOUSE_WEIGHTED_VALUE_SEPARATE_FROM_VENDOR_CREDIT_PRICE",
+  "productionAccess": "NONE",
+  "managedQaBusinessWrites": 0,
+  "documents": {
+    "branch": "490252ce-e9cc-4b84-8dec-971f19a88b62",
+    "caseId": "ccb9ebe9-55fa-4278-9ec3-17e1a091eaa0",
+    "credit": "7396c811-f628-40b7-9350-5d5b9cd67bd2",
+    "material": "6c14410e-8ee3-4551-922d-c762073afb83",
+    "facts": {
+      "quantity": "1.000000",
+      "value": "200000",
+      "actual_value": "200000",
+      "vendor_limit": "150000",
+      "accepted_actual_value": "200000"
+    }
+  },
+  "snapshot": {
+    "scope": {
+      "to": "2026-10-11T20:55:45.8732+07:00",
+      "from": "2000-01-01T00:00:00+07:00",
+      "as_of": "2026-10-11T20:55:45.8732+07:00",
+      "branch_id": "490252ce-e9cc-4b84-8dec-971f19a88b62",
+      "balance_scope": "RECORDED_TRANSACTIONS",
+      "historical_quality": "UNRECONCILED",
+      "business_total_verified": false,
+      "recorded_operations_since": "2026-10-11T20:55:45.819524+07:00"
+    },
+    "payable": {
+      "quality": "READY",
+      "value_vnd": "250000"
+    },
+    "revenue": {
+      "quality": "READY",
+      "value_vnd": "0"
+    },
+    "receivable": {
+      "quality": "READY",
+      "value_vnd": "0"
+    },
+    "direct_cost": {
+      "quality": "READY",
+      "value_vnd": "0"
+    },
+    "gross_profit": {
+      "quality": "READY",
+      "value_vnd": "0"
+    },
+    "salary_payable": {
+      "quality": "READY",
+      "value_vnd": "0"
+    },
+    "operating_profit": {
+      "quality": "READY",
+      "value_vnd": "-50000"
+    },
+    "operating_expense": {
+      "quality": "READY",
+      "value_vnd": "50000"
+    },
+    "commission_payable": {
+      "quality": "READY",
+      "value_vnd": "0"
+    },
+    "operating_margin_bps": {
+      "value": null,
+      "quality": "READY"
+    }
+  },
+  "costPrivacy": {
+    "masked": true,
+    "raw403": true
+  },
+  "status": "PASS"
+}

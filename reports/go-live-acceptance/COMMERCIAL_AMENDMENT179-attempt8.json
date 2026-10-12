@@ -1,0 +1,92 @@
+{
+  "scope": "T04_T21_QUOTE_SO_DRAFT_AMENDMENT_REAL_ROLE_BROWSER",
+  "checkedAt": "2026-10-12T07:35:56.609Z",
+  "baselineCommit": "73c3d17",
+  "schema": 179,
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [
+    {
+      "name": "QUOTE_MISSING_AND_SEVENTH_DECIMAL_CANNOT_SAVE_UI",
+      "status": "PASS",
+      "facts": {}
+    },
+    {
+      "name": "QUOTE_MISSING_AND_SEVENTH_DECIMAL_CANNOT_SAVE_UI",
+      "status": "PASS",
+      "facts": {}
+    },
+    {
+      "name": "QUOTE_TWO_TABS_STALE_EDIT_AND_EXACT_STORED_MONEY",
+      "status": "PASS",
+      "facts": {
+        "quantity": "2.123456",
+        "price": "230000",
+        "amount": "488395",
+        "expected": "488395"
+      }
+    },
+    {
+      "name": "SALES_SEND_QUOTE_DOES_NOT_CREATE_AR_OR_INVENTORY",
+      "status": "PASS",
+      "facts": {}
+    },
+    {
+      "name": "CUSTOMER_ROLE_QUOTE_READ_ACCEPT_SCOPE",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T07:48:25.362Z",
+      "schema": {
+        "count": 180,
+        "latest": "20261012074034"
+      },
+      "facts": {
+        "receiverRpcDenied": "42501",
+        "otherCustomerStreamingHTTP": 200,
+        "otherCustomerNotFound": true,
+        "otherCustomerPDF": 404
+      }
+    }
+  ],
+  "documents": {
+    "quoteCreateIntent": "12055a12-1fe3-411e-8c48-928555a9ff7b",
+    "quote": "05104b11-a105-4ae7-a02a-61d1bb2d212a",
+    "revision": "a1a63228-b0d7-4b65-ab99-c93c538ccdc0",
+    "so": "3fe5ea78-61ea-4ea0-866e-9c82b4d851d1"
+  },
+  "pageErrors": [
+    {
+      "role": "other_customer",
+      "message": "Switched to client rendering because the server rendering errored:\n\nBạn không có quyền xem dữ liệu khách hàng này."
+    }
+  ],
+  "status": "FAIL",
+  "error": "column \"sales_order_id\" does not exist",
+  "failurePages": [
+    {
+      "url": "http://127.0.0.1:3112/admin/orders/3fe5ea78-61ea-4ea0-866e-9c82b4d851d1?notice=from-quote",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA ERP\nĐiều hành\nTổng quan\nBán hàng\nĐơn bán\nBáo giá\nKhách hàng\nKho hàng\nGiao hàng\nTài chính\nBáo cáo\nTin nhắn\nĐăng xuất\nPhiên làm việc có phân quyền\nQA không đầu kỳ G119EE6ACBC\nNhân viên kiểm thử confirmer\nTC\n\nĐƠN BÁN\n\nSO-2026-000416\n\nTheo dõi đơn bán, phân nguồn hàng và giao hàng tại một nơi.\n\nVề danh sách\n\nĐã tạo đơn bán từ đúng phiên bản báo giá.\n\nChưa hoàn tất vận hành\nThương mại\n\nBản nháp\n\nGiao hàng\n\nChưa thực hiện\n\nThanh toán\n\nChưa phát sinh khoản phải thu\n\nMột phiếu giao theo một đơn bán và một điểm lấy; nhiều kho hoặc nguồn khác nhau tách phiếu. Chưa hỗ trợ gom nhiều đơn vào một chuyến. Lượng, công nợ và chi phí giữ tại từng nguồn.\n\nThương mại\nBản nháp\nThực hiện\nChưa thực hiện\nThanh toán\nChưa phát sinh\nThông tin & dòng hàng\nKhách hàng\nKhách kiểm thử khắc phục\nCông trình\nCông trình kiểm thử\nĐịa chỉ giao đã lưu\nĐịa chỉ QA độc lập\nGiao dự kiến\nChưa hẹn\nTổng đơn\n488.395 ₫\nVẬT TƯ\tSỐ LƯỢNG\tĐƠN GIÁ\tTHÀNH TIỀN\tNGUỒN GIÁ\tPHÂN NGUỒN\nCát kiểm thử khắc phục\t2,123456 m³\t230.000 ₫\t488.395 ₫\tBảng giá\t\n\n2,123456 đơn vị cơ sở còn thiếu\n\nHành động tiếp theo\n\nNguồn: phiên bản báo giá a1a63228-b0d7-4b65-ab99-c93c538ccdc0\n\nSửa bản nháp\nXác nhận & giữ hạn mức\n\nHủy bản nháp để bỏ khỏi danh sách đang làm. Chứng từ và nhật ký vẫn được lưu trong lịch sử Đã hủy.\n\nLý do hủy\n Tôi xác nhận hủy chứng từ này và giữ lịch sử\nXóa nháp (hủy có lịch sử)"
+    },
+    {
+      "url": "http://127.0.0.1:3112/admin",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA ERP\nĐiều hành\nTổng quan\nBán hàng\nKho hàng\nGiao hàng\nTài chính\nBáo cáo\nTin nhắn\nĐăng xuất\nPhiên làm việc có phân quyền\nQA không đầu kỳ G119EE6ACBC\nNhân viên kiểm thử confirmer\nTC\n\nTỔNG QUAN KINH DOANH\n\nTổng quan\n\nDoanh thu theo kỳ và công nợ tại thời điểm đã chọn. Thu tiền không làm tăng doanh thu lần nữa.\n\nMở sổ tiền\nTừ ngày\nĐến trước ngày\nTìm khách hàng\nTìm khách\nKhách hàng\nTất cả\nKhách QA chi nhánh mới\nKhách kiểm thử khắc phục\nKhách kiểm thử khắc phục\nQA thu nhiều lần và ứng trước\nCông trình\nTất cả\nCông trình QA phiếu tiền\nCông trình kiểm thử\nCông trình kiểm thử\nNhân viên bán hàng\nTất cả\nNhân viên kiểm thử confirmer\nHoạt động\nTất cả\nGiao hàng\nBán hàng\nDịch vụ\nHành chính\nLàm mới\n\nKỳ 01/10/2026 đến trước 01/11/2026 · số dư tính đến 12/10/2026 14:48\n\nTheo giao dịch đã ghi nhận; lịch sử chưa đối chiếu. Số liệu này chưa xác minh tổng số dư toàn doanh nghiệp.\n\nDoanh thu\n33.730.000 ₫\nBiểu đồ kết quả kinh doanh\nCÙNG KỲ VÀ PHẠM VI\nDoanh thu\n33.730.000 ₫\n\nCHI PHÍ VẬN HÀNH\n\nPhân bổ theo nhóm\n\nBạn không có quyền xem chi tiết này.\n\nHOA HỒNG PHẢI TRẢ\n\nChi tiết theo nhân viên\n\nBạn không có quyền xem chi tiết này.\n\nKhách hàng phải thu\n2.730.000 ₫\nKhách / công trình đang nợ\nTất cả\nKhách kiểm thử khắc phục\nCông trình kiểm thử · hạn 12/10/2026\n1.990.000 ₫\nKhách kiểm thử khắc phục\nCông trình kiểm thử · hạn 12/10/2026\n740.000 ₫\n\nCùng thời điểm chốt và bộ lọc với các chỉ số phía trên.\n\nNhà cung cấp đang phải trả\n\nKhông có khoản mở hoặc không có quyền xem.\n\nCùng thời điểm chốt với các chỉ số phía trên."
+    },
+    {
+      "url": "http://127.0.0.1:3112/customer/quotations/05104b11-a105-4ae7-a02a-61d1bb2d212a",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA\nCổng khách hàng\nTổng quan\nBáo giá\nĐơn hàng\nTin nhắn\nHồ sơ\n Đăng xuất\n\nQT-2026-000010 · PHIÊN BẢN 1\n\nKhách kiểm thử khắc phục\n\nCông trình kiểm thử · Địa chỉ QA độc lập\n\nTải PDF\nVề danh sách\nNội dung phiên bản 1\nĐã gửi\n\nHiệu lực: 01/01/2099 00:00\n\nVẬT TƯ\tSỐ LƯỢNG\tTHÀNH TIỀN\nCát kiểm thử khắc phục\t2,123456 m³\t488.395 ₫\n\nTổng cộng\n488.395 ₫\n\nĐiều khoản: Không có điều khoản bổ sung.\n\nVai trò người nhận chỉ được xem; chủ tài khoản hoặc người phụ trách thanh toán mới có thể chấp nhận."
+    },
+    {
+      "url": "http://127.0.0.1:3112/customer/quotations/05104b11-a105-4ae7-a02a-61d1bb2d212a?notice=accepted",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA\nCổng khách hàng\nTổng quan\nBáo giá\nĐơn hàng\nCông nợ\nTin nhắn\nHồ sơ\n Đăng xuất\n\nQT-2026-000010 · PHIÊN BẢN 1\n\nKhách kiểm thử khắc phục\n\nCông trình kiểm thử · Địa chỉ QA độc lập\n\nTải PDF\nVề danh sách\n\nĐã ghi nhận chấp nhận phiên bản báo giá.\n\nNội dung phiên bản 1\nĐã chấp nhận\n\nHiệu lực: 01/01/2099 00:00\n\nVẬT TƯ\tSỐ LƯỢNG\tTHÀNH TIỀN\nCát kiểm thử khắc phục\t2,123456 m³\t488.395 ₫\n\nTổng cộng\n488.395 ₫\n\nĐiều khoản: Không có điều khoản bổ sung."
+    },
+    {
+      "url": "http://127.0.0.1:3112/customer/quotations/05104b11-a105-4ae7-a02a-61d1bb2d212a",
+      "title": "404: This page could not be found.",
+      "body": "404\nThis page could not be found."
+    }
+  ]
+}

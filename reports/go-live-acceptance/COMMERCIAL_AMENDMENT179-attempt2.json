@@ -1,0 +1,20 @@
+{
+  "scope": "T04_T21_QUOTE_SO_DRAFT_AMENDMENT_REAL_ROLE_BROWSER",
+  "checkedAt": "2026-10-12T07:35:56.609Z",
+  "baselineCommit": "73c3d17",
+  "schema": 179,
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [
+    {
+      "name": "QUOTE_MISSING_AND_SEVENTH_DECIMAL_CANNOT_SAVE_UI",
+      "status": "PASS",
+      "facts": {}
+    }
+  ],
+  "documents": {},
+  "pageErrors": [],
+  "status": "FAIL",
+  "error": "page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================"
+}

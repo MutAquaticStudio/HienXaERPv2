@@ -1,0 +1,32 @@
+{
+  "scope": "G22_BROWSER_MATCH_CORRECTION_RECOVERY_NO_CASH_OR_DEBT_EFFECT",
+  "productionAccess": "NONE",
+  "actualStorageTested": false,
+  "checks": [
+    {
+      "name": "MATCH_CORRECTION_COMMIT_LOSS_RELOAD_FREES600_NO_MONEY",
+      "status": "PASS"
+    },
+    {
+      "name": "MATCH600_COMMIT_LOSS_RELOAD_SHARED_BANK_COVERAGE_CAP_NO_SECOND_DEBT_ALLOCATION",
+      "status": "PASS",
+      "facts": {
+        "debt": "2220000",
+        "cash": 1,
+        "active_linked": "1000000"
+      }
+    }
+  ],
+  "expectedTransportErrors": [
+    {
+      "text": "Failed to load resource: net::ERR_FAILED",
+      "url": "http://127.0.0.1:3110/admin/payment-notices"
+    },
+    {
+      "text": "Failed to load resource: net::ERR_FAILED",
+      "url": "http://127.0.0.1:3110/admin/payment-notices"
+    }
+  ],
+  "unexpectedErrors": [],
+  "status": "PASS"
+}

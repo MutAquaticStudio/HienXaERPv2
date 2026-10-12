@@ -1,0 +1,8 @@
+{
+  "scope": "MASTER_CUSTOMER_DRAFT_CURRENT_FIELD_PERMISSIONS",
+  "phase": "before",
+  "productionAccess": "NONE",
+  "checks": [],
+  "status": "FAIL",
+  "error": "new row for relation \"employee_branch_access\" violates check constraint \"employee_branch_access_check\""
+}

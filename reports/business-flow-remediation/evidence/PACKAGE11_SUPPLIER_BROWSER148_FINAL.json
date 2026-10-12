@@ -1,0 +1,34 @@
+{
+  "scope": "G19_READ_ONLY_RESUME_FINAL_HYDRATION_AND_SCREENSHOTS",
+  "productionAccess": "NONE",
+  "sourceBrowserEvidence": "/Users/nox/Downloads/HienXaERP/outputs/business-flow-remediation/PACKAGE11_SUPPLIER_BROWSER148.json",
+  "businessWrites": 0,
+  "previousBusinessChecks": [
+    {
+      "name": "SECOND_RETURN_APPROVAL_COMMIT_RESPONSE_LOSS_RELOAD_ONE_CREDIT",
+      "status": "PASS"
+    },
+    {
+      "name": "REFUND100K_COMMIT_RESPONSE_LOSS_RELOAD_ONE_CASH_RECEIPT",
+      "status": "PASS"
+    },
+    {
+      "name": "TWO_SOURCE_RETURNS_NO_DOUBLE_AP_CASH_OR_FUNDS",
+      "status": "PASS",
+      "facts": {
+        "old_debt": "0",
+        "new_debt": "10000",
+        "original_reusable": "0",
+        "remaining": "0",
+        "returns": 2,
+        "refunds": 1,
+        "adjustments": 2
+      }
+    }
+  ],
+  "harnessCause": "Playwright default screenshot caret hiding modified input style while React hydration was still pending",
+  "browserPlugin": "ABSENT",
+  "expectedTransportErrors": [],
+  "unexpectedErrors": [],
+  "status": "PASS_READ_ONLY_BROWSER_RESUME"
+}

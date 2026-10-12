@@ -1,0 +1,23 @@
+{
+  "scope": "G19_RECORDED_DIRECT_WAREHOUSE_CUSTODY_THEN_PARTIAL_VENDOR_RETURN",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "productionAccess": "NONE",
+  "managedAuthTested": false,
+  "checks": [
+    {
+      "name": "DIRECT_RETURN_ACTUALLY_RECEIVED_AT_WH_THEN_VENDOR_PARTIAL_NO_SECOND_COGS_REVERSAL",
+      "status": "PASS",
+      "fact": {
+        "fake_inventory": 1,
+        "fake_customer_inventory": 1,
+        "destination": null,
+        "warehouse": "6309cc83-4bf0-42bc-aabc-124e5442ae8f",
+        "state": "RETURNED",
+        "cost": "600000",
+        "ap": "750000"
+      }
+    }
+  ],
+  "status": "PASS",
+  "rolledBack": true
+}

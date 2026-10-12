@@ -1,0 +1,35 @@
+{
+  "status": "PASS_REAL_AUTH_HTTP_NO_NEW_BUSINESS_EFFECT",
+  "checkedAt": "2026-10-12T05:16:34.576Z",
+  "source": {
+    "branch": "474b60c5-cf95-4d11-b782-4f0eefcbb427",
+    "so": "f40687ff-a634-469d-9f0a-19256f7bbbdc",
+    "po": "e14cc495-4e0b-40c0-8a0c-42af67651b9b",
+    "delivery": "2dd6acde-15db-48b0-92b2-7f248681bb52",
+    "work": "617060ea-12ab-4ba5-bf9a-c328058969e6",
+    "obligation": "8c3805f2-edb4-48ed-b18d-151f803b0e3b"
+  },
+  "checks": [
+    {
+      "name": "NUMERIC_JSON_PRECISION_REJECTED_BEFORE_WRITER",
+      "literal": "99999999999999.0000001",
+      "status": "PASS",
+      "http": 409
+    },
+    {
+      "name": "NUMERIC_JSON_PRECISION_REJECTED_BEFORE_WRITER",
+      "literal": "99999999999999.123456",
+      "status": "PASS",
+      "http": 409
+    },
+    {
+      "name": "EXACT_DECIMAL_TEXT_ORIGINAL_INTENT_STILL_RETURNS_COMMITTED_RESULT",
+      "status": "PASS",
+      "http": 200
+    }
+  ],
+  "publicTablesUnchanged": 122,
+  "sourceStateAndVersionKept": true,
+  "newFinancialOrStockWrites": 0,
+  "productionAccess": "NONE"
+}

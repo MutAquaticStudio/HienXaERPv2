@@ -1,0 +1,85 @@
+{
+  "scope": "NATIVE_CANONICAL_RPC_SQL_AUTH_FIXTURE",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "productionAccess": "NONE",
+  "managedAuthTested": false,
+  "checks": [
+    {
+      "name": "G01_STALE_COUNT_AFTER_HANDOFF",
+      "status": "PASS",
+      "denial": {
+        "code": "PT409",
+        "message": "stock_count_basis_changed_recount_required"
+      },
+      "facts": {
+        "qty": "0.000000",
+        "value": "0"
+      },
+      "state": "OPEN",
+      "effects": {
+        "receipts": 0,
+        "audit": 0,
+        "movements": 0
+      }
+    },
+    {
+      "name": "G01_RECORDED_REVISIONS_VALID_APPROVAL_RETRY",
+      "status": "PASS",
+      "observations": [
+        {
+          "qty": "15.000000"
+        },
+        {
+          "qty": "20.000000"
+        }
+      ],
+      "facts": {
+        "qty": "20.000000",
+        "value": "3000000"
+      },
+      "effects": {
+        "audit": 1,
+        "movements": 1
+      }
+    },
+    {
+      "name": "G01_RESERVED_QUANTITY_AND_FAILURE_ATOMICITY",
+      "status": "PASS",
+      "denial": {
+        "code": "23514",
+        "message": "stock_count_adjustment_below_reserved_or_on_hand"
+      },
+      "afterRelease": "APPROVED"
+    },
+    {
+      "name": "G01_G21_FAULT_AFTER_LEDGER_INSERT_ROLLS_BACK",
+      "status": "PASS",
+      "failure": {
+        "code": "P0001",
+        "message": "qa_injected_stock_post_failure"
+      },
+      "facts": {
+        "state": "OPEN",
+        "adjustments": 0,
+        "audit": 0,
+        "receipts": 0
+      },
+      "faultInjectionScope": "TEMPORARY_QA_TRANSACTION_ONLY"
+    },
+    {
+      "name": "G05_RAW_COST_DENIED_SAFE_READER_AND_AUTHORIZED_COST",
+      "status": "PASS",
+      "readerSubject": "d593fd7b-027e-4075-83b8-5f7253d64093",
+      "readerCostPermission": false,
+      "rawCostDenied": true,
+      "safe": {
+        "accepted_base_quantity": "15.000000",
+        "inventory_cost_vnd": null,
+        "inventory_unit_cost_vnd_per_base": null
+      },
+      "authorizedCostVnd": "2250000"
+    }
+  ],
+  "status": "PASS_EXECUTED_DB_SCOPE",
+  "rolledBack": true
+}

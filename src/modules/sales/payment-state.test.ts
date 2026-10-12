@@ -93,5 +93,5 @@ it("keeps RLS invoker semantics on the replacement view", async () => {
   expect(result.rows[0].reloptions).toContain("security_invoker=true");
 });
 it("renders canonical payment labels", () => {
-  expect(["NOT_DUE", "UNPAID", "PARTIAL", "PAID"].map(salesStateLabel)).toEqual(["Chưa phát sinh", "Chưa thanh toán", "Một phần", "Đã thanh toán"]);
+  expect(["NOT_DUE", "UNPAID", "PARTIAL", "PAID"].map(salesStateLabel)).toEqual(["Chưa phát sinh", "Chưa thanh toán", "Thanh toán một phần", "Đã thanh toán"]);
 });

@@ -1,0 +1,554 @@
+{
+  "scope": "READ_SELECT_VND_TEXT_CASTS_NO_WRITE_OR_PERMISSION_CHANGE",
+  "changes": [
+    {
+      "file": "src/app/admin/cashbook/page.tsx",
+      "edits": [
+        {
+          "start": 2616,
+          "end": 2660,
+          "before": "advance_side, counterparty_name, balance_vnd",
+          "after": "advance_side, counterparty_name, balance_vnd::text"
+        },
+        {
+          "start": 1955,
+          "end": 2201,
+          "before": "id, payment_number, direction, counterparty_name, account_code, amount_vnd, allocated_amount_vnd, advance_amount_vnd, unallocated_amount_vnd, effective_at, posting_state, reconciliation_state, reconciliation_difference_vnd, reversal_of_payment_id",
+          "after": "id, payment_number, direction, counterparty_name, account_code, amount_vnd::text, allocated_amount_vnd::text, advance_amount_vnd::text, unallocated_amount_vnd::text, effective_at, posting_state, reconciliation_state, reconciliation_difference_vnd::text, reversal_of_payment_id"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/compensation/page.tsx",
+      "edits": [
+        {
+          "start": 3530,
+          "end": 3615,
+          "before": "id, employee_id, original_earning_event_id, reduction_amount_vnd, reason, recorded_at",
+          "after": "id, employee_id, original_earning_event_id, reduction_amount_vnd::text, reason, recorded_at"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/customers/[id]/page.tsx",
+      "edits": [
+        {
+          "start": 6016,
+          "end": 6108,
+          "before": "id, payment_number, direction, amount_vnd, effective_at, posting_state, reconciliation_state",
+          "after": "id, payment_number, direction, amount_vnd::text, effective_at, posting_state, reconciliation_state"
+        },
+        {
+          "start": 5711,
+          "end": 5813,
+          "before": "id, source_label, site_name, due_date, original_amount_vnd, outstanding_amount_vnd, state, recorded_at",
+          "after": "id, source_label, site_name, due_date, original_amount_vnd::text, outstanding_amount_vnd::text, state, recorded_at"
+        },
+        {
+          "start": 5108,
+          "end": 5219,
+          "before": "id, order_number, commercial_state, fulfillment_state, payment_state, total_vnd, site_name_snapshot, created_at",
+          "after": "id, order_number, commercial_state, fulfillment_state, payment_state, total_vnd::text, site_name_snapshot, created_at"
+        },
+        {
+          "start": 4816,
+          "end": 4903,
+          "before": "id, quotation_number, revision_number, state, total_vnd, site_name_snapshot, created_at",
+          "after": "id, quotation_number, revision_number, state, total_vnd::text, site_name_snapshot, created_at"
+        },
+        {
+          "start": 4511,
+          "end": 4590,
+          "before": "id, scope_type, unit_price_vnd, version, source_type, material_id, price_uom_id",
+          "after": "id, scope_type, unit_price_vnd::text, version, source_type, material_id, price_uom_id"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/deliveries/[id]/page.tsx",
+      "edits": [
+        {
+          "start": 5400,
+          "end": 5511,
+          "before": "id, delivery_line_id, accepted_base_quantity, billable_base_quantity, receivable_amount_vnd, inventory_cost_vnd",
+          "after": "id, delivery_line_id, accepted_base_quantity, billable_base_quantity, receivable_amount_vnd::text, inventory_cost_vnd::text"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/inventory/page.tsx",
+      "edits": [
+        {
+          "start": 3319,
+          "end": 3437,
+          "before": "id, material_id, warehouse_id, delivery_id, movement_type, base_quantity_delta, inventory_value_delta_vnd, occurred_at",
+          "after": "id, material_id, warehouse_id, delivery_id, movement_type, base_quantity_delta, inventory_value_delta_vnd::text, occurred_at"
+        },
+        {
+          "start": 2997,
+          "end": 3155,
+          "before": "warehouse_id, material_id, base_uom_id, on_hand_base_quantity, reserved_base_quantity, available_base_quantity, inventory_value_vnd, average_cost_vnd_per_base",
+          "after": "warehouse_id, material_id, base_uom_id, on_hand_base_quantity, reserved_base_quantity, available_base_quantity, inventory_value_vnd::text, average_cost_vnd_per_base"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/inventory/transfers/[id]/page.tsx",
+      "edits": [
+        {
+          "start": 1087,
+          "end": 1198,
+          "before": "id, event_kind, source_dispatch_id, source_issue_id, base_quantity, value_vnd, reason, recorded_by, recorded_at",
+          "after": "id, event_kind, source_dispatch_id, source_issue_id, base_quantity, value_vnd::text, reason, recorded_by, recorded_at"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/invoices/[id]/page.tsx",
+      "edits": [
+        {
+          "start": 1723,
+          "end": 1761,
+          "before": "id,amount_delta_vnd,reason,recorded_at",
+          "after": "id,amount_delta_vnd::text,reason,recorded_at"
+        },
+        {
+          "start": 1509,
+          "end": 1587,
+          "before": "id,receivable_adjustment_id,amount_delta_vnd,reason_snapshot,status,created_at",
+          "after": "id,receivable_adjustment_id,amount_delta_vnd::text,reason_snapshot,status,created_at"
+        },
+        {
+          "start": 1304,
+          "end": 1390,
+          "before": "id,line_number,source_line_id,description_snapshot,quantity_snapshot,source_amount_vnd",
+          "after": "id,line_number,source_line_id,description_snapshot,quantity_snapshot,source_amount_vnd::text"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/invoices/page.tsx",
+      "edits": [
+        {
+          "start": 1240,
+          "end": 1425,
+          "before": "id,source_obligation_id,customer_name_snapshot,source_type,source_id,source_amount_vnd,billing_verified_at,invoice_due_at,status,provider_state,legal_invoice_number,issued_at,created_at",
+          "after": "id,source_obligation_id,customer_name_snapshot,source_type,source_id,source_amount_vnd::text,billing_verified_at,invoice_due_at,status,provider_state,legal_invoice_number,issued_at,created_at"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/invoices/purchases/matching/page.tsx",
+      "edits": [
+        {
+          "start": 857,
+          "end": 968,
+          "before": "id, supplier_name, document_kind, document_number, declared_value_vnd, match_state, business_state, legal_state",
+          "after": "id, supplier_name, document_kind, document_number, declared_value_vnd::text, match_state, business_state, legal_state"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/invoices/purchases/page.tsx",
+      "edits": [
+        {
+          "start": 1004,
+          "end": 1184,
+          "before": "id,payable_obligation_id,supplier_name_snapshot,source_type,source_id,source_amount_vnd,supplier_document_number,supplier_document_date,document_state,evidence_object_id,created_at",
+          "after": "id,payable_obligation_id,supplier_name_snapshot,source_type,source_id,source_amount_vnd::text,supplier_document_number,supplier_document_date,document_state,evidence_object_id,created_at"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/orders/[id]/edit/page.tsx",
+      "edits": [
+        {
+          "start": 1011,
+          "end": 1104,
+          "before": "id, material_id, ordered_uom_id, quantity, unit_price_vnd, price_source_type, override_reason",
+          "after": "id, material_id, ordered_uom_id, quantity, unit_price_vnd::text, price_source_type, override_reason"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/orders/[id]/page.tsx",
+      "edits": [
+        {
+          "start": 3470,
+          "end": 3637,
+          "before": "id, material_id, base_uom_id, line_number, material_name_snapshot, quantity, unit_price_vnd, line_total_vnd, price_source_type, units_of_measure:ordered_uom_id(symbol)",
+          "after": "id, material_id, base_uom_id, line_number, material_name_snapshot, quantity, unit_price_vnd::text, line_total_vnd::text, price_source_type, units_of_measure:ordered_uom_id(symbol)"
+        },
+        {
+          "start": 3151,
+          "end": 3359,
+          "before": "id, order_number, commercial_state, fulfillment_state, payment_state, customer_name_snapshot, site_name_snapshot, delivery_address_snapshot, total_vnd, requested_delivery_at, quotation_revision_id, created_at",
+          "after": "id, order_number, commercial_state, fulfillment_state, payment_state, customer_name_snapshot, site_name_snapshot, delivery_address_snapshot, total_vnd::text, requested_delivery_at, quotation_revision_id, created_at"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/orders/page.tsx",
+      "edits": [
+        {
+          "start": 2263,
+          "end": 2421,
+          "before": "id, order_number, customer_name_snapshot, site_name_snapshot, commercial_state, fulfillment_state, payment_state, total_vnd, requested_delivery_at, created_at",
+          "after": "id, order_number, customer_name_snapshot, site_name_snapshot, commercial_state, fulfillment_state, payment_state, total_vnd::text, requested_delivery_at, created_at"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/payables/[id]/page.tsx",
+      "edits": [
+        {
+          "start": 1794,
+          "end": 1855,
+          "before": "id, amount_delta_vnd, reason, evidence_object_id, recorded_at",
+          "after": "id, amount_delta_vnd::text, reason, evidence_object_id, recorded_at"
+        },
+        {
+          "start": 1619,
+          "end": 1665,
+          "before": "id, payment_id, amount_delta_vnd, allocated_at",
+          "after": "id, payment_id, amount_delta_vnd::text, allocated_at"
+        },
+        {
+          "start": 1326,
+          "end": 1506,
+          "before": "id, supplier_name, source_label, source_id, purchase_order_id, expense_id, original_amount_vnd, adjustment_amount_vnd, allocated_amount_vnd, outstanding_amount_vnd, due_date, state",
+          "after": "id, supplier_name, source_label, source_id, purchase_order_id, expense_id, original_amount_vnd::text, adjustment_amount_vnd::text, allocated_amount_vnd::text, outstanding_amount_vnd::text, due_date, state"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/payables/page.tsx",
+      "edits": [
+        {
+          "start": 3447,
+          "end": 3510,
+          "before": "id, payment_number, available_amount_vnd, advance_remaining_vnd",
+          "after": "id, payment_number, available_amount_vnd::text, advance_remaining_vnd::text"
+        },
+        {
+          "start": 2722,
+          "end": 2800,
+          "before": "id, supplier_id, supplier_name, source_label, outstanding_amount_vnd, due_date",
+          "after": "id, supplier_id, supplier_name, source_label, outstanding_amount_vnd::text, due_date"
+        },
+        {
+          "start": 1914,
+          "end": 2033,
+          "before": "id, supplier_id, supplier_name, source_label, original_amount_vnd, outstanding_amount_vnd, due_date, recorded_at, state",
+          "after": "id, supplier_id, supplier_name, source_label, original_amount_vnd::text, outstanding_amount_vnd::text, due_date, recorded_at, state"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/payment-notices/page.tsx",
+      "edits": [
+        {
+          "start": 1143,
+          "end": 1219,
+          "before": "id, customer_id, payment_number, statement_reference, matching_available_vnd",
+          "after": "id, customer_id, payment_number, statement_reference, matching_available_vnd::text"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/purchase-orders/[id]/edit/page.tsx",
+      "edits": [
+        {
+          "start": 1472,
+          "end": 1592,
+          "before": "id, linked_sales_order_line_id, material_id, ordered_uom_id, quantity, unit_cost_vnd, price_source_type, override_reason",
+          "after": "id, linked_sales_order_line_id, material_id, ordered_uom_id, quantity, unit_cost_vnd::text, price_source_type, override_reason"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/purchase-orders/[id]/page.tsx",
+      "edits": [
+        {
+          "start": 3709,
+          "end": 3788,
+          "before": "id, supplier_reference, verified_at, supplier_base_quantity, payable_amount_vnd",
+          "after": "id, supplier_reference, verified_at, supplier_base_quantity, payable_amount_vnd::text"
+        },
+        {
+          "start": 3504,
+          "end": 3579,
+          "before": "id, receipt_number, received_at, received_base_quantity, payable_amount_vnd",
+          "after": "id, receipt_number, received_at, received_base_quantity, payable_amount_vnd::text"
+        },
+        {
+          "start": 3205,
+          "end": 3340,
+          "before": "id, linked_sales_order_line_id, material_name_snapshot, quantity, ordered_uom_id, unit_cost_vnd, line_total_cost_vnd, price_source_type",
+          "after": "id, linked_sales_order_line_id, material_name_snapshot, quantity, ordered_uom_id, unit_cost_vnd::text, line_total_cost_vnd::text, price_source_type"
+        },
+        {
+          "start": 2904,
+          "end": 3087,
+          "before": "id, purchase_order_number, supplier_name_snapshot, destination_type, destination_name_snapshot, destination_address_snapshot, source_sales_order_id, state, expected_at, total_cost_vnd",
+          "after": "id, purchase_order_number, supplier_name_snapshot, destination_type, destination_name_snapshot, destination_address_snapshot, source_sales_order_id, state, expected_at, total_cost_vnd::text"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/purchases/returns/[id]/page.tsx",
+      "edits": [
+        {
+          "start": 2954,
+          "end": 2994,
+          "before": "id, source_label, outstanding_amount_vnd",
+          "after": "id, source_label, outstanding_amount_vnd::text"
+        },
+        {
+          "start": 1880,
+          "end": 2055,
+          "before": "id, acceptance_event_id, approved_credit_vnd, amount_vnd, remaining_vnd, refunded_vnd, offset_vnd, retained_charge_vnd, inventory_valuation_difference_vnd, approved_at, reason",
+          "after": "id, acceptance_event_id, approved_credit_vnd::text, amount_vnd::text, remaining_vnd::text, refunded_vnd::text, offset_vnd::text, retained_charge_vnd::text, inventory_valuation_difference_vnd::text, approved_at, reason"
+        },
+        {
+          "start": 1625,
+          "end": 1726,
+          "before": "id, event_kind, base_quantity, source_value_vnd, supplier_reference, reason, recorded_by, recorded_at",
+          "after": "id, event_kind, base_quantity, source_value_vnd::text, supplier_reference, reason, recorded_by, recorded_at"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/quotations/[id]/edit/page.tsx",
+      "edits": [
+        {
+          "start": 1272,
+          "end": 1365,
+          "before": "id, material_id, ordered_uom_id, quantity, unit_price_vnd, price_source_type, override_reason",
+          "after": "id, material_id, ordered_uom_id, quantity, unit_price_vnd::text, price_source_type, override_reason"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/quotations/[id]/page.tsx",
+      "edits": [
+        {
+          "start": 2697,
+          "end": 2825,
+          "before": "id, material_name_snapshot, quantity, unit_price_vnd, line_total_vnd, price_source_type, units_of_measure:ordered_uom_id(symbol)",
+          "after": "id, material_name_snapshot, quantity, unit_price_vnd::text, line_total_vnd::text, price_source_type, units_of_measure:ordered_uom_id(symbol)"
+        },
+        {
+          "start": 2382,
+          "end": 2578,
+          "before": "id, revision_number, state, total_vnd, customer_name_snapshot, site_name_snapshot, delivery_address_snapshot, commercial_terms, expires_at, sent_at, accepted_at, supersedes_revision_id, created_at",
+          "after": "id, revision_number, state, total_vnd::text, customer_name_snapshot, site_name_snapshot, delivery_address_snapshot, commercial_terms, expires_at, sent_at, accepted_at, supersedes_revision_id, created_at"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/quotations/page.tsx",
+      "edits": [
+        {
+          "start": 1346,
+          "end": 1469,
+          "before": "id, quotation_number, revision_number, state, total_vnd, customer_name_snapshot, site_name_snapshot, expires_at, created_at",
+          "after": "id, quotation_number, revision_number, state, total_vnd::text, customer_name_snapshot, site_name_snapshot, expires_at, created_at"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/receivables/[id]/page.tsx",
+      "edits": [
+        {
+          "start": 1876,
+          "end": 1970,
+          "before": "id, amount_delta_vnd, adjustment_kind, return_case_id, reason, evidence_object_id, recorded_at",
+          "after": "id, amount_delta_vnd::text, adjustment_kind, return_case_id, reason, evidence_object_id, recorded_at"
+        },
+        {
+          "start": 1695,
+          "end": 1741,
+          "before": "id, payment_id, amount_delta_vnd, allocated_at",
+          "after": "id, payment_id, amount_delta_vnd::text, allocated_at"
+        },
+        {
+          "start": 1380,
+          "end": 1582,
+          "before": "id, customer_id, customer_name, site_name, source_label, source_id, delivery_id, sales_order_id, original_amount_vnd, adjustment_amount_vnd, allocated_amount_vnd, outstanding_amount_vnd, due_date, state",
+          "after": "id, customer_id, customer_name, site_name, source_label, source_id, delivery_id, sales_order_id, original_amount_vnd::text, adjustment_amount_vnd::text, allocated_amount_vnd::text, outstanding_amount_vnd::text, due_date, state"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/receivables/page.tsx",
+      "edits": [
+        {
+          "start": 4738,
+          "end": 4882,
+          "before": "id, delivery_number, order_number, material_name_snapshot, base_quantity, maximum_credit_vnd, legacy_adjustment_exists, legacy_credit_amount_vnd",
+          "after": "id, delivery_number, order_number, material_name_snapshot, base_quantity, maximum_credit_vnd::text, legacy_adjustment_exists, legacy_credit_amount_vnd::text"
+        },
+        {
+          "start": 4328,
+          "end": 4451,
+          "before": "id, return_case_id, delivery_number, order_number, approved_credit_vnd, amount_vnd, remaining_vnd, refunded_vnd, offset_vnd",
+          "after": "id, return_case_id, delivery_number, order_number, approved_credit_vnd::text, amount_vnd::text, remaining_vnd::text, refunded_vnd::text, offset_vnd::text"
+        },
+        {
+          "start": 3922,
+          "end": 3985,
+          "before": "id, payment_number, available_amount_vnd, advance_remaining_vnd",
+          "after": "id, payment_number, available_amount_vnd::text, advance_remaining_vnd::text"
+        },
+        {
+          "start": 3178,
+          "end": 3267,
+          "before": "id, customer_id, customer_name, site_name, source_label, outstanding_amount_vnd, due_date",
+          "after": "id, customer_id, customer_name, site_name, source_label, outstanding_amount_vnd::text, due_date"
+        },
+        {
+          "start": 2141,
+          "end": 2280,
+          "before": "id, customer_id, site_id, customer_name, site_name, source_label, original_amount_vnd, outstanding_amount_vnd, due_date, recorded_at, state",
+          "after": "id, customer_id, site_id, customer_name, site_name, source_label, original_amount_vnd::text, outstanding_amount_vnd::text, due_date, recorded_at, state"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/settings/pricing/page.tsx",
+      "edits": [
+        {
+          "start": 1235,
+          "end": 1392,
+          "before": "id,scope_type,customer_id,material_id,material_group_id,customer_tier_code,price_uom_id,unit_price_vnd,version,source_type,effective_from,effective_to,active",
+          "after": "id,scope_type,customer_id,material_id,material_group_id,customer_tier_code,price_uom_id,unit_price_vnd::text,version,source_type,effective_from,effective_to,active"
+        }
+      ]
+    },
+    {
+      "file": "src/app/admin/suppliers/[id]/page.tsx",
+      "edits": [
+        {
+          "start": 3348,
+          "end": 3440,
+          "before": "id, payment_number, direction, amount_vnd, effective_at, posting_state, reconciliation_state",
+          "after": "id, payment_number, direction, amount_vnd::text, effective_at, posting_state, reconciliation_state"
+        },
+        {
+          "start": 3054,
+          "end": 3145,
+          "before": "id, source_label, original_amount_vnd, outstanding_amount_vnd, due_date, state, recorded_at",
+          "after": "id, source_label, original_amount_vnd::text, outstanding_amount_vnd::text, due_date, state, recorded_at"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/finance/obligations/route.ts",
+      "edits": [
+        {
+          "start": 1504,
+          "end": 1554,
+          "before": "id, source_label, due_date, outstanding_amount_vnd",
+          "after": "id, source_label, due_date, outstanding_amount_vnd::text"
+        },
+        {
+          "start": 1336,
+          "end": 1397,
+          "before": "id, source_label, due_date, outstanding_amount_vnd, site_name",
+          "after": "id, source_label, due_date, outstanding_amount_vnd::text, site_name"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/invoices/[id]/review/pdf/route.ts",
+      "edits": [
+        {
+          "start": 1732,
+          "end": 1815,
+          "before": "line_number,source_line_id,description_snapshot,quantity_snapshot,source_amount_vnd",
+          "after": "line_number,source_line_id,description_snapshot,quantity_snapshot,source_amount_vnd::text"
+        },
+        {
+          "start": 1278,
+          "end": 1464,
+          "before": "id,branch_id,customer_name_snapshot,source_obligation_id,source_type,source_id,source_amount_vnd,billing_verified_at,invoice_due_at,status,policy_state,provider_state,create_operation_id",
+          "after": "id,branch_id,customer_name_snapshot,source_obligation_id,source_type,source_id,source_amount_vnd::text,billing_verified_at,invoice_due_at,status,policy_state,provider_state,create_operation_id"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/payments/[id]/voucher/pdf/route.ts",
+      "edits": [
+        {
+          "start": 1839,
+          "end": 1922,
+          "before": "id, receivable_obligation_id, payable_obligation_id, amount_delta_vnd, allocated_at",
+          "after": "id, receivable_obligation_id, payable_obligation_id, amount_delta_vnd::text, allocated_at"
+        },
+        {
+          "start": 1544,
+          "end": 1759,
+          "before": "id, payment_number, direction, counterparty_name, account_code, amount_vnd, allocated_amount_vnd, advance_amount_vnd, unallocated_amount_vnd, effective_at, posting_state, reconciliation_state, reversal_of_payment_id",
+          "after": "id, payment_number, direction, counterparty_name, account_code, amount_vnd::text, allocated_amount_vnd::text, advance_amount_vnd::text, unallocated_amount_vnd::text, effective_at, posting_state, reconciliation_state, reversal_of_payment_id"
+        }
+      ]
+    },
+    {
+      "file": "src/app/api/quotation-revisions/[id]/pdf/route.ts",
+      "edits": [
+        {
+          "start": 1437,
+          "end": 1589,
+          "before": "id, quotation_id, revision_number, state, customer_name_snapshot, site_name_snapshot, delivery_address_snapshot, commercial_terms, total_vnd, expires_at",
+          "after": "id, quotation_id, revision_number, state, customer_name_snapshot, site_name_snapshot, delivery_address_snapshot, commercial_terms, total_vnd::text, expires_at"
+        }
+      ]
+    },
+    {
+      "file": "src/app/customer/quotations/[id]/page.tsx",
+      "edits": [
+        {
+          "start": 1826,
+          "end": 1964,
+          "before": "id, revision_number, state, total_vnd, customer_name_snapshot, site_name_snapshot, delivery_address_snapshot, commercial_terms, expires_at",
+          "after": "id, revision_number, state, total_vnd::text, customer_name_snapshot, site_name_snapshot, delivery_address_snapshot, commercial_terms, expires_at"
+        }
+      ]
+    },
+    {
+      "file": "src/app/customer/quotations/page.tsx",
+      "edits": [
+        {
+          "start": 954,
+          "end": 1041,
+          "before": "id, quotation_number, revision_number, state, total_vnd, site_name_snapshot, expires_at",
+          "after": "id, quotation_number, revision_number, state, total_vnd::text, site_name_snapshot, expires_at"
+        }
+      ]
+    },
+    {
+      "file": "src/components/sales/credit-override.tsx",
+      "edits": [
+        {
+          "start": 1335,
+          "end": 1465,
+          "before": "reason, actor_auth_user_id, created_at, approved_limit_vnd, exposure_before_vnd, order_amount_vnd, exposure_after_vnd, overdue_vnd",
+          "after": "reason, actor_auth_user_id, created_at, approved_limit_vnd::text, exposure_before_vnd::text, order_amount_vnd::text, exposure_after_vnd::text, overdue_vnd::text"
+        }
+      ]
+    },
+    {
+      "file": "src/modules/catalog/material-detail.ts",
+      "edits": [
+        {
+          "start": 3363,
+          "end": 3490,
+          "before": "id,scope_type,customer_id,customer_tier_code,price_uom_id,unit_price_vnd,version,source_type,effective_from,effective_to,active",
+          "after": "id,scope_type,customer_id,customer_tier_code,price_uom_id,unit_price_vnd::text,version,source_type,effective_from,effective_to,active"
+        }
+      ]
+    }
+  ],
+  "otherNumericMetadataUnchanged": true
+}

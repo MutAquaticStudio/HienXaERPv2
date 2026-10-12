@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { GPS_DEVICE_AVAILABLE, GPS_DEVICE_UNAVAILABLE_MESSAGE } from "@/modules/routing/device-availability";
 
 export async function POST(request: Request) {
+  if (!GPS_DEVICE_AVAILABLE) return NextResponse.json({ error: GPS_DEVICE_UNAVAILABLE_MESSAGE }, { status: 501 });
   const body = await request.json().catch(() => null) as { deliveryId?: string; assignmentVersion?: number; operationId?: string } | null;
   if (!body?.deliveryId || !Number.isInteger(body.assignmentVersion) || !body.operationId) {
     return NextResponse.json({ error: "Dữ liệu bắt đầu GPS không hợp lệ." }, { status: 400 });

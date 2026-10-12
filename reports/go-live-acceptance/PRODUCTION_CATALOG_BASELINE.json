@@ -1,0 +1,2354 @@
+{
+  "scope": "PRODUCTION_READ_ONLY_CATALOG",
+  "tables": [
+    {
+      "acl": "{supabase_auth_admin=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin,postgres=ar*wdDxtm/supabase_auth_admin}",
+      "rls": true,
+      "name": "audit_log_entries",
+      "schema": "auth"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/supabase_auth_admin,supabase_auth_admin=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin}",
+      "rls": false,
+      "name": "custom_oauth_providers",
+      "schema": "auth"
+    },
+    {
+      "acl": "{postgres=ar*wdDxtm/supabase_auth_admin,supabase_auth_admin=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin}",
+      "rls": true,
+      "name": "flow_state",
+      "schema": "auth"
+    },
+    {
+      "acl": "{postgres=ar*wdDxtm/supabase_auth_admin,supabase_auth_admin=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin}",
+      "rls": true,
+      "name": "identities",
+      "schema": "auth"
+    },
+    {
+      "acl": "{supabase_auth_admin=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin,postgres=ar*wdDxtm/supabase_auth_admin}",
+      "rls": true,
+      "name": "instances",
+      "schema": "auth"
+    },
+    {
+      "acl": "{postgres=ar*wdDxtm/supabase_auth_admin,supabase_auth_admin=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin}",
+      "rls": true,
+      "name": "mfa_amr_claims",
+      "schema": "auth"
+    },
+    {
+      "acl": "{postgres=ar*wdDxtm/supabase_auth_admin,supabase_auth_admin=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin}",
+      "rls": true,
+      "name": "mfa_challenges",
+      "schema": "auth"
+    },
+    {
+      "acl": "{postgres=ar*wdDxtm/supabase_auth_admin,supabase_auth_admin=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin}",
+      "rls": true,
+      "name": "mfa_factors",
+      "schema": "auth"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/supabase_auth_admin,supabase_auth_admin=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin}",
+      "rls": false,
+      "name": "mfa_recovery_code_sets",
+      "schema": "auth"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/supabase_auth_admin,supabase_auth_admin=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin}",
+      "rls": false,
+      "name": "mfa_recovery_codes",
+      "schema": "auth"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/supabase_auth_admin,supabase_auth_admin=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin}",
+      "rls": false,
+      "name": "oauth_authorizations",
+      "schema": "auth"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/supabase_auth_admin,supabase_auth_admin=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin}",
+      "rls": false,
+      "name": "oauth_client_states",
+      "schema": "auth"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/supabase_auth_admin,supabase_auth_admin=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin}",
+      "rls": false,
+      "name": "oauth_clients",
+      "schema": "auth"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/supabase_auth_admin,supabase_auth_admin=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin}",
+      "rls": false,
+      "name": "oauth_consents",
+      "schema": "auth"
+    },
+    {
+      "acl": "{postgres=ar*wdDxtm/supabase_auth_admin,supabase_auth_admin=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin}",
+      "rls": true,
+      "name": "one_time_tokens",
+      "schema": "auth"
+    },
+    {
+      "acl": "{supabase_auth_admin=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin,postgres=ar*wdDxtm/supabase_auth_admin}",
+      "rls": true,
+      "name": "refresh_tokens",
+      "schema": "auth"
+    },
+    {
+      "acl": "{postgres=ar*wdDxtm/supabase_auth_admin,supabase_auth_admin=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin}",
+      "rls": true,
+      "name": "saml_providers",
+      "schema": "auth"
+    },
+    {
+      "acl": "{postgres=ar*wdDxtm/supabase_auth_admin,supabase_auth_admin=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin}",
+      "rls": true,
+      "name": "saml_relay_states",
+      "schema": "auth"
+    },
+    {
+      "acl": "{supabase_auth_admin=arwdDxtm/supabase_auth_admin,postgres=r*/supabase_auth_admin}",
+      "rls": true,
+      "name": "schema_migrations",
+      "schema": "auth"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/supabase_auth_admin,supabase_auth_admin=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin}",
+      "rls": false,
+      "name": "scim_tokens",
+      "schema": "auth"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/supabase_auth_admin,supabase_auth_admin=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin}",
+      "rls": false,
+      "name": "scim_users",
+      "schema": "auth"
+    },
+    {
+      "acl": "{postgres=ar*wdDxtm/supabase_auth_admin,supabase_auth_admin=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin}",
+      "rls": true,
+      "name": "sessions",
+      "schema": "auth"
+    },
+    {
+      "acl": "{postgres=ar*wdDxtm/supabase_auth_admin,supabase_auth_admin=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin}",
+      "rls": true,
+      "name": "sso_domains",
+      "schema": "auth"
+    },
+    {
+      "acl": "{postgres=ar*wdDxtm/supabase_auth_admin,supabase_auth_admin=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin}",
+      "rls": true,
+      "name": "sso_providers",
+      "schema": "auth"
+    },
+    {
+      "acl": "{supabase_auth_admin=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin,postgres=ar*wdDxtm/supabase_auth_admin}",
+      "rls": true,
+      "name": "users",
+      "schema": "auth"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/supabase_auth_admin,supabase_auth_admin=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin}",
+      "rls": false,
+      "name": "webauthn_challenges",
+      "schema": "auth"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/supabase_auth_admin,supabase_auth_admin=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin}",
+      "rls": false,
+      "name": "webauthn_credentials",
+      "schema": "auth"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres}",
+      "rls": true,
+      "name": "branch_operational_states",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres}",
+      "rls": true,
+      "name": "operational_opening_executions",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres}",
+      "rls": true,
+      "name": "operational_opening_packages",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres}",
+      "rls": true,
+      "name": "operational_opening_readbacks",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres}",
+      "rls": true,
+      "name": "operational_recovery_checkpoints",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres}",
+      "rls": true,
+      "name": "operational_state_events",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "advances",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "audit_events",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "branches",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "command_receipts",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "compensation_manual_bases",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "compensation_recognition_policies",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "compensation_rules",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "conversation_participants",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "conversations",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "credit_commitments",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "customer_portal_memberships",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "customer_sites",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=rDxtm/postgres}",
+      "rls": true,
+      "name": "customers",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "deliveries",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "delivery_assignments",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "delivery_handoff_lines",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "delivery_handoffs",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "delivery_lines",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "delivery_result_lines",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "delivery_results",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "delivery_verification_lines",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "delivery_verifications",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "direct_cost_entries",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "earning_events",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "employee_branch_access",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "employee_permission_grants",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "employees",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "evidence_objects",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "expense_categories",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "expenses",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "finance_accounts",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "gps_positions",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "gps_tracking_sessions",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres}",
+      "rls": true,
+      "name": "inventory_movements",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "inventory_reservations",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "inventory_stock_thresholds",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "invoice_adjustment_drafts",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "invoice_coverage",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "invoice_draft_lines",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "invoice_intents",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "machines",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "material_groups",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "material_uom_conversions",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "materials",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "messages",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "opening_balance_sources",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "payable_adjustments",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "payable_obligations",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "payment_allocations",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "payment_notice_review_events",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "payment_notices",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "payment_reconciliation_matches",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "payments",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "permissions",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "portal_evidence_objects",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "pricing_rules",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "purchase_invoice_registry",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres}",
+      "rls": true,
+      "name": "purchase_order_lines",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "purchase_orders",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "purchase_price_rules",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres}",
+      "rls": true,
+      "name": "purchase_receipt_lines",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "purchase_receipts",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "quotation_acceptances",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "quotation_change_requests",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "quotation_lines",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "quotation_pdf_artifacts",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "quotation_revisions",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "quotations",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "receivable_adjustments",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "receivable_obligations",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "report_export_jobs",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "return_cases",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "revenue_entries",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "role_permissions",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "roles",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "route_plan_stops",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "route_plans",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "routing_settings",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "sales_order_credit_overrides",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "sales_order_lines",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "sales_orders",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "service_jobs",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "service_verifications",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "service_work_logs",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "stock_count_lines",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "stock_counts",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "supplier_contacts",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres}",
+      "rls": true,
+      "name": "supplier_fulfillment_lines",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "supplier_fulfillments",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "suppliers",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "supply_allocations",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "units_of_measure",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "vehicles",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "warehouses",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "work_item_assignments",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "work_item_heartbeats",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "work_item_results",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "work_item_verifications",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "work_items",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=Dxtm/postgres,authenticated=r/postgres}",
+      "rls": true,
+      "name": "work_result_portal_evidence",
+      "schema": "public"
+    },
+    {
+      "acl": "{supabase_storage_admin=a*r*w*d*D*x*t*m*/supabase_storage_admin,service_role=arwdDxtm/supabase_storage_admin,authenticated=arwdDxtm/supabase_storage_admin,anon=arwdDxtm/supabase_storage_admin,postgres=a*r*w*d*D*x*t*m*/supabase_storage_admin}",
+      "rls": true,
+      "name": "buckets",
+      "schema": "storage"
+    },
+    {
+      "acl": "{supabase_storage_admin=arwdDxtm/supabase_storage_admin,service_role=arwdDxtm/supabase_storage_admin,authenticated=arwdDxtm/supabase_storage_admin,anon=arwdDxtm/supabase_storage_admin}",
+      "rls": true,
+      "name": "buckets_analytics",
+      "schema": "storage"
+    },
+    {
+      "acl": "{supabase_storage_admin=arwdDxtm/supabase_storage_admin,service_role=r/supabase_storage_admin,authenticated=r/supabase_storage_admin,anon=r/supabase_storage_admin}",
+      "rls": true,
+      "name": "buckets_vectors",
+      "schema": "storage"
+    },
+    {
+      "acl": null,
+      "rls": true,
+      "name": "migrations",
+      "schema": "storage"
+    },
+    {
+      "acl": "{supabase_storage_admin=a*r*w*d*D*x*t*m*/supabase_storage_admin,service_role=arwdDxtm/supabase_storage_admin,authenticated=arwdDxtm/supabase_storage_admin,anon=arwdDxtm/supabase_storage_admin,postgres=a*r*w*d*D*x*t*m*/supabase_storage_admin}",
+      "rls": true,
+      "name": "objects",
+      "schema": "storage"
+    },
+    {
+      "acl": "{supabase_storage_admin=arwdDxtm/supabase_storage_admin,service_role=arwdDxtm/supabase_storage_admin,authenticated=r/supabase_storage_admin,anon=r/supabase_storage_admin}",
+      "rls": true,
+      "name": "s3_multipart_uploads",
+      "schema": "storage"
+    },
+    {
+      "acl": "{supabase_storage_admin=arwdDxtm/supabase_storage_admin,service_role=arwdDxtm/supabase_storage_admin,authenticated=r/supabase_storage_admin,anon=r/supabase_storage_admin}",
+      "rls": true,
+      "name": "s3_multipart_uploads_parts",
+      "schema": "storage"
+    },
+    {
+      "acl": "{supabase_storage_admin=arwdDxtm/supabase_storage_admin,service_role=r/supabase_storage_admin,authenticated=r/supabase_storage_admin,anon=r/supabase_storage_admin}",
+      "rls": true,
+      "name": "vector_indexes",
+      "schema": "storage"
+    }
+  ],
+  "versions": [
+    "20260912101030",
+    "20260912104433",
+    "20260912105455",
+    "20260912112432",
+    "20260912114625",
+    "20260912123357",
+    "20260912144349",
+    "20260913100000",
+    "20260914060713",
+    "20260914095110",
+    "20260914100407",
+    "20260920064133",
+    "20260920070000",
+    "20260920080000",
+    "20260920090000",
+    "20260920100000",
+    "20260920110000",
+    "20260920113000",
+    "20260920150000",
+    "20260920160000",
+    "20260920170000",
+    "20260920180000",
+    "20260921120000",
+    "20260921130000",
+    "20260921140000",
+    "20260921150000",
+    "20260921160000",
+    "20260921170000",
+    "20260921180000",
+    "20260921200000",
+    "20260921200500",
+    "20260921210000",
+    "20260921211000",
+    "20260921211500",
+    "20260921220000",
+    "20260921220500",
+    "20260921221000",
+    "20260921230000",
+    "20260921231000",
+    "20260921231500",
+    "20260921232000",
+    "20260921233000",
+    "20260921234000",
+    "20260921235000",
+    "20260921235500",
+    "20260921235900",
+    "20260922000500",
+    "20260922000600",
+    "20260922000700",
+    "20260923090000",
+    "20260923103009",
+    "20260925000100",
+    "20260927000100",
+    "20260927000200",
+    "20260927000300",
+    "20260927000400",
+    "20260927000500",
+    "20260927000600",
+    "20260927205002",
+    "20260930000100",
+    "20260930101520",
+    "20261001084145",
+    "20261001182059",
+    "20261003063723",
+    "20261003074122",
+    "20261003161428",
+    "20261004052921",
+    "20261004150000",
+    "20261005043000",
+    "20261007022921",
+    "20261007022922",
+    "20261007022923",
+    "20261007111747",
+    "20261007183000",
+    "20261008091836",
+    "20261009173806",
+    "20261009205945",
+    "20261009224842"
+  ],
+  "functions": [
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "980af63145c1d09c0e24c7e1c8985e3b",
+      "args": "target_payment_id uuid, allocation_lines jsonb, actor_auth_user_id uuid",
+      "name": "allocate_payment_lines",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "eba83e03671fa859375f3847c521c1e7",
+      "args": "target_sales_order_line_id uuid, requested_base_quantity numeric, excluded_allocation_id uuid",
+      "name": "assert_allocation_capacity",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "431d9b4c7e58e19bdcdc598553a15a2c",
+      "args": "target_branch_id uuid, target_customer_id uuid, line jsonb, actor_auth_user_id uuid",
+      "name": "assert_commercial_line",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "d785f260db8cbcb67c2c721d0880509a",
+      "args": "",
+      "name": "assert_operational_opening_writers_protected",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "312a34a802630a48360df78b1295b4bb",
+      "args": "line jsonb, original jsonb",
+      "name": "assert_preserved_manual_commercial_line",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "6bb748e4c253c57c866ed459fa531b42",
+      "args": "target_branch_id uuid, target_supplier_id uuid, line jsonb, actor_auth_user_id uuid",
+      "name": "assert_purchase_line",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "21e3595b50865fe3b8f9d45ab0493969",
+      "args": "target_evidence_id uuid, target_branch_id uuid",
+      "name": "assert_verified_evidence",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "39f39a5697f69922836f39845cc096d0",
+      "args": "target_work_item_id uuid, target_branch_id uuid, target_employee_id uuid, target_vehicle_id uuid, target_machine_id uuid, target_start timestamp with time zone, target_end timestamp with time zone",
+      "name": "assert_work_resources_available",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "afa28ffe0a78ed89219e66947d25cb7c",
+      "args": "target_employee_id uuid, target_branch_id uuid, target_role_id uuid, change_reason text, operation_id uuid",
+      "name": "assign_employee_role",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "b25f57a1d9ebcce0305188afaeacd2c0",
+      "args": "package_id uuid, b uuid, run uuid, pkg jsonb, actor uuid",
+      "name": "begin_authorized_opening_import",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "c0549b67d20e2a444bb6621c833984d0",
+      "args": "target_conversation_id uuid",
+      "name": "can_access_conversation",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "ff46482f95ac1f12c838b8c109ad555d",
+      "args": "target_object_path text",
+      "name": "can_read_portal_evidence_object",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "76843646d3050905fba2ec90ea31fef2",
+      "args": "target_object_path text",
+      "name": "can_write_portal_evidence_object",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "1ada9e62475864212617509f8bc8296a",
+      "args": "payload jsonb",
+      "name": "command_payload_hash",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "bd9365f312804df566fffca467c5c31d",
+      "args": "package_id uuid, result_value jsonb",
+      "name": "complete_authorized_opening_import",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "5c9fa5fed6bae06dd9f597df8c474e68",
+      "args": "",
+      "name": "current_employee_id",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "73b74e3a3b31022e6870e9ba866a759b",
+      "args": "target_obligation_id uuid",
+      "name": "current_payable_outstanding",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "6d9c26bb3d3741f125481ca11cab3009",
+      "args": "target_obligation_id uuid",
+      "name": "current_receivable_outstanding",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "451d16bba8d50153c850c684363a07d4",
+      "args": "target_delivery_id uuid",
+      "name": "customer_delivery_payload",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "a95ecc8545d5ebf72bd03d09e96c021b",
+      "args": "target_order_id uuid",
+      "name": "customer_order_payload",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "a78ae690a36d21de53d6bd34863a1a59",
+      "args": "target_allocation_id uuid",
+      "name": "delivery_allocation_consumed",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "7b147e035915a50335c79a495609617a",
+      "args": "target_line_id uuid",
+      "name": "delivery_line_transit_position",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "3380d681b7623b447aeaa03220cd8147",
+      "args": "target_earning_id uuid",
+      "name": "earning_payable_outstanding",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "a0ffd2a16531dde57689811e3e085243",
+      "args": "",
+      "name": "enforce_operational_write",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "227510ad8bcd34c3e13baf32660f553f",
+      "args": "",
+      "name": "guard_evidence_storage_finalization",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "36dafd7de42a759d14b5a2066c506cdb",
+      "args": "",
+      "name": "guard_expense_mutation",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "88494060213292ffffbf1def13c68162",
+      "args": "",
+      "name": "guard_posted_earning",
+      "schema": "private"
+    },
+    {
+      "acl": null,
+      "md5": "4ce3df2b7c360f11696bba9840d82309",
+      "args": "",
+      "name": "guard_purchase_line_mutation",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "d2934e491dc13b9c1528cf3da2a452c8",
+      "args": "",
+      "name": "guard_purchase_order_cancellation_with_fulfillment",
+      "schema": "private"
+    },
+    {
+      "acl": null,
+      "md5": "dd36fd75fd99654234d0a8ee77e2a0a0",
+      "args": "",
+      "name": "guard_purchase_order_mutation",
+      "schema": "private"
+    },
+    {
+      "acl": null,
+      "md5": "15f8f147463c67dec3e759518c4f0121",
+      "args": "",
+      "name": "guard_quote_line_mutation",
+      "schema": "private"
+    },
+    {
+      "acl": null,
+      "md5": "b812d5ada6f338bc7db818ff0ce4aaef",
+      "args": "",
+      "name": "guard_quote_revision_mutation",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "eaa7d94397694ad7dcc56de3baec0242",
+      "args": "",
+      "name": "guard_sales_order_cancellation_with_delivery",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "913c6a1c55463467f4b6406327ea87de",
+      "args": "requested_permission text",
+      "name": "has_any_permission",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "2a96aba87cdd1325b996906489b94cf0",
+      "args": "target_branch_id uuid",
+      "name": "has_branch_access",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "be10aaa40314c72303c3408fa44fab61",
+      "args": "target_customer_id uuid, allowed_roles text[]",
+      "name": "has_customer_membership",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "2c4e501cacd4a8b089280f9ac0f96897",
+      "args": "target_branch_id uuid, requested_permission text",
+      "name": "has_permission",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "4538c01a73a09b67477dc522865e3de3",
+      "args": "",
+      "name": "initialize_operational_branch",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "115b4518c5a4bb06608d891b19d8f023",
+      "args": "",
+      "name": "install_operational_posting_gate",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "e3dffecfeb262f8a4ad9ed496178f38b",
+      "args": "target_work_item_id uuid",
+      "name": "is_current_work_assignee",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "27ae4de7f10f111449bfeea4bffab84f",
+      "args": "package_id uuid, readback_id uuid, expected_version integer",
+      "name": "mark_operational_ready",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "9c8ad7d8de1dbf587d17d2009a614deb",
+      "args": "value text",
+      "name": "normalize_po_warehouse_address",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "637e8cae9453eabda243411f1b2a0436",
+      "args": "a jsonb",
+      "name": "operational_direct_purchase_draft_allocation_allowed",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "54651e607cd70fe3bdf9dd2cde68bf49",
+      "args": "b uuid",
+      "name": "operational_owner",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "4536e97a585e3993929a37888cac85ef",
+      "args": "target_payment_id uuid",
+      "name": "payment_available",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "6acb5b87bfad68f17bd83595d76954fd",
+      "args": "target_work_item_id uuid",
+      "name": "portal_can_access_work_item",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "66d3337d4a13227538a0c18e6bf2580b",
+      "args": "target_customer_id uuid",
+      "name": "portal_customer_role",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "7b5118442c9ee70d7c36df5a6e6a7297",
+      "args": "target_evidence_id uuid, require_ready boolean",
+      "name": "portal_evidence_access",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "597238b2da01ee734e3c169c16968d43",
+      "args": "target_rule uuid, source_key text, work_verification uuid, sales_order uuid, allocation uuid, basis_amount bigint, amount bigint, source_actor uuid, reversed_earning uuid",
+      "name": "post_recognized_earning",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "dce0faf996d4b1d76c09d98d202ec1c5",
+      "args": "target_purchase_order_id uuid",
+      "name": "purchase_order_visible_total_cost",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "3272dbb72acd36e7c69d033e0598ab97",
+      "args": "",
+      "name": "recognize_ar_allocation",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "73aa1ae100be7c3595d5d0b15366b2bf",
+      "args": "",
+      "name": "recognize_verified_work",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "d221ea507b480b13d684a9cdc5fd2622",
+      "args": "package_id uuid",
+      "name": "record_independent_opening_readback",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "5d8cfdd8bfd299670e5433b8dd4f23cb",
+      "args": "package_id uuid, b uuid, run uuid, pkg jsonb, source_bytes bytea, manifest jsonb, actor uuid, recovery uuid, expires timestamp with time zone, data_mode text",
+      "name": "register_operational_opening_package",
+      "schema": "private"
+    },
+    {
+      "acl": null,
+      "md5": "b354ba37dc1fcdd9cc53a8f00f0165fe",
+      "args": "",
+      "name": "reject_append_only_workforce_mutation",
+      "schema": "private"
+    },
+    {
+      "acl": null,
+      "md5": "906e90c39633429d01f8ac95262fb2b0",
+      "args": "",
+      "name": "reject_immutable_finance_mutation",
+      "schema": "private"
+    },
+    {
+      "acl": null,
+      "md5": "a91dbcfda3b23771f962bca9942fefad",
+      "args": "",
+      "name": "reject_r6_posted_mutation",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "2e8c7f50119db3011b72d88aafb89f5d",
+      "args": "",
+      "name": "reject_r7_posted_mutation",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "304a06d22a072f1532476137a32a75bc",
+      "args": "b uuid",
+      "name": "require_active_operations",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "47412c42e65736c7ba76776b7834e8f9",
+      "args": "b uuid, kind text, p jsonb",
+      "name": "require_authorized_opening",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "d6cfd84524d6f22a3674b126fc4114e2",
+      "args": "target_customer_id uuid, target_branch_id uuid, requested_amount_vnd bigint, fixture_source_key text, actor_auth_user_id uuid",
+      "name": "reserve_fixture_credit",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "9ece0c0c4a4e7fd896a691648f1b73e6",
+      "args": "target_sales_order_line_id uuid, target_delivery_line_id uuid, target_warehouse_id uuid, requested_base_quantity numeric, actor_auth_user_id uuid",
+      "name": "reserve_inventory_for_line",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "330b9412124f4b2a6d38edb38c9f07ed",
+      "args": "target_order_id uuid, actor_auth_user_id uuid",
+      "name": "reserve_sales_order_credit",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "2473b8b5f9fda733d8019f88ec5d9f08",
+      "args": "target_order_id uuid",
+      "name": "sales_order_credit_snapshot",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "bf4219b65964430744cf36d0b509615f",
+      "args": "",
+      "name": "sales_order_reader_scope",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "28436ff11eaee9cfa7c6006cdda0eb14",
+      "args": "package_id uuid",
+      "name": "verify_opening_source_snapshot",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "31993d8917288c3f0fd381ba64ac8b0d",
+      "args": "target_work_item_id uuid",
+      "name": "worker_work_item_payload",
+      "schema": "private"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "3f38adc7830dec860611e1b94a54650d",
+      "args": "target_revision_id uuid, acceptance_channel text, confirmed_by_name text, evidence_object_path text, operation_id uuid",
+      "name": "accept_quote_revision",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "c781750b560e884da023732e3e1112ab",
+      "args": "target_branch_id uuid, expected_version integer, recovery_accepted boolean, confirmation text, operation_id uuid",
+      "name": "activate_branch_operations",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "ecec156ad32b2afa4bacc53de8b1c685",
+      "args": "target_return_case_id uuid, credit_amount_vnd bigint, adjustment_reason text, operation_id uuid",
+      "name": "adjust_return_receivable",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "1f6cdd1f4558e6aefa595c23aaf25b85",
+      "args": "",
+      "name": "admin_payment_notice_snapshot",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "46d91873880802a356b87f65ccb1a890",
+      "args": "target_job_id uuid",
+      "name": "advance_report_export_job",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "025d8076d91bef4b5dca4e02dbcf9808",
+      "args": "target_payment_id uuid, allocation_lines jsonb, operation_id uuid",
+      "name": "allocate_payment",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "6ef18571307dfa7d0404c7023922aaf3",
+      "args": "target_route_plan_id uuid, expected_version integer, operation_id uuid",
+      "name": "apply_route_plan",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "67e523bb0c027101648ae5685d689e81",
+      "args": "target_earning_event_id uuid, approved_amount_vnd bigint, due_date date, expected_version integer, operation_id uuid",
+      "name": "approve_earning_event",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "f9d0487a54ba6c90f461724118c4d43c",
+      "args": "target_expense_id uuid, expected_version integer, operation_id uuid",
+      "name": "approve_expense",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "d2fd74cc960110a0322f73cf74b02852",
+      "args": "target_invoice_id uuid, expected_version integer, review_reason text, operation_id uuid",
+      "name": "approve_invoice_business",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "94e2ebd0b98c89c5d1abb6b3bfb9ea14",
+      "args": "target_package_id uuid, expected_package_sha256 text, expected_state_version integer, recovery_accepted boolean, confirmation text, operation_id uuid",
+      "name": "approve_operational_opening_import",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "014e13098ffeaff75fbf439582c18967",
+      "args": "target_stock_count_id uuid, expected_count_version integer, operation_id uuid",
+      "name": "approve_stock_count",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "8f8e4cbe8fa8f134ca17aaac742b1a23",
+      "args": "target_delivery_id uuid, target_employee_id uuid, target_vehicle_id uuid, external_carrier_name text, external_carrier_phone text, expected_version integer, operation_id uuid",
+      "name": "assign_delivery",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "897d2280847324cde31bbfe26577f3ef",
+      "args": "target_employee_id uuid, target_branch_id uuid, target_role_id uuid, change_reason text, operation_id uuid",
+      "name": "assign_employee_role",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "8462a4b241bbf8c0715df7967264a45b",
+      "args": "target_work_item_id uuid, target_employee_id uuid, expected_version integer, operation_id uuid",
+      "name": "assign_work_item",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "9d0251d35ab3c61c817fd6dc9fd4823e",
+      "args": "target_rule_id uuid, source_kind text, source_id uuid, operation_id uuid",
+      "name": "calculate_earning_event",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "9873e51a4812c911f6d722e3bb502c42",
+      "args": "target_invoice_id uuid, expected_version integer, cancel_reason text, operation_id uuid",
+      "name": "cancel_invoice_draft",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "0930383ef29dd903f65aff915f6764a7",
+      "args": "target_purchase_order_id uuid, cancel_reason text, operation_id uuid",
+      "name": "cancel_purchase_order",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "973b283dabdcd7bece954ee6b66a5a0f",
+      "args": "target_order_id uuid, cancel_reason text, operation_id uuid",
+      "name": "cancel_sales_order",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "9fe6e6ae1fef62d377f8a731e46cea25",
+      "args": "target_branch_id uuid",
+      "name": "cashbook_summary",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "2824418e6ee4b494ae74c9c809193a99",
+      "args": "target_work_item_id uuid, expected_version integer, operation_id uuid",
+      "name": "claim_work_item",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "e5f05711576225cecc4382abbf0143be",
+      "args": "target_order_id uuid, close_reason text, operation_id uuid",
+      "name": "close_sales_order_remaining",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "a36b91026e6110d1b08ee295736f0ed8",
+      "args": "target_rule_id uuid, recognition_kind text, effective_at timestamp with time zone, operation_id uuid",
+      "name": "configure_compensation_recognition",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "24c6fc8eaddc58d6552e31369b36f3ba",
+      "args": "target_purchase_order_id uuid, operation_id uuid",
+      "name": "confirm_purchase_order",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "103b87048232bbbcaabe17290084775b",
+      "args": "target_order_id uuid, operation_id uuid",
+      "name": "confirm_sales_order",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "0b6d192626e107b770442baf30ecf2cc",
+      "args": "target_order_id uuid, override_reason text, expected_snapshot_hash text, operation_id uuid",
+      "name": "confirm_sales_order_with_credit_override",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "154b3e6c5126f17921d617c05f73d52b",
+      "args": "target_branch_id uuid, target_customer_id uuid, before_updated_at timestamp with time zone, before_id uuid, page_size integer",
+      "name": "conversation_list_for_scope",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "6bce7263d54ba20b41971bf46423f596",
+      "args": "page_size integer",
+      "name": "conversation_list_snapshot",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "f1eed982847a07fbb5d8d65df5349596",
+      "args": "target_conversation_id uuid, before_created_at timestamp with time zone, before_id uuid, page_size integer",
+      "name": "conversation_message_page",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "087877dcb27169048fe73e59b77e808f",
+      "args": "target_branch_id uuid, rule_code text, rule_name text, target_employee_id uuid, earning_type text, calculation_kind text, rate_vnd_per_unit numeric, rate_bps integer, classification text, effective_from date, effective_to date, operation_id uuid",
+      "name": "create_compensation_rule",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "e5b3feaa564e0bca09e2d0facaed9cef",
+      "args": "target_branch_id uuid, target_audience text, target_customer_id uuid, target_subject text, target_entity_type text, target_entity_id uuid, target_participant_auth_user_ids uuid[], operation_id uuid",
+      "name": "create_conversation",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "f6a0c4bd704c999a488743fef8f94ecb",
+      "args": "target_supply_allocation_id uuid, planned_base_quantity numeric, scheduled_at timestamp with time zone, operation_id uuid",
+      "name": "create_delivery_from_allocation",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "6767d21d2bd7d6c94069cc227c38452f",
+      "args": "target_sales_order_id uuid, planned_lines jsonb, scheduled_at timestamp with time zone, operation_id uuid",
+      "name": "create_delivery_from_allocations",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "8e2fbc20a2b7649a0ab4cee731e9e055",
+      "args": "source_sales_order_line_id uuid, target_supplier_id uuid, requested_quantity numeric, purchase_line jsonb, expected_at timestamp with time zone, operation_id uuid",
+      "name": "create_direct_purchase_from_sales_line",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "68aa4998190bc94685f4781c39d5dd5a",
+      "args": "target_sales_order_id uuid, target_supplier_id uuid, purchase_lines jsonb, expected_at timestamp with time zone, operation_id uuid",
+      "name": "create_direct_purchase_from_sales_order",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "f05a7f7265b0c489d6d5b6e7a8bcb7aa",
+      "args": "target_branch_id uuid, bucket_name text, object_path text, audience text, operation_id uuid",
+      "name": "create_evidence_upload",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "8ec858ddb88519ccae60e291f8f00170",
+      "args": "target_branch_id uuid, target_category_id uuid, target_supplier_id uuid, amount_vnd bigint, effective_at timestamp with time zone, due_date date, description text, activity_kind text, target_sales_order_id uuid, target_evidence_id uuid, operation_id uuid",
+      "name": "create_expense",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "f84fb0608edbfe17bb78bdb0fce530c7",
+      "args": "target_branch_id uuid, category_code text, category_name text, operation_id uuid",
+      "name": "create_expense_category",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "9de52d400e296240f52e1031a8067ee2",
+      "args": "target_branch_id uuid, account_code text, account_name text, account_kind text, operation_id uuid",
+      "name": "create_finance_account",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "666171770492af630e51dfe41f4091ed",
+      "args": "target_invoice_id uuid, target_receivable_adjustment_id uuid, operation_id uuid",
+      "name": "create_invoice_adjustment_draft",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "14ce0a2ec45bba0106491feea13abfff",
+      "args": "target_obligation_id uuid, operation_id uuid",
+      "name": "create_invoice_draft",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "7b82213ec2e3b701f19ceedc88f6e1dc",
+      "args": "target_branch_id uuid, target_supplier_id uuid, target_customer_id uuid, target_site_id uuid, purchase_line jsonb, sales_line jsonb, expected_at timestamp with time zone, commercial_terms text, operation_id uuid",
+      "name": "create_linked_direct_drafts",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "99f505149c9d6aa17e76d522d88ec281",
+      "args": "target_context_type text, target_work_item_id uuid, target_customer_id uuid, target_mime_type text, target_byte_size bigint, operation_id uuid",
+      "name": "create_portal_evidence",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "49442ff1001e2701d944279edfce3d39",
+      "args": "target_branch_id uuid, target_supplier_id uuid, target_warehouse_id uuid, expected_at timestamp with time zone, commercial_terms text, purchase_lines jsonb, operation_id uuid",
+      "name": "create_purchase_order_draft",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "42c5be57f5b1cabf5de78ba19cf152cf",
+      "args": "target_branch_id uuid, target_customer_id uuid, target_site_id uuid, expires_at timestamp with time zone, commercial_terms text, quote_lines jsonb, operation_id uuid",
+      "name": "create_quote_draft",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "943bb63e01c380102eb333636c355a8f",
+      "args": "source_revision_id uuid, operation_id uuid",
+      "name": "create_quote_revision",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "70e7cdc53cc58b396a807fb8f1d2aaad",
+      "args": "target_branch_id uuid, target_side text, target_as_of date, target_cutoff timestamp with time zone, target_customer_id uuid",
+      "name": "create_report_export_job",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "b36d92bb7222c85f82bcae636d738bdf",
+      "args": "target_branch_id uuid, target_departure_at timestamp with time zone, target_vehicle_id uuid, target_driver_employee_id uuid, target_provider_state text, target_provider_distance_meters integer, target_provider_duration_seconds integer, target_provider_error_safe text, target_stops jsonb, operation_id uuid",
+      "name": "create_route_plan",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "22ff1aca37f16ee0ffe67499de3e5f9c",
+      "args": "target_branch_id uuid, target_customer_id uuid, target_site_id uuid, requested_delivery_at timestamp with time zone, commercial_terms text, order_lines jsonb, operation_id uuid",
+      "name": "create_sales_order_draft",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "be8d4d7ee2e4af79cc4f2ee992f63fc7",
+      "args": "source_revision_id uuid, requested_delivery_at timestamp with time zone, operation_id uuid",
+      "name": "create_sales_order_from_quote",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "55808da52a447af99bbab1f0cad5d2b8",
+      "args": "target_branch_id uuid, target_customer_id uuid, target_site_id uuid, service_type text, description text, scheduled_start timestamp with time zone, scheduled_end timestamp with time zone, planned_quantity numeric, unit_label text, target_sales_employee_id uuid, target_vehicle_id uuid, target_machine_id uuid, operation_id uuid",
+      "name": "create_service_job",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "c5b0a41f3142a01409b4d8a33f5803a5",
+      "args": "target_branch_id uuid, supplier_code text, supplier_name text, supplier_phone text, operation_id uuid",
+      "name": "create_supplier_quick",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "cefdf0468c2f92a10b4ca8bc54322afa",
+      "args": "target_customer_id uuid",
+      "name": "customer_portal_display_name",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "ef265af379d3d30d05ab3e4384eada4f",
+      "args": "target_order_id uuid",
+      "name": "customer_portal_order",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "acca421032e74ea5f91a212e055fac76",
+      "args": "target_customer_id uuid",
+      "name": "customer_portal_snapshot",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "08d343f570085bc695a36aafd10f7b4b",
+      "args": "target_customer_ids uuid[]",
+      "name": "customer_private_fields",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "00e3105c65730b775aaac795719b19d7",
+      "args": "target_revision_id uuid",
+      "name": "customer_safe_quotation_lines",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "a84cb35eb6469d6d985957c7381087b2",
+      "args": "target_branch_id uuid",
+      "name": "customer_site_sales_owner_options",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "5a585092afb3bbed853554129239fc17",
+      "args": "target_branch_id uuid",
+      "name": "dashboard_site_options",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "4bcbe5a2fca7bd15211a3d47190fa910",
+      "args": "target_id uuid, target_branch_id uuid, expected_version integer, change_reason text, operation_id uuid",
+      "name": "deactivate_pricing_rule",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "2537ae9832135f72662f013eaed9e738",
+      "args": "target_id uuid, target_branch_id uuid, expected_version integer, change_reason text, operation_id uuid",
+      "name": "deactivate_purchase_price_rule",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "4658266f78c8312aa8559594618c049f",
+      "args": "target_branch_id uuid, target_bucket text, target_q text, target_offset integer, target_limit integer",
+      "name": "dispatch_board_page",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "b6083f0bbdd2b9221835095d9b3ec8aa",
+      "args": "target_evidence_id uuid, checksum_sha256 text, byte_size bigint, operation_id uuid",
+      "name": "finalize_evidence_upload",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "2564b0f98ee114defdf6cabb79caae5b",
+      "args": "target_evidence_id uuid, target_checksum_sha256 text, target_byte_size bigint, operation_id uuid",
+      "name": "finalize_portal_evidence",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "c34fe10bc985486cd34f913871f2ccf3",
+      "args": "target_branch_id uuid, from_inclusive timestamp with time zone, to_exclusive timestamp with time zone, knowledge_cutoff timestamp with time zone, target_customer_id uuid, target_site_id uuid, target_sales_employee_id uuid, target_activity_kind text",
+      "name": "finance_dashboard_detail",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "0ed94ca7b10cbfd41b14e24955037a02",
+      "args": "target_branch_id uuid, from_inclusive timestamp with time zone, to_exclusive timestamp with time zone, knowledge_cutoff timestamp with time zone, target_customer_id uuid, target_site_id uuid, target_sales_employee_id uuid, target_activity_kind text",
+      "name": "finance_dashboard_snapshot",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "1b7ea77a59bcd93596f7d048502ad588",
+      "args": "target_branch_id uuid, target_side text, as_of timestamp with time zone, knowledge_cutoff timestamp with time zone, target_customer_id uuid, target_site_id uuid, target_sales_employee_id uuid",
+      "name": "finance_obligation_snapshot",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "7c1b922bfa72e9ea4682c491b8589dd5",
+      "args": "target_evidence_id uuid",
+      "name": "get_portal_evidence_for_signing",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "d7219b9e0b4c0fa5911b7cf6cb934050",
+      "args": "target_branch_id uuid",
+      "name": "gps_fleet_snapshot",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "879faa8bfa91498d9aa9000c457a7784",
+      "args": "target_session_id uuid, before_sequence bigint, page_size integer",
+      "name": "gps_position_history",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "f81552b54b7c949b2fb22fd49ac96bb3",
+      "args": "target_delivery_id uuid, expected_version integer, handed_off_at timestamp with time zone, operation_id uuid",
+      "name": "handoff_delivery",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "24d5fccff5c82cad82a6306b90f55881",
+      "args": "target_work_item_id uuid, status_note text, operation_id uuid",
+      "name": "heartbeat_work_item",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "2f105c71ccc561e6321051a82e4b4ece",
+      "args": "target_branch_id uuid, page_size integer",
+      "name": "invoice_eligible_sources",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "35b61a9e22ead9b8a17a02b40fc09e44",
+      "args": "target_conversation_id uuid",
+      "name": "mark_conversation_read",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "41417a57d77224ac1eb23ab895bc1544",
+      "args": "target_delivery_id uuid, expected_version integer, operation_id uuid",
+      "name": "mark_delivery_arrived",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "4086d0f8dba1a7c5e85d9db8e664c5db",
+      "args": "target_branch_id uuid, result_limit integer",
+      "name": "messaging_participant_options",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "4c0d2ed3cf953dbee48532aa5e250a31",
+      "args": "",
+      "name": "my_active_delivery_assignments",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "e80f74370ee81cb230bcd4532c0dc6e9",
+      "args": "target_work_item_id uuid",
+      "name": "my_active_gps_assignment",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "467bc7b1618c17d49a96257c97cc5aae",
+      "args": "target_delivery_verification_line_id uuid, case_kind text, requested_base_quantity numeric, reason text, target_evidence_id uuid, operation_id uuid",
+      "name": "open_return_case",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "9d1e57f01e75ea75304fb45b27254d45",
+      "args": "target_branch_id uuid, target_warehouse_id uuid, cutoff_at timestamp with time zone, operation_id uuid",
+      "name": "open_stock_count",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "e3e9897dcb1d3df3f797b6fcc6568cdc",
+      "args": "target_branch_id uuid",
+      "name": "operational_branch_state",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "65cf9f7da55fd1fd8b977b395efe2ee3",
+      "args": "target_branch_id uuid, direction text, target_customer_id uuid, target_supplier_id uuid, target_account_id uuid, amount_vnd bigint, effective_at timestamp with time zone, method text, external_reference text, allocation_lines jsonb, advance_amount_vnd bigint, operation_id uuid, target_employee_id uuid",
+      "name": "post_payment",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "f7335d217b6bc0de7c7087a80c6d7794",
+      "args": "target_order_id uuid",
+      "name": "preview_sales_order_credit_override",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "80d1a6e83c0d176e13a96e305efe1e5d",
+      "args": "target_branch_id uuid",
+      "name": "pricing_config_options",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "81ffeff86a2ab94ceaf181e8f2e0cb26",
+      "args": "target_branch_id uuid, source_kind text, source_id uuid, requested_assignment_mode text, target_employee_id uuid, operation_id uuid",
+      "name": "publish_work_item",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "7b0949982d02e0bf2b450a0cc8bd84bb",
+      "args": "target_branch_id uuid, page_size integer",
+      "name": "purchase_invoice_eligible_sources",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "cca5df1d1d9a3113ea3b016b8934d2a5",
+      "args": "target_branch_id uuid",
+      "name": "purchase_pricing_config_options",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "cd93862cc5370f61fca8691746479a6c",
+      "args": "target_access_id uuid, change_reason text, operation_id uuid",
+      "name": "reactivate_employee_access",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "751129ca57e1d0cbb67d5a77f5c49746",
+      "args": "target_purchase_order_id uuid, receipt_lines jsonb, target_evidence_id uuid, received_at timestamp with time zone, operation_id uuid",
+      "name": "receive_purchase_order",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "db63cd1f4223ccece79a03fa69619000",
+      "args": "target_branch_id uuid, target_employee_id uuid, basis_type text, basis_quantity numeric, period_start date, period_end date, description text, adjusts_earning_event_id uuid, target_evidence_id uuid, operation_id uuid",
+      "name": "record_compensation_basis",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "276fcc4bd492cb81a575eb996475916c",
+      "args": "target_session_id uuid, target_sequence bigint, target_captured_at timestamp with time zone, target_latitude numeric, target_longitude numeric, target_accuracy_meters numeric, target_speed_mps numeric, target_heading_degrees numeric, operation_id uuid",
+      "name": "record_gps_ping",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "ab27e345ce67d82014e8e9dc0b371dab",
+      "args": "target_obligation_id uuid, amount_delta_vnd bigint, reason text, target_evidence_id uuid, operation_id uuid",
+      "name": "record_payable_adjustment",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "2be17e0faf96bdfaaa8b13cff1abb8a6",
+      "args": "target_payment_id uuid, matched_amount_vnd bigint, statement_effective_at timestamp with time zone, statement_reference text, operation_id uuid",
+      "name": "record_payment_reconciliation",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "79fc6e6faf0fd6d46333d72eeabb2859",
+      "args": "target_obligation_id uuid, amount_delta_vnd bigint, reason text, target_evidence_id uuid, operation_id uuid",
+      "name": "record_receivable_adjustment",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "f6256b6717295be2d699c9a5b1d48562",
+      "args": "target_stock_count_id uuid, target_material_id uuid, counted_base_quantity numeric, adjustment_unit_cost_vnd numeric, reason text, target_evidence_id uuid, expected_count_version integer, operation_id uuid",
+      "name": "record_stock_count_line",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "3f89c5fb467a243ea0fc2ff7bc1cf4fa",
+      "args": "invited_auth_user_id uuid, employee_code text, employee_name text, target_branch_id uuid, target_role_id uuid, change_reason text, operation_id uuid",
+      "name": "register_invited_employee",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "80f5baf819ef74454ef905cd20b871b7",
+      "args": "target_payable_obligation_id uuid, target_document_number text, target_document_date date, operation_id uuid",
+      "name": "register_purchase_invoice_source",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "1263723220f7db355a167832072515e2",
+      "args": "target_reservation_id uuid, expected_version integer, release_reason text, operation_id uuid",
+      "name": "release_inventory_reservation",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "25d85767c804683ff101c4bd8147f3e1",
+      "args": "target_revision_id uuid, reason text, operation_id uuid",
+      "name": "request_quotation_change",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "34e132c584375f3e455d7a799b668e9a",
+      "args": "target_sales_order_line_id uuid, target_warehouse_id uuid, requested_base_quantity numeric, operation_id uuid",
+      "name": "reserve_inventory",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "0c38633638835e825862a64116d8875d",
+      "args": "target_return_case_id uuid, resolution text, target_warehouse_id uuid, resolution_reason text, target_evidence_id uuid, expected_version integer, operation_id uuid",
+      "name": "resolve_return_case",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "0358aa957e968934aecec3f2f959f5bc",
+      "args": "target_payment_id uuid, reversal_reason text, operation_id uuid",
+      "name": "reverse_payment",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "7afbfaefdd64983e00eee5778fa10256",
+      "args": "target_payment_notice_id uuid, target_state text, target_review_note text, expected_version integer, operation_id uuid",
+      "name": "review_payment_notice",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "b6c4f6ff889e8ccdf4b2154fb4110bb3",
+      "args": "target_access_id uuid, change_reason text, operation_id uuid",
+      "name": "revoke_employee_access",
+      "schema": "public"
+    },
+    {
+      "acl": null,
+      "md5": "6998ea6b4c2480f5d2e34b5dcf3f8d36",
+      "args": "",
+      "name": "rls_auto_enable",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "1ce3c008276d93a68f74e75aa08e0695",
+      "args": "target_id uuid, source_branch_id uuid, values_json jsonb, expected_json jsonb, change_reason text, operation_id uuid",
+      "name": "save_branch_config",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "3f99f45454e8b158c508f35eb54be971",
+      "args": "kind text, target_id uuid, target_branch_id uuid, values_json jsonb, expected_json jsonb, change_reason text, operation_id uuid",
+      "name": "save_catalog_record",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "af9e72569e3281a866c7be5023276737",
+      "args": "kind text, target_id uuid, target_branch_id uuid, values_json jsonb, expected_json jsonb, change_reason text, operation_id uuid",
+      "name": "save_customer_site_profile",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "fae2a51daa1ae466bba38998cd560e01",
+      "args": "target_id uuid, target_branch_id uuid, supersedes_id uuid, expected_version integer, values_json jsonb, change_reason text, operation_id uuid",
+      "name": "save_pricing_rule",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "05ce3f5e946b101ad40eb54304768025",
+      "args": "target_id uuid, target_branch_id uuid, supersedes_id uuid, expected_version integer, values_json jsonb, change_reason text, operation_id uuid",
+      "name": "save_purchase_price_rule",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "e736fb18a207bf99b5dbeed0b9375da1",
+      "args": "target_conversation_id uuid, target_body text, operation_id uuid",
+      "name": "send_message",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "e99382389153ae71445f7802b761513a",
+      "args": "target_revision_id uuid, operation_id uuid",
+      "name": "send_quote_revision",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "70678c831a04fd00d00f6b8d65113f4c",
+      "args": "target_employee_id uuid, target_branch_id uuid, permission_codes text[], change_reason text, operation_id uuid",
+      "name": "set_employee_explicit_permissions",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "a918da34c8cbefb6fa93e602e5708670",
+      "args": "target_branch_id uuid, target_warehouse_id uuid, target_material_id uuid, target_threshold_base_quantity numeric, target_active boolean",
+      "name": "set_inventory_stock_threshold",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "b04845473b05ac0eb138fea5839531fa",
+      "args": "target_delivery_id uuid, target_assignment_version integer, operation_id uuid",
+      "name": "start_gps_tracking",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "bf66935ad4aa63bb683f01bda03821a1",
+      "args": "target_work_item_id uuid, expected_version integer, operation_id uuid",
+      "name": "start_work_item",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "4341d80074d09261fc66eea27106cdde",
+      "args": "target_session_id uuid, operation_id uuid",
+      "name": "stop_gps_tracking",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "7135adcb372ae2a8aecd3841c10b9684",
+      "args": "target_delivery_id uuid, result_kind text, result_lines jsonb, receiver_name text, note text, missing_arrival_reason text, target_evidence_id uuid, expected_version integer, operation_id uuid",
+      "name": "submit_delivery_result",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "aefafdca907a555c744e92c6754ffed2",
+      "args": "target_customer_id uuid, target_evidence_id uuid, declared_amount_vnd bigint, paid_on date, payment_reference text, customer_note text, operation_id uuid",
+      "name": "submit_payment_notice",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "52cf4590c8d2bc37c4c9eb542b9f821e",
+      "args": "target_work_item_id uuid, result_lines jsonb, receiver_name text, note text, target_evidence_id uuid, missing_arrival_reason text, expected_work_version integer, expected_delivery_version integer, expected_assignment_version integer, operation_id uuid",
+      "name": "submit_portal_delivery_result",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "acb91b480cdb8e5f7425801bd141c32f",
+      "args": "target_work_item_id uuid, actual_quantity numeric, note text, receiver_name text, target_evidence_id uuid, expected_version integer, operation_id uuid",
+      "name": "submit_portal_work_result",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "a8c00915acebcf69af6eec79455e72cc",
+      "args": "target_work_item_id uuid, actual_quantity numeric, note text, receiver_name text, target_evidence_id uuid, expected_version integer, operation_id uuid",
+      "name": "submit_work_result",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "3fe47081e65bcdbcb6a0814e84b69ecf",
+      "args": "target_delivery_id uuid, receiver_name text, receiver_phone text, reason text, expected_version integer, operation_id uuid",
+      "name": "update_delivery_receiver",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "1f04f451aef6ae198846c367b5866c43",
+      "args": "target_purchase_order_id uuid, expected_version integer, expected_at timestamp with time zone, commercial_terms text, purchase_lines jsonb, operation_id uuid",
+      "name": "update_purchase_order_draft",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "6af071eb4dbf1abf83b3f388d1792977",
+      "args": "target_purchase_order_id uuid, expected_version integer, target_warehouse_id uuid, change_reason text, operation_id uuid",
+      "name": "update_purchase_order_warehouse",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "b6ddf6b66dd9b00f5cd0f5a86c6b36ce",
+      "args": "target_revision_id uuid, expected_version integer, expires_at timestamp with time zone, commercial_terms text, quote_lines jsonb, operation_id uuid",
+      "name": "update_quote_draft",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "2fd5b7d3fd9d0822430839ff6aef727f",
+      "args": "target_branch_id uuid, target_stale_after_seconds integer, target_retention_days integer, change_reason text, operation_id uuid",
+      "name": "update_routing_settings",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "e5ac41d8b6c7d1700f96f82c3ab3529b",
+      "args": "target_order_id uuid, expected_version integer, requested_delivery_at timestamp with time zone, commercial_terms text, order_lines jsonb, operation_id uuid",
+      "name": "update_sales_order_draft",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "427b2e4c3049a3b62cc6dea400f72a4e",
+      "args": "target_sales_order_line_id uuid, supply_mode text, target_purchase_order_line_id uuid, target_warehouse_id uuid, requested_base_quantity numeric, target_allocation_id uuid, expected_version integer, operation_id uuid",
+      "name": "upsert_supply_allocation",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "6a952603cee586ef445ebcb35082de9f",
+      "args": "target_delivery_result_id uuid, verification_lines jsonb, expected_delivery_version integer, operation_id uuid",
+      "name": "verify_delivery",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "4e55c49a28c66085ec0156dfbe7073a3",
+      "args": "target_work_item_id uuid, expected_version integer, operation_id uuid",
+      "name": "verify_delivery_work_item",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "f7453690ff895b18f6ea6af038de6cc9",
+      "args": "target_service_job_id uuid, billable_quantity numeric, compensable_quantity numeric, billable_amount_vnd bigint, due_date date, verification_note text, expected_job_version integer, expected_work_version integer, operation_id uuid",
+      "name": "verify_service_job",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "a41d52b385dea2ce953d2ab3446841d6",
+      "args": "target_purchase_order_id uuid, fulfillment_lines jsonb, target_evidence_id uuid, supplier_reference text, operation_id uuid",
+      "name": "verify_supplier_fulfillment",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "8698ab50ec0b6dba09d59bb3310473de",
+      "args": "target_work_item_id uuid",
+      "name": "worker_portal_job",
+      "schema": "public"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "f789e29b9f44a2ddabf87a941019f1cf",
+      "args": "",
+      "name": "worker_portal_snapshot",
+      "schema": "public"
+    }
+  ],
+  "extensions": [
+    "pg_stat_statements",
+    "pgcrypto",
+    "plpgsql",
+    "supabase_vault",
+    "uuid-ossp"
+  ]
+}

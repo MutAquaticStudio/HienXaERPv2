@@ -1,0 +1,126 @@
+begin;
+CREATE OR REPLACE FUNCTION public.finance_dashboard_snapshot(target_branch_id uuid, from_inclusive timestamp with time zone, to_exclusive timestamp with time zone, knowledge_cutoff timestamp with time zone, target_customer_id uuid DEFAULT NULL::uuid, target_site_id uuid DEFAULT NULL::uuid, target_sales_employee_id uuid DEFAULT NULL::uuid, target_activity_kind text DEFAULT NULL::text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ STABLE SECURITY DEFINER
+ SET search_path TO ''
+AS $function$
+declare effective_to timestamptz:=least(to_exclusive,now()); effective_cutoff timestamptz:=least(knowledge_cutoff,now()); can_profit boolean; can_expense boolean; can_ar boolean; can_ap boolean; can_comp boolean; revenue_total bigint:=0; direct_cost_total bigint:=0; opex_total bigint:=0; ar_total bigint:=0; ap_total bigint:=0; salary_total bigint:=0; commission_total bigint:=0; cost_incomplete boolean:=false; opex_not_applicable boolean:=false; unsupported_activity boolean:=target_activity_kind is not null and target_activity_kind not in ('DELIVERY','SERVICE','SALES','OPERATIONS','ADMIN');
+begin
+  if not private.has_permission(target_branch_id,'dashboard.read') then raise exception 'forbidden' using errcode='42501'; end if;
+  if from_inclusive>=to_exclusive then raise exception 'invalid_report_period' using errcode='22023'; end if;
+  can_profit:=private.has_permission(target_branch_id,'finance.profit.read'); can_expense:=private.has_permission(target_branch_id,'finance.expense.read'); can_ar:=private.has_permission(target_branch_id,'finance.ar.read'); can_ap:=private.has_permission(target_branch_id,'finance.ap.read'); can_comp:=private.has_permission(target_branch_id,'compensation.read');
+  select coalesce(sum(amount),0)::bigint into revenue_total from (
+    select r.amount_vnd amount from public.revenue_entries r join public.sales_orders o on o.id=r.sales_order_id where r.branch_id=target_branch_id and r.recorded_at>=from_inclusive and r.recorded_at<effective_to and r.recorded_at<=effective_cutoff and (target_customer_id is null or o.customer_id=target_customer_id) and (target_site_id is null or o.site_id=target_site_id) and (target_sales_employee_id is null or o.sales_owner_employee_id=target_sales_employee_id) and (target_activity_kind is null or target_activity_kind='DELIVERY')
+    union all
+    select v.billable_amount_vnd from public.service_verifications v join public.service_jobs j on j.id=v.service_job_id where j.branch_id=target_branch_id and v.verified_at>=from_inclusive and v.verified_at<effective_to and v.verified_at<=effective_cutoff and (target_customer_id is null or j.customer_id=target_customer_id) and (target_site_id is null or j.site_id=target_site_id) and (target_sales_employee_id is null or j.sales_employee_id=target_sales_employee_id) and (target_activity_kind is null or target_activity_kind='SERVICE')
+    union all
+    select ra.amount_delta_vnd from public.revenue_adjustments ra
+      left join public.sales_orders o on o.id=ra.sales_order_id left join public.service_verifications sv on sv.id=ra.service_verification_id
+      left join public.service_jobs j on j.id=sv.service_job_id
+      where ra.branch_id=target_branch_id and ra.recorded_at>=from_inclusive and ra.recorded_at<effective_to and ra.recorded_at<=effective_cutoff
+        and (target_customer_id is null or coalesce(o.customer_id,j.customer_id)=target_customer_id)
+        and (target_site_id is null or coalesce(o.site_id,j.site_id)=target_site_id)
+        and (target_sales_employee_id is null or coalesce(o.sales_owner_employee_id,j.sales_employee_id)=target_sales_employee_id)
+        and (target_activity_kind is null or(target_activity_kind='DELIVERY' and ra.sales_order_id is not null) or(target_activity_kind='SERVICE' and ra.service_verification_id is not null))
+    union all
+    select a.amount_delta_vnd from public.receivable_adjustments a join public.receivable_obligations ro on ro.id=a.obligation_id
+      join public.delivery_verifications dv on dv.id=ro.delivery_verification_id join public.deliveries d on d.id=dv.delivery_id
+      join public.sales_orders o on o.id=d.sales_order_id
+      where ro.branch_id=target_branch_id and a.return_case_id is not null and a.recorded_at>=from_inclusive and a.recorded_at<effective_to and a.recorded_at<=effective_cutoff
+        and not exists(select 1 from public.revenue_adjustments ra where ra.receivable_adjustment_id=a.id)
+        and (target_customer_id is null or o.customer_id=target_customer_id) and (target_site_id is null or o.site_id=target_site_id)
+        and (target_sales_employee_id is null or o.sales_owner_employee_id=target_sales_employee_id) and(target_activity_kind is null or target_activity_kind='DELIVERY')
+  ) revenue;
+  if can_profit then
+    select coalesce(sum(amount),0)::bigint into direct_cost_total from (
+      select d.amount_delta_vnd amount from public.direct_cost_entries d join public.sales_orders o on o.id=d.sales_order_id where d.branch_id=target_branch_id and d.recorded_at>=from_inclusive and d.recorded_at<effective_to and d.recorded_at<=effective_cutoff and (target_customer_id is null or o.customer_id=target_customer_id) and (target_site_id is null or o.site_id=target_site_id) and (target_sales_employee_id is null or o.sales_owner_employee_id=target_sales_employee_id) and (target_activity_kind is null or target_activity_kind='DELIVERY')
+      union all
+      select e.amount_vnd from public.expenses e join public.delivery_expense_sources s on s.expense_id=e.id join public.deliveries d on d.id=s.delivery_id join public.sales_orders o on o.id=d.sales_order_id
+       where e.branch_id=target_branch_id and e.approval_state='APPROVED' and s.cost_scope='DIRECT_DELIVERY'
+       and e.effective_at>=from_inclusive and e.effective_at<effective_to and e.approved_at<=effective_cutoff
+       and (target_customer_id is null or o.customer_id=target_customer_id) and(target_site_id is null or o.site_id=target_site_id)
+       and(target_sales_employee_id is null or o.sales_owner_employee_id=target_sales_employee_id) and(target_activity_kind is null or target_activity_kind='DELIVERY')
+      union all
+      select ee.approved_amount_vnd from public.earning_events ee left join public.service_verifications sv on sv.id=ee.service_verification_id left join public.service_jobs sj on sj.id=sv.service_job_id left join public.work_item_verifications wv on wv.id=ee.work_item_verification_id left join public.work_items wi on wi.id=wv.work_item_id left join public.deliveries d on d.id=wi.delivery_id left join public.sales_orders wo on wo.id=d.sales_order_id left join public.sales_orders so on so.id=ee.sales_order_id where ee.branch_id=target_branch_id and ee.approval_state='APPROVED' and ee.classification='DIRECT_LABOR' and ee.approved_at>=from_inclusive and ee.approved_at<effective_to and ee.approved_at<=effective_cutoff and (target_customer_id is null or coalesce(sj.customer_id,wo.customer_id,so.customer_id)=target_customer_id) and (target_site_id is null or coalesce(sj.site_id,wo.site_id,so.site_id)=target_site_id) and (target_sales_employee_id is null or coalesce(sj.sales_employee_id,wo.sales_owner_employee_id,so.sales_owner_employee_id)=target_sales_employee_id) and (target_activity_kind is null or (target_activity_kind='SERVICE' and ee.service_verification_id is not null) or (target_activity_kind='DELIVERY' and wi.delivery_id is not null))
+    ) costs;
+    select exists(select 1 from public.delivery_verifications dv join public.deliveries d on d.id=dv.delivery_id
+      join public.sales_orders o on o.id=d.sales_order_id where d.branch_id=target_branch_id
+       and dv.verified_at>=from_inclusive and dv.verified_at<effective_to and dv.verified_at<=effective_cutoff
+       and (target_customer_id is null or o.customer_id=target_customer_id) and (target_site_id is null or o.site_id=target_site_id)
+       and (target_sales_employee_id is null or o.sales_owner_employee_id=target_sales_employee_id) and(target_activity_kind is null or target_activity_kind='DELIVERY')
+       and not private.delivery_cost_sources_complete(dv.id,effective_cutoff)) into cost_incomplete;
+  end if;
+  if can_expense and not private.has_permission(target_branch_id,'inventory.cost.read') and not can_profit and exists(
+   select 1 from public.supplier_return_credits c join public.supplier_return_cases sc on sc.id=c.case_id where c.branch_id=target_branch_id and sc.warehouse_id is not null
+   and c.approved_at>=from_inclusive and c.approved_at<effective_to and c.approved_at<=effective_cutoff) then can_expense:=false;end if;
+  if can_expense then
+    select coalesce(sum(amount),0)::bigint into opex_total from (
+      select e.amount_vnd amount from public.expenses e where e.branch_id=target_branch_id and e.approval_state='APPROVED' and not exists(select 1 from public.delivery_expense_sources ds where ds.expense_id=e.id and ds.cost_scope='DIRECT_DELIVERY') and e.effective_at>=from_inclusive and e.effective_at<effective_to and e.approved_at<=effective_cutoff and (target_customer_id is null or e.customer_id=target_customer_id) and (target_site_id is null or e.site_id=target_site_id) and (target_sales_employee_id is null or e.sales_employee_id=target_sales_employee_id) and (target_activity_kind is null or e.activity_kind=target_activity_kind)
+      union all
+      select ee.approved_amount_vnd from public.earning_events ee left join public.sales_orders so on so.id=ee.sales_order_id left join public.service_verifications sv on sv.id=ee.service_verification_id left join public.service_jobs sj on sj.id=sv.service_job_id where ee.branch_id=target_branch_id and ee.approval_state='APPROVED' and ee.classification in ('OPEX','SALES_COMMISSION') and ee.approved_at>=from_inclusive and ee.approved_at<effective_to and ee.approved_at<=effective_cutoff and (target_customer_id is null or coalesce(so.customer_id,sj.customer_id)=target_customer_id) and (target_site_id is null or coalesce(so.site_id,sj.site_id)=target_site_id) and (target_sales_employee_id is null or ee.employee_id=target_sales_employee_id) and (target_activity_kind is null or (target_activity_kind='SALES' and ee.classification='SALES_COMMISSION') or (target_activity_kind='SERVICE' and ee.service_verification_id is not null) or (target_activity_kind in ('OPERATIONS','ADMIN') and ee.manual_basis_id is not null))
+      union all
+      select e.value_vnd from public.warehouse_transfer_events e join public.warehouse_transfers t on t.id=e.transfer_id
+       where t.branch_id=target_branch_id and e.event_kind='APPROVE_LOSS' and e.recorded_at>=from_inclusive and e.recorded_at<effective_to and e.recorded_at<=effective_cutoff
+       and target_customer_id is null and target_site_id is null and target_sales_employee_id is null and(target_activity_kind is null or target_activity_kind='OPERATIONS')
+      union all
+      select coalesce(e.inventory_value_vnd,e.source_value_vnd)-c.approved_credit_vnd from public.supplier_return_credits c join public.supplier_return_events e on e.id=c.acceptance_event_id
+       join public.supplier_return_cases sc on sc.id=c.case_id left join public.return_cases rc on rc.id=sc.source_return_case_id
+       left join public.delivery_lines ln on ln.id=rc.delivery_line_id left join public.deliveries dd on dd.id=ln.delivery_id left join public.sales_orders so on so.id=dd.sales_order_id
+       where c.branch_id=target_branch_id and c.approved_at>=from_inclusive and c.approved_at<effective_to and c.approved_at<=effective_cutoff
+       and coalesce(e.inventory_value_vnd,e.source_value_vnd)<>c.approved_credit_vnd
+       and(target_customer_id is null or so.customer_id=target_customer_id) and(target_site_id is null or so.site_id=target_site_id)
+       and(target_sales_employee_id is null or so.sales_owner_employee_id=target_sales_employee_id)
+       and(target_activity_kind is null or(target_activity_kind='DELIVERY' and sc.source_fulfillment_line_id is not null) or(target_activity_kind='OPERATIONS' and sc.source_receipt_line_id is not null))
+    ) expenses_all;
+    opex_not_applicable := (target_customer_id is not null or target_site_id is not null or target_sales_employee_id is not null) and (exists(select 1 from public.expenses e where e.branch_id=target_branch_id and e.approval_state='APPROVED' and not exists(select 1 from public.delivery_expense_sources ds where ds.expense_id=e.id and ds.cost_scope='DIRECT_DELIVERY') and e.effective_at>=from_inclusive and e.effective_at<effective_to and e.approved_at<=effective_cutoff and ((target_customer_id is not null and e.customer_id is null) or (target_site_id is not null and e.site_id is null) or (target_sales_employee_id is not null and e.sales_employee_id is null))) or exists(select 1 from public.earning_events ee where ee.branch_id=target_branch_id and ee.approval_state='APPROVED' and ee.classification='OPEX' and ee.manual_basis_id is not null and ee.approved_at>=from_inclusive and ee.approved_at<effective_to and ee.approved_at<=effective_cutoff));
+  end if;
+  if can_expense and (target_customer_id is not null or target_site_id is not null or target_sales_employee_id is not null) and exists(
+   select 1 from public.warehouse_transfer_events e join public.warehouse_transfers t on t.id=e.transfer_id where t.branch_id=target_branch_id and e.event_kind='APPROVE_LOSS'
+    and e.recorded_at>=from_inclusive and e.recorded_at<effective_to and e.recorded_at<=effective_cutoff and(target_activity_kind is null or target_activity_kind='OPERATIONS')) then opex_not_applicable:=true;end if;
+  if can_expense and(target_customer_id is not null or target_site_id is not null or target_sales_employee_id is not null) and exists(
+   select 1 from public.supplier_return_credits c join public.supplier_return_events e on e.id=c.acceptance_event_id join public.supplier_return_cases sc on sc.id=c.case_id
+    where c.branch_id=target_branch_id and sc.source_receipt_line_id is not null and coalesce(e.inventory_value_vnd,e.source_value_vnd)<>c.approved_credit_vnd and c.approved_at>=from_inclusive and c.approved_at<effective_to and c.approved_at<=effective_cutoff
+    and(target_activity_kind is null or target_activity_kind='OPERATIONS')) then opex_not_applicable:=true;end if;
+  if can_ar then select coalesce(sum(r.original_amount_vnd+coalesce((select sum(a.amount_delta_vnd) from public.receivable_adjustments a where a.obligation_id=r.id and a.recorded_at<=effective_to and a.recorded_at<=effective_cutoff),0)-coalesce((select sum(a.amount_delta_vnd) from public.payment_allocations a where a.receivable_obligation_id=r.id and a.allocated_at<=effective_to and a.allocated_at<=effective_cutoff),0)),0)::bigint into ar_total from public.receivable_obligations r left join public.delivery_verifications dv on dv.id=r.delivery_verification_id left join public.deliveries d on d.id=dv.delivery_id left join public.sales_orders so on so.id=d.sales_order_id left join public.service_verifications sv on sv.id=r.service_verification_id left join public.service_jobs sj on sj.id=sv.service_job_id where r.branch_id=target_branch_id and r.recorded_at<=effective_to and r.recorded_at<=effective_cutoff and (target_customer_id is null or r.customer_id=target_customer_id) and (target_site_id is null or r.site_id=target_site_id) and (target_sales_employee_id is null or coalesce(so.sales_owner_employee_id,sj.sales_employee_id)=target_sales_employee_id); end if;
+  if can_ap then select coalesce(sum(p.original_amount_vnd+coalesce((select sum(a.amount_delta_vnd) from public.payable_adjustments a where a.obligation_id=p.id and a.recorded_at<=effective_to and a.recorded_at<=effective_cutoff),0)-coalesce((select sum(a.amount_delta_vnd) from public.payment_allocations a where a.payable_obligation_id=p.id and a.allocated_at<=effective_to and a.allocated_at<=effective_cutoff),0)),0)::bigint into ap_total from public.payable_obligations p where p.branch_id=target_branch_id and p.recorded_at<=effective_to and p.recorded_at<=effective_cutoff; end if;
+  if can_comp then
+    select coalesce(sum(p.original_amount_vnd+coalesce((select sum(a.amount_delta_vnd) from public.payable_adjustments a where a.obligation_id=p.id and a.recorded_at<=effective_to and a.recorded_at<=effective_cutoff),0)-coalesce((select sum(a.amount_delta_vnd) from public.payment_allocations a where a.payable_obligation_id=p.id and a.allocated_at<=effective_to and a.allocated_at<=effective_cutoff),0)),0)::bigint into salary_total from public.payable_obligations p join public.earning_events ee on ee.id=p.earning_event_id where p.branch_id=target_branch_id and ee.classification<>'SALES_COMMISSION' and p.recorded_at<=effective_to and p.recorded_at<=effective_cutoff;
+    select coalesce(sum(p.original_amount_vnd+coalesce((select sum(a.amount_delta_vnd) from public.payable_adjustments a where a.obligation_id=p.id and a.recorded_at<=effective_to and a.recorded_at<=effective_cutoff),0)-coalesce((select sum(a.amount_delta_vnd) from public.payment_allocations a where a.payable_obligation_id=p.id and a.allocated_at<=effective_to and a.allocated_at<=effective_cutoff),0)),0)::bigint into commission_total from public.payable_obligations p join public.earning_events ee on ee.id=p.earning_event_id left join public.sales_orders so on so.id=ee.sales_order_id where p.branch_id=target_branch_id and ee.classification='SALES_COMMISSION' and p.recorded_at<=effective_to and p.recorded_at<=effective_cutoff and (target_customer_id is null or so.customer_id=target_customer_id) and (target_site_id is null or so.site_id=target_site_id) and (target_sales_employee_id is null or ee.employee_id=target_sales_employee_id);
+  end if;
+  return jsonb_build_object('scope',(jsonb_build_object('from',from_inclusive,'to',effective_to,'as_of',effective_cutoff,'branch_id',target_branch_id)||private.branch_recording_scope(target_branch_id,effective_cutoff)),'revenue',jsonb_build_object('value_vnd',case when not unsupported_activity then (revenue_total)::text else null end,'quality',case when unsupported_activity then 'NOT_APPLICABLE' else 'READY' end),'direct_cost',jsonb_build_object('value_vnd',case when can_profit and not cost_incomplete and not unsupported_activity then (direct_cost_total)::text else null end,'quality',case when not can_profit then 'FORBIDDEN' when unsupported_activity then 'NOT_APPLICABLE' when cost_incomplete then 'INCOMPLETE' else 'READY' end),'gross_profit',jsonb_build_object('value_vnd',case when can_profit and not cost_incomplete and not unsupported_activity then (revenue_total-direct_cost_total)::text else null end,'quality',case when not can_profit then 'FORBIDDEN' when unsupported_activity then 'NOT_APPLICABLE' when cost_incomplete then 'INCOMPLETE' else 'READY' end),'operating_expense',jsonb_build_object('value_vnd',case when can_expense and not opex_not_applicable then (opex_total)::text else null end,'quality',case when not can_expense then 'FORBIDDEN' when opex_not_applicable then 'NOT_APPLICABLE' else 'READY' end),'operating_profit',jsonb_build_object('value_vnd',case when can_profit and can_expense and not cost_incomplete and not opex_not_applicable and not unsupported_activity then (revenue_total-direct_cost_total-opex_total)::text else null end,'quality',case when not can_profit or not can_expense then 'FORBIDDEN' when unsupported_activity then 'NOT_APPLICABLE' when cost_incomplete then 'INCOMPLETE' when opex_not_applicable then 'NOT_APPLICABLE' else 'READY' end),'operating_margin_bps',jsonb_build_object('value',case when revenue_total>0 and can_profit and can_expense and not cost_incomplete and not opex_not_applicable and not unsupported_activity then ((revenue_total-direct_cost_total-opex_total)::numeric*10000/revenue_total) else null end,'quality',case when not can_profit or not can_expense then 'FORBIDDEN' when unsupported_activity then 'NOT_APPLICABLE' when cost_incomplete then 'INCOMPLETE' when opex_not_applicable then 'NOT_APPLICABLE' else 'READY' end),'receivable',jsonb_build_object('value_vnd',case when can_ar then (ar_total)::text else null end,'quality',case when can_ar then 'READY' else 'FORBIDDEN' end),'payable',jsonb_build_object('value_vnd',case when can_ap and target_customer_id is null and target_site_id is null and target_sales_employee_id is null then (ap_total)::text else null end,'quality',case when not can_ap then 'FORBIDDEN' when target_customer_id is not null or target_site_id is not null or target_sales_employee_id is not null then 'NOT_APPLICABLE' else 'READY' end),'salary_payable',jsonb_build_object('value_vnd',case when can_comp and target_customer_id is null and target_site_id is null and target_sales_employee_id is null and target_activity_kind is null then (salary_total)::text else null end,'quality',case when not can_comp then 'FORBIDDEN' when target_customer_id is not null or target_site_id is not null or target_sales_employee_id is not null or target_activity_kind is not null then 'NOT_APPLICABLE' else 'READY' end),'commission_payable',jsonb_build_object('value_vnd',case when can_comp and (target_activity_kind is null or target_activity_kind='SALES') then (commission_total)::text else null end,'quality',case when not can_comp then 'FORBIDDEN' when target_activity_kind is not null and target_activity_kind<>'SALES' then 'NOT_APPLICABLE' else 'READY' end));
+end $function$
+;
+create or replace view public.supplier_return_credit_read with(security_barrier=true) as
+ SELECT c.id,
+    c.branch_id,
+    c.supplier_id,
+    s.name AS supplier_name,
+    c.case_id,
+    c.acceptance_event_id,
+    c.obligation_id,
+    c.approved_credit_vnd::text AS approved_credit_vnd,
+    c.amount_vnd::text AS amount_vnd,
+    (c.amount_vnd::numeric - COALESCE(x.settled, 0::numeric))::text AS remaining_vnd,
+    COALESCE(x.refunded, 0::numeric)::text AS refunded_vnd,
+    COALESCE(x.offset_amount, 0::numeric)::text AS offset_vnd,
+    c.reason,
+    c.approved_by,
+    c.approved_at,
+    ( SELECT (e.source_value_vnd - c.approved_credit_vnd)::text AS text
+           FROM supplier_return_events e
+          WHERE e.id = c.acceptance_event_id) AS retained_charge_vnd,
+    case when private.has_permission(c.branch_id,'inventory.cost.read') or private.has_permission(c.branch_id,'finance.profit.read') then
+      (select(coalesce(e.inventory_value_vnd,e.source_value_vnd)-e.source_value_vnd)::text from public.supplier_return_events e where e.id=c.acceptance_event_id) else null end inventory_valuation_difference_vnd
+
+   FROM supplier_return_credits c
+     JOIN suppliers s ON s.id = c.supplier_id
+     LEFT JOIN LATERAL ( SELECT sum(z.amount_vnd) AS settled,
+            sum(z.amount_vnd) FILTER (WHERE z.settlement_kind = 'REFUND'::text) AS refunded,
+            sum(z.amount_vnd) FILTER (WHERE z.settlement_kind = 'OFFSET'::text) AS offset_amount
+           FROM supplier_credit_funds f
+             JOIN supplier_credit_settlements z ON z.credit_fund_id = f.id
+          WHERE f.credit_id = c.id) x ON true
+  WHERE private.has_permission(c.branch_id, 'finance.ap.read'::text);;
+notify pgrst,'reload schema';
+commit;

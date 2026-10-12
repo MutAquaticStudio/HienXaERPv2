@@ -1,0 +1,41 @@
+{
+  "scope": "G11_REAL_BROWSER_PENDING_BRANCH_NO_ACTIVATION_NEW_RECEIPT_SCOPED_REPORTS",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright; Browser plugin not available",
+  "origin": "http://127.0.0.1:3110",
+  "productionAccess": "NONE",
+  "cloudRolesChanged": false,
+  "checks": [
+    {
+      "name": "PENDING_BRANCH_OPERATIONS_PAGE_HAS_NO_ACTIVATION_CHECKLIST_OR_ZERO_ENTRY",
+      "status": "PASS"
+    },
+    {
+      "name": "ACTUAL_NEW_RECEIPT_COMMIT_RELOAD_START_AND_ACTIVATION_UNCHANGED",
+      "status": "PASS",
+      "facts": {
+        "state": "PENDING_OPENING",
+        "version": 0,
+        "activation": null,
+        "stock": "1.000000",
+        "receipts": 2,
+        "start": "2026-10-11 14:11:46.302196+07"
+      },
+      "resumedCommittedBrowserSource": true
+    },
+    {
+      "name": "NEW_TRANSACTIONS_REPORT_AND_EXPORT_KEEP_UNRECONCILED_HISTORY_SCOPE",
+      "status": "PASS",
+      "revenue": "3220000",
+      "gross": "1120000",
+      "debt": "2920000"
+    },
+    {
+      "name": "CASH_AND_INVENTORY_DESCRIBE_RECORDED_FACTS_WITHOUT_ASSUMING_HISTORY_ZERO",
+      "status": "PASS"
+    }
+  ],
+  "expectedTransportErrors": [],
+  "unexpectedErrors": [],
+  "status": "PASS_G11_BROWSER_PENDING_BRANCH_AND_SCOPED_EXPORT"
+}

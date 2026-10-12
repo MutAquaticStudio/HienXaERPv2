@@ -13,7 +13,7 @@ export default async function EditOrderPage({ params }: { params: Promise<{ id: 
   const [orderResult, lineResult] = await Promise.all([
     supabase.from("sales_orders").select("id, branch_id, order_number, customer_id, site_id, commercial_state, draft_version, requested_delivery_at, commercial_terms")
       .eq("id", id).eq("branch_id", access.branchId).maybeSingle(),
-    supabase.from("sales_order_lines").select("id, material_id, ordered_uom_id, quantity, unit_price_vnd, price_source_type, override_reason")
+    supabase.from("sales_order_lines").select("id, material_id, ordered_uom_id, quantity, unit_price_vnd::text, price_source_type, override_reason")
       .eq("sales_order_id", id).order("line_number"),
   ]);
   const order = orderResult.data;

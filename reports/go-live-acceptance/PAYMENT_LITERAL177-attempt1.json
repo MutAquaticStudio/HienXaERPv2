@@ -1,0 +1,17 @@
+{
+  "scope": "T30_LITERAL_PREPAY10M_SERVICE_AR30M_TWO_NEW_RECEIPTS10M",
+  "productionAccess": "NONE",
+  "excludedAdvanceRacesRun": false,
+  "checks": [
+    {
+      "name": "FINANCE_UI_PREPAY10M_BEFORE_AR",
+      "status": "PASS",
+      "cashReceipts": 1
+    }
+  ],
+  "documents": {
+    "customer": "a780847a-26e3-486b-a8f0-1b3013a12229",
+    "site": "8efe8e7a-cc76-461a-8ae4-822f2a9dddae"
+  },
+  "lastFailure": "Cannot read properties of undefined (reading 'job')"
+}

@@ -1,0 +1,739 @@
+[
+  {
+    "path": "scripts/qa/ensure-worker-uat.mjs",
+    "localSha256": "c0ca877b7840362e808ab58d151bbe24d0054000be5d765a92a7f4a31eccf52e",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "scripts/qa/perf.mjs",
+    "localSha256": "df452501bf7d1f8b5e70b4e9371b8609eb2c7aa751080a04d5b1c25a4b7a8e0e",
+    "candidateExists": true,
+    "candidateSha256": "6a2207eee97acf2535c976057993a10dddd963f5d219f4ecb27d44c042786da3",
+    "classification": "LOCAL_DELTA_ALREADY_COVERED"
+  },
+  {
+    "path": "scripts/qa/uat.mjs",
+    "localSha256": "252356e10926d9463b04d55899ed7f450c6bccdeda260f23978a80de574c3270",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "scripts/qa/verify-uat-repairs.mjs",
+    "localSha256": "5d9ac48df48080394093061b899c1d1902a720319f7a7028c9850884a3aadc72",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "scripts/sql/postgres-storage-audit.sql",
+    "localSha256": "55778a31f4fe585e8a240162db16a9f3d2572b44823a7cdd082d5e13cce59185",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "scripts/test-r2-database.mjs",
+    "localSha256": "47a3c8678a9404865b82bad145bca859c78ae1181693f38c7438e472996e951b",
+    "candidateExists": true,
+    "candidateSha256": "e3801452ba64a534c7f45c45ce11e0d572d489a950af4f04e9075198f8028855",
+    "classification": "CLEAN_LOCAL_DELTA_REVIEW"
+  },
+  {
+    "path": "src/app/admin/audit/page.tsx",
+    "localSha256": "b1c856deb66df3416143b40476c3cb5f8899d1181aadd01c690c1986b84e45f1",
+    "candidateExists": true,
+    "candidateSha256": "4c44b5e34e7cc478e2ab0b1d7fafcfce29ed6683378275e5115c7154125281e0",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/admin/cashbook/page.tsx",
+    "localSha256": "7c34b82403a1e3de9619a9cec63499c11dd00609382fb292242c05565839ee69",
+    "candidateExists": true,
+    "candidateSha256": "226dcb152dc4897f9f811c97e1791b6e083601d1b5509932c89ba03d725a65ca",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/admin/catalog/page.tsx",
+    "localSha256": "b62d6a5c612460eb17352e29f36421395332f7e086561413a12fba6a09fc2e6e",
+    "candidateExists": true,
+    "candidateSha256": "b75074d2e8551746bd32142c8e92fd191d4c81ef25565858ab4943e966bdb7c5",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/admin/compensation/page.tsx",
+    "localSha256": "e749463238a56b6239e7138f039f699ecdd4f429f6d6909693d917e668aa2a9a",
+    "candidateExists": true,
+    "candidateSha256": "8cd2faa9c35d916c73f3d6b1ffebf8bc6a1234d5c5ef051bf16a0119bbdb652c",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/admin/customers/[id]/page.tsx",
+    "localSha256": "0ee48d292567c7381ff246a7d5b442215cb0e8de6e5f7f96f6d6d41112dbf82e",
+    "candidateExists": true,
+    "candidateSha256": "74fdbdd0a9f81bfa802eef1996407fe185ed7396353a595188a02e1582676215",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/admin/customers/page.tsx",
+    "localSha256": "00199db0e0d02e2463dbd25c3369332db982b49ae1894c89b2ef9052d6d62b4c",
+    "candidateExists": true,
+    "candidateSha256": "2b73a00faeee545cd1357a1511a46c5357795f08bf77402f501b584663cb12a2",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/admin/deliveries/[id]/cancel/page.tsx",
+    "localSha256": "3de66d8b69f3596f564cabe4a72197fb0d9976fe2cc2bfe7206b3b982ebd2a71",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "src/app/admin/deliveries/[id]/page.tsx",
+    "localSha256": "4b1c31e0cff7c2772a8c114489a8f4cc7898e94049c0cfd539199b408662318e",
+    "candidateExists": true,
+    "candidateSha256": "cfc8edc304e6bfde40d8fdacbee424b34c6f1bd1809344d2985c3f4c53596bf8",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/admin/deliveries/page.tsx",
+    "localSha256": "118fbc33111aa871162d5c3e24bd41c79a68940a256bb3eb2820ffc58b9a26b5",
+    "candidateExists": true,
+    "candidateSha256": "2a11ea0291ea5d44bfb74943b65291b0f55ed01db1b01a5f83fdab9b03de9927",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/admin/dispatch/page.tsx",
+    "localSha256": "636e4282a6d1990b4fdc2c7c74b39693206cc0285050fec291cfbc9a1233da7b",
+    "candidateExists": true,
+    "candidateSha256": "56bf5a1e811b394cd6adf26633b2cffc6647f35f6497dcec564cbad6e52e0bb1",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/admin/inventory/page.tsx",
+    "localSha256": "0f4441b3315bfe5e8a2084e72e010c72a01d2e9e188681bf03ad94c08b868897",
+    "candidateExists": true,
+    "candidateSha256": "8bc41a1f68ef38728615589545b2fa0bedc4829b3915c83735cb3efd38a2ea7d",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/admin/orders/[id]/order-detail.module.css",
+    "localSha256": "364d03e4f23cc3b31b6bbf43a2189c52a3d6a0bb9aadac1e668f373945f72044",
+    "candidateExists": true,
+    "candidateSha256": "293b6fc3f0a52f0941bed95a1c8d8714245019427b22a4ef98f66aa85682646c",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/admin/orders/[id]/page.tsx",
+    "localSha256": "8e9d410491e731d97ef13621648b7e14dd97ce8adc12caa41b34abab399ec827",
+    "candidateExists": true,
+    "candidateSha256": "9609c5512c13fad87b1cbe3d37957313c412bdddf8d3da7bb34f44f84b96fc3a",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/admin/orders/page.tsx",
+    "localSha256": "c6864475fe7bc0215de2b3758f7b2d44d608fda4fce4e7855786bd813891d72b",
+    "candidateExists": true,
+    "candidateSha256": "4f47af09001e2115fcbdc4043029c72a61a4a7102d7c0b7f3aa77723e4b3c64f",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/admin/page.tsx",
+    "localSha256": "7b81f16eece7c156b092a84e7ab500a00ab3c2b3740434f6de7fc1b186129e96",
+    "candidateExists": true,
+    "candidateSha256": "068d077087b720eb10fc4532f5c9dc0c931fcedbfc9c4d8236da4425b390e837",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/admin/payables/page.tsx",
+    "localSha256": "a6a7de7509e075ec39430cfe488216fa10fd198bc379aeb0ba7f725a6954507e",
+    "candidateExists": true,
+    "candidateSha256": "3bebb21f1f0e58a321a10b3c94ce9a45f090c00d0a4f0a9d524cbbc3f5792ff4",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/admin/purchase-orders/[id]/page.tsx",
+    "localSha256": "d0216d885e0c46c3ce84bd341d90e84a6f4ea10e98801f7a7f0fae9801d23903",
+    "candidateExists": true,
+    "candidateSha256": "25f64b5fff500f90d2893d2d6c0d5466bc54501d5460e76ce31e59d315fbadf3",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/admin/purchase-orders/new/page.tsx",
+    "localSha256": "5ed4388d614ccab71f2d439b6d631a1521cc87e135466737493d58b671361a0d",
+    "candidateExists": true,
+    "candidateSha256": "7a53528c70e303a77b8774cfa58a438f39d41bcb749bca655971cfb318ba4855",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/admin/quotations/[id]/page.tsx",
+    "localSha256": "58158c433b4a6e6d06a61644205886cf0db3d579f5b77bf1bc208bc8ccafbdc6",
+    "candidateExists": true,
+    "candidateSha256": "6e59c1c31feb7a37ff57dee3e438188578420ce79e4fafb9f0e6d65e205ab2f3",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/admin/receivables/page.tsx",
+    "localSha256": "944a28db4dd629774c3d32e8c64518bfadae609390121dbc6dbbde1a8fd77eeb",
+    "candidateExists": true,
+    "candidateSha256": "198e25e2823b9c62363b8f0c780a26ae751b3247d8031a06284b0dc79c8877f6",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/admin/reports/page.tsx",
+    "localSha256": "a262f1839864e859b830de6dbe9162ae267f8b7c48aa5ab30d0ba50cc2ff8e28",
+    "candidateExists": true,
+    "candidateSha256": "9ec0d84a6221be640285d4a0f9794372e90a32e9d6a6f550a267896b631807ba",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/admin/service-jobs/[id]/page.tsx",
+    "localSha256": "47669392129bc6d4d3ee0a007629b146c700a824c37c1e87b208f724895ab264",
+    "candidateExists": true,
+    "candidateSha256": "08ddef7006977a019b3f8b91e1c3b5524918083a90d03b1257a4f5d5859412d7",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/admin/service-jobs/page.tsx",
+    "localSha256": "6ad48370462e718396b005b5aef95a6f72668e466c0ee0f51e4d49e6a0d8501d",
+    "candidateExists": true,
+    "candidateSha256": "072960e855d3cc114b0244170c4ffdc82aa8c84b5472272d2bd35738abc512fd",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/api/customers/[id]/debt-statement/pdf/route.ts",
+    "localSha256": "7858f066e785011d22342ef4bbee178db7f5b399085cf8949d144631147f95cd",
+    "candidateExists": true,
+    "candidateSha256": "637d1c94f9d69dfa6d20685988be0335294201f389ccdc755bc5c37f5ede5dda",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/api/deliveries/[id]/note/pdf/route.ts",
+    "localSha256": "9c774dddc506ec7333be1aa974149c44894c5617c83a6d8af3e344f90a9f2c86",
+    "candidateExists": true,
+    "candidateSha256": "2ce259c13589588b2e3c8f85203bd7c57117edb85d92c0d3187d854da18cc7b5",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/api/finance/obligations/route.ts",
+    "localSha256": "00e8b6b89ef4999377349d6ad2c5d340436c29ae536f0a849472d6390b16e053",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "src/app/api/payments/[id]/voucher/pdf/route.ts",
+    "localSha256": "c8aefa20ed83c5865c21f56b5a0f7208c1b03ff3ba31802e42a45f9fc0381299",
+    "candidateExists": true,
+    "candidateSha256": "bd515b55ef0c3e65b6aa79c78cbca3b68b8bbcd3f9e79a198d6dca82cdd989ff",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/api/purchasing/evidence/[id]/signed/route.ts",
+    "localSha256": "3e1c6a5aad7d9f03f89fd33b44c7c2738dd11ff058274abcb5a705039a371f39",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "src/app/api/purchasing/evidence/upload/route.ts",
+    "localSha256": "8df9c887feb57b02481880ed9b5adf76570a68e027839f7e89b76a00d867c36d",
+    "candidateExists": true,
+    "candidateSha256": "e05addad476a581d6bd8b1268a600460bb168b3dc321a68b6b13e5ff13d92f52",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/api/quotation-revisions/[id]/pdf/route.ts",
+    "localSha256": "121ee9b6d026745e8e6d09df702cc3bfd05150a17b2655e452d73e2534233cd2",
+    "candidateExists": true,
+    "candidateSha256": "d3af548b637eb8580a2ed6a51f749cd64ddf3efc8fb277c748caa195bff004c7",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/api/reports/export/route.ts",
+    "localSha256": "464ab8c44bf85cdd2343d25ee69c670bd45930cb05ac2cfa8d2dd296e9505722",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "src/app/customer/layout.tsx",
+    "localSha256": "e4abc626690ef0b3b3733dd9477e46bfceb76787cb451460bf112bbcc09aa11c",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "src/app/customer/orders/page.tsx",
+    "localSha256": "f6f4e8801662d4a8de5fbd8b71150e9a3f4eb69928d1209313686428825bbce0",
+    "candidateExists": true,
+    "candidateSha256": "fa79eeb9883f3884e4c435171c02465bd0cea4e9821108487009c15c727f2023",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/customer/page.tsx",
+    "localSha256": "b5503f6034a498ad1a10aefff3f93c5ebad7e7c04ae8beeb98ec7569477dcbaf",
+    "candidateExists": true,
+    "candidateSha256": "e604d41a766deab210114391ae1f0c250f68b61c8f5ba344b2ea0695d3320c88",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/globals.css",
+    "localSha256": "40a727658c0d2b7ad607e33f6e82bb1b5d6ac1a2a53571a4182a20ebe703053c",
+    "candidateExists": true,
+    "candidateSha256": "af93fc78e24be1fa7234dd20205fac212917c25c1bdf6b9f472dfe8ff96363c3",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/app/recovery/confirm/page.tsx",
+    "localSha256": "ad85679bdbb9daa2db2ed4d5957baf8d8e132c8dc809860c991ddf18b25e5273",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "src/components/access/invite-employee-form.tsx",
+    "localSha256": "6ab391da0598b554ccaca2bcfc198991b9108ae15ac1ce6373975fe43ecf1083",
+    "candidateExists": true,
+    "candidateSha256": "4ae7c981fedea93e69688051148e75b2e2cb834e1be1c17fbe85dec6dabf8b7f",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/components/access/manage-access-form.tsx",
+    "localSha256": "d1b92b9059be14979d9afee1146159532a0045b10dc419e5c3e18f0b04f5bda9",
+    "candidateExists": true,
+    "candidateSha256": "5527e43da3d35dfbd2b01b183de90fd28314f91e5ae95f265401b40073fa01ae",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/components/app-shell.test.tsx",
+    "localSha256": "c144915fed2b367a2a8619336268a41083bb1c1d9ef540fb2cc71d27a4d80957",
+    "candidateExists": true,
+    "candidateSha256": "0f3df167e2a1addf821f7ab89705b606d5b78e6c11fc0ad8a163dc125af5d277",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/components/app-shell.tsx",
+    "localSha256": "94f26a959fa7b7dea3dceecad94e8972bc6f17aacd5565eb22081b6aae7edfaa",
+    "candidateExists": true,
+    "candidateSha256": "3d4270c65279e00c963d0cda61366bac660d04a0bfb439cca712321f37102abc",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/components/auth/recovery-confirm-form.tsx",
+    "localSha256": "63639046dbfb514cdb859c6e7d21a10d45e7a29bd6e4796d3729fbb1419cd5c0",
+    "candidateExists": true,
+    "candidateSha256": "178698e5af0b46d414c6a8dd0f747d8e7e1e1b91b9f0931cb727a85d228118f3",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/components/delivery/open-return-case-form.test.tsx",
+    "localSha256": "90f374a64a588a362dc721fe91182acdcb50ddbf8a5d071e518f8eefe75cc60f",
+    "candidateExists": true,
+    "candidateSha256": "fa8c1795521f697f7537906465ca1033ce0eb11052ec2989b432b8646a55a628",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/components/delivery/open-return-case-form.tsx",
+    "localSha256": "af8f488880ab6b7ffe2749f224a5e692240a0f7d24bac07e969f1fa37c54e41a",
+    "candidateExists": true,
+    "candidateSha256": "ea6143069dffdcae63a9917812f7f0d099c33cf886c59925a3086c111812aec0",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/components/delivery/work-item-bridge.tsx",
+    "localSha256": "647f25c7247bd0ea4be78b8656c7aeeb92bb7e93d95c092c5ebf6f6272d73efb",
+    "candidateExists": true,
+    "candidateSha256": "6c050f548122dea121fcb768dadbba0d4e4b21df39adb5013e4e0a513d5071bb",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/components/portal/portal-shell.tsx",
+    "localSha256": "f866c507be97483fe075a46b06bb33fdfa4423fb667f898505fdbe26bf75ed71",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "src/components/purchasing/purchase-evidence-upload.tsx",
+    "localSha256": "ffa537a9e195ce99ccc63ec1fddcf4f8e9944d79cd606e81cb6da058da7b4437",
+    "candidateExists": true,
+    "candidateSha256": "2407fd356aed43287457d65dc7a64cfd0d487dc11d722496d375d27420e1678f",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/components/purchasing/purchase-order-form.test.tsx",
+    "localSha256": "83ba467d3f3f24978afcf3771ab19e59809c49bc1bb0137e6a24c55c77f53e16",
+    "candidateExists": true,
+    "candidateSha256": "469de9de96ee546370969d042b16fc82e7c39a55138e5c1e309041650617efdc",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/components/purchasing/purchase-order-form.tsx",
+    "localSha256": "024de0b8beec592ebf81e3106a82c7581c9530025222e04ec36205a8463b9f98",
+    "candidateExists": true,
+    "candidateSha256": "3df0392a6de963461c93129caa13944192177ad7d8d310c0aacb231b33d590e4",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/components/purchasing/quick-supplier-form.test.tsx",
+    "localSha256": "d163ea861d228bea0ce549b994d84f741c10a7acaff452b6b43c46eeabd41ff1",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "src/components/purchasing/quick-supplier-form.tsx",
+    "localSha256": "52283f52a45e9b20c2e40a86c85bfe6d52947bbb1e91b2f3ef298049785886b2",
+    "candidateExists": true,
+    "candidateSha256": "a384bb95b409d0744576dca860236397fa3c11816cc1e36be586771f12f5bde3",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/components/report-export-button.tsx",
+    "localSha256": "252d44bfbc0eae357f82c190da687860665882fcedc25511bd0a3672866fbad9",
+    "candidateExists": true,
+    "candidateSha256": "11ea6369d4d3cb2f79ffed20c4c8d7832148b781d91c6eb4144c407d4fb9f058",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/components/sales/commercial-document-form.test.tsx",
+    "localSha256": "45923591b9e3b0a80c513d6380e4b55f6de4bc5dff773251e520ed4221fbcf51",
+    "candidateExists": true,
+    "candidateSha256": "c62af64ceac63d80eeb10208f701381e1cebfedc192562b68919f83f4259314f",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/components/sales/commercial-document-form.tsx",
+    "localSha256": "2e21fe80f4149f9e48c9fb4f28d9c7734a49b76c8e44c4314ec561eb046a36f7",
+    "candidateExists": true,
+    "candidateSha256": "5c942328db2e956075ce4df456fa6fba1e89378d15e3fe166c8c646568a38a01",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/components/sales/credit-override.tsx",
+    "localSha256": "a1f47ab9ced60bc83b6fc96b8e75e62e3585bbe567cf12845600840359a1e49e",
+    "candidateExists": true,
+    "candidateSha256": "2c2fe86813c2e38e06c2b91426f60481b394f8bebfc7e0db897cef4cf4ce5a4c",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/components/sales/quick-create-focus-guard.tsx",
+    "localSha256": "d9f740bba01c9e38569fa0e81255bb3926e486a93f6be86c572896444b30a379",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "src/lib/auth/actions.ts",
+    "localSha256": "21292676c3d639f165bf77e046f70607185c3172ed637a168fd1439fd4d39150",
+    "candidateExists": true,
+    "candidateSha256": "365f983adb793e6105bc52374d9cffe02c40748d231e26671e5dc4a21563632a",
+    "classification": "LOCAL_DELTA_ALREADY_COVERED"
+  },
+  {
+    "path": "src/lib/core/business-time.test.ts",
+    "localSha256": "7f3d18170874986eed6b3187ada7b4ad5328f7bfcb8305da89e6fbc1cbdca816",
+    "candidateExists": true,
+    "candidateSha256": "5e493b4f3dd921320facf7fe7fd308afc795d827a24eceb109c0cb2be3f4b760",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/lib/core/business-time.ts",
+    "localSha256": "4a07cbc7a7cb5a75a9e573cb097da11a0e5fa92d36db1a939577f8a647c4fc18",
+    "candidateExists": true,
+    "candidateSha256": "8bf2ab6f7eec5dfcf8cb83b2c8ce1abe7c59248840b7e3056251b31cdb04c4ce",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/lib/core/quantity.ts",
+    "localSha256": "cb0f83bcd61704ddfe9b459ba7c4bf14632f368352128cc492fb8f1cc952da29",
+    "candidateExists": true,
+    "candidateSha256": "dbd4766f1c5cc1e09d806c9e28cf02a5e8320959a6013f6a36fc11ff4a08c8e9",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/lib/supabase/browser.ts",
+    "localSha256": "bec61308851d364f16abc6e6108f227a035d64ad8052ffc53bf1c5634dcacdad",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "src/modules/audit/server.ts",
+    "localSha256": "f5f830061917fd2ccb145b76b334e798fadd9df5f148287701eac6cb3e3c0576",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "src/modules/delivery/actions.ts",
+    "localSha256": "5e333654943be9f5dee39d27ede9d533449460853b0fc96e5994cabcbb52966c",
+    "candidateExists": true,
+    "candidateSha256": "8f1230740a043270fef07c53fc0dbbb37dfbeeaf4ad8d6db58843d55ab70782f",
+    "classification": "CLEAN_LOCAL_DELTA_REVIEW"
+  },
+  {
+    "path": "src/modules/delivery/cancel-planned-action.ts",
+    "localSha256": "990e2d1fee8b4544a47e586ccf81def99958bd87ee8467f04fe668ad75c707dd",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "src/modules/delivery/result-routing.test.ts",
+    "localSha256": "8500200077b34e77b10c27cfcfa9aa606b995e28dfaf1264fa529ad434b5708f",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "src/modules/delivery/return-case-actions.test.ts",
+    "localSha256": "a70640a0711be2177f45fd447781e123894ffbffaab73e71ce26210ef7dec440",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "src/modules/finance/actions.ts",
+    "localSha256": "eb34599c06d275a38bee44bccc375941cf0224ce84c2840e45b44cb8c9762361",
+    "candidateExists": true,
+    "candidateSha256": "3b22dadf9cbe8048e970a3f0606f71f36c1e6e4a2121c1f319dcfc830da9427e",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/modules/finance/payment-form.tsx",
+    "localSha256": "1d3eaf3cdd9d85e61515e4f57aaed235a4a9c2e76af9f858f9645e4415875c14",
+    "candidateExists": true,
+    "candidateSha256": "833ff07ab9a174bf478bd2ff2da33d3019082949eb9b79cee4218f9d4f274937",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/modules/inventory/actions.ts",
+    "localSha256": "508215e2ecd8107694d6be3930230942fdddb2c939c111128857776d1671474c",
+    "candidateExists": true,
+    "candidateSha256": "84dfbcfd20b220e29b2c45265db39052073151dfb1f9664df7fcb83c1ea2fb9b",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/modules/portal/actions.ts",
+    "localSha256": "99d9d8212126a982db6130f214ee52603626e852bcf8240bf74aea65a3816ffd",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "src/modules/portal/customer-snapshot.test.ts",
+    "localSha256": "1a109300480e87368eb142c0e2fd5a24fb1194a5d4f74219da45776be3a93b3c",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "src/modules/portal/types.ts",
+    "localSha256": "0c117acf993021bfc77889522bb50e54b948795c8d5f5c083c2a8c66168d0c9f",
+    "candidateExists": true,
+    "candidateSha256": "f61cb28e66e524166acd02146c26eee00a1116aae19d3e2857d84c07a7ef61f2",
+    "classification": "LOCAL_DELTA_ALREADY_COVERED"
+  },
+  {
+    "path": "src/modules/pricing/editor.test.tsx",
+    "localSha256": "3ba1f214ff7cd337fba1c72ddc91eebb3498cd38f4d2e581a0406d34a8a45148",
+    "candidateExists": true,
+    "candidateSha256": "f16f0187795e871741346a8c46d670ec6f43e0dde29f3b69a91ab31a3d56cc91",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/modules/pricing/editor.tsx",
+    "localSha256": "9b3c599b9f34001d4839c5f880237abf4fe47031dd3851e6f3d4f22a7829932e",
+    "candidateExists": true,
+    "candidateSha256": "25e63bad87efa11a74948eac40c6fbb41efd65e44b7aeac765abf8efd72fd626",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/modules/purchasing/actions.test.ts",
+    "localSha256": "4e11ab9687a3828d3d6e4411684e2085dfa0a2944ac19546977f555b34231f2b",
+    "candidateExists": true,
+    "candidateSha256": "3ddadbc7ae9877cb0bffb3ae29e8499e625a3c811ce8edf3033b5ee922bc1f85",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/modules/purchasing/actions.ts",
+    "localSha256": "c08cff82dbdecb256ca7787a02a4e11aefe94eebc7c8e986297c90ef3b2e2f41",
+    "candidateExists": true,
+    "candidateSha256": "22abdf1c66f39c0fdf1a9a5bc5e7a09a5bd04b4c500c397e882a1b782d19f253",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/modules/purchasing/form-options.ts",
+    "localSha256": "ce4d93ebdf33b9a13145475ce8a50ab8f0c214b4f1afc81bdbc1faae6b429292",
+    "candidateExists": true,
+    "candidateSha256": "6214ff93fb1c257c6aec80fddbdfd3aea835db12140e0c2527d96b8a2c6f42e2",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/modules/reports/server.ts",
+    "localSha256": "8e8ead3fd3cfe742cd9d3dde458735edcbeb3ab2b53426c14b2e4bfd33b41070",
+    "candidateExists": true,
+    "candidateSha256": "4b4a4f16eabee69bc5a5dc96f726e8f2324c03a2eb5538099519ff9e316c9ea0",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/modules/sales/actions.ts",
+    "localSha256": "100184302cf3c935eade3d829dd3d7754a487ee542c116dfdae171fc805a21d4",
+    "candidateExists": true,
+    "candidateSha256": "35df41285ef042e16e0c8bb453d6652d5020c2926181574f1ad36053fbcba0d9",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/modules/sales/credit-override-actions.test.ts",
+    "localSha256": "95418bea2e7569984739a1f625dfad0b32375733a8febb930ae973707b89c388",
+    "candidateExists": true,
+    "candidateSha256": "0a665b558e70dd61ecc004c662d46a1f09cc0c4b1443ead1fa3276dd9e4a7920",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/modules/sales/credit-override-actions.ts",
+    "localSha256": "484bac1b5d062f54cb2c5c2bc285a1701fb130d6239fc7172186c2b77db08bfe",
+    "candidateExists": true,
+    "candidateSha256": "4d99bf7565237650c605569ea7a9ea093d4bf7aae28e2fc36f4d2ca1ca79a632",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/modules/sales/payment-state.test.ts",
+    "localSha256": "a1faa1729f10170ee18e13100201da517fb9aa9d80699cd135669bd1b050f88a",
+    "candidateExists": true,
+    "candidateSha256": "1161abe4947a03197a4a32d7620e0687e2a1202b6ab64900c46db196628f1702",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/modules/sales/presentation.ts",
+    "localSha256": "43a8aeb5c40c35f36d65859eba41f0ab1cdf083bb467721d367bfa1267c5f342",
+    "candidateExists": true,
+    "candidateSha256": "2d7e6b18b2dc0dfed162c84b98e020d6ae92ed27a860dc2e1c1bb2bd771e00d3",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/modules/workforce/actions.ts",
+    "localSha256": "84d7bb3c399ae54b693aeacac521b5e8c18094f4a30e5b4b56125b594fcac9ab",
+    "candidateExists": true,
+    "candidateSha256": "fd31bf5933058bd7a073a345687ed31dc21ef0fe718b1a353ce3c92b8e33949b",
+    "classification": "LOCAL_DELTA_ALREADY_COVERED"
+  },
+  {
+    "path": "src/modules/workforce/delivery-actions.test.ts",
+    "localSha256": "075b2bcff65d838a88b05c2e6f8a65cac32a811e11f6afbb8fd4328413d33bb2",
+    "candidateExists": true,
+    "candidateSha256": "1b0a2a045babf3d95089ec7f13b108b4cc4adf4f8817b17da3ddd8a2fb041545",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/modules/workforce/delivery-actions.ts",
+    "localSha256": "d6be0ba9122ac1847b0c1329f77fc468dc54addcfb581311272fbb57fc0b4918",
+    "candidateExists": true,
+    "candidateSha256": "7bc70659a182d0b2297edb0d86155b0cb71b6938d139c9fb45c76764dbfb3af1",
+    "classification": "OVERLAP_REVIEW"
+  },
+  {
+    "path": "src/test/acceptance-repairs.test.ts",
+    "localSha256": "aaeb55e9c16fb5928bf1dfc4a071f2742aab6d9399d001547cffd0f42be55f83",
+    "candidateExists": false,
+    "classification": "LOCAL_ONLY_REVIEW"
+  },
+  {
+    "path": "supabase/migrations/20260925000100_customer_sensitive_column_boundary.sql",
+    "localSha256": "4e9bd68947052bccb2a84c19a3f169a124848f4c9c7be440d779b4745d35e9d1",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "supabase/migrations/20260927000100_cashbook_full_scope_summary.sql",
+    "localSha256": "60203ff4631e77c9747612ba4bd5aa9674a1d0aad2b3d70d0547581976025309",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "supabase/migrations/20260927000200_dispatch_scheduled_lookup.sql",
+    "localSha256": "10fa228bf19369ad7b1ac1e4b5d2171df0652440622ec978f4a1ec3f149fd311",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "supabase/migrations/20260927000300_report_export_jobs.sql",
+    "localSha256": "b485b03b60245e112da327751be7d10e9758b3753b1cddd5b0525347ccb9b620",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "supabase/migrations/20260927000400_report_export_retry_accounting.sql",
+    "localSha256": "efdbff2c57532c441af5e1b48d994b3dd5e2988ff19ae953da6cd01329abe5bc",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "supabase/migrations/20260927000500_dashboard_dispatch_scoped_reads.sql",
+    "localSha256": "b9e4a48c0e82ee5aa1f06981f806794678e4d0838e0da0b3849e18bcb011e895",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "supabase/migrations/20260927000600_cashbook_summary_permission.sql",
+    "localSha256": "e1b11321f4884ce85016da89a93fdfa8cada4ef68d47d1d4263c96c28d468d17",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "supabase/migrations/20260927205002_uat_earning_read_boundary.sql",
+    "localSha256": "03aab9c61abe8ee5d7c60c6c2f19c82ac796d2cfeec3151630f190a42f694275",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "supabase/migrations/20260930000100_credit_exposure_net_allocations.sql",
+    "localSha256": "4dafa52a09cddcb38d766d588f1072e5a091d61472e9381a4174b36f9a37d7b2",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "supabase/migrations/20260930023428_return_case_supplier_direct_cost.sql",
+    "localSha256": "4d074f3128fcd7c075871e9e13290b124f912863f1567ff732a01bffbea963ff",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "supabase/migrations/20260930024101_cancel_planned_delivery_release_reservations.sql",
+    "localSha256": "d9d8fe0a7fbe728952bc9bc4050e7d4bb08801454c885b1228fdc81523da5482",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "supabase/migrations/20260930025839_audit_notice_quote_transitions.sql",
+    "localSha256": "e38d8b1e7f111e0faeb4ae7a28faf2f1fbfb1a7b02df0f7b2cef94acf6e25fc9",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "supabase/migrations/20260930050137_cancel_scheduled_service_job.sql",
+    "localSha256": "72645a2905ae1a3f2ec5f52441066345f6eef627c384d1be9ac995758eedd7b0",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "supabase/migrations/20260930081621_replace_custom_serialization_errors.sql",
+    "localSha256": "746588b9820a35c517966446d75fb34ece253f517f34f3ef3852988d86c40180",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "supabase/migrations/20260930101520_custom_rpc_conflicts.sql",
+    "localSha256": "1221f424887fa3c56234cda0a5ff32b0ddd05a12722a7308d2cac8252c8ca7da",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "supabase/migrations/20261001084145_fix_sales_order_payment_state.sql",
+    "localSha256": "ec97ab4130b97e137e01e9a8a9399ca6a572ba812d2124e9c65204012676553f",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "supabase/migrations/20261001182059_sales_order_confirmation_credit_override.sql",
+    "localSha256": "a90a4f308845f56a6b48026033bdf7af070024839a996ed42494f11d07794e9d",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "supabase/migrations/20261002071813_index_quotation_and_customer_credit_lookups.sql",
+    "localSha256": "cca7f71910a12e7e00e7a6e6d3cbe5bd67bcbf898b051d4ee75094ee2ed845a1",
+    "candidateExists": true,
+    "classification": "EXACT_ALREADY_PRESENT"
+  },
+  {
+    "path": "supabase/migrations/20261002114730_acceptance_count_guard_and_direct_po_terms.sql",
+    "localSha256": "e3b92964cce8f11a6bb158c2822fe0da1524015f2ae72244cd9b4b5bcd0e78a7",
+    "candidateExists": false,
+    "classification": "LOCAL_ONLY_REVIEW"
+  }
+]

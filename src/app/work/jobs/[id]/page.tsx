@@ -7,6 +7,7 @@ import { ForegroundGpsControl } from "@/components/routing/foreground-gps-contro
 import { createServerSupabase } from "@/lib/supabase/server";
 import { getWorkerPortalJob } from "@/modules/portal/actions";
 import { formatBusinessDateTime } from "@/lib/core/business-time";
+import { GPS_DEVICE_AVAILABLE, GPS_DEVICE_UNAVAILABLE_MESSAGE } from "@/modules/routing/device-availability";
 
 function showDate(value?: string) {
   return value
@@ -23,7 +24,7 @@ export default async function WorkJobPage({ params }: { params: Promise<{ id: st
   const gpsAssignment = gpsAssignments?.[0];
   const available = job.state === "AVAILABLE";
   const claimed = job.state === "CLAIMED";
-  const canSubmitResult = ["IN_PROGRESS", "BLOCKED"].includes(job.state);
+  const canSubmitResult = job.delivery ? job.delivery.can_submit_result : ["IN_PROGRESS", "BLOCKED"].includes(job.state);
   return (
     <div className={styles.page}>
       <header className={styles.hero}>
@@ -44,7 +45,7 @@ export default async function WorkJobPage({ params }: { params: Promise<{ id: st
             <strong>{job.delivery ? `${job.delivery.lines.length} dòng vật tư` : job.quantity ? job.quantity + " " + (job.unit ?? "") : "Theo xác nhận thực tế"}</strong>
           </div>
           {job.delivery?.lines.map((line) => <div className={styles.kv} key={line.id}>
-            <span>{line.material_name}</span><strong>{line.planned_base_quantity} {line.unit}</strong>
+            <span>{line.material_name}</span><strong>Kế hoạch: {line.planned_base_quantity} · Thực lấy: {line.loaded_base_quantity ?? "Chưa ghi nhận"} · Còn được phép báo: {line.reportable_base_quantity} {line.unit}</strong>
           </div>)}
           {job.access_note ? <p className={styles.status}>{job.access_note}</p> : null}
           {available ? <ClaimJobButton version={job.version} workItemId={job.id} /> : null}
@@ -63,11 +64,16 @@ export default async function WorkJobPage({ params }: { params: Promise<{ id: st
               ? "Nhận việc trước khi ghi nhận kết quả."
               : claimed
                 ? "Bắt đầu công việc trước khi ghi nhận kết quả."
-                : "Công việc đã khóa thao tác kết quả ở trạng thái hiện tại."}</p>
+                : job.delivery && job.state === "IN_PROGRESS" && job.delivery.state === "ASSIGNED"
+                  ? "Kho chưa ghi nhận lượng thực lấy. Kiểm tra bàn giao với kho rồi tải lại công việc."
+                  : "Công việc đã khóa thao tác kết quả ở trạng thái hiện tại."}</p>
+            <a className={styles.buttonSecondary} href={`/work/jobs/${job.id}`}>Tải lại công việc</a>
           </section>
         )}
       </div>
-      {gpsAssignment && <ForegroundGpsControl deliveryId={gpsAssignment.delivery_id} assignmentVersion={gpsAssignment.assignment_version} />}
+      {gpsAssignment && (GPS_DEVICE_AVAILABLE
+        ? <ForegroundGpsControl deliveryId={gpsAssignment.delivery_id} assignmentVersion={gpsAssignment.assignment_version} />
+        : <p className={styles.status}>{GPS_DEVICE_UNAVAILABLE_MESSAGE}</p>)}
     </div>
   );
 }

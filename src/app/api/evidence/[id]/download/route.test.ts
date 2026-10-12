@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { beforeEach, expect, it, vi } from "vitest";
+import { createHash } from "node:crypto";
 
 const mocks = vi.hoisted(() => ({
   auth: vi.fn(), rpc: vi.fn(), storage: vi.fn(), from: vi.fn(), download: vi.fn(),
@@ -17,8 +18,9 @@ import { PortalRpcError } from "@/modules/portal/server";
 
 const id = "2669e303-7230-4158-8c66-4833ddf89c47";
 const args = { params: Promise.resolve({ id }) };
-const metadata = { id, bucket_id: "portal-evidence", object_path: "authoritative/proof.png", mime_type: "image/png" };
 const bytes = new Uint8Array([137, 80, 78, 71]);
+const metadata = { id, bucket_id: "portal-evidence", object_path: "authoritative/proof.png", mime_type: "image/png",
+  checksum_sha256: createHash("sha256").update(bytes).digest("hex"), byte_size: bytes.length };
 const request = new Request("http://127.0.0.1:4057/api/evidence/" + id + "/download?bucket=other&path=untrusted");
 
 beforeEach(() => {
@@ -81,4 +83,15 @@ it("keeps the old URL as an authorization-gated stream, not a signed redirect", 
   const response = await legacyGet(request, args);
   expect(response.status).toBe(200);
   expect(response.headers.get("location")).toBeNull();
+});
+it("rejects changed bytes between authorization and download, even at the same size", async () => {
+  mocks.download.mockResolvedValue({ data: new Blob([new Uint8Array([137, 80, 78, 0])]), error: null });
+  const response = await GET(request, args);
+  expect(response.status).toBe(503);
+  expect(await response.text()).not.toContain(metadata.object_path);
+});
+it("fails closed when the authorized metadata has no stored-byte basis", async () => {
+  mocks.rpc.mockResolvedValue({ ...metadata, checksum_sha256: null });
+  expect((await GET(request, args)).status).toBe(404);
+  expect(mocks.storage).not.toHaveBeenCalled();
 });

@@ -1,0 +1,25 @@
+{
+  "status": "PASS_REAL_MANAGED_STORAGE_READ_AND_WRONG_CUSTOMER_DENIAL",
+  "checkedAt": "2026-10-12T06:24:09.667Z",
+  "evidence": "2da9a845-666a-437d-8c70-8e981e007dcf",
+  "checks": [
+    {
+      "name": "AUTHORIZED_ACTUAL_APP_STREAM_SIZE_AND_SHA",
+      "status": "PASS",
+      "bytes": 869,
+      "sha256": "004b6a122c6be7ffdca5258b9b4046103f780e47c2d53dc97ecb81d70431547e"
+    },
+    {
+      "name": "OTHER_CUSTOMER_APP_STREAM_MASKED404",
+      "status": "PASS",
+      "http": 404
+    },
+    {
+      "name": "DIRECT_PORTAL_SDK_DOWNLOAD_STILL_DENIED",
+      "status": "PASS"
+    }
+  ],
+  "newWrites": 0,
+  "productionAccess": "NONE",
+  "fullUploadProof": "Unchanged upload/finalization code and pre178 actual QA evidence remain scoped separately"
+}

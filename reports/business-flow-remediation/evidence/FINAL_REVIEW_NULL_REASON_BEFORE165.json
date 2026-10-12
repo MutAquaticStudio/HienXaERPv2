@@ -1,0 +1,11 @@
+{
+  "scope": "G03_CUSTOMER_PHYSICAL_RETURN_CUMULATIVE_SOURCE_VALUE",
+  "phase": "after",
+  "status": "REPRODUCED_NULL_RETURN_REASON_SUCCESS_AUDIT",
+  "facts": {
+    "nullReasonWasAccepted": true,
+    "successfulAuditReason": null
+  },
+  "rolledBack": true,
+  "productionAccess": "NONE"
+}

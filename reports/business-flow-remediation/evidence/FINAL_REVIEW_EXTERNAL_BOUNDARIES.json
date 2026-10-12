@@ -1,0 +1,11 @@
+{
+  "scope": "READ_ONLY_NATIVE_STORAGE_ENVIRONMENT_PREFLIGHT",
+  "supabaseOrigin": "http://127.0.0.1:3108",
+  "portalStorageSecretConfigured": false,
+  "storageGatewayStatus": 403,
+  "storageBody": "{\"code\":\"HX_TEST_GATEWAY_ROUTE_DENIED\",\"message\":\"Stage 2 test gateway rejected or could not complete this request.\"}",
+  "realtimeGatewayAvailable": false,
+  "realDeviceAvailable": false,
+  "productionAccess": "NONE",
+  "storageWrites": 0
+}

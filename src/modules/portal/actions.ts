@@ -5,7 +5,7 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { authenticatedPortalClient, portalRpc } from "@/modules/portal/server";
+import { authenticatedPortalClient, portalRpc, PortalRpcError } from "@/modules/portal/server";
 import type {
   CustomerOrder,
   CustomerPortalSnapshot,
@@ -27,7 +27,12 @@ export async function getWorkerPortalSnapshot() {
 
 export async function getWorkerPortalJob(id: string) {
   const supabase = await portalClientOrRedirect("/work/login");
-  return portalRpc<WorkerJob>(supabase, "worker_portal_job", { target_work_item_id: id });
+  try {
+    return await portalRpc<WorkerJob>(supabase, "worker_portal_job", { target_work_item_id: id });
+  } catch (error) {
+    if (error instanceof PortalRpcError && error.code === "42501") redirect("/work?notice=work-unavailable");
+    throw error;
+  }
 }
 
 export async function getCustomerPortalSnapshot(customerId?: string) {
@@ -49,7 +54,12 @@ export async function getCustomerPortalSnapshot(customerId?: string) {
 
 export async function getCustomerPortalOrder(id: string) {
   const supabase = await portalClientOrRedirect("/customer/login");
-  return portalRpc<CustomerOrder>(supabase, "customer_portal_order", { target_order_id: id });
+  try {
+    return await portalRpc<CustomerOrder>(supabase, "customer_portal_order", { target_order_id: id });
+  } catch (error) {
+    if (error instanceof PortalRpcError && error.code === "42501") redirect("/customer/orders?notice=order-unavailable");
+    throw error;
+  }
 }
 
 export async function getAdminPaymentNotices() {

@@ -12,15 +12,16 @@ export function UatBrowserTiming() {
     return subscribeTiming(update);
   }, []);
   if (!snapshot) return null;
-  return <section className="card card-pad" aria-label="UAT browser timing" data-testid="uat-timing-panel" data-count={snapshot.samples.length} data-pending={snapshot.pending ? "true" : "false"}>
-    <h2>UAT browser timing (tab-local only)</h2>
-    <p>Click to painted useful UI. No API duration, identities, query values or business telemetry. Errors and cold/first samples remain in the raw record.</p>
+  return <section className="card card-pad" aria-label="Đo thời gian phản hồi giao diện" data-testid="uat-timing-panel" data-count={snapshot.samples.length} data-pending={snapshot.pending ? "true" : "false"}>
+    <h2>Đo thời gian phản hồi giao diện</h2>
+    <p>Đo từ lúc bấm đến khi nội dung hiển thị, chỉ trong thẻ trình duyệt này. Giữ cả mẫu lỗi và lần tải đầu; không thu thập thông tin người dùng hoặc dữ liệu nghiệp vụ.</p>
     {(["ADMIN_SHELL_BROWSER", "DASHBOARD_BROWSER_CONTENT"] as TimingMetric[]).map((metric) => {
       const samples = snapshot.samples.filter((sample) => sample.metric === metric);
       const budget = metric === "ADMIN_SHELL_BROWSER" ? 300 : 2000;
-      return <p key={metric}>{metric}: n={samples.length}; p95={percentile(samples.map((s) => s.durationMs), 0.95)?.toFixed(3) ?? "pending"} ms; {timingVerdict(samples, budget)}</p>;
+      const verdict = timingVerdict(samples, budget);
+      return <p key={metric}>{metric === "ADMIN_SHELL_BROWSER" ? "Điều hướng quản trị" : "Nội dung tổng quan"}: {samples.length.toLocaleString("vi-VN")} mẫu; thời gian ở mức 95%: {percentile(samples.map((s) => s.durationMs), 0.95)?.toLocaleString("vi-VN", { minimumFractionDigits: 3, maximumFractionDigits: 3 }) ?? "Đang chờ"} ms; {verdict === "PASS" ? "Đạt" : verdict === "FAIL" ? "Chưa đạt" : "Đang chờ"}</p>;
     })}
-    {snapshot.storageError && <p role="alert">Measurement storage failed. Do not declare timing PASS.</p>}
-    <details><summary>Raw measurement samples</summary><pre data-testid="uat-timing-state">{JSON.stringify(snapshot)}</pre></details>
+    {snapshot.storageError && <p role="alert">Không lưu được phép đo. Chưa đủ bằng chứng để kết luận đạt.</p>}
+    <details><summary>Chi tiết dữ liệu kiểm thử</summary><pre data-testid="uat-timing-state">{JSON.stringify(snapshot)}</pre></details>
   </section>;
 }

@@ -1,0 +1,40 @@
+{
+  "scope": "G09_REAL_OWNER_BROWSER_COMMISSION_REVIEW_RECOVERY_AND_WAIVE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright; Browser plugin not available",
+  "productionAccess": "NONE",
+  "syntheticLocalEmployeesAndRules": true,
+  "realRightsOrRulesChanged": false,
+  "checks": [
+    {
+      "kind": "RECOVER_UNPAID_COMMISSION",
+      "status": "PASS",
+      "fact": {
+        "resolutions": 1,
+        "kind": "RECOVER_UNPAID_COMMISSION",
+        "originalhash": "c54b0640f65555673b723e81f0174a07",
+        "payments": 1,
+        "olddebt": "0"
+      }
+    },
+    {
+      "kind": "WAIVE",
+      "status": "PASS",
+      "fact": {
+        "resolutions": 1,
+        "kind": "WAIVE",
+        "originalhash": "e3c77547e2cbe5d012640fcc0787de3e",
+        "payments": 1,
+        "olddebt": "0"
+      }
+    }
+  ],
+  "expectedTransportErrors": [
+    {
+      "text": "Failed to load resource: net::ERR_FAILED",
+      "url": "http://127.0.0.1:3110/admin/compensation"
+    }
+  ],
+  "unexpectedErrors": [],
+  "status": "PASS_COMMISSION_REVIEW_BROWSER_RECOVERY_AND_WAIVER"
+}

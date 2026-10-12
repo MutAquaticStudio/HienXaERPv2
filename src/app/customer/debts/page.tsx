@@ -1,12 +1,10 @@
+import { formatPortalMoney as money } from "@/modules/portal/money";
+import { formatBusinessDate } from "@/lib/core/business-time";
+import { financeSourceLabel, financeStateLabel } from "@/modules/finance/presentation";
 import styles from "@/components/portal/portal.module.css";
 import { PaymentNoticeForm } from "@/components/portal/payment-notice-form";
 import { getCustomerPortalSnapshot } from "@/modules/portal/actions";
 
-const money = (value: string | number = 0) => new Intl.NumberFormat("vi-VN", {
-  style: "currency",
-  currency: "VND",
-  maximumFractionDigits: 0,
-}).format(Number(value));
 
 export default async function CustomerDebtsPage() {
   const snapshot = await getCustomerPortalSnapshot();
@@ -32,16 +30,16 @@ export default async function CustomerDebtsPage() {
           <h2>Khoản cần thanh toán</h2>
           {snapshot.debt.items.length ? snapshot.debt.items.map((item) => (
             <article className={styles.kv} key={item.id}>
-              <span>{item.source_number ?? item.source_type ?? "Khoản phải thu"}<br /><small>Hạn {item.due_date ?? "chưa chốt"}</small></span>
+              <span>{item.source_number ?? financeSourceLabel(item.source_type)}<br /><small>Hạn {item.due_date ? formatBusinessDate(item.due_date) : "chưa chốt"}</small></span>
               <strong>{money(item.outstanding_amount_vnd ?? 0)}</strong>
             </article>
           )) : <p className={styles.empty}>Không có dư nợ.</p>}
           <h2>Thông báo đã gửi</h2>
           {snapshot.payment_notices.map((notice) => (
             <article className={styles.card} key={notice.id}>
-              <span className={styles.badge}>{notice.state}</span>
+              <span className={styles.badge}>{financeStateLabel(notice.state)}</span>
               <strong>{money(notice.amount_vnd)}</strong>
-              <span className={styles.hint}>{notice.paid_on} · {notice.reference ?? "Không có mã giao dịch"}</span>
+              <span className={styles.hint}>{formatBusinessDate(notice.paid_on)} · {notice.reference ?? "Không có mã giao dịch"}</span>
               <a className={styles.link} href={"/api/evidence/" + notice.evidence_id + "/download"} rel="noreferrer" target="_blank">Mở chứng từ riêng tư</a>
               {notice.review_note ? <p>{notice.review_note}</p> : null}
             </article>

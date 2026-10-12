@@ -1,0 +1,207 @@
+{
+  "scope": "FINAL_CANONICAL174_EFFECTIVE_FUNCTIONS_ACL_NATIVE_CLOUD_QA_PARITY",
+  "canonicalMigrations": 174,
+  "qaHistory": 175,
+  "status": "PASS_RELEVANT_CONTRACT_PARITY",
+  "nativeFunctionCount": 288,
+  "qaFunctionCount": 288,
+  "differences": [
+    {
+      "schema": "public",
+      "name": "customer_safe_quotation_lines",
+      "signature": "target_revision_id uuid"
+    }
+  ],
+  "functions": [
+    {
+      "schema": "private",
+      "name": "assert_verified_evidence",
+      "signature": "target_evidence_id uuid, target_branch_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION private.assert_verified_evidence(target_evidence_id uuid, target_branch_id uuid)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nbegin\n  if target_evidence_id is not null and not exists (\n    select 1 from public.evidence_objects e where e.id = target_evidence_id\n      and e.branch_id = target_branch_id and e.upload_state = 'VERIFIED'\n      and private.evidence_storage_binding_current('INTERNAL',e.id,e.bucket_name,e.object_path) and exists(select 1 from private.evidence_storage_attestations a where a.namespace='INTERNAL' and a.evidence_id=e.id and a.checksum_sha256=e.checksum_sha256 and a.byte_size=e.byte_size)\n  ) then raise exception 'evidence_not_verified' using errcode = '23514'; end if;\nend\n$function$\n",
+      "acl": "{postgres=X/postgres}",
+      "sha256": "93274069cb054c8bef71ebcaa0075aa139b98e92f956e93cb85e9074a7e00115"
+    },
+    {
+      "schema": "private",
+      "name": "can_read_internal_evidence_storage",
+      "signature": "target_bucket text, target_path text",
+      "definition": "CREATE OR REPLACE FUNCTION private.can_read_internal_evidence_storage(target_bucket text, target_path text)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n select exists(select 1 from public.evidence_objects e where e.bucket_name=target_bucket and e.object_path=target_path and private.has_permission(e.branch_id,'evidence.manage'))\n$function$\n",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "sha256": "3ebff7d085a2ac3308226e8131776fe39f217d2e871a9465c55d572364ada124"
+    },
+    {
+      "schema": "private",
+      "name": "can_read_portal_evidence_object",
+      "signature": "target_object_path text",
+      "definition": "CREATE OR REPLACE FUNCTION private.can_read_portal_evidence_object(target_object_path text)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n  select exists (\n    select 1\n    from public.portal_evidence_objects e\n    where e.object_path = target_object_path\n      and private.portal_evidence_access(e.id, true)\n  )\n$function$\n",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "sha256": "6b96a92998081de4c694bfc274016ed26df041c1160fbe59fe8627a168b1f7d1"
+    },
+    {
+      "schema": "private",
+      "name": "can_write_internal_evidence_storage",
+      "signature": "target_bucket text, target_path text",
+      "definition": "CREATE OR REPLACE FUNCTION private.can_write_internal_evidence_storage(target_bucket text, target_path text)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n select exists(select 1 from public.evidence_objects e where e.bucket_name=target_bucket and e.object_path=target_path and e.upload_state='PENDING' and private.has_permission(e.branch_id,'evidence.manage'))\n$function$\n",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "sha256": "8eccdc47502482c185ac8dba2b5acdd161801afc63d98c660179bbdc7e4ad4cf"
+    },
+    {
+      "schema": "private",
+      "name": "can_write_portal_evidence_object",
+      "signature": "target_object_path text",
+      "definition": "CREATE OR REPLACE FUNCTION private.can_write_portal_evidence_object(target_object_path text)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n  select exists (\n    select 1\n    from public.portal_evidence_objects e\n    where e.object_path = target_object_path\n      and e.uploaded_by = (select auth.uid())\n      and e.object_state='PENDING'\n      and private.portal_evidence_access(e.id, false)\n  )\n$function$\n",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "sha256": "3333648b2dd1727f765f360052611fc9c90d0d76f0fcf3392cb9528bebe7a4a2"
+    },
+    {
+      "schema": "private",
+      "name": "evidence_actor_customer_role",
+      "signature": "actor_uuid uuid, target_customer_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION private.evidence_actor_customer_role(actor_uuid uuid, target_customer_id uuid)\n RETURNS text\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n  select m.membership_role::text\n  from public.customer_portal_memberships m\n  where m.auth_user_id = actor_uuid\n    and m.customer_id = target_customer_id\n    and m.active\n  order by m.customer_id\n  limit 1\n$function$\n",
+      "acl": "{postgres=X/postgres}",
+      "sha256": "c1229b042213d23d5a36bb217a0c67c003445704051d3f200fe9618d53e005f6"
+    },
+    {
+      "schema": "private",
+      "name": "evidence_actor_has_permission",
+      "signature": "actor_uuid uuid, target_branch_id uuid, requested_permission text",
+      "definition": "CREATE OR REPLACE FUNCTION private.evidence_actor_has_permission(actor_uuid uuid, target_branch_id uuid, requested_permission text)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n  select exists (\n    select 1\n    from public.employees e\n    join public.employee_branch_access a on a.employee_id = e.id and a.active\n    join public.branches b on b.id = a.branch_id and b.active\n    join public.roles r on r.id = a.role_id and r.active\n    where e.auth_user_id = actor_uuid\n      and e.active\n      and a.branch_id = target_branch_id\n      and (\n        exists (\n          select 1 from public.role_permissions rp\n          where rp.role_id = r.id and rp.permission_code = requested_permission\n        )\n        or exists (\n          select 1 from public.employee_permission_grants g\n          where g.employee_id = e.id\n            and g.branch_id = a.branch_id\n            and g.permission_code = requested_permission\n        )\n      )\n  )\n$function$\n",
+      "acl": "{postgres=X/postgres}",
+      "sha256": "b48b2d382df537cd8d61b0f1ae99a494a590db3e9da70b2cfd37b920b8d0dc0c"
+    },
+    {
+      "schema": "private",
+      "name": "evidence_actor_is_assignee",
+      "signature": "actor_uuid uuid, target_work_item_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION private.evidence_actor_is_assignee(actor_uuid uuid, target_work_item_id uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n  select exists (\n    select 1\n    from public.work_item_assignments a\n    join public.work_items w on w.id = a.work_item_id\n    where a.work_item_id = target_work_item_id\n      and a.superseded_at is null\n      and a.employee_id = (select e.id from public.employees e where e.auth_user_id=actor_uuid and e.active limit 1)\n      and private.evidence_actor_has_permission(actor_uuid,w.branch_id, 'work.claim')\n  )\n$function$\n",
+      "acl": "{postgres=X/postgres}",
+      "sha256": "2b57bd5b698276acf24a123616ced5e3df5997c41f140605109cabed3a06e68a"
+    },
+    {
+      "schema": "private",
+      "name": "evidence_actor_portal_access",
+      "signature": "actor_uuid uuid, target_evidence_id uuid, require_ready boolean",
+      "definition": "CREATE OR REPLACE FUNCTION private.evidence_actor_portal_access(actor_uuid uuid, target_evidence_id uuid, require_ready boolean DEFAULT true)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n  select exists (\n    select 1\n    from public.portal_evidence_objects e\n    where e.id = target_evidence_id\n      and (not require_ready or e.object_state = 'READY')\n      and e.object_state <> 'REVOKED'\n      and (\n        private.evidence_actor_has_permission(actor_uuid,\n          coalesce(\n            (select w.branch_id from public.work_items w where w.id = e.work_item_id),\n            (select c.branch_id from public.customers c where c.id = e.customer_id)\n          ),\n          'evidence.manage'\n        )\n        or (e.context_type = 'WORK_RESULT' and private.evidence_actor_is_assignee(actor_uuid,e.work_item_id))\n        or (\n          e.context_type = 'WORK_RESULT'\n          and exists (\n            select 1\n            from public.work_result_portal_evidence link\n            join public.work_item_results wr on wr.id = link.work_result_id\n            join public.work_items w on w.id = wr.work_item_id\n            join public.delivery_results dr on dr.source_work_item_result_id = wr.id\n            join public.deliveries d on d.id = dr.delivery_id\n            where link.evidence_id = e.id\n              and wr.work_item_id = e.work_item_id\n              and w.delivery_id = d.id\n              and w.branch_id = d.branch_id\n              and private.evidence_actor_has_permission(actor_uuid,d.branch_id, 'delivery.read')\n              and private.evidence_actor_has_permission(actor_uuid,d.branch_id, 'delivery.verify')\n          )\n        )\n        or (\n          e.context_type = 'PAYMENT_NOTICE'\n          and private.evidence_actor_customer_role(actor_uuid,e.customer_id) in ('OWNER','FINANCE_CONTACT')\n        )\n        or (\n          e.context_type = 'PAYMENT_NOTICE'\n          and private.evidence_actor_has_permission(actor_uuid,(select c.branch_id from public.customers c where c.id = e.customer_id), 'finance.payment_notice.review')\n        )\n      )\n  )\n$function$\n",
+      "acl": "{postgres=X/postgres}",
+      "sha256": "758b9bde9557cd45e1ebba75b44eef91a99f060e7579f86c1c3859d41f933dd1"
+    },
+    {
+      "schema": "private",
+      "name": "evidence_storage_binding_current",
+      "signature": "kind text, eid uuid, bucket text, path text",
+      "definition": "CREATE OR REPLACE FUNCTION private.evidence_storage_binding_current(kind text, eid uuid, bucket text, path text)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n  select exists(select 1 from private.evidence_storage_bindings b\n    where b.namespace=kind and b.evidence_id=eid\n      and jsonb_build_object('id',b.object_id,'version',b.object_version)=private.evidence_storage_identity(bucket,path));\n$function$\n",
+      "acl": "{postgres=X/postgres}",
+      "sha256": "80a158806577e3fd3f028ad82587ca1a421a63517c596c710e2b677f65697abc"
+    },
+    {
+      "schema": "private",
+      "name": "evidence_storage_identity",
+      "signature": "bucket text, path text",
+      "definition": "CREATE OR REPLACE FUNCTION private.evidence_storage_identity(bucket text, path text)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare identity jsonb;\nbegin\n  if to_regclass('storage.objects') is null then return null;end if;\n  execute 'select jsonb_build_object(''id'',id,''version'',version) from storage.objects where bucket_id=$1 and name=$2 and version is not null' into identity using bucket,path;\n  return identity;\nend $function$\n",
+      "acl": "{postgres=X/postgres}",
+      "sha256": "b90493137743be552f3f8370629dad249d6cf196d9c2c6329fe03ff8ae975acb"
+    },
+    {
+      "schema": "private",
+      "name": "evidence_storage_object_exists",
+      "signature": "target_bucket text, target_path text",
+      "definition": "CREATE OR REPLACE FUNCTION private.evidence_storage_object_exists(target_bucket text, target_path text)\n RETURNS boolean\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare present boolean;\nbegin\n if to_regclass('storage.objects') is null then return false;end if;\n execute 'select exists(select 1 from storage.objects where bucket_id=$1 and name=$2)' into present using target_bucket,target_path;\n return coalesce(present,false);\nend $function$\n",
+      "acl": "{postgres=X/postgres}",
+      "sha256": "c10e0ce36ae8dc74592776e7a21c6eecff7f440ae5ec782a994466fdfebc489f"
+    },
+    {
+      "schema": "private",
+      "name": "guard_evidence_storage_finalization",
+      "signature": "",
+      "definition": "CREATE OR REPLACE FUNCTION private.guard_evidence_storage_finalization()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'public', 'private'\nAS $function$\nbegin\n  if new.upload_state='VERIFIED' and old.upload_state<>'VERIFIED'\n    and not private.evidence_storage_object_exists(new.bucket_name,new.object_path) then\n    raise exception 'evidence_storage_object_unavailable' using errcode='55000';\n  end if;\n  return new;\nend;\n$function$\n",
+      "acl": "{postgres=X/postgres}",
+      "sha256": "990e93f3a3816f0f9b1ad91d420b2f4804d1dac6c563b78b5d1fdf4e7e28f7e2"
+    },
+    {
+      "schema": "private",
+      "name": "portal_evidence_access",
+      "signature": "target_evidence_id uuid, require_ready boolean",
+      "definition": "CREATE OR REPLACE FUNCTION private.portal_evidence_access(target_evidence_id uuid, require_ready boolean DEFAULT true)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n  select exists (\n    select 1\n    from public.portal_evidence_objects e\n    where e.id = target_evidence_id\n      and (not require_ready or(e.object_state='READY' and private.evidence_storage_binding_current('PORTAL',e.id,e.bucket_id,e.object_path) and exists(select 1 from private.evidence_storage_attestations a where a.namespace='PORTAL' and a.evidence_id=e.id and a.checksum_sha256=e.checksum_sha256 and a.byte_size=e.final_byte_size)))\n      and e.object_state <> 'REVOKED'\n      and (\n        private.has_permission(\n          coalesce(\n            (select w.branch_id from public.work_items w where w.id = e.work_item_id),\n            (select c.branch_id from public.customers c where c.id = e.customer_id)\n          ),\n          'evidence.manage'\n        )\n        or (e.context_type = 'WORK_RESULT' and private.is_current_work_assignee(e.work_item_id))\n        or (\n          e.context_type = 'WORK_RESULT'\n          and exists (\n            select 1\n            from public.work_result_portal_evidence link\n            join public.work_item_results wr on wr.id = link.work_result_id\n            join public.work_items w on w.id = wr.work_item_id\n            join public.delivery_results dr on dr.source_work_item_result_id = wr.id\n            join public.deliveries d on d.id = dr.delivery_id\n            where link.evidence_id = e.id\n              and wr.work_item_id = e.work_item_id\n              and w.delivery_id = d.id\n              and w.branch_id = d.branch_id\n              and private.has_permission(d.branch_id, 'delivery.read')\n              and private.has_permission(d.branch_id, 'delivery.verify')\n          )\n        )\n        or (\n          e.context_type = 'PAYMENT_NOTICE'\n          and private.portal_customer_role(e.customer_id) in ('OWNER','FINANCE_CONTACT')\n        )\n        or (\n          e.context_type = 'PAYMENT_NOTICE'\n          and private.has_permission((select c.branch_id from public.customers c where c.id = e.customer_id), 'finance.payment_notice.review')\n        )\n      )\n  )\n$function$\n",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "sha256": "6cc5db7cc6dfbef4d6932c3609255b14a70e4dcf58129c6e3ccff8f877747992"
+    },
+    {
+      "schema": "private",
+      "name": "record_storage_attestation",
+      "signature": "kind text, eid uuid, sha text, bytes bigint, actor uuid",
+      "definition": "CREATE OR REPLACE FUNCTION private.record_storage_attestation(kind text, eid uuid, sha text, bytes bigint, actor uuid)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare\n  old private.evidence_storage_attestations%rowtype;\n  binding private.evidence_storage_bindings%rowtype;\n  bucket text;path text;identity jsonb;\nbegin\n  if kind='PORTAL' then select bucket_id,object_path into bucket,path from public.portal_evidence_objects where id=eid;\n  elsif kind='INTERNAL' then select bucket_name,object_path into bucket,path from public.evidence_objects where id=eid;\n  else raise exception 'invalid_evidence_namespace' using errcode='22023';end if;\n  if to_regclass('storage.objects') is null then raise exception 'evidence_storage_object_unavailable' using errcode='55000';end if;\n  execute 'select jsonb_build_object(''id'',id,''version'',version) from storage.objects where bucket_id=$1 and name=$2 and version is not null for share' into identity using bucket,path;\n  if identity is null then raise exception 'evidence_storage_object_unavailable' using errcode='55000';end if;\n  select * into old from private.evidence_storage_attestations where namespace=kind and evidence_id=eid;\n  if found then\n    if old.checksum_sha256 is distinct from sha or old.byte_size is distinct from bytes then raise exception 'evidence_attestation_conflict' using errcode='23505';end if;\n  else\n    insert into private.evidence_storage_attestations(namespace,evidence_id,checksum_sha256,byte_size,verified_by) values(kind,eid,sha,bytes,actor);\n  end if;\n  select * into binding from private.evidence_storage_bindings where namespace=kind and evidence_id=eid;\n  if found then\n    if jsonb_build_object('id',binding.object_id,'version',binding.object_version) is distinct from identity then raise exception 'evidence_storage_object_changed' using errcode='23505';end if;\n  else\n    insert into private.evidence_storage_bindings(namespace,evidence_id,object_id,object_version) values(kind,eid,(identity->>'id')::uuid,identity->>'version');\n  end if;\nend $function$\n",
+      "acl": "{postgres=X/postgres}",
+      "sha256": "c0217e42430c289bc0c4b28dbd9c9206c8b6e3df0575162a94074d6be75a83e2"
+    },
+    {
+      "schema": "public",
+      "name": "create_evidence_upload",
+      "signature": "target_branch_id uuid, bucket_name text, object_path text, audience text, operation_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.create_evidence_upload(target_branch_id uuid, bucket_name text, object_path text, audience text, operation_id uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare hash text; receipt public.command_receipts%rowtype; evidence_id uuid;\nbegin\n  if not private.has_permission(target_branch_id, 'evidence.manage') then raise exception 'forbidden' using errcode = '42501'; end if;\n  if bucket_name not in ('delivery-proofs','inventory-evidence') or char_length(trim(object_path)) < 3 or audience not in ('INTERNAL','CUSTOMER') then raise exception 'invalid_evidence_upload' using errcode = '22023'; end if;\n  hash := private.command_payload_hash(jsonb_build_object('branch_id', target_branch_id, 'bucket', bucket_name, 'path', trim(object_path), 'audience', audience));\n  select * into receipt from public.command_receipts where command_receipts.operation_id = create_evidence_upload.operation_id;\n  if found then if receipt.command_name <> 'create_evidence_upload' or receipt.payload_hash <> hash then raise exception 'operation_payload_conflict' using errcode = '23505'; end if; return receipt.result_entity_id; end if;\n  insert into public.evidence_objects(branch_id, bucket_name, object_path, audience, created_by)\n  values (target_branch_id, bucket_name, trim(object_path), audience, (select auth.uid())) returning id into evidence_id;\n  insert into public.command_receipts values (operation_id, (select auth.uid()), 'create_evidence_upload', hash, 'evidence_object', evidence_id, now());\n  return evidence_id;\nend\n$function$\n",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "sha256": "079a5d3ebe148f56c640bddce4e3e39c69d22b6e3306ad996e3883e8da76e89d"
+    },
+    {
+      "schema": "public",
+      "name": "create_portal_evidence",
+      "signature": "target_context_type text, target_work_item_id uuid, target_customer_id uuid, target_mime_type text, target_byte_size bigint, operation_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.create_portal_evidence(target_context_type text, target_work_item_id uuid, target_customer_id uuid, target_mime_type text, target_byte_size bigint, operation_id uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare\n  payload_hash text;\n  receipt public.command_receipts%rowtype;\n  evidence public.portal_evidence_objects%rowtype;\n  extension text;\n  actor_quota bigint;\nbegin\n  if (select auth.uid()) is null then raise exception 'authentication_required' using errcode = '42501'; end if;\n  if target_mime_type not in ('image/jpeg','image/png','application/pdf') or target_byte_size not between 1 and 10485760 then\n    raise exception 'unsupported_evidence_file' using errcode = '22023';\n  end if;\n  if target_context_type = 'WORK_RESULT' then\n    if target_work_item_id is null or target_customer_id is not null or not private.is_current_work_assignee(target_work_item_id) then\n      raise exception 'work_evidence_forbidden' using errcode = '42501';\n    end if;\n  elsif target_context_type = 'PAYMENT_NOTICE' then\n    if target_customer_id is null or target_work_item_id is not null or coalesce(private.portal_customer_role(target_customer_id), '') not in ('OWNER','FINANCE_CONTACT') then\n      raise exception 'payment_evidence_forbidden' using errcode = '42501';\n    end if;\n  else\n    raise exception 'unsupported_evidence_context' using errcode = '22023';\n  end if;\n\n  payload_hash := private.command_payload_hash(jsonb_build_object(\n    'context', target_context_type,\n    'work_item', target_work_item_id,\n    'customer', target_customer_id,\n    'mime', target_mime_type,\n    'bytes', target_byte_size\n  ));\n  select * into receipt from public.command_receipts r where r.operation_id = create_portal_evidence.operation_id;\n  if found then\n    if receipt.command_name <> 'create_portal_evidence' or receipt.payload_hash <> payload_hash then raise exception 'operation_payload_conflict' using errcode = '23505'; end if;\n    select * into evidence from public.portal_evidence_objects e where e.id = receipt.result_entity_id;\n    return jsonb_build_object('id', evidence.id, 'bucket_id', evidence.bucket_id, 'object_path', evidence.object_path, 'state', evidence.object_state);\n  end if;\n\n  select coalesce(sum(coalesce(e.final_byte_size, e.declared_byte_size)), 0)\n  into actor_quota\n  from public.portal_evidence_objects e\n  where e.uploaded_by = (select auth.uid()) and e.object_state <> 'REVOKED';\n  if actor_quota + target_byte_size > 104857600 then raise exception 'portal_evidence_quota_exceeded' using errcode = '54000'; end if;\n\n  extension := case target_mime_type when 'image/jpeg' then '.jpg' when 'image/png' then '.png' else '.pdf' end;\n  evidence.id := gen_random_uuid();\n  evidence.object_path := lower(target_context_type) || '/' || evidence.id::text || '-' || gen_random_uuid()::text || extension;\n  insert into public.portal_evidence_objects(\n    id, object_path, context_type, work_item_id, customer_id, uploaded_by, mime_type, declared_byte_size\n  ) values(\n    evidence.id, evidence.object_path, target_context_type, target_work_item_id, target_customer_id,\n    (select auth.uid()), target_mime_type, target_byte_size\n  ) returning * into evidence;\n  insert into public.command_receipts\n  values(operation_id, (select auth.uid()), 'create_portal_evidence', payload_hash, 'portal_evidence', evidence.id, now());\n  return jsonb_build_object('id', evidence.id, 'bucket_id', evidence.bucket_id, 'object_path', evidence.object_path, 'state', evidence.object_state);\nend $function$\n",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "sha256": "1853c0186097937068dc216dce58ffe6837c8db7e19de68bb7676244c9c45f66"
+    },
+    {
+      "schema": "public",
+      "name": "evidence_verified_storage_status",
+      "signature": "target_evidence_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.evidence_verified_storage_status(target_evidence_id uuid)\n RETURNS boolean\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare e public.evidence_objects%rowtype;begin select * into e from public.evidence_objects where id=target_evidence_id;if e.id is null or not private.has_permission(e.branch_id,'evidence.manage') then raise exception 'forbidden' using errcode='42501';end if;\nreturn e.upload_state='VERIFIED' and private.evidence_storage_binding_current('INTERNAL',e.id,e.bucket_name,e.object_path) and exists(select 1 from private.evidence_storage_attestations a where a.namespace='INTERNAL' and a.evidence_id=e.id and a.checksum_sha256=e.checksum_sha256 and a.byte_size=e.byte_size);end $function$\n",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "sha256": "62d141a473f607fc956a1823a3862ed14673332ac2afde481ee2d54ed22e71de"
+    },
+    {
+      "schema": "public",
+      "name": "finalize_evidence_upload",
+      "signature": "target_evidence_id uuid, checksum_sha256 text, byte_size bigint, operation_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.finalize_evidence_upload(target_evidence_id uuid, checksum_sha256 text, byte_size bigint, operation_id uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare evidence public.evidence_objects%rowtype; hash text; receipt public.command_receipts%rowtype;\nbegin\n  select * into evidence from public.evidence_objects where id = target_evidence_id for update;\n  if evidence.id is null then raise exception 'evidence_not_found' using errcode = '23503'; end if;\n  if not private.has_permission(evidence.branch_id, 'evidence.manage') then raise exception 'forbidden' using errcode = '42501'; end if;\n  if checksum_sha256 !~ '^[0-9a-f]{64}$' or byte_size <= 0 then raise exception 'invalid_evidence_metadata' using errcode = '22023'; end if;\n  if evidence.upload_state='PENDING' then raise exception 'storage_finalization_requires_server' using errcode='42501';end if;\n  hash := private.command_payload_hash(jsonb_build_object('evidence_id', target_evidence_id, 'checksum', checksum_sha256, 'byte_size', byte_size));\n  select * into receipt from public.command_receipts where command_receipts.operation_id = finalize_evidence_upload.operation_id;\n  if found then if receipt.command_name <> 'finalize_evidence_upload' or receipt.payload_hash <> hash then raise exception 'operation_payload_conflict' using errcode = '23505'; end if; return receipt.result_entity_id; end if;\n  if evidence.upload_state = 'VERIFIED' and (evidence.checksum_sha256 <> checksum_sha256 or evidence.byte_size <> byte_size) then raise exception 'evidence_payload_conflict' using errcode = '23505'; end if;\n  update public.evidence_objects set upload_state = 'VERIFIED', checksum_sha256 = finalize_evidence_upload.checksum_sha256,\n    byte_size = finalize_evidence_upload.byte_size, verified_at = coalesce(verified_at, now()) where id = target_evidence_id;\n  insert into public.command_receipts values (operation_id, (select auth.uid()), 'finalize_evidence_upload', hash, 'evidence_object', target_evidence_id, now());\n  return target_evidence_id;\nend\n$function$\n",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "sha256": "589d0d696552f85934e7a9edf041c71392de8d150edfc202c373119053aea0d6"
+    },
+    {
+      "schema": "public",
+      "name": "finalize_evidence_upload_verified",
+      "signature": "actor_uuid uuid, target_evidence_id uuid, checksum_sha256 text, byte_size bigint, operation_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.finalize_evidence_upload_verified(actor_uuid uuid, target_evidence_id uuid, checksum_sha256 text, byte_size bigint, operation_id uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare evidence public.evidence_objects%rowtype; hash text; receipt public.command_receipts%rowtype;\nbegin\n  select * into evidence from public.evidence_objects where id = target_evidence_id for update;\n  if evidence.id is null then raise exception 'evidence_not_found' using errcode = '23503'; end if;\n  if not private.evidence_actor_has_permission(actor_uuid,evidence.branch_id, 'evidence.manage') then raise exception 'forbidden' using errcode = '42501'; end if;\n  if checksum_sha256 !~ '^[0-9a-f]{64}$' or byte_size <= 0 then raise exception 'invalid_evidence_metadata' using errcode = '22023'; end if;\n  if actor_uuid is null or operation_id is null or checksum_sha256 is null or byte_size is null or byte_size not between 1 and 10485760 or checksum_sha256 !~ '^[0-9a-f]{64}$' then raise exception 'invalid_evidence_metadata' using errcode='22023';end if;\n  if not private.evidence_storage_object_exists(evidence.bucket_name,evidence.object_path) then raise exception 'evidence_storage_object_unavailable' using errcode='55000';end if;\n  hash := private.command_payload_hash(jsonb_build_object('evidence_id', target_evidence_id, 'checksum', checksum_sha256, 'byte_size', byte_size));\n  select * into receipt from public.command_receipts where command_receipts.operation_id = finalize_evidence_upload_verified.operation_id;\n  if found then if receipt.command_name <> 'finalize_evidence_upload' or receipt.payload_hash <> hash then raise exception 'operation_payload_conflict' using errcode = '23505'; end if; perform private.record_storage_attestation('INTERNAL',evidence.id,checksum_sha256,byte_size,actor_uuid); return receipt.result_entity_id; end if;\n  if evidence.upload_state = 'VERIFIED' and (evidence.checksum_sha256 <> checksum_sha256 or evidence.byte_size <> byte_size) then raise exception 'evidence_payload_conflict' using errcode = '23505'; end if;\n  perform private.record_storage_attestation('INTERNAL',evidence.id,checksum_sha256,byte_size,actor_uuid);\n  update public.evidence_objects set upload_state = 'VERIFIED', checksum_sha256 = finalize_evidence_upload_verified.checksum_sha256,\n    byte_size = finalize_evidence_upload_verified.byte_size, verified_at = coalesce(verified_at, now()) where id = target_evidence_id;\n  insert into public.command_receipts values (operation_id, actor_uuid, 'finalize_evidence_upload', hash, 'evidence_object', target_evidence_id, now());\n  insert into public.audit_events(actor_auth_user_id,branch_id,action,entity_type,entity_id,trace_id,changed_fields)\n  values(actor_uuid,evidence.branch_id,'evidence.storage_verified','evidence_object',evidence.id,operation_id,array['stored_file','checksum_sha256','byte_size']);\n  return target_evidence_id;\nend\n$function$\n",
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "sha256": "f3b2c8d615405d74a9170a77bf0437bff1c6d9aafa142b493b756dc6e67ab4b4"
+    },
+    {
+      "schema": "public",
+      "name": "finalize_portal_evidence",
+      "signature": "target_evidence_id uuid, target_checksum_sha256 text, target_byte_size bigint, operation_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.finalize_portal_evidence(target_evidence_id uuid, target_checksum_sha256 text, target_byte_size bigint, operation_id uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare\n  evidence public.portal_evidence_objects%rowtype;\n  payload_hash text;\n  receipt public.command_receipts%rowtype;\nbegin\n  select * into evidence from public.portal_evidence_objects e where e.id = target_evidence_id;\n  if evidence.id is null or evidence.uploaded_by <> (select auth.uid()) or not private.portal_evidence_access(evidence.id, false) then\n    raise exception 'evidence_finalize_forbidden' using errcode = '42501';\n  end if;\n  if target_byte_size <> evidence.declared_byte_size or target_checksum_sha256 !~ '^[0-9a-f]{64}$' then\n    raise exception 'evidence_integrity_mismatch' using errcode = '22023';\n  end if;\n  if evidence.object_state='PENDING' then raise exception 'storage_finalization_requires_server' using errcode='42501';end if;\n  payload_hash := private.command_payload_hash(jsonb_build_object('evidence', target_evidence_id, 'checksum', target_checksum_sha256, 'bytes', target_byte_size));\n  select * into receipt from public.command_receipts r where r.operation_id = finalize_portal_evidence.operation_id;\n  if found then\n    if receipt.command_name <> 'finalize_portal_evidence' or receipt.payload_hash <> payload_hash then raise exception 'operation_payload_conflict' using errcode = '23505'; end if;\n    return receipt.result_entity_id;\n  end if;\n  if evidence.object_state = 'READY' then\n    if evidence.final_byte_size <> target_byte_size or evidence.checksum_sha256 <> target_checksum_sha256 then raise exception 'evidence_already_finalized' using errcode = '23505'; end if;\n  elsif evidence.object_state = 'PENDING' then\n    update public.portal_evidence_objects set\n      final_byte_size = target_byte_size,\n      checksum_sha256 = target_checksum_sha256,\n      object_state = 'READY',\n      finalized_at = now()\n    where id = evidence.id;\n  else\n    raise exception 'evidence_revoked' using errcode = '42501';\n  end if;\n  insert into public.command_receipts\n  values(operation_id, (select auth.uid()), 'finalize_portal_evidence', payload_hash, 'portal_evidence', evidence.id, now());\n  return evidence.id;\nend $function$\n",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "sha256": "fe8f8d77aa5721790316568cafd3918226d11536d163a5a3c33f36a9aadf0b87"
+    },
+    {
+      "schema": "public",
+      "name": "finalize_portal_evidence_verified",
+      "signature": "actor_uuid uuid, target_evidence_id uuid, target_checksum_sha256 text, target_byte_size bigint, operation_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.finalize_portal_evidence_verified(actor_uuid uuid, target_evidence_id uuid, target_checksum_sha256 text, target_byte_size bigint, operation_id uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare\n  evidence public.portal_evidence_objects%rowtype;\n  payload_hash text;\n  receipt public.command_receipts%rowtype;\nbegin\n  select * into evidence from public.portal_evidence_objects e where e.id = target_evidence_id for update;\n  if evidence.id is null or (evidence.uploaded_by <> actor_uuid and not(evidence.object_state='READY' and private.evidence_actor_has_permission(actor_uuid,coalesce((select branch_id from public.work_items where id=evidence.work_item_id),(select branch_id from public.customers where id=evidence.customer_id)),'evidence.manage'))) or not private.evidence_actor_portal_access(actor_uuid,evidence.id, false) then\n    raise exception 'evidence_finalize_forbidden' using errcode = '42501';\n  end if;\n  if target_byte_size <> evidence.declared_byte_size or target_checksum_sha256 !~ '^[0-9a-f]{64}$' then\n    raise exception 'evidence_integrity_mismatch' using errcode = '22023';\n  end if;\n  if actor_uuid is null or operation_id is null or target_checksum_sha256 is null or target_byte_size is null or target_byte_size not between 1 and 10485760 or target_checksum_sha256 !~ '^[0-9a-f]{64}$' then raise exception 'invalid_evidence_metadata' using errcode='22023';end if;\n  if not private.evidence_storage_object_exists(evidence.bucket_id,evidence.object_path) then raise exception 'evidence_storage_object_unavailable' using errcode='55000';end if;\n  payload_hash := private.command_payload_hash(jsonb_build_object('evidence', target_evidence_id, 'checksum', target_checksum_sha256, 'bytes', target_byte_size));\n  select * into receipt from public.command_receipts r where r.operation_id = finalize_portal_evidence_verified.operation_id;\n  if found then\n    if receipt.command_name <> 'finalize_portal_evidence' or receipt.payload_hash <> payload_hash then raise exception 'operation_payload_conflict' using errcode = '23505'; end if;\n    perform private.record_storage_attestation('PORTAL',evidence.id,target_checksum_sha256,target_byte_size,actor_uuid);\n    return receipt.result_entity_id;\n  end if;\n  if evidence.object_state = 'READY' then\n    if evidence.final_byte_size <> target_byte_size or evidence.checksum_sha256 <> target_checksum_sha256 then raise exception 'evidence_already_finalized' using errcode = '23505'; end if;\n  elsif evidence.object_state = 'PENDING' then\n    update public.portal_evidence_objects set\n      final_byte_size = target_byte_size,\n      checksum_sha256 = target_checksum_sha256,\n      object_state = 'READY',\n      finalized_at = now()\n    where id = evidence.id;\n  else\n    raise exception 'evidence_revoked' using errcode = '42501';\n  end if;\n  insert into public.command_receipts\n  values(operation_id, actor_uuid, 'finalize_portal_evidence', payload_hash, 'portal_evidence', evidence.id, now());\n  perform private.record_storage_attestation('PORTAL',evidence.id,target_checksum_sha256,target_byte_size,actor_uuid);\n  insert into public.audit_events(actor_auth_user_id,branch_id,action,entity_type,entity_id,trace_id,changed_fields)\n  values(actor_uuid,coalesce((select branch_id from public.work_items where id=evidence.work_item_id),(select branch_id from public.customers where id=evidence.customer_id)),'evidence.storage_verified','portal_evidence',evidence.id,operation_id,array['stored_file','checksum_sha256','byte_size']);\n  return evidence.id;\nend $function$\n",
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "sha256": "be422948c829b028c62c9801ffaa3b04c28ef4eb2c6c6113902d62237b2c65a9"
+    },
+    {
+      "schema": "public",
+      "name": "get_portal_evidence_for_signing",
+      "signature": "target_evidence_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.get_portal_evidence_for_signing(target_evidence_id uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare evidence public.portal_evidence_objects%rowtype;\nbegin\n  if not private.portal_evidence_access(target_evidence_id,true) then raise exception 'evidence_access_denied' using errcode='42501';end if;\n  select * into evidence from public.portal_evidence_objects where id=target_evidence_id;\n  return jsonb_build_object('id',evidence.id,'bucket_id',evidence.bucket_id,'object_path',evidence.object_path,\n    'mime_type',evidence.mime_type,'checksum_sha256',evidence.checksum_sha256,'byte_size',evidence.final_byte_size);\nend $function$\n",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "sha256": "7064839f9fb7377bc429cf81791b6dbd18dd976521c8e0f442c5f8e3a525b20d"
+    }
+  ],
+  "productionAccess": "NONE",
+  "unrelatedDifferenceReview": {
+    "function": "public.customer_safe_quotation_lines(uuid)",
+    "classification": "FORMATTING_ONLY",
+    "reason": "Reviewed diff: same permissions, projected fields, text quantities/prices, order and return; ACL equal. Kept existing QA definition."
+  }
+}

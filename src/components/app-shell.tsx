@@ -13,7 +13,7 @@ type NavigationItem = { href: string; label: string; icon: LucideIcon; exact?: b
 const adminGroups = [
   { id: "sales", label: "Bán hàng", icon: ShoppingCart },
   { id: "purchasing", label: "Mua hàng", icon: PackageSearch },
-  { id: "inventory", label: "Vật tư & kho", icon: Warehouse },
+  { id: "inventory", label: "Kho hàng", icon: Warehouse },
   { id: "delivery", label: "Giao hàng", icon: Truck },
   { id: "finance", label: "Tài chính", icon: WalletCards },
   { id: "workforce", label: "Nhân công & dịch vụ", icon: UsersRound },
@@ -35,8 +35,8 @@ const navigation: Record<Surface, readonly NavigationItem[]> = {
     { href: "/admin/dispatch", label: "Điều phối", icon: ClipboardCheck, permission: "delivery.read", managementPermission: "roles.manage", managementHref: "/admin/dispatch/resources", group: "delivery" },
     { href: "/admin/deliveries", label: "Phiếu giao", icon: Truck, permission: "delivery.read", group: "delivery" },
     { href: "/admin/routes", label: "Lộ trình", icon: Route, permission: "delivery.read", group: "delivery" },
-    { href: "/admin/receivables", label: "Phải thu", icon: WalletCards, permission: "finance.ar.read", group: "finance" },
-    { href: "/admin/payables", label: "Phải trả", icon: WalletCards, permission: "finance.ap.read", group: "finance" },
+    { href: "/admin/receivables", label: "Công nợ phải thu", icon: WalletCards, permission: "finance.ar.read", group: "finance" },
+    { href: "/admin/payables", label: "Công nợ phải trả", icon: WalletCards, permission: "finance.ap.read", group: "finance" },
     { href: "/admin/cashbook", label: "Sổ tiền", icon: WalletCards, permission: "finance.ar.read", group: "finance" },
     { href: "/admin/expenses", label: "Chi phí", icon: FileText, permission: "finance.expense.read", group: "finance" },
     { href: "/admin/payment-notices", label: "Báo chuyển khoản", icon: WalletCards, permission: "finance.payment_notice.review", group: "finance" },
@@ -72,6 +72,7 @@ export function AppShell({ surface, children, permissions, actorName, branchName
   const [expandedGroups, setExpandedGroups] = useState<Record<string, { pathname: string; open: boolean }>>({});
   const menuButton = useRef<HTMLButtonElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
+  const restoreMenuFocus = useRef(false);
   const visibleItems = navigation[surface].filter((item) => item.permissionsAny
     ? item.permissionsAny.some((permission) => permissions?.includes(permission))
     : !item.permission || permissions?.includes(item.permission) || Boolean(item.managementPermission && permissions?.includes(item.managementPermission)))
@@ -81,9 +82,15 @@ export function AppShell({ surface, children, permissions, actorName, branchName
     .sort((left, right) => right.href.length - left.href.length)[0]?.href;
   const initials = actorName?.trim().split(/\s+/).filter(Boolean).slice(-2).map((part) => part[0]?.toLocaleUpperCase("vi-VN")).join("") ?? "";
 
-  useEffect(() => { if (open) closeButton.current?.focus(); }, [open]);
+  useEffect(() => {
+    if (open) closeButton.current?.focus();
+    else if (restoreMenuFocus.current) {
+      restoreMenuFocus.current = false;
+      menuButton.current?.focus();
+    }
+  }, [open]);
 
-  function closeMenu() { setOpen(false); menuButton.current?.focus(); }
+  function closeMenu() { restoreMenuFocus.current = true; setOpen(false); }
   function renderLink(item: NavigationItem, nested = false) {
     const Icon = item.icon;
     const active = item.href === activeHref;

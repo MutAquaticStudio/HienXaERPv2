@@ -1,0 +1,44 @@
+{
+  "scope": "BUYER_PO_EDIT_STALE_CONFIRM_CANCEL_NO_STOCK_AP_WITHOUT_RECEIPT",
+  "checkedAt": "2026-10-12T09:58:07.076Z",
+  "baselineCommit": "73c3d17",
+  "schema": 179,
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [
+    {
+      "name": "PO_TWO_TAB_EDIT_EXACT_QUANTITY_AND_PRICE_SNAPSHOT_STALE_DENIED",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T09:58:15.330Z",
+      "schema": {
+        "count": 185,
+        "latest": "20261012093644"
+      },
+      "facts": {
+        "quantity": "2.123456",
+        "price": "150000",
+        "amount": "318518",
+        "expected": "318518"
+      }
+    }
+  ],
+  "documents": {
+    "po": "c7d3f2d8-116f-4a2c-b8c4-17c474f15f45"
+  },
+  "pageErrors": [],
+  "status": "FAIL",
+  "error": "Expected values to be strictly deep-equal:",
+  "failurePages": [
+    {
+      "url": "http://127.0.0.1:3112/admin/purchase-orders/c7d3f2d8-116f-4a2c-b8c4-17c474f15f45",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA ERP\nĐiều hành\nTổng quan\nĐơn bán\nMua hàng\nĐơn mua\nNhà cung cấp\nKho hàng\nGiao hàng\nTài chính\nBáo cáo\nTin nhắn\nĐăng xuất\nPhiên làm việc có phân quyền\nQA không đầu kỳ G119EE6ACBC\nQA khắc phục purchasing\nPP\n\nĐƠN MUA\n\nPO-2026-000453\n\nNCC QA chi nhánh mới · Về kho Hiền Xa\n\nVề danh sách\nTrạng thái đơn mua\nBản nháp\nĐã nhận / NCC giao\n0 lần xác minh\nPhải trả đã phát sinh\n0 ₫\nĐiểm đến & dòng mua\nĐiểm đến\nKho QA mới không tồn đầu kỳ\nDự kiến\nChưa hẹn\nĐịa chỉ nhận đã lưu\nCục bộ QA\nĐiều khoản mua\nQA độc lập\nTổng giá mua\n318.518 ₫\nVẬT TƯ\tSỐ LƯỢNG\tGIÁ MUA\tTHÀNH TIỀN\tPHÂN NGUỒN\nCát kiểm thử khắc phục\t2,123456 m³\t150.000 ₫\t318.518 ₫\tChưa gắn dòng bán\nLịch sử nhận hàng và giao thẳng\n\nChưa có phiếu nhập kho hoặc xác minh nhà cung cấp giao thẳng.\n\nHành động tiếp theo\nSửa bản nháp\nXác nhận đơn mua\n\nHủy bản nháp để bỏ khỏi danh sách đang làm. Chứng từ và nhật ký vẫn được lưu trong lịch sử Đã hủy.\n\nLý do hủy\n Tôi xác nhận hủy chứng từ này và giữ lịch sử\nXóa nháp (hủy có lịch sử)"
+    },
+    {
+      "url": "http://127.0.0.1:3112/admin/purchase-orders/c7d3f2d8-116f-4a2c-b8c4-17c474f15f45/edit",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA ERP\nĐiều hành\nTổng quan\nĐơn bán\nMua hàng\nĐơn mua\nNhà cung cấp\nKho hàng\nGiao hàng\nTài chính\nBáo cáo\nTin nhắn\nĐăng xuất\nPhiên làm việc có phân quyền\nQA không đầu kỳ G119EE6ACBC\nQA khắc phục purchasing\nPP\n\nĐƠN MUA · BẢN NHÁP\n\nSửa PO-2026-000453\n\nSửa nhiều dòng, ngày và điều khoản; giá mua được kiểm lại khi lưu.\n\nVề đơn mua\nNhà cung cấp\nChọn nhà cung cấp\nNCC QA chi nhánh mới\nKho nhận\nKho QA mới không tồn đầu kỳ\nQA kho đã đối chiếu sau phục hồi\n\nĐịa chỉ kho: Cục bộ QA\n\nĐịa chỉ nhận đã lưu trên đơn mua: Cục bộ QA\n\nLý do cập nhật kho nhận\nCập nhật địa chỉ từ kho\nNgày dự kiến\nĐiều khoản mua\nDòng mua\n1 / 50 dòng\nDòng 1\nXóa dòng\nVật tư *\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nCát kiểm thử khắc phục\nQA giao vật tư bao25kg\nSynthetic cement\nSynthetic packaged goods\nĐơn vị mua *\nm³\nSố lượng *\nGiá mua thủ công (VND)\nGhi chú ngoại lệ giá mua\n\nChưa xem trước giá dòng này.\n\n+ Thêm dòng\nTính giá mua và xem trước\n\nBản nháp đã được người khác sửa. Hãy tải lại.\n\nLưu thay đổi đơn mua nháp"
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "scope": "G11_FIRST_SOURCE_FAULT_AND_REAL_AUTH_TWO_ACTORS_ONE_STABLE_START",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "productionAccess": "NONE",
+  "managedQaBusinessWrites": 0,
+  "cloudRolesChanged": false,
+  "checks": [
+    {
+      "name": "FAILED_FIRST_COMMAND_ROLLS_BACK_START_HISTORY_AND_STATE_RETRY_ONE_IMMUTABLE_START",
+      "status": "PASS",
+      "afterFault": {
+        "starts": 0,
+        "audits": 0,
+        "receipts": 0,
+        "po": "DRAFT"
+      },
+      "afterRetry": {
+        "starts": 1,
+        "startaudits": 1,
+        "commandaudits": 1,
+        "state": "PENDING_OPENING",
+        "version": 0
+      },
+      "openingAuthorizationStillRequired": true
+    },
+    {
+      "name": "TWO_ACTORS_FIRST_ORDINARY_SOURCE_COMMANDS_ONE_START_NO_ACTIVATION_OR_FAKE_MONEY",
+      "status": "PASS",
+      "facts": {
+        "starts": 1,
+        "startaudits": 1,
+        "confirmed": 2,
+        "state": "PENDING_OPENING",
+        "version": 0,
+        "payments": 0
+      },
+      "actors": [
+        "0d1d2134-5a21-40a4-9fcb-375898d3c133",
+        "fcd46a45-a0b9-4c9b-bd91-6592e8f38d43"
+      ],
+      "pidA": 692,
+      "pidB": 694,
+      "observedBlockingPids": [
+        692
+      ],
+      "doc": {
+        "branch": "6b0d0932-d1f2-42af-b8e1-704f504e2789",
+        "poA": "a7379d92-7f7f-499b-b6e5-149883918867",
+        "poB": "7d88a9b6-f1d7-4e06-bae1-ba3521d8b869"
+      }
+    }
+  ],
+  "excludedAdvanceRacesReexecuted": false,
+  "status": "PASS_G11_START_ATOMICITY_AND_REAL_AUTH_CONCURRENCY"
+}

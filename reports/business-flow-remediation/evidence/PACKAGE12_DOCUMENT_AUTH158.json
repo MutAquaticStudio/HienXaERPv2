@@ -1,0 +1,174 @@
+{
+  "scope": "G20_G19_ACTUAL_JWT_INVOICE_CREDITNOTE_SOURCE_MATCH_NO_AP_REPEAT",
+  "productionAccess": "NONE",
+  "managedQaBusinessWrites": 0,
+  "documents": {
+    "branch": "043028fc-0af1-485f-a658-7b6cac2edb4b",
+    "supplier": "d2e28ceb-ad7a-44fd-b500-2cd98be8b695",
+    "stock": {
+      "prefix": "RMB60F9F8A",
+      "uom": "da91bb1f-1219-4af3-8ea7-a02a5320cf61",
+      "material": "d40ff7aa-a2c1-432b-aea3-b5545e3a96f0",
+      "price": "0ac6ef36-9413-4181-a4d6-b430d4aa43b3",
+      "cost": "a9a8d78e-2b33-42c1-9fed-3a9f64faf255",
+      "po": "5cc6ce45-67d9-4ef5-9037-b08ad672bbdb",
+      "common": {
+        "material_id": "d40ff7aa-a2c1-432b-aea3-b5545e3a96f0",
+        "ordered_uom_id": "da91bb1f-1219-4af3-8ea7-a02a5320cf61",
+        "quantity": "15",
+        "conversion_numerator": "1",
+        "conversion_denominator": "1",
+        "rounding_mode": "HALF_UP"
+      },
+      "cutoff": "2026-10-11 17:37:17.29253+07",
+      "customer": "e76a08ff-1605-41dc-8bb2-7f2fa8c08ff4",
+      "site": "2eb492f0-2ef1-4aea-a302-c37b0feba375",
+      "unitPriceVnd": "230000"
+    },
+    "receiptLine": "0a712812-0446-44a4-9ce6-792d8b87fce0",
+    "obligation": "eea87eb0-217e-4054-b556-2514cf00796b",
+    "target": "ee24f729-2416-48b1-bf0c-c44db6f9eb65",
+    "account": "31ff490d-d4d5-4339-a6db-486ccb8135d8",
+    "payment": "9d89f2d7-7a6e-44c1-a918-88ff3a8eafe4",
+    "caseId": "6b03a331-410a-4c0a-8081-f0ea7c351837",
+    "acceptance": "e6b19725-a4cc-4ddc-970f-5285f7d02c42",
+    "credit": "8bcee913-db9f-4806-8dea-67503f0d4a07",
+    "refund": "f27765a0-332a-4d57-a4f6-5a5a7f3d1a5d"
+  },
+  "checks": [
+    {
+      "kind": "INVOICE",
+      "status": "PASS",
+      "id": "bf9ad5f8-f274-4a76-b9a7-6773aef132c4",
+      "input": {
+        "target_branch_id": "043028fc-0af1-485f-a658-7b6cac2edb4b",
+        "target_supplier_id": "d2e28ceb-ad7a-44fd-b500-2cd98be8b695",
+        "target_document_kind": "INVOICE",
+        "target_document_number": "RMB60F9F8A_INVOICE",
+        "target_document_date": "2026-10-11",
+        "declared_total_vnd": "2250000",
+        "document_lines": [
+          {
+            "source_kind": "RECEIPT_LINE",
+            "source_id": "0a712812-0446-44a4-9ce6-792d8b87fce0",
+            "document_quantity": "15",
+            "document_unit_cost": "150000",
+            "document_value_vnd": "2250000"
+          }
+        ],
+        "operation_id": "3c34e69a-b1e0-4c85-ad00-c30f738f17c7"
+      },
+      "review": {
+        "target_document_id": "bf9ad5f8-f274-4a76-b9a7-6773aef132c4",
+        "review_decision": "APPROVE_MATCH",
+        "review_reason": "So đúng nguồn ghi nhận, không phát hành hoặc ghi AP lại",
+        "expected_version": 1,
+        "operation_id": "3561b974-c182-4c52-b3b9-fa154385318f"
+      }
+    },
+    {
+      "kind": "CREDIT_NOTE",
+      "status": "PASS",
+      "id": "75788116-3fd3-41c0-9062-d3102bc381e0",
+      "input": {
+        "target_branch_id": "043028fc-0af1-485f-a658-7b6cac2edb4b",
+        "target_supplier_id": "d2e28ceb-ad7a-44fd-b500-2cd98be8b695",
+        "target_document_kind": "CREDIT_NOTE",
+        "target_document_number": "RMB60F9F8A_CNOTE",
+        "target_document_date": "2026-10-11",
+        "declared_total_vnd": "140000",
+        "document_lines": [
+          {
+            "source_kind": "RETURN_CREDIT",
+            "source_id": "8bcee913-db9f-4806-8dea-67503f0d4a07",
+            "document_quantity": "1",
+            "document_unit_cost": "150000",
+            "document_value_vnd": "140000"
+          }
+        ],
+        "operation_id": "04966ccb-6c82-4749-be80-f8b04b9774ad"
+      },
+      "review": {
+        "target_document_id": "75788116-3fd3-41c0-9062-d3102bc381e0",
+        "review_decision": "APPROVE_MATCH",
+        "review_reason": "So đúng nguồn ghi nhận, không phát hành hoặc ghi AP lại",
+        "expected_version": 1,
+        "operation_id": "83bb2411-0435-4242-9c04-a2666046d40c"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "target_branch_id": "043028fc-0af1-485f-a658-7b6cac2edb4b",
+      "target_supplier_id": "d2e28ceb-ad7a-44fd-b500-2cd98be8b695",
+      "target_document_kind": "INVOICE",
+      "target_document_number": "RMB60F9F8A_INVOICE",
+      "target_document_date": "2026-10-11",
+      "declared_total_vnd": "2250000",
+      "document_lines": [
+        {
+          "source_kind": "RECEIPT_LINE",
+          "source_id": "0a712812-0446-44a4-9ce6-792d8b87fce0",
+          "document_quantity": "15",
+          "document_unit_cost": "150000",
+          "document_value_vnd": "2250000"
+        }
+      ],
+      "operation_id": "3c34e69a-b1e0-4c85-ad00-c30f738f17c7"
+    },
+    {
+      "target_branch_id": "043028fc-0af1-485f-a658-7b6cac2edb4b",
+      "target_supplier_id": "d2e28ceb-ad7a-44fd-b500-2cd98be8b695",
+      "target_document_kind": "CREDIT_NOTE",
+      "target_document_number": "RMB60F9F8A_CNOTE",
+      "target_document_date": "2026-10-11",
+      "declared_total_vnd": "140000",
+      "document_lines": [
+        {
+          "source_kind": "RETURN_CREDIT",
+          "source_id": "8bcee913-db9f-4806-8dea-67503f0d4a07",
+          "document_quantity": "1",
+          "document_unit_cost": "150000",
+          "document_value_vnd": "140000"
+        }
+      ],
+      "operation_id": "04966ccb-6c82-4749-be80-f8b04b9774ad"
+    }
+  ],
+  "before": {
+    "ap": 2,
+    "adjustments": 2,
+    "payments": 3,
+    "source_debt": "0",
+    "target_debt": "10000"
+  },
+  "after": {
+    "ap": 2,
+    "adjustments": 2,
+    "payments": 3,
+    "source_debt": "0",
+    "target_debt": "10000"
+  },
+  "creditLine": {
+    "id": "e1533cf9-63ee-435f-8148-f6f5d4cde3f7",
+    "document_id": "75788116-3fd3-41c0-9062-d3102bc381e0",
+    "line_number": 1,
+    "source_kind": "RETURN_CREDIT",
+    "source_id": "8bcee913-db9f-4806-8dea-67503f0d4a07",
+    "purchase_order_line_id": "2e5ea37d-bfcc-4321-9c9a-a20a99da5875",
+    "material_id": "d40ff7aa-a2c1-432b-aea3-b5545e3a96f0",
+    "material_name": "Cát kiểm thử khắc phục",
+    "document_uom_id": "da91bb1f-1219-4af3-8ea7-a02a5320cf61",
+    "uom_symbol": "m³",
+    "source_quantity": "1.000000",
+    "document_quantity": "1.000000",
+    "source_unit_cost": "150000.000000",
+    "document_unit_cost": "150000.000000",
+    "source_value_vnd": "140000",
+    "document_value_vnd": "140000",
+    "approved_return_charge_vnd": "10000",
+    "match_result": "MATCHED_APPROVED_RETURN_CHARGE",
+    "covered": true
+  },
+  "status": "PASS"
+}

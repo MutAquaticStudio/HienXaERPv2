@@ -1,0 +1,138 @@
+{
+  "scope": "CURRENT_DEBT_INTERNAL_INVOICE_SUPPLIER_EXPORT_AP_FILTERS_EXISTING_SOURCES",
+  "checkedAt": "2026-10-12T13:54:33.058Z",
+  "baselineCommit": "73c3d17",
+  "schema": 179,
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [
+    {
+      "name": "CURRENT_PDF_current-debt.pdf",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T13:54:39.054Z",
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "url": "/api/customers/8f2de180-ff9b-44fe-929c-685ee8ef6077/debt-statement/pdf?asOf=2026-10-12",
+        "bytes": 304103,
+        "sha256": "9cb1e5f85d15fcf91582f73013d17d431af3f3ac681926fab2a432ae49a7ba93",
+        "pages": 1,
+        "expectedText": [
+          "2.101.111",
+          "BẢNG ĐỐI CHIẾU CÔNG NỢ",
+          "không phải hóa đơn thuế"
+        ]
+      }
+    },
+    {
+      "name": "CURRENT_PDF_current-invoice-internal.pdf",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T13:54:42.416Z",
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "url": "/api/invoices/93974ae6-ea71-4bc0-aef5-64cadcc155b6/review/pdf",
+        "bytes": 304162,
+        "sha256": "1181730be6846ffadc6d89f72f5c7834d7bdb3cbacf534206ce50403390bb730",
+        "pages": 1,
+        "expectedText": [
+          "920.000",
+          "Chưa phát hành hóa đơn",
+          "KHÔNG PHẢI HÓA ĐƠN ĐIỆN TỬ"
+        ]
+      }
+    },
+    {
+      "name": "CURRENT_SUPPLIER_REVIEW_CSV_SOURCE_EXACT_INTERNAL_LABEL_FORMULA_SAFE",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T13:54:43.364Z",
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "source": "3e983fa4-70e3-4f2a-9604-9b603cc3eae3",
+        "lines": 1,
+        "bytes": 609,
+        "sha256": "479963fa1b792411f14e23bc6092fc51f4bb424f73715c270dbdfabfcd5d6d0e"
+      }
+    },
+    {
+      "name": "WORKER_PRIVATE_SOURCE_DOCUMENT_DENIED",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T13:54:43.487Z",
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "path": "/api/customers/8f2de180-ff9b-44fe-929c-685ee8ef6077/debt-statement/pdf",
+        "status": 404
+      }
+    },
+    {
+      "name": "WORKER_PRIVATE_SOURCE_DOCUMENT_DENIED",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T13:54:43.622Z",
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "path": "/api/invoices/93974ae6-ea71-4bc0-aef5-64cadcc155b6/review/pdf",
+        "status": 403
+      }
+    },
+    {
+      "name": "WORKER_PRIVATE_SOURCE_DOCUMENT_DENIED",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T13:54:43.822Z",
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "path": "/api/supplier-documents/3e983fa4-70e3-4f2a-9604-9b603cc3eae3/review/csv",
+        "status": 403
+      }
+    },
+    {
+      "name": "OTHER_CUSTOMER_DEBT_SOURCE_DENIED",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T13:54:43.965Z",
+      "schema": {
+        "count": 186,
+        "latest": "20261012110100"
+      },
+      "facts": {
+        "status": 404
+      }
+    }
+  ],
+  "documents": {},
+  "pageErrors": [],
+  "status": "FAIL",
+  "error": "Expected values to be strictly equal:",
+  "failurePages": [
+    {
+      "url": "http://127.0.0.1:3112/admin",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA ERP\nĐiều hành\nTổng quan\nBán hàng\nNhà cung cấp\nKho hàng\nGiao hàng\nTài chính\nThu nhập\nBáo cáo\nTin nhắn\nĐăng xuất\nPhiên làm việc có phân quyền\nQA không đầu kỳ G119EE6ACBC\nQA khắc phục finance\nPF\n\nTỔNG QUAN KINH DOANH\n\nTổng quan\n\nDoanh thu theo kỳ và công nợ tại thời điểm đã chọn. Thu tiền không làm tăng doanh thu lần nữa.\n\nMở sổ tiền\nTừ ngày\nĐến trước ngày\nTìm khách hàng\nTìm khách\nKhách hàng\nTất cả\nKhách QA chi nhánh mới\nKhách kiểm thử khắc phục\nKhách kiểm thử khắc phục\nKhách kiểm thử khắc phục\nKhách kiểm thử khắc phục\nQA thu nhiều lần và ứng trước\nCông trình\nTất cả\nCông trình QA phiếu tiền\nCông trình kiểm thử\nCông trình kiểm thử\nCông trình kiểm thử\nCông trình kiểm thử\nNhân viên bán hàng\nTất cả\nNhân viên hoa hồng giả QA\nNhân viên hoa hồng giả QA\nNhân viên hoa hồng giả QA\nNhân viên kiểm thử confirmer\nNhân viên kiểm thử noConfirm\nNhân viên kiểm thử owner\nQA khắc phục finance\nQA khắc phục purchasing\nQA khắc phục warehouse\nHoạt động\nTất cả\nGiao hàng\nBán hàng\nDịch vụ\nHành chính\nLàm mới\n\nKỳ 01/10/2026 đến trước 01/11/2026 · số dư tính đến 12/10/2026 20:54\n\nTheo giao dịch đã ghi nhận; lịch sử chưa đối chiếu. Số liệu này chưa xác minh tổng số dư toàn doanh nghiệp.\n\nDoanh thu\n33.841.111 ₫\nLợi nhuận gộp quản trị\n31.391.111 ₫\nChi phí vận hành\n123.457 ₫\nLợi nhuận hoạt động\n31.267.654 ₫\nBiên lợi nhuận\n92,395%\nBiểu đồ kết quả kinh doanh\nCÙNG KỲ VÀ PHẠM VI\nDoanh thu\n33.841.111 ₫\nLN gộp quản trị\n31.391.111 ₫\nLN hoạt động\n31.267.654 ₫\n\nCHI PHÍ VẬN HÀNH\n\nPhân bổ theo nhóm\nChi phi nhan su van hanh\nThu nhập nhân sự\n123.457 ₫\n\nHOA HỒNG PHẢI TRẢ\n\nChi tiết theo nhân viên\n\nKhông có hoa hồng còn phải trả tại thời điểm đã chọn.\n\nKhách hàng phải thu\n2.841.111 ₫\nNhà cung cấp phải trả\n3.600.000 ₫\nLương phải chi\n100.000 ₫\nHoa hồng phải chi\n0 ₫\nKhách / công trình đang nợ\nTất cả\nKhách kiểm thử khắc phục\nCông trình kiểm thử · hạn 12/10/2026\n1.990.000 ₫\nKhách kiểm thử khắc phục\nCông trình kiểm thử · hạn 12/10/2026\n740.000 ₫\nKhách kiểm thử khắc phục\nCông trình kiểm thử · hạn 12/10/2026\n111.111 ₫\n\nCùng thời điểm chốt và bộ lọc với các chỉ số phía trên.\n\nNhà cung cấp đang phải trả\nTất cả\nNCC QA chi nhánh mới\nHạn 12/10/2026\n1.500.000 ₫\nNCC QA chi nhánh mới\nHạn 12/10/2026\n750.000 ₫\nNCC QA chi nhánh mới\nHạn 12/10/2026\n750.000 ₫\nNCC QA chi nhánh mới\nHạn 12/10/2026\n450.000 ₫\nNhân viên kiểm thử noConfirm\nHạn 12/10/2026\n100.000 ₫\nNCC QA chi nhánh mới\nHạn 12/10/2026\n50.000 ₫\n\nCùng thời điểm chốt với các chỉ số phía trên."
+    },
+    {
+      "url": "http://127.0.0.1:3112/work",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA\nCổng nhân sự\nCông việc\nNhận việc\nVị trí\nThu nhập\nTin nhắn\nHồ sơ\n Đăng xuất\n\nCA LÀM VIỆC CỦA NHÂN VIÊN KIỂM THỬ NOCONFIRM\n\nSẵn sàng cho việc tiếp theo\n\nƯu tiên hiện tại, hành động tiếp theo và thông tin hiện trường nằm trong một luồng ngắn.\n\nHIỆN TẠI\n\nChưa có công việc được phân công.\n\nTIẾP THEO\n\nChưa có công việc được phân công.\n\nHành động nhanh\n\nKhông cần mở màn hình ERP dày đặc.\n\nXem kho việc có thể nhận\nXem thu nhập của tôi"
+    },
+    {
+      "url": "http://127.0.0.1:3112/customer",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA\nCổng khách hàng\nTổng quan\nBáo giá\nĐơn hàng\nCông nợ\nTin nhắn\nHồ sơ\n Đăng xuất\n\nH41EA1F6F_ELIGIBLE\n\nKhách hàng xác nhận hợp lệ\n\nBáo giá cần xử lý, đơn hàng, giao nhận và công nợ theo đúng vai trò truy cập.\n\nĐƠN HÀNG\n\n11\n\nĐơn hàng trong phạm vi khách hàng này.\n\nXem tiến trình giao nhận\nCÔNG NỢ\n\n0 ₫\n\nQuá hạn 0 ₫\n\nXem và gửi thông báo thanh toán"
+    }
+  ]
+}

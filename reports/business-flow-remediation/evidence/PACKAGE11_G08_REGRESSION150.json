@@ -1,0 +1,60 @@
+{
+  "scope": "G08_UNFINISHED_NATIVE_BOUNDARIES",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "managedAuthTested": false,
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "UNPAID_RETURN_REDUCES_DEBT_WITHOUT_REFUND_ENTITLEMENT",
+      "status": "PASS",
+      "deferredSourceChecksExecuted": true,
+      "facts": {
+        "debt": "2990000",
+        "credit": "0",
+        "funds": 0,
+        "payments": 0
+      }
+    },
+    {
+      "name": "ZERO_BILLABLE_RETURN_RECORDS_DECISION_WITHOUT_FAKE_AR_OR_MONEY",
+      "status": "PASS",
+      "deferredSourceChecksExecuted": true,
+      "facts": {
+        "approved": "0",
+        "owed": "0",
+        "obligation_id": null,
+        "adjustments": 0,
+        "payments": 0
+      }
+    },
+    {
+      "name": "MULTIPLE_CASES_AND_PARTIAL_REFUNDS_SHARE_ONE_ORIGINAL_ALLOCATION_WITHOUT_REUSE",
+      "status": "PASS",
+      "deferredSourceChecksExecuted": true,
+      "held": {
+        "debt": "0",
+        "available": "0",
+        "heldcredit": "460000",
+        "releases": 2
+      },
+      "after": {
+        "firstcredit": "0",
+        "secondcredit": "230000",
+        "available": "0",
+        "cash": "2990000",
+        "payments": 3
+      },
+      "scope": {
+        "code": "42501",
+        "message": "customer_credit_offset_scope_mismatch"
+      },
+      "denied": {
+        "code": "42501",
+        "message": "forbidden_or_customer_credit_not_found"
+      },
+      "workerCreditRows": 0
+    }
+  ],
+  "status": "PASS_NATIVE_CREDIT_BOUNDARIES",
+  "rolledBack": true
+}

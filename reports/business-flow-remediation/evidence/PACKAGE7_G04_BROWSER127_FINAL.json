@@ -1,0 +1,23 @@
+{
+  "scope": "G04_REAL_SALES_BROWSER_SAVED_PRICE_QTY_EDIT_RELOAD",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright; Browser plugin not available",
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "ACTUAL_SALES_UI_SAVED230K_PRICE_QTY3_STORED690K_DESPITE_NEW260K_RULE",
+      "status": "PASS",
+      "fact": {
+        "qty": "3.000000",
+        "price": "230000",
+        "total": "690000"
+      },
+      "currentRule": {
+        "price": "260000"
+      }
+    }
+  ],
+  "expectedTransportErrors": [],
+  "unexpectedErrors": [],
+  "status": "PASS_SALES_BROWSER_SAVED_PRICE_AND_INDEPENDENT_READ"
+}

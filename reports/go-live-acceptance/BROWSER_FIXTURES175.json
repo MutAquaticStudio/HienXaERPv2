@@ -1,0 +1,160 @@
+{
+  "scope": "ISOLATED_NATIVE_BROWSER_CONFIGURATION_REAL_QA_AUTH_UIDS",
+  "documents": {
+    "prefix": "RME8501A2E",
+    "uom": "34c06cde-3bff-4fef-864b-a678e808edac",
+    "material": "e5a614a1-97fa-4e10-b687-3c689a715ffa",
+    "price": "251c6b44-f2b3-4b75-9c65-ad9a619971a2",
+    "cost": "e2cc81a2-a209-4229-b0b8-12beef1ae9c6",
+    "po": "19e5d9d6-d1c3-4946-91cd-13570df6ab64",
+    "common": {
+      "material_id": "e5a614a1-97fa-4e10-b687-3c689a715ffa",
+      "ordered_uom_id": "34c06cde-3bff-4fef-864b-a678e808edac",
+      "quantity": "15",
+      "conversion_numerator": "1",
+      "conversion_denominator": "1",
+      "rounding_mode": "HALF_UP"
+    },
+    "cutoff": "2026-10-12 03:52:29.921284+07",
+    "customer": "8f2de180-ff9b-44fe-929c-685ee8ef6077",
+    "site": "cb99bbf4-c2cc-4366-aef9-15628e87904a",
+    "unitPriceVnd": "230000",
+    "fixtures": {
+      "prefix": "H41EA1F6F",
+      "owner": "0d1d2134-5a21-40a4-9fcb-375898d3c133",
+      "confirmer": "d593fd7b-027e-4075-83b8-5f7253d64093",
+      "noConfirm": "654de2bf-cf27-4536-ad03-258c348e1f51",
+      "foreignConfirmer": "6b6ac4d8-b045-48eb-b9ac-94600ca7eaa3",
+      "revoked": "cbbc7d79-faf4-4846-93f6-ec97112c0e48",
+      "branch": "474b60c5-cf95-4d11-b782-4f0eefcbb427",
+      "otherBranch": "e5deaf2f-b8c5-462c-acf4-ee3253f63ecc",
+      "customer": "8c6f35f6-f570-4971-abae-2a48737d2244",
+      "site": "85e320d5-064b-4869-bc08-39ddebd86823",
+      "salesPrice": "9ad27c46-44ee-44fb-b3bc-aacfb7a8941b",
+      "purchasePrice": "a4ba9443-58a5-4a3a-a679-15ffa85c6ca0",
+      "supplier": "ab8e0f92-d8d7-4150-932a-7e1dd2baa6b8",
+      "warehouse": "59ded449-38e8-4a63-ae1f-b64d6cbd3b6c",
+      "material": "3a989ff8-e382-4006-9f8c-a0cff706f427",
+      "uom": "6aab6dc5-87dc-44ea-8580-d336dd53a0de"
+    },
+    "personas": {
+      "sales": {
+        "subject": "d593fd7b-027e-4075-83b8-5f7253d64093",
+        "employee": "4a54bf5d-e868-434d-ae91-aa3d30684134",
+        "role": "d24380c9-8c80-4c87-9c94-51da6b5e3a5f",
+        "permissions": [
+          "dashboard.read",
+          "catalog.read",
+          "customers.read",
+          "pricing.read",
+          "orders.read",
+          "orders.create",
+          "orders.confirm",
+          "orders.cancel",
+          "quotation.read",
+          "quotation.create",
+          "quotation.send",
+          "quotation.accept",
+          "delivery.read",
+          "inventory.read",
+          "finance.ar.read"
+        ]
+      },
+      "purchasing": {
+        "subject": "fcd46a45-a0b9-4c9b-bd91-6592e8f38d43",
+        "employee": "e6c822a3-b79d-4bd9-974d-288d3474f105",
+        "role": "65fc9dcb-f78b-46be-905a-c3d711c342ed",
+        "permissions": [
+          "dashboard.read",
+          "catalog.read",
+          "suppliers.read",
+          "purchasing.read",
+          "purchasing.create",
+          "purchasing.confirm",
+          "purchasing.cancel",
+          "purchasing.price.read",
+          "purchasing.price.manage",
+          "delivery.read",
+          "inventory.read",
+          "finance.ap.read"
+        ]
+      },
+      "warehouse": {
+        "subject": "e04f1e5a-2a2d-4347-a506-1b6a35ea790f",
+        "employee": "76f470e0-0fbf-4617-9606-2576b2dcf4df",
+        "role": "e7d9e21e-c734-4adb-a010-97baada3c806",
+        "permissions": [
+          "dashboard.read",
+          "catalog.read",
+          "customers.read",
+          "suppliers.read",
+          "purchasing.read",
+          "inventory.read",
+          "inventory.reserve",
+          "inventory.receive",
+          "inventory.count",
+          "inventory.adjust",
+          "delivery.read",
+          "delivery.create",
+          "delivery.assign",
+          "delivery.handoff",
+          "delivery.submit",
+          "delivery.verify",
+          "delivery.exception",
+          "work.manage",
+          "workforce.read"
+        ]
+      },
+      "finance": {
+        "subject": "a89838c9-bb2d-4758-874c-b031f9655f49",
+        "employee": "ce459ae5-53f4-4bf5-95ba-5d98944ac277",
+        "role": "ac293a86-020e-4294-9423-0cb3c6c63fc7",
+        "permissions": [
+          "dashboard.read",
+          "catalog.read",
+          "customers.read",
+          "suppliers.read",
+          "delivery.read",
+          "inventory.read",
+          "inventory.cost.read",
+          "finance.ar.read",
+          "finance.ar.adjust",
+          "finance.ap.read",
+          "finance.ap.adjust",
+          "finance.account.manage",
+          "finance.payment.post",
+          "finance.payment.reverse",
+          "finance.payment_notice.review",
+          "finance.reconcile",
+          "finance.expense.read",
+          "finance.expense.manage",
+          "finance.profit.read",
+          "compensation.read",
+          "compensation.approve"
+        ]
+      },
+      "worker": {
+        "subject": "654de2bf-cf27-4536-ad03-258c348e1f51",
+        "employee": "7a29b908-578e-4d45-b408-70f7a93256a9",
+        "role": "8d7e075c-2268-4ae9-a8cf-ec68a4059e87",
+        "permissions": [
+          "work.claim",
+          "workforce.read"
+        ]
+      }
+    },
+    "vehicle": "7f5758c8-ae71-4f22-a3e1-f66ff9e1296d",
+    "account": "0a8592dc-875c-4d29-a649-5d4f80782d81",
+    "branch": "474b60c5-cf95-4d11-b782-4f0eefcbb427",
+    "portalSubjects": {
+      "receiver": "dbfead9b-f234-4948-9e54-d79f7826cbad",
+      "customerFinance": "4b99a47e-738a-4ee8-83f9-7df75ec9b257",
+      "otherCustomer": "d15b7188-25f8-4fc5-8d80-df455a1ef567"
+    },
+    "sourceSynthetic": true,
+    "productionAccess": "NONE"
+  },
+  "tokensRecorded": false,
+  "passwordsRecorded": false,
+  "cleanup": "Drop only the owned browser clone after evidence/readback, preserve original QA database"
+}

@@ -17,6 +17,10 @@ describe("earning calculation boundary", () => {
   });
   it("keeps cancellation error handling unrelated to earning messages", async () => {
     mock.rpc.mockResolvedValue({ error: { code: "55000", message: "service_not_cancelable" } });
-    await expect(cancelScheduledServiceJobAction(form({ serviceJobId: id, version: "1", reason: "controlled cancellation", operationId: id }))).rejects.toThrow("service_not_cancelable");
+    let redirect = "";
+    try { await cancelScheduledServiceJobAction(form({ serviceJobId: id, version: "1", reason: "controlled cancellation", operationId: id })); } catch (error) { redirect = decodeURIComponent((error as Error).message); }
+    expect(redirect).toContain("Không thể hủy lịch dịch vụ vì đã phát sinh công việc hoặc kết quả xác minh.");
+    expect(redirect).not.toMatch(/service_not_cancelable|thu nhập/);
+    expect(mock.invalidate).not.toHaveBeenCalled();
   });
 });

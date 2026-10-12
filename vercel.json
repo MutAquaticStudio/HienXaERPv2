@@ -1,4 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "regions": ["icn1"]
+  "regions": ["icn1"],
+  "git": {
+    "deploymentEnabled": {
+      "main": false,
+      "codex/business-flow-remediation-g01-g23": false,
+      "codex/go-live-acceptance": false
+    }
+  }
 }

@@ -1,0 +1,20 @@
+{
+  "scope": "G03_CUSTOMER_PHYSICAL_RETURN_CUMULATIVE_SOURCE_VALUE",
+  "phase": "before",
+  "status": "REPRODUCED_ONE_VND_VALUE_CREATION",
+  "facts": {
+    "source": {
+      "id": "4c06de86-27a5-456d-9d89-41f78e96681d",
+      "value": "150000",
+      "unit": "149999.550001"
+    },
+    "returned": {
+      "quantity": "1.000003",
+      "value": "150001"
+    },
+    "independentExpectedValue": "150000",
+    "cases": 3
+  },
+  "rolledBack": true,
+  "productionAccess": "NONE"
+}

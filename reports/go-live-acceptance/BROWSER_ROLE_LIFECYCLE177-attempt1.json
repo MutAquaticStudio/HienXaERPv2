@@ -1,0 +1,112 @@
+{
+  "scope": "REAL_BROWSER_ROLE_PAGES_AND_REVOCATION_WITH_EXISTING_SESSION",
+  "productionAccess": "NONE",
+  "checks": [],
+  "pages": [
+    {
+      "role": "worker",
+      "url": "/work",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "worker",
+      "url": "/work/pool",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "worker",
+      "url": "/work/earnings",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "worker",
+      "url": "/work/messages",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "worker",
+      "url": "/work/profile",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "worker",
+      "url": "/work/tracking",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "worker",
+      "url": "/work/jobs/617060ea-12ab-4ba5-bf9a-c328058969e6",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "receiver",
+      "url": "/customer",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "receiver",
+      "url": "/customer/orders",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "receiver",
+      "url": "/customer/orders/f40687ff-a634-469d-9f0a-19256f7bbbdc",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "receiver",
+      "url": "/customer/quotations",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "receiver",
+      "url": "/customer/messages",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "receiver",
+      "url": "/customer/profile",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "customer-finance",
+      "url": "/customer",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "customer-finance",
+      "url": "/customer/orders/f40687ff-a634-469d-9f0a-19256f7bbbdc",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "customer-finance",
+      "url": "/customer/debts",
+      "status": "PASS_READ",
+      "http": 200
+    },
+    {
+      "role": "customer-finance",
+      "url": "/customer/profile",
+      "status": "PASS_READ",
+      "http": 200
+    }
+  ],
+  "failures": [],
+  "status": "FAIL",
+  "error": "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('Đã thu hồi quyền tại chi nhánh và ghi nhật ký.', { exact: true }) to be visible\u001b[22m\n"
+}

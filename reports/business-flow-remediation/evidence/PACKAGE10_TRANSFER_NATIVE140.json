@@ -1,0 +1,84 @@
+{
+  "scope": "G18_NATIVE_PARTIAL_SHORTAGE_SOURCE_VALUE_FAULT_RETRY_VERSION",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "productionAccess": "NONE",
+  "managedAuthTested": false,
+  "checks": [
+    {
+      "name": "PARTIAL3_RECEIVE2_SHORTAGE1_APPROVED_LOSS_THEN_SECOND_LOT_FRACTIONAL_TOTAL3",
+      "status": "PASS",
+      "shortage": {
+        "id": "daa1a71c-64f0-49b3-8134-7797aac4f01b",
+        "branch_id": "dd101b24-aa92-4fd0-a0e7-30a935c2724c",
+        "transfer_number": "WT-00000002",
+        "from_warehouse_id": "6309cc83-4bf0-42bc-aabc-124e5442ae8f",
+        "to_warehouse_id": "6fa87325-10c8-4d1a-a022-5b4fa4a86b2b",
+        "material_id": "c5ba15e8-aa5c-4251-8e52-69a668736a08",
+        "base_uom_id": "7a571f49-1970-4452-b376-bf0a674b0a41",
+        "planned_base_quantity": "6.000000",
+        "dispatch_closed": false,
+        "version": 4,
+        "reason": "Chuyển kho theo nguồn mới",
+        "created_by": "0d1d2134-5a21-40a4-9fcb-375898d3c133",
+        "created_at": "2026-10-11T10:00:39.697Z",
+        "from_warehouse_name": "Synthetic warehouse A",
+        "to_warehouse_name": "Kho đến giả QA",
+        "material_code": "RM9D4064AC",
+        "material_name": "Cát kiểm thử khắc phục",
+        "shipped_base_quantity": "3.000000",
+        "received_base_quantity": "2.000000",
+        "loss_base_quantity": "0",
+        "in_transit_base_quantity": "1.000000",
+        "transfer_state": "IN_PROGRESS",
+        "in_transit_value_vnd": "150000"
+      },
+      "closed": {
+        "id": "daa1a71c-64f0-49b3-8134-7797aac4f01b",
+        "branch_id": "dd101b24-aa92-4fd0-a0e7-30a935c2724c",
+        "transfer_number": "WT-00000002",
+        "from_warehouse_id": "6309cc83-4bf0-42bc-aabc-124e5442ae8f",
+        "to_warehouse_id": "6fa87325-10c8-4d1a-a022-5b4fa4a86b2b",
+        "material_id": "c5ba15e8-aa5c-4251-8e52-69a668736a08",
+        "base_uom_id": "7a571f49-1970-4452-b376-bf0a674b0a41",
+        "planned_base_quantity": "6.000000",
+        "dispatch_closed": false,
+        "version": 9,
+        "reason": "Chuyển kho theo nguồn mới",
+        "created_by": "0d1d2134-5a21-40a4-9fcb-375898d3c133",
+        "created_at": "2026-10-11T10:00:39.697Z",
+        "from_warehouse_name": "Synthetic warehouse A",
+        "to_warehouse_name": "Kho đến giả QA",
+        "material_code": "RM9D4064AC",
+        "material_name": "Cát kiểm thử khắc phục",
+        "shipped_base_quantity": "6.000000",
+        "received_base_quantity": "5.000000",
+        "loss_base_quantity": "1.000000",
+        "in_transit_base_quantity": "0.000000",
+        "transfer_state": "CLOSED",
+        "in_transit_value_vnd": "0"
+      },
+      "facts": {
+        "quantity": "9.000000",
+        "value": "1350000"
+      },
+      "lotValues": {
+        "value": "450000"
+      },
+      "journal": {
+        "n": 1
+      },
+      "faultRolledBack": true
+    },
+    {
+      "name": "CLOSE_UNSHIPPED_REMAINDER_PRESERVES_PLAN",
+      "status": "PASS",
+      "ended": {
+        "transfer_state": "CLOSED",
+        "planned_base_quantity": "2.000000",
+        "shipped_base_quantity": "1.000000"
+      }
+    }
+  ],
+  "status": "PASS",
+  "rolledBack": true
+}

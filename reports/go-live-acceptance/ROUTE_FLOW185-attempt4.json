@@ -1,0 +1,150 @@
+{
+  "scope": "DISPATCH_ROUTE_TWO_DELIVERY_SOURCES_CREATE_APPLY_RELOAD",
+  "checkedAt": "2026-10-12T09:50:06.374Z",
+  "baselineCommit": "73c3d17",
+  "schema": 179,
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [
+    {
+      "name": "DISPATCH_CREATE_MANUAL_ROUTE_WITH_TWO_REAL_SOURCES_NO_ASSIGNMENT_YET",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T09:58:11.436Z",
+      "schema": {
+        "count": 185,
+        "latest": "20261012093644"
+      },
+      "facts": {
+        "status": "DRAFT",
+        "provider_state": "MANUAL_FALLBACK",
+        "stops": 2
+      }
+    },
+    {
+      "name": "OVERLAPPING_DEFAULT_WINDOWS_REJECT_ATOMICALLY_AND_SHOW_SOURCE_SCHEDULE_GUIDANCE",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T10:04:11.165Z",
+      "schema": {
+        "count": 185,
+        "latest": "20261012093644"
+      },
+      "facts": {
+        "status": "DRAFT",
+        "assignments": 0
+      }
+    },
+    {
+      "name": "DISPATCH_UI_SETS_REAL_NONOVERLAPPING_WINDOWS_NO_LIMIT_BYPASS",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T10:04:13.200Z",
+      "schema": {
+        "count": 185,
+        "latest": "20261012093644"
+      },
+      "facts": {}
+    },
+    {
+      "name": "DISPATCH_CREATE_MANUAL_ROUTE_WITH_TWO_REAL_SOURCES_NO_ASSIGNMENT_YET",
+      "status": "PASS",
+      "checkedAt": "2026-10-12T10:04:14.541Z",
+      "schema": {
+        "count": 185,
+        "latest": "20261012093644"
+      },
+      "facts": {
+        "status": "DRAFT",
+        "provider_state": "MANUAL_FALLBACK",
+        "stops": 2
+      }
+    }
+  ],
+  "documents": {
+    "sale": "1b332285-48bc-40e0-bd3b-3ceb405536e6",
+    "material": "57c9beb6-bbbb-4789-82a1-dfb1c0b13037",
+    "vehicle": "39d44583-6ed0-4847-a65a-dcd326b14cc4",
+    "deliveries": [
+      {
+        "id": "ac345322-296f-4e75-b0e6-61283f1835b6",
+        "number": "DL-2026-000603",
+        "quantity": "3"
+      },
+      {
+        "id": "70c8549d-94a8-4bd8-91b9-3154d62a48bc",
+        "number": "DL-2026-000604",
+        "quantity": "2"
+      }
+    ],
+    "oldPlan": "9465ba53-5d13-4cc9-8b42-6e65b1f2a64a",
+    "schedulesCorrected": true,
+    "plan": "2e0c2096-72d5-4d0a-bc51-cd6a6de60a3f"
+  },
+  "pageErrors": [],
+  "status": "FAIL",
+  "error": "Expected values to be strictly equal:",
+  "failurePages": [
+    {
+      "url": "http://127.0.0.1:3112/admin/routes?plan=2e0c2096-72d5-4d0a-bc51-cd6a6de60a3f",
+      "title": "Hiền Xa ERP",
+      "body": "ĐANG TẢI DỮ LIỆU\n\nVui lòng chờ"
+    },
+    {
+      "url": "http://127.0.0.1:3112/work",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA\nCổng nhân sự\nCông việc\nNhận việc\nVị trí\nThu nhập\nTin nhắn\nHồ sơ\n Đăng xuất\n\nCA LÀM VIỆC CỦA NHÂN VIÊN KIỂM THỬ NOCONFIRM\n\nSẵn sàng cho việc tiếp theo\n\nƯu tiên hiện tại, hành động tiếp theo và thông tin hiện trường nằm trong một luồng ngắn.\n\nHIỆN TẠI\n\nChưa có công việc được phân công.\n\nTIẾP THEO\n\nChưa có công việc được phân công.\n\nHành động nhanh\n\nKhông cần mở màn hình ERP dày đặc.\n\nXem kho việc có thể nhận\nXem thu nhập của tôi"
+    }
+  ],
+  "formBeforeSubmit": {
+    "valid": true,
+    "fields": [
+      {
+        "name": "",
+        "type": "datetime-local",
+        "value": "2200-03-01T07:00",
+        "validation": ""
+      },
+      {
+        "name": "vehicle_id",
+        "type": "select-one",
+        "value": "39d44583-6ed0-4847-a65a-dcd326b14cc4",
+        "validation": ""
+      },
+      {
+        "name": "driver_employee_id",
+        "type": "select-one",
+        "value": "7a29b908-578e-4d45-b408-70f7a93256a9",
+        "validation": ""
+      },
+      {
+        "name": "departure_at_iso",
+        "type": "hidden",
+        "value": "2200-03-01T00:00:00.000Z",
+        "validation": ""
+      },
+      {
+        "name": "delivery_ids",
+        "type": "hidden",
+        "value": "[\"ac345322-296f-4e75-b0e6-61283f1835b6\",\"70c8549d-94a8-4bd8-91b9-3154d62a48bc\"]",
+        "validation": ""
+      },
+      {
+        "name": "operation_id",
+        "type": "hidden",
+        "value": "",
+        "validation": ""
+      },
+      {
+        "name": "",
+        "type": "checkbox",
+        "value": "on",
+        "validation": ""
+      },
+      {
+        "name": "",
+        "type": "checkbox",
+        "value": "on",
+        "validation": ""
+      }
+    ]
+  }
+}

@@ -1,4 +1,6 @@
 "use client";
+import { userFacingError } from "@/lib/core/errors";
+import { FilePicker } from "@/components/ui/file-picker";
 
 import type { ChangeEvent, FormEvent } from "react";
 import { useEffect, useState } from "react";
@@ -11,6 +13,7 @@ import {
   type SafeWorkDraft,
 } from "@/modules/portal/draft";
 import type { WorkerJob } from "@/modules/portal/types";
+import { isExactEntryQuantity } from "@/lib/core/quantity";
 
 export function WorkResultDraftForm({
   workItemId,
@@ -34,6 +37,11 @@ export function WorkResultDraftForm({
   const [message, setMessage] = useState("");
   const [error, setError] = useState(false);
   const router = useRouter();
+  const deliveryReady = !delivery || (delivery.can_submit_result === true && !!delivery.assignment_version
+    && delivery.lines.every((line) => typeof line.loaded_base_quantity === "string"
+      && isExactEntryQuantity(line.loaded_base_quantity, true) && isExactEntryQuantity(line.reportable_base_quantity, true)));
+  const sourceChanged = !!draft && (draft.expectedVersion !== version || (!!delivery && !!draft.delivery
+    && (draft.delivery.expectedVersion !== delivery.version || draft.delivery.expectedAssignmentVersion !== delivery.assignment_version)));
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -76,7 +84,7 @@ export function WorkResultDraftForm({
       setError(true);
       setMessage(uploadError instanceof TypeError || !navigator.onLine
         ? "Mất kết nối. Bản nháp và tệp vẫn được giữ; hãy kết nối lại rồi tải minh chứng lần nữa."
-        : uploadError instanceof Error ? uploadError.message : "Tải minh chứng thất bại");
+        : uploadError instanceof Error ? userFacingError(uploadError.message) : "Tải minh chứng thất bại");
     } finally {
       setUploading(false);
     }
@@ -84,7 +92,7 @@ export function WorkResultDraftForm({
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!draft || submitting || uploading) return;
+    if (!draft || submitting || uploading || !deliveryReady) return;
     setSubmitting(true);
     setError(false);
     setMessage("Đang gửi đúng phiên bản công việc...");
@@ -115,7 +123,10 @@ export function WorkResultDraftForm({
       router.refresh();
     } catch (submitError) {
       setError(true);
-      setMessage(submitError instanceof Error ? submitError.message : "Gửi kết quả thất bại");
+      if (submitError instanceof Error && ["stale_work_or_delivery_version", "stale_work_version"].includes(submitError.message)) {
+        setDraft((current) => current ? { ...current, sourceRejected: true } : current);
+      }
+      setMessage(submitError instanceof Error ? (submitError.message === "stale_work_or_delivery_version" ? "Công việc hoặc phiếu giao đã thay đổi. Vui lòng tải lại để kiểm tra; bản nháp vẫn được giữ." : userFacingError(submitError.message)) : "Gửi kết quả thất bại");
     } finally {
       setSubmitting(false);
     }
@@ -123,13 +134,22 @@ export function WorkResultDraftForm({
 
   if (!draft) return <p className={styles.status}>Đang mở bản nháp an toàn...</p>;
 
+  function useCurrentSource() {
+    if (!draft?.sourceRejected || !sourceChanged || !deliveryReady) return;
+    setDraft({ ...draft, sourceRejected: undefined, operationId: crypto.randomUUID(), expectedVersion: version,
+      ...(delivery && draft.delivery ? { delivery: { ...draft.delivery, expectedVersion: delivery.version,
+        expectedAssignmentVersion: delivery.assignment_version } } : {}) });
+    setError(false);
+    setMessage("Đã dùng phiên bản mới. Kiểm tra lượng thực lấy và từng lượng báo giao trước khi gửi.");
+  }
+
   return (
     <form className={styles.form} onSubmit={submit}>
       {delivery && draft.delivery ? delivery.lines.map((line) => <div className={styles.field} key={line.id}>
         <label htmlFor={"actual-" + line.id}>Lượng thực tế · {line.material_name} ({line.unit})</label>
-        <span className={styles.hint}>Kế hoạch: {line.planned_base_quantity} {line.unit}. Nhập 0 nếu không giao được dòng này.</span>
-        <input id={"actual-" + line.id} inputMode="decimal" type="number" min="0" max={line.planned_base_quantity}
-          step="0.000001" required disabled={submitting || uploading}
+        <span className={styles.hint}>Kế hoạch: {line.planned_base_quantity} {line.unit}. Thực lấy: {line.loaded_base_quantity ?? "Chưa ghi nhận"}. Còn được phép báo: {line.reportable_base_quantity ?? "Chưa xác định"} {line.unit}. Nhập 0 nếu không giao được dòng này.</span>
+        <input id={"actual-" + line.id} inputMode="decimal" type="number" min="0" max={line.reportable_base_quantity}
+          step="0.000001" required disabled={submitting || uploading || !deliveryReady}
           value={draft.delivery?.lines.find((item) => item.deliveryLineId === line.id)?.actualQuantity ?? ""}
           onChange={(event) => setDraft((current) => current?.delivery ? { ...current, delivery: { ...current.delivery,
             lines: current.delivery.lines.map((item) => item.deliveryLineId === line.id
@@ -152,17 +172,20 @@ export function WorkResultDraftForm({
       <div className={styles.field}>
         <label htmlFor="result-note">Ghi chú hiện trường</label>
         <textarea id="result-note" maxLength={1000} minLength={3} onChange={update("note")} value={draft.note} />
-        <span className={styles.hint}>Chỉ số lượng, người nhận và ghi chú được lưu cục bộ. Không lưu ảnh, token hay dữ liệu tiền.</span>
+        <span className={styles.hint}>Chỉ số lượng, người nhận và ghi chú được lưu cục bộ. Không lưu ảnh, thông tin đăng nhập hoặc số tiền.</span>
       </div>
       <div className={styles.field}>
         <label htmlFor="proof-file">Minh chứng riêng</label>
-        <input accept="image/jpeg,image/png,application/pdf" id="proof-file" onChange={(event) => setFile(event.target.files?.[0] ?? null)} type="file" />
+        <FilePicker accept="image/jpeg,image/png,application/pdf" id="proof-file" onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
         <button className={styles.buttonSecondary} disabled={!file || uploading} onClick={uploadProof} type="button">
           {uploading ? "Đang tải minh chứng" : evidenceId ? "Tải lại minh chứng" : "Tải minh chứng"}
         </button>
       </div>
       {message ? <p className={styles.status + " " + (error ? styles.error : "")} role="status">{message}</p> : null}
-      <button className={styles.button} disabled={submitting || uploading || (!!delivery && !delivery.assignment_version)} type="submit">
+      {!deliveryReady && <p className={styles.status}>Chưa có lượng thực lấy hoặc công việc chưa được phép báo giao. Kiểm tra bàn giao với kho/điều phối rồi tải dữ liệu mới.</p>}
+      {(error || sourceChanged || !deliveryReady) && <button className={styles.buttonSecondary} type="button" onClick={() => router.refresh()}>Tải dữ liệu mới</button>}
+      {draft.sourceRejected && sourceChanged && <button className={styles.buttonSecondary} type="button" disabled={!deliveryReady} onClick={useCurrentSource}>Dùng phiên bản mới đã tải</button>}
+      <button className={styles.button} disabled={submitting || uploading || !deliveryReady} type="submit">
         {submitting ? "Đang gửi kết quả" : "Gửi kết quả công việc"}
       </button>
     </form>

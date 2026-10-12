@@ -1,3 +1,4 @@
+import { workStateLabel } from "@/modules/portal/presentation";
 import { randomUUID } from "node:crypto";
 
 import { requireInternalPermission } from "@/lib/access/context";
@@ -35,7 +36,7 @@ export async function DeliveryWorkItemBridge({ deliveryId }: { deliveryId: strin
       <button className="button button-primary" type="submit">Giao việc qua cổng thợ</button>
     </form>}
     {work && <>
-      <p><strong>{work.work_number}</strong> · {work.execution_state}</p>
+      <p><strong>{work.work_number}</strong> · {workStateLabel(work.execution_state)}</p>
       {context.permissions.has("work.verify") && work.execution_state === "DONE" && delivery?.execution_state === "VERIFIED" && <form action={verifyDeliveryWorkItemAction}>
         <input type="hidden" name="deliveryId" value={deliveryId} />
         <input type="hidden" name="workItemId" value={work.id} />

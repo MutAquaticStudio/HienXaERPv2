@@ -1,0 +1,34 @@
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+
+ RUN  v5.0.0 /Users/nox/.codex/worktrees/go-live-acceptance/HienXaERP
+
+··xx
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/api/portal/work-results/route.test.ts > rejects numeric JSON 99999999999999.0000001 that loses quantity digits during parsing
+ FAIL  src/app/api/portal/work-results/route.test.ts > rejects numeric JSON 99999999999999.123456 that loses quantity digits during parsing
+AssertionError: expected 200 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 200
+
+ ❯ src/app/api/portal/work-results/route.test.ts:26:27
+     24|     headers: { "content-type": "application/json" },
+     25|     body: `{"workItemId":"${id}","operationId":"${id}","expectedVersio…
+     26|   expect(response.status).toBe(409);
+       |                           ^
+     27|   expect(portal.rpc).not.toHaveBeenCalled();
+     28| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 2 passed (4)
+   Start at  12:13:49
+   Duration  268ms (setup 41%, import 35%, transform 18%, tests 5%, worker 1%)
+

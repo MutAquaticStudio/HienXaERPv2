@@ -1,0 +1,26 @@
+{
+  "scope": "MASTER_DRAFT_OUTCOME_ACTOR_BRANCH_AND_FINANCIAL_DELEGATION",
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "MASTER_DRAFT_PERSIST_GET_RETRY_CHANGE_CONFLICT_AND_WORKER_DENIAL",
+      "status": "PASS"
+    },
+    {
+      "name": "MASTER_ORIGINAL_INTENT_RESULT_BEFORE_STATE_GUARD_BOUND_TO_ACTOR_SOURCE_AND_PAYLOAD",
+      "status": "PASS"
+    },
+    {
+      "name": "FINANCIAL_DRAFT_DELEGATES_UNCHANGED_WITH_CURRENT_RIGHTS_NO_FINANCIAL_WRITER",
+      "status": "PASS",
+      "advanceRace": false
+    },
+    {
+      "name": "CANONICAL_INTERNAL_HELPERS_NOT_DIRECTLY_EXECUTABLE_BY_AUTHENTICATED",
+      "status": "PASS"
+    }
+  ],
+  "status": "PASS",
+  "rolledBack": true,
+  "checkedAt": "2026-10-12T08:26:44.985Z"
+}

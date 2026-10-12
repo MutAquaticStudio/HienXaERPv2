@@ -13,12 +13,39 @@ export function MessageRefreshSignal({ conversationId }: { conversationId: strin
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
     if (!url || !key) return;
+    let active = true;
+    const refresh = () => { if (active) router.refresh(); };
     const supabase = createBrowserClient(url, key);
-    const channel = supabase
+    const createChannel = () => supabase
       .channel(`message-refresh-${conversationId}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${conversationId}` }, () => router.refresh())
-      .subscribe();
-    return () => { void supabase.removeChannel(channel); };
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${conversationId}` }, refresh)
+      .on("system", {}, (payload) => {
+        // SUBSCRIBED precedes the database listener. Requery at readiness and
+        // reconnect to recover messages committed while no listener was active.
+        if (payload.extension === "postgres_changes" && payload.status === "ok") refresh();
+      });
+    let channel = createChannel();
+    async function subscribe(target: typeof channel) {
+      const { data, error } = await supabase.auth.getSession();
+      if (!active || target !== channel || error || !data.session) return;
+      // Cookie restoration is asynchronous. Bind the JWT before asking the
+      // server to authorize the table/filter; an anonymous join cannot read it.
+      await supabase.realtime.setAuth(data.session.access_token);
+      if (active && target === channel) target.subscribe();
+    }
+    const queryFallback = () => { /* The authenticated query/reload path remains available. */ };
+    void subscribe(channel).catch(queryFallback);
+    const reconnect = () => {
+      refresh();
+      void (async () => {
+        await supabase.removeChannel(channel);
+        if (!active) return;
+        channel = createChannel();
+        await subscribe(channel);
+      })().catch(queryFallback);
+    };
+    window.addEventListener("online", reconnect);
+    return () => { active = false; window.removeEventListener("online", reconnect); void supabase.removeChannel(channel); };
   }, [conversationId, router]);
   return null;
 }

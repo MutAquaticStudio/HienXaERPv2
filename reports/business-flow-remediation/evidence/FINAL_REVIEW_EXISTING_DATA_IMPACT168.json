@@ -1,0 +1,14 @@
+{
+  "schema": 168,
+  "finite": {
+    "invalid": 0
+  },
+  "overvalued": {
+    "sources": 0
+  },
+  "security": {
+    "missing_rls": 0
+  },
+  "productionAccess": "NONE",
+  "businessWrites": 0
+}

@@ -1,0 +1,13 @@
+{
+  "status": "REPRODUCED_ROUTE_APPLY_REJECTION",
+  "fact": {
+    "error": {
+      "code": "23P01",
+      "message": "work_resource_schedule_collision"
+    },
+    "plan": {
+      "status": "DRAFT"
+    }
+  },
+  "productionAccess": "NONE"
+}

@@ -1,7 +1,10 @@
 "use client";
 
 import { useRef, useState, type ChangeEvent } from "react";
+import { userFacingError } from "@/lib/core/errors";
+import { FilePicker } from "@/components/ui/file-picker";
 import { createBrowserSupabase } from "@/lib/supabase/browser";
+import { rememberEvidenceIntent } from "@/lib/core/evidence-intent";
 
 type OperationIds = { create: string; finalize: string };
 type PrepareResponse = { evidenceId?: string; objectPath?: string; token?: string; alreadyVerified?: boolean; error?: string };
@@ -23,6 +26,14 @@ export function PurchaseEvidenceUpload({ purchaseOrderId }: { purchaseOrderId: s
     try {
       const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
       const checksumSha256 = Array.from(new Uint8Array(digest), (value) => value.toString(16).padStart(2, "0")).join("");
+      const { data: actor, error: authError } = await createBrowserSupabase().auth.getUser();
+      if (authError || !actor.user) throw new Error("Phiên đăng nhập đã hết hạn.");
+      if (operationIds.current?.create !== ids.create) return;
+      const selectionId = ids.create;
+      const saved = await rememberEvidenceIntent(actor.user.id, "purchase:" + purchaseOrderId, checksumSha256, localStorage);
+      if (operationIds.current?.create !== selectionId) return;
+      ids = saved;
+      operationIds.current = ids;
       const response = await fetch("/api/purchasing/evidence/upload", { method: "POST", credentials: "same-origin",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ purchaseOrderId, createOperationId: ids.create, fileName: file.name, byteSize: file.size }) });
@@ -48,7 +59,7 @@ export function PurchaseEvidenceUpload({ purchaseOrderId }: { purchaseOrderId: s
       if (operationIds.current?.create !== ids.create) return;
       const message = reason instanceof Error ? reason.message : "Không thể tải minh chứng.";
       setEvidenceId("");
-      setError(message);
+      setError(userFacingError(message, "Không thể tải minh chứng. Vui lòng thử lại."));
       inputRef.current?.setCustomValidity("Tải lại minh chứng hoặc bỏ chọn tệp trước khi lưu.");
     } finally {
       if (operationIds.current?.create === ids.create) setBusy(false);
@@ -79,7 +90,7 @@ export function PurchaseEvidenceUpload({ purchaseOrderId }: { purchaseOrderId: s
 
   return <div className="field">
     <label htmlFor={`purchaseEvidence-${purchaseOrderId}`}>Minh chứng nhận hàng/NCC giao (tùy chọn)</label>
-    <input ref={inputRef} id={`purchaseEvidence-${purchaseOrderId}`} type="file" accept=".png,.jpg,.jpeg,.pdf,image/png,image/jpeg,application/pdf" onChange={onFileChange} />
+    <FilePicker inputRef={inputRef} id={`purchaseEvidence-${purchaseOrderId}`} accept=".png,.jpg,.jpeg,.pdf,image/png,image/jpeg,application/pdf" onChange={onFileChange} />
     <input type="hidden" name="evidenceId" value={evidenceId} />
     <p className="muted" role="status">{busy ? "Đang tải minh chứng..." : evidenceId ? "Đã tải minh chứng; sẽ gắn khi xác nhận nghiệp vụ." : "Chấp nhận PNG, JPEG hoặc PDF tối đa 10 MB."}</p>
     {error && <p role="alert">{error} {selectedFile && selectedFile.size <= maxBytes && <button className="button button-secondary" type="button" disabled={busy} onClick={() => { if (operationIds.current) void upload(selectedFile, operationIds.current); }}>Thử tải lại</button>}</p>}

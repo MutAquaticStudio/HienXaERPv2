@@ -1,4 +1,5 @@
 "use client";
+import { userFacingError } from "@/lib/core/errors";
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -26,7 +27,7 @@ export function StartJobButton({ workItemId, version }: { workItemId: string; ve
       setMessage("Đã bắt đầu công việc.");
       router.refresh();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Không thể bắt đầu công việc");
+      setMessage(error instanceof Error ? userFacingError(error.message) : "Không thể bắt đầu công việc");
       setBusy(false);
     }
   }

@@ -19,11 +19,18 @@ export function parseBusinessDateTime(value: string): string | null {
 }
 
 export function formatBusinessDate(value: string) {
-  return new Intl.DateTimeFormat("vi-VN", { timeZone: BUSINESS_TIME_ZONE }).format(new Date(value));
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Chưa có dữ liệu";
+  return new Intl.DateTimeFormat("vi-VN", {
+    timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", year: "numeric",
+  }).format(date);
 }
 
 export function formatBusinessDateTime(value: string) {
-  return new Intl.DateTimeFormat("vi-VN", {
-    timeZone: BUSINESS_TIME_ZONE, dateStyle: "medium", timeStyle: "short",
-  }).format(new Date(value));
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Chưa có dữ liệu";
+  const time = new Intl.DateTimeFormat("vi-VN", {
+    timeZone: BUSINESS_TIME_ZONE, hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+  }).format(date);
+  return `${formatBusinessDate(value)} ${time}`;
 }

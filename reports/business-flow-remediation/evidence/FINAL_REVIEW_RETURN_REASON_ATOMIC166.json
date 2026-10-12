@@ -1,0 +1,25 @@
+{
+  "scope": "G03_CUSTOMER_PHYSICAL_RETURN_CUMULATIVE_SOURCE_VALUE",
+  "phase": "after",
+  "status": "PASS",
+  "facts": {
+    "mode": "WAREHOUSE",
+    "sources": [
+      {
+        "id": "554b6c8f-4190-42c7-8db7-20ef4b7e66f2",
+        "value": "150000",
+        "unit": "149999.550001"
+      }
+    ],
+    "returned": {
+      "quantity": "1.000003",
+      "value": "150000"
+    },
+    "remainingCost": "0",
+    "independentExpectedValue": "150000",
+    "cases": 3,
+    "faultRollbackTested": true
+  },
+  "rolledBack": true,
+  "productionAccess": "NONE"
+}

@@ -17,7 +17,7 @@ export default async function EditQuotationPage({ params }: { params: Promise<{ 
   const [revisionResult, lineResult] = await Promise.all([
     supabase.from("quotation_revisions").select("id, state, draft_version, expires_at, commercial_terms")
       .eq("id", quote.current_revision_id).eq("quotation_id", quote.id).maybeSingle(),
-    supabase.from("quotation_lines").select("id, material_id, ordered_uom_id, quantity, unit_price_vnd, price_source_type, override_reason")
+    supabase.from("quotation_lines").select("id, material_id, ordered_uom_id, quantity, unit_price_vnd::text, price_source_type, override_reason")
       .eq("revision_id", quote.current_revision_id).order("line_number"),
   ]);
   const revision = revisionResult.data;
@@ -30,6 +30,6 @@ export default async function EditQuotationPage({ params }: { params: Promise<{ 
       quantity: String(line.quantity), manualPriceVnd: line.price_source_type === "MANUAL_APPROVED" ? String(line.unit_price_vnd) : "",
       manualReason: line.price_source_type === "MANUAL_APPROVED" ? line.override_reason ?? "" : "" })),
   };
-  return <><header className="page-heading"><div><p className="eyebrow">Báo giá · Bản nháp</p><h1>Sửa {quote.quotation_number}</h1><p className="lede">Sửa cùng revision trước khi gửi; sau khi gửi, lịch sử được khóa.</p></div><Link className="button button-secondary" href={`/admin/quotations/${id}`}>Về báo giá</Link></header>
+  return <><header className="page-heading"><div><p className="eyebrow">Báo giá · Bản nháp</p><h1>Sửa {quote.quotation_number}</h1><p className="lede">Sửa cùng phiên bản trước khi gửi; sau khi gửi, lịch sử được khóa.</p></div><Link className="button button-secondary" href={`/admin/quotations/${id}`}>Về báo giá</Link></header>
     <CommercialDocumentForm kind="quote" options={options} operationId={randomUUID()} canManagePrice={access.permissions.has("pricing.manage")} canManageCustomers={false} existing={existing} /></>;
 }

@@ -1,7 +1,11 @@
+import { permissionLabel } from "@/components/access/presentation";
+import { roleLabel } from "@/components/access/presentation";
 import { InviteEmployeeForm } from "@/components/access/invite-employee-form";
 import { ExplicitPermissionForm, ManageAccessForm, ReactivateAccessForm, RevokeAccessForm } from "@/components/access/manage-access-form";
 import { requireInternalPermission } from "@/lib/access/context";
+import { CORE_LIST_PAGE_SIZE, ilikePattern, parseCoreListQuery } from "@/lib/core-list";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { ListPager } from "@/components/ui/list-pager";
 
 type RoleRelation = { id: string; name: string; role_permissions: { permission_code: string }[] };
 type Assignment = { id: string; active: boolean; branch_id: string; branches: { id: string; name: string } | null; roles: RoleRelation | null };
@@ -10,11 +14,14 @@ type RoleRow = { id: string; name: string; role_permissions: { permission_code: 
 type PermissionRow = { code: string; name: string };
 type GrantRow = { employee_id: string; branch_id: string; permission_code: string };
 
-export default async function AccessManagementPage() {
+export default async function AccessManagementPage({ searchParams }: { searchParams: Promise<{ q?: string; page?: string }> }) {
   const actor = await requireInternalPermission("roles.manage");
+  const list = parseCoreListQuery(await searchParams);
   const supabase = await createServerSupabase();
+  let employeeQuery = supabase.from("employees").select("id, code, display_name, active, employee_branch_access(id, active, branch_id, branches(id, name), roles(id, name, role_permissions(permission_code)))", { count: "exact" });
+  if (list.q) employeeQuery = employeeQuery.or(`code.ilike.${ilikePattern(list.q)},display_name.ilike.${ilikePattern(list.q)}`);
   const [employees, branches, roles, permissions, grants] = await Promise.all([
-    supabase.from("employees").select("id, code, display_name, active, employee_branch_access(id, active, branch_id, branches(id, name), roles(id, name, role_permissions(permission_code)))").order("display_name").limit(100),
+    employeeQuery.order("display_name").order("id").range(list.from, list.to),
     supabase.from("branches").select("id, name").eq("id", actor.branchId).eq("active", true),
     supabase.from("roles").select("id, name, role_permissions(permission_code)").eq("active", true).order("name"),
     supabase.from("permissions").select("code, name").order("code"),
@@ -31,21 +38,24 @@ export default async function AccessManagementPage() {
   const permissionOptions = permissionRows.filter((permission) => actor.permissions.has(permission.code));
 
   return <>
-    <header className="page-heading"><div><p className="eyebrow">Quản trị truy cập</p><h1>Nhân viên & quyền</h1><p className="lede">Đang quản lý {actor.branchName}. Chuyển chi nhánh để quản lý phạm vi khác; không tự thay đổi quyền của chính mình.</p></div><span className="scope-chip">Tối đa 100 nhân viên</span></header>
+    <header className="page-heading"><div><p className="eyebrow">Quản trị truy cập</p><h1>Nhân viên & quyền</h1><p className="lede">Đang quản lý {actor.branchName}. Chuyển chi nhánh để quản lý phạm vi khác; không tự thay đổi quyền của chính mình.</p></div><span className="scope-chip">{CORE_LIST_PAGE_SIZE} nhân viên / trang</span></header>
+    <form className="filter-bar"><label>Tìm nhân viên<input name="q" defaultValue={list.q} placeholder="Mã hoặc tên nhân viên" /></label><button className="button button-secondary" type="submit">Tìm kiếm</button></form>
     <section className="card card-pad"><h2>Mời nhân viên</h2><InviteEmployeeForm branches={branches.data} roles={roleOptions} /></section>
     {employeeRows.map((employee) => {
       const hasActiveCurrentAccess = employee.employee_branch_access.some((assignment) => assignment.branch_id === actor.branchId && assignment.active);
       return <section className="card card-pad" key={employee.id}>
         <div className="section-head flush"><div><h2>{employee.display_name} · {employee.code}</h2><p>{employee.active ? "Nhân viên đang hoạt động" : "Nhân viên đã ngừng hoạt động"}</p></div><span className="scope-chip">{employee.employee_branch_access.filter((assignment) => assignment.active).length} phạm vi hiệu lực</span></div>
-        <div className="table-wrap"><table><thead><tr><th>Chi nhánh</th><th>Vai trò</th><th>Quyền tường minh</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>{employee.employee_branch_access.map((assignment) => {
+        <div className="table-wrap"><table><thead><tr><th>Chi nhánh</th><th>Vai trò</th><th>Quyền bổ sung</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>{employee.employee_branch_access.map((assignment) => {
           const explicit = grantRows.filter((grant) => grant.employee_id === employee.id && grant.branch_id === assignment.branch_id).map((grant) => grant.permission_code);
           const baseline = new Set(assignment.roles?.role_permissions.map((permission) => permission.permission_code) ?? []);
           const assignableExplicit = permissionOptions.filter((permission) => !baseline.has(permission.code));
           const canAct = employee.active && employee.id !== actor.employeeId && assignment.branch_id === actor.branchId;
-          return <tr key={assignment.id}><td>{assignment.branches?.name ?? "Không có quyền xem"}</td><td>{assignment.roles?.name ?? "Không có quyền xem"}</td><td>{explicit.length ? explicit.join(", ") : "Không có"}</td><td>{assignment.active ? "Đang có hiệu lực" : "Đã thu hồi"}</td><td>{canAct && assignment.active && <div className="action-cluster"><details><summary>Quyền riêng</summary><ExplicitPermissionForm employeeId={employee.id} branchId={assignment.branch_id} permissions={assignableExplicit} selected={explicit} /></details><details><summary>Thu hồi</summary><RevokeAccessForm accessId={assignment.id} /></details></div>}{canAct && !assignment.active && !hasActiveCurrentAccess && <details><summary>Kích hoạt lại</summary><ReactivateAccessForm accessId={assignment.id} /></details>}</td></tr>;
+          return <tr key={assignment.id}><td>{assignment.branches?.name ?? "Không có quyền xem"}</td><td>{assignment.roles ? roleLabel(assignment.roles.name) : "Không có quyền xem"}</td><td>{explicit.length ? explicit.map(code => permissionRows.find(permission => permission.code === code)?.name ? permissionLabel(permissionRows.find(permission => permission.code === code)!.name) : "Quyền bổ sung").join(", ") : "Không có"}</td><td>{assignment.active ? "Đang có hiệu lực" : "Đã thu hồi"}</td><td>{canAct && assignment.active && <div className="action-cluster"><details><summary>Quyền riêng</summary><ExplicitPermissionForm employeeId={employee.id} branchId={assignment.branch_id} permissions={assignableExplicit} selected={explicit} /></details><details><summary>Thu hồi</summary><RevokeAccessForm accessId={assignment.id} /></details></div>}{canAct && !assignment.active && !hasActiveCurrentAccess && <details><summary>Kích hoạt lại</summary><ReactivateAccessForm accessId={assignment.id} /></details>}</td></tr>;
         })}</tbody></table></div>
         {employee.active && employee.id !== actor.employeeId && <details><summary>Cấp / đổi vai trò tại {actor.branchName}</summary><ManageAccessForm employeeId={employee.id} branches={branches.data} roles={roleOptions} /></details>}
       </section>;
     })}
+    {!employeeRows.length && <p className="empty-inline">Không có nhân viên phù hợp trong phạm vi bạn được xem.</p>}
+    <ListPager page={list.page} total={employees.count ?? 0} params={{ q: list.q }} />
   </>;
 }

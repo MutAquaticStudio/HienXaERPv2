@@ -1,0 +1,30 @@
+$ eslint .
+
+/Users/nox/.codex/worktrees/go-live-acceptance/HienXaERP/scripts/qa/go-live/purchase-amendment-browser.mjs
+  4:100  warning  'd' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/nox/.codex/worktrees/go-live-acceptance/HienXaERP/scripts/qa/reconcile-current-candidate.mjs
+  268:90  warning  'raw' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/nox/.codex/worktrees/go-live-acceptance/HienXaERP/scripts/qa/test-po-address-policy.mjs
+  143:47  warning  'unit_cost_vnd' is assigned a value but never used                @typescript-eslint/no-unused-vars
+  143:61  warning  'purchase_price_rule_id' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  143:84  warning  'purchase_price_rule_version' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  196:47  warning  'unit_cost_vnd' is assigned a value but never used                @typescript-eslint/no-unused-vars
+  196:61  warning  'purchase_price_rule_id' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  196:84  warning  'purchase_price_rule_version' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/nox/.codex/worktrees/go-live-acceptance/HienXaERP/scripts/qa/test-qa-reconciliation.mjs
+  3:10  warning  'resolve' is defined but never used   @typescript-eslint/no-unused-vars
+  8:16  warning  'root' is defined but never used      @typescript-eslint/no-unused-vars
+  8:96  warning  'hashJson' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/nox/.codex/worktrees/go-live-acceptance/HienXaERP/src/modules/pricing/editor.tsx
+  56:6  warning  React Hook useLayoutEffect has missing dependencies: 'purchase', 'purchaseRule', and 'rule'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/nox/.codex/worktrees/go-live-acceptance/HienXaERP/src/modules/purchasing/finish-direct-draft.test.ts
+  14:28  warning  '_name' is defined but never used  @typescript-eslint/no-unused-vars
+  14:43  warning  '_args' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 14 problems (0 errors, 14 warnings)
+

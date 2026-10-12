@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { operationalPostingError } from "@/lib/core/errors";
 import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
@@ -34,8 +35,11 @@ export async function confirmSalesOrderCreditOverride(formData: FormData): Promi
         expected_snapshot_hash: input.data.snapshotHash, operation_id: input.data.operationId,
       });
       if (error) {
-        if (error.message.includes("credit_snapshot_changed")) {
-          message = "Số dư hoặc bản nháp đã thay đổi. Kiểm tra snapshot mới trước khi duyệt lại.";
+        const postingError = operationalPostingError(error.message);
+        if (postingError) {
+          message = postingError;
+        } else if (error.message.includes("credit_snapshot_changed")) {
+          message = "Số dư hoặc bản nháp đã thay đổi. Kiểm tra thông tin tín dụng mới trước khi duyệt lại.";
         } else if (error.message.includes("credit_override_not_required")) {
           message = "Đơn đang đủ điều kiện tín dụng. Hãy dùng Xác nhận đơn thông thường.";
         } else if (error.code === "42501") {

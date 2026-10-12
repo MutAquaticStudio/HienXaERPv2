@@ -6,7 +6,9 @@ import { z } from "zod";
 import { resolveInternalAccess } from "@/lib/access/context";
 import { AppError } from "@/lib/core/errors";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { finalizeVerifiedEvidence } from "@/modules/portal/evidence-storage";
 import { detectEvidenceMime } from "@/modules/portal/server";
+import { hasSameRequestOrigin } from "@/lib/core/request-origin";
 
 const bucket = "inventory-evidence";
 const maxBytes = 10 * 1024 * 1024;
@@ -25,8 +27,7 @@ function failure(error: string, status: number) {
 }
 
 function invalidRequest(request: Request) {
-  const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin) return failure("Nguồn yêu cầu không hợp lệ.", 403);
+  if (!hasSameRequestOrigin(request)) return failure("Nguồn yêu cầu không hợp lệ.", 403);
   if (Number(request.headers.get("content-length") ?? 0) > maxJsonBytes) return failure("Yêu cầu quá lớn.", 413);
   if (!request.headers.get("content-type")?.startsWith("application/json")) return failure("Định dạng yêu cầu không hợp lệ.", 415);
   return null;
@@ -67,7 +68,12 @@ export async function POST(request: Request) {
       .select("upload_state").eq("id", evidenceId).eq("branch_id", access.branchId).maybeSingle();
     if (evidenceError || !evidence) return failure("Không thể kiểm tra minh chứng.", 502);
     if (evidence.upload_state === "VERIFIED") {
-      return NextResponse.json({ evidenceId, objectPath, alreadyVerified: true }, { headers: { "cache-control": "private, no-store" } });
+      const { data: verified, error: statusError } = await supabase.rpc("evidence_verified_storage_status", { target_evidence_id: evidenceId });
+      if (statusError) return failure("Không thể kiểm tra tệp đã lưu.", 503);
+      if (verified) return NextResponse.json({ evidenceId, objectPath, alreadyVerified: true }, { headers: { "cache-control": "private, no-store" } });
+      // Legacy metadata needs a stored-byte check before it can be used as proof.
+      // PATCH downloads the existing object without replacing it.
+      return NextResponse.json({ evidenceId, objectPath, alreadyVerified: true, needsVerification: true }, { headers: { "cache-control": "private, no-store" } });
     }
     const { data: signed, error: signedError } = await supabase.storage.from(bucket).createSignedUploadUrl(objectPath);
     if (signedError || !signed?.token) return failure("Không thể chuẩn bị tải tệp.", 502);
@@ -109,11 +115,12 @@ export async function PATCH(request: Request) {
       (evidence.upload_state === "VERIFIED" && (evidence.checksum_sha256 !== checksum || Number(evidence.byte_size) !== bytes.length))) {
       return failure("Tệp đã tải không khớp lựa chọn hiện tại.", 409);
     }
-    const { error: finalizeError } = await supabase.rpc("finalize_evidence_upload", {
-      target_evidence_id: parsed.data.evidenceId, checksum_sha256: checksum,
-      byte_size: bytes.length, operation_id: parsed.data.finalizeOperationId,
+    const { data: actor, error: actorError } = await supabase.auth.getUser();
+    if (actorError || !actor.user) return failure("Phiên đăng nhập đã hết hạn.", 401);
+    await finalizeVerifiedEvidence("INTERNAL", {
+      actorUuid: actor.user.id, evidenceId: parsed.data.evidenceId, checksum,
+      byteSize: bytes.length, operationId: parsed.data.finalizeOperationId,
     });
-    if (finalizeError) return failure("Không thể xác minh tệp minh chứng.", 502);
     return NextResponse.json({ evidenceId: parsed.data.evidenceId }, { headers: { "cache-control": "private, no-store" } });
   } catch { return failure("Không thể xác minh minh chứng.", 400); }
 }

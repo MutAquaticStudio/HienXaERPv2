@@ -1,0 +1,10 @@
+{
+  "scope": "ACTUAL_QA_STORAGE_BYTES_PRIVATE_BACKUP_AND_ISOLATED_RESTORE",
+  "productionAccess": "NONE",
+  "businessDocumentsChanged": 0,
+  "checks": [],
+  "productionBackupReplacement": false,
+  "status": "FAIL",
+  "error": "The expression evaluated to a falsy value:",
+  "checkedAt": "2026-10-12T10:13:06.370Z"
+}

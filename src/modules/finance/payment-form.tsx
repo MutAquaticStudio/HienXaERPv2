@@ -1,7 +1,9 @@
 "use client";
+import { formatBusinessDate } from "@/lib/core/business-time";
 
 import { useMemo, useState } from "react";
-import { postPaymentAction } from "@/modules/finance/actions";
+import { submitPaymentWithOutcomeAction } from "@/modules/finance/actions";
+import { ReliableCommandForm } from "@/components/reliable-command-form";
 import { formatVnd, vnd } from "@/lib/core/money";
 
 export type PaymentTarget = {
@@ -21,6 +23,7 @@ type Props = {
   defaultEffectiveAt: string;
   redirectTo: string;
   operationId: string;
+  actorScope: string;
   historicalContext?: boolean;
 };
 
@@ -69,7 +72,17 @@ export function PaymentForm(props: Props) {
     .filter((item) => integer(item.amount_vnd) > 0n);
 
   return (
-    <form className="card card-pad payment-editor" action={postPaymentAction}>
+    <ReliableCommandForm className="card card-pad payment-editor" action={submitPaymentWithOutcomeAction}
+      command="post_payment" scope={`${props.actorScope}:${props.direction}:${props.partyId}`} operationId={props.operationId}
+      onRestore={(entries) => {
+        const fields = Object.fromEntries(entries);
+        setAmount(fields.amount ?? "");
+        setAdvance(fields.advanceAmount ?? "0");
+        try {
+          const values = JSON.parse(fields.allocationsJson ?? "[]") as Array<{ obligation_id: string; amount_vnd: string }>;
+          setAllocations(Object.fromEntries(values.map((item) => [item.obligation_id, item.amount_vnd])));
+        } catch { setAllocations({}); }
+      }} onNew={() => { setAmount(""); setAdvance("0"); setAllocations({}); }}>
       <div className="section-head flush">
         <div><p className="eyebrow">{props.direction === "RECEIPT" ? "Phiếu thu" : "Phiếu chi"}</p><h2>{props.partyName}</h2></div>
         <span className="scope-chip">Số dư hiện tại</span>
@@ -78,7 +91,6 @@ export function PaymentForm(props: Props) {
       <input type="hidden" name="direction" value={props.direction} />
       <input type="hidden" name="partyId" value={props.partyId} />
       <input type="hidden" name="allocationsJson" value={JSON.stringify(allocationPayload)} />
-      <input type="hidden" name="operationId" value={props.operationId} />
       <input type="hidden" name="redirectTo" value={props.redirectTo} />
       <div className="inline-create">
         <label>Số tiền {props.direction === "RECEIPT" ? "nhận" : "chi"}<input name="amount" value={amount} onChange={(event) => setAmount(event.target.value)} inputMode="numeric" required /></label>
@@ -91,7 +103,7 @@ export function PaymentForm(props: Props) {
       <div className="allocation-editor">
         <div className="allocation-head"><strong>Phân bổ thủ công</strong><span>Đã chọn {allocationPayload.length} khoản · không tự chọn thứ tự khoản</span></div>
         <div className="filter-bar"><label>Tìm khoản theo nguồn<input value={search} onChange={(event) => setSearch(event.target.value)} maxLength={80} placeholder="Mã hoặc tên nguồn" /></label><button className="button button-secondary" type="button" disabled={busy} onClick={() => void loadObligations(1, search)}>Tìm khoản</button></div>
-        {visible.map((item) => <label className="allocation-row" key={item.id}><span><strong>{item.sourceLabel}</strong><small>Đến hạn {new Intl.DateTimeFormat("vi-VN").format(new Date(item.dueDate))} · còn {formatVnd(vnd(item.outstandingAmountVnd))}</small></span><input aria-label={`Phân bổ cho ${item.sourceLabel}`} value={allocations[item.id] ?? ""} onChange={(event) => setAllocations((current) => ({ ...current, [item.id]: event.target.value }))} inputMode="numeric" placeholder="0" /></label>)}
+        {visible.map((item) => <label className="allocation-row" key={item.id}><span><strong>{item.sourceLabel}</strong><small>Đến hạn {formatBusinessDate(item.dueDate)} · còn {formatVnd(vnd(item.outstandingAmountVnd))}</small></span><input aria-label={`Phân bổ cho ${item.sourceLabel}`} value={allocations[item.id] ?? ""} onChange={(event) => setAllocations((current) => ({ ...current, [item.id]: event.target.value }))} inputMode="numeric" placeholder="0" /></label>)}
         {!visible.length && <p className="empty-inline">Không có khoản còn dư phù hợp.</p>}
         {loadError && <p className="form-message" role="alert">{loadError}</p>}
         <div className="action-cluster"><span className="muted">Trang {page}</span>{page > 1 && <button className="button button-secondary" type="button" disabled={busy} onClick={() => void loadObligations(page - 1, appliedSearch)}>Trước</button>}{hasNext && <button className="button button-secondary" type="button" disabled={busy} onClick={() => void loadObligations(page + 1, appliedSearch)}>Tiếp</button>}</div>
@@ -102,6 +114,6 @@ export function PaymentForm(props: Props) {
         <span className={unallocated < 0n ? "money-negative" : ""}>Còn chưa phân loại<strong>{formatVnd(vnd(unallocated.toString()))}</strong></span>
       </div>
       <button className="button button-primary action-full" type="submit" disabled={received <= 0n || unallocated < 0n}>Ghi nhận {props.direction === "RECEIPT" ? "thu tiền" : "chi tiền"}</button>
-    </form>
+    </ReliableCommandForm>
   );
 }

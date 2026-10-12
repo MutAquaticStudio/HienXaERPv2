@@ -1,0 +1,104 @@
+{
+  "scope": "ACTUAL_BROWSER_SEPARATE_ROLE_STANDARD_SOURCE_FLOW",
+  "origin": "http://127.0.0.1:3112",
+  "database": "hx_remediation_go_live_browser175",
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0",
+  "checks": [
+    {
+      "name": "SALES_REAL_UI_CREATE_CONFIRM_NO_OPENING",
+      "status": "PASS",
+      "facts": {
+        "so": "f40687ff-a634-469d-9f0a-19256f7bbbdc"
+      }
+    },
+    {
+      "name": "PURCHASING_REAL_UI_CREATE_CONFIRM_DISTINCT_PRICES",
+      "status": "PASS",
+      "facts": {
+        "po": "e14cc495-4e0b-40c0-8a0c-42af67651b9b"
+      }
+    },
+    {
+      "name": "WAREHOUSE_REAL_UI_RECEIVE10_THEN5_RELOAD",
+      "status": "PASS",
+      "facts": {
+        "po": "e14cc495-4e0b-40c0-8a0c-42af67651b9b",
+        "stock": "15.000000"
+      }
+    },
+    {
+      "name": "WAREHOUSE_REAL_UI_RECEIVE10_THEN5_RELOAD",
+      "status": "PASS",
+      "facts": {
+        "po": "e14cc495-4e0b-40c0-8a0c-42af67651b9b",
+        "stock": "15.000000"
+      }
+    },
+    {
+      "name": "WAREHOUSE_REAL_UI_RECEIVE10_THEN5_RELOAD",
+      "status": "PASS",
+      "facts": {
+        "po": "e14cc495-4e0b-40c0-8a0c-42af67651b9b",
+        "stock": "15.000000"
+      }
+    },
+    {
+      "name": "PURCHASING_SELECTS_WAREHOUSE_SOURCE",
+      "status": "PASS",
+      "facts": {
+        "so": "f40687ff-a634-469d-9f0a-19256f7bbbdc"
+      }
+    },
+    {
+      "name": "DISPATCH_ASSIGN_PUBLISH_CURRENT_WORK",
+      "status": "PASS",
+      "facts": {
+        "delivery": "2dd6acde-15db-48b0-92b2-7f248681bb52",
+        "work": "617060ea-12ab-4ba5-bf9a-c328058969e6"
+      }
+    },
+    {
+      "name": "WAREHOUSE_REAL_UI_RECEIVE10_THEN5_RELOAD",
+      "status": "PASS",
+      "facts": {
+        "po": "e14cc495-4e0b-40c0-8a0c-42af67651b9b",
+        "stock": "15.000000"
+      }
+    },
+    {
+      "name": "WORKER_ACTUAL14_USES_SERVER_LIMIT",
+      "status": "PASS",
+      "facts": {
+        "work": "617060ea-12ab-4ba5-bf9a-c328058969e6"
+      }
+    },
+    {
+      "name": "AUTHORIZED_VERIFY_ACCEPTED13_SEPARATE_FROM_WORKER14",
+      "status": "PASS",
+      "facts": {
+        "obligation": "8c3805f2-edb4-48ed-b18d-151f803b0e3b"
+      }
+    }
+  ],
+  "screenshots": [
+    "reports/go-live-acceptance/screenshots/standard-sales-created-confirmed.png",
+    "reports/go-live-acceptance/screenshots/standard-purchasing-created-confirmed.png",
+    "reports/go-live-acceptance/screenshots/standard-warehouse-partial-receipts.png",
+    "reports/go-live-acceptance/screenshots/standard-warehouse-partial-receipts.png",
+    "reports/go-live-acceptance/screenshots/standard-warehouse-partial-receipts.png",
+    "reports/go-live-acceptance/screenshots/standard-warehouse-partial-receipts.png",
+    "reports/go-live-acceptance/screenshots/standard-worker-plan15-loaded14-limit14.png",
+    "reports/go-live-acceptance/screenshots/standard-accepted13-keeps-worker14.png"
+  ],
+  "consoleErrors": [],
+  "documents": {
+    "branch": "474b60c5-cf95-4d11-b782-4f0eefcbb427",
+    "so": "f40687ff-a634-469d-9f0a-19256f7bbbdc",
+    "po": "e14cc495-4e0b-40c0-8a0c-42af67651b9b",
+    "delivery": "2dd6acde-15db-48b0-92b2-7f248681bb52",
+    "work": "617060ea-12ab-4ba5-bf9a-c328058969e6",
+    "obligation": "8c3805f2-edb4-48ed-b18d-151f803b0e3b"
+  }
+}

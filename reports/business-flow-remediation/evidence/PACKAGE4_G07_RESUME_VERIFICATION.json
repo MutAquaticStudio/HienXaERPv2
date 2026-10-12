@@ -1,0 +1,145 @@
+{
+  "scope": "G07_RESUME_READBACK_AND_UNFINISHED_CHECKS",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "productionAccess": "NONE",
+  "completedRacesRerun": false,
+  "checks": [
+    {
+      "name": "EXISTING_different-intents_INDEPENDENT_READBACK",
+      "status": "PASS",
+      "readbackPid": 36080,
+      "originalPids": [
+        17503,
+        17504
+      ],
+      "facts": {
+        "debt": "400000",
+        "advance": "400000",
+        "allocated": "600000",
+        "effects": 1,
+        "payments": 1
+      },
+      "sources": {
+        "receipts": 1,
+        "audits": 1,
+        "consumptions": 1
+      },
+      "raceReexecuted": false,
+      "managedAuthInRace": false
+    },
+    {
+      "name": "EXISTING_same-intent_INDEPENDENT_READBACK",
+      "status": "PASS",
+      "readbackPid": 36080,
+      "originalPids": [
+        17506,
+        17507
+      ],
+      "facts": {
+        "debt": "400000",
+        "advance": "400000",
+        "allocated": "600000",
+        "effects": 1,
+        "payments": 1
+      },
+      "sources": {
+        "receipts": 1,
+        "audits": 1,
+        "consumptions": 1
+      },
+      "raceReexecuted": false,
+      "managedAuthInRace": false
+    },
+    {
+      "name": "MID_CONSUMPTION_FAILURE_ROLLS_BACK_ALL_EFFECTS_THEN_SAME_INTENT_RETRIES",
+      "status": "PASS",
+      "failure": {
+        "code": "P0001",
+        "message": "QA_INJECTED_AFTER_ADVANCE_CONSUMPTION"
+      },
+      "afterFault": {
+        "debt": "1000000",
+        "advance": "1000000",
+        "payments": 1,
+        "allocations": 0,
+        "consumptions": 0,
+        "receipts": 0,
+        "audits": 0
+      },
+      "afterRetry": {
+        "debt": "400000",
+        "advance": "400000",
+        "allocations": 1,
+        "audits": 1
+      },
+      "scope": {
+        "code": "42501",
+        "message": "allocation_scope_mismatch"
+      },
+      "duplicate": {
+        "code": "23505",
+        "message": "duplicate_allocation_target"
+      },
+      "conflict": {
+        "code": "23505",
+        "message": "operation_payload_conflict"
+      }
+    },
+    {
+      "name": "SUPPLIER_ADVANCE_PARTIAL_ALLOCATIONS_AND_CUSTOMER_READER_SCOPE",
+      "status": "PASS",
+      "apFacts": {
+        "debt": "0",
+        "advance": "0",
+        "allocated": "150000",
+        "cashEvents": 1
+      },
+      "salesSupplierSourceRows": 0,
+      "salesSupplierBalanceRows": 0
+    }
+  ],
+  "migrations": [
+    {
+      "file": "20261011030154_remediation_delivery_line_reader_boundary.sql",
+      "sha256": "c986e2f75ae7e7f7ae7e77385e95963f088c3217c534e48f3ee3cbc218f5127b"
+    },
+    {
+      "file": "20261011030440_remediation_single_pickup_delivery_boundary.sql",
+      "sha256": "949fa0989853702259d97c2f0992e4345b8e932a86f115ec48773707886ab8bf"
+    },
+    {
+      "file": "20261011030903_remediation_delivery_assignee_eligibility.sql",
+      "sha256": "ee62b26154dd7b4da4a11608d3e7d50f2eaf9a57ede39979dacfd7f2b2b1fff0"
+    },
+    {
+      "file": "20261011031114_remediation_existing_capacity_confirmation.sql",
+      "sha256": "89c4c713b19e0cc33ce867e46a460bb3275821a076ba8038fdef94ed33e1df03"
+    },
+    {
+      "file": "20261011031732_remediation_advance_allocation_ledger.sql",
+      "sha256": "110b28ab60381a9f403268c10550ca903d39c47724b6376599fa6800f003f378"
+    },
+    {
+      "file": "20261011032215_remediation_payment_classification_reader.sql",
+      "sha256": "43be29fe74f17e587ce787d195c96b08969697127df92d424940002c5e534a73"
+    },
+    {
+      "file": "20261011032327_remediation_advance_reader_permissions.sql",
+      "sha256": "3471ffe49d8ff33636bc621e9a82abcd7d269e8304247360b38914101eef4f39"
+    },
+    {
+      "file": "20261011032420_remediation_payment_party_reader_scope.sql",
+      "sha256": "198d2b43e833e4bec4135e1b93e9ea3dbcc8811db72eb28948219557a6a9e9b9"
+    },
+    {
+      "file": "20261011032606_remediation_existing_payment_intent_recovery.sql",
+      "sha256": "a612b656e23bb0a467aa5fb0b4606c1a9c8f290287c674b66c25ef9cf1c0e3be"
+    },
+    {
+      "file": "20261011033537_remediation_guarded_payment_balance_reader.sql",
+      "sha256": "8af6474c2f331c916e614133dac29f5c61f0855c4be30d21a3518e38af607de3"
+    }
+  ],
+  "newFixturesRolledBack": true,
+  "status": "PASS_G07_RESUME_VERIFICATION"
+}

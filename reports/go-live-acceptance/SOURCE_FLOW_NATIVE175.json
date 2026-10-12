@@ -1,0 +1,90 @@
+{
+  "productionAccess": "NONE",
+  "schemaChanges": 0,
+  "businessWritesCommitted": 0,
+  "excludedAdvanceRacesRun": false,
+  "checks": [
+    {
+      "name": "EFFECTIVE_FUNCTIONS_AND_ACL_MATCH_RECORDED174",
+      "count": 23,
+      "status": "PASS"
+    },
+    {
+      "name": "WORKER_SERVER_PLAN15_ACTUAL14_REPORTABLE14",
+      "status": "PASS",
+      "workerLine": {
+        "id": "fbe9f011-cdc0-43f0-b830-7769644a5f33",
+        "unit": "m³",
+        "material_name": "Cát kiểm thử khắc phục",
+        "loaded_base_quantity": "14.000000",
+        "planned_base_quantity": "15.000000",
+        "reportable_base_quantity": "14.000000"
+      },
+      "actualLoaded": "14.000000",
+      "serverDenial": {
+        "code": "22023",
+        "message": "invalid_delivery_result_line"
+      },
+      "dataIntegrityPreserved": true
+    },
+    {
+      "name": "CUSTOMER_OWNER_CURRENT_ORDER_SCOPED",
+      "status": "PASS",
+      "financeVisible": true,
+      "foreignCustomerDenied": true
+    },
+    {
+      "name": "CUSTOMER_FINANCE_CONTACT_CURRENT_ORDER_SCOPED",
+      "status": "PASS",
+      "financeVisible": true,
+      "foreignCustomerDenied": true
+    },
+    {
+      "name": "CUSTOMER_RECEIVER_CURRENT_ORDER_SCOPED",
+      "status": "PASS",
+      "financeVisible": false,
+      "foreignCustomerDenied": true
+    },
+    {
+      "name": "SAME_SO_PURCHASING_WAREHOUSE_SALES_WORKER_FINANCE_AND_CUSTOMER_CHAIN",
+      "status": "PASS",
+      "facts": {
+        "stock": "1.000000",
+        "cargo": "1.000000",
+        "revenue": "2990000",
+        "debt": "1990000",
+        "payments": 1,
+        "workerreport": "PARTIAL",
+        "accepted": "13.000000"
+      },
+      "deniedVersion": {
+        "code": "PT409",
+        "message": "stale_work_version"
+      },
+      "deniedVerify": {
+        "code": "42501",
+        "message": "forbidden"
+      },
+      "deniedPay": {
+        "code": "42501",
+        "message": "forbidden"
+      },
+      "operationalComplete": false
+    },
+    {
+      "name": "REASSIGNMENT_SYNC_AND_OLD_ACTOR_START_DENIED_BROAD_READ_ENTITLEMENT_PRESERVED",
+      "status": "PASS",
+      "oldReadViaIndependentWorkforceRead": true,
+      "oldStart": {
+        "code": "42501",
+        "message": "not_current_assignee"
+      },
+      "assignments": {
+        "delivery_employee": "bccb7cb3-b921-4878-8eaf-57493d046d04",
+        "work_employee": "bccb7cb3-b921-4878-8eaf-57493d046d04"
+      }
+    }
+  ],
+  "status": "PASS",
+  "rolledBack": true
+}

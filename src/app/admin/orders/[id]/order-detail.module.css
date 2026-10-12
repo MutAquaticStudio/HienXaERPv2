@@ -69,7 +69,7 @@
   .layout td::before {
     content: attr(data-label);
     color: var(--muted);
-    font-size: 13px;
+    font-size: var(--font-size-caption);
     font-weight: 700;
   }
 

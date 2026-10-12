@@ -1,0 +1,46 @@
+{
+  "scope": "G02_QUOTATION_MONEY_EXACT_TRANSPORT_ADMIN_CUSTOMER",
+  "checkedAt": "2026-10-12T08:42:53.518Z",
+  "baselineCommit": "73c3d17",
+  "schema": 179,
+  "productionAccess": "NONE",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright1.63.0; Browser skill/plugin is not listed",
+  "checks": [],
+  "documents": {
+    "quote": "7555ec32-178f-4a65-a438-2ed1dffba6b8",
+    "revision": "a327c6f4-d08e-4894-80e6-0bbe51f8558e",
+    "material": "12d5b07e-1afe-4fd3-80bb-a6a69258e6f1",
+    "po": "c7d3f2d8-116f-4a2c-b8c4-17c474f15f45"
+  },
+  "pageErrors": [],
+  "source": {
+    "amount": "9007199254740993"
+  },
+  "surfaces": [
+    {
+      "role": "sales",
+      "exactExpectedShown": false,
+      "roundedValueShown": false
+    },
+    {
+      "role": "customer-finance",
+      "exactExpectedShown": false,
+      "roundedValueShown": false
+    }
+  ],
+  "status": "FAIL",
+  "error": "The expression evaluated to a falsy value:",
+  "failurePages": [
+    {
+      "url": "http://127.0.0.1:3112/admin/quotations/7555ec32-178f-4a65-a438-2ed1dffba6b8",
+      "title": "Hiền Xa ERP",
+      "body": "HX\nHIỀN XA ERP\nĐiều hành\nTổng quan\nBán hàng\nĐơn bán\nBáo giá\nKhách hàng\nKho hàng\nGiao hàng\nTài chính\nBáo cáo\nTin nhắn\nĐăng xuất\nPhiên làm việc có phân quyền\nQA không đầu kỳ G119EE6ACBC\nNhân viên kiểm thử confirmer\nTC\n\nBÁO GIÁ · PHIÊN BẢN 1\n\nQT-2026-000011\n\nKhách kiểm thử khắc phục · Công trình kiểm thử\n\nTải PDF phiên bản này\nVề danh sách\nThông tin báo giá\nĐã gửi\nGiá trị\n9.007.199.254.740.992 ₫\nHiệu lực đến\n01/01/2099 07:00\nĐịa chỉ giao\nĐịa chỉ QA độc lập\nĐiều khoản\nQA tiền lớn có nguồn, không ghi sổ\nVẬT TƯ\tSỐ LƯỢNG\tĐƠN GIÁ\tTHÀNH TIỀN\tNGUỒN GIÁ\nCát kiểm thử khắc phục\t1 m³\t9.007.199.254.740.992 ₫\t9.007.199.254.740.992 ₫\tBảng giá\nLịch sử phiên bản\nR1 · Đã gửi\n12/10/2026 15:42\nHành động tiếp theo\nKênh xác nhận\nĐiện thoại\nZalo\nThư điện tử\nKhác\nNgười xác nhận\nGhi nhận chấp nhận R1\nTạo phiên bản mới\n\nChấp nhận báo giá không tự xác nhận đơn và không tạo công nợ."
+    },
+    {
+      "url": "http://127.0.0.1:3112/customer/quotations/7555ec32-178f-4a65-a438-2ed1dffba6b8",
+      "title": "Hiền Xa ERP",
+      "body": "ĐANG TẢI DỮ LIỆU\n\nVui lòng chờ"
+    }
+  ]
+}

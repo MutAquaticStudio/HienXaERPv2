@@ -1,0 +1,9 @@
+{
+  "status": "REPRODUCED",
+  "facts": {
+    "rows": 1004,
+    "free_rows": 1004
+  },
+  "scope": "OWNER_READ_NATIVE_QA_HISTORY_ROWS",
+  "productionAccess": "NONE"
+}

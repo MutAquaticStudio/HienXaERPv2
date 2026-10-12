@@ -1,0 +1,35 @@
+{
+  "scope": "G17_OWNER_BROWSER_CREATE_APPROVE_AFTER_COMMIT_RESPONSE_LOSS_RELOAD",
+  "browserPlugin": "ABSENT",
+  "fallback": "Installed Playwright; Browser plugin not available",
+  "productionAccess": "NONE",
+  "checks": [
+    {
+      "name": "CREATE_LOST_RESPONSE_RELOAD_ONE_SOURCE",
+      "status": "PASS",
+      "expense": "cbbf00f0-fe0f-4a8e-8714-00be9edf81c3"
+    },
+    {
+      "name": "APPROVAL_LOST_RESPONSE_RELOAD_ONE_AP_NO_CASH_EARNING",
+      "status": "PASS",
+      "facts": {
+        "sources": 1,
+        "ap": 1,
+        "payments": 0,
+        "earnings": 0
+      }
+    }
+  ],
+  "expectedTransportErrors": [
+    {
+      "text": "Failed to load resource: net::ERR_FAILED",
+      "url": "http://127.0.0.1:3110/admin/expenses"
+    },
+    {
+      "text": "Failed to load resource: net::ERR_FAILED",
+      "url": "http://127.0.0.1:3110/admin/expenses"
+    }
+  ],
+  "unexpectedErrors": [],
+  "status": "PASS"
+}

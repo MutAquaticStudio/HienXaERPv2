@@ -1,0 +1,97 @@
+{
+  "scope": "G11_FRESH_PENDING_BRANCH_VALID_SOURCE_TRANSACTIONS_WITHOUT_OPENING",
+  "database": "hx_remediation_g01_g23_upgrade",
+  "productionAccess": "NONE",
+  "managedAuthTested": false,
+  "realAccountRightsChanged": false,
+  "checks": [
+    {
+      "name": "NEW_PURCHASE_RECEIPT_SO_ACTUAL_HANDOFF_VERIFY_RECEIPT_DISBURSEMENT_WITHOUT_OPENING",
+      "status": "PASS",
+      "facts": {
+        "state": "PENDING_OPENING",
+        "stateversion": 0,
+        "activation": null,
+        "inventoryopening": 0,
+        "financeopening": 0,
+        "cashopening": 0,
+        "starts": 1,
+        "debt": "2220000",
+        "stock": "1.000000",
+        "payments": 2
+      },
+      "state": {
+        "state": "PENDING_OPENING",
+        "version": 0,
+        "canActivate": false,
+        "postingAllowed": true,
+        "reconciliationId": null,
+        "historicalQuality": "UNRECONCILED",
+        "businessTotalVerified": false,
+        "recordedOperationsSince": null
+      },
+      "scope": {
+        "to": "2026-10-12T03:48:59.038848+07:00",
+        "from": "2000-01-01T07:00:00+07:00",
+        "as_of": "2026-10-12T03:48:59.038848+07:00",
+        "branch_id": "7298c4da-0195-42b2-8304-03471626b913",
+        "balance_scope": "RECORDED_TRANSACTIONS",
+        "historical_quality": "UNRECONCILED",
+        "business_total_verified": false,
+        "recorded_operations_since": null
+      },
+      "recordedRevenueSource": "3220000",
+      "postCommitReportCheck": "SEPARATE_HTTP_REQUIRED"
+    },
+    {
+      "name": "VERSIONS_ALLOCATION_CAPS_AND_CROSS_BRANCH_SCOPE_RETAINED",
+      "status": "PASS"
+    },
+    {
+      "name": "G03_CLOSE_ONLY_REMAINDER_WITHOUT_CHANGED_BILLED_TOTAL_RETRY_ONCE",
+      "status": "PASS",
+      "closed": {
+        "commercial_state": "CLOSED",
+        "consumed": "3220000",
+        "released": "230000",
+        "audits": 1
+      }
+    },
+    {
+      "name": "DIRECT_SOURCE_PURCHASE_HANDOFF_VERIFY_NO_FAKE_WAREHOUSE_WITHOUT_ACTIVATION",
+      "status": "PASS",
+      "direct": {
+        "warehouse": "1.000000",
+        "faketransit": 0,
+        "revenue": "230000",
+        "starts": 1
+      }
+    },
+    {
+      "name": "NEW_G07_REGRESSION100K_ALLOCATE75K_WITHOUT_NEW_CASH_NO_EXCLUDED_RACE",
+      "status": "PASS",
+      "advance": {
+        "payments": 3,
+        "available": "25000",
+        "advance": "25000",
+        "allocations": 1
+      }
+    },
+    {
+      "name": "EARLIER_KNOWLEDGE_DOES_NOT_CLAIM_FUTURE_RECORDING_START",
+      "status": "PASS",
+      "scope": {
+        "to": "2026-10-12T03:48:59.038848+07:00",
+        "from": "2000-01-01T07:00:00+07:00",
+        "as_of": "2000-01-02T07:00:00+07:00",
+        "branch_id": "7298c4da-0195-42b2-8304-03471626b913",
+        "balance_scope": "RECORDED_TRANSACTIONS",
+        "historical_quality": "UNRECONCILED",
+        "business_total_verified": false,
+        "recorded_operations_since": null
+      }
+    }
+  ],
+  "status": "PASS_NO_OPENING_NATIVE_SOURCE_FLOW",
+  "rolledBack": true
+}

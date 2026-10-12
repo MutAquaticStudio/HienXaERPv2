@@ -1,0 +1,14 @@
+{
+  "status": "REPRODUCED_WORKER_POOL_CLAIM_ROLLBACK",
+  "productionAccess": "NONE",
+  "fact": {
+    "error": {
+      "code": "23514",
+      "message": "command_audit_source_missing"
+    },
+    "after": {
+      "execution_state": "AVAILABLE",
+      "assignments": 0
+    }
+  }
+}

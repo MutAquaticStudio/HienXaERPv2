@@ -1,0 +1,38 @@
+{
+  "scope": "G19_ACTUAL_JWT_REFUND_VS_OFFSET_SHARED_SUPPLIER_CREDIT",
+  "productionAccess": "NONE",
+  "excludedAdvanceRacesReexecuted": false,
+  "documents": {
+    "credit": "14c42171-febd-4a30-b037-480b6d52a0bb",
+    "caseId": "dbfc5d2f-2972-4a50-9d17-1160961895c8",
+    "branch": "8be51b06-8107-41c4-b7cd-b0bb53885ad4",
+    "supplier": "14ac5b01-8b3b-4dc9-8376-0b55496a621d",
+    "obligation": "63017c3b-47d5-4402-9603-b6fda2528b65",
+    "payment": "a02a572c-9ec8-4609-81b5-54c4bb3d803b",
+    "account": "99904ba6-7a1f-43e1-ad7c-04781771a9f5",
+    "material_id": "a876eed3-bfe4-49c3-923d-4fe9e2175f9d",
+    "target": "3e1c3bc0-c67d-4511-a388-206110c917a5"
+  },
+  "race": {
+    "actors": [
+      "0d1d2134-5a21-40a4-9fcb-375898d3c133",
+      "a89838c9-bb2d-4758-874c-b031f9655f49"
+    ],
+    "pidA": 65199,
+    "pidB": 65200,
+    "observedBlockingPids": [
+      65199
+    ],
+    "firstStatus": 200,
+    "secondStatus": 400,
+    "facts": {
+      "remaining": "50000",
+      "target_debt": "150000",
+      "original_reusable": "0",
+      "refunds": 1,
+      "loser_receipts": 0,
+      "loser_audits": 0
+    }
+  },
+  "status": "PASS"
+}
