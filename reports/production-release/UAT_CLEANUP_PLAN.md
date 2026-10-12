@@ -1,22 +1,19 @@
-# Phạm vi dọn UAT trước phát hành
+# Dọn UAT đã thực hiện
 
-Yêu cầu người dùng: dọn UAT trước PR/merge và deploy Production. Đã được phép xử lý UAT; không cần hỏi lại quyền chung. Chưa thực hiện DELETE/UPDATE trên Production.
+Chủ hệ thống xác nhận SO-2026-000013 và PO-2026-000010–000012 đều là UAT; yêu cầu xóa trước merge/deploy và bỏ sao lưu.
 
-Đích cấu hình đã xác minh: Vercel `hien-xa-erp-v2` / team `hienxa`, domain `hien-xa-erp-v2-nu.vercel.app`, Supabase `nbwynrwkdbtfsitafsxa`. Vercel env Production trỏ đúng ref này; không dùng QA làm Production.
+| Phạm vi | Kết quả |
+|---|---|
+|SO1,PO3,dòng SO1,dòng PO3,allocation giao thẳng1|Đã xóa theo mã/trạng thái/nguồn cụ thể|
+|Receipt6,audit chứng từ/branch6,branch UAT1,operational state1|Đã xóa đúng closure|
+|uat_sales,uat_worker và9 quyền|Đã xóa;0 nhân viên tham chiếu|
+|live_uat_finance,live_uat_proof_setup_b,live_uat_purchasing,live_uat_warehouse và39 quyền|Đã xóa;0 nhân viên tham chiếu;62 quyền Owner giữ nguyên|
+|8 Auth user đã ban ở miền thử,8 identities,53 audit actor UAT|Đã xóa; không có nguồn nghiệp vụ hiện còn tham chiếu; session/refresh UAT dọn|
+|Owner,HX_OWNER,HX,MT,BS và2 Auth user còn lại|Giữ giá trị/liên kết; không suy toàn master là thử|
+|Storage/minh chứng|0 objects/0 evidence_objects/0 portal_evidence_objects/0 work_result_portal_evidence; không xóa tệp doanh nghiệp|
 
-| Nguồn | Phân loại | Quyết định hiện hành |
-|---|---|---|
-| Branch `LUAT_PROOF_B_261008`, ID e6c81cc5-58ce-4620-a357-32a0a49790ad | UAT rõ ràng từ mã/tên | Chờ backup và thử khôi phục; không xóa khi chưa có căn cứ phục hồi |
-| 4 audit_events và1 private.branch_operational_states gắn branch UAT | Phụ thuộc nguồn UAT | Phải cùng snapshot/đối chiếu với branch; không xóa audit của nguồn khác |
-| SO-2026-000013, ID de541c3c-8323-471f-9bd9-a3115ba0161c, DRAFT, branch HX | Không có marker UAT | Giữ; câu hỏi phân loại đã gửi người dùng |
-| PO-2026-000010, ID d6375226-43a1-4ba6-9319-5c97c389eb5d, CANCELLED | Không có marker UAT | Giữ chờ phân loại |
-| PO-2026-000011, ID675eca7b-d53a-4f66-8b2f-15b06418eb53, DRAFT | Không có marker UAT | Giữ chờ phân loại |
-| PO-2026-000012, ID336c8008-e9a4-444d-bf98-64e3ec0f42cb, DRAFT | Không có marker UAT | Giữ chờ phân loại |
-| Customer MT, supplier BS, employee HX_OWNER và branch HX | Không có marker UAT | Bảo toàn; không suy từ hệ thống đang ít chứng từ rằng tất cả là thử |
-| Auth users có qa_seed |0 | Không có căn cứ xóa tài khoản Auth doanh nghiệp |
+DML tìm ID từ natural keys, không hardcode ID phát sinh. Năm guard cấm xóa chứng từ thường chỉ đình chỉ trong maintenance transaction có khóa ghi; FK và trigger khác vẫn hoạt động. Khôi phục đúng định nghĩa/trạng thái trước commit. Sai count/thêm nghiệp vụ/khác dòng giữ lại phải rollback. Không TRUNCATE,reset sequence,sửa số dư hoặc tạo opening.
 
-Kiểm FK thực tế:55 bảng tham chiếu branch; ở branch UAT chỉ audit_events4 và branch_operational_states1 có dòng, các bảng nghiệp vụ khác0. Inventory toàn dự án tại lần đọc:1SO,3PO,0 kho movement/thu chi/AR/AP/giao/công việc/Storage objects/evidence. Số0 không thay việc phân loại nguồn.
+Mã/bằng chứng: UAT_CLEANUP.sql,UAT_AUTH_CLEANUP.sql,UAT_REMAINING_ROLES_CLEANUP.sql,UAT_CLEANUP_RESULT.json,CLEANUP_FINAL_READBACK.json. Email/mật khẩu không đưa vào PR. Auth audit/log hạ tầng Supabase giữ nguyên.
 
-Sau khi đủ kết nối: dump DB/roles/schema/data theo quyền, kiểm archive/SHA và restore sang môi trường thử; so khóa/FK/nguồn, quyền và giá trị. Lập snapshot riêng các row/ancestors trong danh sách dọn và fingerprint toàn dữ liệu cần giữ. Mọi danh sách xóa dùng ID và nguồn rõ ràng, khóa/chặn ghi phù hợp, kiểm lại counts/hash trong cùng transaction; mismatch phải rollback. Không TRUNCATE, không xóa theo tên chứa “test/QA” chung, không disable FK/trigger/RLS, không tạo opening hoặc tiền giả.
-
-Chỉ dọn4 chứng từ HX nếu người dùng xác nhận là UAT; đọc lại toàn đồ thị con trước khi lập DELETE. Sau dọn, đối chiếu nguồn giữ, Auth/cấu hình và Storage. Hai race ứng trước không chạy lại; giữ bằng chứng600.000đ/400.000đ.
+Hai race ứng trước không chạy lại: package4-advance-race.mjs --mode different-intents và --mode same-intent. Giữ bằng chứng600.000đ/400.000đ trong hồ sơ QA.

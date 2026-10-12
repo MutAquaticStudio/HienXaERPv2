@@ -1,0 +1,32 @@
+{
+  "status": "PASS_CONFIRMED_UAT_CLEANUP_READBACK",
+  "project": "nbwynrwkdbtfsitafsxa",
+  "backup": "WAIVED_BY_OWNER",
+  "removedRows": {
+    "businessClosureAndFirstRoles": 34,
+    "testAuthUsers": 8,
+    "testIdentities": 8,
+    "testActorBusinessAudit": 53,
+    "remainingUatRoles": 4,
+    "remainingUatPermissionRows": 39
+  },
+  "checked_at": "2026-10-12 19:56:49.930133+00",
+  "remaining": {
+    "payments": 0,
+    "movements": 0,
+    "uat_roles": 0,
+    "sales_orders": 0,
+    "purchase_orders": 0,
+    "storage_objects": 0,
+    "test_auth_users": 0
+  },
+  "retained": {
+    "branch": 1,
+    "customer": 1,
+    "supplier": 1,
+    "auth_users": 2,
+    "owner_role": 1,
+    "owner_employee": 1,
+    "owner_permissions": 62
+  }
+}

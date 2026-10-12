@@ -1,0 +1,24 @@
+{
+  "status": "READ_ONLY_NOT_DELETED",
+  "project": "nbwynrwkdbtfsitafsxa",
+  "checkedAt": "2026-10-12T19:09:58.744Z",
+  "roles": [
+    {
+      "id": "f3fdea21-d178-4d96-931a-f9bb06112d81",
+      "code": "uat_sales",
+      "name": "Bán hàng UAT",
+      "employee_branch_assignments": 0,
+      "permission_rows": 7,
+      "row_hash": "0c63d1637773f96e74a1ec36fd80c88d"
+    },
+    {
+      "id": "f5f58202-f617-430b-b389-5f53dcc1a955",
+      "code": "uat_worker",
+      "name": "Thợ UAT",
+      "employee_branch_assignments": 0,
+      "permission_rows": 2,
+      "row_hash": "18af32bf409d9a570559836860a84a79"
+    }
+  ],
+  "decision": "Explicit UAT labels, no employee branch assignment. Include only these two role IDs and their nine permissions in guarded cleanup after backup/restore; preserve all real roles/users."
+}
