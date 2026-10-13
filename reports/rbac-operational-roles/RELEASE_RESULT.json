@@ -1,0 +1,61 @@
+{
+  "status": "DEPLOYED_RBAC_DATA_VERIFIED_OWNER_BROWSER_PENDING_LOGIN",
+  "checkedAt": "2026-10-13T12:26:32.763970+00:00",
+  "candidate": "b3e1232296be4f50f976941eaedbedca4dfd998f",
+  "merge": "cb6ad38ebec16a8a0e04ff3d4b3d0d7edc85a734",
+  "headCI": {
+    "id": 38395094288,
+    "head": "b3e1232296be4f50f976941eaedbedca4dfd998f",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/MutAquaticStudio/HienXaERPv2/actions/runs/38395094288"
+  },
+  "mergeCI": {
+    "id": 38395614047,
+    "head": "cb6ad38ebec16a8a0e04ff3d4b3d0d7edc85a734",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/MutAquaticStudio/HienXaERPv2/actions/runs/38395614047"
+  },
+  "ciUnitTests": 648,
+  "deployment": {
+    "id": "dpl_B37gX9d4YzRfgxuBer1kXV2ygwGq",
+    "url": "https://hien-xa-erp-v2-g74xhg12z-hienxa.vercel.app",
+    "readyState": "READY",
+    "target": "production"
+  },
+  "productionAlias": "https://hien-xa-erp-v2-nu.vercel.app",
+  "dbProject": "nbwynrwkdbtfsitafsxa",
+  "canonicalFeatureSchema": 189,
+  "actualMigrationHistoryCount": 183,
+  "managedMigration": {
+    "version": "20261013121739",
+    "name": "operational_role_presets",
+    "statements_md5": "c85dbec5047a0ee1535d332ae4fb4cb0",
+    "statement_parts": 1
+  },
+  "localMigration": "20261013105000_operational_role_presets.sql",
+  "migrationSha256": "8ec1e8f3253ec1d0116cece07c15305565dbf892bc96a3bc7d45ecf5f4814131",
+  "migrationMd5MatchesStatements": true,
+  "newRoles": 8,
+  "newPermissionPairs": 100,
+  "existingOwnerAndPermissionsPreserved": true,
+  "roleOrBranchAssignmentsChanged": false,
+  "unchangedTables": 140,
+  "unchangedPolicies": 127,
+  "functionAclAndDefinerPreserved": true,
+  "onlyChangedFunctions": [
+    "public.assign_employee_role",
+    "public.register_invited_employee"
+  ],
+  "postdeployAll142FingerprintsStillSameAsAfterMigration": true,
+  "postdeploy5xxLogs": {
+    "deploymentId": "dpl_B37gX9d4YzRfgxuBer1kXV2ygwGq",
+    "window": "10m",
+    "limit": 100,
+    "entries": 0
+  },
+  "browser": "Owner session expired, redirected /login; user asked to sign in. No form submitted, fake user or transaction created.",
+  "backup": "WAIVED_NOT_PERFORMED",
+  "advanceRacesRerun": false
+}

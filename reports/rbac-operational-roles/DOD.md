@@ -8,8 +8,9 @@
 - [x]8 role trên trình duyệt qua Owner form và phiên nhân viên riêng.
 - [x]117 bảng nghiệp vụ QA và1 role hiệu lực; không email/ghi sổ thử.
 - [x]45 test liên quan,type/lint/build đạt; các module nghiệp vụ không sửa.
-- [ ] CI head và merge đạt đúng phiên bản.
-- [ ] Migration Production đối chiếu bảo toàn role/binding/data/grants/policies.
-- [ ] Deploy và kiểm đọc sau triển khai đúng commit/schema.
+- [x] CI headb3e1232 và mergecb6ad38 đạt648 kiểm thử,95 testfiles,type/lint/build. Tree merge bằng ứng viên.
+- [x] Migration thực20261013121739/name operational_role_presets,checksum khớp SQL;8 roles/100 cặp quyền mới. Owner62/binding/140 bảng khác/127policies/ACL giữ nguyên.
+- [x] Deploy cb6ad38/artifactB37gX/Production READY;schema189/history183;11 HTTP/Auth checks đạt,0log5xx truy vấn10m.142 fingerprint sau deploy khớp sau migration.
+- [ ] Kiểm form role bằng Owner Production: phiên hết hiệu lực; chờ chủ đăng nhập lại, không ghi đạt.
 
 Hai race ứng trước không chạy lại. Backup/restore: miễn theo chỉ đạo, không thực hiện. Email mời thật không gửi thử; không coi mock là tích hợp SMTP.

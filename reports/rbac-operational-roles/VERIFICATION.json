@@ -11,9 +11,35 @@
   "realJwtRoles": 8,
   "browserRoles": 8,
   "businessTablesUnchanged": 117,
-  "ci": "PENDING_FINAL_HEAD",
-  "productionMigration": "NOT_APPLIED_YET",
-  "productionDeploy": "NOT_DEPLOYED_YET",
+  "ci": {
+    "head": {
+      "id": 38395094288,
+      "head": "b3e1232296be4f50f976941eaedbedca4dfd998f",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/MutAquaticStudio/HienXaERPv2/actions/runs/38395094288"
+    },
+    "merge": {
+      "id": 38395614047,
+      "head": "cb6ad38ebec16a8a0e04ff3d4b3d0d7edc85a734",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/MutAquaticStudio/HienXaERPv2/actions/runs/38395614047"
+    },
+    "tests": 648
+  },
+  "productionMigration": {
+    "version": "20261013121739",
+    "name": "operational_role_presets",
+    "statements_md5": "c85dbec5047a0ee1535d332ae4fb4cb0",
+    "statement_parts": 1
+  },
+  "productionDeploy": {
+    "id": "dpl_B37gX9d4YzRfgxuBer1kXV2ygwGq",
+    "url": "https://hien-xa-erp-v2-g74xhg12z-hienxa.vercel.app",
+    "readyState": "READY",
+    "target": "production"
+  },
   "excludedAdvanceRaceCommands": [
     "scripts/qa/remediation/package4-advance-race.mjs --mode different-intents",
     "scripts/qa/remediation/package4-advance-race.mjs --mode same-intent"

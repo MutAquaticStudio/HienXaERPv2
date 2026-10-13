@@ -41,3 +41,8 @@ Sao lưu không chạy theo chỉ đạo mới. Không tạo giao dịch tài ch
 ## 2026-10-13T10:56:31.014591+00:00 — PR47 giao diện phát hành
 
 CI head792a509/run38382113455 và merged538e9f/run38382583091 success623. Merge tree khớp. Deploy đúngd538e9f,artifact8HgrA,alias READY.11 HTTP/Auth checks và17 Owner/UI observations đạt;142 bảng453 dòng fingerprint giữ nguyên;5xx query10m không có entry. Không migration/dọn dữ liệu/ghi sổ. Chi tiết iteration-2/RELEASE_RESULT.json.
+
+
+## 2026-10-13T12:26:32.763970+00:00 — PR48 RBAC
+
+CI b3e/cb6 đạt648,type/lint/build. Migrationname operational_role_presets/version20261013121739,SQLMD5khớp;8role/100permissionpairs,Owner62/binding140bảng/127policies/ACL giữ. Deploycb6/artifactB37gX/aliasREADY;11HTTP/Auth và142fingerprintsau deployđạt,0log5xx10m. PhiênOwnerhết,cầnđăngnhập lại để kiểm form;khôngghiPASS. Khôngemail/tài khoản/ghi sổthửProduction. Hồsơ reports/rbac-operational-roles/.

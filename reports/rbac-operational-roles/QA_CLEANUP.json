@@ -1,0 +1,7 @@
+{
+  "status": "PASS_DISPOSABLE_QA_REMOVED_SOURCE_PRESERVED",
+  "checkedAt": "2026-10-13T12:14:11.454Z",
+  "removedDatabase": "hx_rbac_roles_20261013",
+  "sourceDatabase": "hx_remediation_go_live_browser175",
+  "productionAccess": false
+}

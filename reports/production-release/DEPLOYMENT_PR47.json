@@ -1,0 +1,19 @@
+{
+  "status": "READY_PRODUCTION",
+  "commit": "d538e9f42ec804834d46cd554bdf01e85b65cb2c",
+  "deploymentId": "dpl_8HgrA4D86tsUCBaYg4FezfU82CeZ",
+  "deploymentUrl": "https://hien-xa-erp-v2-zpybxxta2-hienxa.vercel.app",
+  "productionAlias": "https://hien-xa-erp-v2-nu.vercel.app",
+  "target": "production",
+  "createdAt": 1791840318873,
+  "ciAfterMerge": "https://github.com/MutAquaticStudio/HienXaERPv2/actions/runs/38382583091",
+  "sourceEquivalentToTestedHead": "792a509e561c723ffbdb8c000eb92fa8c6a209b5",
+  "noRuntimeSourceDiffAfterMerge": true,
+  "dbRef": "nbwynrwkdbtfsitafsxa",
+  "canonicalFeatureSchema": 188,
+  "actualMigrationHistoryCount": 182,
+  "latestMigration": "20261012211058",
+  "backup": "WAIVED_BY_OWNER_NOT_PERFORMED",
+  "spacingFollowUp": "RELEASED_PR47_VERIFIED_OWNER_READONLY",
+  "lastUiEvidence": "../ux-ui-refinement/iteration-2/RELEASE_RESULT.json"
+}
