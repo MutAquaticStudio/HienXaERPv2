@@ -204,7 +204,22 @@
     "additionalCreditActionsAndDashboardTests": 12,
     "build": "PASS"
   },
-  "ci": "PENDING_FINAL_HEAD",
+  "ci": {
+    "head": {
+      "id": 38382113455,
+      "head": "792a509e561c723ffbdb8c000eb92fa8c6a209b5",
+      "conclusion": "success",
+      "url": "https://github.com/MutAquaticStudio/HienXaERPv2/actions/runs/38382113455"
+    },
+    "merge": {
+      "id": 38382583091,
+      "status": "completed",
+      "conclusion": "success",
+      "head": "d538e9f42ec804834d46cd554bdf01e85b65cb2c",
+      "url": "https://github.com/MutAquaticStudio/HienXaERPv2/actions/runs/38382583091"
+    },
+    "tests": 623
+  },
   "advanceRaceCommandsExcluded": [
     "scripts/qa/remediation/package4-advance-race.mjs --mode different-intents",
     "scripts/qa/remediation/package4-advance-race.mjs --mode same-intent"

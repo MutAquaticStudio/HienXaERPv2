@@ -1,0 +1,321 @@
+{
+  "checkedAt": "2026-10-13T10:28:39.638Z",
+  "commit": "d538e9f42ec804834d46cd554bdf01e85b65cb2c",
+  "url": "https://hien-xa-erp-v2-nu.vercel.app",
+  "actor": "Owner existing business session",
+  "checks": [
+    {
+      "page": "/admin",
+      "checkedAt": "2026-10-13T10:26:09.008Z",
+      "brand": "Hiền Xa ERP",
+      "details": [
+        {
+          "gap": "18px",
+          "padding": "22px",
+          "title": "Phân bổ theo nhóm"
+        },
+        {
+          "gap": "18px",
+          "padding": "22px",
+          "title": "Chi tiết theo nhân viên"
+        }
+      ],
+      "documentWidth": 898,
+      "heading": "Tổng quan",
+      "navOverflow": "auto",
+      "scrollbar": "none",
+      "topbarLabelRemoved": true,
+      "viewport": 898
+    },
+    {
+      "page": "/admin/products",
+      "brand": "Hiền Xa ERP",
+      "documentWidth": 898,
+      "heading": "Vật tư & quy cách",
+      "historicalCallout": false,
+      "priceFooterRemoved": true,
+      "tableColumns": [
+        "Mã",
+        "Vật tư",
+        "Nhóm",
+        "Đơn vị gốc",
+        "Cho phép",
+        "Trạng thái"
+      ],
+      "topbarLabelRemoved": true,
+      "viewport": 898
+    },
+    {
+      "page": "/admin/customers",
+      "brand": "Hiền Xa ERP",
+      "documentWidth": 898,
+      "heading": "Khách hàng",
+      "historicalCallout": false,
+      "priceFooterRemoved": true,
+      "tableColumns": [
+        "Mã",
+        "Tên khách hàng",
+        "Điện thoại",
+        "Nhóm giá",
+        "Hạn mức",
+        "Trạng thái"
+      ],
+      "topbarLabelRemoved": true,
+      "viewport": 898
+    },
+    {
+      "page": "/admin/inventory",
+      "brand": "Hiền Xa ERP",
+      "documentWidth": 898,
+      "heading": "Tồn kho",
+      "historicalCallout": false,
+      "priceFooterRemoved": true,
+      "tableColumns": [
+        "Kho",
+        "Vật tư",
+        "Ngưỡng",
+        "Trạng thái",
+        "Cập nhật",
+        "Kho",
+        "Vật tư",
+        "Tồn đã ghi nhận",
+        "Đã giữ",
+        "Khả dụng",
+        "Giá trị / Giá vốn bình quân",
+        "Thời điểm",
+        "Loại",
+        "Vật tư",
+        "Vị trí",
+        "Tăng / giảm",
+        "Nguồn"
+      ],
+      "topbarLabelRemoved": true,
+      "viewport": 898
+    },
+    {
+      "page": "/admin/dispatch",
+      "brand": "Hiền Xa ERP",
+      "documentWidth": 898,
+      "heading": "Bảng phân giao",
+      "historicalCallout": false,
+      "priceFooterRemoved": true,
+      "tableColumns": [],
+      "topbarLabelRemoved": true,
+      "viewport": 898
+    },
+    {
+      "page": "/admin/receivables",
+      "brand": "Hiền Xa ERP",
+      "documentWidth": 898,
+      "heading": "Phải thu khách hàng",
+      "historicalCallout": false,
+      "priceFooterRemoved": true,
+      "tableColumns": [
+        "Khách / công trình",
+        "Nguồn",
+        "Phát sinh",
+        "Hạn",
+        "Gốc",
+        "Còn lại",
+        ""
+      ],
+      "topbarLabelRemoved": true,
+      "viewport": 898
+    },
+    {
+      "page": "/admin/payables",
+      "brand": "Hiền Xa ERP",
+      "documentWidth": 898,
+      "heading": "Phải trả nhà cung cấp",
+      "historicalCallout": false,
+      "priceFooterRemoved": true,
+      "tableColumns": [
+        "Nhà cung cấp",
+        "Nguồn",
+        "Phát sinh",
+        "Hạn",
+        "Gốc",
+        "Còn lại",
+        ""
+      ],
+      "topbarLabelRemoved": true,
+      "viewport": 898
+    },
+    {
+      "page": "/admin/cashbook",
+      "brand": "Hiền Xa ERP",
+      "documentWidth": 898,
+      "heading": "Sổ tiền và đối soát",
+      "historicalCallout": false,
+      "priceFooterRemoved": true,
+      "tableColumns": [
+        "Mã",
+        "Ngày",
+        "Đối tác",
+        "Tài khoản",
+        "Loại",
+        "Số tiền",
+        "Đối soát",
+        "Hành động"
+      ],
+      "topbarLabelRemoved": true,
+      "viewport": 898
+    },
+    {
+      "page": "/admin/expenses",
+      "brand": "Hiền Xa ERP",
+      "documentWidth": 898,
+      "heading": "Chi phí vận hành",
+      "historicalCallout": false,
+      "priceFooterRemoved": true,
+      "tableColumns": [
+        "Mã",
+        "Ngày",
+        "Nhóm / mô tả",
+        "NCC",
+        "Phạm vi",
+        "Số tiền",
+        "Trạng thái",
+        ""
+      ],
+      "topbarLabelRemoved": true,
+      "viewport": 898
+    },
+    {
+      "page": "/admin/invoices",
+      "brand": "Hiền Xa ERP",
+      "documentWidth": 898,
+      "heading": "Hồ sơ lập hóa đơn",
+      "historicalCallout": false,
+      "priceFooterRemoved": true,
+      "tableColumns": [
+        "Mã hồ sơ",
+        "Khách hàng",
+        "Nguồn",
+        "Số tiền nguồn",
+        "Trạng thái",
+        "Dịch vụ phát hành / pháp lý",
+        "Khách hàng",
+        "Nguồn",
+        "Xác minh",
+        "Số tiền nguồn",
+        "Thao tác"
+      ],
+      "topbarLabelRemoved": true,
+      "viewport": 898
+    },
+    {
+      "page": "/admin/invoices/purchases",
+      "brand": "Hiền Xa ERP",
+      "documentWidth": 898,
+      "heading": "Sổ chứng từ nhà cung cấp",
+      "historicalCallout": false,
+      "priceFooterRemoved": true,
+      "tableColumns": [
+        "Nhà cung cấp",
+        "Nguồn",
+        "Giá trị",
+        "Tham chiếu",
+        "Chứng từ",
+        "Nhà cung cấp",
+        "Nguồn",
+        "Giá trị nguồn",
+        "Thao tác"
+      ],
+      "topbarLabelRemoved": true,
+      "viewport": 898
+    },
+    {
+      "page": "/admin/settings",
+      "brand": "Hiền Xa ERP",
+      "documentWidth": 898,
+      "heading": "Thiết lập hệ thống",
+      "historicalCallout": false,
+      "priceFooterRemoved": true,
+      "tableColumns": [],
+      "topbarLabelRemoved": true,
+      "viewport": 898
+    },
+    {
+      "page": "/admin/reports",
+      "brand": "Hiền Xa ERP",
+      "documentWidth": 898,
+      "heading": "Báo cáo nghiệp vụ",
+      "historicalCallout": false,
+      "priceFooterRemoved": true,
+      "tableColumns": [
+        "Đối tượng / nhóm",
+        "Ngữ cảnh",
+        "Ngày / kỳ",
+        "Số tiền"
+      ],
+      "topbarLabelRemoved": true,
+      "viewport": 898
+    },
+    {
+      "page": "/admin/orders/new",
+      "brand": "Hiền Xa ERP",
+      "documentWidth": 898,
+      "heading": "Tạo đơn bán",
+      "historicalCallout": false,
+      "priceFooterRemoved": true,
+      "tableColumns": [],
+      "topbarLabelRemoved": true,
+      "viewport": 898
+    },
+    {
+      "page": "/admin/orders/new",
+      "viewportHeight": 779,
+      "documentWidth": 390,
+      "formActionButtons": [
+        {
+          "disabled": true,
+          "text": "Lưu bản nháp"
+        }
+      ],
+      "heading": "Tạo đơn bán",
+      "lookupRows": [
+        {
+          "height": 48.34375,
+          "width": 312
+        },
+        {
+          "height": 48.34375,
+          "width": 312
+        }
+      ],
+      "priceFooterRemoved": true,
+      "viewport": 390
+    },
+    {
+      "page": "/admin/orders/85f881e3-d66d-4e0d-93b3-24f402b93642",
+      "viewportHeight": 779,
+      "creditStyled": true,
+      "deliveryButtonLabels": [
+        "Tạo phiếu giao"
+      ],
+      "documentWidth": 390,
+      "heading": "SO-2026-000017",
+      "oldDuplicateSummaryAbsent": true,
+      "openExceptionVisible": false,
+      "viewport": 390
+    },
+    {
+      "case": "menuScrollbar",
+      "box": {
+        "height": 779,
+        "width": 274,
+        "x": 0,
+        "y": 0
+      },
+      "brand": "Hiền Xa ERP",
+      "clientHeight": 583,
+      "overflow": "auto",
+      "scrollHeight": 723,
+      "scrollbar": "none",
+      "closeFocusCheck": "Not recorded: viewport changed while screenshot was captured; earlier QA and AppShell keyboard tests remain the evidence."
+    }
+  ],
+  "productionFormSubmissions": false,
+  "limits": "Read-only layout and allowed Owner access. No financial/stock test posting, not all roles/workflows re-executed."
+}

@@ -1,0 +1,1493 @@
+{
+  "candidate": "792a509e561c723ffbdb8c000eb92fa8c6a209b5",
+  "merge": "d538e9f42ec804834d46cd554bdf01e85b65cb2c",
+  "headCI": {
+    "id": 38382113455,
+    "head": "792a509e561c723ffbdb8c000eb92fa8c6a209b5",
+    "conclusion": "success",
+    "url": "https://github.com/MutAquaticStudio/HienXaERPv2/actions/runs/38382113455"
+  },
+  "mergeCI": {
+    "id": 38382583091,
+    "status": "completed",
+    "conclusion": "success",
+    "head": "d538e9f42ec804834d46cd554bdf01e85b65cb2c",
+    "url": "https://github.com/MutAquaticStudio/HienXaERPv2/actions/runs/38382583091"
+  },
+  "dbBefore": {
+    "payments": 3,
+    "checkedAt": "2026-10-13T10:16:38.03039+00:00",
+    "inventory": {
+      "rows": 4,
+      "valueDelta": "50000000",
+      "quantityDelta": "10.000000"
+    },
+    "salesOrders": 4,
+    "historyCount": 182,
+    "purchaseOrders": 2,
+    "storageObjects": 3,
+    "latestMigration": "20261012211058",
+    "paymentAllocations": 2,
+    "publicRowFingerprint": "93e6644c1a04eba8978eac5e740616c0",
+    "extraApiDdlPrivileges": 0
+  },
+  "dbAfter": {
+    "payments": 3,
+    "checkedAt": "2026-10-13T10:26:41.459164+00:00",
+    "inventory": {
+      "rows": 4,
+      "valueDelta": "50000000",
+      "quantityDelta": "10.000000"
+    },
+    "salesOrders": 4,
+    "historyCount": 182,
+    "purchaseOrders": 2,
+    "storageObjects": 3,
+    "latestMigration": "20261012211058",
+    "paymentAllocations": 2,
+    "publicRowFingerprint": "93e6644c1a04eba8978eac5e740616c0",
+    "extraApiDdlPrivileges": 0
+  },
+  "fingerprintBefore": [
+    {
+      "table_name": "private.branch_operational_states",
+      "rows": 1,
+      "fingerprint": "c04720be59ac9299b1451c739c418594"
+    },
+    {
+      "table_name": "private.branch_recorded_operations",
+      "rows": 1,
+      "fingerprint": "885d7945ecad786ba92a627bc8128fd8"
+    },
+    {
+      "table_name": "private.command_drafts",
+      "rows": 8,
+      "fingerprint": "14715fd1a07cdf412734632ac02e667b"
+    },
+    {
+      "table_name": "private.evidence_storage_attestations",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "private.evidence_storage_bindings",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "private.master_command_contexts",
+      "rows": 1,
+      "fingerprint": "9c9d10977f7c19b1171bee498da6c11e"
+    },
+    {
+      "table_name": "private.operational_import_receipts",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "private.operational_opening_executions",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "private.operational_opening_packages",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "private.operational_opening_readbacks",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "private.operational_recovery_checkpoints",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "private.operational_state_events",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.advance_allocations",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.advances",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.audit_events",
+      "rows": 106,
+      "fingerprint": "af3732a45c7018e8683df3fbdf9acac4"
+    },
+    {
+      "table_name": "public.branches",
+      "rows": 1,
+      "fingerprint": "aabbd46c4e9a5cace22fb034ac93717a"
+    },
+    {
+      "table_name": "public.cash_opening_balances",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.command_receipts",
+      "rows": 44,
+      "fingerprint": "a0c5d626b9ead9668a2d8c6256d189e2"
+    },
+    {
+      "table_name": "public.commission_reconciliation_cases",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.commission_review_resolutions",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.compensation_manual_bases",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.compensation_recognition_policies",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.compensation_rules",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.conversation_participants",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.conversations",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.credit_commitments",
+      "rows": 3,
+      "fingerprint": "cd7173086f1f52a90b8f27478e1ad993"
+    },
+    {
+      "table_name": "public.customer_credit_funds",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.customer_credit_settlements",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.customer_credits",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.customer_portal_memberships",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.customer_sites",
+      "rows": 1,
+      "fingerprint": "d6a8faa8e5ab68e0a7d481f0d8e18558"
+    },
+    {
+      "table_name": "public.customers",
+      "rows": 1,
+      "fingerprint": "f4ebbac579bdcba9b9eb0c1475d5fbf8"
+    },
+    {
+      "table_name": "public.deliveries",
+      "rows": 3,
+      "fingerprint": "81873ed6360872a2af3d92c47cea83ac"
+    },
+    {
+      "table_name": "public.delivery_assignments",
+      "rows": 2,
+      "fingerprint": "61a0b7f0ad7ff91574f25613892f3bdb"
+    },
+    {
+      "table_name": "public.delivery_expense_sources",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.delivery_handoff_lines",
+      "rows": 2,
+      "fingerprint": "e5209b9e6247199f4b4f92bf09963a40"
+    },
+    {
+      "table_name": "public.delivery_handoffs",
+      "rows": 2,
+      "fingerprint": "c668c94c82abd99a4f3b349fab6d4c6b"
+    },
+    {
+      "table_name": "public.delivery_lines",
+      "rows": 3,
+      "fingerprint": "3d5af9426e63e7e41d0b22081ebf3123"
+    },
+    {
+      "table_name": "public.delivery_result_lines",
+      "rows": 2,
+      "fingerprint": "8021cbc40073d37a787616bafee01e74"
+    },
+    {
+      "table_name": "public.delivery_results",
+      "rows": 2,
+      "fingerprint": "87f411e07abc5da7a9e7c53cf8d6e979"
+    },
+    {
+      "table_name": "public.delivery_verification_lines",
+      "rows": 2,
+      "fingerprint": "a7049f566d07ecb4eac06e79161fac0c"
+    },
+    {
+      "table_name": "public.delivery_verifications",
+      "rows": 2,
+      "fingerprint": "abb9949761a0dd1c36475bcf428e4313"
+    },
+    {
+      "table_name": "public.direct_cost_entries",
+      "rows": 2,
+      "fingerprint": "7764a89c4c53a93b2f91308fe08f864d"
+    },
+    {
+      "table_name": "public.earning_events",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.employee_branch_access",
+      "rows": 1,
+      "fingerprint": "31700896b5b17701b8f564209be04825"
+    },
+    {
+      "table_name": "public.employee_permission_grants",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.employees",
+      "rows": 1,
+      "fingerprint": "955e8a691343ae4990e5eed665d263d7"
+    },
+    {
+      "table_name": "public.evidence_objects",
+      "rows": 3,
+      "fingerprint": "71a86027c20b4aa2c551413159f2b06d"
+    },
+    {
+      "table_name": "public.expense_categories",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.expenses",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.finance_accounts",
+      "rows": 1,
+      "fingerprint": "1fc2425481ad6f14e4595bab4542d7a5"
+    },
+    {
+      "table_name": "public.gps_positions",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.gps_tracking_sessions",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.inventory_movements",
+      "rows": 4,
+      "fingerprint": "b8cb982fc1f26ba4e02fac75c4fd0215"
+    },
+    {
+      "table_name": "public.inventory_opening_sources",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.inventory_reservations",
+      "rows": 2,
+      "fingerprint": "25dc53ca514e59c25124a85cee7dffcb"
+    },
+    {
+      "table_name": "public.inventory_stock_thresholds",
+      "rows": 1,
+      "fingerprint": "d037afa9e50169f987d61d63fc73c898"
+    },
+    {
+      "table_name": "public.invoice_adjustment_drafts",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.invoice_coverage",
+      "rows": 1,
+      "fingerprint": "4ae56055cae9708e0609bc27259c64ce"
+    },
+    {
+      "table_name": "public.invoice_draft_lines",
+      "rows": 1,
+      "fingerprint": "a4c0ecb5ba11f97326e3f4c82e250a38"
+    },
+    {
+      "table_name": "public.invoice_intents",
+      "rows": 1,
+      "fingerprint": "c2fd2be906dce53061b632aeab505d2f"
+    },
+    {
+      "table_name": "public.machines",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.material_groups",
+      "rows": 1,
+      "fingerprint": "f734b79064d994a25126fc13881d8ab8"
+    },
+    {
+      "table_name": "public.material_uom_conversions",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.materials",
+      "rows": 1,
+      "fingerprint": "48ad02c86b5b57bcb100c1fa503a1025"
+    },
+    {
+      "table_name": "public.messages",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.opening_balance_sources",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.payable_adjustments",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.payable_obligations",
+      "rows": 2,
+      "fingerprint": "9e768be05b1616a163d5cb103aaa9d0d"
+    },
+    {
+      "table_name": "public.payment_allocations",
+      "rows": 2,
+      "fingerprint": "7d8a26b723c5f216d28fdbb3a6724aa3"
+    },
+    {
+      "table_name": "public.payment_notice_match_reversals",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.payment_notice_matches",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.payment_notice_review_events",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.payment_notices",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.payment_reconciliation_matches",
+      "rows": 2,
+      "fingerprint": "11f7bfb9b016a7e24791db3809b74094"
+    },
+    {
+      "table_name": "public.payments",
+      "rows": 3,
+      "fingerprint": "0d06fca8c16122e23394bc800409eb79"
+    },
+    {
+      "table_name": "public.permissions",
+      "rows": 62,
+      "fingerprint": "65f1fc249837489d5f74c6f9a5aea104"
+    },
+    {
+      "table_name": "public.portal_evidence_objects",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.pricing_rules",
+      "rows": 1,
+      "fingerprint": "2ce83a07d9cb078c84c643a31025e2ff"
+    },
+    {
+      "table_name": "public.purchase_invoice_registry",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.purchase_order_lines",
+      "rows": 2,
+      "fingerprint": "cfe3cc35b1f6e4d1d8392f030d3bf1dd"
+    },
+    {
+      "table_name": "public.purchase_orders",
+      "rows": 2,
+      "fingerprint": "bdb670fdd50eeeb5217875e33b285be6"
+    },
+    {
+      "table_name": "public.purchase_price_rules",
+      "rows": 1,
+      "fingerprint": "740e0aa511cc965b063fcf104e683131"
+    },
+    {
+      "table_name": "public.purchase_receipt_lines",
+      "rows": 1,
+      "fingerprint": "dc1466bd07b06fa1a7183c0cfe890dc0"
+    },
+    {
+      "table_name": "public.purchase_receipts",
+      "rows": 1,
+      "fingerprint": "3bcb94878111dd90d1d3c90a7b7d2f1c"
+    },
+    {
+      "table_name": "public.quotation_acceptances",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.quotation_change_requests",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.quotation_lines",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.quotation_pdf_artifacts",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.quotation_revisions",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.quotations",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.receivable_adjustments",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.receivable_obligations",
+      "rows": 2,
+      "fingerprint": "167659dd89c7d5fa980102b3eead95c7"
+    },
+    {
+      "table_name": "public.report_export_jobs",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.return_cases",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.revenue_adjustments",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.revenue_entries",
+      "rows": 2,
+      "fingerprint": "f633a02bbf5195b1e8193b5c6be0c93f"
+    },
+    {
+      "table_name": "public.role_permissions",
+      "rows": 62,
+      "fingerprint": "c40c5aa9960848bcb2380cf8ccf102ae"
+    },
+    {
+      "table_name": "public.roles",
+      "rows": 1,
+      "fingerprint": "b5f647341840b4dcd2db381ef1879916"
+    },
+    {
+      "table_name": "public.route_plan_stops",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.route_plans",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.routing_settings",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.sales_order_credit_overrides",
+      "rows": 1,
+      "fingerprint": "f795fdf22c32c95f6aa5204bcdb0ab72"
+    },
+    {
+      "table_name": "public.sales_order_lines",
+      "rows": 4,
+      "fingerprint": "8c9c49233daba4b5a3706ff793082d0e"
+    },
+    {
+      "table_name": "public.sales_orders",
+      "rows": 4,
+      "fingerprint": "b338d368c37862cd364dd462d591ca07"
+    },
+    {
+      "table_name": "public.service_jobs",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.service_verifications",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.service_work_logs",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.stock_count_lines",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.stock_count_observations",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.stock_counts",
+      "rows": 1,
+      "fingerprint": "ea4227c963fda62659b3673cf42d2dc4"
+    },
+    {
+      "table_name": "public.supplier_contacts",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.supplier_credit_funds",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.supplier_credit_settlements",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.supplier_document_lines",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.supplier_documents",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.supplier_fulfillment_lines",
+      "rows": 1,
+      "fingerprint": "f27b9b9de2ce131d93d8f6aba032da95"
+    },
+    {
+      "table_name": "public.supplier_fulfillments",
+      "rows": 1,
+      "fingerprint": "7d6a4344a97e245fd152b6a8e105299e"
+    },
+    {
+      "table_name": "public.supplier_return_cases",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.supplier_return_credits",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.supplier_return_events",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.suppliers",
+      "rows": 1,
+      "fingerprint": "097726c979a2048de09579e884d8aa9d"
+    },
+    {
+      "table_name": "public.supply_allocations",
+      "rows": 3,
+      "fingerprint": "5845d685806211b747ca2dcd4d016646"
+    },
+    {
+      "table_name": "public.units_of_measure",
+      "rows": 1,
+      "fingerprint": "5a13b412851bbee89848770a3e08a4cc"
+    },
+    {
+      "table_name": "public.vehicles",
+      "rows": 1,
+      "fingerprint": "1416bf8904adae39d6ff5b4efcf3487e"
+    },
+    {
+      "table_name": "public.warehouse_transfer_events",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.warehouse_transfers",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.warehouses",
+      "rows": 1,
+      "fingerprint": "32dd5890c859322ffd6a0e9cabc30d3f"
+    },
+    {
+      "table_name": "public.work_item_assignments",
+      "rows": 1,
+      "fingerprint": "6d9846a25d43b5df26099ab186a2c569"
+    },
+    {
+      "table_name": "public.work_item_heartbeats",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.work_item_results",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.work_item_verifications",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.work_items",
+      "rows": 1,
+      "fingerprint": "7dd2a24ef2a1e89f92acfc872c27cfcd"
+    },
+    {
+      "table_name": "public.work_result_portal_evidence",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "storage.buckets",
+      "rows": 3,
+      "fingerprint": "a1711432f550253e8a3ac4656b3f94d8"
+    },
+    {
+      "table_name": "storage.buckets_analytics",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "storage.buckets_vectors",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "storage.migrations",
+      "rows": 73,
+      "fingerprint": "c91ed151263d1736482336d59b351d47"
+    },
+    {
+      "table_name": "storage.objects",
+      "rows": 3,
+      "fingerprint": "4dd645e626124e2de92ba8f0fa0b9f68"
+    },
+    {
+      "table_name": "storage.s3_multipart_uploads",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "storage.s3_multipart_uploads_parts",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "storage.vector_indexes",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    }
+  ],
+  "fingerprintAfter": [
+    {
+      "table_name": "private.branch_operational_states",
+      "rows": 1,
+      "fingerprint": "c04720be59ac9299b1451c739c418594"
+    },
+    {
+      "table_name": "private.branch_recorded_operations",
+      "rows": 1,
+      "fingerprint": "885d7945ecad786ba92a627bc8128fd8"
+    },
+    {
+      "table_name": "private.command_drafts",
+      "rows": 8,
+      "fingerprint": "14715fd1a07cdf412734632ac02e667b"
+    },
+    {
+      "table_name": "private.evidence_storage_attestations",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "private.evidence_storage_bindings",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "private.master_command_contexts",
+      "rows": 1,
+      "fingerprint": "9c9d10977f7c19b1171bee498da6c11e"
+    },
+    {
+      "table_name": "private.operational_import_receipts",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "private.operational_opening_executions",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "private.operational_opening_packages",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "private.operational_opening_readbacks",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "private.operational_recovery_checkpoints",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "private.operational_state_events",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.advance_allocations",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.advances",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.audit_events",
+      "rows": 106,
+      "fingerprint": "af3732a45c7018e8683df3fbdf9acac4"
+    },
+    {
+      "table_name": "public.branches",
+      "rows": 1,
+      "fingerprint": "aabbd46c4e9a5cace22fb034ac93717a"
+    },
+    {
+      "table_name": "public.cash_opening_balances",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.command_receipts",
+      "rows": 44,
+      "fingerprint": "a0c5d626b9ead9668a2d8c6256d189e2"
+    },
+    {
+      "table_name": "public.commission_reconciliation_cases",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.commission_review_resolutions",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.compensation_manual_bases",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.compensation_recognition_policies",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.compensation_rules",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.conversation_participants",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.conversations",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.credit_commitments",
+      "rows": 3,
+      "fingerprint": "cd7173086f1f52a90b8f27478e1ad993"
+    },
+    {
+      "table_name": "public.customer_credit_funds",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.customer_credit_settlements",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.customer_credits",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.customer_portal_memberships",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.customer_sites",
+      "rows": 1,
+      "fingerprint": "d6a8faa8e5ab68e0a7d481f0d8e18558"
+    },
+    {
+      "table_name": "public.customers",
+      "rows": 1,
+      "fingerprint": "f4ebbac579bdcba9b9eb0c1475d5fbf8"
+    },
+    {
+      "table_name": "public.deliveries",
+      "rows": 3,
+      "fingerprint": "81873ed6360872a2af3d92c47cea83ac"
+    },
+    {
+      "table_name": "public.delivery_assignments",
+      "rows": 2,
+      "fingerprint": "61a0b7f0ad7ff91574f25613892f3bdb"
+    },
+    {
+      "table_name": "public.delivery_expense_sources",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.delivery_handoff_lines",
+      "rows": 2,
+      "fingerprint": "e5209b9e6247199f4b4f92bf09963a40"
+    },
+    {
+      "table_name": "public.delivery_handoffs",
+      "rows": 2,
+      "fingerprint": "c668c94c82abd99a4f3b349fab6d4c6b"
+    },
+    {
+      "table_name": "public.delivery_lines",
+      "rows": 3,
+      "fingerprint": "3d5af9426e63e7e41d0b22081ebf3123"
+    },
+    {
+      "table_name": "public.delivery_result_lines",
+      "rows": 2,
+      "fingerprint": "8021cbc40073d37a787616bafee01e74"
+    },
+    {
+      "table_name": "public.delivery_results",
+      "rows": 2,
+      "fingerprint": "87f411e07abc5da7a9e7c53cf8d6e979"
+    },
+    {
+      "table_name": "public.delivery_verification_lines",
+      "rows": 2,
+      "fingerprint": "a7049f566d07ecb4eac06e79161fac0c"
+    },
+    {
+      "table_name": "public.delivery_verifications",
+      "rows": 2,
+      "fingerprint": "abb9949761a0dd1c36475bcf428e4313"
+    },
+    {
+      "table_name": "public.direct_cost_entries",
+      "rows": 2,
+      "fingerprint": "7764a89c4c53a93b2f91308fe08f864d"
+    },
+    {
+      "table_name": "public.earning_events",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.employee_branch_access",
+      "rows": 1,
+      "fingerprint": "31700896b5b17701b8f564209be04825"
+    },
+    {
+      "table_name": "public.employee_permission_grants",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.employees",
+      "rows": 1,
+      "fingerprint": "955e8a691343ae4990e5eed665d263d7"
+    },
+    {
+      "table_name": "public.evidence_objects",
+      "rows": 3,
+      "fingerprint": "71a86027c20b4aa2c551413159f2b06d"
+    },
+    {
+      "table_name": "public.expense_categories",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.expenses",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.finance_accounts",
+      "rows": 1,
+      "fingerprint": "1fc2425481ad6f14e4595bab4542d7a5"
+    },
+    {
+      "table_name": "public.gps_positions",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.gps_tracking_sessions",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.inventory_movements",
+      "rows": 4,
+      "fingerprint": "b8cb982fc1f26ba4e02fac75c4fd0215"
+    },
+    {
+      "table_name": "public.inventory_opening_sources",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.inventory_reservations",
+      "rows": 2,
+      "fingerprint": "25dc53ca514e59c25124a85cee7dffcb"
+    },
+    {
+      "table_name": "public.inventory_stock_thresholds",
+      "rows": 1,
+      "fingerprint": "d037afa9e50169f987d61d63fc73c898"
+    },
+    {
+      "table_name": "public.invoice_adjustment_drafts",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.invoice_coverage",
+      "rows": 1,
+      "fingerprint": "4ae56055cae9708e0609bc27259c64ce"
+    },
+    {
+      "table_name": "public.invoice_draft_lines",
+      "rows": 1,
+      "fingerprint": "a4c0ecb5ba11f97326e3f4c82e250a38"
+    },
+    {
+      "table_name": "public.invoice_intents",
+      "rows": 1,
+      "fingerprint": "c2fd2be906dce53061b632aeab505d2f"
+    },
+    {
+      "table_name": "public.machines",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.material_groups",
+      "rows": 1,
+      "fingerprint": "f734b79064d994a25126fc13881d8ab8"
+    },
+    {
+      "table_name": "public.material_uom_conversions",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.materials",
+      "rows": 1,
+      "fingerprint": "48ad02c86b5b57bcb100c1fa503a1025"
+    },
+    {
+      "table_name": "public.messages",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.opening_balance_sources",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.payable_adjustments",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.payable_obligations",
+      "rows": 2,
+      "fingerprint": "9e768be05b1616a163d5cb103aaa9d0d"
+    },
+    {
+      "table_name": "public.payment_allocations",
+      "rows": 2,
+      "fingerprint": "7d8a26b723c5f216d28fdbb3a6724aa3"
+    },
+    {
+      "table_name": "public.payment_notice_match_reversals",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.payment_notice_matches",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.payment_notice_review_events",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.payment_notices",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.payment_reconciliation_matches",
+      "rows": 2,
+      "fingerprint": "11f7bfb9b016a7e24791db3809b74094"
+    },
+    {
+      "table_name": "public.payments",
+      "rows": 3,
+      "fingerprint": "0d06fca8c16122e23394bc800409eb79"
+    },
+    {
+      "table_name": "public.permissions",
+      "rows": 62,
+      "fingerprint": "65f1fc249837489d5f74c6f9a5aea104"
+    },
+    {
+      "table_name": "public.portal_evidence_objects",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.pricing_rules",
+      "rows": 1,
+      "fingerprint": "2ce83a07d9cb078c84c643a31025e2ff"
+    },
+    {
+      "table_name": "public.purchase_invoice_registry",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.purchase_order_lines",
+      "rows": 2,
+      "fingerprint": "cfe3cc35b1f6e4d1d8392f030d3bf1dd"
+    },
+    {
+      "table_name": "public.purchase_orders",
+      "rows": 2,
+      "fingerprint": "bdb670fdd50eeeb5217875e33b285be6"
+    },
+    {
+      "table_name": "public.purchase_price_rules",
+      "rows": 1,
+      "fingerprint": "740e0aa511cc965b063fcf104e683131"
+    },
+    {
+      "table_name": "public.purchase_receipt_lines",
+      "rows": 1,
+      "fingerprint": "dc1466bd07b06fa1a7183c0cfe890dc0"
+    },
+    {
+      "table_name": "public.purchase_receipts",
+      "rows": 1,
+      "fingerprint": "3bcb94878111dd90d1d3c90a7b7d2f1c"
+    },
+    {
+      "table_name": "public.quotation_acceptances",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.quotation_change_requests",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.quotation_lines",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.quotation_pdf_artifacts",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.quotation_revisions",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.quotations",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.receivable_adjustments",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.receivable_obligations",
+      "rows": 2,
+      "fingerprint": "167659dd89c7d5fa980102b3eead95c7"
+    },
+    {
+      "table_name": "public.report_export_jobs",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.return_cases",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.revenue_adjustments",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.revenue_entries",
+      "rows": 2,
+      "fingerprint": "f633a02bbf5195b1e8193b5c6be0c93f"
+    },
+    {
+      "table_name": "public.role_permissions",
+      "rows": 62,
+      "fingerprint": "c40c5aa9960848bcb2380cf8ccf102ae"
+    },
+    {
+      "table_name": "public.roles",
+      "rows": 1,
+      "fingerprint": "b5f647341840b4dcd2db381ef1879916"
+    },
+    {
+      "table_name": "public.route_plan_stops",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.route_plans",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.routing_settings",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.sales_order_credit_overrides",
+      "rows": 1,
+      "fingerprint": "f795fdf22c32c95f6aa5204bcdb0ab72"
+    },
+    {
+      "table_name": "public.sales_order_lines",
+      "rows": 4,
+      "fingerprint": "8c9c49233daba4b5a3706ff793082d0e"
+    },
+    {
+      "table_name": "public.sales_orders",
+      "rows": 4,
+      "fingerprint": "b338d368c37862cd364dd462d591ca07"
+    },
+    {
+      "table_name": "public.service_jobs",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.service_verifications",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.service_work_logs",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.stock_count_lines",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.stock_count_observations",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.stock_counts",
+      "rows": 1,
+      "fingerprint": "ea4227c963fda62659b3673cf42d2dc4"
+    },
+    {
+      "table_name": "public.supplier_contacts",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.supplier_credit_funds",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.supplier_credit_settlements",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.supplier_document_lines",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.supplier_documents",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.supplier_fulfillment_lines",
+      "rows": 1,
+      "fingerprint": "f27b9b9de2ce131d93d8f6aba032da95"
+    },
+    {
+      "table_name": "public.supplier_fulfillments",
+      "rows": 1,
+      "fingerprint": "7d6a4344a97e245fd152b6a8e105299e"
+    },
+    {
+      "table_name": "public.supplier_return_cases",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.supplier_return_credits",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.supplier_return_events",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.suppliers",
+      "rows": 1,
+      "fingerprint": "097726c979a2048de09579e884d8aa9d"
+    },
+    {
+      "table_name": "public.supply_allocations",
+      "rows": 3,
+      "fingerprint": "5845d685806211b747ca2dcd4d016646"
+    },
+    {
+      "table_name": "public.units_of_measure",
+      "rows": 1,
+      "fingerprint": "5a13b412851bbee89848770a3e08a4cc"
+    },
+    {
+      "table_name": "public.vehicles",
+      "rows": 1,
+      "fingerprint": "1416bf8904adae39d6ff5b4efcf3487e"
+    },
+    {
+      "table_name": "public.warehouse_transfer_events",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.warehouse_transfers",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.warehouses",
+      "rows": 1,
+      "fingerprint": "32dd5890c859322ffd6a0e9cabc30d3f"
+    },
+    {
+      "table_name": "public.work_item_assignments",
+      "rows": 1,
+      "fingerprint": "6d9846a25d43b5df26099ab186a2c569"
+    },
+    {
+      "table_name": "public.work_item_heartbeats",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.work_item_results",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.work_item_verifications",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "public.work_items",
+      "rows": 1,
+      "fingerprint": "7dd2a24ef2a1e89f92acfc872c27cfcd"
+    },
+    {
+      "table_name": "public.work_result_portal_evidence",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "storage.buckets",
+      "rows": 3,
+      "fingerprint": "a1711432f550253e8a3ac4656b3f94d8"
+    },
+    {
+      "table_name": "storage.buckets_analytics",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "storage.buckets_vectors",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "storage.migrations",
+      "rows": 73,
+      "fingerprint": "c91ed151263d1736482336d59b351d47"
+    },
+    {
+      "table_name": "storage.objects",
+      "rows": 3,
+      "fingerprint": "4dd645e626124e2de92ba8f0fa0b9f68"
+    },
+    {
+      "table_name": "storage.s3_multipart_uploads",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "storage.s3_multipart_uploads_parts",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table_name": "storage.vector_indexes",
+      "rows": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    }
+  ],
+  "dataDifferences": [],
+  "advanceRacesRerun": false,
+  "deployment": {
+    "id": "dpl_8HgrA4D86tsUCBaYg4FezfU82CeZ",
+    "url": "https://hien-xa-erp-v2-zpybxxta2-hienxa.vercel.app",
+    "readyState": "READY",
+    "target": "production",
+    "productionAlias": "https://hien-xa-erp-v2-nu.vercel.app"
+  },
+  "runtimeEqualsTestedHead": true,
+  "ciTests": 623,
+  "postdeploy5xxQuery": {
+    "deploymentId": "dpl_8HgrA4D86tsUCBaYg4FezfU82CeZ",
+    "since": "10m",
+    "entries": 0,
+    "checkedAt": "2026-10-13T10:56:31.014591+00:00",
+    "limit": "Only queried deployment/window, not a guarantee for all unexercised routes"
+  }
+}

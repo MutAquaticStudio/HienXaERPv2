@@ -1,0 +1,11 @@
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, expect, it, vi } from "vitest";
+const m=vi.hoisted(()=>({pending:false,action:vi.fn()}));
+vi.mock("react",async()=>({...await vi.importActual<typeof import("react")>("react"),useActionState:()=>[undefined,m.action,m.pending]}));
+vi.mock("@/lib/auth/actions",()=>({assignRoleAction:vi.fn(),reactivateAccessAction:vi.fn(),revokeAccessAction:vi.fn(),setExplicitPermissionsAction:vi.fn()}));
+import{ManageAccessForm}from"./manage-access-form";
+const props={employeeId:"qa-employee",branches:[{id:"qa-branch",name:"QA chi nhánh"}],roles:[{id:"qa-worker",name:"Thợ"}],operationId:"11111111-1111-4111-8111-111111111111"};
+afterEach(()=>{cleanup();m.pending=false;});
+it("preserves the same intent across rerender and response loss until fields change",()=>{const{container,rerender}=render(<ManageAccessForm {...props}/>);expect(container.querySelector<HTMLInputElement>('[name="operationId"]')?.value).toBe(props.operationId);rerender(<ManageAccessForm {...props} operationId="22222222-2222-4222-8222-222222222222"/>);expect(container.querySelector<HTMLInputElement>('[name="operationId"]')?.value).toBe(props.operationId);});
+it("starts a new intent only when the assignment fields change",()=>{const{container}=render(<ManageAccessForm {...props}/>);fireEvent.change(screen.getByLabelText("Vai trò"),{target:{value:"qa-worker"}});const id=container.querySelector<HTMLInputElement>('[name="operationId"]')?.value;expect(id).not.toBe(props.operationId);expect(id).toMatch(/^[a-f0-9-]{36}$/);fireEvent.change(screen.getByLabelText("Lý do thay đổi"),{target:{value:"QA vai trò mới"}});expect(container.querySelector<HTMLInputElement>('[name="operationId"]')?.value).not.toBe(id);});
+it("disables sending while the same command is pending",()=>{m.pending=true;render(<ManageAccessForm {...props}/>);expect(screen.getByRole("button",{name:"Cấp / đổi vai trò"})).toBeDisabled();});

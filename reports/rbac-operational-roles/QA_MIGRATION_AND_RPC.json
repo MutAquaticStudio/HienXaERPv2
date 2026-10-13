@@ -1,0 +1,85 @@
+{
+  "status": "PASS",
+  "checkedAt": "2026-10-13T11:31:15.917Z",
+  "database": "hx_rbac_roles_20261013",
+  "featureSchema": 189,
+  "migration": "20261013105000_operational_role_presets.sql",
+  "migrationSha256": "85bf08855ff57a0c74aef3e9c2eb67c827a2523ae23f65fbe8c1347e62942c74",
+  "checks": [
+    {
+      "name": "8_PRESETS_EXACT_EXISTING_ROLE_PERMISSIONS_UNCHANGED",
+      "status": "PASS",
+      "newRoles": 8
+    },
+    {
+      "name": "ONLY_INVITE_AND_ASSIGN_ROLE_GUARDS_CHANGED_POLICIES_GRANTS_OTHER_FUNCTIONS_PRESERVED",
+      "status": "PASS"
+    },
+    {
+      "name": "NO_AUTO_ASSIGNMENT_NO_BUSINESS_TABLE_CHANGE",
+      "status": "PASS",
+      "unchangedPublicTables": 120
+    },
+    {
+      "name": "REPLAY_NO_DUPLICATE_NO_EXISTING_ROLE_OVERWRITE",
+      "status": "PASS"
+    },
+    {
+      "name": "EXISTING_CUSTOMIZED_OR_INACTIVE_PRESET_NOT_REACTIVATED_OR_REWRITTEN",
+      "status": "PASS"
+    },
+    {
+      "name": "INVITE_RPC_PERMISSION_CEILING",
+      "status": "PASS",
+      "sqlstate": "42501"
+    },
+    {
+      "name": "INVITE_RPC_CROSS_BRANCH_DENIED",
+      "status": "PASS",
+      "sqlstate": "42501"
+    },
+    {
+      "name": "SELF_ROLE_CHANGE_DENIED",
+      "status": "PASS",
+      "sqlstate": "42501"
+    },
+    {
+      "name": "REGISTER_BUILTIN_MANAGER_ROLE_AND_ONE_ACTIVE_BRANCH_ACCESS",
+      "status": "PASS"
+    },
+    {
+      "name": "REGISTER_BUILTIN_SALES_ROLE_AND_ONE_ACTIVE_BRANCH_ACCESS",
+      "status": "PASS"
+    },
+    {
+      "name": "REGISTER_BUILTIN_PURCHASING_ROLE_AND_ONE_ACTIVE_BRANCH_ACCESS",
+      "status": "PASS"
+    },
+    {
+      "name": "REGISTER_BUILTIN_WAREHOUSE_ROLE_AND_ONE_ACTIVE_BRANCH_ACCESS",
+      "status": "PASS"
+    },
+    {
+      "name": "REGISTER_BUILTIN_DISPATCH_ROLE_AND_ONE_ACTIVE_BRANCH_ACCESS",
+      "status": "PASS"
+    },
+    {
+      "name": "REGISTER_BUILTIN_ACCOUNTANT_ROLE_AND_ONE_ACTIVE_BRANCH_ACCESS",
+      "status": "PASS"
+    },
+    {
+      "name": "REGISTER_BUILTIN_WORKER_ROLE_AND_ONE_ACTIVE_BRANCH_ACCESS",
+      "status": "PASS"
+    },
+    {
+      "name": "REGISTER_BUILTIN_DRIVER_ROLE_AND_ONE_ACTIVE_BRANCH_ACCESS",
+      "status": "PASS"
+    },
+    {
+      "name": "ALL_COMMAND_FIXTURES_ROLLED_BACK",
+      "status": "PASS"
+    }
+  ],
+  "productionAccess": false,
+  "realManagedAuthIntegration": "Separate JWT/browser evidence required; these checks execute authenticated SQL policies/RPC against native Postgres."
+}

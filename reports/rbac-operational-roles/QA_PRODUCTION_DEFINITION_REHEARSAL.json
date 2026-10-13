@@ -1,0 +1,17 @@
+{
+  "status": "PASS_REHEARSED_EXACT_PRODUCTION_FUNCTION_DEFINITIONS_IN_QA",
+  "checkedAt": "2026-10-13T12:07:41.550Z",
+  "database": "hx_rbac_roles_20261013",
+  "sourceSchema": 188,
+  "targetSchema": 189,
+  "migrationSha256": "8ec1e8f3253ec1d0116cece07c15305565dbf892bc96a3bc7d45ecf5f4814131",
+  "checks": [
+    "EXACT_PRODUCTION_DEFINITIONS_ACCEPTED",
+    "BOTH_GUARDS_PRESENT",
+    "ACL_AND_DEFINER_PRESERVED",
+    "EXISTING_ROLE_ROWS_PRESERVED",
+    "ACTUAL_ROLE_REPLAY_ONE_ACCESS_ONE_AUDIT"
+  ],
+  "rolledBack": true,
+  "productionWrites": false
+}

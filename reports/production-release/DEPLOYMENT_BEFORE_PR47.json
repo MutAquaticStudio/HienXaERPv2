@@ -1,0 +1,18 @@
+{
+  "status": "READY_PRODUCTION",
+  "commit": "68903bb25b27ba4a87e500375d0186b82184e972",
+  "deploymentId": "dpl_FxnSHkLvfVdBAS8p3GgVM3AxyXva",
+  "deploymentUrl": "https://hien-xa-erp-v2-jrk7lpsps-hienxa.vercel.app",
+  "productionAlias": "https://hien-xa-erp-v2-nu.vercel.app",
+  "target": "production",
+  "createdAt": 1791840318873,
+  "ciAfterMerge": "https://github.com/MutAquaticStudio/HienXaERPv2/actions/runs/38310446772",
+  "sourceEquivalentToTestedHead": "079f001e464c154a6282010479089727a5c8471b",
+  "noRuntimeSourceDiffAfterMerge": true,
+  "dbRef": "nbwynrwkdbtfsitafsxa",
+  "canonicalFeatureSchema": 188,
+  "actualMigrationHistoryCount": 182,
+  "latestMigration": "20261012211058",
+  "backup": "WAIVED_BY_OWNER_NOT_PERFORMED",
+  "spacingFollowUp": "Local browser verified; release pending. Do not classify the still-deployed unpadded cards as fixed."
+}

@@ -81,19 +81,21 @@ const assignRoleSchema = z.object({
   branchId: z.uuid(),
   roleId: z.uuid(),
   reason: z.string().trim().min(3).max(500),
+  operationId: z.uuid(),
 });
 
 export async function assignRoleAction(_: AuthFormState, formData: FormData): Promise<AuthFormState> {
-  const parsed = assignRoleSchema.safeParse({ employeeId: formData.get("employeeId"), branchId: formData.get("branchId"), roleId: formData.get("roleId"), reason: formData.get("reason") });
+  const parsed = assignRoleSchema.safeParse({ employeeId: formData.get("employeeId"), branchId: formData.get("branchId"), roleId: formData.get("roleId"), reason: formData.get("reason"), operationId: formData.get("operationId") });
   if (!parsed.success) return { message: "Thông tin phân quyền chưa hợp lệ." };
-  await requireInternalPermission("roles.manage");
+  const actor = await requireInternalPermission("roles.manage");
+  if (parsed.data.branchId !== actor.branchId) return { message: "Chỉ cấp vai trò tại chi nhánh đang quản lý." };
   const supabase = await createServerSupabase();
   const { error } = await supabase.rpc("assign_employee_role", {
     target_employee_id: parsed.data.employeeId,
     target_branch_id: parsed.data.branchId,
     target_role_id: parsed.data.roleId,
     change_reason: parsed.data.reason,
-    operation_id: randomUUID(),
+    operation_id: parsed.data.operationId,
   });
   if (error) return { message: "Không thể cập nhật vai trò. Không có thay đổi nào được xác nhận." };
   revalidatePath("/admin/access");
@@ -115,7 +117,16 @@ export async function inviteEmployeeAction(_: AuthFormState, formData: FormData)
     branchId: formData.get("branchId"), roleId: formData.get("roleId"), reason: formData.get("reason"),
   });
   if (!parsed.success) return { message: "Thông tin lời mời chưa hợp lệ." };
-  await requireInternalPermission("roles.manage");
+  const actor = await requireInternalPermission("roles.manage");
+  if (parsed.data.branchId !== actor.branchId) return { message: "Chỉ mời nhân viên vào chi nhánh đang quản lý." };
+  const supabase = await createServerSupabase();
+  const { data: role, error: roleError } = await supabase.from("roles")
+    .select("id, role_permissions(permission_code)").eq("id", parsed.data.roleId).eq("active", true).maybeSingle();
+  if (roleError || !role) return { message: "Vai trò không còn khả dụng. Tải lại danh sách trước khi mời." };
+  if (role.role_permissions.some((permission) => !actor.permissions.has(permission.permission_code))) {
+    return { message: "Không thể cấp vai trò có quyền vượt phạm vi của bạn." };
+  }
+
 
   const secretKey = process.env.SUPABASE_SECRET_KEY;
   if (!secretKey) return { message: "Dịch vụ mời nhân viên chưa được cấu hình. Vui lòng liên hệ quản trị viên." };
@@ -124,7 +135,6 @@ export async function inviteEmployeeAction(_: AuthFormState, formData: FormData)
   const { data: invite, error: inviteError } = await authAdmin.auth.admin.inviteUserByEmail(parsed.data.email);
   if (inviteError || !invite.user) return { message: "Không thể gửi lời mời. Vui lòng liên hệ quản trị viên để kiểm tra tài khoản." };
 
-  const supabase = await createServerSupabase();
   const { error: registerError } = await supabase.rpc("register_invited_employee", {
     invited_auth_user_id: invite.user.id,
     employee_code: parsed.data.code,

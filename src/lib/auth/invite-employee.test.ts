@@ -1,0 +1,49 @@
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
+const m = vi.hoisted(() => ({ access: vi.fn(), server: vi.fn(), from: vi.fn(), select: vi.fn(), eq: vi.fn(), role: vi.fn(), rpc: vi.fn(), admin: vi.fn(), invite: vi.fn() }));
+vi.mock("@/lib/access/context", () => ({ requireInternalPermission: m.access }));
+vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: m.server }));
+vi.mock("@/lib/supabase/config", () => ({ getSupabaseConfig: () => ({ url: "https://qa.example.test" }) }));
+vi.mock("@supabase/supabase-js", () => ({ createClient: m.admin }));
+vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
+vi.mock("next/headers", () => ({ cookies: vi.fn() }));
+vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
+vi.mock("@/modules/portal/server", () => ({ portalRpc: vi.fn() }));
+import { inviteEmployeeAction, assignRoleAction } from "./actions";
+const branch = "11111111-1111-4111-8111-111111111111", role = "22222222-2222-4222-8222-222222222222";
+function form(otherBranch = branch) { const f = new FormData(); Object.entries({ email: "qa-invite@example.test", code: "QA_RBAC", name: "QA nhân viên", branchId: otherBranch, roleId: role, reason: "QA cấp quyền" }).forEach(([k,v]) => f.set(k,v)); return f; }
+beforeEach(() => {
+ vi.clearAllMocks(); vi.stubEnv("SUPABASE_SECRET_KEY", "test-only-not-a-credential");
+ m.access.mockResolvedValue({ branchId: branch, permissions: new Set(["roles.manage", "work.read", "work.claim"]) });
+ const builder = { select: m.select, eq: m.eq, maybeSingle: m.role }; m.from.mockReturnValue(builder); m.select.mockReturnValue(builder); m.eq.mockReturnValue(builder);
+ m.role.mockResolvedValue({ data: { id: role, role_permissions: [{ permission_code: "work.read" }, { permission_code: "work.claim" }] }, error: null });
+ m.server.mockResolvedValue({ from: m.from, rpc: m.rpc }); m.rpc.mockResolvedValue({ error: null });
+ m.admin.mockReturnValue({ auth: { admin: { inviteUserByEmail: m.invite } } });
+ m.invite.mockResolvedValue({ data: { user: { id: "33333333-3333-4333-8333-333333333333" } }, error: null });
+});
+afterEach(() => vi.unstubAllEnvs());
+it("checks the active server role before sending an authorized worker invite", async () => {
+ expect((await inviteEmployeeAction(undefined, form()))?.success).toBe(true);
+ expect(m.access).toHaveBeenCalledWith("roles.manage"); expect(m.eq.mock.calls).toEqual([["id",role],["active",true]]);
+ expect(m.invite).toHaveBeenCalledOnce(); expect(m.rpc).toHaveBeenCalledWith("register_invited_employee", expect.objectContaining({ target_branch_id: branch, target_role_id: role }));
+ expect(m.role.mock.invocationCallOrder[0]).toBeLessThan(m.invite.mock.invocationCallOrder[0]);
+});
+it("does not send an invitation for a forged cross-branch target", async () => {
+ expect((await inviteEmployeeAction(undefined, form("44444444-4444-4444-8444-444444444444")))?.success).not.toBe(true); expect(m.server).not.toHaveBeenCalled(); expect(m.invite).not.toHaveBeenCalled();
+});
+it("does not send an invitation for a role exceeding the actor's permissions", async () => {
+ m.role.mockResolvedValue({ data: { role_permissions: [{ permission_code: "finance.payment.post" }] }, error: null });
+ expect((await inviteEmployeeAction(undefined, form()))?.success).not.toBe(true); expect(m.invite).not.toHaveBeenCalled(); expect(m.rpc).not.toHaveBeenCalled();
+});
+it.each([null, { error: { message: "role lookup unavailable" } }])("rejects missing/inactive or unreadable roles before external email (%j)", async (value) => {
+ m.role.mockResolvedValue(value ? { data:null,...value } : { data:null,error:null });
+ expect((await inviteEmployeeAction(undefined, form()))?.success).not.toBe(true); expect(m.invite).not.toHaveBeenCalled();
+});
+it("does not bypass a denied roles.manage check", async () => {
+ m.access.mockRejectedValue(new Error("forbidden")); await expect(inviteEmployeeAction(undefined, form())).rejects.toThrow("forbidden"); expect(m.invite).not.toHaveBeenCalled();
+});
+it("does not report linkage success if the DB recheck rejects a changed role after email", async () => {
+ m.rpc.mockResolvedValue({ error: { code: "42501" } }); const result=await inviteEmployeeAction(undefined,form()); expect(result?.success).not.toBe(true); expect(result?.message).toContain("chưa liên kết"); expect(m.invite).toHaveBeenCalledOnce();
+});
+
+it("forwards a stable role-assignment operation id for retry",async()=>{const f=form();f.set('employeeId','55555555-5555-4555-8555-555555555555');f.set('operationId','66666666-6666-4666-8666-666666666666');await assignRoleAction(undefined,f);await assignRoleAction(undefined,f);expect(m.rpc.mock.calls.map(c=>c[1].operation_id)).toEqual(['66666666-6666-4666-8666-666666666666','66666666-6666-4666-8666-666666666666']);});
+it("rejects missing assignment operation ids and cross-branch intent without a mutation",async()=>{const f=form();f.set('employeeId','55555555-5555-4555-8555-555555555555');await assignRoleAction(undefined,f);expect(m.rpc).not.toHaveBeenCalled();f.set('operationId','66666666-6666-4666-8666-666666666666');f.set('branchId','44444444-4444-4444-8444-444444444444');await assignRoleAction(undefined,f);expect(m.rpc).not.toHaveBeenCalled();});
