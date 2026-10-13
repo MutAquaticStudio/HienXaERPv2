@@ -1,0 +1,11 @@
+$ vitest run src/modules/reports/dashboard-snapshot-cutoff.test.ts
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+
+ RUN  v5.0.0 /Users/nox/.codex/worktrees/ux-ui-refinement/HienXaERP
+
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  13:51:46
+   Duration  954ms (environment 76%, setup 17%, transform 4%, tests 2%)
+

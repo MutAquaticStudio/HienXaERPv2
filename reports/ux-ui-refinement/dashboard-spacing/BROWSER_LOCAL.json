@@ -1,0 +1,391 @@
+{
+  "checkedAt": "2026-10-13T07:02:55.375Z",
+  "baselineCommit": "68903bb25b27ba4a87e500375d0186b82184e972",
+  "browser": "Codex CUA in-app browser",
+  "scope": "Actual React component and CSS rendered in a local visual fixture. Does not prove financial/Auth/DB integration.",
+  "before631": {
+    "cards": [
+      {
+        "heading": "Phân bổ theo nhóm",
+        "headingInsetLeft": 1,
+        "headingInsetTop": 1,
+        "paddingLeft": "0px",
+        "paddingTop": "0px"
+      },
+      {
+        "heading": "Chi tiết theo nhân viên",
+        "headingInsetLeft": 1,
+        "headingInsetTop": 1,
+        "paddingLeft": "0px",
+        "paddingTop": "0px"
+      }
+    ],
+    "chartGap": 0,
+    "documentWidth": 616,
+    "phase": "before",
+    "sourceHash": "4d4029bfa8bd382004659e15a128e0d9c93c4fd0619d777ad16d7cacb48078af",
+    "viewport": {
+      "height": 779,
+      "width": 631
+    }
+  },
+  "after631": {
+    "cards": [
+      {
+        "heading": "Phân bổ theo nhóm",
+        "headingInsetLeft": 23,
+        "headingInsetTop": 23,
+        "paddingLeft": "22px",
+        "paddingTop": "22px"
+      },
+      {
+        "heading": "Chi tiết theo nhân viên",
+        "headingInsetLeft": 23,
+        "headingInsetTop": 23,
+        "paddingLeft": "22px",
+        "paddingTop": "22px"
+      }
+    ],
+    "chartGap": 22,
+    "documentWidth": 616,
+    "phase": "after",
+    "sourceHash": "221161528afc8ccdd28ebdf2d2203bb3ce0d16ef5df48626df5b2bb240fe42d2",
+    "viewport": {
+      "height": 779,
+      "width": 631
+    }
+  },
+  "baselineChecks": [
+    {
+      "chartGap": 0,
+      "padding": "0px",
+      "width": 390
+    },
+    {
+      "chartGap": 0,
+      "padding": "0px",
+      "width": 1280
+    }
+  ],
+  "checks": [
+    {
+      "cards": [
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Phân bổ theo nhóm"
+        },
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Chi tiết theo nhân viên"
+        }
+      ],
+      "documentWidth": 375,
+      "gap": 22,
+      "sourceHash": "221161528afc8ccdd28ebdf2d2203bb3ce0d16ef5df48626df5b2bb240fe42d2",
+      "state": "empty",
+      "viewport": 390,
+      "meaningfulContent": true,
+      "pass": true
+    },
+    {
+      "cards": [
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Phân bổ theo nhóm"
+        },
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Chi tiết theo nhân viên"
+        }
+      ],
+      "documentWidth": 375,
+      "gap": 22,
+      "sourceHash": "221161528afc8ccdd28ebdf2d2203bb3ce0d16ef5df48626df5b2bb240fe42d2",
+      "state": "populated",
+      "viewport": 390,
+      "meaningfulContent": true,
+      "pass": true
+    },
+    {
+      "cards": [
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Phân bổ theo nhóm"
+        },
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Chi tiết theo nhân viên"
+        }
+      ],
+      "documentWidth": 375,
+      "gap": 22,
+      "sourceHash": "221161528afc8ccdd28ebdf2d2203bb3ce0d16ef5df48626df5b2bb240fe42d2",
+      "state": "unavailable",
+      "viewport": 390,
+      "meaningfulContent": true,
+      "pass": true
+    },
+    {
+      "cards": [
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Phân bổ theo nhóm"
+        },
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Chi tiết theo nhân viên"
+        }
+      ],
+      "documentWidth": 375,
+      "gap": 22,
+      "sourceHash": "221161528afc8ccdd28ebdf2d2203bb3ce0d16ef5df48626df5b2bb240fe42d2",
+      "state": "forbidden",
+      "viewport": 390,
+      "meaningfulContent": true,
+      "pass": true
+    },
+    {
+      "cards": [
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Phân bổ theo nhóm"
+        },
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Chi tiết theo nhân viên"
+        }
+      ],
+      "documentWidth": 375,
+      "gap": 22,
+      "sourceHash": "221161528afc8ccdd28ebdf2d2203bb3ce0d16ef5df48626df5b2bb240fe42d2",
+      "state": "not-applicable",
+      "viewport": 390,
+      "meaningfulContent": true,
+      "pass": true
+    },
+    {
+      "cards": [
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Phân bổ theo nhóm"
+        },
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Chi tiết theo nhân viên"
+        }
+      ],
+      "documentWidth": 616,
+      "gap": 22,
+      "sourceHash": "221161528afc8ccdd28ebdf2d2203bb3ce0d16ef5df48626df5b2bb240fe42d2",
+      "state": "empty",
+      "viewport": 631,
+      "meaningfulContent": true,
+      "pass": true
+    },
+    {
+      "cards": [
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Phân bổ theo nhóm"
+        },
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Chi tiết theo nhân viên"
+        }
+      ],
+      "documentWidth": 616,
+      "gap": 22,
+      "sourceHash": "221161528afc8ccdd28ebdf2d2203bb3ce0d16ef5df48626df5b2bb240fe42d2",
+      "state": "populated",
+      "viewport": 631,
+      "meaningfulContent": true,
+      "pass": true
+    },
+    {
+      "cards": [
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Phân bổ theo nhóm"
+        },
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Chi tiết theo nhân viên"
+        }
+      ],
+      "documentWidth": 616,
+      "gap": 22,
+      "sourceHash": "221161528afc8ccdd28ebdf2d2203bb3ce0d16ef5df48626df5b2bb240fe42d2",
+      "state": "unavailable",
+      "viewport": 631,
+      "meaningfulContent": true,
+      "pass": true
+    },
+    {
+      "cards": [
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Phân bổ theo nhóm"
+        },
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Chi tiết theo nhân viên"
+        }
+      ],
+      "documentWidth": 616,
+      "gap": 22,
+      "sourceHash": "221161528afc8ccdd28ebdf2d2203bb3ce0d16ef5df48626df5b2bb240fe42d2",
+      "state": "forbidden",
+      "viewport": 631,
+      "meaningfulContent": true,
+      "pass": true
+    },
+    {
+      "cards": [
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Phân bổ theo nhóm"
+        },
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Chi tiết theo nhân viên"
+        }
+      ],
+      "documentWidth": 616,
+      "gap": 22,
+      "sourceHash": "221161528afc8ccdd28ebdf2d2203bb3ce0d16ef5df48626df5b2bb240fe42d2",
+      "state": "not-applicable",
+      "viewport": 631,
+      "meaningfulContent": true,
+      "pass": true
+    },
+    {
+      "cards": [
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Phân bổ theo nhóm"
+        },
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Chi tiết theo nhân viên"
+        }
+      ],
+      "documentWidth": 1280,
+      "gap": 22,
+      "sourceHash": "221161528afc8ccdd28ebdf2d2203bb3ce0d16ef5df48626df5b2bb240fe42d2",
+      "state": "empty",
+      "viewport": 1280,
+      "meaningfulContent": true,
+      "pass": true
+    },
+    {
+      "cards": [
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Phân bổ theo nhóm"
+        },
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Chi tiết theo nhân viên"
+        }
+      ],
+      "documentWidth": 1280,
+      "gap": 22,
+      "sourceHash": "221161528afc8ccdd28ebdf2d2203bb3ce0d16ef5df48626df5b2bb240fe42d2",
+      "state": "populated",
+      "viewport": 1280,
+      "meaningfulContent": true,
+      "pass": true
+    },
+    {
+      "cards": [
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Phân bổ theo nhóm"
+        },
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Chi tiết theo nhân viên"
+        }
+      ],
+      "documentWidth": 1280,
+      "gap": 22,
+      "sourceHash": "221161528afc8ccdd28ebdf2d2203bb3ce0d16ef5df48626df5b2bb240fe42d2",
+      "state": "unavailable",
+      "viewport": 1280,
+      "meaningfulContent": true,
+      "pass": true
+    },
+    {
+      "cards": [
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Phân bổ theo nhóm"
+        },
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Chi tiết theo nhân viên"
+        }
+      ],
+      "documentWidth": 1280,
+      "gap": 22,
+      "sourceHash": "221161528afc8ccdd28ebdf2d2203bb3ce0d16ef5df48626df5b2bb240fe42d2",
+      "state": "forbidden",
+      "viewport": 1280,
+      "meaningfulContent": true,
+      "pass": true
+    },
+    {
+      "cards": [
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Phân bổ theo nhóm"
+        },
+        {
+          "overflow": false,
+          "padding": "22px",
+          "title": "Chi tiết theo nhân viên"
+        }
+      ],
+      "documentWidth": 1280,
+      "gap": 22,
+      "sourceHash": "221161528afc8ccdd28ebdf2d2203bb3ce0d16ef5df48626df5b2bb240fe42d2",
+      "state": "not-applicable",
+      "viewport": 1280,
+      "meaningfulContent": true,
+      "pass": true
+    }
+  ],
+  "consoleErrors": 0,
+  "interaction": "Có dữ liệu link changed actual rendered component from empty to populated.",
+  "productionWrites": false,
+  "advanceRacesRerun": false
+}

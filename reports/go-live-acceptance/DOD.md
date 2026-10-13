@@ -1,3 +1,5 @@
+> Checkpoint lịch sử: trạng thái phát hành hiện hành được ghi tại [DOD Production](../production-release/DOD.md). Không dùng các dòng chưa triển khai dưới đây để mô tả bản Production mới.
+
 # DOD hiện hành
 
 **CHƯA HOÀN TẤT GO LIVE.** Người dùng đã yêu cầu merge GitHub ngay, không kiểm thử thêm hoặc chờ CI. Quyết định này không chuyển các mục chưa nghiệm thu/thực hiện bên dưới thành đạt.

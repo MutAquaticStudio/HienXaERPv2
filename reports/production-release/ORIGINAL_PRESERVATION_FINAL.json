@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "checkedAt": "2026-10-13T06:38:47.965650+00:00",
+  "originalCheckout": "/Users/nox/Downloads/HienXaERP",
+  "head": "79b0b918c7430bfd0e9d17e247ecba2be1fa0bf2",
+  "branch": "codex/uat-role-navigation-20260923",
+  "fileCount": 12534,
+  "byteDifferences": 0,
+  "headUnchanged": true,
+  "branchUnchanged": true,
+  "defaultPorcelainUnchanged": true,
+  "manifestSha256": "d96d4f34d03e06e9535b3c96724f970fdd1a8819b3b8c92a3567b27e7e8341de",
+  "resetCleanOrOverwritePerformed": false,
+  "scope": "All manifest file bytes plus branch/HEAD/default porcelain status. Does not classify unrelated external files."
+}

@@ -1,0 +1,33 @@
+{
+  "checkedAt": "2026-10-13T07:09:09.974955+00:00",
+  "baseline": "68903bb25b27ba4a87e500375d0186b82184e972",
+  "changedRuntimeFiles": [
+    "src/app/globals.css",
+    "src/components/dashboard/dashboard-details.tsx"
+  ],
+  "commands": [
+    {
+      "command": "pnpm lint",
+      "exitCode": 0,
+      "errors": 0,
+      "existingWarnings": 13
+    },
+    {
+      "command": "pnpm typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm test src/modules/reports/dashboard-snapshot-cutoff.test.ts",
+      "exitCode": 0,
+      "passed": 6
+    },
+    {
+      "command": "pnpm build",
+      "exitCode": 0
+    }
+  ],
+  "sourceComponentAndCssSha256": "221161528afc8ccdd28ebdf2d2203bb3ce0d16ef5df48626df5b2bb240fe42d2",
+  "schemaApiRpcCalculationsAndPermissionsChanged": false,
+  "advanceRacesRerun": false,
+  "financialIntegrationRetest": "Not rerun for this presentation-only diff; prior QA evidence kept in its original scope."
+}

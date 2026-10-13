@@ -1,0 +1,14 @@
+{
+  "checkedAt": "2026-10-13T06:39:55.750348+00:00",
+  "project": "nbwynrwkdbtfsitafsxa",
+  "payments": 0,
+  "authUsers": 2,
+  "salesOrders": 0,
+  "purchaseOrders": 0,
+  "storageObjects": 0,
+  "historyCount": 182,
+  "latestMigration": "20261012211058",
+  "ownerPermissions": 62,
+  "extraApiDdlPrivileges": 0,
+  "businessWritesByThisCheck": false
+}
