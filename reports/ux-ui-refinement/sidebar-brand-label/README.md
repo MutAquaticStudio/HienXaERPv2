@@ -4,4 +4,4 @@ Theo bình luận trình duyệt của chủ hệ thống ngày 13/10/2026, ph�
 
 Source: src/components/app-shell.tsx. Chỉ đổi markup tên; không thay hooks, bộ lọc quyền, điều hướng, trạng thái mở/đóng, bàn phím hoặc server/API/schema. Bản này được phát hành cùng spacing đã merge trong PR46, không triển khai riêng bản trung gian.
 
-Local lint/typecheck và 16 kiểm thử AppShell đạt (đích điều hướng, quyền ẩn/hiện, Escape, focus, mở/đóng). Build và CI phải đạt trước merge/phát hành. Hai race ứng trước không chạy lại. Kiểm chứng browser Production có đăng nhập sau phát hành sẽ ghi theo kết quả thật; chưa ghi ca chưa chạy thành đạt.
+Local lint/typecheck và 15 kiểm thử AppShell đạt (đích điều hướng, quyền ẩn/hiện, Escape, focus, mở/đóng). Build và CI phải đạt trước merge/phát hành. Hai race ứng trước không chạy lại. Kiểm chứng browser Production có đăng nhập sau phát hành sẽ ghi theo kết quả thật; chưa ghi ca chưa chạy thành đạt.

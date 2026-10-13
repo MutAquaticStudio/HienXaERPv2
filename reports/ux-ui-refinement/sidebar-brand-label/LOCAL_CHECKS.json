@@ -8,7 +8,7 @@
   "lintExit": 0,
   "typecheckExit": 0,
   "appShellTestsExit": 0,
-  "appShellTestsPassed": 16,
+  "appShellTestsPassed": 15,
   "build": "IN_PROGRESS_NOT_YET_CLASSIFIED",
   "productionBrowser": "PENDING_REAL_POSTDEPLOY_CHECK",
   "businessOrSchemaChanged": false,
