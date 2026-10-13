@@ -66,7 +66,7 @@ const navigation: Record<Surface, readonly NavigationItem[]> = {
 
 const surfaceNames = { admin: "Điều hành", work: "Tác nghiệp", customer: "Khách hàng" } as const;
 
-export function AppShell({ surface, children, permissions, actorName, branchName }: { surface: Surface; children: React.ReactNode; permissions?: readonly string[]; actorName?: string; branchName?: string }) {
+export function AppShell({ surface, children, permissions, actorName }: { surface: Surface; children: React.ReactNode; permissions?: readonly string[]; actorName?: string; branchName?: string }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, { pathname: string; open: boolean }>>({});
@@ -143,7 +143,6 @@ export function AppShell({ surface, children, permissions, actorName, branchName
       <div className="workspace" inert={open}>
         <header className="topbar">
           <button ref={menuButton} className="mobile-menu" type="button" aria-label="Mở menu" aria-expanded={open} aria-controls="app-sidebar" onClick={() => setOpen(true)}><Menu size={24} /></button>
-          <span className="topbar-context">{branchName}</span>
           <div className="identity"><span>{actorName}</span><span className="identity-avatar" aria-hidden="true">{initials}</span></div>
         </header>
         <main className="content">{children}{surface === "admin" && <UatBrowserTiming />}</main>

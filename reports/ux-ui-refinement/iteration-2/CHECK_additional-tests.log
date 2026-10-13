@@ -1,0 +1,11 @@
+$ vitest run src/modules/sales/credit-override-actions.test.ts src/modules/reports/dashboard-snapshot-cutoff.test.ts
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+
+ RUN  v5.0.0 <release-worktree>
+
+
+ Test Files  2 passed (2)
+      Tests  12 passed (12)
+   Start at  17:12:57
+   Duration  952ms (environment 64%, import 11%, setup 11%, tests 10%, transform 4%)
+

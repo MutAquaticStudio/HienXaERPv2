@@ -1,0 +1,11 @@
+$ vitest run src/components/app-shell.test.tsx src/components/inventory/material-stock-hint.test.tsx src/components/sales/commercial-document-form.test.tsx src/components/sales/credit-override.test.tsx src/modules/sales/operational-completion.test.tsx
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+
+ RUN  v5.0.0 <release-worktree>
+
+
+ Test Files  4 passed (4)
+      Tests  36 passed (36)
+   Start at  17:11:34
+   Duration  2.57s (environment 42%, tests 39%, setup 7%, transform 6%, import 5%)
+

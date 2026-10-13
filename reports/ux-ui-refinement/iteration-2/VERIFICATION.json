@@ -1,0 +1,213 @@
+{
+  "checkedAt": "2026-10-13T10:15:07.352571+00:00",
+  "runtimeSourceSha256": "53073a8bd7f7943da0eac27e9f5e9f122f350af9fcb3d55661f978c7e646615e",
+  "sourceScope": "src/** and package/lock/Next/TS/Vercel config; production code final iteration2",
+  "browserEvidenceQualification": "32 QA captures precede final topbar label removal and last text shortening. Final change is covered by AppShell tests; browser after deploy will bind released commit. Before mobile viewport 390x779; after mobile 390x844: width and content/table comparisons valid, not identical-height screenshots.",
+  "comparisons": [
+    {
+      "screen": "overview",
+      "width": 1007,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "sales-form",
+      "width": 1007,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "credit-order",
+      "width": 1007,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "sales-order",
+      "width": 1007,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "products",
+      "width": 1007,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "customers",
+      "width": 1007,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "inventory",
+      "width": 1007,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "dispatch",
+      "width": 1007,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "receivables",
+      "width": 1007,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "payables",
+      "width": 1007,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "cashbook",
+      "width": 1007,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "expenses",
+      "width": 1007,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "invoices",
+      "width": 1007,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "purchase-documents",
+      "width": 1007,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "settings",
+      "width": 1007,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "reports",
+      "width": 1007,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "overview",
+      "width": 390,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "sales-form",
+      "width": 390,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "credit-order",
+      "width": 390,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "sales-order",
+      "width": 390,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "products",
+      "width": 390,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "customers",
+      "width": 390,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "inventory",
+      "width": 390,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "dispatch",
+      "width": 390,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "receivables",
+      "width": 390,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "payables",
+      "width": 390,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "cashbook",
+      "width": 390,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "expenses",
+      "width": 390,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "invoices",
+      "width": 390,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "purchase-documents",
+      "width": 390,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "settings",
+      "width": 390,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    },
+    {
+      "screen": "reports",
+      "width": 390,
+      "noDocumentOverflow": true,
+      "tableColumnsPreserved": true
+    }
+  ],
+  "checks": {
+    "lint": "PASS",
+    "typecheck": "PASS",
+    "affectedUnitTests": 36,
+    "additionalCreditActionsAndDashboardTests": 12,
+    "build": "PASS"
+  },
+  "ci": "PENDING_FINAL_HEAD",
+  "advanceRaceCommandsExcluded": [
+    "scripts/qa/remediation/package4-advance-race.mjs --mode different-intents",
+    "scripts/qa/remediation/package4-advance-race.mjs --mode same-intent"
+  ],
+  "productionWrites": false
+}
