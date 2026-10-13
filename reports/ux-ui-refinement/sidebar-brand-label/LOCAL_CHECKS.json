@@ -9,7 +9,10 @@
   "typecheckExit": 0,
   "appShellTestsExit": 0,
   "appShellTestsPassed": 15,
-  "build": "IN_PROGRESS_NOT_YET_CLASSIFIED",
+  "build": {
+    "exitCode": 0,
+    "rawLogSha256": "9cbec8efdad76aa51b829e761f5a9369ad05a69949597808d0d23b97b4ce743d"
+  },
   "productionBrowser": "PENDING_REAL_POSTDEPLOY_CHECK",
   "businessOrSchemaChanged": false,
   "advanceRacesRerun": false
