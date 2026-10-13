@@ -36,3 +36,8 @@ Sao lưu không chạy theo chỉ đạo mới. Không tạo giao dịch tài ch
 -06:38UTC:12.534 tệp gốc/HEAD/branch/default status đối chiếu manifest,0 thay đổi. ORIGINAL_PRESERVATION_FINAL.json.
 - Người dùng đăng nhập thật và browser vào/admin dưới Owner; tổng quan/dữ liệu/phân quyền hoạt động đọc. Không coi tài khoản Owner là kiểm chứng mọi vai trò.
 - Chủ hệ thống chỉ ra hai thẻ Tổng quan thiếu spacing. Tiếp tục sửa trên codex/dashboard-card-spacing, không tuyên bố UI không còn lỗi. Local15 biến thể hiển thị đạt, nguồn tài chính không đổi.
+
+
+## 2026-10-13T10:56:31.014591+00:00 — PR47 giao diện phát hành
+
+CI head792a509/run38382113455 và merged538e9f/run38382583091 success623. Merge tree khớp. Deploy đúngd538e9f,artifact8HgrA,alias READY.11 HTTP/Auth checks và17 Owner/UI observations đạt;142 bảng453 dòng fingerprint giữ nguyên;5xx query10m không có entry. Không migration/dọn dữ liệu/ghi sổ. Chi tiết iteration-2/RELEASE_RESULT.json.
