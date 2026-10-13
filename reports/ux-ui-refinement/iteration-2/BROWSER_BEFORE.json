@@ -1,0 +1,641 @@
+{
+  "sourceCommit": "68903bb25b27ba4a87e500375d0186b82184e972",
+  "qaSchema": 188,
+  "auth": "Real managed QA Auth ffrwiglcrlumfvhubaxg",
+  "database": "Isolated native hx_ux_visual_20261013",
+  "role": "Owner QA",
+  "screens": [
+    {
+      "name": "overview",
+      "viewport": 1007,
+      "path": "/admin",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 1007,
+        "heading": "Tổng quan",
+        "recordingBanner": true,
+        "tableColumns": [],
+        "viewportWidth": 1007
+      }
+    },
+    {
+      "name": "sales-form",
+      "viewport": 1007,
+      "path": "/admin/orders/new",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 1007,
+        "heading": "Tạo đơn bán",
+        "recordingBanner": false,
+        "tableColumns": [],
+        "viewportWidth": 1007
+      }
+    },
+    {
+      "name": "credit-order",
+      "viewport": 1007,
+      "path": "/admin/orders/773faf8e-2d71-47bc-bec8-375beb4d4423",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 1007,
+        "heading": "SO-2026-000420",
+        "recordingBanner": false,
+        "tableColumns": [
+          "Vật tư",
+          "Số lượng",
+          "Đơn giá",
+          "Thành tiền",
+          "Nguồn giá",
+          "Phân nguồn"
+        ],
+        "viewportWidth": 1007
+      }
+    },
+    {
+      "name": "sales-order",
+      "viewport": 1007,
+      "path": "/admin/orders/aab98715-1df4-49b9-8cd0-ac907cc54bb4",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 1007,
+        "heading": "SO-2026-000419",
+        "recordingBanner": false,
+        "tableColumns": [
+          "Vật tư",
+          "Số lượng",
+          "Đơn giá",
+          "Thành tiền",
+          "Nguồn giá",
+          "Phân nguồn"
+        ],
+        "viewportWidth": 1007
+      }
+    },
+    {
+      "name": "products",
+      "viewport": 1007,
+      "path": "/admin/products",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 1007,
+        "heading": "Vật tư & quy cách",
+        "recordingBanner": false,
+        "tableColumns": [
+          "Mã",
+          "Vật tư",
+          "Nhóm",
+          "Đơn vị gốc",
+          "Cho phép",
+          "Trạng thái"
+        ],
+        "viewportWidth": 1007
+      }
+    },
+    {
+      "name": "customers",
+      "viewport": 1007,
+      "path": "/admin/customers",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 1007,
+        "heading": "Khách hàng",
+        "recordingBanner": false,
+        "tableColumns": [
+          "Mã",
+          "Tên khách hàng",
+          "Điện thoại",
+          "Nhóm giá",
+          "Hạn mức",
+          "Trạng thái"
+        ],
+        "viewportWidth": 1007
+      }
+    },
+    {
+      "name": "inventory",
+      "viewport": 1007,
+      "path": "/admin/inventory",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 1007,
+        "heading": "Tồn kho",
+        "recordingBanner": true,
+        "tableColumns": [
+          "Kho",
+          "Vật tư",
+          "Ngưỡng",
+          "Trạng thái",
+          "Cập nhật",
+          "Kho",
+          "Vật tư",
+          "Tồn đã ghi nhận",
+          "Đã giữ",
+          "Khả dụng",
+          "Giá trị / Giá vốn bình quân",
+          "Thời điểm",
+          "Loại",
+          "Vật tư",
+          "Vị trí",
+          "Tăng / giảm",
+          "Nguồn"
+        ],
+        "viewportWidth": 1007
+      }
+    },
+    {
+      "name": "dispatch",
+      "viewport": 1007,
+      "path": "/admin/dispatch",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 1007,
+        "heading": "Bảng phân giao",
+        "recordingBanner": false,
+        "tableColumns": [],
+        "viewportWidth": 1007
+      }
+    },
+    {
+      "name": "receivables",
+      "viewport": 1007,
+      "path": "/admin/receivables",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 1007,
+        "heading": "Phải thu khách hàng",
+        "recordingBanner": false,
+        "tableColumns": [
+          "Khách / công trình",
+          "Nguồn",
+          "Phát sinh",
+          "Hạn",
+          "Gốc",
+          "Còn lại",
+          ""
+        ],
+        "viewportWidth": 1007
+      }
+    },
+    {
+      "name": "payables",
+      "viewport": 1007,
+      "path": "/admin/payables",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 1007,
+        "heading": "Phải trả nhà cung cấp",
+        "recordingBanner": false,
+        "tableColumns": [
+          "Nhà cung cấp",
+          "Nguồn",
+          "Phát sinh",
+          "Hạn",
+          "Gốc",
+          "Còn lại",
+          ""
+        ],
+        "viewportWidth": 1007
+      }
+    },
+    {
+      "name": "cashbook",
+      "viewport": 1007,
+      "path": "/admin/cashbook",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 1007,
+        "heading": "Sổ tiền và đối soát",
+        "recordingBanner": true,
+        "tableColumns": [
+          "Mã",
+          "Ngày",
+          "Đối tác",
+          "Tài khoản",
+          "Loại",
+          "Số tiền",
+          "Đối soát",
+          "Hành động"
+        ],
+        "viewportWidth": 1007
+      }
+    },
+    {
+      "name": "expenses",
+      "viewport": 1007,
+      "path": "/admin/expenses",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 1007,
+        "heading": "Chi phí vận hành",
+        "recordingBanner": false,
+        "tableColumns": [
+          "Mã",
+          "Ngày",
+          "Nhóm / mô tả",
+          "NCC",
+          "Phạm vi",
+          "Số tiền",
+          "Trạng thái",
+          ""
+        ],
+        "viewportWidth": 1007
+      }
+    },
+    {
+      "name": "invoices",
+      "viewport": 1007,
+      "path": "/admin/invoices",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 1007,
+        "heading": "Hồ sơ lập hóa đơn",
+        "recordingBanner": false,
+        "tableColumns": [
+          "Mã hồ sơ",
+          "Khách hàng",
+          "Nguồn",
+          "Số tiền nguồn",
+          "Trạng thái",
+          "Dịch vụ phát hành / pháp lý",
+          "Khách hàng",
+          "Nguồn",
+          "Xác minh",
+          "Số tiền nguồn",
+          "Thao tác"
+        ],
+        "viewportWidth": 1007
+      }
+    },
+    {
+      "name": "purchase-documents",
+      "viewport": 1007,
+      "path": "/admin/invoices/purchases",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 1007,
+        "heading": "Sổ chứng từ nhà cung cấp",
+        "recordingBanner": false,
+        "tableColumns": [
+          "Nhà cung cấp",
+          "Nguồn",
+          "Giá trị",
+          "Tham chiếu",
+          "Chứng từ",
+          "Nhà cung cấp",
+          "Nguồn",
+          "Giá trị nguồn",
+          "Thao tác"
+        ],
+        "viewportWidth": 1007
+      }
+    },
+    {
+      "name": "settings",
+      "viewport": 1007,
+      "path": "/admin/settings",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 1007,
+        "heading": "Thiết lập hệ thống",
+        "recordingBanner": false,
+        "tableColumns": [],
+        "viewportWidth": 1007
+      }
+    },
+    {
+      "name": "reports",
+      "viewport": 1007,
+      "path": "/admin/reports",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 1007,
+        "heading": "Báo cáo nghiệp vụ",
+        "recordingBanner": false,
+        "tableColumns": [
+          "Đối tượng / nhóm",
+          "Ngữ cảnh",
+          "Ngày / kỳ",
+          "Số tiền"
+        ],
+        "viewportWidth": 1007
+      }
+    },
+    {
+      "name": "overview",
+      "viewport": 390,
+      "path": "/admin",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 390,
+        "heading": "Tổng quan",
+        "recordingBanner": true,
+        "tableColumns": [],
+        "viewportWidth": 390
+      }
+    },
+    {
+      "name": "sales-form",
+      "viewport": 390,
+      "path": "/admin/orders/new",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 390,
+        "heading": "Tạo đơn bán",
+        "recordingBanner": false,
+        "tableColumns": [],
+        "viewportWidth": 390
+      }
+    },
+    {
+      "name": "credit-order",
+      "viewport": 390,
+      "path": "/admin/orders/773faf8e-2d71-47bc-bec8-375beb4d4423",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 390,
+        "heading": "SO-2026-000420",
+        "recordingBanner": false,
+        "tableColumns": [
+          "Vật tư",
+          "Số lượng",
+          "Đơn giá",
+          "Thành tiền",
+          "Nguồn giá",
+          "Phân nguồn"
+        ],
+        "viewportWidth": 390
+      }
+    },
+    {
+      "name": "sales-order",
+      "viewport": 390,
+      "path": "/admin/orders/aab98715-1df4-49b9-8cd0-ac907cc54bb4",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 390,
+        "heading": "SO-2026-000419",
+        "recordingBanner": false,
+        "tableColumns": [
+          "Vật tư",
+          "Số lượng",
+          "Đơn giá",
+          "Thành tiền",
+          "Nguồn giá",
+          "Phân nguồn"
+        ],
+        "viewportWidth": 390
+      }
+    },
+    {
+      "name": "products",
+      "viewport": 390,
+      "path": "/admin/products",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 390,
+        "heading": "Vật tư & quy cách",
+        "recordingBanner": false,
+        "tableColumns": [
+          "Mã",
+          "Vật tư",
+          "Nhóm",
+          "Đơn vị gốc",
+          "Cho phép",
+          "Trạng thái"
+        ],
+        "viewportWidth": 390
+      }
+    },
+    {
+      "name": "customers",
+      "viewport": 390,
+      "path": "/admin/customers",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 390,
+        "heading": "Khách hàng",
+        "recordingBanner": false,
+        "tableColumns": [
+          "Mã",
+          "Tên khách hàng",
+          "Điện thoại",
+          "Nhóm giá",
+          "Hạn mức",
+          "Trạng thái"
+        ],
+        "viewportWidth": 390
+      }
+    },
+    {
+      "name": "inventory",
+      "viewport": 390,
+      "path": "/admin/inventory",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 390,
+        "heading": "Tồn kho",
+        "recordingBanner": true,
+        "tableColumns": [
+          "Kho",
+          "Vật tư",
+          "Ngưỡng",
+          "Trạng thái",
+          "Cập nhật",
+          "Kho",
+          "Vật tư",
+          "Tồn đã ghi nhận",
+          "Đã giữ",
+          "Khả dụng",
+          "Giá trị / Giá vốn bình quân",
+          "Thời điểm",
+          "Loại",
+          "Vật tư",
+          "Vị trí",
+          "Tăng / giảm",
+          "Nguồn"
+        ],
+        "viewportWidth": 390
+      }
+    },
+    {
+      "name": "dispatch",
+      "viewport": 390,
+      "path": "/admin/dispatch",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 390,
+        "heading": "Bảng phân giao",
+        "recordingBanner": false,
+        "tableColumns": [],
+        "viewportWidth": 390
+      }
+    },
+    {
+      "name": "receivables",
+      "viewport": 390,
+      "path": "/admin/receivables",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 390,
+        "heading": "Phải thu khách hàng",
+        "recordingBanner": false,
+        "tableColumns": [
+          "Khách / công trình",
+          "Nguồn",
+          "Phát sinh",
+          "Hạn",
+          "Gốc",
+          "Còn lại",
+          ""
+        ],
+        "viewportWidth": 390
+      }
+    },
+    {
+      "name": "payables",
+      "viewport": 390,
+      "path": "/admin/payables",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 390,
+        "heading": "Phải trả nhà cung cấp",
+        "recordingBanner": false,
+        "tableColumns": [
+          "Nhà cung cấp",
+          "Nguồn",
+          "Phát sinh",
+          "Hạn",
+          "Gốc",
+          "Còn lại",
+          ""
+        ],
+        "viewportWidth": 390
+      }
+    },
+    {
+      "name": "cashbook",
+      "viewport": 390,
+      "path": "/admin/cashbook",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 390,
+        "heading": "Sổ tiền và đối soát",
+        "recordingBanner": true,
+        "tableColumns": [
+          "Mã",
+          "Ngày",
+          "Đối tác",
+          "Tài khoản",
+          "Loại",
+          "Số tiền",
+          "Đối soát",
+          "Hành động"
+        ],
+        "viewportWidth": 390
+      }
+    },
+    {
+      "name": "expenses",
+      "viewport": 390,
+      "path": "/admin/expenses",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 390,
+        "heading": "Chi phí vận hành",
+        "recordingBanner": false,
+        "tableColumns": [
+          "Mã",
+          "Ngày",
+          "Nhóm / mô tả",
+          "NCC",
+          "Phạm vi",
+          "Số tiền",
+          "Trạng thái",
+          ""
+        ],
+        "viewportWidth": 390
+      }
+    },
+    {
+      "name": "invoices",
+      "viewport": 390,
+      "path": "/admin/invoices",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 390,
+        "heading": "Hồ sơ lập hóa đơn",
+        "recordingBanner": false,
+        "tableColumns": [
+          "Mã hồ sơ",
+          "Khách hàng",
+          "Nguồn",
+          "Số tiền nguồn",
+          "Trạng thái",
+          "Dịch vụ phát hành / pháp lý",
+          "Khách hàng",
+          "Nguồn",
+          "Xác minh",
+          "Số tiền nguồn",
+          "Thao tác"
+        ],
+        "viewportWidth": 390
+      }
+    },
+    {
+      "name": "purchase-documents",
+      "viewport": 390,
+      "path": "/admin/invoices/purchases",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 390,
+        "heading": "Sổ chứng từ nhà cung cấp",
+        "recordingBanner": false,
+        "tableColumns": [
+          "Nhà cung cấp",
+          "Nguồn",
+          "Giá trị",
+          "Tham chiếu",
+          "Chứng từ",
+          "Nhà cung cấp",
+          "Nguồn",
+          "Giá trị nguồn",
+          "Thao tác"
+        ],
+        "viewportWidth": 390
+      }
+    },
+    {
+      "name": "settings",
+      "viewport": 390,
+      "path": "/admin/settings",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 390,
+        "heading": "Thiết lập hệ thống",
+        "recordingBanner": false,
+        "tableColumns": [],
+        "viewportWidth": 390
+      }
+    },
+    {
+      "name": "reports",
+      "viewport": 390,
+      "path": "/admin/reports",
+      "layout": {
+        "brand": "HIỀN XA ERP",
+        "documentWidth": 390,
+        "heading": "Báo cáo nghiệp vụ",
+        "recordingBanner": false,
+        "tableColumns": [
+          "Đối tượng / nhóm",
+          "Ngữ cảnh",
+          "Ngày / kỳ",
+          "Số tiền"
+        ],
+        "viewportWidth": 390
+      }
+    }
+  ],
+  "discardedAttempt": "First capture matched a loading h1; rejected and recaptured only after .page-heading h1 appeared.",
+  "productionAccess": false
+}

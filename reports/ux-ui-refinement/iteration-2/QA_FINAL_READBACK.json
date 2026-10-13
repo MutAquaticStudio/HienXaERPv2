@@ -1,0 +1,62 @@
+{
+  "status": "PASS_DRAFT_PERSISTED_AND_NO_FINANCIAL_STOCK_POSTING",
+  "checkedAt": "2026-10-13T10:12:56.495Z",
+  "qaDatabase": "hx_ux_visual_20261013",
+  "sourceDatabase": "hx_remediation_go_live_browser175",
+  "schema": 188,
+  "draft": {
+    "id": "773faf8e-2d71-47bc-bec8-375beb4d4423",
+    "order_number": "SO-2026-000420",
+    "commercial_state": "DRAFT",
+    "confirmed_at": null,
+    "cancelled_at": null
+  },
+  "lines": [
+    {
+      "line_number": 1,
+      "quantity": "1.000000",
+      "unit_price_vnd": "230000",
+      "line_total_vnd": "230000"
+    }
+  ],
+  "checks": [
+    {
+      "table": "inventory_movements",
+      "n": 275,
+      "fingerprint": "bfe7a3ee06478a0ef12a9314ea3dd503",
+      "unchangedFromOriginalQA": true
+    },
+    {
+      "table": "inventory_reservations",
+      "n": 70,
+      "fingerprint": "b66afde68d53ee32218e3d5b3c885476",
+      "unchangedFromOriginalQA": true
+    },
+    {
+      "table": "payments",
+      "n": 52,
+      "fingerprint": "a66f1f6de2d725dfcab866dc38c9b3ab",
+      "unchangedFromOriginalQA": true
+    },
+    {
+      "table": "payment_allocations",
+      "n": 50,
+      "fingerprint": "243a99063b53cb1b007e031850f68e98",
+      "unchangedFromOriginalQA": true
+    },
+    {
+      "table": "delivery_verifications",
+      "n": 51,
+      "fingerprint": "82f3c166bbcc6dcd6ea5f205b66faef7",
+      "unchangedFromOriginalQA": true
+    },
+    {
+      "table": "customer_credits",
+      "n": 11,
+      "fingerprint": "d339fb60538b39666081ab0e71ec93f1",
+      "unchangedFromOriginalQA": true
+    }
+  ],
+  "productionAccess": false,
+  "advanceRacesRerun": false
+}

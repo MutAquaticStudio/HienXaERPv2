@@ -104,14 +104,14 @@ describe("grouped operational navigation", () => {
     expect(opener).toHaveFocus();
   });
 
-  it("keeps Vietnamese labels and the authenticated actor/branch intact", () => {
+  it("keeps Vietnamese labels and actor intact without the removed topbar branch label", () => {
     render(shell());
     const sidebar = screen.getByRole("complementary");
     expect(within(sidebar).getByRole("button", { name: "Kho hàng" })).toBeInTheDocument();
     expect(within(sidebar).getByRole("button", { name: "Nhân công & dịch vụ" })).toBeInTheDocument();
     expect(sidebar.textContent).not.toMatch(/\uFFFD|Ã[\u0080-\u00bf]|Â[\u0080-\u00bf]/u);
     expect(screen.getByText("Chủ QA")).toBeInTheDocument();
-    expect(screen.getByText("Chi nhánh QA")).toBeInTheDocument();
+    expect(screen.queryByText("Chi nhánh QA")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Đăng xuất" }).closest("form")).toHaveAttribute("method", "post");
   });
 });

@@ -1,4 +1,3 @@
-import { RecordingScopeNotice } from "@/modules/operations/recording-scope-notice";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { formatQuantity } from "@/lib/core/quantity";
 import { formatBusinessDateTime } from "@/lib/core/business-time";
@@ -80,9 +79,9 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
   if (term) clearMaterialParams.set("q", term);
   const clearMaterialHref = `/admin/inventory${clearMaterialParams.size ? `?${clearMaterialParams}` : ""}`;
 
-  return <>
+  return <div className="page-stack">
     <header className="page-heading"><div><p className="eyebrow">Kho hàng</p><h1>Tồn kho</h1><p className="lede">Theo dõi tồn đã ghi nhận, hàng đã giữ cho đơn bán và lượng còn khả dụng.</p></div><div className="form-actions">{access.permissions.has("roles.manage") && <ButtonLink href="/admin/inventory/warehouses" variant="secondary">Quản lý kho</ButtonLink>}<ButtonLink href="/admin/stock-counts" variant="secondary">Kiểm kho</ButtonLink></div></header>
-    <Link className="button button-secondary" href="/admin/inventory/transfers">Chuyển kho</Link><RecordingScopeNotice branchId={access.branchId} />
+    <Link className="button button-secondary" href="/admin/inventory/transfers">Chuyển kho</Link>
     {query.notice === "threshold-saved" && <p className="form-message success" role="status">Đã lưu ngưỡng cảnh báo.</p>}
     {query.error && <p className="form-message" role="alert">Không thể lưu ngưỡng. Kiểm tra kho, vật tư và số lượng rồi thử lại.</p>}
     <form key={filterContextKey} className="card filter-bar" method="get">{materialId && <input type="hidden" name="material" value={materialId} />}<label>Kho<select name="warehouse" defaultValue={warehouseId ?? ""}><option value="">Tất cả kho</option>{[...warehouses].map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></label><label>Tìm vật tư<input name="q" defaultValue={term} placeholder="Tên vật tư" /></label><button className="button button-secondary" type="submit">Lọc</button></form>
@@ -94,5 +93,5 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
 
     <section className="card"><div className="section-head"><h2>Vị trí kho</h2><StatusBadge tone="info">{positions.length} dòng</StatusBadge></div><div className="table-wrap"><table><thead><tr><th>Kho</th><th>Vật tư</th><th>Tồn đã ghi nhận</th><th>Đã giữ</th><th>Khả dụng</th><th>Giá trị / Giá vốn bình quân</th></tr></thead><tbody>{positions.map((row) => <tr key={`${row.warehouse_id}-${row.material_id}`}><td>{warehouses.get(row.warehouse_id)}</td><td>{materials.get(row.material_id)}</td><td className="mono">{formatQuantity(String(row.on_hand_base_quantity))} {symbols.get(row.base_uom_id)}</td><td className="mono">{formatQuantity(String(row.reserved_base_quantity))}</td><td><strong className="mono">{formatQuantity(String(row.available_base_quantity))}</strong></td><td>{row.inventory_value_vnd == null ? "Ẩn theo quyền" : <span className="mono">{formatVnd(vnd(String(row.inventory_value_vnd)))} · {row.average_cost_vnd_per_base == null ? "Chưa có giá vốn" : `${formatQuantity(row.average_cost_vnd_per_base)} ₫/đơn vị cơ sở`}</span>}</td></tr>)}</tbody></table>{positions.length === 0 && <p className="empty-inline">Chưa có phát sinh kho phù hợp bộ lọc.</p>}</div></section>
     <section className="card inventory-ledger"><div className="section-head"><h2>Phát sinh kho gần nhất</h2><span className="muted">Lưu đầy đủ lịch sử · tối đa 30 dòng</span></div><div className="table-wrap"><table><thead><tr><th>Thời điểm</th><th>Loại</th><th>Vật tư</th><th>Vị trí</th><th>Tăng / giảm</th><th>Nguồn</th></tr></thead><tbody>{movements.map((row) => <tr key={row.id}><td>{formatBusinessDateTime(row.occurred_at)}</td><td>{inventoryMovementLabel(row.movement_type)}</td><td>{materials.get(row.material_id) ?? "Vật tư đang cập nhật"}</td><td>{row.warehouse_id ? warehouses.get(row.warehouse_id) : "Đang giao"}</td><td className="mono">{formatQuantity(String(row.base_quantity_delta))}</td><td>{row.delivery_id ? <Link className="code-link" href={`/admin/deliveries/${row.delivery_id}`}>Phiếu giao</Link> : "Chứng từ kho"}</td></tr>)}</tbody></table></div></section>
-  </>;
+  </div>;
 }

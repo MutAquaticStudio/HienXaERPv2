@@ -51,7 +51,7 @@ export default async function OrderDetailPage({ params, searchParams }: { params
   const warehouses = warehouseResult.data ?? [];
   const availability = access.permissions.has("inventory.read") ? await loadWarehouseAvailability(access.branchId, lines.map(line => line.material_id)) : undefined;
   const query = await searchParams;
-  return <>
+  return <div className="page-stack">
     <header className="page-heading"><div><p className="eyebrow">Đơn bán</p><h1>{order.order_number}</h1><p className="lede">Theo dõi đơn bán, phân nguồn hàng và giao hàng tại một nơi.</p></div><ButtonLink href="/admin/orders" variant="secondary">Về danh sách</ButtonLink></header>
     <SalesOrderCreditOverride orderId={id} />
       <ActionNotice notice={query.notice} error={query.error} />
@@ -72,11 +72,11 @@ export default async function OrderDetailPage({ params, searchParams }: { params
         <p className="muted">Nhập lượng cho các dòng cùng chuyến; để trống dòng chưa giao. Mỗi dòng bán chỉ chọn một phân bổ nguồn hàng trong một phiếu.</p>
         {group.rows.map((allocation) => { const orderLine = lines.find((line) => line.id === allocation.sales_order_line_id); return <div className="field" key={allocation.id}><input type="hidden" name="allocationId" value={allocation.id} /><label htmlFor={"delivery-" + allocation.id}>{orderLine?.material_name_snapshot ?? "Dòng đơn bán"} · {sourceModeLabel(allocation.supply_mode)} · đã phân {formatQuantity(allocation.allocated_base_quantity)} đơn vị cơ sở</label><input id={"delivery-" + allocation.id} name="quantity" inputMode="decimal" /></div>; })}
         <div className="field"><label htmlFor={"schedule-" + group.key}>Lịch giao</label><input id={"schedule-" + group.key} name="scheduledAt" type="datetime-local" /></div>
-        <button className="button button-primary action-full" type="submit">Tạo phiếu giao nhiều dòng</button>
+        <button className="button button-primary action-full" type="submit">Tạo phiếu giao</button>
       </form>)}
       {["DRAFT", "CONFIRMED"].includes(order.commercial_state) && deliveries.length === 0 && access.permissions.has("orders.cancel") && <CancelDocumentForm entityId={order.id} operationId={randomUUID()} state={order.commercial_state} label="Hủy đơn" action={cancelSalesOrderAction} />}
       {order.commercial_state === "CONFIRMED" && allocations.length === 0 && <p className="muted">Chưa có nguồn hàng. Chọn nguồn hoặc đặt NCC từ dòng hàng.</p>}
       {["CANCELLED", "CLOSED"].includes(order.commercial_state) && <p className="muted">Phần thương mại đã đóng; theo dõi giao hàng, thanh toán và ngoại lệ theo nguồn ở trên.</p>}
     </aside></div>
-  </>;
+  </div>;
 }
