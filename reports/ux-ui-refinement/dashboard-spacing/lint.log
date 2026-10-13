@@ -24,4 +24,3 @@ $ eslint .
   14:43  warning  '_args' is defined but never used  @typescript-eslint/no-unused-vars
 
 ✖ 13 problems (0 errors, 13 warnings)
-
