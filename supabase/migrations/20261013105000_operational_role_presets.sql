@@ -33,7 +33,7 @@ cross join lateral unnest(presets.permissions) as p(permission_code);
 -- Preserve the existing invitation implementation, with the same privilege
 -- ceiling already enforced by assign_employee_role. No policy/grant change.
 do $migration$
-declare definition text; anchor text := '  if change_reason is null or char_length(change_reason) < 3 then';
+declare definition text; anchor text := 'if change_reason is null or char_length(change_reason) < 3 then';
 begin
   definition := pg_get_functiondef('public.register_invited_employee(uuid,text,text,uuid,uuid,text,uuid)'::regprocedure);
   if position('role_exceeds_actor_permissions' in definition)=0 then
