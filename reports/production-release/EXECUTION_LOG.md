@@ -27,3 +27,12 @@ Merge,migration đích,deploy/readback sau deploy sẽ được ghi theo kết q
 - Runtime500 log cho deploymentG6k không có bản ghi trong cửa sổ đọc; kiểm HTTP không có5xx. Đây là phạm vi truy vấn log,không suy mọi chức năng đã chạy.
 
 Sao lưu không chạy theo chỉ đạo mới. Không tạo giao dịch tài chính/kho,không chạy2 advance races,không gửi email/invite,không reset mật khẩu hoặc thay secret từ sentinel.
+
+##13/10/2026: chốt PR45 và tiếp nhận lỗi spacing
+
+- PR45 merge68903bb; CI38310446772 đúng merge SHA success. DeploymentFxnSHk READY/Production đúng target; health trên alias trả68903bb.
+-06:38UTC:11 kiểm HTTP/Auth/anonymous boundary đạt; log5xx trong1h không có bản ghi; không ghi tài chính/kho.
+-06:39UTC:DB readbackhist182/latest20261012211058/Owner62/0overgrant/0SO/0PO/2Auth/0Storage.
+-06:38UTC:12.534 tệp gốc/HEAD/branch/default status đối chiếu manifest,0 thay đổi. ORIGINAL_PRESERVATION_FINAL.json.
+- Người dùng đăng nhập thật và browser vào/admin dưới Owner; tổng quan/dữ liệu/phân quyền hoạt động đọc. Không coi tài khoản Owner là kiểm chứng mọi vai trò.
+- Chủ hệ thống chỉ ra hai thẻ Tổng quan thiếu spacing. Tiếp tục sửa trên codex/dashboard-card-spacing, không tuyên bố UI không còn lỗi. Local15 biến thể hiển thị đạt, nguồn tài chính không đổi.

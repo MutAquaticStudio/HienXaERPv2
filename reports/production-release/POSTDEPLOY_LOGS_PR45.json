@@ -1,0 +1,7 @@
+{
+  "checkedAt": "2026-10-13T07:08:01.712225+00:00",
+  "deploymentId": "dpl_FxnSHkLvfVdBAS8p3GgVM3AxyXva",
+  "query": "Vercel status-code 5xx; since 1h; limit 100",
+  "returnedRecords": 0,
+  "scope": "No 5xx in the queried window. Does not prove routes that were not exercised."
+}

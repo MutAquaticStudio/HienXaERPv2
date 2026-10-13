@@ -55,8 +55,8 @@ export function DashboardDetails({
     commissionMetric.quality === "READY" && detail?.commission_detail.quality === "READY";
 
   return (
-    <div className="two-column">
-      <section className="card stack">
+    <div className="two-column dashboard-details">
+      <section className="card card-pad stack">
         <div>
           <p className="eyebrow">Chi phí vận hành</p>
           <h2>Phân bổ theo nhóm</h2>
@@ -84,7 +84,7 @@ export function DashboardDetails({
         )}
       </section>
 
-      <section className="card stack">
+      <section className="card card-pad stack">
         <div>
           <p className="eyebrow">Hoa hồng phải trả</p>
           <h2>Chi tiết theo nhân viên</h2>

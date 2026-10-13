@@ -10,7 +10,8 @@
       "codex/go-live-acceptance": false,
       "codex/remove-opening-pending": false,
       "codex/ux-ui-refinement": false,
-      "codex/production-release-20261013": false
+      "codex/production-release-20261013": false,
+      "codex/dashboard-card-spacing": false
     }
   }
 }

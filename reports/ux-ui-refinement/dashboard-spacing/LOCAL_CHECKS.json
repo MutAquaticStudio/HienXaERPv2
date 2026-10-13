@@ -1,0 +1,40 @@
+{
+  "checkedAt": "2026-10-13T07:09:09.974955+00:00",
+  "baseline": "68903bb25b27ba4a87e500375d0186b82184e972",
+  "changedRuntimeFiles": [
+    "src/app/globals.css",
+    "src/components/dashboard/dashboard-details.tsx"
+  ],
+  "commands": [
+    {
+      "command": "pnpm lint",
+      "exitCode": 0,
+      "errors": 0,
+      "existingWarnings": 13
+    },
+    {
+      "command": "pnpm typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm test src/modules/reports/dashboard-snapshot-cutoff.test.ts",
+      "exitCode": 0,
+      "passed": 6
+    },
+    {
+      "command": "pnpm build",
+      "exitCode": 0
+    }
+  ],
+  "sourceComponentAndCssSha256": "221161528afc8ccdd28ebdf2d2203bb3ce0d16ef5df48626df5b2bb240fe42d2",
+  "schemaApiRpcCalculationsAndPermissionsChanged": false,
+  "advanceRacesRerun": false,
+  "financialIntegrationRetest": "Not rerun for this presentation-only diff; prior QA evidence kept in its original scope.",
+  "rawLogSha256": {
+    "related-tests.log": "f567638e68969f1f29010ba6735b6c22705be5928042e5c9cd8b173a85e731cd",
+    "lint.log": "e51db408429d738877125d4eb2c27504a8e1ae3134c56fa123f9ed9823f5c958",
+    "typecheck.log": "99d7c2179cdd316467c51f37901025a0753453664d741214ba56fc631fa6c0bc",
+    "build.log": "4bdbe47e16aacbfbc4921063b46b12e351ea9ee4833f2f7b8b0684ed608556a0"
+  },
+  "logFormatting": "Saved readable logs normalize carriage returns/trailing whitespace; original raw log hashes retained."
+}

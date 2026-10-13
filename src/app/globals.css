@@ -560,6 +560,11 @@ tbody tr:hover { background: #f8fbff; }
   margin-top: 1rem;
 }
 
+.dashboard-details { margin-top: 22px; }
+.dashboard-details > .card > :last-child { margin-bottom: 0; }
+.dashboard-details .rank-list { padding: 0; }
+.dashboard-details .quality-callout { margin: 0; }
+
 .result-chart {
   margin-top: 1rem;
   background:

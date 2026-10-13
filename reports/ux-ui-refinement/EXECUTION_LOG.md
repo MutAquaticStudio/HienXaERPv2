@@ -43,3 +43,10 @@ Sau CI543a93e và af42bb5 đều đạt, kiểm viewport bổ sung phát hiện 
 Đã kiểm lại7 viewport:0 clipping,0 document overflow, text các chỉ số không đổi. Typecheck, lint, build sau sửa đều exit0 (LOCAL_CHECKS.json). Sau sửa MetricNumber chỉ chạy lại đọc/hiển thị và CI; không replay ca ghi sổ hoặc hai race bị loại.
 
 CI sau sửa1bb38ab đạt: run38285885758,91 tệp/619 unit,8 Node, typecheck/lint/build đều success. Đã restart preview với health SHA1bb38ab; chụp lại24 màn hình và7 viewport trên source sạch. Runtime hash `b56c4ace29f2690f5fb78bb9acfb9327861488346c43254d4fdcfd3dedbb600c` đóng dấu bản cuối. Commit kế tiếp chỉ chốt hồ sơ; CI HEAD mới phải thành công trước bàn giao và kết quả cuối được ghi trực tiếp trong mô tả PR44. Không chạy thêm ca ghi sổ.
+
+##13/10/2026: lỗi khoảng cách do chủ hệ thống chỉ ra
+
+- Baseline Production68903bb; hai thẻ thiếu padding và margin với biểu đồ. Lần khảo sát trước bỏ sót; ảnh/đo0px được giữ.
+- Sửa DashboardDetails/globals.css trong worktree riêng; không đổi nghiệp vụ hoặc schema.
+-15 ca component/CSS thực ở390/631/1280 đạt; local lint/type/6 dashboard tests/build đạt. Xem dashboard-spacing/.
+- Bản sửa chưa lên Production tại thời điểm ghi hàng này; kết quả CI/merge/deploy cập nhật theo thao tác thực.

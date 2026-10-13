@@ -1,0 +1,83 @@
+{
+  "status": "PASS_POSTDEPLOY_HTTP_AUTH_CONNECTIVITY_AND_ANONYMOUS_BOUNDARIES",
+  "checkedAt": "2026-10-13T06:38:56.316Z",
+  "commit": "68903bb25b27ba4a87e500375d0186b82184e972",
+  "url": "https://hien-xa-erp-v2-nu.vercel.app",
+  "projectRef": "nbwynrwkdbtfsitafsxa",
+  "checks": [
+    {
+      "path": "/api/health",
+      "http": 200,
+      "body": {
+        "status": "ok",
+        "service": "hien-xa-erp-v2",
+        "buildSha": "68903bb25b27ba4a87e500375d0186b82184e972",
+        "requiredMigration": "20261012155947",
+        "gpsDevice": "DEFERRED",
+        "legalInvoice": "DEFERRED"
+      }
+    },
+    {
+      "path": "/login",
+      "http": 200,
+      "location": null,
+      "streamRedirect": false
+    },
+    {
+      "path": "/work/login",
+      "http": 200,
+      "location": null,
+      "streamRedirect": false
+    },
+    {
+      "path": "/customer/login",
+      "http": 200,
+      "location": null,
+      "streamRedirect": false
+    },
+    {
+      "path": "/admin",
+      "http": 200,
+      "location": null,
+      "streamRedirect": true
+    },
+    {
+      "path": "/work",
+      "http": 200,
+      "location": null,
+      "streamRedirect": true
+    },
+    {
+      "path": "/customer",
+      "http": 200,
+      "location": null,
+      "streamRedirect": true
+    },
+    {
+      "path": "/api/access/context",
+      "http": 401,
+      "location": null,
+      "streamRedirect": false
+    },
+    {
+      "path": "/api/finance/obligations?side=AR&party=afb23c6f-3ea7-4477-b53f-421b78aee375",
+      "http": 307,
+      "location": "/login",
+      "streamRedirect": false
+    },
+    {
+      "service": "Production Auth settings",
+      "http": 200,
+      "emailEnabled": true
+    },
+    {
+      "service": "Production anonymous customer read",
+      "http": 401,
+      "rows": null,
+      "expected": "No access to the existing business customer"
+    }
+  ],
+  "financialInventoryWrites": false,
+  "authenticatedProductionBrowser": "NOT_PERFORMED_NO_EXISTING_BUSINESS_LOGIN_CREDENTIAL_AVAILABLE",
+  "actualSecretKeyValue": "Not read or rotated; existing Vercel sensitive configuration retained"
+}
