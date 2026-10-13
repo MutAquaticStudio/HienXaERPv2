@@ -1,0 +1,16 @@
+{
+  "checkedAt": "2026-10-13T07:23:11.051590+00:00",
+  "baselineCommit": "926896205da3fa95a4dfa40b6126e7b944efdf13",
+  "runtimeChanged": [
+    "src/components/app-shell.tsx"
+  ],
+  "sourceSha256": "ba4b96b4c870fb31faa1b7bd79121d38c904220dfe31b4de05dc7301a446b620",
+  "lintExit": 0,
+  "typecheckExit": 0,
+  "appShellTestsExit": 0,
+  "appShellTestsPassed": 16,
+  "build": "IN_PROGRESS_NOT_YET_CLASSIFIED",
+  "productionBrowser": "PENDING_REAL_POSTDEPLOY_CHECK",
+  "businessOrSchemaChanged": false,
+  "advanceRacesRerun": false
+}

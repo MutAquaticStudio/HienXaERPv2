@@ -111,8 +111,7 @@ export function AppShell({ surface, children, permissions, actorName, branchName
         }
       }}>
         <div className="brand">
-          <span className="brand-mark" aria-hidden="true">HX</span>
-          <div><strong>HIỀN XA ERP</strong><span>{surfaceNames[surface]}</span></div>
+          <div><strong>Hiền Xa ERP</strong></div>
           <button ref={closeButton} className="mobile-close" type="button" aria-label="Đóng menu" onClick={closeMenu}><X size={22} /></button>
         </div>
         <nav className="nav-list" aria-label="Các phân hệ">
