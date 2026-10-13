@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { permissionLabel } from "@/components/access/presentation";
 import { roleLabel } from "@/components/access/presentation";
 import { InviteEmployeeForm } from "@/components/access/invite-employee-form";
@@ -32,14 +33,14 @@ export default async function AccessManagementPage({ searchParams }: { searchPar
   const roleRows = roles.data as unknown as RoleRow[];
   const permissionRows = permissions.data as PermissionRow[];
   const grantRows = grants.data as GrantRow[];
-  const roleOptions = roleRows
-    .filter((role) => role.role_permissions.every((permission) => actor.permissions.has(permission.permission_code)))
-    .map((role) => ({ id: role.id, name: role.name }));
+  const assignableRoles = roleRows.filter((role) => role.role_permissions.every((permission) => actor.permissions.has(permission.permission_code)));
+  const roleOptions = assignableRoles.map((role) => ({ id: role.id, name: role.name }));
   const permissionOptions = permissionRows.filter((permission) => actor.permissions.has(permission.code));
 
-  return <>
+  return <div className="page-stack">
     <header className="page-heading"><div><p className="eyebrow">Quản trị truy cập</p><h1>Nhân viên & quyền</h1><p className="lede">Đang quản lý {actor.branchName}. Chuyển chi nhánh để quản lý phạm vi khác; không tự thay đổi quyền của chính mình.</p></div><span className="scope-chip">{CORE_LIST_PAGE_SIZE} nhân viên / trang</span></header>
     <form className="filter-bar"><label>Tìm nhân viên<input name="q" defaultValue={list.q} placeholder="Mã hoặc tên nhân viên" /></label><button className="button button-secondary" type="submit">Tìm kiếm</button></form>
+    <details className="card card-pad"><summary>Vai trò và quyền có thể cấp</summary><p className="muted">Quyền áp dụng tại chi nhánh được chọn. Khách hàng dùng cổng riêng, không dùng vai trò nhân viên. Việc bổ sung danh mục không tự đổi quyền của ai.</p><div className="table-wrap"><table><thead><tr><th>Vai trò</th><th>Quyền hiện có</th></tr></thead><tbody>{assignableRoles.map((role) => <tr key={role.id}><td>{roleLabel(role.name)}</td><td>{role.role_permissions.map((permission) => permissionLabel(permissionRows.find((item) => item.code === permission.permission_code)?.name ?? permission.permission_code)).join(", ") || "Chưa có quyền"}</td></tr>)}</tbody></table></div></details>
     <section className="card card-pad"><h2>Mời nhân viên</h2><InviteEmployeeForm branches={branches.data} roles={roleOptions} /></section>
     {employeeRows.map((employee) => {
       const hasActiveCurrentAccess = employee.employee_branch_access.some((assignment) => assignment.branch_id === actor.branchId && assignment.active);
@@ -52,10 +53,10 @@ export default async function AccessManagementPage({ searchParams }: { searchPar
           const canAct = employee.active && employee.id !== actor.employeeId && assignment.branch_id === actor.branchId;
           return <tr key={assignment.id}><td>{assignment.branches?.name ?? "Không có quyền xem"}</td><td>{assignment.roles ? roleLabel(assignment.roles.name) : "Không có quyền xem"}</td><td>{explicit.length ? explicit.map(code => permissionRows.find(permission => permission.code === code)?.name ? permissionLabel(permissionRows.find(permission => permission.code === code)!.name) : "Quyền bổ sung").join(", ") : "Không có"}</td><td>{assignment.active ? "Đang có hiệu lực" : "Đã thu hồi"}</td><td>{canAct && assignment.active && <div className="action-cluster"><details><summary>Quyền riêng</summary><ExplicitPermissionForm employeeId={employee.id} branchId={assignment.branch_id} permissions={assignableExplicit} selected={explicit} /></details><details><summary>Thu hồi</summary><RevokeAccessForm accessId={assignment.id} /></details></div>}{canAct && !assignment.active && !hasActiveCurrentAccess && <details><summary>Kích hoạt lại</summary><ReactivateAccessForm accessId={assignment.id} /></details>}</td></tr>;
         })}</tbody></table></div>
-        {employee.active && employee.id !== actor.employeeId && <details><summary>Cấp / đổi vai trò tại {actor.branchName}</summary><ManageAccessForm employeeId={employee.id} branches={branches.data} roles={roleOptions} /></details>}
+        {employee.active && employee.id !== actor.employeeId && <details><summary>Cấp / đổi vai trò tại {actor.branchName}</summary><ManageAccessForm operationId={randomUUID()} employeeId={employee.id} branches={branches.data} roles={roleOptions} /></details>}
       </section>;
     })}
     {!employeeRows.length && <p className="empty-inline">Không có nhân viên phù hợp trong phạm vi bạn được xem.</p>}
     <ListPager page={list.page} total={employees.count ?? 0} params={{ q: list.q }} />
-  </>;
+  </div>;
 }

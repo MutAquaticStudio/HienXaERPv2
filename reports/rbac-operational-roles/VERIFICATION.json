@@ -1,0 +1,21 @@
+{
+  "checkedAt": "2026-10-13T12:02:44.240161+00:00",
+  "migrationSha256": "85bf08855ff57a0c74aef3e9c2eb67c827a2523ae23f65fbe8c1347e62942c74",
+  "localChecks": {
+    "lint": "PASS",
+    "typecheck": "PASS",
+    "tests": 45,
+    "build": "PASS"
+  },
+  "sqlRpcChecks": 17,
+  "realJwtRoles": 8,
+  "browserRoles": 8,
+  "businessTablesUnchanged": 117,
+  "ci": "PENDING_FINAL_HEAD",
+  "productionMigration": "NOT_APPLIED_YET",
+  "productionDeploy": "NOT_DEPLOYED_YET",
+  "excludedAdvanceRaceCommands": [
+    "scripts/qa/remediation/package4-advance-race.mjs --mode different-intents",
+    "scripts/qa/remediation/package4-advance-race.mjs --mode same-intent"
+  ]
+}

@@ -1,3 +1,4 @@
+import rolePresets from "./default-role-presets.json";
 import { AppError } from "@/lib/core/errors";
 
 const destinations = [
@@ -25,7 +26,9 @@ const destinations = [
   ["work.read", "/work"],
 ] as const;
 
-export function internalLandingPath(permissions: ReadonlySet<string>): string {
+export function internalLandingPath(permissions: ReadonlySet<string>, roleName?: string): string {
+  const preset = rolePresets.find((role) => role.name === roleName);
+  if (preset && permissions.has(preset.landingPermission)) return preset.landingPath;
   const destination = destinations.find(([permission]) => permissions.has(permission));
   if (destination) return destination[1];
   throw new AppError({ code: "FORBIDDEN", message: "Bạn chưa được cấp quyền vào khu vực làm việc. Vui lòng liên hệ quản trị viên.", status: 403 });

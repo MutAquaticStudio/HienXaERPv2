@@ -1,0 +1,166 @@
+[
+  {
+    "code": "builtin_manager",
+    "name": "Quản lý",
+    "landingPermission": "dashboard.read",
+    "landingPath": "/admin",
+    "permissions": [
+      "catalog.read",
+      "customers.read",
+      "suppliers.read",
+      "orders.read",
+      "quotation.read",
+      "pricing.read",
+      "purchasing.read",
+      "purchasing.price.read",
+      "inventory.read",
+      "inventory.cost.read",
+      "delivery.read",
+      "delivery.verify",
+      "delivery.exception",
+      "workforce.read",
+      "work.verify",
+      "service.read",
+      "service.verify",
+      "compensation.read",
+      "compensation.approve",
+      "finance.ar.read",
+      "finance.ap.read",
+      "finance.expense.read",
+      "finance.profit.read",
+      "dashboard.read"
+    ]
+  },
+  {
+    "code": "builtin_sales",
+    "name": "Bán hàng",
+    "landingPermission": "orders.read",
+    "landingPath": "/admin/orders",
+    "permissions": [
+      "catalog.read",
+      "customers.read",
+      "customers.manage",
+      "pricing.read",
+      "orders.read",
+      "orders.create",
+      "orders.confirm",
+      "orders.cancel",
+      "quotation.read",
+      "quotation.create",
+      "quotation.send",
+      "delivery.read",
+      "inventory.read",
+      "finance.ar.read"
+    ]
+  },
+  {
+    "code": "builtin_purchasing",
+    "name": "Mua hàng",
+    "landingPermission": "purchasing.read",
+    "landingPath": "/admin/purchase-orders",
+    "permissions": [
+      "catalog.read",
+      "suppliers.read",
+      "suppliers.manage",
+      "orders.read",
+      "purchasing.read",
+      "purchasing.create",
+      "purchasing.confirm",
+      "purchasing.cancel",
+      "purchasing.price.read",
+      "purchasing.price.manage",
+      "delivery.read",
+      "inventory.read",
+      "finance.ap.read"
+    ]
+  },
+  {
+    "code": "builtin_warehouse",
+    "name": "Nhân viên kho",
+    "landingPermission": "inventory.read",
+    "landingPath": "/admin/inventory",
+    "permissions": [
+      "catalog.read",
+      "customers.read",
+      "suppliers.read",
+      "orders.read",
+      "purchasing.read",
+      "inventory.read",
+      "inventory.receive",
+      "inventory.reserve",
+      "inventory.count",
+      "delivery.read",
+      "delivery.handoff"
+    ]
+  },
+  {
+    "code": "builtin_dispatch",
+    "name": "Điều phối",
+    "landingPermission": "delivery.read",
+    "landingPath": "/admin/dispatch",
+    "permissions": [
+      "catalog.read",
+      "customers.read",
+      "suppliers.read",
+      "orders.read",
+      "inventory.read",
+      "delivery.read",
+      "delivery.create",
+      "delivery.assign",
+      "delivery.exception",
+      "workforce.read",
+      "work.manage",
+      "service.read"
+    ]
+  },
+  {
+    "code": "builtin_accountant",
+    "name": "Kế toán",
+    "landingPermission": "finance.ar.read",
+    "landingPath": "/admin/receivables",
+    "permissions": [
+      "catalog.read",
+      "customers.read",
+      "suppliers.read",
+      "orders.read",
+      "purchasing.read",
+      "purchasing.price.read",
+      "delivery.read",
+      "inventory.read",
+      "inventory.cost.read",
+      "finance.ar.read",
+      "finance.ar.adjust",
+      "finance.ap.read",
+      "finance.ap.adjust",
+      "finance.account.manage",
+      "finance.payment.post",
+      "finance.payment.reverse",
+      "finance.payment_notice.review",
+      "finance.reconcile",
+      "finance.expense.read",
+      "finance.expense.manage",
+      "finance.profit.read",
+      "compensation.read"
+    ]
+  },
+  {
+    "code": "builtin_worker",
+    "name": "Thợ",
+    "landingPermission": "work.read",
+    "landingPath": "/work",
+    "permissions": [
+      "work.read",
+      "work.claim"
+    ]
+  },
+  {
+    "code": "builtin_driver",
+    "name": "Tài xế",
+    "landingPermission": "work.read",
+    "landingPath": "/work",
+    "permissions": [
+      "work.read",
+      "work.claim"
+    ]
+  }
+]

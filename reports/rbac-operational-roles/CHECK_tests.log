@@ -1,0 +1,11 @@
+$ vitest run src/components/access/manage-access-form.test.tsx src/lib/auth/invite-employee.test.ts src/lib/access/default-role-presets.test.ts src/lib/access/landing.test.ts src/lib/access/landing-workspaces.test.ts src/lib/access/policy.test.ts
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+
+ RUN  v5.0.0 <release-worktree>
+
+
+ Test Files  6 passed (6)
+      Tests  45 passed (45)
+   Start at  18:58:44
+   Duration  1.08s (environment 74%, setup 15%, transform 6%, import 3%, tests 2%, worker 1%)
+

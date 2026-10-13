@@ -1,0 +1,130 @@
+{
+  "checkedAt": "2026-10-13T11:52:50.684Z",
+  "source": "36a3717 plus RBAC working changes",
+  "schema": 189,
+  "ownerPicker": [
+    "Chọn vai trò",
+    "Bán hàng",
+    "Chỉ lập nháp kiểm thử",
+    "Chủ doanh nghiệp kiểm thử cô lập",
+    "Kế toán",
+    "Mua hàng",
+    "Nhân viên kho",
+    "QA cổng thợ tối thiểu",
+    "QA khắc phục finance",
+    "QA khắc phục purchasing",
+    "QA khắc phục sales",
+    "QA khắc phục warehouse",
+    "QA khắc phục worker",
+    "QA nghiệm thu finance",
+    "QA nghiệm thu purchasing",
+    "QA nghiệm thu warehouse",
+    "Quản lý",
+    "Thợ",
+    "Tài xế",
+    "Xác nhận kiểm thử",
+    "Điều phối"
+  ],
+  "selectedWorker": {
+    "documentWidth": 1280,
+    "email": "",
+    "text": "Thợ",
+    "viewport": 1280
+  },
+  "roleCases": [
+    {
+      "role": "builtin_manager",
+      "label": "Quản lý",
+      "landing": "http://localhost:3116/admin",
+      "heading": "Tổng quan",
+      "roleChangedByOwnerForm": true,
+      "runnerUsesOwnSession": true
+    },
+    {
+      "role": "builtin_sales",
+      "label": "Bán hàng",
+      "landing": "http://localhost:3116/admin/orders",
+      "actor": "Nhân viên kiểm thử noConfirmTN",
+      "documentWidth": 1280,
+      "hasAdminRoleLink": false,
+      "heading": "Đơn bán",
+      "viewport": 1280,
+      "roleChangedByOwnerForm": true,
+      "runnerUsesOwnSession": true
+    },
+    {
+      "role": "builtin_purchasing",
+      "label": "Mua hàng",
+      "landing": "http://localhost:3116/admin/purchase-orders",
+      "actor": "Nhân viên kiểm thử noConfirmTN",
+      "documentWidth": 1280,
+      "hasAdminRoleLink": false,
+      "heading": "Đơn mua",
+      "viewport": 1280,
+      "roleChangedByOwnerForm": true,
+      "runnerUsesOwnSession": true
+    },
+    {
+      "role": "builtin_warehouse",
+      "label": "Nhân viên kho",
+      "landing": "http://localhost:3116/admin/inventory",
+      "actor": "Nhân viên kiểm thử noConfirmTN",
+      "documentWidth": 1280,
+      "hasAdminRoleLink": false,
+      "heading": "Tồn kho",
+      "viewport": 1280,
+      "roleChangedByOwnerForm": true,
+      "runnerUsesOwnSession": true
+    },
+    {
+      "role": "builtin_dispatch",
+      "label": "Điều phối",
+      "landing": "http://localhost:3116/admin/dispatch",
+      "actor": "Nhân viên kiểm thử noConfirmTN",
+      "documentWidth": 1280,
+      "hasAdminRoleLink": false,
+      "heading": "Bảng phân giao",
+      "viewport": 1280,
+      "roleChangedByOwnerForm": true,
+      "runnerUsesOwnSession": true
+    },
+    {
+      "role": "builtin_accountant",
+      "label": "Kế toán",
+      "landing": "http://localhost:3116/admin/receivables",
+      "actor": "Nhân viên kiểm thử noConfirmTN",
+      "documentWidth": 1280,
+      "hasAdminRoleLink": false,
+      "heading": "Phải thu khách hàng",
+      "viewport": 1280,
+      "roleChangedByOwnerForm": true,
+      "runnerUsesOwnSession": true
+    },
+    {
+      "role": "builtin_worker",
+      "label": "Thợ",
+      "landing": "http://localhost:3116/work",
+      "documentWidth": 1280,
+      "hasAdminRoleLink": false,
+      "heading": "Tiếp tục việc đang làm",
+      "viewport": 1280,
+      "roleChangedByOwnerForm": true,
+      "runnerUsesOwnSession": true
+    },
+    {
+      "role": "builtin_driver",
+      "label": "Tài xế",
+      "landing": "http://localhost:3116/work",
+      "documentWidth": 1280,
+      "hasAdminRoleLink": false,
+      "heading": "Tiếp tục việc đang làm",
+      "viewport": 1280,
+      "roleChangedByOwnerForm": true,
+      "runnerUsesOwnSession": true
+    }
+  ],
+  "actualRoleChanges": "Owner form /server action/RPC on disposable QA, readback in separate runner session using localhost versus127.0.0.1 cookies",
+  "financialInventoryPostings": false,
+  "productionAccess": false,
+  "invitationEmailsSent": false
+}

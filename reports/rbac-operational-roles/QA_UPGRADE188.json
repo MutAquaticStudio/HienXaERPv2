@@ -1,0 +1,26 @@
+{
+  "status": "PASS_ISOLATED_QA_UPGRADED_TO_FEATURE188",
+  "database": "hx_rbac_roles_20261013",
+  "host": "127.0.0.1",
+  "port": 49760,
+  "before": {
+    "n": 186,
+    "latest": "20261012110100"
+  },
+  "after": {
+    "n": 188,
+    "latest": "20261012211058"
+  },
+  "applied": [
+    {
+      "file": "20261012155947_retire_opening_pending_rule.sql",
+      "sha256": "ab182d5980172ed2cdd472c9e0087a907cecf5a61f8221427e91cf80b05efd5f"
+    },
+    {
+      "file": "20261012211058_align_business_api_table_privileges.sql",
+      "sha256": "42ebcd9e8a0ec9ff4fff33020140e00668fb2f3b5da56c70aedea56eff017d29"
+    }
+  ],
+  "productionAccess": "NONE",
+  "originalQADatabaseChanged": false
+}

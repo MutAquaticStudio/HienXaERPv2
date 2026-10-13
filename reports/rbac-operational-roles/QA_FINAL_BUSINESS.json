@@ -1,0 +1,604 @@
+{
+  "status": "PASS_BUSINESS_ROWS_PRESERVED_AFTER_RBAC_QA",
+  "checkedAt": "2026-10-13T12:01:13.783Z",
+  "schema": 189,
+  "database": "hx_rbac_roles_20261013",
+  "checks": [
+    {
+      "table": "advance_allocations",
+      "rows": 6,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "advances",
+      "rows": 11,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "branches",
+      "rows": 15,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "cash_opening_balances",
+      "rows": 2,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "command_receipts",
+      "rows": 9142,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "commission_reconciliation_cases",
+      "rows": 3,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "commission_review_resolutions",
+      "rows": 3,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "compensation_manual_bases",
+      "rows": 3,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "compensation_recognition_policies",
+      "rows": 3,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "compensation_rules",
+      "rows": 7,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "conversation_participants",
+      "rows": 6,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "conversations",
+      "rows": 3,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "credit_commitments",
+      "rows": 69,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "customer_credit_funds",
+      "rows": 11,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "customer_credit_settlements",
+      "rows": 5,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "customer_credits",
+      "rows": 11,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "customer_portal_memberships",
+      "rows": 4,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "customer_sites",
+      "rows": 82,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "customers",
+      "rows": 95,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "deliveries",
+      "rows": 78,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "delivery_assignments",
+      "rows": 76,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "delivery_expense_sources",
+      "rows": 4,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "delivery_handoff_lines",
+      "rows": 66,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "delivery_handoffs",
+      "rows": 65,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "delivery_lines",
+      "rows": 79,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "delivery_result_lines",
+      "rows": 54,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "delivery_results",
+      "rows": 53,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "delivery_verification_lines",
+      "rows": 52,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "delivery_verifications",
+      "rows": 51,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "direct_cost_entries",
+      "rows": 70,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "earning_events",
+      "rows": 8,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "employees",
+      "rows": 15,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "evidence_objects",
+      "rows": 0,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "expense_categories",
+      "rows": 4,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "expenses",
+      "rows": 1006,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "finance_accounts",
+      "rows": 38,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "gps_positions",
+      "rows": 0,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "gps_tracking_sessions",
+      "rows": 0,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "inventory_movements",
+      "rows": 275,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "inventory_opening_sources",
+      "rows": 4,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "inventory_reservations",
+      "rows": 70,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "inventory_stock_thresholds",
+      "rows": 1,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "invoice_adjustment_drafts",
+      "rows": 0,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "invoice_coverage",
+      "rows": 1,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "invoice_draft_lines",
+      "rows": 1,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "invoice_intents",
+      "rows": 1,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "machines",
+      "rows": 0,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "material_groups",
+      "rows": 1,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "material_uom_conversions",
+      "rows": 3,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "materials",
+      "rows": 79,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "messages",
+      "rows": 5,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "opening_balance_sources",
+      "rows": 5,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "payable_adjustments",
+      "rows": 7,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "payable_obligations",
+      "rows": 1103,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "payment_allocations",
+      "rows": 50,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "payment_notice_match_reversals",
+      "rows": 1,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "payment_notice_matches",
+      "rows": 3,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "payment_notice_review_events",
+      "rows": 2,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "payment_notices",
+      "rows": 2,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "payment_reconciliation_matches",
+      "rows": 2,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "payments",
+      "rows": 52,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "permissions",
+      "rows": 62,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "portal_evidence_objects",
+      "rows": 2,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "pricing_rules",
+      "rows": 81,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "purchase_invoice_registry",
+      "rows": 0,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "purchase_order_lines",
+      "rows": 104,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "purchase_orders",
+      "rows": 104,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "purchase_price_rules",
+      "rows": 78,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "purchase_receipt_lines",
+      "rows": 78,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "purchase_receipts",
+      "rows": 78,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "quotation_acceptances",
+      "rows": 1,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "quotation_change_requests",
+      "rows": 0,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "quotation_lines",
+      "rows": 3,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "quotation_pdf_artifacts",
+      "rows": 0,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "quotation_revisions",
+      "rows": 3,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "quotations",
+      "rows": 2,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "receivable_adjustments",
+      "rows": 17,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "receivable_obligations",
+      "rows": 1054,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "report_export_jobs",
+      "rows": 2,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "return_cases",
+      "rows": 19,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "revenue_adjustments",
+      "rows": 8,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "revenue_entries",
+      "rows": 50,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "route_plan_stops",
+      "rows": 4,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "route_plans",
+      "rows": 2,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "routing_settings",
+      "rows": 0,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "sales_order_credit_overrides",
+      "rows": 0,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "sales_order_lines",
+      "rows": 80,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "sales_orders",
+      "rows": 75,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "service_jobs",
+      "rows": 1005,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "service_verifications",
+      "rows": 1003,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "service_work_logs",
+      "rows": 1003,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "stock_count_lines",
+      "rows": 6,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "stock_count_observations",
+      "rows": 6,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "stock_counts",
+      "rows": 6,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "supplier_contacts",
+      "rows": 0,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "supplier_credit_funds",
+      "rows": 4,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "supplier_credit_settlements",
+      "rows": 5,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "supplier_document_lines",
+      "rows": 3,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "supplier_documents",
+      "rows": 3,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "supplier_fulfillment_lines",
+      "rows": 10,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "supplier_fulfillments",
+      "rows": 10,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "supplier_return_cases",
+      "rows": 5,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "supplier_return_credits",
+      "rows": 5,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "supplier_return_events",
+      "rows": 10,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "suppliers",
+      "rows": 15,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "supply_allocations",
+      "rows": 62,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "units_of_measure",
+      "rows": 80,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "vehicles",
+      "rows": 12,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "warehouse_transfer_events",
+      "rows": 7,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "warehouse_transfers",
+      "rows": 2,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "warehouses",
+      "rows": 20,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "work_item_assignments",
+      "rows": 1014,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "work_item_heartbeats",
+      "rows": 1,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "work_item_results",
+      "rows": 1006,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "work_item_verifications",
+      "rows": 1003,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "work_items",
+      "rows": 1011,
+      "fingerprintUnchanged": true
+    },
+    {
+      "table": "work_result_portal_evidence",
+      "rows": 0,
+      "fingerprintUnchanged": true
+    }
+  ],
+  "fixtureMetadataExclusions": [
+    "roles",
+    "role_permissions",
+    "employee_branch_access",
+    "employee_permission_grants",
+    "audit_events"
+  ],
+  "activeRoleForRunner": 1,
+  "financialInventoryWrites": false,
+  "invitationEmailsSent": false,
+  "productionAccess": false
+}

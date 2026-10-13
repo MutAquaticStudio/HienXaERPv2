@@ -4,5 +4,5 @@ import { redirect } from "next/navigation";
 
 export default async function Home() {
   const access = await requireInternalAccess();
-  redirect(internalLandingPath(access.permissions));
+  redirect(internalLandingPath(access.permissions, access.roleName));
 }
