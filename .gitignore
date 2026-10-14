@@ -13,3 +13,6 @@ test-results/
 .pnpm-store/
 .vercel
 .env*
+
+# Private QA downloads/screenshots stay local; only synthetic PDF samples are published.
+reports/document-pdf-forms/qa/

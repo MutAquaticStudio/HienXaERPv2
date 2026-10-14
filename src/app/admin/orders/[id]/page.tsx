@@ -52,7 +52,7 @@ export default async function OrderDetailPage({ params, searchParams }: { params
   const availability = access.permissions.has("inventory.read") ? await loadWarehouseAvailability(access.branchId, lines.map(line => line.material_id)) : undefined;
   const query = await searchParams;
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Đơn bán</p><h1>{order.order_number}</h1><p className="lede">Theo dõi đơn bán, phân nguồn hàng và giao hàng tại một nơi.</p></div><ButtonLink href="/admin/orders" variant="secondary">Về danh sách</ButtonLink></header>
+    <header className="page-heading"><div><p className="eyebrow">Đơn bán</p><h1>{order.order_number}</h1><p className="lede">Theo dõi đơn bán, phân nguồn hàng và giao hàng tại một nơi.</p></div><div className="inline-actions"><ButtonLink href={`/api/orders/${order.id}/pdf`} variant="secondary">Tải PDF đơn bán</ButtonLink><ButtonLink href="/admin/orders" variant="secondary">Về danh sách</ButtonLink></div></header>
     <SalesOrderCreditOverride orderId={id} />
       <ActionNotice notice={query.notice} error={query.error} />
     <CloseRemainingForm orderId={order.id} commercialState={order.commercial_state} fulfillmentState={order.fulfillment_state} canClose={access.permissions.has("orders.cancel")} />

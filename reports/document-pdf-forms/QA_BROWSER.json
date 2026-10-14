@@ -1,0 +1,28 @@
+{
+  "status": "PASS_OWNER_QA_BROWSER_DOWNLOADS",
+  "pages": [
+    "Sales order detail",
+    "Purchase order detail",
+    "Delivery detail"
+  ],
+  "downloads": [
+    "SO-QA.pdf",
+    "PO-QA.pdf",
+    "DL-QA.pdf"
+  ],
+  "source": "Existing native QA plus real managed QA Auth",
+  "ui": {
+    "header": {
+      "height": 103.1875,
+      "width": 923,
+      "x": 308,
+      "y": 108
+    },
+    "height": 720,
+    "pageOverflow": false,
+    "width": 1280
+  },
+  "financialOrInventoryActions": false,
+  "productionAccess": false,
+  "rawScreenshots": "Local private evidence; not included in Git"
+}
