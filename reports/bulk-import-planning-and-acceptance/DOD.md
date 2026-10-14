@@ -1,6 +1,6 @@
 # DOD — ứng viên bulk import, trạng thái 14/10/2026
 
-Trạng thái chung: **PR NHÁP #50; CI đã đạt trên commit mã `9d230f6`; CHƯA NGHIỆM THU QA/TRÌNH DUYỆT, CHƯA PHÁT HÀNH.** Hai cờ tính năng mặc định tắt.
+Trạng thái chung: **PR NHÁP #50; CI run #189 đã đạt trên head `d656ed1` (bao gồm toàn bộ mã tại `9d230f6`); CHƯA NGHIỆM THU QA/REVIEW ĐỘC LẬP, CHƯA PHÁT HÀNH.** Hai cờ tính năng mặc định tắt.
 
 - [x] Checkout gốc và thay đổi local được giữ nguyên; làm việc trong worktree riêng.
 - [x] Nền đã xác minh: `origin/main` `013093134d16d4157d761a748090933a2cd6fc87`, có merge PR49.
@@ -19,8 +19,8 @@ Trạng thái chung: **PR NHÁP #50; CI đã đạt trên commit mã `9d230f6`; 
 - [ ] Browser UAT với tài khoản đúng vai trò SO/PO và Supabase Auth/Storage QA thật.
 - [ ] Kiểm thử upload/tải lại/mất phản hồi trên browser; desktop/mobile.
 - [ ] Xác nhận cấu hình môi trường QA, feature flags, cron retention và phục hồi tệp qua Storage thật.
-- [x] PR nháp #50; CI GitHub run #188 đạt trên commit mã `9d230f6` (lint, typecheck, test, build).
-- [ ] Review độc lập và CI lại sau cập nhật tài liệu/commit cuối.
+- [x] PR nháp #50; CI GitHub run #189 đạt trên head `d656ed1` (lint, typecheck, 669 test, source/evidence tests, build).
+- [ ] Review độc lập.
 - [x] Vercel Preview của PR ở trạng thái Ready: https://hien-xa-erp-v2-git-codex-safe-so-po-bulk-import-hienxa.vercel.app (chỉ preview; chưa đăng nhập/UAT, feature gate mặc định tắt).
 - [ ] Diễn tập migration, backup/restore trên DB tương ứng môi trường phát hành; kiểm chứng dữ liệu thật trước/sau.
 - [ ] Kế hoạch bật feature theo chi nhánh và triển khai riêng được chủ hệ thống duyệt.
