@@ -1,0 +1,30 @@
+{
+  "status": "PASS_REAL_QA_GENERATED_PDF_CONTENT",
+  "checks": [
+    {
+      "file": "SO-HTTP.pdf",
+      "sourceMatches": true,
+      "pages": 1,
+      "costVisible": false
+    },
+    {
+      "file": "PO-HTTP.pdf",
+      "sourceMatches": true,
+      "pages": 1,
+      "costVisible": true
+    },
+    {
+      "file": "DL-HTTP.pdf",
+      "sourceMatches": true,
+      "pages": 1,
+      "costVisible": false
+    },
+    {
+      "file": "PO-WAREHOUSE.pdf",
+      "sourceMatches": true,
+      "pages": 1,
+      "costVisible": false
+    }
+  ],
+  "dbWrites": false
+}

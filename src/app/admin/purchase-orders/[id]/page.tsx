@@ -73,7 +73,7 @@ export default async function PurchaseOrderDetailPage({ params, searchParams }: 
   const query = await searchParams;
   const payable = [...receipts, ...fulfillments].reduce((sum, row) => sum + BigInt(row.payable_amount_vnd ?? 0), 0n);
   return <>
-    <header className="page-heading"><div><p className="eyebrow">Đơn mua</p><h1>{order.purchase_order_number}</h1><p className="lede">{order.supplier_name_snapshot} · {purchaseStateLabel(order.destination_type)}</p></div><ButtonLink href="/admin/purchase-orders" variant="secondary">Về danh sách</ButtonLink></header>
+    <header className="page-heading"><div><p className="eyebrow">Đơn mua</p><h1>{order.purchase_order_number}</h1><p className="lede">{order.supplier_name_snapshot} · {purchaseStateLabel(order.destination_type)}</p></div><div className="inline-actions"><ButtonLink href={`/api/purchase-orders/${order.id}/pdf`} variant="secondary">Tải PDF đơn mua</ButtonLink><ButtonLink href="/admin/purchase-orders" variant="secondary">Về danh sách</ButtonLink></div></header>
     <ActionNotice notice={query.notice} error={query.error} />
     <CommandRecoveryNotice scope={access.authUserId + ":" + access.branchId + ":" + order.id} command="receive_purchase_order" />
     <CommandRecoveryNotice scope={access.authUserId + ":" + access.branchId + ":" + order.id} command="verify_supplier_fulfillment" />

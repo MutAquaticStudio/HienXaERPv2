@@ -1,0 +1,74 @@
+{
+  "status": "PASS_REAL_QA_HTTP_AUTH_RLS",
+  "checkedAt": "2026-10-14T02:20:59.514Z",
+  "authProject": "ffrwiglcrlumfvhubaxg",
+  "database": "hx_remediation_go_live_browser175",
+  "schema": "Existing QA baseline; no schema modification",
+  "checks": [
+    {
+      "case": "anonymous_SO",
+      "status": 401,
+      "noPdf": true
+    },
+    {
+      "case": "Owner_SO",
+      "status": 200,
+      "bytes": 15216,
+      "privateNoStore": true
+    },
+    {
+      "case": "anonymous_PO",
+      "status": 401,
+      "noPdf": true
+    },
+    {
+      "case": "Owner_PO",
+      "status": 200,
+      "bytes": 15136,
+      "privateNoStore": true
+    },
+    {
+      "case": "anonymous_DL",
+      "status": 401,
+      "noPdf": true
+    },
+    {
+      "case": "Owner_DL",
+      "status": 200,
+      "bytes": 15547,
+      "privateNoStore": true
+    },
+    {
+      "case": "Warehouse_PO_no_price",
+      "status": 200,
+      "verifyContentSeparately": true
+    },
+    {
+      "case": "Worker_SO_denied",
+      "status": 403
+    },
+    {
+      "case": "Worker_PO_denied",
+      "status": 403
+    },
+    {
+      "case": "Worker_DL_denied",
+      "status": 403
+    },
+    {
+      "case": "Owner_wrong_selected_branch_SO",
+      "status": 404
+    },
+    {
+      "case": "Owner_wrong_selected_branch_PO",
+      "status": 404
+    },
+    {
+      "case": "Owner_wrong_selected_branch_DL",
+      "status": 404
+    }
+  ],
+  "productionAccess": false,
+  "businessWrites": false,
+  "credentialsRecorded": false
+}
