@@ -51,3 +51,17 @@ Một lượt chạy trước các sửa này thất bại ở harness, đã đ�
 | GitHub PR/CI | PR nháp #50; run #188 PASS trên commit mã `9d230f62184a6816a767994cd15f1b6e4496bac0`; status `mergeable=true`, draft vẫn mở. |
 | Vercel preview | `hien-xa-erp-v2` Ready tại `https://hien-xa-erp-v2-git-codex-safe-so-po-bulk-import-hienxa.vercel.app`; check `hienxa-erp-v2` bị chặn bởi tài khoản deploy. Chưa dùng preview để kết luận role UAT đạt. |
 | Head cuối đã kiểm tra | `d656ed17c12634392de0538864f3f96db1550f81`; commit thứ hai chỉ cập nhật báo cáo nghiệm thu. GitHub CI run #189 hoàn tất PASS; Vercel preview deployment ID `Ef4tN1ZqVxkiHc83ZcdvF2SUMzzm` Ready. |
+
+## Tiếp tục sau checkpoint — 14/10/2026
+
+| Bước | Môi trường/phiên bản | Thao tác và kỳ vọng | Kết quả thực tế | Bằng chứng |
+|---|---|---|---|---|
+| QA discovery | Supabase read-only metadata | Xác định dự án QA tách Production và lịch sử migration hiện hành | `HienXaERPv2-QA` ref `ffrwiglcrlumfvhubaxg`, ACTIVE_HEALTHY. Danh sách remote có migration `20261002114730` mà worktree ứng viên không có; nhiều migration sau 12/10 cũng chưa có trên QA. | Supabase get_project/list_migrations, 14/10/2026 |
+| QA guard | Checkout gốc, chỉ đọc cấu hình cục bộ | Xác nhận fingerprint trong .env.qa.local mà không in bí mật | PASS: project ref và URL khớp QA, khác Production. | `pnpm qa:guard`, 14/10/2026 |
+| CLI rehearsal dry-run | QA, chỉ đọc | Xem migrations CLI sẽ áp dụng, không ghi DB | Lượt đầu bị chặn DNS trong sandbox. Sau khi chạy CLI được phép, dry-run báo `LegacyDbPushMissingLocalError` do phiên bản remote không có trong cây migration ứng viên; không có migration được CLI áp dụng. | Supabase CLI `db push --dry-run`, 14/10/2026 |
+| QA connector migration | Supabase QA | Kiểm tra tool migration và ghi nhận phiên bản nền | Đã áp dụng migration nội dung `20261012155947_retire_opening_pending_rule.sql` vào QA. Connector ghi version `20261014074344`, không phải version của file. Dừng các migration tiếp theo; không tự sửa bảng lịch sử migration. Production không bị truy cập/ghi. | Supabase apply_migration thành công; list_migrations xác nhận `20261014074344`; dry-run CLI xác nhận lệch lịch sử |
+| Browser preview | Vercel Preview, không đăng nhập | Mở màn import SO và kiểm tra môi trường | Redirect tới /login; chưa kiểm tra quyền hoặc giao dịch. GET môi trường QA bị trình duyệt chặn; không dùng tài khoản Production. | Browser tab 19, 14/10/2026 |
+| QA harness | Local, worktree PR #50 | Chạy bộ QA test thuần local sau cập nhật fixture Storage và SQLSTATE | Lượt đầu phát hiện fixture thiếu schema Storage và kỳ vọng SQLSTATE cũ. Đã sửa fixture; `pnpm qa:test` PASS 32/32. | Terminal 14/10/2026 |
+| XLSX parser | Local, worktree PR #50 | Hồi quy parser file nhập | PASS 5/5. | `pnpm exec vitest run src/modules/bulk-import/xlsx-parser.test.ts`, 14/10/2026 |
+
+QA migration drift là release blocker cho mọi thao tác schema tiếp theo đến khi chủ repo đối chiếu/chuẩn hóa lịch sử nguồn; không dùng kết quả local thay thế UAT Supabase thật.
