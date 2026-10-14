@@ -1,6 +1,6 @@
 # DOD — ứng viên bulk import, trạng thái 14/10/2026
 
-Trạng thái chung: **ỨNG VIÊN CỤC BỘ ĐÃ KIỂM TRA; CHƯA NGHIỆM THU QA/TRÌNH DUYỆT, CHƯA PHÁT HÀNH.** Hai cờ tính năng mặc định tắt.
+Trạng thái chung: **PR NHÁP #50; CI đã đạt trên commit mã `9d230f6`; CHƯA NGHIỆM THU QA/TRÌNH DUYỆT, CHƯA PHÁT HÀNH.** Hai cờ tính năng mặc định tắt.
 
 - [x] Checkout gốc và thay đổi local được giữ nguyên; làm việc trong worktree riêng.
 - [x] Nền đã xác minh: `origin/main` `013093134d16d4157d761a748090933a2cd6fc87`, có merge PR49.
@@ -19,10 +19,12 @@ Trạng thái chung: **ỨNG VIÊN CỤC BỘ ĐÃ KIỂM TRA; CHƯA NGHIỆM TH
 - [ ] Browser UAT với tài khoản đúng vai trò SO/PO và Supabase Auth/Storage QA thật.
 - [ ] Kiểm thử upload/tải lại/mất phản hồi trên browser; desktop/mobile.
 - [ ] Xác nhận cấu hình môi trường QA, feature flags, cron retention và phục hồi tệp qua Storage thật.
-- [ ] Independent review, PR và CI đúng commit ứng viên.
+- [x] PR nháp #50; CI GitHub run #188 đạt trên commit mã `9d230f6` (lint, typecheck, test, build).
+- [ ] Review độc lập và CI lại sau cập nhật tài liệu/commit cuối.
+- [x] Vercel Preview của PR ở trạng thái Ready: https://hien-xa-erp-v2-git-codex-safe-so-po-bulk-import-hienxa.vercel.app (chỉ preview; chưa đăng nhập/UAT, feature gate mặc định tắt).
 - [ ] Diễn tập migration, backup/restore trên DB tương ứng môi trường phát hành; kiểm chứng dữ liệu thật trước/sau.
 - [ ] Kế hoạch bật feature theo chi nhánh và triển khai riêng được chủ hệ thống duyệt.
 - [ ] Không triển khai/không chạy Production; không có bằng chứng live.
 - [ ] PDF MVP2/OCR, PO giao thẳng và mẫu nhập phức tạp vẫn hoãn.
 
-Các mục chưa đạt ở trên chưa được đổi thành PASS bằng code review hay CI tổng. Hai race ứng trước 600.000đ và 400.000đ không chạy lại.
+Các mục QA/backup/review/phát hành chưa đạt ở trên chưa được đổi thành PASS bằng CI tổng hoặc preview deployment. Check Vercel phụ `hienxa-erp-v2` báo lỗi do tài khoản deploy bị chặn; check `hien-xa-erp-v2` có Preview Ready. Hai race ứng trước 600.000đ và 400.000đ không chạy lại.

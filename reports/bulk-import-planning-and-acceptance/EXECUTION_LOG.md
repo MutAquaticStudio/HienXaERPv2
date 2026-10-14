@@ -16,7 +16,7 @@ Ngày thực hiện: 14/10/2026. Mọi ghi dữ liệu kiểm thử chỉ xảy 
 | Build | Worktree cuối; Next.js 16.3.8 | Production build/static route generation | PASS; có route SO/PO import và retention | `pnpm build` |
 | Advisory | Lockfile hiện tại | `pnpm audit --prod` | PASS, không advisory đã biết | `pnpm audit --prod` |
 | Browser/QA thật | Chưa có môi trường QA biệt lập/tài khoản import | Kiểm tra vai trò, upload thật, refresh, mất mạng, responsive và Storage/RLS thật | CHƯA CHẠY; không giả lập PASS | Chờ cấu hình QA/Auth/Storage được cung cấp |
-| CI/review/phát hành | Chưa tạo PR | CI trên commit, review và deploy | CHƯA CHẠY; chưa commit/PR/merge/deploy | Ứng viên còn uncommitted trong worktree |
+| CI/review/phát hành | Commit `9d230f6`, PR nháp #50 | CI đúng commit, Vercel preview và trạng thái phát hành | CI run #188 PASS; một Vercel preview Ready, check project phụ bị account-blocked; PR vẫn draft, chưa review/merge/deploy | PR #50; preview link trong `DOD.md` |
 
 ## Các lỗi harness phát hiện và xử lý
 
@@ -48,3 +48,5 @@ Một lượt chạy trước các sửa này thất bại ở harness, đã đ�
 | Native migration evidence | Hai migration SHA khớp `PR2_NATIVE_MIGRATION.json`; không sửa SQL sau lần chạy native 23 checks PASS. |
 | `pnpm audit --prod` | Không làm mới được trong lượt này do kết nối registry bị `ENOTFOUND`; lần audit trước trên lockfile ứng viên báo không có advisory đã biết. |
 | Checkout gốc | Vẫn branch `codex/uat-role-navigation-20260923`, HEAD `79b0b918…`, 128 mục status; không có sửa đổi từ task này. |
+| GitHub PR/CI | PR nháp #50; run #188 PASS trên commit mã `9d230f62184a6816a767994cd15f1b6e4496bac0`; status `mergeable=true`, draft vẫn mở. |
+| Vercel preview | `hien-xa-erp-v2` Ready tại `https://hien-xa-erp-v2-git-codex-safe-so-po-bulk-import-hienxa.vercel.app`; check `hienxa-erp-v2` bị chặn bởi tài khoản deploy. Chưa dùng preview để kết luận role UAT đạt. |
