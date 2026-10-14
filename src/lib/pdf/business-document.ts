@@ -47,6 +47,7 @@ export async function createBusinessDocument(input: BusinessDocumentInput): Prom
   const font = await doc.embedFont(await readFile(path.join(process.cwd(), "public/fonts/NotoSansVietnamese-Regular.ttf")), { subset: true });
   doc.setTitle(`${input.title} - ${input.reference}`);
   doc.setAuthor("Hiền Xa ERP"); doc.setCreator("Hiền Xa ERP");
+  doc.setSubject(`Nguồn: ${input.sourceId}; xuất lúc: ${input.generatedAt}`);
   let page!: PDFPage;
   let y = 0;
   const draw = (text: string, x: number, baseline: number, size = 9, color = ink) => page.drawText(text, { x, y: baseline, size, font, color });
@@ -152,9 +153,6 @@ export async function createBusinessDocument(input: BusinessDocumentInput): Prom
   doc.getPages().forEach((p, i, pages) => {
     page = p;
     page.drawLine({ start: { x: M, y: 63 }, end: { x: W - M, y: 63 }, color: border, thickness: .5 });
-    draw("Chứng từ nghiệp vụ - không phải hóa đơn thuế. Chữ ký chỉ có hiệu lực khi được ký.", M, 49, 7, muted);
-    draw(`Xuất lúc: ${input.generatedAt}`, M, 36, 7, muted);
-    draw(`Nguồn: ${input.sourceId}`, M, 24, 6.5, muted);
     right(`Trang ${i + 1}/${pages.length}`, W - M, 24, 7);
   });
   return doc.save();

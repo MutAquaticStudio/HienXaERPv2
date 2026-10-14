@@ -2,7 +2,7 @@
 
 Nền ứng dụng: main/Production cb6ad38ebec16a8a0e04ff3d4b3d0d7edc85a734, schema Production189. Thay đổi riêng trên codex/document-pdf-forms; checkout gốc 79b0b91 và mọi thay đổi local được giữ nguyên. Chưa thay bản Production trong đợt này.
 
-Ba mẫu A4 dùng font Noto Sans tiếng Việt và màu xanh hiện có: thông tin hai bên/điểm giao, ngày lập/lịch hẹn, bảng hàng, điều khoản, ký tay, nguồn, thời điểm xuất và số trang. SO/PO có nút tải tại chi tiết chứng từ; phiếu giao giữ nguyên đường tải cũ.
+Ba mẫu A4 dùng font Noto Sans tiếng Việt và màu xanh hiện có: thông tin hai bên/điểm giao, ngày lập/lịch hẹn, bảng hàng, điều khoản, ký tay và số trang. Theo yêu cầu bổ sung, bỏ ba dòng chú thích góc trái chân trang; mã nguồn/thời điểm xuất giữ trong metadata PDF, không in ra giấy. SO/PO có nút tải tại chi tiết chứng từ; phiếu giao giữ nguyên đường tải cũ.
 
 - SO: lượng/đơn giá/thành tiền/tổng theo chứng từ đã lưu, không tính lại theo bảng giá mới.
 - PO: bản có giá khi có purchasing.price.read; bản kho loại cả cột giá/thành tiền/tổng, không đổi NULL thành0.
@@ -35,3 +35,7 @@ QA dùng Auth dự án ffrwiglcrlumfvhubaxg và DB native hx_remediation_go_live
 - Kiểm chứng UI ở1280x720; mẫu A4 không phụ thuộc kích thước màn hình. Không tuyên bố đã kiểm thử in máy in vật lý hoặc phiên Production.
 
 PDF/ảnh tải từ QA nằm ở reports/document-pdf-forms/qa/ trên máy và bản riêng trong /private/tmp/hienxa-pdf-20261014-private; được loại khỏi Git. Chỉ kết quả kiểm chứng đã lược bỏ nội dung chứng từ và mẫu minh họa tổng hợp được đưa vào PR. Không chia sẻ payload QA sau khi phê duyệt tự động từ chối push ban đầu.
+
+## Chỉnh chân trang theo yêu cầu
+
+Bỏ ba dòng góc trái phía dưới ở cả SO/PO/phiếu giao; giữ số trang góc phải và phần ký trong nội dung. Bản nhiều trang/bản PO ẩn giá được tạo lại bằng cùng renderer. QA_HTTP/QA_BROWSER/QA_PDF_CONTENT ghi lần kiểm chứng tích hợp trước tại2fceb1f, còn hiệu lực cho quyền và số liệu vì không đổi loader/builder/API; không dùng các PDF QA cũ để chứng minh chân trang mới. Chân trang mới được kiểm chứng bằng PDF render và verify-layout.py. Không chạy lại hai race ứng trước.

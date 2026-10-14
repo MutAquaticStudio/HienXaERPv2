@@ -6,37 +6,43 @@
       "file": "output/pdf/PO-A4.pdf",
       "pages": 1,
       "margins": "PASS",
-      "pagination": "PASS"
+      "pagination": "PASS",
+      "leftFooterEmpty": true
     },
     {
       "file": "output/pdf/Phieu-giao-A4.pdf",
       "pages": 1,
       "margins": "PASS",
-      "pagination": "PASS"
+      "pagination": "PASS",
+      "leftFooterEmpty": true
     },
     {
       "file": "output/pdf/SO-A4.pdf",
       "pages": 1,
       "margins": "PASS",
-      "pagination": "PASS"
+      "pagination": "PASS",
+      "leftFooterEmpty": true
     },
     {
       "file": "reports/document-pdf-forms/visual/delivery-before.pdf",
       "pages": 1,
       "margins": "PASS",
-      "pagination": "PASS"
+      "pagination": "PASS",
+      "leftFooterEmpty": false
     },
     {
       "file": "reports/document-pdf-forms/visual/PO-no-price.pdf",
       "pages": 1,
       "margins": "PASS",
-      "pagination": "PASS"
+      "pagination": "PASS",
+      "leftFooterEmpty": true
     },
     {
       "file": "reports/document-pdf-forms/visual/SO-many-pages.pdf",
       "pages": 4,
       "margins": "PASS",
-      "pagination": "PASS"
+      "pagination": "PASS",
+      "leftFooterEmpty": true
     }
   ]
 }
