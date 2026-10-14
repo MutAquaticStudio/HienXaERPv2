@@ -1,3 +1,4 @@
+vi.mock("server-only", () => ({}));
 import {beforeEach,expect,it,vi} from "vitest";
 const m=vi.hoisted(()=>({permission:vi.fn(),client:vi.fn(),rpc:vi.fn()}));
 vi.mock("@/lib/access/context",()=>({requireInternalPermission:m.permission,requireCustomerAccess:vi.fn()}));vi.mock("@/lib/supabase/server",()=>({createServerSupabase:m.client}));vi.mock("next/cache",()=>({revalidatePath:vi.fn()}));vi.mock("next/navigation",()=>({redirect:vi.fn()}));

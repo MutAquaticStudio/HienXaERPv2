@@ -19,6 +19,9 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   const query = await searchParams;
   const list = parseCoreListQuery(query);
   const supabase = await createServerSupabase();
+  const { data: bulkImportEnabled } = access.permissions.has("orders.create")
+    ? await supabase.rpc("bulk_import_feature_status", { target_branch_id: access.branchId, target_kind: "SO" })
+    : { data: false };
   let request = supabase.from("sales_orders").select("id").eq("branch_id", access.branchId);
   if (list.q) request = request.or(`order_number.ilike.${ilikePattern(list.q)},customer_name_snapshot.ilike.${ilikePattern(list.q)},site_name_snapshot.ilike.${ilikePattern(list.q)}`);
   request = applyDocumentListScope(request, "commercial_state", list.state);
@@ -41,6 +44,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
     <header className="page-heading">
       <div><p className="eyebrow">Bán hàng</p><h1>Đơn bán</h1><p className="lede">Tìm đơn, xem tiến độ giao hàng và theo dõi thanh toán tại một nơi.</p></div>
       {access.permissions.has("orders.create") && <ButtonLink href="/admin/orders/new">Tạo đơn bán</ButtonLink>}
+      {bulkImportEnabled === true && process.env.HX_BULK_IMPORT_ENABLED === "true" && <ButtonLink href="/admin/orders/import" variant="secondary">Nhập từ Excel</ButtonLink>}
     </header>
     <ActionNotice notice={query.notice} error={query.error} />
     <form className="filter-bar" aria-label="Bộ lọc đơn bán">

@@ -1,3 +1,4 @@
+vi.mock("server-only", () => ({}));
 import {beforeEach,expect,it,vi} from "vitest";
 const m=vi.hoisted(()=>({permission:vi.fn(),rpc:vi.fn(),revalidate:vi.fn()}));
 vi.mock("@/lib/access/context",()=>({requireInternalPermission:m.permission,requireCustomerAccess:vi.fn()}));vi.mock("@/lib/supabase/server",()=>({createServerSupabase:async()=>({rpc:m.rpc})}));vi.mock("next/cache",()=>({revalidatePath:m.revalidate}));vi.mock("next/navigation",()=>({redirect:(p:string)=>{throw Error("REDIRECT:"+p)}}));

@@ -1,0 +1,771 @@
+{
+  "scope": "FRESH_NATIVE_APPLICATION_SCHEMA_AUTH_SHIM",
+  "database": "hx_remediation_bulk_import_20261014_base",
+  "status": "PASS_SCHEMA_FROM_ZERO",
+  "migrations": [
+    {
+      "file": "20260912101030_identity_access.sql",
+      "sha256": "53af3c8e31b6ad3f63a5ecbe56cb96c8d3595bfdd0b4044b8ada5afe5b44cdc2"
+    },
+    {
+      "file": "20260912104433_catalog_crm_pricing_credit.sql",
+      "sha256": "5bf7b74117ea5a5b269d059926d0eb39cae9df76cb86fa277d3b0cd41076965b"
+    },
+    {
+      "file": "20260912105455_sales_quotes_orders.sql",
+      "sha256": "e466fe7bb0271f4ff747c43d683be721e555866bf173c7747e37bc57129662d4"
+    },
+    {
+      "file": "20260912112432_purchasing_sourcing.sql",
+      "sha256": "9c4b5d26a0d206728ba3a7ded89f632a20c678ee7fe6904e33b4763c19d06368"
+    },
+    {
+      "file": "20260912114625_inventory_delivery.sql",
+      "sha256": "4d7dd06d1cf22d2e94164f12428352830f13bd677ac39609a836a93ad2a2a71b"
+    },
+    {
+      "file": "20260912123357_finance_dashboard.sql",
+      "sha256": "1a7a0b3a8b593b48a08581fc494a29cfb308f809b549f6cb49ef6689d96df660"
+    },
+    {
+      "file": "20260912144349_workforce_service_compensation.sql",
+      "sha256": "7070cf53196e9efb24ecf17a70b06fe66b6b470018b7ead1b0dcadf4d3d1d366"
+    },
+    {
+      "file": "20260913100000_worker_customer_portals.sql",
+      "sha256": "8a8ea72892abca0d653014c788e2562d86b03b3e6bf5f1fc9feb716f7d21b90d"
+    },
+    {
+      "file": "20260914060713_grant_purchase_order_lines_select.sql",
+      "sha256": "077258b070a36226861c531e4c3b7b6725449aba82423a2dae1d3ce51be4842f"
+    },
+    {
+      "file": "20260914095110_fix_worker_snapshot_employee_scope.sql",
+      "sha256": "3d1a0dd36666af531cabcb07174029ea11195b3c5c447ae958c730a4ae2cddba"
+    },
+    {
+      "file": "20260914100407_admin_catalog_worker_completion.sql",
+      "sha256": "154f07cd190ab07d92acfba13ed5c9621ed30e9773e0795602edd3633bfe83da"
+    },
+    {
+      "file": "20260920064133_customer_site_profile.sql",
+      "sha256": "0b73c3b060f449aaa2b908f452257fc287cc254d479a1457aa430bf6e10cdc58"
+    },
+    {
+      "file": "20260920070000_customer_site_stale_conflict.sql",
+      "sha256": "187ebd49581bfbe0e5fed7affebd89b05d4583a56366465897fa66d264c5ab1d"
+    },
+    {
+      "file": "20260920080000_customer_site_owner_credit.sql",
+      "sha256": "1374fb0b3748187896c768fe5e60cf088578e17f2451608b3f92159afcadf331"
+    },
+    {
+      "file": "20260920090000_supplier_catalog_guard.sql",
+      "sha256": "349892a84da89df3930dcc24acc7933ef243030f3b7751822aab79e538117fd1"
+    },
+    {
+      "file": "20260920100000_operational_master_config.sql",
+      "sha256": "234c251c8d68158b21cc53ba041fb01fd6d72bc368c23ff3dd9a301066c4464a"
+    },
+    {
+      "file": "20260920110000_pricing_rule_config.sql",
+      "sha256": "4b8ca8d36b22213f128ae4bd52904f773742b0143cc523122bb7ac997fd76c8a"
+    },
+    {
+      "file": "20260920113000_pricing_version_boundary.sql",
+      "sha256": "a15ba3bded24e4c305177db146d37537f1aaab23c3212f9e4b7459fbe3aeee36"
+    },
+    {
+      "file": "20260920150000_commercial_draft_edit.sql",
+      "sha256": "edb10d1a8497e1e243740d63d93bb7609234b8c02c9f4d021478811aae64c388"
+    },
+    {
+      "file": "20260920160000_purchase_draft_multiline.sql",
+      "sha256": "84605d1f42305331a9bb7b2323860e2d36a27b01a29406e45829e93d584f540c"
+    },
+    {
+      "file": "20260920170000_preserve_draft_manual_price.sql",
+      "sha256": "2e3dee98fe0b41b903ee7ce97a60e7a33a095cf2b910b3f919c6635c3216eae6"
+    },
+    {
+      "file": "20260920180000_gc12_direct_multiline_edit.sql",
+      "sha256": "953fd1a411f53e854fd64ec46bf32144744e1a768044fdbc96d86743533f5ceb"
+    },
+    {
+      "file": "20260921120000_gc13_purchase_order_line_progress.sql",
+      "sha256": "6f3ccc9539f2320dd8780d713223b816866a54e956fa4d0cf8c2a5050a3eaa88"
+    },
+    {
+      "file": "20260921130000_gc14_delivery_multiline.sql",
+      "sha256": "80c1b65acddb23b72dcdaeb100b0e506c3657365df7700dc0adbf36ba19c79a3"
+    },
+    {
+      "file": "20260921140000_gc14_return_line_guard.sql",
+      "sha256": "eab2df9116837e6812f91a689fec0f5bbca742f126fbc1733d9a7119be0a5d80"
+    },
+    {
+      "file": "20260921150000_gc17_access_management.sql",
+      "sha256": "4f9bac2b23e11164cba567192025b9e6280e037585f0e23bb0e32f980183854f"
+    },
+    {
+      "file": "20260921160000_gc18_customer_order_portal.sql",
+      "sha256": "99d9e39e03db0f86bb759d40c2b7780b0ef602e22aac62474a3ec1b9a030e285"
+    },
+    {
+      "file": "20260921170000_gc20_dashboard_detail.sql",
+      "sha256": "010667b3c7ad1f71b403d1a21ecd8e254a8395e2f037090a715b0a5f3f062dae"
+    },
+    {
+      "file": "20260921180000_gc21_low_stock_alerts.sql",
+      "sha256": "ee264ba80a41e2b05f1cc3501b5c5b68e213b4e609e94e5a5b9ef18304d77795"
+    },
+    {
+      "file": "20260921200000_r10_routing.sql",
+      "sha256": "d70c403de1b09c28ca24672c30ab1028d82cee6091689edfca60182c95fe516f"
+    },
+    {
+      "file": "20260921200500_r10_routing_apply_fix.sql",
+      "sha256": "161cc5ef0ddc0a4f6e3d60cf637768c57508ebd6e58cec130144f78e3a8defd7"
+    },
+    {
+      "file": "20260921210000_r10_foreground_gps.sql",
+      "sha256": "7b4dc9412531b99a8320f9554cd887196bf757ee5cb989cab9128d9554f59325"
+    },
+    {
+      "file": "20260921211000_r10_worker_gps_assignment.sql",
+      "sha256": "6f582aaf8f9131aa8e0815f043e1c911c4172e7afc1b1d60c49159de0b3c74e4"
+    },
+    {
+      "file": "20260921211500_r10_worker_tracking_list.sql",
+      "sha256": "6652aac605aeb678f1e265d39d29f1f5582cca3920f14acc0638d4aaa4009346"
+    },
+    {
+      "file": "20260921220000_r10_messaging.sql",
+      "sha256": "2cac75cbcc09d338e75a840a7b10b8103bec3ae68de15cc4d9a87af73c0a545d"
+    },
+    {
+      "file": "20260921220500_r10_messaging_customer_name_fix.sql",
+      "sha256": "55a10a8dd0a57b2860d8fffce4ff5fbd0fec1840cc804ce947387afb982830be"
+    },
+    {
+      "file": "20260921221000_r10_message_scope.sql",
+      "sha256": "fa095af965649305241d9540ccff01295126316c1c5dc3ceba134c25b393ae09"
+    },
+    {
+      "file": "20260921230000_r11_invoice_neutral.sql",
+      "sha256": "6d7e6d8f366ea6b0ca14c529eac61fbc0f79b42c8aca1af36ecf50c9dd1ac477"
+    },
+    {
+      "file": "20260921231000_r11_invoice_adjustment_registry.sql",
+      "sha256": "8a3f25c4c4b8ad4ce3e3dfca43dcab8cb29ca9df04fc91a4088cf7cffe516c1e"
+    },
+    {
+      "file": "20260921231500_r11_direct_fulfillment_evidence.sql",
+      "sha256": "3020d74a5e0900b23279377009b7addb547be472be30bfce2829329fa3613bc5"
+    },
+    {
+      "file": "20260921232000_r11_purchase_registry_eligibility.sql",
+      "sha256": "da37e4d68fc7832c1d450e7544cd4ea4b63ad57721fa15b6f4a93919cadaa51d"
+    },
+    {
+      "file": "20260921233000_r12_order_list_perf.sql",
+      "sha256": "9098d31fdd68c06309f062860240e8c042aca9c2ed3f4f92c15f891d01e9dc7e"
+    },
+    {
+      "file": "20260921234000_r12_purchase_list_perf.sql",
+      "sha256": "88c37b7f21466f9451953c863d3b9f05003fb4d6129a151cad7a3cb633b067f6"
+    },
+    {
+      "file": "20260921235000_r12_finance_list_perf.sql",
+      "sha256": "150e69b1c2da1eaae2a18d999adf5217c330c2e20cd44871e5d4a5ff5e678ef8"
+    },
+    {
+      "file": "20260921235500_r12_delivery_list_indexes.sql",
+      "sha256": "612a605c5e6c1229d3cccc057a5b94276c4ad710e68779e19a9161cd5f7f5014"
+    },
+    {
+      "file": "20260921235900_r12_expense_list_indexes.sql",
+      "sha256": "31158b04b15bc00c6f0c0c0df998f541b8cd54c225664dc03e764e2a330685a9"
+    },
+    {
+      "file": "20260922000500_r12_sales_lookup_indexes.sql",
+      "sha256": "7a63cde6a6be38d7eb443ff2eafcb44b15ae5a5b61852f5855daedcd380f5415"
+    },
+    {
+      "file": "20260922000600_r12_customer_portal_customer_boundary.sql",
+      "sha256": "b0ef0363ff2175228fd797806ca5ed1dd88f2b94827301ba516f4a4eaf3d2d2b"
+    },
+    {
+      "file": "20260922000700_r12_portal_line_projection.sql",
+      "sha256": "21c8018b4bcb36a20e46bd9d4dfd94a192a9f9f2fbda14a4e0142319fcb4714e"
+    },
+    {
+      "file": "20260923090000_customer_portal_order_allocation.sql",
+      "sha256": "f0b8271d6023d0e17d9632b0e57043accff8d79627328a62240f2e2e7cf3160c"
+    },
+    {
+      "file": "20260923103009_fix_gps_null_authorization.sql",
+      "sha256": "534425ff8ec5c329ad46547e828b672dec3b9dadcffcf6b2f792aecbd80602dd"
+    },
+    {
+      "file": "20260923162705_revoke_uat_worker_compensation_read.sql",
+      "sha256": "ca8bf947a0d3493dadf225042bf655341fbc3f7f13e6cd8a4547483ca2ab342d"
+    },
+    {
+      "file": "20260925000100_customer_sensitive_column_boundary.sql",
+      "sha256": "4e9bd68947052bccb2a84c19a3f169a124848f4c9c7be440d779b4745d35e9d1"
+    },
+    {
+      "file": "20260927000100_cashbook_full_scope_summary.sql",
+      "sha256": "60203ff4631e77c9747612ba4bd5aa9674a1d0aad2b3d70d0547581976025309"
+    },
+    {
+      "file": "20260927000200_dispatch_scheduled_lookup.sql",
+      "sha256": "10fa228bf19369ad7b1ac1e4b5d2171df0652440622ec978f4a1ec3f149fd311"
+    },
+    {
+      "file": "20260927000300_report_export_jobs.sql",
+      "sha256": "b485b03b60245e112da327751be7d10e9758b3753b1cddd5b0525347ccb9b620"
+    },
+    {
+      "file": "20260927000400_report_export_retry_accounting.sql",
+      "sha256": "efdbff2c57532c441af5e1b48d994b3dd5e2988ff19ae953da6cd01329abe5bc"
+    },
+    {
+      "file": "20260927000500_dashboard_dispatch_scoped_reads.sql",
+      "sha256": "b9e4a48c0e82ee5aa1f06981f806794678e4d0838e0da0b3849e18bcb011e895"
+    },
+    {
+      "file": "20260927000600_cashbook_summary_permission.sql",
+      "sha256": "e1b11321f4884ce85016da89a93fdfa8cada4ef68d47d1d4263c96c28d468d17"
+    },
+    {
+      "file": "20260927205002_uat_earning_read_boundary.sql",
+      "sha256": "03aab9c61abe8ee5d7c60c6c2f19c82ac796d2cfeec3151630f190a42f694275"
+    },
+    {
+      "file": "20260930000100_credit_exposure_net_allocations.sql",
+      "sha256": "4dafa52a09cddcb38d766d588f1072e5a091d61472e9381a4174b36f9a37d7b2"
+    },
+    {
+      "file": "20260930023428_return_case_supplier_direct_cost.sql",
+      "sha256": "4d074f3128fcd7c075871e9e13290b124f912863f1567ff732a01bffbea963ff"
+    },
+    {
+      "file": "20260930024101_cancel_planned_delivery_release_reservations.sql",
+      "sha256": "d9d8fe0a7fbe728952bc9bc4050e7d4bb08801454c885b1228fdc81523da5482"
+    },
+    {
+      "file": "20260930025839_audit_notice_quote_transitions.sql",
+      "sha256": "e38d8b1e7f111e0faeb4ae7a28faf2f1fbfb1a7b02df0f7b2cef94acf6e25fc9"
+    },
+    {
+      "file": "20260930050137_cancel_scheduled_service_job.sql",
+      "sha256": "72645a2905ae1a3f2ec5f52441066345f6eef627c384d1be9ac995758eedd7b0"
+    },
+    {
+      "file": "20260930081621_replace_custom_serialization_errors.sql",
+      "sha256": "746588b9820a35c517966446d75fb34ece253f517f34f3ef3852988d86c40180"
+    },
+    {
+      "file": "20260930101520_custom_rpc_conflicts.sql",
+      "sha256": "1221f424887fa3c56234cda0a5ff32b0ddd05a12722a7308d2cac8252c8ca7da"
+    },
+    {
+      "file": "20261001084145_fix_sales_order_payment_state.sql",
+      "sha256": "ec97ab4130b97e137e01e9a8a9399ca6a572ba812d2124e9c65204012676553f"
+    },
+    {
+      "file": "20261001182059_sales_order_confirmation_credit_override.sql",
+      "sha256": "a90a4f308845f56a6b48026033bdf7af070024839a996ed42494f11d07794e9d"
+    },
+    {
+      "file": "20261002071813_index_quotation_and_customer_credit_lookups.sql",
+      "sha256": "cca7f71910a12e7e00e7a6e6d3cbe5bd67bcbf898b051d4ee75094ee2ed845a1"
+    },
+    {
+      "file": "20261003063723_fix_verified_delivery_rules.sql",
+      "sha256": "5022111d6ef3dcc9ca7c5af3853a7b7f851304f07c071da38a697a681ec034fa"
+    },
+    {
+      "file": "20261003074122_audit_worker_quantity_verification.sql",
+      "sha256": "097d3c369e9a001b1f5712293cb37be54815218c029a6e70c791642c785f90aa"
+    },
+    {
+      "file": "20261003161428_reconcile_qa_count_guard_and_direct_po_contract.sql",
+      "sha256": "d7f3d8a1728febe17d7040db84dbfe55f3294cea3754c3595d7321ac230eb939"
+    },
+    {
+      "file": "20261004052921_po_warehouse_address_policy.sql",
+      "sha256": "9e74a7976728bb33b4401d642b79329e5d5ece9ac016e8509c06bbf238bf2f7d"
+    },
+    {
+      "file": "20261004150000_sales_order_reader_scope.sql",
+      "sha256": "dedb99340af736af32a44fe94c68b2a8d52e540daee0692522130f42df517a42"
+    },
+    {
+      "file": "20261005043000_purchase_cost_column_boundary.sql",
+      "sha256": "a81058d48368dc8527bb133e13b76cfb9f016879a4d63238723a871b152193ef"
+    },
+    {
+      "file": "20261007022921_evidence_delivery_verifier_scope.sql",
+      "sha256": "46f42b0d498c8053c95346bbb15c59b77d36b937c332ceead66f1b3bc22481e1"
+    },
+    {
+      "file": "20261007022922_preserve_return_case_supplier_direct_cost.sql",
+      "sha256": "3c80fc4dd0d24aa5a3b079e1918bdb3753afa0199dfb2f578175ca440d64da0c"
+    },
+    {
+      "file": "20261007022923_freeze_delivered_allocation_source.sql",
+      "sha256": "48529aa6eb90564e5868860e0e0d59518e3466ddb4cbbfa0b59fcecbd606fac9"
+    },
+    {
+      "file": "20261007111747_employee_workforce_reader_correlation.sql",
+      "sha256": "23d64c001a3665e223658faa99eac2cf8944126a8ecd3297f417623af1e52bed"
+    },
+    {
+      "file": "20261007183000_close_sales_order_remaining.sql",
+      "sha256": "754145dce77986e3b7980cbc5d73ecafdea3f76860875cfc7967867533ebff2d"
+    },
+    {
+      "file": "20261008091836_compensation_source_recognition.sql",
+      "sha256": "f959b49873f6c0117c6ab428107e4c432fcaa7eaa9a0cc601d38f2a6c7511c50"
+    },
+    {
+      "file": "20261008224033_operational_opening_sources.sql",
+      "sha256": "5ea93da878981186fe6273ef887adcc052f04c35530cfa924ec9d144cebd9994"
+    },
+    {
+      "file": "20261009173806_secure_operational_posting_gate.sql",
+      "sha256": "f03146a6ad1b98003b34f0d6793ee51654bf763abf7f476668606c18cc60d50e"
+    },
+    {
+      "file": "20261009205945_direct_purchase_draft_operational_gate.sql",
+      "sha256": "069af232d3a2f7249e8961d8ac0a189938880d750568bf7eee1a256ffb4d57b8"
+    },
+    {
+      "file": "20261009224842_supplier_purchase_price_commands.sql",
+      "sha256": "03a836fe1aef1ab1f683260bd03e407f3fe9ee1657c9593e9e95545ffb7097e2"
+    },
+    {
+      "file": "20261010203345_remediation_stock_count_cost_access.sql",
+      "sha256": "c4c26716d18702265ecf09049bc31aa9b6c2f8230b97cf58124d2cda66d5d482"
+    },
+    {
+      "file": "20261010204330_remediation_count_observation_qualification.sql",
+      "sha256": "baa5772e6ec063e4038d7f005aab55190b46121486e6b78540ae76542de1579c"
+    },
+    {
+      "file": "20261010210748_remediation_stock_count_audit_history.sql",
+      "sha256": "6dbef5ee34f9f5eb44ab9ee668867d1f39a84a39f59f73cdab6288218714dce0"
+    },
+    {
+      "file": "20261010213838_remediation_quantity_cumulative_billing_versions.sql",
+      "sha256": "42b2e94f28ead37b745b9368bb31586b2029feafee75786a7f9d7c5acb4279f7"
+    },
+    {
+      "file": "20261010214948_remediation_command_outcome_lookup.sql",
+      "sha256": "300a2805fe98fc701885e9550229851f0c323a638c660cb1d84c25225881ea0d"
+    },
+    {
+      "file": "20261010215531_remediation_private_command_drafts.sql",
+      "sha256": "f09bf586a085964917120befa38c86e595912d7c1ab1aa1ddf7c907cfe979485"
+    },
+    {
+      "file": "20261010220044_remediation_intent_serialization.sql",
+      "sha256": "148ba61d1cc33fee8d65ecebd5be37f262378c2dd4e4882f0808f6fe1f023f3f"
+    },
+    {
+      "file": "20261010220311_remediation_outcome_receipt_column.sql",
+      "sha256": "2c9203b1ea83bafeac1dc4378cbb24f585a2c3994ed1e28b86c5a7afc265f280"
+    },
+    {
+      "file": "20261010223429_remediation_dispatch_assignment_exceptions.sql",
+      "sha256": "be5d10452e8887b599f72706313e2babe72393358fb9a5f1bff272e419283dd8"
+    },
+    {
+      "file": "20261011025105_remediation_dispatch_schedule_actual_loading.sql",
+      "sha256": "6fabd6e9de78db19bed6a457c91931165159a42893cf84f613280e57cda1699a"
+    },
+    {
+      "file": "20261011025252_remediation_zero_loading_observation.sql",
+      "sha256": "1d4e271cb568b0870d6c558dfed7bf28abcfe869c26a09f751b2672124fec663"
+    },
+    {
+      "file": "20261011025428_remediation_assignment_history_supersession.sql",
+      "sha256": "597cf83994cc70bd7974e2ff3fd6a2ffc7e522428b6e2fe66e4692a68076703e"
+    },
+    {
+      "file": "20261011025703_remediation_vehicle_capacity_evidence.sql",
+      "sha256": "517cf674a65e78409b0b6208a566afadc1a59b84a16f91b64ca533f2f317ed70"
+    },
+    {
+      "file": "20261011030154_remediation_delivery_line_reader_boundary.sql",
+      "sha256": "c986e2f75ae7e7f7ae7e77385e95963f088c3217c534e48f3ee3cbc218f5127b"
+    },
+    {
+      "file": "20261011030440_remediation_single_pickup_delivery_boundary.sql",
+      "sha256": "949fa0989853702259d97c2f0992e4345b8e932a86f115ec48773707886ab8bf"
+    },
+    {
+      "file": "20261011030903_remediation_delivery_assignee_eligibility.sql",
+      "sha256": "ee62b26154dd7b4da4a11608d3e7d50f2eaf9a57ede39979dacfd7f2b2b1fff0"
+    },
+    {
+      "file": "20261011031114_remediation_existing_capacity_confirmation.sql",
+      "sha256": "89c4c713b19e0cc33ce867e46a460bb3275821a076ba8038fdef94ed33e1df03"
+    },
+    {
+      "file": "20261011031732_remediation_advance_allocation_ledger.sql",
+      "sha256": "110b28ab60381a9f403268c10550ca903d39c47724b6376599fa6800f003f378"
+    },
+    {
+      "file": "20261011032215_remediation_payment_classification_reader.sql",
+      "sha256": "43be29fe74f17e587ce787d195c96b08969697127df92d424940002c5e534a73"
+    },
+    {
+      "file": "20261011032327_remediation_advance_reader_permissions.sql",
+      "sha256": "3471ffe49d8ff33636bc621e9a82abcd7d269e8304247360b38914101eef4f39"
+    },
+    {
+      "file": "20261011032420_remediation_payment_party_reader_scope.sql",
+      "sha256": "198d2b43e833e4bec4135e1b93e9ea3dbcc8811db72eb28948219557a6a9e9b9"
+    },
+    {
+      "file": "20261011032606_remediation_existing_payment_intent_recovery.sql",
+      "sha256": "a612b656e23bb0a467aa5fb0b4606c1a9c8f290287c674b66c25ef9cf1c0e3be"
+    },
+    {
+      "file": "20261011033537_remediation_guarded_payment_balance_reader.sql",
+      "sha256": "8af6474c2f331c916e614133dac29f5c61f0855c4be30d21a3518e38af607de3"
+    },
+    {
+      "file": "20261011045335_remediation_vehicle_actual_cargo_guard.sql",
+      "sha256": "0fb01b31fe5c8306c230912a81cccb8676fd67ce7781e48878512a5d6c5d4bc5"
+    },
+    {
+      "file": "20261011045547_remediation_direct_loading_remainder_resolution.sql",
+      "sha256": "bfda1d0e4228cb844b06463f30bdcb5a04ead1ee26aa9c70d47406af70efc1e6"
+    },
+    {
+      "file": "20261011050252_remediation_dispatch_loaded_cargo_exception.sql",
+      "sha256": "e4f1f8de81e7423ee67838cc1159d3d4ede5d05d8993a7e03a587afad1ca6096"
+    },
+    {
+      "file": "20261011050951_remediation_customer_credit_source_ledger.sql",
+      "sha256": "4965575918e0fbd8773d050cff8c9f0d564bcfa61fa29db95e7938b7277de0c4"
+    },
+    {
+      "file": "20261011051249_remediation_customer_credit_settlement_commands.sql",
+      "sha256": "0234d57a03939a43c73bebb6a7e8a2cf48dc44dd8ff3523ecdf18c2be769b1bb"
+    },
+    {
+      "file": "20261011051635_remediation_credit_offset_reversal_qualification.sql",
+      "sha256": "11baa19b4ed1d5c2b4388e9448e6072fe0ac6b2836b01aff648e3c39cb170712"
+    },
+    {
+      "file": "20261011052458_remediation_customer_credit_readers_and_intents.sql",
+      "sha256": "3fba954091f18f23e78f0c327f1b45dccfac437eb9b6f03eebb804bd67262a4d"
+    },
+    {
+      "file": "20261011055430_remediation_partial_credit_commission_sources.sql",
+      "sha256": "fa79ef046fa45f887ef6db14f188f321236a00c43d0c21d74ecc2a4ee195e55a"
+    },
+    {
+      "file": "20261011055632_remediation_typed_revenue_and_cost_completeness.sql",
+      "sha256": "1fa3c17b8e03a1aa9dd25f805c4afc79447a0e06ba5c00b6787eea9e2fbbda99"
+    },
+    {
+      "file": "20261011065009_remediation_remaining_quantity_return_contracts.sql",
+      "sha256": "fbad390c27eeae9117789514f6c867be4a6e4fc71a3dfdaf8f1f17da6bddf0bc"
+    },
+    {
+      "file": "20261011065135_remediation_atomic_command_audit_coverage.sql",
+      "sha256": "0d78349750d649e3131712804b924a9b4b39772ddd37078e39260497316d5f4b"
+    },
+    {
+      "file": "20261011065209_remediation_command_audit_receipt_columns.sql",
+      "sha256": "284e0ae525e8201c1b55fcb9432b433dedff6d9acab095392b41d4779ac252f5"
+    },
+    {
+      "file": "20261011070246_remediation_new_transactions_without_opening.sql",
+      "sha256": "a3b55a6cbc70e60a34e56ee11fc170f31f0030adab9120f70ba2e63584a50919"
+    },
+    {
+      "file": "20261011070348_remediation_recording_start_audit_trace.sql",
+      "sha256": "e8bab93fd48927a7ce94d4469dea424f9de2a9649473489c54606ea066d68cea"
+    },
+    {
+      "file": "20261011070814_remediation_recorded_scope_knowledge_cutoff.sql",
+      "sha256": "9c3ad0aff607e717ea0595c3e4a98bc913837d0cc39643e109630de41b8efefd"
+    },
+    {
+      "file": "20261011071940_remediation_work_assignment_audit_source.sql",
+      "sha256": "fba92de2031277567e67b3daca5625fb7b8e9b1867e32b322be046d26c9bde71"
+    },
+    {
+      "file": "20261011074807_remediation_server_price_priority.sql",
+      "sha256": "41dd137b634022767025335ebdb352965fd4f6c0c2e55a7d481626d23a874d0f"
+    },
+    {
+      "file": "20261011080455_remediation_purchase_price_priority_and_snapshot_guard.sql",
+      "sha256": "48b16dfccdeab2723439ca1aa423d24bf0670c826c43511fc6c9c6d9fb7c190c"
+    },
+    {
+      "file": "20261011081819_remediation_retail_price_intent_recovery.sql",
+      "sha256": "eba8f79f9989a2336307aeed91951c3137c89eeb86b235108f698e23a24dfd7c"
+    },
+    {
+      "file": "20261011082134_remediation_retail_global_version_namespace.sql",
+      "sha256": "75a0d2ecb962bd872fa6ac53718b92962f768793103db95450ae845dc3251159"
+    },
+    {
+      "file": "20261011082916_remediation_legacy_return_credit_source_reconciliation.sql",
+      "sha256": "d9e9dc074018f5a1a54fe4511487862e669526861cf4183bd6037f792efbe86f"
+    },
+    {
+      "file": "20261011083155_remediation_legacy_return_reconciliation_ui_reader.sql",
+      "sha256": "c3909e4e8bde1af4a338d336ca0e943f115b8084766c1b176fa65c4e54c993e3"
+    },
+    {
+      "file": "20261011083514_remediation_hour_quantity_before_compensation_money.sql",
+      "sha256": "12501c5d822d873988feb66b12bcd7ca02adcb8558b25b3dbe11e937902e419a"
+    },
+    {
+      "file": "20261011083735_remediation_return_case_cumulative_price_cap.sql",
+      "sha256": "9eacd68951042525ce9b960d76a1a54ba4749516a06bd978e7f614c70035eb8a"
+    },
+    {
+      "file": "20261011084222_remediation_commission_review_resolution.sql",
+      "sha256": "110ce0508cc4b2a1d75ae408459e54f23d5fdb58b85ec2845dba9e69e0978e31"
+    },
+    {
+      "file": "20261011084641_remediation_commission_review_existing_adjustment_class.sql",
+      "sha256": "c8d2723b6e212f96df08ee9d4a5337d60d0758fa50f6dc5170155ec907215911"
+    },
+    {
+      "file": "20261011085003_remediation_commission_review_reliable_intents.sql",
+      "sha256": "de1d439d5939a104fb1bd23896989a665cadf529df0ec27eb4759c289e5da04e"
+    },
+    {
+      "file": "20261011095111_remediation_delivery_expense_sources.sql",
+      "sha256": "d7d6e6ebb80139600209584a6a349db952c080936d5003e3d665712ee3754364"
+    },
+    {
+      "file": "20261011095410_remediation_trip_cost_report_alias.sql",
+      "sha256": "7371e5355c6ed5fdf4d46b2a44e57ef42ac1be318d96ebf190f77d535a89990a"
+    },
+    {
+      "file": "20261011095717_remediation_source_warehouse_transfers.sql",
+      "sha256": "fa2d494c21db195b9619d68255ef61c4229cfb3abbbfaebff7a72bc6850df6bb"
+    },
+    {
+      "file": "20261011100038_remediation_transfer_explicit_source_parameters.sql",
+      "sha256": "0d598485a6642792f6bfbecbdc8a331570256346e686ed15ac933e15e7e7de52"
+    },
+    {
+      "file": "20261011100106_remediation_transfer_reliable_intents.sql",
+      "sha256": "394760e1f88e8a6afb0c41ecab699d15dc55f03c6f53a304b95c97e61623b46d"
+    },
+    {
+      "file": "20261011100537_remediation_transfer_quantity_reader_and_loss_report.sql",
+      "sha256": "0dfabf7d21459eacb9dfe08829486c09b76453117969f443fe667ca287d4542e"
+    },
+    {
+      "file": "20261011101750_remediation_supplier_return_sources_and_physical_custody.sql",
+      "sha256": "268f96abc7b86011f75769aa8e03cc47acef5aa43dcfeb6c662e30822b200371"
+    },
+    {
+      "file": "20261011102116_remediation_supplier_return_original_units_and_sources.sql",
+      "sha256": "6f010522e6952fc2e92fb068f1b9964052207d3f6667805a829218364c333f31"
+    },
+    {
+      "file": "20261011102325_remediation_supplier_credit_funding_and_settlement.sql",
+      "sha256": "8782b3cd58c41b8344c7a763c5d3dd86ceb71cb611059d53eb50770821b463d5"
+    },
+    {
+      "file": "20261011102746_remediation_supplier_return_reliable_readers_and_payment_guards.sql",
+      "sha256": "6cd44e1774d3e12db1053d29e6666d352a980b78aa7f562be0745b4e5fc0f728"
+    },
+    {
+      "file": "20261011103600_remediation_supplier_return_retained_charge_reporting.sql",
+      "sha256": "8b7bc60d14b53240cdc86faa9c53dac1474d8d476ca003865e4dcbde310f9042"
+    },
+    {
+      "file": "20261011103941_remediation_supplier_return_reporting_scope_and_recovery_permissions.sql",
+      "sha256": "a2d1398b8f2f63427478f5b56827d77f9dc328ba06286525768ae3c4e87f5eec"
+    },
+    {
+      "file": "20261011133125_remediation_direct_return_net_source_capacity.sql",
+      "sha256": "8096ae0e1c8fbda2c0c4b178df907d5bff05e48ac11cef363e2c2fbaca940732"
+    },
+    {
+      "file": "20261011133558_remediation_direct_retirement_guard_error_compatibility.sql",
+      "sha256": "83ce7c49ed3e558dd8d222e0a1d0cd8ccfc00b69669b49b277ef1a43279e24e8"
+    },
+    {
+      "file": "20261011135309_remediation_supplier_return_actual_inventory_value.sql",
+      "sha256": "231b5eae73c0ebdbb6db010d96e975397e156c025fbe3909ee0e920cc6e3add0"
+    },
+    {
+      "file": "20261011135458_remediation_supplier_return_inventory_variance_privacy.sql",
+      "sha256": "a31eb0b1bdbe694ccda4be8232ecd6df190fdb092b05e785fe1a722593fbbb2f"
+    },
+    {
+      "file": "20261011135628_remediation_supplier_return_recorded_warehouse_custody.sql",
+      "sha256": "fd644ab8bdde96cf95cc3eaf364d56ea3b532028cf15542583577d52b71803f4"
+    },
+    {
+      "file": "20261011140012_remediation_supplier_return_pending_custody_readers.sql",
+      "sha256": "a306f40712e146ea45a9afd7b29b02ecbec69878a4a50023232874c511632093"
+    },
+    {
+      "file": "20261011140611_remediation_supplier_document_three_way_matching.sql",
+      "sha256": "a3f302eac0e8eb7f17a0e492d9f38f2fed7595974e25b8efd10c455176b4755a"
+    },
+    {
+      "file": "20261011141057_remediation_supplier_document_price_precision.sql",
+      "sha256": "c881e8e398470c7b49a7c1d930531abaddb1193c5f7317219be7189669b8dc6e"
+    },
+    {
+      "file": "20261011141501_remediation_document_recovery_and_source_readers.sql",
+      "sha256": "2d2612fa0869c4052086691e40c92cbb6e392e03e8b26830683bca4e0ea014f6"
+    },
+    {
+      "file": "20261011142209_remediation_exact_invoice_readers.sql",
+      "sha256": "9c3c19c3ccdc254795f432731324a2b36ccae39abaa0857e3678d531c5eab0c4"
+    },
+    {
+      "file": "20261011142818_remediation_invoice_review_exact_trace_readers.sql",
+      "sha256": "c12a390367de816a392e7f953cd0229c3b9fa9b3f1d16f63cbfc01a94fb72485"
+    },
+    {
+      "file": "20261011143218_remediation_notice_reconciled_receipt_matching.sql",
+      "sha256": "c2e07713d9499bd34962e6dc1d6e4d865c559c3b9aa6adad29567732af7c1305"
+    },
+    {
+      "file": "20261011143447_remediation_notice_match_corrections_and_recovery.sql",
+      "sha256": "0537c5ecc7ec590ead5dc6f9523e0db380ca9cfda0a204a964a4c6f378389934"
+    },
+    {
+      "file": "20261011145329_remediation_operational_completion_dimensions.sql",
+      "sha256": "80ba7a3bd22c1e6d8031399d7fbeaa2c3fc24435aa028966511a4ac3d48cbac9"
+    },
+    {
+      "file": "20261011151524_remediation_completion_open_work_and_document_exceptions.sql",
+      "sha256": "2e686b2555c6280daffeb40bed64db8891c1ca6775bc2202b26ce01e788a42ce"
+    },
+    {
+      "file": "20261011151852_remediation_portal_notice_actor_retry_audit.sql",
+      "sha256": "e4356d7ec6b15577be33867de06e8b54797aace6a27673b20c7bbc84af7a90a7"
+    },
+    {
+      "file": "20261011163754_remediation_return_cost_cumulative_source_value.sql",
+      "sha256": "fe35235141b4b143bee260d67618f68d4f54df4e1a6929adf94203b09601bc2d"
+    },
+    {
+      "file": "20261011165609_remediation_return_resolution_required_reason.sql",
+      "sha256": "e004788429231ae9f8a9a3bde169e725eb4fd8d6db4f93d7a2e478545e471e97"
+    },
+    {
+      "file": "20261011170622_remediation_storage_verified_server_finalization.sql",
+      "sha256": "a054e31a2a8828bcd9b67ed69eb71250cf9b9b6a0e51680605f66f7d85b71e53"
+    },
+    {
+      "file": "20261011170932_remediation_verified_evidence_locks_and_audit.sql",
+      "sha256": "220ac7a54de55b10b29b9cc4eb83abce50e1e493c1b7f4f41f3494a589bbfa39"
+    },
+    {
+      "file": "20261011173021_remediation_evidence_storage_attestations.sql",
+      "sha256": "7dd9d92277fb4a7c5c4e4d717267bab8c53ec3022ed7276c101d223b97ee0270"
+    },
+    {
+      "file": "20261011183132_remediation_evidence_write_once_objects.sql",
+      "sha256": "823c103dcb5529cdd24b98428cb004e59ec1f7d4bacf2e88b1971f5afbbedd17"
+    },
+    {
+      "file": "20261011183922_remediation_evidence_download_stored_byte_check.sql",
+      "sha256": "f3afce7d8439d3797de32fe5f20313d9ba6ec3c3987de10e531b571ed70e5f2e"
+    },
+    {
+      "file": "20261011191208_remediation_internal_evidence_verification_audit.sql",
+      "sha256": "013cba32f80410dbae6679a902916edb3159bef1da5312defdff05ba4cb2268a"
+    },
+    {
+      "file": "20261011191806_remediation_current_employee_identity.sql",
+      "sha256": "bb74b8e4c2a210d516551bf03f19115b5eaddc74fa3e5b1b69f5a998006b6734"
+    },
+    {
+      "file": "20261011192422_remediation_retire_unused_identity_probe.sql",
+      "sha256": "fe39b4551ca57b8e66541733f7d74a001f15dcd29d0920eb24f10a5271c83486"
+    },
+    {
+      "file": "20261011203524_worker_actual_quantity_contract.sql",
+      "sha256": "9bdfcf111713f69495674f155ab54ba1c336cd0346599395c89305cd8e93daca"
+    },
+    {
+      "file": "20261011211355_guarded_return_credit_reader.sql",
+      "sha256": "0d82f3c10af5a9eedbdaebd35abfc3e894361c84057bc3008bfe8d82aebf4dfb"
+    },
+    {
+      "file": "20261011211846_exact_portal_money_transport.sql",
+      "sha256": "0dc90bb8d30161bf44d3a2dd4aefd12f0fbddb263266f3acc859b98bea48ba31"
+    },
+    {
+      "file": "20261012054843_auth_inactive_actor_boundary.sql",
+      "sha256": "0f0447ad7426daa91b423f0bc6b9e00649e88689cd069971d92744af56c4e7c8"
+    },
+    {
+      "file": "20261012062053_workforce_current_assignment_reader.sql",
+      "sha256": "9923b7af250b2e30803a7255d3d94b9956f4109c67ff629d8f277b49a57ba640"
+    },
+    {
+      "file": "20261012074034_atomic_operating_command_audit.sql",
+      "sha256": "93cbd9e0f00ac631fd3e56b35c97e5da7ba5ba4ce2d66d1b8a5568c2ae0bd8c3"
+    },
+    {
+      "file": "20261012075211_compensation_rate_precision_guard.sql",
+      "sha256": "807907b7c1ea37468c085b58eb4f4e7f89a4fb68d9193d3fa28dc6beb5b3e6e3"
+    },
+    {
+      "file": "20261012081213_recoverable_master_commands.sql",
+      "sha256": "2178d3b9090d7ad8780e0134ece661600d4dde0b3b9feccc81ba947bb47df065"
+    },
+    {
+      "file": "20261012082356_master_draft_command_constraint.sql",
+      "sha256": "4515080fd915173e450adfc2b1fe37f419caaebcd2fe1a0692592468a86a0ae0"
+    },
+    {
+      "file": "20261012085902_exact_dashboard_detail_money.sql",
+      "sha256": "1d0801bbb72850ca8f7ea467298297acc1556c405564cf798174eacf2ba3b80b"
+    },
+    {
+      "file": "20261012093644_work_assignment_receipt_audit_source.sql",
+      "sha256": "817a692ce22b7539ea1998556478103af0270231a93ffea038f6969b269eb4e1"
+    },
+    {
+      "file": "20261012110100_master_draft_current_field_permissions.sql",
+      "sha256": "bc0de7d5a1b64a8878a2ee3ee47d8c43dd93600ef0308dea5a2b2973e369a7d5"
+    },
+    {
+      "file": "20261012155947_retire_opening_pending_rule.sql",
+      "sha256": "ab182d5980172ed2cdd472c9e0087a907cecf5a61f8221427e91cf80b05efd5f"
+    },
+    {
+      "file": "20261012211058_align_business_api_table_privileges.sql",
+      "sha256": "42ebcd9e8a0ec9ff4fff33020140e00668fb2f3b5da56c70aedea56eff017d29"
+    },
+    {
+      "file": "20261013105000_operational_role_presets.sql",
+      "sha256": "8ec1e8f3253ec1d0116cece07c15305565dbf892bc96a3bc7d45ecf5f4814131"
+    },
+    {
+      "file": "20261014034026_bulk_import_draft_recovery_boundary.sql",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "unprotectedPublicTables": 0,
+  "authenticatedWithoutIdentityRows": 0,
+  "managedAuthOrStorageRecovery": "NOT_TESTED",
+  "productionAccess": "NONE"
+}

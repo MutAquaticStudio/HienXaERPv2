@@ -1,0 +1,13 @@
+{
+  "checkedAt": "2026-10-14T03:40:25.262456+00:00",
+  "root": "/Users/nox/Downloads/HienXaERP",
+  "branch": "codex/uat-role-navigation-20260923",
+  "head": "79b0b918c7430bfd0e9d17e247ecba2be1fa0bf2",
+  "statusSha256": "847b10278175f6f0fc8d36d638333e9d6be7dc38a895407cfe8b55d3715f4142",
+  "changedAndUntrackedFileCount": 12534,
+  "changedAndUntrackedContentManifestSha256": "508e7c3d6a820efc0660d4da710e279fe4ea161a6eb7f37c1109b95799f0a344",
+  "originalMutation": "NONE",
+  "trackedChanged": 61,
+  "untrackedStatusEntries": 67,
+  "untrackedMigrationEntries": 19
+}

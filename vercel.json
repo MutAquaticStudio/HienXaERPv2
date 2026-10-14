@@ -16,5 +16,11 @@
       "codex/rbac-operational-roles": false,
       "codex/document-pdf-forms": false
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/bulk-import-retention",
+      "schedule": "0 19 * * *"
+    }
+  ]
 }

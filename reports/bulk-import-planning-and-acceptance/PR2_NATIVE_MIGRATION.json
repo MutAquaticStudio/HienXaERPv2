@@ -1,0 +1,225 @@
+{
+  "status": "PASS",
+  "scope": "PR1_AND_PR2_NATIVE_RECOVERY_AND_IMPORT_BOUNDARY",
+  "productionAccess": "NONE",
+  "managedQAAccess": "NONE",
+  "excludedAdvanceRacesRun": false,
+  "checks": [
+    {
+      "name": "BASELINE_FROM_MAIN_189",
+      "status": "PASS",
+      "migrationFiles": 189
+    },
+    {
+      "name": "UPGRADE_ACTOR_DENIAL_OLD_DOC_AND_PUBLIC_ACL_PRESERVED",
+      "status": "PASS"
+    },
+    {
+      "name": "SO_SAVED_INTENT_BOUND_TO_CANONICAL_RPC",
+      "status": "PASS"
+    },
+    {
+      "name": "SO_FROZEN_INTENT_CONFLICT_BRANCH_ACTOR_AND_LOOKUP_FIRST",
+      "status": "PASS"
+    },
+    {
+      "name": "PO_SAVED_INTENT_BOUND_TO_CANONICAL_RPC",
+      "status": "PASS"
+    },
+    {
+      "name": "PO_FROZEN_INTENT_CONFLICT_BRANCH_ACTOR_AND_LOOKUP_FIRST",
+      "status": "PASS"
+    },
+    {
+      "name": "REVOKED_PO_COST_READ_DENIED_FOR_PERSISTED_INTENT_AND_OUTCOME",
+      "status": "PASS"
+    },
+    {
+      "name": "EXISTING_RECOVERY_ADAPTER_DELEGATION",
+      "status": "PASS"
+    },
+    {
+      "name": "BULK_IMPORT_DEFAULT_OFF",
+      "status": "PASS"
+    },
+    {
+      "name": "REVIEW_SOURCE_CORRECTIONS_AND_PRICE_OVERRIDE_SURVIVE_RELOAD",
+      "status": "PASS"
+    },
+    {
+      "name": "SO_IMPORT_CREATE_AND_RETRY_ONCE_PER_SOURCE_OPERATION",
+      "status": "PASS"
+    },
+    {
+      "name": "SOURCE_DUPLICATE_BLOCK_AND_EXPLICIT_REPEAT_AUDIT",
+      "status": "PASS"
+    },
+    {
+      "name": "CONCURRENT_SAME_SOURCE_CREATION_SERIALIZED",
+      "status": "PASS"
+    },
+    {
+      "name": "PARTIAL_REVIEW_PRESERVES_CREATED_DOCUMENT_AND_DUPLICATE_STATE",
+      "status": "PASS"
+    },
+    {
+      "name": "INVALID_REVIEW_CAN_BE_SAVED_AND_CORRECTED_WITHOUT_RECREATING_RUN",
+      "status": "PASS"
+    },
+    {
+      "name": "PO_IMPORT_WAREHOUSE_DRAFT_USES_CANONICAL_RPC",
+      "status": "PASS"
+    },
+    {
+      "name": "BULK_IMPORT_RUN_RATE_LIMIT",
+      "status": "PASS"
+    },
+    {
+      "name": "EXPIRED_UPLOAD_CANNOT_BE_REVERIFIED",
+      "status": "PASS"
+    },
+    {
+      "name": "EXPIRED_RUN_AND_DOCUMENT_NO_LONGER_READABLE",
+      "status": "PASS"
+    },
+    {
+      "name": "RETENTION_QUEUE_SERVICE_ROLE_ONLY_AND_MARKS_STORAGE_PURGED",
+      "status": "PASS"
+    },
+    {
+      "name": "REVOKED_EMPLOYEE_OLD_IDENTITY_DENIED",
+      "status": "PASS"
+    },
+    {
+      "name": "DRAFTS_NO_STOCK_AR_AP_CASH_ALLOCATION_OR_FAKE_OPENING",
+      "status": "PASS",
+      "counts": {
+        "inventory_movements": 0,
+        "inventory_reservations": 0,
+        "payable_obligations": 0,
+        "payment_allocations": 0,
+        "payments": 0,
+        "receivable_obligations": 0,
+        "revenue_entries": 0,
+        "supply_allocations": 0
+      }
+    },
+    {
+      "name": "FRESH_UPGRADE_FUNCTION_AND_ACL_PARITY",
+      "status": "PASS"
+    }
+  ],
+  "migrationShas": {
+    "20261014034026_bulk_import_draft_recovery_boundary.sql": "c22cf82e1a6873a230471776ba4b45924c8367b097c328a2e73bada7b680a12f",
+    "20261014131000_bulk_so_po_import.sql": "f5dfe8a744cde1cd5cf4aa4c9f098ce2d780c2eab9998130d8fba24b4f316bae"
+  },
+  "databases": [
+    "hx_remediation_bulk_recovery_808719968d",
+    "hx_remediation_bulk_fresh_5b9325eb25"
+  ],
+  "engine": "PostgreSQL 17.11 (Postgres.app) on aarch64-apple-darwin23.6.0, compiled by Apple clang version 15.0.0 (clang-1500.3.9.4), 64-bit",
+  "baselineGap": {
+    "name": "SO_RECEIPT_ACTOR_OWNERSHIP_MISSING",
+    "status": "REPRODUCED_BEFORE_FIX",
+    "productionExploit": "NOT_TESTED"
+  },
+  "expectedDenials": [
+    {
+      "code": "23505",
+      "message": "operation_payload_conflict"
+    },
+    {
+      "code": "23505",
+      "message": "operation_payload_conflict"
+    },
+    {
+      "code": "23505",
+      "message": "operation_payload_conflict"
+    },
+    {
+      "code": "23505",
+      "message": "operation_payload_conflict"
+    },
+    {
+      "code": "23505",
+      "message": "operation_payload_conflict"
+    },
+    {
+      "code": "42501",
+      "message": "forbidden"
+    },
+    {
+      "code": "23505",
+      "message": "operation_payload_conflict"
+    },
+    {
+      "code": "23505",
+      "message": "operation_payload_conflict"
+    },
+    {
+      "code": "23505",
+      "message": "operation_payload_conflict"
+    },
+    {
+      "code": "23505",
+      "message": "operation_payload_conflict"
+    },
+    {
+      "code": "42501",
+      "message": "forbidden"
+    },
+    {
+      "code": "42501",
+      "message": "forbidden"
+    },
+    {
+      "code": "42501",
+      "message": "forbidden"
+    },
+    {
+      "code": "22023",
+      "message": "invalid_command_lookup"
+    },
+    {
+      "code": "42501",
+      "message": "forbidden"
+    },
+    {
+      "code": "42501",
+      "message": "forbidden"
+    },
+    {
+      "code": "42501",
+      "message": "new row violates row-level security policy for table \"objects\""
+    },
+    {
+      "code": "55000",
+      "message": "bulk_import_rate_limited"
+    },
+    {
+      "code": "42501",
+      "message": "permission denied for function list_expired_bulk_import_files"
+    },
+    {
+      "code": "42501",
+      "message": "forbidden"
+    },
+    {
+      "code": "42501",
+      "message": "forbidden"
+    },
+    {
+      "code": "42501",
+      "message": "forbidden"
+    },
+    {
+      "code": "42501",
+      "message": "forbidden"
+    },
+    {
+      "code": "42501",
+      "message": "forbidden"
+    }
+  ],
+  "cleanup": "OWNED_DATABASES_REMOVED"
+}

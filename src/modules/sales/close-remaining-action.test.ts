@@ -1,3 +1,4 @@
+vi.mock("server-only", () => ({}));
 import {beforeEach,describe,expect,it,vi} from "vitest";
 const mocks=vi.hoisted(()=>({permission:vi.fn(),rpc:vi.fn(),revalidate:vi.fn()}));
 vi.mock("@/lib/access/context",()=>({requireInternalPermission:mocks.permission,requireCustomerAccess:vi.fn()}));

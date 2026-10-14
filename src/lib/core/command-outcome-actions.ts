@@ -12,10 +12,10 @@ import { documentCommands } from "@/modules/invoicing/document-commands";
 import { noticeCommands } from "@/modules/finance/notice-commands";
 import { masterCommands } from "@/modules/catalog/command";
 
-const commandSchema = z.enum(["post_payment", "receive_purchase_order", "verify_supplier_fulfillment", "allocate_payment", "resolve_commission_reconciliation", "create_delivery_expense", "approve_expense", "create_warehouse_transfer", "record_warehouse_transfer_event", "create_supplier_return", "record_supplier_return_event", "approve_supplier_return_credit", "refund_supplier_credit", "offset_supplier_credit", ...noticeCommands, ...documentCommands, ...creditCommandNames, ...masterCommands]);
+const commandSchema = z.enum(["create_sales_order_draft", "create_purchase_order_draft", "post_payment", "receive_purchase_order", "verify_supplier_fulfillment", "allocate_payment", "resolve_commission_reconciliation", "create_delivery_expense", "approve_expense", "create_warehouse_transfer", "record_warehouse_transfer_event", "create_supplier_return", "record_supplier_return_event", "approve_supplier_return_credit", "refund_supplier_credit", "offset_supplier_credit", ...noticeCommands, ...documentCommands, ...creditCommandNames, ...masterCommands]);
 
 export async function saveCommandDraftAction(operationId: string, command: string, entries: Array<[string, string]>): Promise<CommandOutcome> {
-  const parsed = z.object({ operationId: z.uuid(), command: commandSchema, entries: z.array(z.tuple([z.string().max(100), z.string().max(20000)])).max(200) }).safeParse({ operationId, command, entries });
+  const parsed = z.object({ operationId: z.uuid(), command: commandSchema, entries: z.array(z.tuple([z.string().max(100), z.string().max(60000)])).max(200) }).safeParse({ operationId, command, entries });
   if (!parsed.success) return { status: "FAILED", message: "Thông tin thao tác chưa hợp lệ. Vui lòng kiểm tra lại." };
   const access = await requireInternalAccess();
   const supabase = await createServerSupabase();
