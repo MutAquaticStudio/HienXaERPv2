@@ -10,6 +10,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { ExistingPaymentAllocationForm, type ExistingPayment } from "@/modules/finance/existing-payment-allocation-form";
 import { CommandRecoveryNotice } from "@/components/reliable-command-form";
 import { PaymentForm, type PaymentTarget } from "@/modules/finance/payment-form";
+import { AutoFilterForm } from "@/components/ui/auto-filter-form";
 
 type Payable = { id: string; supplier_id: string; supplier_name: string; source_label: string; original_amount_vnd: string; outstanding_amount_vnd: string; due_date: string; recorded_at: string; state: string };
 type Account = { id: string; code: string; name: string };
@@ -52,7 +53,7 @@ export default async function PayablesPage({ searchParams }: { searchParams: Pro
   const selectedName = selected[0]?.supplier_name ?? partyResult.data?.name;
   return <div className="page-stack"><header className="page-heading"><div><p className="eyebrow">Tài chính · Công nợ phải trả</p><h1>Phải trả nhà cung cấp</h1><p className="lede">Theo dõi công nợ nhà cung cấp từ hàng đã nhận và chi phí đã duyệt.</p></div><div className="action-cluster"><Link className="button button-secondary" href="/admin/expenses">Chi phí</Link><Link className="button button-secondary" href="/admin/cashbook">Sổ tiền</Link></div></header>
     <ActionNotice notice={query.notice} error={query.error} reference={query.payment} />
-    <form className="filter-bar">{supplierId && <input type="hidden" name="supplier" value={supplierId} />}<label>Tìm kiếm<input name="q" defaultValue={list.q} placeholder="Nhà cung cấp, nguồn" /></label><label>Trạng thái<select name="state" defaultValue={list.state}><option value="">Tất cả còn dư</option><option value="OVERDUE">Quá hạn</option></select></label><button className="button button-secondary" type="submit">Áp dụng</button>{(list.q || list.state || supplierId) && <Link className="code-link" href="/admin/payables">Xóa lọc</Link>}</form>
+    <AutoFilterForm>{supplierId && <input type="hidden" name="supplier" value={supplierId} />}<label>Tìm kiếm<input name="q" defaultValue={list.q} placeholder="Nhà cung cấp, nguồn" /></label><label>Trạng thái<select name="state" defaultValue={list.state}><option value="">Tất cả còn dư</option><option value="OVERDUE">Quá hạn</option></select></label>{(list.q || list.state || supplierId) && <Link className="code-link" href="/admin/payables">Xóa lọc</Link>}</AutoFilterForm>
     {supplierId && <p className="form-message">Đang xem công nợ của {selectedName ?? "nhà cung cấp đã chọn"}. Chọn các khoản cần thanh toán trước khi ghi chi.</p>}
     {supplierId && selectedName && canPost && accounts.length > 0 && <PaymentForm actorScope={access.authUserId + ":" + access.branchId} direction="DISBURSEMENT" partyId={supplierId} partyName={selectedName} accounts={accounts} obligations={selected.map((item): PaymentTarget => ({ id: item.id, sourceLabel: item.source_label, dueDate: item.due_date, outstandingAmountVnd: item.outstanding_amount_vnd }))} initialHasNext={selectedFetched.length > CORE_LIST_PAGE_SIZE} defaultEffectiveAt={localNow()} redirectTo={`/admin/payables?supplier=${supplierId}`} operationId={randomUUID()} />}
     {supplierId && selectedName && canPost && !accounts.length && <p className="form-message">Cần tạo tài khoản tiền tại Sổ tiền trước khi ghi nhận chi.</p>}

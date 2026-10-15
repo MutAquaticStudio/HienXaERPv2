@@ -2,6 +2,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 const mocks=vi.hoisted(()=>({access:vi.fn(),client:vi.fn(),rpc:vi.fn(),from:vi.fn(),calls:[] as {table:string;method:string;args:unknown[]}[],results:{} as Record<string,{data:unknown[];error:unknown}>}));
+vi.mock("next/navigation",()=>({useRouter:()=>({replace:vi.fn()}),usePathname:()=>"/admin/suppliers/pricing"}));
 vi.mock("@/lib/access/context",()=>({requireInternalAccess:mocks.access}));
 vi.mock("@/lib/supabase/server",()=>({createServerSupabase:mocks.client}));
 vi.mock("@/modules/portal/server",()=>({portalRpc:mocks.rpc}));
