@@ -6,7 +6,7 @@ Trạng thái: **ĐANG TRIỂN KHAI — CHƯA DEPLOY**. Không áp migration lê
 
 | Mã | Quyết định | Tài liệu bị thay đổi |
 |---|---|---|
-| D1 | Tắt hẳn Báo giá (nội bộ + cổng khách). Không xóa dữ liệu/RPC; đơn bán cũ có nguồn báo giá vẫn xem được. | Spec.md L98, SPEC-140; UXUI.md L141, L1479, L1532 |
+| D1 | Tắt hẳn Báo giá (nội bộ + cổng khách) bằng cờ `QUOTATIONS_ENABLED` (`src/lib/features.ts`). Không xóa dữ liệu/RPC/quyền; preset vai trò giữ nguyên để khớp DB; đơn bán cũ có nguồn báo giá vẫn xem được. | Spec.md L98, SPEC-140; UXUI.md L141, L1479, L1532 |
 | D2 | KPI Tổng quan: Doanh thu │ Tổng chi phí │ **Lợi nhuận ròng** (= `operating_profit`: doanh thu − giá vốn − chi phí vận hành) │ Biên lợi nhuận ròng. LN gộp không còn hiển thị trên giao diện (trang Báo cáo vốn không có chỉ số lợi nhuận); RPC vẫn trả `gross_profit`. | SPEC-DASH-001; UX-DASH-002 |
 | D3 | Biểu đồ đường: Thu = doanh thu ghi nhận, Chi = giá vốn + chi phí vận hành, Lợi nhuận = Thu − Chi. Cùng công thức với KPI. | UX-DASH-004 |
 | D4 | Chỉnh giá bán hàng loạt: lưu một lần, nguyên tử (RPC batch mới). Làm tròn mặc định 1.000đ, có xem trước. | SPEC-120, SPEC-CONFIG-002 |
@@ -61,6 +61,7 @@ Dùng `scripts/qa/go-live/browser-kit.mjs`; script đặt tại `scripts/qa/feed
 | QA-FB-B09 | Tổng quan lọc theo khách khi có chi phí chung chưa phân bổ → ẩn Chi/Lợi nhuận kèm lý do |
 | QA-FB-B10 | Báo cáo: đối chiếu từng báo cáo `/admin/reports` với chứng từ gốc của bộ dữ liệu QA; CSV khớp màn hình |
 | QA-FB-B11 | Báo giá tắt ở nội bộ và cổng khách (404); đơn bán cũ từ báo giá vẫn mở được |
+| QA-FB-B11a | Kịch bản lịch sử về báo giá (`scripts/qa/go-live/commercial-amendment-browser.mjs`, `quotation-money-browser.mjs`) không còn áp dụng khi D1 có hiệu lực; bật lại cờ `QUOTATIONS_ENABLED` để chạy lại |
 | QA-FB-B12 | Vật tư: cột giá/giá vốn/tồn theo quyền với 5 vai trò (Owner, Quản lý, Bán hàng, Kho, Kế toán) |
 | QA-FB-B13 | Giá hàng loạt +10% → xem trước → lưu → đơn bán mới dùng giá mới; hai người lưu cùng lúc → người sau bị từ chối, không ghi một phần |
 | QA-FB-B14 | Hiệu năng: Tổng quan kỳ 12 tháng, đo p95 trên 20 lần, trong ngân sách SPEC-370 |

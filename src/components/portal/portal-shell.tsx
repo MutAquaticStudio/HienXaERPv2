@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import styles from "@/components/portal/portal.module.css";
+import { QUOTATIONS_ENABLED } from "@/lib/features";
 
 const workerLinks = [
   { href: "/work", label: "Công việc", icon: House },
@@ -28,7 +29,7 @@ const workerLinks = [
 
 const customerLinks = [
   { href: "/customer", label: "Tổng quan", icon: House },
-  { href: "/customer/quotations", label: "Báo giá", icon: ClipboardList },
+  ...(QUOTATIONS_ENABLED ? [{ href: "/customer/quotations", label: "Báo giá", icon: ClipboardList }] : []),
   { href: "/customer/orders", label: "Đơn hàng", icon: BriefcaseBusiness },
   { href: "/customer/debts", label: "Công nợ", icon: CircleDollarSign },
   { href: "/customer/messages", label: "Tin nhắn", icon: MessageSquare },

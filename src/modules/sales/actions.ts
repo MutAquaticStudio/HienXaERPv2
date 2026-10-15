@@ -10,6 +10,7 @@ import { AppError, operationalPostingError, quantityInputError } from "@/lib/cor
 import { isExactBaseQuantity } from "@/lib/core/quantity";
 import { requireCustomerAccess, requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { QUOTATIONS_DISABLED_MESSAGE, QUOTATIONS_ENABLED } from "@/lib/features";
 import { resolvePrice, type PriceRule } from "@/modules/pricing/resolve-price";
 
 const CommercialDecimal = Decimal.clone({ precision: 50 });
@@ -320,9 +321,9 @@ async function saveDocument(kind: "order" | "quote", mode: "create" | "edit", fo
 }
 
 export async function createSalesOrderAction(_: SalesActionState, formData: FormData) { return saveDocument("order", "create", formData); }
-export async function createQuotationAction(_: SalesActionState, formData: FormData) { return saveDocument("quote", "create", formData); }
+export async function createQuotationAction(_: SalesActionState, formData: FormData) { return QUOTATIONS_ENABLED ? saveDocument("quote", "create", formData) : { message: QUOTATIONS_DISABLED_MESSAGE }; }
 export async function updateSalesOrderDraftAction(_: SalesActionState, formData: FormData) { return saveDocument("order", "edit", formData); }
-export async function updateQuotationDraftAction(_: SalesActionState, formData: FormData) { return saveDocument("quote", "edit", formData); }
+export async function updateQuotationDraftAction(_: SalesActionState, formData: FormData) { return QUOTATIONS_ENABLED ? saveDocument("quote", "edit", formData) : { message: QUOTATIONS_DISABLED_MESSAGE }; }
 
 async function internalCommand(permission: string, rpc: string, args: Record<string, unknown>, destination: string, notice: string) {
   await requireInternalPermission(permission);
@@ -353,18 +354,21 @@ export async function closeSalesOrderRemainingAction(formData: FormData) {
 }
 
 export async function sendQuotationAction(formData: FormData) {
+  if (!QUOTATIONS_ENABLED) redirect(`/admin/orders?error=${encodeURIComponent(QUOTATIONS_DISABLED_MESSAGE)}`);
   const parsed = commandSchema.extend({ quoteId: z.uuid() }).safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId"), quoteId: formData.get("quoteId") });
   if (!parsed.success) redirect("/admin/quotations?error=invalid-command");
   return internalCommand("quotation.send", "send_quote_revision", { target_revision_id: parsed.data.entityId, operation_id: parsed.data.operationId }, `/admin/quotations/${parsed.data.quoteId}`, "sent");
 }
 
 export async function acceptQuotationAction(formData: FormData) {
+  if (!QUOTATIONS_ENABLED) redirect(`/admin/orders?error=${encodeURIComponent(QUOTATIONS_DISABLED_MESSAGE)}`);
   const parsed = commandSchema.extend({ quoteId: z.uuid(), channel: z.enum(["PHONE", "ZALO", "EMAIL", "OTHER"]), confirmedBy: z.string().trim().min(2).max(160) }).safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId"), quoteId: formData.get("quoteId"), channel: formData.get("channel"), confirmedBy: formData.get("confirmedBy") });
   if (!parsed.success) redirect("/admin/quotations?error=invalid-command");
   return internalCommand("quotation.accept", "accept_quote_revision", { target_revision_id: parsed.data.entityId, acceptance_channel: parsed.data.channel, confirmed_by_name: parsed.data.confirmedBy, evidence_object_path: null, operation_id: parsed.data.operationId }, `/admin/quotations/${parsed.data.quoteId}`, "accepted");
 }
 
 export async function acceptCustomerQuotationAction(formData: FormData) {
+  if (!QUOTATIONS_ENABLED) redirect(`/customer?error=${encodeURIComponent(QUOTATIONS_DISABLED_MESSAGE)}`);
   const parsed = commandSchema.extend({ quoteId: z.uuid() }).safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId"), quoteId: formData.get("quoteId") });
   if (!parsed.success) redirect("/customer/quotations?error=invalid-command");
   const membership = await requireCustomerAccess(["OWNER", "FINANCE_CONTACT"]);
@@ -378,12 +382,14 @@ export async function acceptCustomerQuotationAction(formData: FormData) {
 }
 
 export async function createQuotationRevisionAction(formData: FormData) {
+  if (!QUOTATIONS_ENABLED) redirect(`/admin/orders?error=${encodeURIComponent(QUOTATIONS_DISABLED_MESSAGE)}`);
   const parsed = commandSchema.extend({ quoteId: z.uuid() }).safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId"), quoteId: formData.get("quoteId") });
   if (!parsed.success) redirect("/admin/quotations?error=invalid-command");
   return internalCommand("quotation.create", "create_quote_revision", { source_revision_id: parsed.data.entityId, operation_id: parsed.data.operationId }, `/admin/quotations/${parsed.data.quoteId}`, "revised");
 }
 
 export async function createOrderFromQuotationAction(formData: FormData) {
+  if (!QUOTATIONS_ENABLED) redirect(`/admin/orders?error=${encodeURIComponent(QUOTATIONS_DISABLED_MESSAGE)}`);
   const parsed = commandSchema.extend({ quoteId: z.uuid(), deliveryAt: z.string().trim().optional() }).safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId"), quoteId: formData.get("quoteId"), deliveryAt: formData.get("deliveryAt") });
   if (!parsed.success) redirect("/admin/quotations?error=invalid-command");
   let deliveryAt;

@@ -5,6 +5,7 @@ import path from "node:path";
 import fontkit from "@pdf-lib/fontkit";
 import { PDFDocument, rgb } from "pdf-lib";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { QUOTATIONS_ENABLED } from "@/lib/features";
 
 type Revision = { id: string; quotation_id: string; revision_number: number; state: string; customer_name_snapshot: string; site_name_snapshot: string; delivery_address_snapshot: string; commercial_terms: string | null; total_vnd: string; expires_at: string | null };
 type Line = { material_name_snapshot: string; quantity: string; unit_price_vnd: string; line_total_vnd: string; uom_symbol: string | null };
@@ -12,6 +13,7 @@ const money = (value: string) => `${new Intl.NumberFormat("vi-VN").format(BigInt
 const stateLabel = (value: string) => ({ DRAFT: "Bản nháp", SENT: "Đã gửi", ACCEPTED: "Đã chấp nhận", SUPERSEDED: "Đã thay thế", CANCELLED: "Đã hủy" } as Record<string, string>)[value] ?? "Chưa xác định";
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  if (!QUOTATIONS_ENABLED) return new Response("Không tìm thấy.", { status: 404 });
   const { id } = await params;
   const supabase = await createServerSupabase();
   const { data: auth } = await supabase.auth.getUser();

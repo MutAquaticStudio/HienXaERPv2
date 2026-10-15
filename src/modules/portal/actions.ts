@@ -5,6 +5,8 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { QUOTATIONS_ENABLED } from "@/lib/features";
+
 import { authenticatedPortalClient, portalRpc, PortalRpcError } from "@/modules/portal/server";
 import type {
   CustomerOrder,
@@ -68,6 +70,7 @@ export async function getAdminPaymentNotices() {
 }
 
 export async function requestQuotationChangeAction(formData: FormData) {
+  if (!QUOTATIONS_ENABLED) redirect("/customer");
   const revisionId = String(formData.get("revision_id") ?? "");
   const reason = String(formData.get("reason") ?? "");
   const operationId = String(formData.get("operation_id") ?? randomUUID());
