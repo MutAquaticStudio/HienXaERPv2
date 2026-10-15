@@ -31,8 +31,11 @@ pnpm check           # lint + typecheck + test + build — chạy trước khi p
 node --test scripts/qa/evidence-reverification.test.mjs scripts/qa/source-binding.test.mjs   # cũng chạy trong CI
 ```
 
-CI (`.github/workflows/ci.yml`) chạy đúng các bước trên với Node 24 + pnpm 11.
-DB cục bộ cần Docker + Supabase CLI: `pnpm db:start`, `pnpm db:reset`, `pnpm db:test` (pgTAP trong `supabase/tests`).
+CI (`.github/workflows/ci.yml`) chạy đúng các bước trên với Node 24 + pnpm 11, và job `db-migrations`
+(Postgres 17): `HX_TEST_PG_URL=postgres://postgres@127.0.0.1:5432/postgres pnpm db:test:isolated` — áp toàn bộ migration
+lên DB tạm, kiểm tra RLS/quyền, chạy `supabase/tests/native/*.sql` (mỗi file rollback; `_setup.sql` là fixture chung).
+Migration/RPC mới phải có test SQL native kèm theo.
+DB cục bộ đầy đủ cần Docker + Supabase CLI: `pnpm db:start`, `pnpm db:reset`, `pnpm db:test` (pgTAP trong `supabase/tests`).
 
 ## Kiến trúc
 
