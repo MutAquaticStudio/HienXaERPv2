@@ -572,6 +572,28 @@ tbody tr:hover { background: #f8fbff; }
     linear-gradient(120deg, color-mix(in srgb, var(--accent) 7%, var(--paper)), var(--paper) 54%);
 }
 
+.profit-chart { margin-top: 0.75rem; }
+.profit-chart-legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1.25rem; margin: 0 0 0.5rem; padding: 0; list-style: none; font-size: var(--font-size-caption); color: var(--text); }
+.profit-chart-legend li { display: inline-flex; align-items: center; gap: 0.45rem; }
+.profit-chart-legend i, .profit-chart-tooltip i { display: inline-block; width: 14px; height: 2px; border-radius: 1px; }
+.profit-chart-scroll { overflow-x: auto; overscroll-behavior-x: contain; }
+.profit-chart-plot { position: relative; min-width: 600px; }
+.profit-chart-plot svg { display: block; width: 100%; height: auto; overflow: visible; touch-action: pan-y; }
+.profit-chart-plot svg:focus-visible { outline: 2px solid var(--primary); outline-offset: 4px; border-radius: 6px; }
+.profit-chart-grid { stroke: var(--border); stroke-width: 1; }
+.profit-chart-zero { stroke: var(--muted); stroke-width: 1; }
+.profit-chart-crosshair { stroke: var(--muted); stroke-width: 1; }
+.profit-chart-axis { fill: var(--muted); font-size: 12px; font-family: var(--font-sans); }
+.profit-chart-tooltip {
+  position: absolute; top: 0; transform: translateX(-50%); z-index: 2; display: grid; gap: 0.2rem;
+  min-width: 220px; padding: 0.55rem 0.75rem; pointer-events: none;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow);
+  font-size: var(--font-size-caption); color: var(--text);
+}
+.profit-chart-tooltip span { display: flex; align-items: center; gap: 0.45rem; white-space: nowrap; }
+.profit-chart-table { margin-top: 0.75rem; font-size: var(--font-size-caption); }
+.profit-chart-table summary { cursor: pointer; color: var(--primary); }
+
 .bar-row {
   display: grid;
   grid-template-columns: 150px minmax(120px, 1fr) 170px;

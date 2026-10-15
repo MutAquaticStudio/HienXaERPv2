@@ -30,7 +30,7 @@ try {
   const target = report.origin + "/admin?from=2000-01-01&to=2099-01-01&activity=DELIVERY&customer=" + d.customer;
   const finance = await login("finance-employee");
   await finance.page.goto(target);
-  const profit = finance.page.locator(".finance-metrics .metric-card").filter({ hasText: "Lợi nhuận gộp quản trị" });
+  const profit = finance.page.locator(".finance-metrics .metric-card").filter({ hasText: "Lợi nhuận ròng" });
   await profit.getByText("Chưa đủ hoặc chưa khớp giá vốn theo dòng và nguồn", { exact: true }).waitFor();
   assert.equal(await profit.locator(".metric-value").innerText(), "—");
   await finance.faults.assertHealthy();
@@ -64,7 +64,7 @@ try {
   await writeFile(args.screenshots + "/g16-source-ar-export.csv", contents);
   report.checks.push({ name: "AUTHENTICATED_AR_CSV_MATCHES_SOURCE_DEBT_WITHOUT_COST_FIELDS", status: "PASS", totalVnd: "2300000", pnlCsvImplemented: false });
   const sales = await login("sales"); await sales.page.goto(target);
-  assert.equal(await sales.page.locator(".finance-metrics .metric-card").filter({ hasText: "Lợi nhuận gộp quản trị" }).count(), 0);
+  assert.equal(await sales.page.locator(".finance-metrics .metric-card").filter({ hasText: "Lợi nhuận ròng" }).count(), 0);
   await sales.faults.assertHealthy();
   report.checks.push({ name: "SALES_ROLE_CANNOT_READ_COST_OR_PROFIT_FROM_NEW_DASHBOARD_PATH", status: "PASS" });
   report.status = "PASS_BROWSER_COST_SOURCE_COMPLETENESS_AND_SCOPED_EXPORT";

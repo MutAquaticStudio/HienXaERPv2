@@ -7,7 +7,7 @@ Trạng thái: **ĐANG TRIỂN KHAI — CHƯA DEPLOY**. Không áp migration lê
 | Mã | Quyết định | Tài liệu bị thay đổi |
 |---|---|---|
 | D1 | Tắt hẳn Báo giá (nội bộ + cổng khách). Không xóa dữ liệu/RPC; đơn bán cũ có nguồn báo giá vẫn xem được. | Spec.md L98, SPEC-140; UXUI.md L141, L1479, L1532 |
-| D2 | KPI Tổng quan thay "LN gộp" bằng "Lợi nhuận ròng" (= `operating_profit`: doanh thu − giá vốn − chi phí vận hành). LN gộp vẫn có ở Báo cáo. | SPEC-DASH-001; UX-DASH-002 |
+| D2 | KPI Tổng quan: Doanh thu │ Tổng chi phí │ **Lợi nhuận ròng** (= `operating_profit`: doanh thu − giá vốn − chi phí vận hành) │ Biên lợi nhuận ròng. LN gộp không còn hiển thị trên giao diện (trang Báo cáo vốn không có chỉ số lợi nhuận); RPC vẫn trả `gross_profit`. | SPEC-DASH-001; UX-DASH-002 |
 | D3 | Biểu đồ đường: Thu = doanh thu ghi nhận, Chi = giá vốn + chi phí vận hành, Lợi nhuận = Thu − Chi. Cùng công thức với KPI. | UX-DASH-004 |
 | D4 | Chỉnh giá bán hàng loạt: lưu một lần, nguyên tử (RPC batch mới). Làm tròn mặc định 1.000đ, có xem trước. | SPEC-120, SPEC-CONFIG-002 |
 
@@ -57,6 +57,7 @@ Dùng `scripts/qa/go-live/browser-kit.mjs`; script đặt tại `scripts/qa/feed
 | QA-FB-B06 | Bộ lọc tự áp dụng ở 12 danh sách; URL giữ trạng thái; Back/Forward đúng; "Đang làm việc"/"Đã hủy"/"Tất cả" |
 | QA-FB-B07 | Danh sách khách: bấm mã hoặc tên đều mở chi tiết; cột công nợ chỉ hiện khi có quyền |
 | QA-FB-B08 | Tổng quan: đổi kỳ/khách/công trình/loại hoạt động → KPI và biểu đồ đổi cùng; tổng biểu đồ = KPI |
+| QA-FB-B08a | `scripts/qa/remediation/package6-no-opening-browser.mjs` (assert số LN gộp 1.120.000 trên thẻ cũ) được thay bằng QA-FB-B08; `package5` đã đổi sang thẻ "Lợi nhuận ròng" |
 | QA-FB-B09 | Tổng quan lọc theo khách khi có chi phí chung chưa phân bổ → ẩn Chi/Lợi nhuận kèm lý do |
 | QA-FB-B10 | Báo cáo: đối chiếu từng báo cáo `/admin/reports` với chứng từ gốc của bộ dữ liệu QA; CSV khớp màn hình |
 | QA-FB-B11 | Báo giá tắt ở nội bộ và cổng khách (404); đơn bán cũ từ báo giá vẫn mở được |
