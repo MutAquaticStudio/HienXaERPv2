@@ -2752,3 +2752,22 @@ Không đổi biến môi trường hay cấu hình dự án Vercel. Env Preview
 Kiểm tra (GET qua connector Vercel): `/admin/quotations` và `/customer/quotations` 404 (`x-nextjs-rewritten-path` `/…/__khong-tim-thay`);
 `/admin` chưa đăng nhập → chuyển `/login` (hàm chạy icn1, proxy + guard không lỗi); `/recovery/confirm` 200; runtime log của deployment: không có dòng nào.
 Chưa làm trên preview: đăng nhập tài khoản QA và đo B14 — mạng phiên cloud không tới `*.vercel.app` (proxy từ chối). Production không đổi.
+
+## 2026-10-16 — FB-REL: phát hành Production (Owner: "deploy lên production luôn")
+
+Lệnh Owner trong phiên: deploy Production ngay để thử bằng tài khoản Production. Production Supabase `nbwynrwkdbtfsitafsxa`:
+- Đọc trước: 0 báo giá (bảng `quotations` rỗng) → tắt báo giá (D1) không ảnh hưởng chứng từ nào. Lịch sử migration Production khác tên/version repo
+  (183 bản ghi; `operational_role_presets` = `20261013121739`; có bản gộp `pr44_reviewed_schema187_compact_forward_20261013`), nên đối chiếu bằng
+  mã nguồn: `finance_dashboard_snapshot`, `save_pricing_rule`, `private.has_permission`, `private.command_payload_hash` cùng md5 với QA; cột
+  `command_receipts`, `audit_events`, `pricing_rules` khớp QA. Hai hàm mới chưa tồn tại.
+- Áp `20261015120000_dashboard_profit_series` và `20261015130000_pricing_rules_batch` (mỗi file một transaction, ghi `schema_migrations` đúng
+  version repo, sha256 file như QA). Sau khi áp: md5 hai hàm = QA; anon không gọi được, authenticated gọi được; 0 bảng thiếu RLS; anon 0 quyền bảng;
+  0 definer thiếu `search_path`. Hàm definer anon gọi được duy nhất là `public.rls_auto_enable()` (event trigger nền tảng, có từ trước, ghi trong
+  baseline release cũ). Security advisors: 25 ERROR view definer, 163 WARN definer cho authenticated (thêm `save_pricing_rules_batch`, tự kiểm
+  `pricing.manage`), 1 WARN anon (`rls_auto_enable`), 1 WARN mật khẩu lộ, 11 INFO — không có cảnh báo mới ngoài thiết kế.
+Vercel: deployment Production `dpl_FmumGBwyCA4QHVL2x1fWXyzdPc2G` từ `nox/elegant-volta-kr29iz@70ba7cf` (env Production của dự án, không đổi env),
+READY, gán `hien-xa-erp-v2-nu.vercel.app` và `hien-xa-erp-v2-hienxa.vercel.app`. Kiểm: `/api/health` 200 `buildSha` = `70ba7cf…`; `/login` 200;
+`/admin/quotations/new` 404; runtime log không có lỗi. Phương án quay lui: promote `dpl_CsTHXxgFJNeyVhZJqZd9UMEaEbUD` (main `0130931`) — hai migration
+chỉ thêm hàm mới nên code cũ vẫn chạy được.
+Tồn tại (có từ trước, không do bản này): env dự án thiếu `NEXT_PUBLIC_APP_URL` → link "Quên mật khẩu" trỏ `http://localhost:3000`;
+`main` chưa chứa các commit của nhánh (cần PR để đồng bộ).
