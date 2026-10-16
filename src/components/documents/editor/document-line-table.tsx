@@ -5,13 +5,13 @@ import { X } from "lucide-react";
 import { formatVnd, vnd } from "@/lib/core/money";
 import type { EditorLine, EditorMaterial, PricedLine } from "./types";
 
-type Props = {
-  lines: EditorLine[];
+type Props<L extends EditorLine> = {
+  lines: L[];
   materials: EditorMaterial[];
   canManagePrice: boolean;
   isValidQuantity: (value: string) => boolean;
   priced: (index: number) => PricedLine | null;
-  onChange: (key: number, change: Partial<EditorLine>) => void;
+  onChange: (key: number, change: Partial<L>) => void;
   onRemove: (key: number) => void;
   /** Called when Enter is pressed in a line, so typing can go straight back to the material search. */
   onDone?: () => void;
@@ -19,11 +19,11 @@ type Props = {
   fields?: { uom: string; price: string; reason: string };
   labels?: { uom: string; price: string };
   /** Extra hidden inputs that must stay aligned with each line (e.g. salesLineId). */
-  hiddenFields?: (line: EditorLine) => ReactNode;
+  hiddenFields?: (line: L) => ReactNode;
   /** A full-width row under a line (stock hint, linked sales price...). */
-  detail?: (line: EditorLine, index: number) => ReactNode;
+  detail?: (line: L, index: number) => ReactNode;
   /** Material fixed by its source (e.g. a sales order line). */
-  lockedMaterial?: (line: EditorLine) => boolean;
+  lockedMaterial?: (line: L) => boolean;
   emptyText?: string;
 };
 
@@ -34,8 +34,8 @@ const DEFAULT_LABELS = { uom: "ĐVT", price: "Đơn giá" };
  * Inline-editable document lines (KiotViet style). Every line posts exactly one value per field name,
  * in line order, so the server can read them with FormData.getAll().
  */
-export function DocumentLineTable({ lines, materials, canManagePrice, isValidQuantity, priced, onChange, onRemove, onDone, focusKey,
-  fields = DEFAULT_FIELDS, labels = DEFAULT_LABELS, hiddenFields, detail, lockedMaterial, emptyText = "Chưa có dòng hàng. Tìm vật tư ở ô phía trên để thêm (F3)." }: Props) {
+export function DocumentLineTable<L extends EditorLine>({ lines, materials, canManagePrice, isValidQuantity, priced, onChange, onRemove, onDone, focusKey,
+  fields = DEFAULT_FIELDS, labels = DEFAULT_LABELS, hiddenFields, detail, lockedMaterial, emptyText = "Chưa có dòng hàng. Tìm vật tư ở ô phía trên để thêm (F3)." }: Props<L>) {
   const quantityRefs = useRef(new Map<number, HTMLInputElement>());
   useEffect(() => {
     if (focusKey == null) return;
@@ -74,7 +74,7 @@ export function DocumentLineTable({ lines, materials, canManagePrice, isValidQua
           </td>
           <td data-label={labels.uom}>
             <select aria-label={`${labels.uom} dòng ${row}`} name={priceLocked ? undefined : fields.uom} value={line.uomId} disabled={priceLocked}
-              onChange={(event) => onChange(line.key, { uomId: event.target.value })} required>
+              onChange={(event) => onChange(line.key, { uomId: event.target.value } as Partial<L>)} required>
               {(material?.uoms ?? []).map((uom) => <option key={uom.id} value={uom.id}>{uom.symbol}</option>)}
             </select>
             {priceLocked && <input type="hidden" name={fields.uom} value={line.uomId} />}
@@ -83,12 +83,12 @@ export function DocumentLineTable({ lines, materials, canManagePrice, isValidQua
             <input ref={(element) => { if (element) quantityRefs.current.set(line.key, element); else quantityRefs.current.delete(line.key); }}
               aria-label={`Số lượng dòng ${row}`} name="quantity" inputMode="decimal" value={line.quantity} required
               aria-invalid={!quantityValid} aria-describedby={quantityValid ? undefined : `qty-error-${line.key}`}
-              onChange={(event) => onChange(line.key, { quantity: event.target.value })} onKeyDown={enterMovesOn} />
+              onChange={(event) => onChange(line.key, { quantity: event.target.value } as Partial<L>)} onKeyDown={enterMovesOn} />
           </td>
           <td className="numeric" data-label={labels.price}>
             {canManagePrice
               ? <input aria-label={`${labels.price} thủ công dòng ${row}`} name={fields.price} inputMode="numeric" value={line.manualPriceVnd}
-                placeholder={price ? formatVnd(vnd(price.unitPriceVnd)) : "Giá hệ thống"} onChange={(event) => onChange(line.key, { manualPriceVnd: event.target.value })} onKeyDown={enterMovesOn} />
+                placeholder={price ? formatVnd(vnd(price.unitPriceVnd)) : "Giá hệ thống"} onChange={(event) => onChange(line.key, { manualPriceVnd: event.target.value } as Partial<L>)} onKeyDown={enterMovesOn} />
               : <><input type="hidden" name={fields.price} value={line.manualPriceVnd} />{price ? formatVnd(vnd(price.unitPriceVnd)) : "—"}</>}
             {price && <small className="table-subline">{price.sourceLabel}</small>}
           </td>
@@ -99,7 +99,7 @@ export function DocumentLineTable({ lines, materials, canManagePrice, isValidQua
           {!quantityValid && <small id={`qty-error-${line.key}`} role="alert" className="field-error">Nhập số lượng lớn hơn 0, tối đa 6 chữ số thập phân.</small>}
           {canManagePrice && line.manualPriceVnd
             ? <label className="doc-editor-reason">Lý do giá thủ công dòng {row}<input name={fields.reason} maxLength={500} value={line.manualReason} placeholder="Bắt buộc khi giá khác bảng giá"
-              onChange={(event) => onChange(line.key, { manualReason: event.target.value })} onKeyDown={enterMovesOn} /></label>
+              onChange={(event) => onChange(line.key, { manualReason: event.target.value } as Partial<L>)} onKeyDown={enterMovesOn} /></label>
             : null}
           {priceLocked && <small className="muted">Giá thủ công đã duyệt: {formatVnd(vnd(line.manualPriceVnd))}. Đổi giá hoặc đơn vị cần quyền quản lý giá.</small>}
           {extra}

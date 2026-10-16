@@ -117,7 +117,7 @@ export const EntityCombobox = forwardRef<EntityComboboxHandle, Props>(function E
         {!loading && !failed && !shown.length && <li className="doc-editor-listbox-note" role="presentation">{emptyText}</li>}
       </ul>}
     </div>
-    <input type="hidden" name={name} value={value?.id ?? ""} />
+    {name && <input type="hidden" name={name} value={value?.id ?? ""} />}
     {value?.detail && <small className="muted">{value.detail}</small>}
   </div>;
 });
