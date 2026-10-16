@@ -80,7 +80,8 @@ export function ProfitLineChart({ series }: { series: ProfitSeries }) {
       <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} role="img" aria-labelledby={titleId} tabIndex={0}
         onPointerMove={track} onPointerLeave={() => setActive(null)} onFocus={() => setActive((current) => current ?? points.length - 1)}
         onBlur={() => setActive(null)} onKeyDown={keyboard}>
-        <title id={titleId}>Biểu đồ đường Thu, Chi và Lợi nhuận {granularityLabel(series.granularity).toLowerCase()}. Dùng phím mũi tên để xem từng kỳ.</title>
+        {/* A single string: React renders a <title> with several children empty on the server (hydration mismatch). */}
+        <title id={titleId}>{`Biểu đồ đường Thu, Chi và Lợi nhuận ${granularityLabel(series.granularity).toLowerCase()}. Dùng phím mũi tên để xem từng kỳ.`}</title>
         {ticks.map((tick) => <g key={tick.toString()}>
           <line className={tick === 0n ? "profit-chart-zero" : "profit-chart-grid"} x1={PAD.left} x2={WIDTH - PAD.right} y1={y(tick)} y2={y(tick)} />
           <text className="profit-chart-axis" x={PAD.left - 8} y={y(tick)} textAnchor="end" dominantBaseline="middle">{compactVnd(tick)}</text>

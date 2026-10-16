@@ -1,4 +1,5 @@
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { renderToString } from "react-dom/server";
 import { afterEach, expect, it } from "vitest";
 import { ProfitLineChart } from "./profit-line-chart";
 import type { ProfitSeries } from "@/modules/reports/profit-series";
@@ -49,6 +50,11 @@ it("offers the same numbers as a table", () => {
   const rows = within(table).getAllByRole("row");
   expect(rows).toHaveLength(4);
   expect(rows[3]).toHaveTextContent("-500.000");
+});
+
+it("server-renders the chart title text, so hydration matches the browser", () => {
+  const html = renderToString(<ProfitLineChart series={series} />);
+  expect(html).toMatch(/<title id="[^"]+">Biểu đồ đường Thu, Chi và Lợi nhuận theo ngày\. Dùng phím mũi tên để xem từng kỳ\.<\/title>/);
 });
 
 it("explains an empty period instead of drawing", () => {
