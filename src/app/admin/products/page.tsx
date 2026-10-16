@@ -6,6 +6,8 @@ import { requireInternalPermission } from "@/lib/access/context";
 import { CORE_LIST_PAGE_SIZE, ilikePattern, parseCoreListQuery } from "@/lib/core-list";
 import { formatQuantity } from "@/lib/core/quantity";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { CatalogCreateButton } from "@/modules/catalog/catalog-dialog";
+import { catalogCreateProps } from "@/modules/catalog/editor-data";
 import { currentDefaultPrice, stockSummary, type ListPosition, type ListPriceRule } from "@/modules/catalog/material-list";
 import { readPricingClock } from "@/modules/pricing/request-clock";
 
@@ -75,11 +77,12 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
     };
   });
   const filtered = Boolean(list.q || list.state || group || use);
+  const create = can.manage ? await catalogCreateProps("materials", access, supabase) : null;
 
   return <div className="page-stack">
     <header className="page-heading"><div><p className="eyebrow">Kho hàng</p><h1>Vật tư</h1><p className="lede">Danh mục vật tư, giá bán và tồn kho. Bấm vào một dòng để xem chi tiết.</p></div>
       {(can.manage || can.price) && <div className="action-cluster">
-        {can.manage && <Link className="button button-primary" href="/admin/products/manage?kind=materials">+ Vật tư</Link>}
+        {create && <CatalogCreateButton {...create} label="+ Vật tư" />}
         {can.price && <Link className="button button-secondary" href="/admin/products/pricing">Thiết lập giá</Link>}
         {can.manage && <details className="more-actions"><summary className="button button-secondary">Danh mục khác</summary><div className="more-actions-menu"><Link href="/admin/products/manage?kind=groups">Nhóm vật tư</Link><Link href="/admin/products/manage?kind=units">Đơn vị tính</Link><Link href="/admin/products/manage?kind=conversions">Quy đổi</Link></div></details>}
       </div>}

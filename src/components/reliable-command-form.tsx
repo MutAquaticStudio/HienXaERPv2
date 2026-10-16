@@ -21,6 +21,8 @@ type Props = {
   onRestore?: (entries: Array<[string, string]>) => void;
   onNew?: () => void;
   resultHref?: (id:string) => string;
+  /** Called once a submit (or a lookup of it) is confirmed saved, e.g. to close the popup holding the form. */
+  onSuccess?: (outcome: CommandOutcome & { status: "SUCCESS" }) => void;
 };
 const keyFor = (scope: string, command: string) => `hx-intent-v1:${scope}:${command}`;
 const validId = (value: string | null) => Boolean(value && /^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(value));
@@ -102,7 +104,7 @@ export function ReliableCommandForm(props: Props) {
       const result = await props.action(formFor(entries));
       setState(result);
       if (result.status !== "UNKNOWN") localStorage.removeItem(key);
-      if (result.status === "SUCCESS") router.refresh();
+      if (result.status === "SUCCESS") { router.refresh(); props.onSuccess?.(result); }
     } catch {
       setState({ status: "UNKNOWN", message: "Phản hồi bị gián đoạn; chưa xác định được kết quả. Tra cứu hoặc thử lại cùng thao tác, không ghi lần mới." });
     } finally { setBusy(false); }
@@ -119,7 +121,7 @@ export function ReliableCommandForm(props: Props) {
     try {
       const outcome = await lookupCommandOutcomeAction(operation, props.command);
       setState(outcome);
-      if (outcome.status === "SUCCESS") { localStorage.removeItem(key); router.refresh(); }
+      if (outcome.status === "SUCCESS") { localStorage.removeItem(key); router.refresh(); props.onSuccess?.(outcome); }
     } catch { setState({ status: "UNKNOWN", message: "Chưa tra cứu được kết quả. Hãy giữ mã thao tác và thử lại." }); }
     finally { setBusy(false); }
   }

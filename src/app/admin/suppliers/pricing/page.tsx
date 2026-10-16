@@ -1,14 +1,14 @@
 import { readPricingClock } from "@/modules/pricing/request-clock";
-import { effectivePriceState, effectivePriceLabels, matchesEffectivePriceState } from "@/modules/pricing/effective-state";
+import { effectivePriceState, effectivePriceLabels, effectivePriceTones, matchesEffectivePriceState } from "@/modules/pricing/effective-state";
 import { formatBusinessDate } from "@/lib/core/business-time";
 import { priceSourceLabel } from "@/modules/pricing/presentation";
-import { randomUUID } from "node:crypto";
 import Link from "next/link";
 import { AppError } from "@/lib/core/errors";
 import { requireInternalAccess } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { portalRpc } from "@/modules/portal/server";
-import { PricingRuleEditor,type PriceOptions,type PurchasePriceRule } from "@/modules/pricing/editor";
+import type { PriceOptions, PurchasePriceRule } from "@/modules/pricing/editor";
+import { PricingRuleList, type PriceRuleRow } from "@/modules/pricing/rule-list";
 import { formatVnd,vnd } from "@/lib/core/money";
 import { AutoFilterForm } from "@/components/ui/auto-filter-form";
 export default async function PurchasePricingPage({searchParams}:{searchParams:Promise<{q?:string;supplier?:string;material?:string;state?:string}>}){
@@ -38,9 +38,12 @@ export default async function PurchasePricingPage({searchParams}:{searchParams:P
  const labels={suppliers:[...((supplierLabels.data??[]) as unknown as {id:string;name:string}[]),...(options.suppliers??[])],materials:[...((materialLabels.data??[]) as unknown as {id:string;name:string}[]),...options.materials],units:[...((unitLabels.data??[]) as unknown as {id:string;symbol:string}[]).map(u=>({id:u.id,name:u.symbol})),...options.units]};
  const label=(items:{id:string;name:string}[]|undefined,id:string)=>items?.find(x=>x.id===id)?.name??id;
  const shown=rows.filter(r=>matchesEffectivePriceState(r,query.state,now)&&(!q||[label(labels.suppliers,r.supplier_id),label(labels.materials,r.material_id)].some(v=>v.toLocaleLowerCase().includes(q))));
- return <><header className="page-heading"><div><p className="eyebrow">Nhà cung cấp · {access.branchName}</p><h1 tabIndex={-1}>Bảng giá mua</h1><p className="lede">Đổi giá bằng phiên bản mới. Thông tin trên đơn mua đã chốt được giữ nguyên.</p></div><Link href="/admin/suppliers" className="button button-secondary">Nhà cung cấp</Link></header>
+ const tableRows:PriceRuleRow[]=shown.map(rule=>{const state=effectivePriceState(rule,now);const party=label(labels.suppliers,rule.supplier_id),target=label(labels.materials,rule.material_id),uom=label(labels.units,rule.purchase_uom_id);
+  return {id:rule.id,party,target,uom,price:formatVnd(vnd(rule.unit_cost_vnd)),source:priceSourceLabel(rule.source_type),period:"Từ "+formatBusinessDate(rule.effective_from)+(rule.effective_to?" đến trước "+formatBusinessDate(rule.effective_to):""),
+   version:rule.version,state:effectivePriceLabels[state],stateTone:effectivePriceTones[state],editable:manage&&rule.active,purchaseRule:rule,scopeLabel:[party,target,uom].join(" · ")};});
+ return <div className="page-stack"><header className="page-heading"><div><p className="eyebrow">Nhà cung cấp · {access.branchName}</p><h1 tabIndex={-1}>Bảng giá mua</h1><p className="lede">Đổi giá bằng phiên bản mới. Thông tin trên đơn mua đã chốt được giữ nguyên.</p></div><Link href="/admin/suppliers" className="button button-secondary">Nhà cung cấp</Link></header>
  <AutoFilterForm><label>Tìm NCC / vật tư<input name="q" defaultValue={query.q}/></label><label>Trạng thái<select name="state" defaultValue={query.state??""}><option value="">Tất cả / lịch sử</option><option value="ACTIVE">Đang hiệu lực</option><option value="FUTURE">Chưa có hiệu lực</option><option value="EXPIRED">Hết hiệu lực</option><option value="INACTIVE">Đã ngừng</option></select></label>{query.supplier&&<input type="hidden" name="supplier" value={query.supplier}/>}</AutoFilterForm>
- {manage&&<details className="card card-pad"><summary>Tạo giá mua</summary><PricingRuleEditor purchase options={options} command={{targetId:randomUUID(),operationId:randomUUID()}}/></details>}
- {!read&&<p className="muted">Quyền quản lý không tự cấp quyền đọc chi phí. Chỉ tạo giá từ dữ liệu được cung cấp.</p>}<p className="muted">Tối đa 100 phiên bản mới nhất trong chi nhánh.</p>
- {shown.map(rule=><details className="card card-pad" key={rule.id} data-price-rule-id={rule.id}><summary>{label(labels.suppliers,rule.supplier_id)} · {label(labels.materials,rule.material_id)} · {formatVnd(vnd(rule.unit_cost_vnd))} · Phiên bản {rule.version} · {effectivePriceLabels[effectivePriceState(rule,now)]}</summary><p>ĐVT {label(labels.units,rule.purchase_uom_id)} · {priceSourceLabel(rule.source_type)} · {formatBusinessDate(rule.effective_from)}{rule.effective_to?" đến trước "+formatBusinessDate(rule.effective_to):""}</p>{manage&&rule.active&&<PricingRuleEditor purchase purchaseRule={rule} options={options} scopeLabel={label(labels.suppliers,rule.supplier_id)+" · "+label(labels.materials,rule.material_id)+" · "+label(labels.units,rule.purchase_uom_id)} command={{targetId:randomUUID(),operationId:randomUUID()}}/>}</details>)}</>;
+ {!read&&<p className="muted">Quyền quản lý không tự cấp quyền đọc chi phí. Chỉ tạo giá từ dữ liệu được cung cấp.</p>}
+ <PricingRuleList purchase rows={tableRows} options={options} canManage={manage} partyLabel="Nhà cung cấp" createLabel="+ Tạo giá mua"/>
+ <p className="muted">Tối đa 100 phiên bản mới nhất trong chi nhánh.</p></div>;
 }

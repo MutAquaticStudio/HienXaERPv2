@@ -6,6 +6,8 @@ import { requireInternalPermission } from "@/lib/access/context";
 import { parseCoreListQuery, ilikePattern } from "@/lib/core-list";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { CatalogCreateButton } from "@/modules/catalog/catalog-dialog";
+import { catalogCreateProps } from "@/modules/catalog/editor-data";
 
 type CustomerRow = { id: string; code: string; display_name: string; phone: string | null; tier_code: string | null; customer_type: string; active: boolean };
 type Query = { q?: string; state?: string; page?: string; tier?: string; type?: string };
@@ -48,10 +50,11 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
   const debts = new Map<string, bigint>();
   for (const row of debtRows) debts.set(row.customer_id, (debts.get(row.customer_id) ?? 0n) + BigInt(row.outstanding_amount_vnd));
   const filtered = Boolean(list.q || list.state || tier || type);
+  const create = canManage ? await catalogCreateProps("customers", access, supabase) : null;
 
   return <div className="page-stack">
     <header className="page-heading"><div><p className="eyebrow">Bán hàng</p><h1>Khách hàng</h1><p className="lede">Hồ sơ khách hàng tại {access.branchName}. Bấm vào một dòng để xem chi tiết.</p></div>
-      {canManage && <div className="action-cluster"><Link className="button button-primary" href="/admin/customers/manage?kind=customers">+ Khách hàng</Link><Link className="button button-secondary" href="/admin/customers/manage?kind=sites">Công trình</Link></div>}
+      {create && <div className="action-cluster"><CatalogCreateButton {...create} label="+ Khách hàng" /><Link className="button button-secondary" href="/admin/customers/manage?kind=sites">Công trình</Link></div>}
     </header>
     <div className="list-layout">
       <AutoFilterForm className="card card-pad list-filters" aria-label="Bộ lọc khách hàng">
