@@ -70,8 +70,9 @@ Lỗi QA trình duyệt bắt được và đã sửa (có test): Enter chọn g
 lỗi hydration #418 trên Tổng quan (`<title>` nhiều con); route báo giá tắt trả 200 thay vì 404; bảng dòng đơn bán/mua bị cuộn ngang
 che Đơn giá/Thành tiền ở 1440px. Báo cáo chạy: 0 lỗi trang ở lần chạy cuối.
 
-Phát hiện ngoài phạm vi (chưa sửa, cần Owner quyết): `proxy.ts` ở gốc repo nhưng app nằm trong `src/app` → Next không đăng ký proxy,
-nên làm mới phiên Supabase trong proxy **chưa từng chạy** (từ 12/09). Chuyển sang `src/proxy.ts` sẽ bật nó cho toàn app kể cả Production.
+Phát hiện ngoài phạm vi: `proxy.ts` ở gốc repo nhưng app nằm trong `src/app` → Next không đăng ký proxy,
+nên làm mới phiên Supabase trong proxy **chưa từng chạy** (từ 12/09). Owner giao toàn quyền (16/10/2026) → đã chuyển sang `src/proxy.ts`
+và kiểm trên QA (`FB-PROXY` trong `tasks.md`); có hiệu lực trên Production khi deploy.
 
 ## 3. Ma trận QA
 

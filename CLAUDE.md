@@ -46,7 +46,7 @@ DB cục bộ đầy đủ cần Docker + Supabase CLI: `pnpm db:start`, `pnpm d
 - `src/lib/core/` — tiền (`money.ts`, VND là `bigint` nguyên đồng), số lượng (`quantity.ts`, tối đa 6 chữ số thập phân,
   không tự làm tròn), `business-time.ts` (Asia/Ho_Chi_Minh), `errors.ts`, `idempotency.ts`, `command-outcome.ts`.
 - `src/lib/access/` — phân quyền ứng dụng (`requireInternalPermission`, `resolveInternalAccess`, …).
-- `proxy.ts` (thay cho middleware trong Next 16) làm mới phiên Supabase.
+- `src/proxy.ts` (thay cho middleware trong Next 16; phải nằm cùng cấp với `app`, đặt ở gốc repo sẽ bị Next bỏ qua) làm mới phiên Supabase.
 - `supabase/migrations/` — nguồn sự thật của schema; nghiệp vụ ghi sổ nằm trong RPC Postgres (`supabase.rpc(...)`)
   chạy một transaction, RLS bật trên mọi bảng public.
 

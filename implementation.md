@@ -2728,3 +2728,15 @@ Phát hiện chưa sửa: `proxy.ts` ở gốc repo, app ở `src/app` → Next 
 Supabase trong proxy chưa từng chạy từ 12/09/2026. Trang lỗi chung "Không thể mở trang" khi tài khoản thiếu quyền/không thuộc chi nhánh (đúng là chặn,
 nhưng thông báo chung chung). Cả hai cần Owner quyết; không tự đổi vì ảnh hưởng toàn app/Production.
 
+
+## 2026-10-16 — FB-PROXY: bật làm mới phiên Supabase (Owner giao toàn quyền)
+
+Owner giao toàn quyền xử lý các việc còn chờ (16/10/2026). `proxy.ts` chuyển từ gốc repo sang `src/proxy.ts` (cùng cấp `src/app`, theo
+`node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/proxy.md`); nội dung không đổi. Test `src/proxy.test.ts`: vị trí file
+(không còn proxy/middleware ở gốc), phạm vi matcher (trang/API có, tài nguyên tĩnh không) bằng `unstable_doesMiddlewareMatch`, ủy quyền cho
+`refreshAuthSession`. Bằng chứng: build in `ƒ Proxy (Middleware)` và `functions-config-manifest.json` có `/_middleware` (trước đây không có).
+Trên QA project: đăng nhập `hxqa-owner`, sửa cookie phiên cho access token hết hạn 1 giờ → `GET /admin` trả 200 kèm `Set-Cookie` phiên mới
+(access + refresh token đều xoay vòng, hạn mới ở tương lai), tải lại `/admin` vẫn đăng nhập. JWT QA ký ES256 → `getClaims()` xác minh tại chỗ,
+không thêm lượt gọi Auth mỗi request. Chạy lại runner B06/B07/B08/B11/B12: PASS/ghi nhận như trước, 0 lỗi trang.
+Kèm sửa test không ổn định `price-book-editor.test.tsx` (chỉ khi chạy cả bộ): thông báo "Chưa xác định kết quả" hiện trước khi transition kết thúc,
+nút còn nhãn "Đang lưu..." → test chờ nút sẵn sàng rồi mới bấm lại. Kiểm tra: lint 0 lỗi, typecheck, 742 test (2 lần), build, node test 19/19.
