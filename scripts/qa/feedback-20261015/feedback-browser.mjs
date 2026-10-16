@@ -31,12 +31,13 @@ async function login(role, { surface = "admin", viewport = VIEWPORTS.desktop } =
   await page.getByLabel("Thư điện tử").fill(email(role));
   await page.getByLabel("Mật khẩu", { exact: true }).fill(env.HX_QA_PASSWORD);
   await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
-  await page.waitForURL((url) => url.pathname === "/select-branch" || (url.pathname.startsWith(`/${surface}`) && !url.pathname.endsWith("/login")));
+  // Each role lands on its own start page (e.g. a worker goes to /work), so accept anything past the login form.
+  await page.waitForURL((url) => !url.pathname.endsWith("/login") && url.pathname !== "/");
   if (new URL(page.url()).pathname === "/select-branch") {
     const branch = page.getByLabel("Chi nhánh đang hoạt động");
     if (args.branch) await branch.selectOption(args.branch);
     await page.getByRole("button", { name: "Tiếp tục", exact: true }).click();
-    await page.waitForURL((url) => url.pathname.startsWith(`/${surface}`));
+    await page.waitForURL((url) => url.pathname !== "/select-branch" && url.pathname !== "/");
   }
   return page;
 }
@@ -121,10 +122,14 @@ const CASES = {
   // Cột giá/giá vốn/tồn theo quyền: ghi lại ma trận để đối chiếu vai trò (không tự suy ra quyền).
   async B12() {
     const matrix = {};
-    for (const role of (args.roles ?? "owner,sales,finance,worker").split(",")) {
+    // hxqa-finance is a customer-portal account; the internal finance role is hxqa-finance-employee.
+    for (const role of (args.roles ?? "owner,sales,purchasing,warehouse-dispatch,finance-employee,worker").split(",")) {
       const page = await login(role.trim());
       const response = await page.goto(origin + "/admin/products");
-      matrix[role] = response.status() === 200 ? await page.locator("table thead th").allInnerTexts() : `HTTP ${response.status()}`;
+      const landed = new URL(page.url()).pathname;
+      matrix[role] = response.status() === 200 && landed === "/admin/products"
+        ? await page.locator("table thead th").allInnerTexts()
+        : `HTTP ${response.status()} → ${landed}`;
       for (const [name, viewport] of Object.entries(VIEWPORTS)) { await page.setViewportSize(viewport); await shot(page, `B12-products-${role}-${name}`); }
     }
     return { status: "RECORDED_FOR_REVIEW", matrix };
@@ -147,7 +152,8 @@ const CASES = {
   // Tạo đơn bán 1 dòng chỉ bằng bàn phím (ghi QA data).
   async B01() {
     assert.ok(args.writes && args.customer && args.material, "B01 cần --writes --customer --material");
-    const page = await login("sales");
+    // "Tạo đơn" only shows with orders.confirm; pass --order-role owner when the QA sales account cannot confirm.
+    const page = await login(args.orderRole ?? args["order-role"] ?? "sales");
     await page.goto(origin + "/admin/orders/new");
     const steps = [];
     const options = (name) => page.getByRole("listbox", { name, exact: true }).getByRole("option").first();
