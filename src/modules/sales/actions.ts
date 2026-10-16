@@ -266,6 +266,14 @@ async function saveDocument(kind: "order" | "quote", mode: "create" | "edit", fo
     expected = snapshot;
   } catch { return { message: "Cần xem trước giá của mọi dòng trước khi lưu." }; }
   const access = await requireInternalPermission(kind === "order" ? "orders.create" : "quotation.create");
+  // "Tạo đơn" = save the draft, then confirm it, each with its own retry-safe operation ID.
+  let confirmOperationId: string | null = null;
+  if (kind === "order" && mode === "create" && formData.get("intent") === "confirm") {
+    if (!access.permissions.has("orders.confirm")) return { message: "Bạn không có quyền xác nhận đơn bán. Hãy chọn Lưu nháp." };
+    const confirmId = z.uuid().safeParse(formData.get("confirmOperationId"));
+    if (!confirmId.success || confirmId.data === parsed.data.operationId) return { message: "Thông tin xác nhận đơn chưa hợp lệ. Hãy tải lại màn hình." };
+    confirmOperationId = confirmId.data;
+  }
   const supabase = await createServerSupabase();
   let quoteId: string | null = null;
   if (edit?.success) {
@@ -315,6 +323,12 @@ async function saveDocument(kind: "order" | "quote", mode: "create" | "edit", fo
       : await supabase.rpc("create_quote_draft", { target_branch_id: access.branchId, target_customer_id: parsed.data.customerId, target_site_id: parsed.data.siteId, expires_at: effectiveAt, commercial_terms: parsed.data.terms || null, quote_lines: lines, operation_id: parsed.data.operationId });
   if (result.error || !result.data) return { message: commandError(result.error?.message ?? "unknown") };
   revalidatePath(kind === "order" ? "/admin/orders" : "/admin/quotations");
+  if (confirmOperationId) {
+    const confirmed = await supabase.rpc("confirm_sales_order", { target_order_id: result.data, operation_id: confirmOperationId });
+    revalidatePath(`/admin/orders/${result.data}`);
+    if (confirmed.error) redirect(`/admin/orders/${result.data}?error=${encodeURIComponent(`Đã lưu bản nháp nhưng chưa xác nhận được: ${commandError(confirmed.error.message, true)}`)}`);
+    redirect(`/admin/orders/${result.data}?notice=confirmed`);
+  }
   const destinationId = edit?.success && kind === "quote" ? quoteId : result.data;
   revalidatePath(`${kind === "order" ? "/admin/orders" : "/admin/quotations"}/${destinationId}`);
   redirect(`${kind === "order" ? "/admin/orders" : "/admin/quotations"}/${destinationId}?notice=${mode === "edit" ? "updated" : "created"}`);

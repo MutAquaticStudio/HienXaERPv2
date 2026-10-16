@@ -53,6 +53,7 @@ Dùng `scripts/qa/go-live/browser-kit.mjs`; script đặt tại `scripts/qa/feed
 | QA-FB-B02 | Đơn nhiều dòng, trùng vật tư, đổi ĐVT, giá thủ công + lý do; khách có 1 công trình được tự chọn |
 | QA-FB-B03 | "Tạo đơn" vượt hạn mức → nháp được lưu, chuyển trang chi tiết, thông báo tiếng Việt |
 | QA-FB-B04 | Mất mạng sau khi gửi → "Thử lại đúng thao tác" → đúng 1 đơn, 1 receipt, 1 audit |
+| QA-FB-B04a | Kịch bản lịch sử dùng form cũ (nút "Tìm khách", "Tính giá và xem trước", "+ Thêm dòng", "Lưu bản nháp", nhãn "Số lượng *"): `scripts/qa/go-live/{configuration,multi-delivery,browser-source-flow,multi-uom,commercial-amendment,service,service-dispatch,pool-work}-browser.mjs`, `scripts/qa/remediation/package7-pricing-browser.mjs`. Đây là bằng chứng lịch sử (không chạy lại ca đã PASS); hành vi tương ứng được kiểm lại bằng QA-FB-B01…B05 với selector mới: combobox "Khách hàng"/"Công trình / điểm giao", combobox "Tìm vật tư", "Số lượng dòng N", "ĐVT bán dòng N", "Đơn giá thủ công dòng N", "Lý do giá thủ công dòng N", nút "Tạo đơn"/"Lưu nháp" |
 | QA-FB-B05 | Đơn mua: kho, giao thẳng gắn đơn bán, thêm NCC qua "+", thiếu địa chỉ kho bị chặn |
 | QA-FB-B06 | Bộ lọc tự áp dụng ở 12 danh sách; URL giữ trạng thái; Back/Forward đúng; "Đang làm việc"/"Đã hủy"/"Tất cả" |
 | QA-FB-B07 | Danh sách khách: bấm mã hoặc tên đều mở chi tiết; cột công nợ chỉ hiện khi có quyền |
