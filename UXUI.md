@@ -951,7 +951,11 @@ List:
 
 Kiểu KiotViet (15/10/2026): ô tìm kiếm + lọc cột trái (Nhóm vật tư, Trạng thái, Cho phép bán/mua), 25 dòng/trang. Thêm cột Giá bán (giá chung hiện hành theo ĐVT gốc, khi có quyền xem giá), Giá vốn bình quân (khi có quyền giá vốn), Tồn kho tổng các kho của chi nhánh (khi có quyền kho) — chỉ truy vấn cho các dòng trên trang. Bấm dòng mở rộng ngay tại chỗ: tồn theo kho, quy đổi ĐVT và link "Xem chi tiết vật tư". Đầu trang: "+ Vật tư", "Thiết lập giá", "Danh mục khác".
 
-`/admin/products/pricing` — Thiết lập giá (D4, SPEC-PRI-005): bảng Mã │ Tên │ ĐVT │ Giá vốn (theo quyền) │ Giá hiện tại │ Giá mới (sửa trực tiếp) │ Chênh lệch; chọn nhiều dòng → tăng/giảm theo % hoặc số tiền, chọn làm tròn (1.000 đ mặc định / 100 đ / không), xem chênh lệch từng dòng; một ngày áp dụng + một lý do; nút "Lưu bảng giá (N thay đổi)" lưu tất cả một lần. Thanh lưu dính đáy màn trên desktop. Không có quyền quản lý giá: chỉ xem. Giá theo khách và lịch sử ở "Giá theo khách & lịch sử".
+Popup vật tư (D5/D7) có 2 tab: **Thông tin** và **Đơn vị tính & giá** (bảng: đơn vị, "1 đơn vị =", loại quy đổi, giá bán chung, giá vốn ≈ theo
+quyền; "+ Thêm đơn vị bán", "Ngừng"; "Chia giá theo quy đổi"; một lý do, một nút lưu). Tạo vật tư mới xong tự chuyển sang tab Đơn vị tính.
+Trên điện thoại mỗi đơn vị là một thẻ. Trang Chính sách giá có mục **Nhóm giá khách** (bảng + popup thêm/sửa); ô "Nhóm giá" của khách là danh sách chọn.
+
+`/admin/products/pricing` — Thiết lập giá (D4, SPEC-PRI-005; chọn "Bảng giá": Giá chung hoặc từng nhóm giá khách, D11): bảng Mã │ Tên │ ĐVT │ Giá vốn (theo quyền) │ Giá hiện tại │ Giá mới (sửa trực tiếp) │ Chênh lệch; chọn nhiều dòng → tăng/giảm theo % hoặc số tiền, chọn làm tròn (1.000 đ mặc định / 100 đ / không), xem chênh lệch từng dòng; một ngày áp dụng + một lý do; nút "Lưu bảng giá (N thay đổi)" lưu tất cả một lần. Thanh lưu dính đáy màn trên desktop. Không có quyền quản lý giá: chỉ xem. Giá theo khách và lịch sử ở "Giá theo khách & lịch sử".
 
 Detail:
 - UOM conversions;

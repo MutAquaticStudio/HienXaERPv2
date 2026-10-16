@@ -54,3 +54,8 @@ export function decimalForEditing(value: string): string {
   if (!/^\d+(?:\.\d+)?$/.test(text)) return text;
   return new Decimal(text).toFixed().replace(".", ",");
 }
+
+/** Whole đồng for editing: "300000" → "300.000"; anything else is shown as typed. */
+export function vndForEditing(value: string): string {
+  return /^\d+$/.test(value) ? new Intl.NumberFormat("vi-VN").format(BigInt(value)) : value;
+}

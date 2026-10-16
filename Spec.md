@@ -721,6 +721,17 @@ Mỗi conversion phải biết:
 
 `VEHICLE_LOAD` là quy tắc lập kế hoạch/tải xe, không mặc định là chuyển đổi vật lý chính xác.
 
+## SPEC-UOM-004 — Đơn vị tính của vật tư (D7, 16/10/2026)
+
+- Mỗi vật tư có **một đơn vị cơ sở** (không đổi sau khi tạo); tồn kho chỉ là một con số theo đơn vị cơ sở.
+- **Đơn vị bán** là quy đổi theo vật tư "1 <đơn vị> = tử/mẫu <đơn vị cơ sở>", loại Chính xác / Đóng gói / Ước lượng / Đo thực tế, được phép
+  tính tiền; Ước lượng và Đo thực tế bắt buộc ghi nguồn (3–500 ký tự). Tỉ lệ tối đa 6 chữ số thập phân, không làm tròn ngầm.
+- Thêm/ngừng đơn vị bán và đặt giá chung từng đơn vị lưu **một lần nguyên tử** (`save_material_units`): quy đổi đi qua lệnh danh mục hiện có,
+  giá đi qua lưu giá hàng loạt (SPEC-PRI-005). Chỉ đặt giá cho đơn vị cơ sở hoặc đơn vị bán đang dùng. Đổi tỉ lệ = ngừng bản cũ + thêm bản mới;
+  dòng chứng từ đã lập giữ snapshot quy đổi (SPEC-UOM-002). Quyền: quy đổi cần `catalog.manage`, giá cần `pricing.manage`.
+- "Chia giá theo quy đổi" (D11) chỉ là công cụ gợi ý trên giao diện từ giá của một đơn vị, làm tròn 1.000 / 100 / không; giá lưu luôn là số VND
+  tuyệt đối của từng đơn vị.
+
 ---
 
 # SPEC-120 — Pricing
@@ -773,6 +784,15 @@ Override giá cần:
 - Mỗi dòng tạo phiên bản mới qua đúng lệnh lưu giá đơn lẻ (version, khóa lạc quan, audit từng dòng) và lô có thêm một audit + receipt. Gửi lại cùng mã thao tác trả lại kết quả cũ, không ghi lần hai; cùng mã thao tác nhưng nội dung khác bị từ chối.
 - Cách mặc định vẫn là nhập giá bán cuối (SPEC-CONFIG-002). Tăng/giảm theo % hoặc theo số tiền tính trên **giá bán hiện tại** (không phải trên giá vốn) và chỉ là công cụ tính giá mới trên giao diện; giá được lưu luôn là số VND nguyên dương tuyệt đối. Làm tròn mặc định đến 1.000 đ, có lựa chọn 100 đ hoặc không làm tròn; người dùng thấy giá mới và chênh lệch từng dòng trước khi lưu. Dòng chưa có giá hiện tại không được điều chỉnh theo %/số tiền, chỉ nhập giá trực tiếp.
 - Giá vốn chỉ hiển thị cho người có quyền xem giá vốn. Chứng từ đã chốt giữ snapshot (SPEC-PRI-003).
+- Bổ sung D11 (16/10/2026): bảng giá hàng loạt chọn được **bảng giá của một nhóm giá khách** (Sỉ, Đại lý…) và lưu giá nhóm (`CUSTOMER_TIER`)
+  theo đúng quy tắc trên; giá chung hiện kèm để so sánh. Giá của các đơn vị bán khác hiện tham khảo, sửa ở "Đơn vị tính & giá" của vật tư.
+
+## SPEC-PRI-006 — Nhóm giá khách (D11, 16/10/2026)
+
+- Nhóm giá khách là danh mục theo chi nhánh (mã, tên, đang dùng); quản lý cần `pricing.manage`. Mã là định danh, viết hoa A–Z 0–9 _ -, không đổi.
+- `customers.tier_code` và giá nhóm (`pricing_rules.customer_tier_code`) chỉ nhận mã là nhóm của cùng chi nhánh (khóa ngoại trong database).
+- Khách không thuộc nhóm nào dùng giá chung (giá lẻ). Ngừng nhóm: không gán cho khách mới, không đặt giá nhóm mới; khách đang ở nhóm giữ nguyên.
+- Thứ tự ưu tiên giá không đổi (SPEC-PRI-001).
 
 ---
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decimalForEditing, normalizeDecimalInput, normalizeVndInput } from "./vn-number";
+import { decimalForEditing, normalizeDecimalInput, normalizeVndInput, vndForEditing } from "./vn-number";
 
 describe("normalizeDecimalInput", () => {
   it.each([
@@ -29,5 +29,13 @@ describe("decimalForEditing", () => {
     expect(decimalForEditing("1.500000")).toBe("1,5");
     expect(decimalForEditing("1250")).toBe("1250");
     expect(decimalForEditing("abc")).toBe("abc");
+  });
+});
+
+describe("vndForEditing", () => {
+  it("groups whole đồng and leaves other text as typed", () => {
+    expect(vndForEditing("300000")).toBe("300.000");
+    expect(vndForEditing("")).toBe("");
+    expect(vndForEditing("12,5")).toBe("12,5");
   });
 });

@@ -2793,3 +2793,25 @@ Kiểm: `pnpm check` PASS. QA trên app local trỏ QA project (chỉ đọc): �
 SL "1,5" gửi `1.5`, tổng 315.000 ₫ (1,5 × 210.000), thanh tổng + nút trong màn hình; đơn mua lời nhắc "Chọn nhà cung cấp để tính giá";
 link `#error_code=otp_expired` ở trang gốc → trang đặt mật khẩu báo hết hạn; `/?code=` → trang đặt mật khẩu; token giả bị xóa khỏi URL và từ chối;
 không lỗi console. Chưa gửi thư mời thật (env QA cục bộ không có secret key; dùng tài khoản thật sau khi deploy).
+
+## 2026-10-16 — FB2-D2: Đợt 2 (popup danh mục, Đơn vị tính, nhóm giá khách)
+
+Nhánh `nox/elegant-volta-kr29iz`, sau Đợt 1 (PR #52 chờ Owner). Chưa đẩy lên để không lẫn vào #52.
+- **Popup danh mục (D5)**: `ModuleCatalogPage` thành bảng gọn (`catalog-dialog.tsx`: `CatalogTable`/`CatalogDialog`/`CatalogCreateButton`, cột theo
+  `fields.ts` `list`), "Thêm"/"Sửa" mở `CatalogEditor` trong popup; `?id=` mở thẳng, `?tab=units` mở tab đơn vị. Nút "+ Khách hàng", "+ Vật tư",
+  "+ Nhà cung cấp" tạo tại chỗ. `ReliableCommandForm` thêm `onSuccess` (đóng popup), giữ nguyên idempotency/UNKNOWN. Trang NCC kiểu bảng như Khách
+  hàng (tên → chi tiết, cột "Còn phải trả" chỉ với `finance.ap.read`). Chính sách giá và Bảng giá mua: bảng + popup tạo/đổi giá (`rule-list.tsx`).
+- **Đơn vị tính (D7)**: RPC `save_material_units` (migration `20261016150000`): ngừng trước rồi thêm đơn vị bán (qua `save_catalog_record`
+  `conversions`, luôn quy về đơn vị cơ sở, `settlement_allowed`), rồi giá từng đơn vị qua `save_pricing_rules_batch`; tất cả một giao dịch, receipt
+  riêng, mã thao tác con suy ra từ mã lệnh; chặn tỉ lệ quá 6 số lẻ, đơn vị trùng, giá cho đơn vị không bán được, ước lượng thiếu nguồn.
+  Giao diện `material-units-editor.tsx` (tab trong popup vật tư) + công cụ chia giá `unit-split.ts` (Decimal, làm tròn half-up theo bước).
+- **Nhóm giá khách (D11)**: bảng `customer_price_groups` (RLS theo chi nhánh, chỉ đọc cho authenticated, không cho anon), backfill từ mã cũ, khóa
+  ngoại (chi nhánh, mã) trên `customers.tier_code` và `pricing_rules.customer_tier_code`; RPC `save_customer_price_group` (`pricing.manage`);
+  `save_pricing_rules_batch` nhận `customer_tier_code` (CUSTOMER_TIER, nhóm phải đang dùng). Ô "Nhóm giá" của khách là danh sách chọn; Chính sách
+  giá có mục Nhóm giá khách; Thiết lập giá chọn "Bảng giá" theo nhóm, hiện giá chung để so và giá các đơn vị bán khác. Test native 030 thêm nhóm VIP
+  làm fixture; script QA cũ (`package7`, `isolated-branch-fixture`) tạo nhóm trước khi gán mã.
+Kiểm: `pnpm check` PASS (127 file / 819+ test); `db:test:isolated` PASS (040, 050 mới). QA project: áp 2 migration (ghi `schema_migrations`,
+sha256 trong bản ghi), 3 mã cũ thành nhóm, RLS bật, anon 0 quyền. QA trình duyệt (app local trỏ QA, owner chi nhánh A): tạo vật tư trong popup →
+tự sang tab Đơn vị tính → thêm bao = 50 và bag = 1.000, giá 1 bag 6.000.000 → chia ra 6.000 / 300.000 → lưu (database: 2 quy đổi + 3 giá đúng);
+tạo nhóm "QA Sỉ"; bảng giá theo nhóm hiện cột Giá chung; popup khách có danh sách nhóm; tạo đơn bán chọn được bao/bag, 3 bao = 900.000 ₫;
+điện thoại 390 hiện thẻ. Production chưa áp (chờ Owner).

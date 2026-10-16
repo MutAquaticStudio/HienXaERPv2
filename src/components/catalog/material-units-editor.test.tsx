@@ -32,8 +32,8 @@ it("adds a selling unit, splits a per-tonne price by the ratios and saves everyt
   fireEvent.change(screen.getByLabelText("Giá bán 1 tấn"), { target: { value: "6.000.000" } });
   fireEvent.change(screen.getByRole("combobox", { name: "Từ giá 1" }), { target: { value: "tan" } });
   fireEvent.click(screen.getByRole("button", { name: "Tính giá các đơn vị khác" }));
-  expect(screen.getByLabelText("Giá bán 1 kg")).toHaveValue("6000");
-  expect(screen.getByLabelText("Giá bán 1 bao")).toHaveValue("300000");
+  expect(screen.getByLabelText("Giá bán 1 kg")).toHaveValue("6.000");
+  expect(screen.getByLabelText("Giá bán 1 bao")).toHaveValue("300.000");
 
   fireEvent.change(screen.getByLabelText("Lý do thay đổi *"), { target: { value: "Bán theo tấn" } });
   fireEvent.click(screen.getByRole("button", { name: /Lưu đơn vị & giá \(4 thay đổi\)/ }));

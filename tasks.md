@@ -706,7 +706,7 @@ preview → Owner OK → merge, áp migration Production (đối chiếu md5), d
 | Task | Nội dung | Trạng thái |
 |---|---|---|
 | FB2-D1 | Đợt 1: mời nhân viên (link về trang đặt mật khẩu của app, nhận token lời mời, báo link hết hạn bằng tiếng Việt); tổng tiền đơn bán/mua (lời nhắc thiếu khách/công trình/NCC, thanh tổng + nút dính đáy ở <1440px, chọn lại cùng công trình/NCC tính lại giá, nhập số kiểu Việt "1,5"/"1.250"/"120.000"); thông báo duyệt vượt hạn mức; mã khách tạo nhanh tự viết hoa; popup chung `Dialog` | PASS_QA_PROJECT_20261016 (lint/typecheck/test/build; bố cục 1440/1366/390 và link mời/khôi phục kiểm trên app local trỏ QA) |
-| FB2-D2 | Đợt 2: popup danh mục, Đơn vị tính kiểu KiotViet (D7), giá chia theo quy đổi (D11), nhóm giá khách | PLANNED |
+| FB2-D2 | Đợt 2: danh mục dạng bảng + popup (Khách/Công trình, NCC, Vật tư, Nhóm, Đơn vị, Xe, Máy, Kho, Chi nhánh); NCC kiểu bảng; Chính sách giá + Bảng giá mua dạng bảng + popup; "Đơn vị tính & giá" của vật tư (D7, RPC `save_material_units`, migration `20261016150000`); chia giá theo quy đổi (D11); nhóm giá khách (migration `20261016160000`, `save_customer_price_group`, bảng giá theo nhóm) | DONE_LOCAL; QA project migrated + QA trình duyệt PASS 16/10 (chờ #52 merge để mở PR) |
 | FB2-D2B | Đợt 2b: biến thể vật tư (D11) | PLANNED |
 | FB2-D3 | Đợt 3: tạo đơn bán − / +, tồn kho hiện luôn, xác nhận qua popup (D6), lập phiếu giao một bước, Dịch vụ tạo nhanh (D9) | PLANNED |
 | FB2-D4 | Đợt 4: Khách hàng 360 & NCC 360 dạng tab | PLANNED |
