@@ -71,7 +71,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
             const debt = debts.get(customer.id) ?? 0n;
             return <tr key={customer.id}>
               <td data-label="Mã"><Link className="mono code-link" href={href} tabIndex={-1}>{customer.code}</Link></td>
-              <td data-label="Tên khách hàng"><Link className="code-link row-link" href={href}>{customer.display_name}</Link><small className="table-subline">{customer.customer_type === "INDIVIDUAL" ? "Cá nhân" : "Doanh nghiệp"}</small></td>
+              <td className="row-title" data-label="Tên khách hàng"><Link className="code-link row-link" href={href}>{customer.display_name}</Link><small className="table-subline">{customer.customer_type === "INDIVIDUAL" ? "Cá nhân" : "Doanh nghiệp"}</small></td>
               <td data-label="Điện thoại">{customer.phone ?? "Chưa có"}</td>
               <td data-label="Nhóm giá">{customer.tier_code ?? "Mặc định"}</td>
               {canReadFinance && <>
