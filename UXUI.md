@@ -1,5 +1,7 @@
 > Quy tắc hiện hành 12/10/2026: bỏ opening pending và kích hoạt thủ công khỏi vận hành. Thông tin đối chiếu lịch sử chỉ mô tả chất lượng dữ liệu, không khóa giao dịch mới. Các bằng chứng trạng thái/gate cũ bên dưới là lịch sử, không phải điều kiện đang áp dụng.
 
+> Quyết định Owner 15/10/2026 (`FB-KIOTVIET-20261015`, xem đầu Spec.md): Báo giá tắt (D1) — mọi màn/nút/hành trình báo giá trong tài liệu này tạm không hiển thị; KPI Tổng quan dùng lợi nhuận ròng (D2); biểu đồ đường Thu/Chi/Lợi nhuận theo bộ lọc (D3); thiết lập giá hàng loạt (D4). Màn tạo đơn bán/đơn mua, danh sách khách hàng, vật tư và bộ lọc tham chiếu bố cục KiotViet theo góp ý khách (UX-110.6, UX-ORD-002, UX-320, UX-340, UX-350, UX-FLOW-001).
+
 # UXUI.md — HIỀN XA ERP V2
 
 > **Bộ tài liệu:** `HX-V2-DOCSET-4.4`  
@@ -140,7 +142,7 @@ TỔNG QUAN
 
 BÁN HÀNG
   Đơn bán hàng
-  Báo giá
+  Báo giá          (ẩn khi Báo giá tắt — D1, 15/10/2026)
 
 MUA HÀNG
   Đơn mua
@@ -442,6 +444,13 @@ Dependent filter:
 - chọn customer → site chỉ hiện site của customer;
 - clear parent → clear child không hợp lệ.
 
+## UX-110.6 — Bộ lọc tự áp dụng (15/10/2026)
+
+- Không có nút "Áp dụng": chọn ở select/ngày là lọc ngay; ô tìm kiếm lọc sau khi ngừng gõ 300ms (UX-100).
+- Đổi bộ lọc thay URL hiện tại (tải lại/chia sẻ link giữ bộ lọc; không tạo một mục lịch sử cho mỗi lần gõ nên Back quay về trang trước; không cuộn về đầu trang), bỏ tham số trống và quay về trang 1.
+- Giữ "Xóa lọc". Trình duyệt tắt JavaScript vẫn có nút gửi dự phòng.
+- Trạng thái chứng từ (đơn bán, đơn mua): mặc định "Đang làm việc" (không gồm đã hủy); có "Đã hủy" riêng; "Tất cả" gồm cả đã hủy. Không ghi chú kỹ thuật kiểu "trừ đã hủy" trong nhãn.
+
 ---
 
 # UX-120 — Table
@@ -658,12 +667,12 @@ URL state cần:
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
-│ TỔNG QUAN                           [Làm mới] [Bộ lọc]      │
-│ Thời gian | Chi nhánh | Sales | Khách | Công trình          │
+│ TỔNG QUAN                                                   │
+│ Thời gian | Chi nhánh | Sales | Khách | Công trình (tự lọc) │
 ├─────────────────────────────────────────────────────────────┤
-│ Doanh thu │ LN gộp │ CP HĐ │ LN HĐ │ Biên LN               │
+│ Doanh thu │ Tổng chi phí │ LN ròng │ Biên LN ròng          │
 ├─────────────────────────────────────────────────────────────┤
-│ BIỂU ĐỒ KẾT QUẢ KINH DOANH                                 │
+│ BIỂU ĐỒ ĐƯỜNG THU / CHI / LỢI NHUẬN                        │
 ├──────────────────────────┬──────────────────────────────────┤
 │ CÔNG TRÌNH ĐANG NỢ       │ NCC ĐANG PHẢI TRẢ                │
 ├──────────────────────────┴──────────────────────────────────┤
@@ -686,7 +695,7 @@ Không có decorative chart nhỏ nếu không giúp quyết định.
 
 ## UX-DASH-004 — Biểu đồ chính cùng nguồn tài chính
 
-Một biểu đồ mặc định: doanh thu, lợi nhuận gộp quản trị, lợi nhuận hoạt động khi đủ dữ liệu. Legend và tooltip ghi kỳ/phạm vi và chất lượng số liệu. Nếu operating_profit không áp dụng do thiếu phân bổ chi phí, ẩn series đó kèm lý do, không vẽ đường 0.
+Một biểu đồ đường mặc định (D3, 15/10/2026): **Thu**, **Chi**, **Lợi nhuận** theo ngày/tuần/tháng của kỳ đang lọc (SPEC-DASH-009). Dùng đúng bộ lọc của trang: đổi kỳ/khách/công trình/sales/loại hoạt động thì biểu đồ đổi cùng KPI. Legend và tooltip ghi kỳ con và chất lượng số liệu; di chuột hoặc phím mũi tên để xem từng điểm; có "Xem bảng số liệu" cho người không đọc được biểu đồ. Điểm không READY làm đứt đường, không vẽ 0. Nếu Chi/Lợi nhuận không áp dụng do thiếu phân bổ chi phí (ví dụ lọc theo khách), ẩn series đó kèm lý do. Mobile: biểu đồ cuộn ngang trong thẻ, không ép nhỏ chữ.
 
 Cách tính và hiệu năng chỉ tham chiếu SPEC-200, SPEC-460, SPEC-PERF-002; không công thức độc lập ở component.
 
@@ -816,6 +825,13 @@ Có "Thêm khách nhanh", "Thêm công trình", "Dùng giá riêng", "Nhập gi�
 
 Nút chính khi đang nhập: "Lưu nháp" hoặc "Xác nhận đơn" theo trạng thái/quyền, hậu quả phải rõ. Không tự bấm xác nhận/ghi nợ vì người dùng vừa chọn khách.
 
+Bố cục kiểu KiotViet (15/10/2026):
+- Vùng chính: ô "Tìm vật tư" (mã/tên, gõ không dấu được, phím tắt F3) → Enter/bấm thêm dòng với ĐVT mặc định, số lượng 1 và đưa con trỏ vào ô số lượng; chọn lại cùng vật tư + ĐVT mặc định (chưa sửa giá) thì tăng số lượng. Bảng dòng sửa trực tiếp: STT │ Mã │ Tên │ ĐVT │ SL │ Đơn giá │ Thành tiền │ ✕; nhập giá thủ công (khi có quyền) thì ô lý do hiện ngay dòng đó; Enter trong dòng quay về ô tìm vật tư.
+- Cột phải: Khách hàng (tìm gõ-là-lọc, "+ Thêm khách"; không chọn sẵn khách đầu tiên), Công trình/điểm giao (sau khi chọn khách, ô công trình được focus và mở danh sách; không tự chọn kể cả khi chỉ có một — SPEC-JOURNEY-003), ngày, điều khoản/ghi chú, tổng hợp (số dòng, tổng tiền hàng).
+- Giá tự tính lại sau khi ngừng sửa ~250ms; không có nút "Tính giá và xem trước", "Tìm khách", "+ Thêm dòng".
+- Hai nút: **"Tạo đơn"** = lưu và xác nhận trong một lần bấm (chỉ hiện khi có quyền xác nhận) và **"Lưu nháp"**; có dòng giải thích hậu quả hai nút. Nếu lưu được nhưng xác nhận bị từ chối (hạn mức, quá hạn...) thì bản nháp vẫn còn, mở trang chi tiết đơn kèm lý do tiếng Việt. Mất phản hồi dùng "Thử lại đúng thao tác" (UX-850), không tạo đơn thứ hai.
+- Mobile: cùng nội dung một cột; mỗi dòng vật tư thành thẻ có nhãn trường.
+
 ## UX-ORD-003 — Detail
 
 Header:
@@ -837,6 +853,8 @@ Không hiển thị action không hợp lệ.
 ---
 
 # UX-310 — `/admin/quotations`
+
+> Tắt từ 15/10/2026 (D1): route trả "không tìm thấy", không có trong menu. Nội dung dưới đây áp dụng khi Owner bật lại.
 
 List:
 - number;
@@ -874,6 +892,8 @@ Detail:
 - received/delivered quantities;
 - AP link nếu phát sinh.
 
+Tạo/sửa đơn mua (15/10/2026) dùng cùng bộ khối với UX-ORD-002: ô tìm vật tư + bảng dòng (ĐVT mua, SL, giá mua từ giá NCC, giá thủ công + lý do); cột phải: Nhà cung cấp (tìm gõ-là-lọc, "+" thêm NCC nhanh ngay trong màn), Giao đến (Kho / Giao thẳng), kho nhận + địa chỉ, ngày dự kiến, ghi chú, tổng hợp. Đơn nhập kho mới có **"Tạo đơn mua"** (lưu + xác nhận, khi có quyền) và "Lưu nháp"; đường giao thẳng giữ nút nói rõ hậu quả theo UX-FLOW-003 ("Lưu đơn mua và bản nháp bán", "Lưu đơn mua giao thẳng").
+
 ---
 
 # UX-330 — `/admin/suppliers`
@@ -892,6 +912,8 @@ Payable click → exact detail.
 ---
 
 # UX-340 — `/admin/customers`
+
+List (kiểu KiotViet, 15/10/2026): ô tìm kiếm + bộ lọc cột trái (Trạng thái, Loại khách, Nhóm giá), tự áp dụng (UX-110.6). Cột: Mã │ Tên khách hàng │ Điện thoại │ Nhóm giá │ Nợ hiện tại │ Hạn mức │ Trạng thái; Nợ hiện tại và Hạn mức chỉ truy vấn/hiển thị khi có quyền xem phải thu, chỉ cho các khách trên trang. Bấm mã, tên hoặc bất kỳ chỗ nào trên dòng đều mở hồ sơ khách. Mobile: mỗi khách là một thẻ.
 
 Detail:
 - customer header;
@@ -919,6 +941,10 @@ List:
 - base UOM;
 - sale/purchase;
 - status.
+
+Kiểu KiotViet (15/10/2026): ô tìm kiếm + lọc cột trái (Nhóm vật tư, Trạng thái, Cho phép bán/mua), 25 dòng/trang. Thêm cột Giá bán (giá chung hiện hành theo ĐVT gốc, khi có quyền xem giá), Giá vốn bình quân (khi có quyền giá vốn), Tồn kho tổng các kho của chi nhánh (khi có quyền kho) — chỉ truy vấn cho các dòng trên trang. Bấm dòng mở rộng ngay tại chỗ: tồn theo kho, quy đổi ĐVT và link "Xem chi tiết vật tư". Đầu trang: "+ Vật tư", "Thiết lập giá", "Danh mục khác".
+
+`/admin/products/pricing` — Thiết lập giá (D4, SPEC-PRI-005): bảng Mã │ Tên │ ĐVT │ Giá vốn (theo quyền) │ Giá hiện tại │ Giá mới (sửa trực tiếp) │ Chênh lệch; chọn nhiều dòng → tăng/giảm theo % hoặc số tiền, chọn làm tròn (1.000 đ mặc định / 100 đ / không), xem chênh lệch từng dòng; một ngày áp dụng + một lý do; nút "Lưu bảng giá (N thay đổi)" lưu tất cả một lần. Thanh lưu dính đáy màn trên desktop. Không có quyền quản lý giá: chỉ xem. Giá theo khách và lịch sử ở "Giá theo khách & lịch sử".
 
 Detail:
 - UOM conversions;
@@ -1474,7 +1500,7 @@ Cỡ chữ/nút trong UX-060 và UX-WORK-006 là lựa chọn thiết kế Hiề
 
 Tham chiếu tài liệu quản trị **Sapo Omni/OmniAI trên web** về tạo đơn, đặt hàng nhập, hồ sơ khách và thanh toán công nợ. Không trộn mặc định màn máy tính tiền, FnB, kế toán hoặc màn trên điện thoại thành một giao diện Hiền Xa. Nguồn và giới hạn được ghi ở IMP-WORKFLOW-001.
 
-Học: điều hướng trái, ô tìm kiếm rõ, lọc nhanh, bảng hàng chỉnh trực tiếp, thêm nhanh đối tượng và đi vào chứng từ liên quan. Không sao chép: thương hiệu, độ dày đặc của tất cả cột, hover-only để đọc tồn, hoặc quy trình hãng vận chuyển không phù hợp xe vật liệu của Hiền Xa.
+Học: điều hướng trái, ô tìm kiếm rõ, lọc nhanh, bảng hàng chỉnh trực tiếp, thêm nhanh đối tượng và đi vào chứng từ liên quan. Từ 15/10/2026 theo góp ý khách, màn tạo đơn bán/mua, danh sách khách hàng/vật tư và thiết lập giá tham chiếu thêm bố cục KiotViet (ô tìm hàng hóa F3, bảng dòng sửa trực tiếp, cột phải khách và tổng tiền, ít nút) với cùng giới hạn không sao chép thương hiệu. Không sao chép: thương hiệu, độ dày đặc của tất cả cột, hover-only để đọc tồn, hoặc quy trình hãng vận chuyển không phù hợp xe vật liệu của Hiền Xa.
 
 Menu UX-030 là danh mục toàn hệ thống, không phải màn hình mặc định của mọi tài khoản. Bán hàng ưu tiên Đơn bán/Báo giá/Khách hàng; điều phối ưu tiên Giao hàng; tài chính ưu tiên Công nợ/Thu chi; chủ có Tổng quan. Các mục không thường dùng vẫn truy cập được theo quyền, có thể thu gọn nhóm, không xóa chức năng để làm giao diện có vẻ đơn giản.
 
@@ -1490,14 +1516,14 @@ Không tạo thêm dashboard riêng cho mỗi vai trò: có thể dùng bộ l�
 | 2 | Chọn/xác nhận công trình | Điểm giao, người nhận, hạn chế xe đã lưu | Tên và địa chỉ; nút Thêm công trình không làm mất đơn đang nhập |
 | 3 | Chọn vật tư, nhập số lượng/đơn vị | Giá riêng hợp lệ; quy cách; tồn khả dụng nếu được phép | Nguồn giá, giá theo đơn vị, thành tiền |
 | 4 | Chọn thời điểm giao và nguồn nếu đã biết | Mặc định có nhãn, phần nhiều nguồn mở theo nhu cầu | Ngày giao là đã chốt hay còn dự kiến; nguồn chưa chốt không giả READY |
-| 5 | Chọn Lưu nháp hoặc Xác nhận đơn | Kiểm giá/UOM/hạn mức/trạng thái ở server | Tổng tiền + điểm giao + phạm vi cam kết; chỉ hành động được phép |
+| 5 | Chọn Lưu nháp hoặc Tạo đơn (lưu + xác nhận) | Kiểm giá/UOM/hạn mức/trạng thái ở server | Tổng tiền + điểm giao + phạm vi cam kết; chỉ hành động được phép |
 | 6 | Xem kết quả | Trả mã đơn và hướng dẫn công việc tiếp | Chờ chọn nguồn/Chờ phân giao/... theo trạng thái nguồn thật |
 
 Desktop: khối dòng vật tư là vùng chính; bên cạnh là khách/công trình và tổng hợp. Không bắt mở lần lượt sáu trang cho đơn đơn giản. Mobile: cùng nội dung theo một cột, nhãn/tổng dễ thấy.
 
 Ví dụ giả định quy cách đã cấu hình: xi măng A, 2 tấn, 3.000.000 đ/tấn → 6.000.000 đ; dòng phụ "40 bao × 50 kg". Đơn giá này là dữ liệu thử, không giá thật của Hiền Xa. Chuyển sang bao phải hiển thị lại số lượng và giá theo bao tương ứng, không giữ nguyên đơn giá/tấn dưới nhãn bao.
 
-Nếu khách chỉ cần báo giá: chuyển sang luồng báo giá với thông tin đã nhập và đúng quyền. Nếu khách đã chốt đơn: không buộc tạo một báo giá vô nghĩa. Ghi nhận khách đồng ý qua điện thoại/Zalo theo kênh/bằng chứng hiện có, không bắt khách mở portal mới có thể bán.
+Nếu khách chỉ cần báo giá: chuyển sang luồng báo giá với thông tin đã nhập và đúng quyền (khi Báo giá tắt theo D1: dùng Lưu nháp). Nếu khách đã chốt đơn: không buộc tạo một báo giá vô nghĩa. Ghi nhận khách đồng ý qua điện thoại/Zalo theo kênh/bằng chứng hiện có, không bắt khách mở portal mới có thể bán.
 
 **Ngoại lệ:** thiếu giá; trùng khách; UOM chưa cấu hình; tồn chưa xác định; vượt hạn mức; đang lưu thì mất mạng. Lỗi phải giữ form. Mất phản hồi lệnh dùng UX-850, không tạo đơn thứ hai.
 
@@ -1529,7 +1555,7 @@ NCC hoặc người điều phối cung cấp lượng giao/bằng chứng; Hi�
 
 **Người dùng:** bán hàng/tài chính. **Bắt đầu:** tìm khách hoặc bấm tên khách từ đơn/công nợ. **Kết thúc:** thực hiện hành động trên đúng khách/công trình mà không tìm lại ở module khác.
 
-Đầu hồ sơ hiển thị tên/liên hệ, nhân viên phụ trách, công trình đang dùng và thông tin công nợ được phép. Hành động chính: **Tạo đơn**. Hành động phụ theo quyền: **Tạo báo giá**, **Ghi nhận thu tiền**.
+Đầu hồ sơ hiển thị tên/liên hệ, nhân viên phụ trách, công trình đang dùng và thông tin công nợ được phép. Hành động chính: **Tạo đơn**. Hành động phụ theo quyền: **Tạo báo giá** (ẩn khi Báo giá tắt — D1), **Ghi nhận thu tiền**.
 
 Các vùng chính: Tổng quan, Công trình, Giá riêng, Giao dịch, Công nợ. Tài liệu/lịch sử được nhóm trong vùng liên quan; không bắt hiển thị đồng thời mọi bảng. Tìm một công trình phải mở được đúng đơn/giao/công nợ của công trình đó.
 

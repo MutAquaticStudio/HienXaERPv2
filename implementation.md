@@ -2647,3 +2647,20 @@ Customer credit funded từ negative release của allocation đã thu; refund/o
 ## 2026-10-11 — G01–G23 tiếp tục đến source649dd17/schema164
 
 Giữ nền3b83779/originalcheckout, triển khai G17–18(8f84c66),G19(9c3e425),G20/G22/G23(649dd17). Chi phí theo actualassignment/xe, chuyển kho theo custodylot/lossapproval, trảNCCphysical/accept/credit/refund/offsetsource; invoice matching source/APneutral vàbanknoticeboundedcoverage; operationalcompletion nhiềuaxes/ngoại lệ. G16 được kiểm riêng allsourcequality, không suy từgross1.04m. Hai advance races cũ không chạy lại. Final typed/build/lint/tests/evidence/representative136→164upgrade vàscoped browser/JWT/faults có tại reports/business-flow-remediation; T01–T42 nêu rõ missing/BLOCKED, không blanketacceptance. Realinvoiceprovider/Storage/deviceRealtime ngoài evidence, khôngfakeissued. PRnháp phụthuộcPR41, khôngmerge/deployProduction; CI phải gắnfinalPRhead.
+
+## 2026-10-16 — FB-KIOTVIET-20261015: góp ý khách kiểu KiotViet (Claude Code)
+
+Nguồn: chỉ thị Owner 15/10/2026 + quyết định D1–D4 (đầu Spec.md). Nhánh `nox/elegant-volta-kr29iz`, commit `75e8b48` (G0) → `bb2c1cf` (G1) → `89f5983` (G2) → `1720468` (G3) → `64e1481` (G4) → `7b890ce` (G5) → `d68dda4` (G6) → `761ce4f` (G7) → `2dc793b` (G8) → commit tài liệu G9. Không PR/merge/deploy; không truy cập Production hay QA cloud.
+
+Bằng chứng cục bộ tại `2dc793b` (loại: kiểm thử tự động cục bộ, không phải runtime):
+- `pnpm lint` 0 lỗi (14 warning nền không đổi); `pnpm typecheck`; `pnpm test` 110 file / 735 test PASS; `pnpm build` PASS; `node --test` evidence-reverification + source-binding 15/15.
+- DB native (`scripts/db-native/run.mjs`, PostgreSQL 16 cục bộ ở chế độ tương thích MAINTAIN; CI dùng 17): 191 migration áp sạch; RLS mọi bảng public; anon không có quyền bảng và không gọi được definer; definer có `search_path`; `010_access_isolation`, `020_dashboard_series`, `030_pricing_batch` PASS. Đã thử đột biến `save_pricing_rules_batch` (ghi một phần) để chắc `030_pricing_batch` bắt được lỗi.
+- Ảnh desktop 1440/mobile 390 dựng từ component (không có backend) cho Tổng quan, tạo đơn bán, bảng giá; lưu ngoài repo.
+
+Thay đổi hành vi đáng chú ý:
+- Lợi nhuận gộp không còn hiển thị ở đâu trên giao diện (trước đây chỉ có ở KPI Tổng quan); snapshot vẫn trả `gross_profit`.
+- "Tạo đơn"/"Tạo đơn mua" gọi lưu nháp rồi xác nhận bằng hai operationId do client giữ; xác nhận lỗi thì nháp vẫn còn.
+- Bộ lọc dùng `router.replace`: không tạo mục lịch sử cho mỗi lần gõ.
+
+Chưa có: QA-FB-B01…B14 trên QA project (khung `scripts/qa/feedback-20261015/` chưa chạy), UAT khách, kiểm tra read-only báo giá `SENT` ở Production, cho phép áp 2 migration (`20261015120000`, `20261015130000`) và deploy.
+

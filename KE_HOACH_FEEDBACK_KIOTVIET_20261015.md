@@ -1,6 +1,6 @@
 # Kế hoạch & QA — Feedback khách theo phong cách KiotViet (15/10/2026)
 
-Trạng thái: **ĐANG TRIỂN KHAI — CHƯA DEPLOY**. Không áp migration lên QA cloud/Production khi chưa có lệnh của Owner.
+Trạng thái: **ĐÃ XONG CODE G0–G9 trên nhánh `nox/elegant-volta-kr29iz` — CHƯA QA TRÌNH DUYỆT, CHƯA DEPLOY**. Không áp migration lên QA cloud/Production khi chưa có lệnh của Owner.
 
 ## 1. Quyết định của Owner
 
@@ -8,8 +8,8 @@ Trạng thái: **ĐANG TRIỂN KHAI — CHƯA DEPLOY**. Không áp migration lê
 |---|---|---|
 | D1 | Tắt hẳn Báo giá (nội bộ + cổng khách) bằng cờ `QUOTATIONS_ENABLED` (`src/lib/features.ts`). Không xóa dữ liệu/RPC/quyền; preset vai trò giữ nguyên để khớp DB; đơn bán cũ có nguồn báo giá vẫn xem được. | Spec.md L98, SPEC-140; UXUI.md L141, L1479, L1532 |
 | D2 | KPI Tổng quan: Doanh thu │ Tổng chi phí │ **Lợi nhuận ròng** (= `operating_profit`: doanh thu − giá vốn − chi phí vận hành) │ Biên lợi nhuận ròng. LN gộp không còn hiển thị trên giao diện (trang Báo cáo vốn không có chỉ số lợi nhuận); RPC vẫn trả `gross_profit`. | SPEC-DASH-001; UX-DASH-002 |
-| D3 | Biểu đồ đường: Thu = doanh thu ghi nhận, Chi = giá vốn + chi phí vận hành, Lợi nhuận = Thu − Chi. Cùng công thức với KPI. | UX-DASH-004 |
-| D4 | Chỉnh giá bán hàng loạt: lưu một lần, nguyên tử (RPC batch mới). Làm tròn mặc định 1.000đ, có xem trước. | SPEC-120, SPEC-CONFIG-002 |
+| D3 | Biểu đồ đường: Thu = doanh thu ghi nhận, Chi = giá vốn + chi phí vận hành, Lợi nhuận = Thu − Chi. Cùng công thức với KPI. | SPEC-DASH-009 (mới); UX-DASH-002, UX-DASH-004 |
+| D4 | Chỉnh giá bán hàng loạt: lưu một lần, nguyên tử (RPC batch mới). Làm tròn mặc định 1.000đ, có xem trước. | SPEC-PRI-005 (mới, có đối chiếu SPEC-CONFIG-002); UX-350 |
 
 ## 2. Giai đoạn
 
@@ -24,7 +24,25 @@ Trạng thái: **ĐANG TRIỂN KHAI — CHƯA DEPLOY**. Không áp migration lê
 | G6 | Danh sách khách hàng kiểu KiotViet | — |
 | G7 | Danh sách vật tư kiểu KiotViet (giá bán, giá vốn, tồn theo quyền) | — |
 | G8 | Thiết lập giá hàng loạt + sửa idempotency `savePricingRuleAction` | migration `save_pricing_rules_batch` |
-| G9 | Cập nhật Spec/UXUI/tasks/implementation theo D1–D4 | — |
+| G9 | Cập nhật Spec/UXUI/tasks/implementation theo D1–D4; khung QA trình duyệt `scripts/qa/feedback-20261015/` | — |
+
+### Tiến độ (16/10/2026)
+
+| GĐ | Commit | Kiểm chứng cục bộ |
+|---|---|---|
+| G0 | `75e8b48` | DB native PASS |
+| G1 | `bb2c1cf` | unit + build |
+| G2 | `89f5983` | `020_dashboard_series.sql` PASS; ảnh desktop/mobile |
+| G3 | `1720468` | unit (menu, landing, route, action) |
+| G4 | `64e1481` | 17 + 5 test; ảnh desktop/mobile |
+| G5 | `7b890ce` | 17 + 4 test |
+| G6 | `d68dda4` | 4 test |
+| G7 | `761ce4f` | 5 test + `material-list` |
+| G8 | `2dc793b` | `030_pricing_batch.sql` PASS (có mutation check); 4 + 3 + 6 + 3 test; ảnh desktop/mobile |
+| G9 | commit tài liệu này | `node --test scripts/qa/feedback-20261015/support.test.mjs` |
+
+Tổng tại G8: lint 0 lỗi (14 warning nền), typecheck, 735 unit test, build, DB native (191 migration + 3 file test) đều PASS.
+QA-FB-B01…B14 **chưa chạy** (cần app local trỏ QA project + Owner cho áp 2 migration lên QA).
 
 ## 3. Ma trận QA
 
@@ -39,7 +57,7 @@ Trạng thái: **ĐANG TRIỂN KHAI — CHƯA DEPLOY**. Không áp migration lê
 | QA-FB-A06 | Unit/route | Báo giá tắt: menu, landing, hồ sơ khách không còn báo giá; route trả 404; action báo giá bị từ chối |
 | QA-FB-A07 | Unit | `MaterialSearchBox`: tìm theo mã/tên/không dấu; Enter thêm dòng; chọn lại cùng vật tư + ĐVT → tăng SL |
 | QA-FB-A08 | Unit | `DocumentLineTable`: FormData đúng tên field & thứ tự; sửa giá bắt buộc lý do; ẩn ô giá khi không có quyền |
-| QA-FB-A09 | Server action | `createAndConfirmSalesOrderAction`: thành công; xác nhận lỗi (hạn mức) → nháp còn + thông báo; gửi lại cùng 2 operationId không tạo đơn thứ hai; thiếu `orders.confirm` → từ chối |
+| QA-FB-A09 | Server action | `saveDocument` với `intent=confirm` (đơn bán) và `saveWarehouseDocument` (đơn mua kho): thành công; xác nhận lỗi (hạn mức) → nháp còn + thông báo; hai operationId khác nhau do client giữ; thiếu `orders.confirm`/`purchasing.confirm` → từ chối |
 | QA-FB-A10 | DB native | `save_pricing_rules_batch`: all-or-nothing khi một dòng stale; idempotent cùng operation_id; payload khác → `operation_payload_conflict`; > 500 dòng bị từ chối; đủ N audit; thiếu `pricing.manage` → 42501 |
 | QA-FB-A11 | Unit | Điều chỉnh giá hàng loạt +/−% và +/− số tiền, làm tròn 1.000đ/100đ/không làm tròn bằng BigInt; không cho giá ≤ 0 |
 | QA-FB-A12 | Hồi quy | Toàn bộ test hiện có (`pnpm check`) |
@@ -50,12 +68,12 @@ Dùng `scripts/qa/go-live/browser-kit.mjs`; script đặt tại `scripts/qa/feed
 | Mã | Ca kiểm thử |
 |---|---|
 | QA-FB-B01 | Tạo đơn bán 1 dòng chỉ bằng bàn phím: ≤ 5 thao tác (trước: ~11). Ghi số thao tác trước/sau |
-| QA-FB-B02 | Đơn nhiều dòng, trùng vật tư, đổi ĐVT, giá thủ công + lý do; khách có 1 công trình được tự chọn |
+| QA-FB-B02 | Đơn nhiều dòng, trùng vật tư, đổi ĐVT, giá thủ công + lý do; khách có 1 công trình **không** được tự chọn (SPEC-JOURNEY-003) — ô công trình được focus, mở sẵn danh sách, Enter để chọn |
 | QA-FB-B03 | "Tạo đơn" vượt hạn mức → nháp được lưu, chuyển trang chi tiết, thông báo tiếng Việt |
 | QA-FB-B04 | Mất mạng sau khi gửi → "Thử lại đúng thao tác" → đúng 1 đơn, 1 receipt, 1 audit |
 | QA-FB-B04a | Kịch bản lịch sử dùng form cũ (nút "Tìm khách", "Tính giá và xem trước", "+ Thêm dòng", "Lưu bản nháp", nhãn "Số lượng *"): `scripts/qa/go-live/{configuration,multi-delivery,browser-source-flow,multi-uom,commercial-amendment,service,service-dispatch,pool-work}-browser.mjs`, `scripts/qa/remediation/package7-pricing-browser.mjs`. Đây là bằng chứng lịch sử (không chạy lại ca đã PASS); hành vi tương ứng được kiểm lại bằng QA-FB-B01…B05 với selector mới: combobox "Khách hàng"/"Công trình / điểm giao", combobox "Tìm vật tư", "Số lượng dòng N", "ĐVT bán dòng N", "Đơn giá thủ công dòng N", "Lý do giá thủ công dòng N", nút "Tạo đơn"/"Lưu nháp" |
 | QA-FB-B05 | Đơn mua: kho, giao thẳng gắn đơn bán, thêm NCC qua "+", thiếu địa chỉ kho bị chặn |
-| QA-FB-B06 | Bộ lọc tự áp dụng ở 12 danh sách; URL giữ trạng thái; Back/Forward đúng; "Đang làm việc"/"Đã hủy"/"Tất cả" |
+| QA-FB-B06 | Bộ lọc tự áp dụng ở 12 danh sách; URL giữ trạng thái khi tải lại; không tạo mục lịch sử cho mỗi lần gõ (Back về trang trước); "Đang làm việc"/"Đã hủy"/"Tất cả" |
 | QA-FB-B07 | Danh sách khách: bấm mã hoặc tên đều mở chi tiết; cột công nợ chỉ hiện khi có quyền |
 | QA-FB-B08 | Tổng quan: đổi kỳ/khách/công trình/loại hoạt động → KPI và biểu đồ đổi cùng; tổng biểu đồ = KPI |
 | QA-FB-B08a | `scripts/qa/remediation/package6-no-opening-browser.mjs` (assert số LN gộp 1.120.000 trên thẻ cũ) được thay bằng QA-FB-B08; `package5` đã đổi sang thẻ "Lợi nhuận ròng" |

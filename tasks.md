@@ -25,6 +25,7 @@ QA_SCHEMA_MUTATION: PO_PATCH_ALREADY_APPLIED_NEW_PATCHES_NOT_AUTHORIZED
 QA_APPROVED_PATCH_SHA256: 9e74a7976728bb33b4401d642b79329e5d5ece9ac016e8509c06bbf238bf2f7d
 QA_SCHEMA_APPLY: APPLIED
 PRODUCTION_MUTATION: FORBIDDEN_WITHOUT_OWNER
+ACTIVE_FEEDBACK_BATCH: FB_KIOTVIET_20261015  # Claude Code, branch nox/elegant-volta-kr29iz; see section at end
 ```
 
 Historical R0–R9 tasks are not repeated here. Their source/evidence lives in implementation.md.
@@ -670,3 +671,26 @@ Forward candidate: 20261009224842_supplier_purchase_price_commands.sql. SHA256 0
 ## REM-G01-G23 active remediation
 
 Owner G01–G23 prompt authorizes source/schema, isolated QA, commits and Draft PR; no Production/merge/deploy. Supersedes OP-CUTOVER-01 mandatory opening/manual activation for new operations; protected historical import/immutability retained, not expanded. Single agent, sequential packages; stage1 G01/G05/G21 active. Track decisions/status/evidence in reports/business-flow-remediation. Old acceptance is reference only, not repair PASS.
+
+
+## FB-KIOTVIET-20261015 — Góp ý khách theo phong cách KiotViet
+
+Owner 15/10/2026: plan + thiết kế QA trước, không deploy vội. Quyết định D1–D4 ghi ở đầu Spec.md/UXUI.md; kế hoạch, ma trận QA và tiến độ tại `KE_HOACH_FEEDBACK_KIOTVIET_20261015.md`. Nhánh `nox/elegant-volta-kr29iz`; không PR/merge/deploy, không chạm Production.
+
+| Task | Nội dung | Trạng thái |
+|---|---|---|
+| FB-G0 | Harness DB native (`pnpm db:test:isolated`) + CI job `db-migrations` | DONE_LOCAL |
+| FB-G1 | Bộ lọc tự áp dụng (12 danh sách), bỏ "trừ đã hủy", tên khách bấm được | DONE_LOCAL |
+| FB-G2 | KPI Lợi nhuận ròng (D2) + biểu đồ đường Thu/Chi/Lợi nhuận theo bộ lọc (D3); migration `20261015120000_dashboard_profit_series` | DONE_LOCAL |
+| FB-G3 | Tắt Báo giá nội bộ + cổng khách (D1), không xóa dữ liệu/RPC | DONE_LOCAL |
+| FB-G4 | Tạo đơn bán kiểu KiotViet, "Tạo đơn" = lưu + xác nhận | DONE_LOCAL |
+| FB-G5 | Tạo đơn mua dùng chung bộ khối, "+" NCC nhanh | DONE_LOCAL |
+| FB-G6 | Danh sách khách hàng kiểu KiotViet | DONE_LOCAL |
+| FB-G7 | Danh sách vật tư kiểu KiotViet (giá/giá vốn/tồn theo quyền) | DONE_LOCAL |
+| FB-G8 | Thiết lập giá hàng loạt nguyên tử (D4); migration `20261015130000_pricing_rules_batch`; sửa idempotency `savePricingRuleAction` | DONE_LOCAL |
+| FB-G9 | Tài liệu + khung QA trình duyệt `scripts/qa/feedback-20261015/` | DONE_LOCAL |
+| FB-QA | QA-FB-B01…B14 trên QA project (desktop 1440 + mobile 390) | BLOCKED_OWNER: cần cho phép áp 2 migration mới lên QA project |
+| FB-UAT | Khách/Owner nghiệm thu từng góp ý (bảng số thao tác trước/sau) | PENDING_OWNER |
+| FB-REL | Read-only Production: đếm báo giá `SENT`; Owner cho phép riêng áp 2 migration + deploy | PENDING_OWNER |
+
+DONE_LOCAL = lint/typecheck/unit/build/DB native PASS trên nhánh; không phải nghiệm thu runtime. Kịch bản trình duyệt lịch sử dùng form/nhãn cũ (QA-FB-B04a, B08a, B11a) là bằng chứng lịch sử, được kiểm lại bằng QA-FB-B mới.
