@@ -1,7 +1,9 @@
 # QA trình duyệt — góp ý KiotViet (`FB-KIOTVIET-20261015`)
 
-Ma trận đầy đủ: `KE_HOACH_FEEDBACK_KIOTVIET_20261015.md` §3.2. **Trạng thái: CHƯA CHẠY TRÊN TRÌNH DUYỆT.**
-Migration (`20261015120000`, `20261015130000` + 2 bản nền) đã áp lên QA project ngày 16/10/2026 và QA database đã PASS.
+Ma trận đầy đủ: `KE_HOACH_FEEDBACK_KIOTVIET_20261015.md` §3.2. **Trạng thái: đã chạy trên QA project ngày 16/10/2026** —
+kết quả từng ca ở kế hoạch §2. Lưu ý dữ liệu QA: `hxqa-sales` không có `orders.confirm` → chạy B01 với `--order-role owner`;
+`hxqa-finance` là tài khoản cổng khách (vai trò tài chính nội bộ là `hxqa-finance-employee`); khách dùng cho B01 phải có hạn mức
+và không có nợ quá hạn (ví dụ "20261004T140821Z Updated").
 
 ## Điều kiện
 

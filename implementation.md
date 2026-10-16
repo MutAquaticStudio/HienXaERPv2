@@ -2706,3 +2706,25 @@ Theo yêu cầu Owner (16/10/2026), đã đặt lại mật khẩu chung cho đ�
 không đổi; Production không đụng. Giá trị mật khẩu không ghi vào repo; `.env.qa.local` cũ cần cập nhật `HX_QA_PASSWORD`.
 Chưa thử đăng nhập thật (phiên không ra mạng tới QA).
 
+## 2026-10-16 — FB-KIOTVIET-20261015: QA trình duyệt trên QA project (phiên cloud)
+
+Owner mở domain QA cho môi trường cloud. App build local với env QA (file tạm ngoài repo, mật khẩu chỉ qua biến môi trường tiến trình),
+`NODE_USE_ENV_PROXY=1 pnpm start -p 3112`, runner `scripts/qa/feedback-20261015/feedback-browser.mjs`, Chromium desktop 1440 + mobile 390,
+chi nhánh "HXQA Branch A". Đăng nhập thật `hxqa-owner` qua Auth API: 200.
+
+Kết quả (lần chạy cuối, báo cáo PASS, 0 lỗi trang): B01 PASS (SO-2026-000064/065 CONFIRMED, đúng khách/công trình, 400.000, có credit commitment;
+đọc lại DB), B06 PASS, B07 PASS, B08 PASS (tổng LN biểu đồ = KPI: 2.399.904 cho 15 ngày; 3.475.024 cho 13 tuần), B11 PASS (404 nội bộ + cổng khách),
+B12 ma trận cột khớp quyền DB 6 vai trò, B13 PASS (`QPE44F1B7B-MATERIALB` v1 250.000 → v2 275.000, đúng 1 audit lô, phiên dữ liệu cũ không ghi gì;
+đơn mới lấy 275.000). B14 không đại diện: p95 3,4–3,9 s do mạng container → proxy → Supabase Seoul (130–420 ms/lượt; danh sách đơn p50 2,4 s);
+DB ~280 ms. B03 thấy gián tiếp: SO-2026-000062/063 để nháp khi xác nhận bị chặn (chưa hạn mức; nợ quá hạn) với thông báo tiếng Việt.
+
+Lỗi QA bắt được và đã sửa (mỗi lỗi có test; test cũ vẫn xanh): `7afec05` combobox chọn gợi ý cũ khi đang tìm (SO-2026-000062 bị lưu cho khách
+`HXAUD3009Q1` thay vì khách đã gõ); `cc83d25` hydration #418 Tổng quan (`<title>` nhiều con, chỉ ở production build; bisect: commit trước G2 sạch);
+`83407fc` route báo giá tắt trả 200 → rewrite `beforeFiles` trả 404 thật; `a6e9c36` bảng dòng đơn bán/mua cuộn ngang che giá ở 1440px
+(đo trên app thật 1920/1440/1366/1280/1024/390: không còn cuộn ngang); `856a3be` runner (đăng nhập theo trang đích của vai trò, `--order-role`).
+Kiểm tra cục bộ sau sửa: lint 0 lỗi, typecheck, 739 test, build mặc định, node test QA 19/19.
+
+Phát hiện chưa sửa: `proxy.ts` ở gốc repo, app ở `src/app` → Next 16 không đăng ký proxy (build không có dòng Proxy, manifest rỗng); làm mới phiên
+Supabase trong proxy chưa từng chạy từ 12/09/2026. Trang lỗi chung "Không thể mở trang" khi tài khoản thiếu quyền/không thuộc chi nhánh (đúng là chặn,
+nhưng thông báo chung chung). Cả hai cần Owner quyết; không tự đổi vì ảnh hưởng toàn app/Production.
+

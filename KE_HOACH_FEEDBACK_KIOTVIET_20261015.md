@@ -1,6 +1,6 @@
 # Kế hoạch & QA — Feedback khách theo phong cách KiotViet (15/10/2026)
 
-Trạng thái: **ĐÃ XONG CODE G0–G9; ĐÃ ÁP MIGRATION + QA DATABASE PASS TRÊN QA PROJECT (16/10/2026) — CHƯA QA TRÌNH DUYỆT, CHƯA DEPLOY**. Không áp migration lên Production khi chưa có lệnh riêng của Owner.
+Trạng thái: **ĐÃ XONG CODE G0–G9; MIGRATION + QA DATABASE + QA TRÌNH DUYỆT TỰ ĐỘNG PASS TRÊN QA PROJECT (16/10/2026) — CHỜ OWNER UAT, CHƯA DEPLOY**. Không áp migration lên Production khi chưa có lệnh riêng của Owner.
 
 ## 1. Quyết định của Owner
 
@@ -54,8 +54,24 @@ Tổng tại G8: lint 0 lỗi (14 warning nền), typecheck, 735 unit test, buil
   tổng Lợi nhuận = KPI (3.475.024), Thu − Chi = Lợi nhuận từng điểm. Lọc theo khách: điểm có chi phí chưa phân bổ là
   `NOT_APPLICABLE`, không mang giá trị (B09 ở tầng DB). Biểu đồ 12 tháng chạy ~280 ms phía DB (1 lần đo, chưa phải p95 trình duyệt).
 
-QA-FB-B01…B14 (trình duyệt) **chưa chạy**: môi trường cloud của phiên không ra mạng tới `*.supabase.co` và không có mật khẩu
-tài khoản QA. Chạy bằng `scripts/qa/feedback-20261015/` trên máy có `.env.qa.local`, hoặc mở mạng + biến môi trường cho phiên cloud.
+### QA trình duyệt trên QA project (16/10/2026, phiên cloud, app local trỏ QA, Chromium 1440 + 390)
+| Ca | Kết quả |
+|---|---|
+| B01 | PASS — 5 bước bàn phím (khách → công trình → F3 vật tư → SL → "Tạo đơn"); SO-2026-000064 và SO-2026-000065 CONFIRMED, đúng khách/công trình, 2 × 200.000 = 400.000, có credit commitment |
+| B03 | PASS gián tiếp — khi xác nhận bị chặn (khách chưa có hạn mức; khách có nợ quá hạn) nháp vẫn lưu, mở chi tiết với lý do tiếng Việt (SO-2026-000062, SO-2026-000063 để nháp) |
+| B06, B07, B11 | PASS (B11 sau khi sửa: 5 route báo giá trả 404 thật) |
+| B08 | PASS — 15 ngày: tổng LN biểu đồ = KPI 2.399.904; 13 tuần: 3.475.024 = KPI |
+| B12 | Ma trận cột khớp quyền DB của 6 vai trò (owner giá+vốn+tồn; sales giá; purchasing không; kho tồn; finance-employee và worker bị chặn) |
+| B13 | PASS — `QPE44F1B7B-MATERIALB` 250.000 → 275.000 (v2, v1 kết thúc đúng lúc v2 bắt đầu, 1 audit lô); phiên thứ hai dữ liệu cũ bị từ chối, không ghi gì; đơn mới lấy ngay 275.000 |
+| B14 | KHÔNG ĐẠI DIỆN — p95 Tổng quan 12 tháng 3,4–3,9 s đo từ container cloud qua proxy tới Supabase Seoul (mỗi lượt gọi 130–420 ms; danh sách đơn cũng 2,4 s p50). Phía DB chỉ ~280 ms. Cần đo lại trên QA preview gần region |
+| B02, B04, B05, B09 (trình duyệt), B10 | Thủ công — Owner UAT |
+
+Lỗi QA trình duyệt bắt được và đã sửa (có test): Enter chọn gợi ý cũ khi tìm khách đang chạy → lưu nháp sai khách;
+lỗi hydration #418 trên Tổng quan (`<title>` nhiều con); route báo giá tắt trả 200 thay vì 404; bảng dòng đơn bán/mua bị cuộn ngang
+che Đơn giá/Thành tiền ở 1440px. Báo cáo chạy: 0 lỗi trang ở lần chạy cuối.
+
+Phát hiện ngoài phạm vi (chưa sửa, cần Owner quyết): `proxy.ts` ở gốc repo nhưng app nằm trong `src/app` → Next không đăng ký proxy,
+nên làm mới phiên Supabase trong proxy **chưa từng chạy** (từ 12/09). Chuyển sang `src/proxy.ts` sẽ bật nó cho toàn app kể cả Production.
 
 ## 3. Ma trận QA
 
@@ -103,7 +119,7 @@ Checklist tiếng Việt theo từng góp ý; bảng số thao tác trước/sau
 
 ## 4. Cổng phát hành (chưa deploy)
 1. CI xanh: `phase-gate` + `db-migrations`.
-2. QA-FB-B01…B14 PASS trên QA project. (Migration + QA database trên QA project: ĐÃ PASS 16/10/2026.)
+2. QA-FB-B01…B14 PASS trên QA project. (Migration + QA database + QA trình duyệt tự động: ĐÃ PASS 16/10/2026; B14 cần đo lại ở môi trường đại diện; ca thủ công chờ UAT.)
 3. Owner UAT ký.
 4. Truy vấn read-only Production: số báo giá đang `SENT` → Owner xác nhận trước khi tắt báo giá.
 5. Owner cho phép riêng: áp 2 migration mới lên Production + deploy. (Production đã có `align_business_api_table_privileges`
