@@ -17,6 +17,8 @@ export function useAutoPricePreview<R>({ load, enabled, scope, failure, holdUnti
   const changed = useRef(!holdUntilChange);
   const [record, setRecord] = useState<{ scope: unknown; value: R } | null>(null);
   const [pending, setPending] = useState(false);
+  // Bumped on every invalidate, so re-choosing the same customer/site/supplier prices again.
+  const [generation, setGeneration] = useState(0);
   const preview = record && Object.is(record.scope, scope) ? record.value : null;
 
   const invalidate = useCallback(() => {
@@ -24,6 +26,7 @@ export function useAutoPricePreview<R>({ load, enabled, scope, failure, holdUnti
     changed.current = true;
     setRecord(null);
     setPending(false);
+    setGeneration((value) => value + 1);
   }, []);
 
   const refresh = useCallback(async () => {
@@ -43,7 +46,7 @@ export function useAutoPricePreview<R>({ load, enabled, scope, failure, holdUnti
     if (!enabled || !changed.current) return;
     const timer = setTimeout(() => { void refresh(); }, delayMs);
     return () => { clearTimeout(timer); revision.current += 1; };
-  }, [enabled, refresh, delayMs]);
+  }, [enabled, refresh, delayMs, generation]);
 
   return { preview, pending, invalidate, refresh };
 }

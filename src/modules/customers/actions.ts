@@ -9,7 +9,8 @@ import { portalRpc } from '@/modules/portal/server';
 
 type QuickCreateResult = { success: boolean; message: string; id?: string; name?: string; address?: string };
 const customerInput = z.object({
-  code: z.string().trim().regex(/^[A-Z0-9_-]{2,32}$/),
+  // Customer codes are stored upper-case; "kh-01" typed in a hurry is the same code as "KH-01".
+  code: z.string().trim().toUpperCase().regex(/^[A-Z0-9_-]{2,32}$/),
   name: z.string().trim().min(2).max(160),
   phone: z.string().trim().max(60).optional(),
 });
@@ -24,7 +25,9 @@ const siteInput = z.object({
 
 export async function createCustomerQuickAction(_: QuickCreateResult | undefined, form: FormData): Promise<QuickCreateResult> {
   const parsed = customerInput.safeParse({code:form.get('code'),name:form.get('name'),phone:form.get('phone')});
-  if (!parsed.success) return {success:false,message:'Mã hoặc tên khách chưa hợp lệ.'};
+  if (!parsed.success) return {success:false,message:parsed.error.issues.some((issue)=>issue.path[0]==='code')
+    ?'Mã khách gồm 2–32 ký tự: chữ không dấu, số, dấu gạch ngang hoặc gạch dưới (vd KH-001).'
+    :'Tên khách cần từ 2 đến 160 ký tự.'};
   const access = await requireInternalPermission('customers.manage');
   const id = randomUUID();
   try {

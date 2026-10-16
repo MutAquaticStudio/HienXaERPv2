@@ -104,6 +104,8 @@ export const EntityCombobox = forwardRef<EntityComboboxHandle, Props>(function E
       const option = shown[highlight];
       if (option) choose(option);
     } else if (event.key === "Escape") {
+      // Closing the list must not also close a popup the box sits in.
+      if (open) event.preventDefault();
       cancelSearch();
       setOpen(false);
       setQuery(null);

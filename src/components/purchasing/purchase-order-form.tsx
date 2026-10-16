@@ -1,18 +1,21 @@
 "use client";
 
-import { startTransition, useActionState, useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { startTransition, useActionState, useCallback, useMemo, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { DocumentLineTable } from "@/components/documents/editor/document-line-table";
+import { DocumentTotalValue } from "@/components/documents/editor/document-total";
 import { EntityCombobox } from "@/components/documents/editor/entity-combobox";
 import { addMaterialLine, MAX_DOCUMENT_LINES } from "@/components/documents/editor/lines";
 import { MaterialSearchBox, type MaterialSearchHandle } from "@/components/documents/editor/material-search-box";
+import { NumberEntry } from "@/components/documents/editor/number-entry";
 import type { EditorLine, EditorMaterial, EntityOption } from "@/components/documents/editor/types";
 import { useAutoPricePreview } from "@/components/documents/editor/use-auto-price-preview";
-import { QuickCreateFocusGuard } from "@/components/sales/quick-create-focus-guard";
+import { Dialog } from "@/components/ui/dialog";
 import { formatQuantity } from "@/lib/core/quantity";
 import { priceSourceLabel } from "@/modules/pricing/presentation";
 import { userFacingError } from "@/lib/core/errors";
 import { formatVnd, vnd } from "@/lib/core/money";
+import { normalizeVndInput } from "@/lib/core/vn-number";
 import { isPositiveSalesQuantity } from "@/modules/sales/quantity-input";
 import { createPurchaseOrderAction, createSupplierQuickAction, previewWarehousePurchaseAction, searchPurchaseSuppliersAction, updatePurchaseOrderDraftAction, updatePurchaseWarehouseAddressAction, updatePurchaseDraftDestinationAction, type CostPreviewResult } from "@/modules/purchasing/actions";
 import { normalizeWarehouseAddress, warehouseAddressRequired } from "@/modules/purchasing/warehouse-address";
@@ -40,12 +43,6 @@ function QuickSupplierPanel({ onCreated, onClose }: { onCreated: (supplier: Enti
   const operationId = useRef(crypto.randomUUID());
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState("");
-  useEffect(() => { document.getElementById("quick-supplier-code")?.focus(); }, []);
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); };
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [onClose]);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (pending) return;
@@ -59,10 +56,8 @@ function QuickSupplierPanel({ onCreated, onClose }: { onCreated: (supplier: Enti
     } catch { setMessage("Chưa xác định kết quả. Bấm tạo lại để kiểm tra; hệ thống không tạo trùng."); }
     finally { setPending(false); }
   }
-  return <div className="quick-create-backdrop" role="presentation"><section className="quick-create-panel card" role="dialog" aria-modal="true" aria-labelledby="quick-supplier-title">
-    <QuickCreateFocusGuard />
-    <div className="commercial-line-head"><div><p className="eyebrow">Tạo nhanh trong mua hàng</p><h2 id="quick-supplier-title">Thêm nhà cung cấp</h2></div><button className="button button-secondary" type="button" onClick={onClose}>Đóng</button></div>
-    <p className="muted">Đơn mua đang soạn được giữ nguyên. Nhà cung cấp mới sẽ được chọn tự động.</p>
+  return <Dialog eyebrow="Tạo nhanh trong mua hàng" title="Thêm nhà cung cấp" onClose={onClose} initialFocusId="quick-supplier-code"
+    description="Đơn mua đang soạn được giữ nguyên. Nhà cung cấp mới sẽ được chọn tự động.">
     <form onSubmit={submit} className="form-grid">
       <div className="field"><label htmlFor="quick-supplier-code">Mã NCC *</label><input id="quick-supplier-code" name="code" required pattern="[A-Za-z0-9_\-]{2,32}" maxLength={32} /></div>
       <div className="field"><label htmlFor="quick-supplier-name">Tên NCC *</label><input id="quick-supplier-name" name="name" required minLength={2} maxLength={160} /></div>
@@ -70,7 +65,7 @@ function QuickSupplierPanel({ onCreated, onClose }: { onCreated: (supplier: Enti
       {message && <p className="form-message field-full" role="status">{userFacingError(message)}</p>}
       <div className="form-actions field-full"><button className="button button-primary" type="submit" disabled={pending}>{pending ? "Đang tạo..." : "Tạo nhà cung cấp"}</button></div>
     </form>
-  </section></div>;
+  </Dialog>;
 }
 
 export function PurchaseOrderForm({ options, operationId, confirmOperationId, canConfirm = false, salesLine, sourceLines, canCreateSales, canManagePrice, canReadPrice, canManageSalesPrice = false, canManageWarehouse = false, existing, initialSupplierId, initialWarehouseId, initialMaterialId }: {
@@ -127,6 +122,10 @@ export function PurchaseOrderForm({ options, operationId, confirmOperationId, ca
   const emptyLines = !supplierId || !lines.length || lines.some((line) => !line.materialId || !line.uomId || !isPositiveSalesQuantity(line.quantity) || (sourceMode && !line.salesLineId));
   const disabled = emptyLines || (warehouseMode ? !warehouseId || (!existing && addressMissing) || (!!existing && warehouseId !== committedWarehouseId) : sourceMode ? !availableSourceLines.length : !canCreateSales || !site);
   const previewNeeded = canReadPrice || createsSales;
+  const priceMissing = !supplierId ? "Chọn nhà cung cấp để tính giá"
+    : createsSales && !site ? "Chọn khách hàng và công trình để tính giá"
+    : !lines.length ? "Thêm vật tư để tính giá"
+    : emptyLines ? "Sửa dòng hàng chưa hợp lệ để tính giá" : null;
 
   const load = useCallback(() => previewWarehousePurchaseAction({ mode, supplierId, warehouseId: warehouseMode ? warehouseId : undefined,
     customerId: createsSales ? customerId : undefined,
@@ -229,14 +228,15 @@ export function PurchaseOrderForm({ options, operationId, confirmOperationId, ca
         onDone={() => searchRef.current?.focus()}
         hiddenFields={(line) => <input type="hidden" name="salesLineId" value={line.salesLineId} />}
         detail={createsSales ? (line, index) => <>
-          {canManageSalesPrice && <span className="doc-editor-reason"><label>Giá bán thủ công dòng {index + 1}<input name="manualSalesPriceVnd" inputMode="numeric" value={line.manualSalesPriceVnd} onChange={(event) => changeLines((current) => current.map((item) => item.key === line.key ? { ...item, manualSalesPriceVnd: event.target.value } : item))} /></label>
+          {canManageSalesPrice && <span className="doc-editor-reason"><label>Giá bán thủ công dòng {index + 1}<NumberEntry inputMode="numeric" value={line.manualSalesPriceVnd} normalize={normalizeVndInput} onValue={(manualSalesPriceVnd) => changeLines((current) => current.map((item) => item.key === line.key ? { ...item, manualSalesPriceVnd } : item))} /></label>
+            <input type="hidden" name="manualSalesPriceVnd" value={line.manualSalesPriceVnd} />
             {line.manualSalesPriceVnd && <label>Lý do giá bán dòng {index + 1}<input name="manualSalesReason" maxLength={500} value={line.manualSalesReason} onChange={(event) => changeLines((current) => current.map((item) => item.key === line.key ? { ...item, manualSalesReason: event.target.value } : item))} /></label>}
             {!line.manualSalesPriceVnd && <input type="hidden" name="manualSalesReason" value="" />}</span>}
           {preview?.success && preview.sales?.lines[index] && <small className="muted">Giá bán khách: <strong>{formatVnd(vnd(preview.sales.lines[index].unitPriceVnd))}</strong> · {priceSourceLabel(preview.sales.lines[index].priceSourceType)} · Thành tiền bán: <strong>{formatVnd(vnd(preview.sales.lines[index].lineTotalVnd))}</strong></small>}
         </> : undefined} />
     </section>
 
-    <aside className="card card-pad doc-editor-side" aria-label="Thông tin đơn mua">
+    <div className="doc-editor-rail"><aside className="card card-pad doc-editor-side" aria-label="Thông tin đơn mua">
       <EntityCombobox label="Nhà cung cấp" name="supplierId" value={supplier} options={supplierChoices} readOnly={!!existing} placeholder="Tìm NCC theo mã hoặc tên"
         onSearch={async (term) => { const found = (await searchPurchaseSuppliersAction(term)).suppliers.map((item) => ({ id: item.id, label: item.name })); setSupplierChoices((current) => [...current, ...found.filter((item) => !current.some((row) => row.id === item.id))]); return found; }}
         onSelect={(option) => { setSupplier(option); invalidate(); }}
@@ -253,26 +253,32 @@ export function PurchaseOrderForm({ options, operationId, confirmOperationId, ca
         <EntityCombobox label="Khách hàng" name="customerId" value={customer} options={customerOptions} placeholder="Tìm khách hàng" onSelect={(option) => { setCustomer(option); setSite(null); invalidate(); }} />
         <EntityCombobox label="Công trình" name="siteId" value={site} options={sites} disabled={!customerId} placeholder={customerId ? "Chọn công trình giao hàng" : "Chọn khách hàng trước"} emptyText="Khách chưa có công trình." onSelect={(option) => { setSite(option); invalidate(); }} />
       </>}
-      <div className="field"><label htmlFor="expectedAt">Ngày dự kiến</label><input id="expectedAt" name="expectedAt" type="datetime-local" defaultValue={localDateTime(existing?.expectedAt ?? null)} /></div>
-      <div className="field"><label htmlFor="terms">Điều khoản mua</label><textarea id="terms" name="terms" rows={2} maxLength={1000} defaultValue={existing?.terms ?? ""} /></div>
+      {mode === "LINKED_DIRECT" && !salesLine && <p className="mock-banner">{existing ? "Lưu cập nhật đơn mua nháp này; không tạo đơn mua hoặc đơn bán mới. Đơn bán liên kết được giữ nguyên." : "Giá mua được lưu trên đơn mua. Gắn đơn bán có sẵn sẽ giữ nguyên giá bán; chọn tạo đơn bán liên kết sẽ lưu hai bản nháp cùng lúc."}</p>}
+    </aside>
 
-      <dl className="doc-editor-summary">
+    <div className="card card-pad doc-editor-footer" role="group" aria-label="Tổng tiền và lưu đơn mua">
+      {preview && !preview.success && <p role="status" className="form-message">{userFacingError(preview.message)}</p>}
+      {state?.message && <p className={`form-message${state.success ? " success" : ""}`} role="status">{userFacingError(state.message)}</p>}
+      {state?.partialPurchaseOrderId && <Link className="button button-secondary" href={`/admin/purchase-orders/${state.partialPurchaseOrderId}/edit`}>Mở đơn mua nháp đã tạo</Link>}
+      <div className="doc-editor-totals"><dl className="doc-editor-summary">
         <div><dt>Số dòng</dt><dd>{lines.length}</dd></div>
         {canReadPrice
-          ? <div className="doc-editor-total"><dt>Tổng tiền hàng</dt><dd>{preview?.success && preview.totalVnd ? formatVnd(vnd(preview.totalVnd)) : previewPending ? "Đang tính giá..." : "—"}</dd></div>
+          ? <div className="doc-editor-total"><dt>Tổng tiền hàng</dt><dd><DocumentTotalValue totalVnd={preview?.success ? preview.totalVnd : null} pending={previewPending && !priceMissing} /></dd></div>
           : <p className="muted">Giá mua được giữ ẩn theo quyền. Hệ thống vẫn kiểm tra giá khi lưu.</p>}
         {createsSales && preview?.success && preview.sales && <div><dt>Tổng giá bán khách</dt><dd>{formatVnd(vnd(preview.sales.totalVnd))}</dd></div>}
       </dl>
-      {preview && !preview.success && <p role="status" className="form-message">{userFacingError(preview.message)}</p>}
-      {mode === "LINKED_DIRECT" && !salesLine && <p className="mock-banner">{existing ? "Lưu cập nhật đơn mua nháp này; không tạo đơn mua hoặc đơn bán mới. Đơn bán liên kết được giữ nguyên." : "Giá mua được lưu trên đơn mua. Gắn đơn bán có sẵn sẽ giữ nguyên giá bán; chọn tạo đơn bán liên kết sẽ lưu hai bản nháp cùng lúc."}</p>}
-      {state?.message && <p className={`form-message${state.success ? " success" : ""}`} role="status">{userFacingError(state.message)}</p>}
-      {state?.partialPurchaseOrderId && <Link className="button button-secondary" href={`/admin/purchase-orders/${state.partialPurchaseOrderId}/edit`}>Mở đơn mua nháp đã tạo</Link>}
+      {canReadPrice && priceMissing && <p className="doc-editor-total-hint">{priceMissing}</p>}</div>
       <div className="doc-editor-actions">
         {confirmable && <button className="button button-primary" type="submit" name="intent" value="confirm" disabled={blocked}>{pending ? "Đang lưu..." : "Tạo đơn mua"}</button>}
         <button className={`button ${confirmable ? "button-secondary" : "button-primary"}`} type="submit" name="intent" value="draft" disabled={blocked}>{pending && !confirmable ? "Đang lưu..." : draftLabel}</button>
       </div>
       {confirmable && <p className="muted doc-editor-hint">“Tạo đơn mua” lưu và xác nhận ngay; “Lưu nháp” để sửa tiếp sau.</p>}
-    </aside>
+    </div>
+
+    <div className="card card-pad doc-editor-extra" role="group" aria-label="Ngày dự kiến và điều khoản">
+      <div className="field"><label htmlFor="expectedAt">Ngày dự kiến</label><input id="expectedAt" name="expectedAt" type="datetime-local" defaultValue={localDateTime(existing?.expectedAt ?? null)} /></div>
+      <div className="field"><label htmlFor="terms">Điều khoản mua</label><textarea id="terms" name="terms" rows={2} maxLength={1000} defaultValue={existing?.terms ?? ""} /></div>
+    </div></div>
   </form>{quickSupplier && <QuickSupplierPanel onClose={() => setQuickSupplier(false)}
     onCreated={(created) => { setSupplierChoices((current) => [...current, created]); setSupplier(created); invalidate(); setQuickSupplier(false); }} />}</>;
 }

@@ -3,6 +3,8 @@
 import { Fragment, useEffect, useRef, type KeyboardEvent, type ReactNode } from "react";
 import { X } from "lucide-react";
 import { formatVnd, vnd } from "@/lib/core/money";
+import { decimalForEditing, normalizeDecimalInput, normalizeVndInput } from "@/lib/core/vn-number";
+import { NumberEntry } from "./number-entry";
 import type { EditorLine, EditorMaterial, PricedLine } from "./types";
 
 type Props<L extends EditorLine> = {
@@ -81,23 +83,25 @@ export function DocumentLineTable<L extends EditorLine>({ lines, materials, canM
             {priceLocked && <input type="hidden" name={fields.uom} value={line.uomId} />}
           </td>
           <td className="numeric" data-label="Số lượng">
-            <input ref={(element) => { if (element) quantityRefs.current.set(line.key, element); else quantityRefs.current.delete(line.key); }}
-              aria-label={`Số lượng dòng ${row}`} name="quantity" inputMode="decimal" value={line.quantity} required
+            <input type="hidden" name="quantity" value={line.quantity} />
+            <NumberEntry ref={(element) => { if (element) quantityRefs.current.set(line.key, element); else quantityRefs.current.delete(line.key); }}
+              aria-label={`Số lượng dòng ${row}`} inputMode="decimal" value={line.quantity} required normalize={normalizeDecimalInput} display={decimalForEditing}
               aria-invalid={!quantityValid} aria-describedby={quantityValid ? undefined : `qty-error-${line.key}`}
-              onChange={(event) => onChange(line.key, { quantity: event.target.value } as Partial<L>)} onKeyDown={enterMovesOn} />
+              onValue={(quantity) => onChange(line.key, { quantity } as Partial<L>)} onKeyDown={enterMovesOn} />
           </td>
           <td className="numeric" data-label={labels.price}>
+            <input type="hidden" name={fields.price} value={line.manualPriceVnd} />
             {canManagePrice
-              ? <input aria-label={`${labels.price} thủ công dòng ${row}`} name={fields.price} inputMode="numeric" value={line.manualPriceVnd}
-                placeholder={price ? formatVnd(vnd(price.unitPriceVnd)) : "Giá hệ thống"} onChange={(event) => onChange(line.key, { manualPriceVnd: event.target.value } as Partial<L>)} onKeyDown={enterMovesOn} />
-              : <><input type="hidden" name={fields.price} value={line.manualPriceVnd} />{price ? formatVnd(vnd(price.unitPriceVnd)) : "—"}</>}
+              ? <NumberEntry aria-label={`${labels.price} thủ công dòng ${row}`} inputMode="numeric" value={line.manualPriceVnd} normalize={normalizeVndInput}
+                placeholder={price ? formatVnd(vnd(price.unitPriceVnd)) : "Giá hệ thống"} onValue={(manualPriceVnd) => onChange(line.key, { manualPriceVnd } as Partial<L>)} onKeyDown={enterMovesOn} />
+              : price ? formatVnd(vnd(price.unitPriceVnd)) : "—"}
             {price && <small className="table-subline">{price.sourceLabel}</small>}
           </td>
           <td className="numeric" data-label="Thành tiền"><strong>{price ? formatVnd(vnd(price.lineTotalVnd)) : "—"}</strong></td>
           <td className="doc-editor-remove"><button type="button" className="icon-button" aria-label={`Xóa dòng ${row}`} onClick={() => onRemove(line.key)}><X size={16} aria-hidden="true" /></button></td>
         </tr>
         {(!quantityValid || (canManagePrice && line.manualPriceVnd) || priceLocked || extra) && <tr className="doc-editor-line-detail"><td /><td colSpan={7}>
-          {!quantityValid && <small id={`qty-error-${line.key}`} role="alert" className="field-error">Nhập số lượng lớn hơn 0, tối đa 6 chữ số thập phân.</small>}
+          {!quantityValid && <small id={`qty-error-${line.key}`} role="alert" className="field-error">Nhập số lượng lớn hơn 0, tối đa 6 chữ số thập phân (vd 1,5 hoặc 1.250).</small>}
           {canManagePrice && line.manualPriceVnd
             ? <label className="doc-editor-reason">Lý do giá thủ công dòng {row}<input name={fields.reason} maxLength={500} value={line.manualReason} placeholder="Bắt buộc khi giá khác bảng giá"
               onChange={(event) => onChange(line.key, { manualReason: event.target.value } as Partial<L>)} onKeyDown={enterMovesOn} /></label>

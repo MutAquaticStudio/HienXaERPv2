@@ -202,3 +202,18 @@ it("retries an unknown outcome with the exact captured payload and operation ID"
   expect(mocks.save.mock.calls.map(call => call[1].get("quantity"))).toEqual(["2", "2"]);
   expect(mocks.save.mock.calls.map(call => call[1].get("operationId"))).toEqual([props.operationId, props.operationId]);
 });
+
+it("tells the cashier what is missing instead of a blank total, then prices Vietnamese quantities", async () => {
+  render(<CommercialDocumentForm {...props} initialMaterialId="material" />);
+  expect(screen.getByText("Chọn khách hàng và công trình để tính giá", { selector: ".doc-editor-total-hint" })).toBeInTheDocument();
+  expect(screen.getByText("—", { selector: ".doc-editor-total dd" })).toBeInTheDocument();
+  expect(mocks.preview).not.toHaveBeenCalled();
+
+  pickCustomer("Khách B");
+  await waitFor(() => expect(screen.getByRole("combobox", { name: "Công trình / điểm giao" })).toBeEnabled());
+  fireEvent.focus(screen.getByRole("combobox", { name: "Công trình / điểm giao" }));
+  fireEvent.mouseDown(await screen.findByRole("option", { name: /Công trình B/ }));
+  fireEvent.change(quantity(), { target: { value: "1,5" } });
+  await waitFor(() => expect(mocks.preview).toHaveBeenLastCalledWith(expect.objectContaining({ customerId: "customer-b", siteId: "site-b", lines: [expect.objectContaining({ quantity: "1.5" })] })));
+  expect(await screen.findByText("120.000 ₫", { selector: ".doc-editor-total dd" })).toBeInTheDocument();
+});

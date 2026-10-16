@@ -1,18 +1,18 @@
 "use client";
 import { MaterialStockHint } from "@/components/inventory/material-stock-hint";
-import { QuickCreateFocusGuard } from "@/components/sales/quick-create-focus-guard";
+import { Dialog } from "@/components/ui/dialog";
 import { DocumentLineTable } from "@/components/documents/editor/document-line-table";
+import { DocumentTotalValue } from "@/components/documents/editor/document-total";
 import { EntityCombobox, type EntityComboboxHandle } from "@/components/documents/editor/entity-combobox";
 import { addMaterialLine } from "@/components/documents/editor/lines";
 import { MaterialSearchBox, type MaterialSearchHandle } from "@/components/documents/editor/material-search-box";
 import type { EditorLine, EditorMaterial, EntityOption } from "@/components/documents/editor/types";
 import { useAutoPricePreview } from "@/components/documents/editor/use-auto-price-preview";
 
-import { startTransition, useActionState, useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { startTransition, useActionState, useCallback, useRef, useState, type FormEvent } from "react";
 import { isPositiveSalesQuantity } from "@/modules/sales/quantity-input";
 import { priceSourceLabel } from "@/modules/pricing/presentation";
 import { userFacingError } from "@/lib/core/errors";
-import { formatVnd, vnd } from "@/lib/core/money";
 import { createCustomerQuickAction, createSiteQuickAction } from "@/modules/customers/actions";
 import { createQuotationAction, createSalesOrderAction, previewCommercialDocumentAction, updateQuotationDraftAction, updateSalesOrderDraftAction, type PricePreviewResult, type SalesActionState } from "@/modules/sales/actions";
 import { searchSalesCustomersAction, searchSalesSitesAction } from "@/modules/sales/form-lookup-actions";
@@ -42,12 +42,6 @@ function QuickCreatePanel({ mode, customerId, onCustomerCreated, onSiteCreated, 
 }) {
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState("");
-  useEffect(() => { document.getElementById("quick-create-code")?.focus(); }, [mode]);
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); };
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [onClose]);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     event.stopPropagation();
@@ -62,19 +56,18 @@ function QuickCreatePanel({ mode, customerId, onCustomerCreated, onSiteCreated, 
     } catch { setMessage("Không thể tạo nhanh. Kiểm tra quyền và thử lại."); }
     finally { setPending(false); }
   }
-  return <div className="quick-create-backdrop" role="presentation"><section className="quick-create-panel card" role="dialog" aria-modal="true" aria-labelledby="quick-create-title">
-    <QuickCreateFocusGuard />
-    <div className="commercial-line-head"><div><p className="eyebrow">Tạo nhanh trong bán hàng</p><h2 id="quick-create-title">{mode === "customer" ? "Thêm khách hàng" : "Thêm công trình"}</h2></div><button className="button button-secondary" type="button" onClick={onClose}>Đóng</button></div>
-    <p className="muted">Đơn đang soạn được giữ nguyên. Sau khi tạo, bản ghi mới sẽ được chọn tự động.</p>
+  return <Dialog eyebrow="Tạo nhanh trong bán hàng" title={mode === "customer" ? "Thêm khách hàng" : "Thêm công trình"} onClose={onClose} initialFocusId="quick-create-code"
+    description="Đơn đang soạn được giữ nguyên. Sau khi tạo, bản ghi mới sẽ được chọn tự động.">
     <form onSubmit={submit} className="form-grid">
       {mode === "site" && <input type="hidden" name="customerId" value={customerId} />}
-      <div className="field"><label htmlFor="quick-create-code">Mã *</label><input id="quick-create-code" name="code" required minLength={2} maxLength={32} /></div>
+      <div className="field"><label htmlFor="quick-create-code">Mã *</label><input id="quick-create-code" name="code" required minLength={2} maxLength={32} autoCapitalize="characters" autoComplete="off"
+        className={mode === "customer" ? "input-code" : undefined} /></div>
       <div className="field"><label htmlFor="quick-create-name">{mode === "customer" ? "Tên khách hàng" : "Tên công trình"} *</label><input id="quick-create-name" name="name" required minLength={2} maxLength={160} /></div>
       {mode === "customer" ? <div className="field"><label htmlFor="quick-create-phone">Điện thoại</label><input id="quick-create-phone" name="phone" maxLength={60} /></div> : <><div className="field field-full"><label htmlFor="quick-create-address">Địa chỉ giao hàng *</label><input id="quick-create-address" name="address" required minLength={3} maxLength={500} /></div><div className="field"><label htmlFor="quick-create-receiver">Người nhận</label><input id="quick-create-receiver" name="receiverName" maxLength={120} /></div><div className="field"><label htmlFor="quick-create-receiver-phone">Điện thoại người nhận</label><input id="quick-create-receiver-phone" name="receiverPhone" maxLength={60} /></div></>}
       {message && <p className="form-message field-full" role="status">{userFacingError(message)}</p>}
       <div className="form-actions field-full"><button className="button button-primary" type="submit" disabled={pending}>{pending ? "Đang tạo..." : mode === "customer" ? "Tạo khách hàng" : "Tạo công trình"}</button></div>
     </form>
-  </section></div>;
+  </Dialog>;
 }
 
 export function CommercialDocumentForm({ kind, options, operationId, confirmOperationId, canConfirm = false, canManagePrice, canManageCustomers, existing, initialCustomerId, initialSiteId, initialMaterialId }: {
@@ -121,7 +114,10 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
 
   const customerId = customer?.id ?? "";
   const siteId = site?.id ?? "";
-  const empty = !customerId || !siteId || !lines.length || lines.some((line) => !line.materialId || !line.uomId || !isPositiveSalesQuantity(line.quantity));
+  const priceMissing = !customerId || !siteId ? "Chọn khách hàng và công trình để tính giá"
+    : !lines.length ? "Thêm vật tư để tính giá"
+    : lines.some((line) => !line.materialId || !line.uomId || !isPositiveSalesQuantity(line.quantity)) ? "Sửa dòng hàng chưa hợp lệ để tính giá" : null;
+  const empty = !!priceMissing;
   const load = useCallback(() => previewCommercialDocumentAction({ kind, customerId, siteId,
     documentId: existing?.id, expectedVersion: existing?.version,
     lines: lines.map((line) => ({ materialId: line.materialId, orderedUomId: line.uomId, quantity: line.quantity,
@@ -187,7 +183,7 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
         detail={options.availability ? (line) => <details className="doc-editor-stock"><summary>Tồn kho</summary><MaterialStockHint availability={options.availability} materialId={line.materialId} orderedUomId={line.uomId} quantity={line.quantity} /></details> : undefined} />
     </section>
 
-    <aside className="card card-pad doc-editor-side" aria-label="Thông tin đơn">
+    <div className="doc-editor-rail"><aside className="card card-pad doc-editor-side" aria-label="Thông tin đơn">
       <EntityCombobox label="Khách hàng" name="customerId" value={customer} options={customerChoices} readOnly={!!existing} placeholder="Tìm khách theo mã hoặc tên"
         onSearch={async (term) => { const found = (await searchSalesCustomersAction(kind, term)).map((item) => ({ id: item.id, label: item.name })); setCustomerChoices((current) => [...current, ...found.filter((item) => !current.some((row) => row.id === item.id))]); return found; }}
         onSelect={selectCustomer}
@@ -198,22 +194,28 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
         onSelect={(option) => { setSite(option); invalidate(); if (option) searchRef.current?.focus(); }}
         action={!existing && canManageCustomers ? <button type="button" className="quick-create-trigger" onClick={() => setQuickMode("site")} disabled={!customerId}>+ Thêm công trình</button> : undefined} />
       {lookupMessage && <p className="form-message" role="status">{lookupMessage}</p>}
-      <div className="field"><label htmlFor="effectiveAt">{kind === "order" ? "Ngày giao dự kiến" : "Hiệu lực đến"}</label><input id="effectiveAt" name="effectiveAt" type="datetime-local" value={effectiveAt} onChange={(event) => setEffectiveAt(event.target.value)} required={kind === "quote"} /></div>
-      <div className="field"><label htmlFor="terms">Điều khoản / ghi chú</label><textarea id="terms" name="terms" rows={2} maxLength={1000} aria-describedby="terms-hint" value={terms} onChange={(event) => setTerms(event.target.value)} placeholder="Điều kiện giao, thanh toán hoặc lưu ý" /><small id="terms-hint" className="muted">{terms.length}/1.000</small></div>
+    </aside>
 
-      <dl className="doc-editor-summary">
-        <div><dt>Số dòng</dt><dd>{lines.length}</dd></div>
-        <div className="doc-editor-total"><dt>Tổng tiền hàng</dt><dd>{preview?.success && preview.totalVnd ? formatVnd(vnd(preview.totalVnd)) : previewPending ? "Đang tính giá..." : "—"}</dd></div>
-      </dl>
+    <div className="card card-pad doc-editor-footer" role="group" aria-label="Tổng tiền và lưu đơn">
       {preview && !preview.success && <p role="status" className="form-message">{userFacingError(preview.message)}</p>}
       {state?.message && <p className={`form-message${state.success ? " success" : ""}`} role="status">{userFacingError(state.message)}</p>}
+      <div className="doc-editor-totals"><dl className="doc-editor-summary">
+        <div><dt>Số dòng</dt><dd>{lines.length}</dd></div>
+        <div className="doc-editor-total"><dt>Tổng tiền hàng</dt><dd><DocumentTotalValue totalVnd={preview?.success ? preview.totalVnd : null} pending={previewPending && !priceMissing} /></dd></div>
+      </dl>
+      {priceMissing && <p className="doc-editor-total-hint">{priceMissing}</p>}</div>
       <div className="doc-editor-actions">
         {confirmable && <button className="button button-primary" type="submit" name="intent" value="confirm" disabled={!ready}>{pending ? "Đang lưu..." : "Tạo đơn"}</button>}
         <button className={`button ${confirmable ? "button-secondary" : "button-primary"}`} type="submit" name="intent" value="draft" disabled={!ready}>{pending && !confirmable ? "Đang lưu..." : existing ? "Lưu thay đổi bản nháp" : "Lưu nháp"}</button>
         {state?.outcomeUnknown && <button className="button button-secondary" type="button" disabled={pending} onClick={() => { const original = lastSubmission.current; if (original && !submissionPending.current) { submissionPending.current = true; startTransition(() => formAction(original)); } }}>Thử lại đúng thao tác</button>}
       </div>
       {confirmable && <p className="muted doc-editor-hint">“Tạo đơn” lưu và xác nhận ngay; “Lưu nháp” để sửa tiếp sau.</p>}
-    </aside>
+    </div>
+
+    <div className="card card-pad doc-editor-extra" role="group" aria-label={kind === "order" ? "Ngày giao và ghi chú" : "Hiệu lực và ghi chú"}>
+      <div className="field"><label htmlFor="effectiveAt">{kind === "order" ? "Ngày giao dự kiến" : "Hiệu lực đến"}</label><input id="effectiveAt" name="effectiveAt" type="datetime-local" value={effectiveAt} onChange={(event) => setEffectiveAt(event.target.value)} required={kind === "quote"} /></div>
+      <div className="field"><label htmlFor="terms">Điều khoản / ghi chú</label><textarea id="terms" name="terms" rows={2} maxLength={1000} aria-describedby="terms-hint" value={terms} onChange={(event) => setTerms(event.target.value)} placeholder="Điều kiện giao, thanh toán hoặc lưu ý" /><small id="terms-hint" className="muted">{terms.length}/1.000</small></div>
+    </div></div>
   </form>{quickMode && <QuickCreatePanel key={quickMode} mode={quickMode} customerId={customerId} onClose={() => setQuickMode(null)}
     onCustomerCreated={(created) => { const option = { id: created.id, label: created.name }; siteLoadRevision.current += 1; setCustomerChoices((current) => [...current, option]); setSitesByCustomer((current) => ({ ...current, [created.id]: [] })); setCustomer(option); setSite(null); invalidate(); setQuickMode("site"); }}
     onSiteCreated={(created) => { siteLoadRevision.current += 1; setSitesByCustomer((current) => ({ ...current, [customerId]: [...(current[customerId] ?? []), created] })); setSite(siteOption(created)); invalidate(); setQuickMode(null); }} />}</>;

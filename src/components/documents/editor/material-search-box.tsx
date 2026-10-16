@@ -52,6 +52,7 @@ export const MaterialSearchBox = forwardRef<MaterialSearchHandle, {
       const material = results[highlight];
       if (material) pick(material);
     } else if (event.key === "Escape") {
+      if (open && query.trim()) event.preventDefault();
       setQuery("");
       setOpen(false);
     }

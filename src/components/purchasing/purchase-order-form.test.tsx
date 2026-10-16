@@ -144,7 +144,8 @@ it("adds direct-delivery lines only from the sales order's remaining lines", () 
   expect(screen.queryByRole("combobox", { name: "Tìm vật tư" })).not.toBeInTheDocument();
   expect(quantity()).toHaveValue("4");
   choose("Thêm dòng từ đơn bán", "Vật tư A loại 2");
-  expect(quantity(2)).toHaveValue("1.5");
+  expect(quantity(2)).toHaveValue("1,5");
+  expect([...document.querySelectorAll<HTMLInputElement>('input[name="quantity"]')].map((input) => input.value)).toEqual(["4", "1.5"]);
   expect([...document.querySelectorAll<HTMLInputElement>('input[name="salesLineId"]')].map((input) => input.value)).toEqual(["sl-1", "sl-2"]);
   expect(screen.getByRole("combobox", { name: "Thêm dòng từ đơn bán" })).toBeDisabled();
 });
