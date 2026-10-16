@@ -58,6 +58,8 @@ it("keeps every edit and the same operation when the save outcome is unknown", a
   fireEvent.click(saveButton());
   expect(await screen.findByText(/Chưa xác định kết quả lưu/)).toBeInTheDocument();
   expect(screen.getByLabelText("Giá mới Xi măng")).toHaveValue("99.000");
+  // The message can render a beat before the transition settles; retry only once the button is back.
+  await waitFor(() => expect(saveButton()).toBeEnabled());
   fireEvent.click(saveButton());
   await waitFor(() => expect(m.save).toHaveBeenCalledTimes(2));
   expect(m.save.mock.calls[1][0]).toEqual(m.save.mock.calls[0][0]);
