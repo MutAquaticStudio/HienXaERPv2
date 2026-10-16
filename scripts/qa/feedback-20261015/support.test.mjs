@@ -16,7 +16,10 @@ test("accepts only the approved QA project and never Production", async () => {
   assert.equal((await loadQaEnv(await envFile(qaEnv))).qa.ref, "ffrwiglcrlumfvhubaxg");
   await assert.rejects(loadQaEnv(await envFile([...qaEnv, "DATABASE_URL=postgres://postgres@db.nbwynrwkdbtfsitafsxa.supabase.co/postgres"])), /Production/);
   await assert.rejects(loadQaEnv(await envFile(qaEnv.map((line) => line.replace("=true", "=false")))), /QA approval/);
-  await assert.rejects(loadQaEnv(await envFile(qaEnv.filter((line) => !line.startsWith("HX_QA_PASSWORD")))), /HX_QA_PASSWORD/);
+  const withoutPassword = qaEnv.filter((line) => !line.startsWith("HX_QA_PASSWORD"));
+  await assert.rejects(loadQaEnv(await envFile(withoutPassword), {}), /HX_QA_PASSWORD/);
+  assert.equal((await loadQaEnv(await envFile(withoutPassword), { HX_QA_PASSWORD: "from-env" })).env.HX_QA_PASSWORD, "from-env");
+  assert.equal((await loadQaEnv(await envFile(qaEnv), { HX_QA_PASSWORD: "from-env" })).env.HX_QA_PASSWORD, "x");
   await assert.rejects(loadQaEnv(undefined), /--env/);
 });
 

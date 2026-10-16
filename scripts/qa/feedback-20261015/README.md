@@ -1,7 +1,7 @@
 # QA trình duyệt — góp ý KiotViet (`FB-KIOTVIET-20261015`)
 
-Ma trận đầy đủ: `KE_HOACH_FEEDBACK_KIOTVIET_20261015.md` §3.2. **Trạng thái: CHƯA CHẠY** — cần app local trỏ QA project
-và 2 migration mới (`20261015120000`, `20261015130000`) đã được Owner cho phép áp lên QA project.
+Ma trận đầy đủ: `KE_HOACH_FEEDBACK_KIOTVIET_20261015.md` §3.2. **Trạng thái: CHƯA CHẠY TRÊN TRÌNH DUYỆT.**
+Migration (`20261015120000`, `20261015130000` + 2 bản nền) đã áp lên QA project ngày 16/10/2026 và QA database đã PASS.
 
 ## Điều kiện
 
@@ -22,6 +22,31 @@ node scripts/qa/feedback-20261015/feedback-browser.mjs --env .env.qa.local --wri
 ```
 
 Kết quả: `report.json` + ảnh chụp trong `--out` (mặc định `/var/tmp/hx-fb-qa`, ngoài repo). Không commit ảnh/dữ liệu QA.
+
+## Chạy trong phiên Claude Code trên cloud
+
+Môi trường cloud cần (Owner cấu hình trong cài đặt môi trường, rồi mở phiên mới):
+- Network access → Allowed domains: `ffrwiglcrlumfvhubaxg.supabase.co` (chỉ QA, không thêm Production).
+- Một biến môi trường bí mật: `HX_QA_PASSWORD`. Không đặt `NEXT_PUBLIC_SUPABASE_URL`/cờ cloud ở mức môi trường.
+
+Trong phiên (file env tạm để ngoài repo; mật khẩu lấy từ biến môi trường, không ghi ra file):
+
+```bash
+QA_ENV=/tmp/hx-qa.env   # hoặc thư mục scratchpad của phiên
+cat > "$QA_ENV" <<EOF
+HX_QA_PROJECT_REF=ffrwiglcrlumfvhubaxg
+HX_QA_RUNTIME_APPROVED=true
+HX_CLOUD_RUNTIME_APPROVED=true
+NEXT_PUBLIC_SUPABASE_URL=https://ffrwiglcrlumfvhubaxg.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<publishable key của QA — lấy bằng Supabase connector get_publishable_keys>
+EOF
+set -a; . "$QA_ENV"; set +a
+pnpm build
+NODE_USE_ENV_PROXY=1 pnpm start -p 3112 &     # server Next đi qua proxy của môi trường (Node >= 22.21)
+node scripts/qa/feedback-20261015/feedback-browser.mjs --env "$QA_ENV" --out /tmp/hx-fb-qa
+```
+
+Chromium chỉ gọi `127.0.0.1:3112`; các ca tự động không dùng Supabase phía trình duyệt nên không cần cấu hình proxy cho trình duyệt.
 Kiểm tra cục bộ phần không cần trình duyệt: `node --test scripts/qa/feedback-20261015/support.test.mjs`.
 
 ## Ca tự động và ca thủ công

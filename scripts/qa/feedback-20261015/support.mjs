@@ -4,13 +4,17 @@ import { guard, PRODUCTION_REF } from "../core.mjs";
 
 export const DEFAULT_ORIGIN = "http://127.0.0.1:3112";
 
-/** Reads `.env.qa.local` and refuses anything that is not the approved QA project (never Production). */
-export async function loadQaEnv(path) {
+/**
+ * Reads `.env.qa.local` and refuses anything that is not the approved QA project (never Production).
+ * The QA password may come from the process environment (cloud sessions keep it as an environment secret, not in a file).
+ */
+export async function loadQaEnv(path, processEnv = process.env) {
   if (!path) throw new Error("Thiếu --env (đường dẫn .env.qa.local)");
-  const env = parseEnv(await readFile(path, "utf8"));
+  const env = { ...parseEnv(await readFile(path, "utf8")) };
+  if (!env.HX_QA_PASSWORD && processEnv.HX_QA_PASSWORD) env.HX_QA_PASSWORD = processEnv.HX_QA_PASSWORD;
   if (Object.values(env).some((value) => String(value).includes(PRODUCTION_REF))) throw new Error("File env chứa Production ref; dừng.");
   const qa = guard(env);
-  if (!env.HX_QA_PASSWORD) throw new Error("Thiếu HX_QA_PASSWORD trong file env QA");
+  if (!env.HX_QA_PASSWORD) throw new Error("Thiếu HX_QA_PASSWORD (trong file env QA hoặc biến môi trường)");
   return { env, qa };
 }
 
