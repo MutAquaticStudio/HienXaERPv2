@@ -68,6 +68,39 @@ describe("entity combobox", () => {
     expect(screen.getByRole("option", { name: "Kết quả anh" })).toBeInTheDocument();
   });
 
+  it("hides stale suggestions while searching and lets Enter pick the newest answer, never an old one", async () => {
+    vi.useFakeTimers();
+    const onSelect = vi.fn();
+    const onSearch = vi.fn((term: string) => new Promise<{ id: string; label: string }[]>((resolve) => setTimeout(() => resolve([{ id: `r-${term}`, label: `Kết quả ${term}` }]), 800)));
+    render(<EntityCombobox label="Khách hàng" name="customerId" value={null} options={options} onSearch={onSearch} onSelect={onSelect} />);
+    const input = screen.getByRole("combobox", { name: "Khách hàng" });
+    fireEvent.focus(input);
+    expect(screen.getByRole("option", { name: "Khách A" })).toBeInTheDocument();
+    fireEvent.change(input, { target: { value: "hxqa" } });
+    expect(screen.queryByRole("option", { name: "Khách A" })).toBeNull();
+    expect(screen.getByText("Đang tìm...")).toBeInTheDocument();
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(onSelect).not.toHaveBeenCalled();
+    await act(async () => { await vi.advanceTimersByTimeAsync(ENTITY_SEARCH_DEBOUNCE_MS + 800); });
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(onSelect).toHaveBeenCalledWith({ id: "r-hxqa", label: "Kết quả hxqa" });
+  });
+
+  it("forgets a queued Enter when the user keeps typing", async () => {
+    vi.useFakeTimers();
+    const onSelect = vi.fn();
+    const onSearch = vi.fn(async (term: string) => [{ id: `r-${term}`, label: `Kết quả ${term}` }]);
+    render(<EntityCombobox label="Khách hàng" name="customerId" value={null} options={options} onSearch={onSearch} onSelect={onSelect} />);
+    const input = screen.getByRole("combobox", { name: "Khách hàng" });
+    fireEvent.focus(input);
+    fireEvent.change(input, { target: { value: "an" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+    fireEvent.change(input, { target: { value: "anh" } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(ENTITY_SEARCH_DEBOUNCE_MS); });
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(screen.getByRole("option", { name: "Kết quả anh" })).toBeInTheDocument();
+  });
+
   it("posts the chosen id and shows a read-only value for stored drafts", () => {
     const { container } = render(<EntityCombobox label="Khách hàng" name="customerId" value={options[1]} options={options} readOnly onSelect={vi.fn()} />);
     expect(screen.queryByRole("combobox")).toBeNull();

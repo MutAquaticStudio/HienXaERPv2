@@ -31,42 +31,59 @@ export const EntityCombobox = forwardRef<EntityComboboxHandle, Props>(function E
   const [open, setOpen] = useState(false);
   const [results, setResults] = useState<EntityOption[] | null>(null);
   const [highlight, setHighlight] = useState(0);
-  const [loading, setLoading] = useState(false);
+  // From the keystroke until the newest answer arrives the old list no longer matches the text, so it is hidden:
+  // Enter must never pick a suggestion the user did not search for.
+  const [pending, setPending] = useState(false);
   const [failed, setFailed] = useState(false);
   const revision = useRef(0);
+  const pickWhenReady = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useImperativeHandle(ref, () => ({ focus: () => inputRef.current?.focus() }), []);
   useEffect(() => () => clearTimeout(timer.current), []);
 
-  const shown = results ?? options;
+  const shown = pending ? [] : results ?? options;
   const text = query ?? value?.label ?? "";
+
+  function cancelSearch() {
+    revision.current += 1;
+    clearTimeout(timer.current);
+    pickWhenReady.current = false;
+    setPending(false);
+  }
 
   function search(term: string) {
     clearTimeout(timer.current);
+    pickWhenReady.current = false;
     if (!onSearch) {
       const lowered = term.toLowerCase();
       setResults(options.filter((option) => `${option.label} ${option.detail ?? ""}`.toLowerCase().includes(lowered)));
       return;
     }
     const current = ++revision.current;
+    setPending(true);
+    setFailed(false);
     timer.current = setTimeout(async () => {
-      setLoading(true);
-      setFailed(false);
       try {
         const found = await onSearch(term);
-        if (current === revision.current) { setResults(found); setHighlight(0); }
+        if (current !== revision.current) return;
+        setPending(false);
+        // Enter pressed while searching picks the first answer to what was typed.
+        if (pickWhenReady.current && found[0]) { choose(found[0]); return; }
+        pickWhenReady.current = false;
+        setResults(found);
+        setHighlight(0);
       } catch {
-        if (current === revision.current) setFailed(true);
-      } finally {
-        if (current === revision.current) setLoading(false);
+        if (current !== revision.current) return;
+        pickWhenReady.current = false;
+        setPending(false);
+        setFailed(true);
       }
     }, ENTITY_SEARCH_DEBOUNCE_MS);
   }
 
   function choose(option: EntityOption) {
-    revision.current += 1;
-    clearTimeout(timer.current);
+    cancelSearch();
     setQuery(null);
     setResults(null);
     setOpen(false);
@@ -83,9 +100,11 @@ export const EntityCombobox = forwardRef<EntityComboboxHandle, Props>(function E
       // Enter only ever picks; it never submits the surrounding document form.
       event.preventDefault();
       if (!open) { setOpen(true); return; }
+      if (pending) { pickWhenReady.current = true; return; }
       const option = shown[highlight];
       if (option) choose(option);
     } else if (event.key === "Escape") {
+      cancelSearch();
       setOpen(false);
       setQuery(null);
       setResults(null);
@@ -104,7 +123,7 @@ export const EntityCombobox = forwardRef<EntityComboboxHandle, Props>(function E
         aria-activedescendant={open && shown[highlight] ? `${listId}-${highlight}` : undefined}
         value={text}
         onFocus={() => { setOpen(true); setHighlight(Math.max(0, shown.findIndex((option) => option.id === value?.id))); }}
-        onBlur={() => { setOpen(false); setQuery(null); setResults(null); }}
+        onBlur={() => { cancelSearch(); setOpen(false); setQuery(null); setResults(null); }}
         onChange={(event) => { setQuery(event.target.value); setOpen(true); setHighlight(0); if (value) onSelect(null); search(event.target.value.trim()); }}
         onKeyDown={keyDown} />
       {open && <ul id={listId} role="listbox" aria-label={label} className="doc-editor-listbox">
@@ -112,9 +131,9 @@ export const EntityCombobox = forwardRef<EntityComboboxHandle, Props>(function E
           onMouseDown={(event) => { event.preventDefault(); choose(option); }} onMouseEnter={() => setHighlight(index)}>
           <span>{option.label}</span>{option.detail && <small>{option.detail}</small>}
         </li>)}
-        {loading && <li className="doc-editor-listbox-note" role="presentation">Đang tìm...</li>}
-        {!loading && failed && <li className="doc-editor-listbox-note" role="presentation">Không thể tìm. Thử lại sau.</li>}
-        {!loading && !failed && !shown.length && <li className="doc-editor-listbox-note" role="presentation">{emptyText}</li>}
+        {pending && <li className="doc-editor-listbox-note" role="presentation">Đang tìm...</li>}
+        {!pending && failed && <li className="doc-editor-listbox-note" role="presentation">Không thể tìm. Thử lại sau.</li>}
+        {!pending && !failed && !shown.length && <li className="doc-editor-listbox-note" role="presentation">{emptyText}</li>}
       </ul>}
     </div>
     {name && <input type="hidden" name={name} value={value?.id ?? ""} />}
