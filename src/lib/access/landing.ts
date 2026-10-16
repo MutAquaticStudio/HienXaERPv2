@@ -1,5 +1,6 @@
 import rolePresets from "./default-role-presets.json";
 import { AppError } from "@/lib/core/errors";
+import { QUOTATIONS_ENABLED } from "@/lib/features";
 
 const destinations = [
   ["dashboard.read", "/admin"],
@@ -29,7 +30,7 @@ const destinations = [
 export function internalLandingPath(permissions: ReadonlySet<string>, roleName?: string): string {
   const preset = rolePresets.find((role) => role.name === roleName);
   if (preset && permissions.has(preset.landingPermission)) return preset.landingPath;
-  const destination = destinations.find(([permission]) => permissions.has(permission));
+  const destination = destinations.find(([permission, path]) => permissions.has(permission) && (QUOTATIONS_ENABLED || path !== "/admin/quotations"));
   if (destination) return destination[1];
   throw new AppError({ code: "FORBIDDEN", message: "Bạn chưa được cấp quyền vào khu vực làm việc. Vui lòng liên hệ quản trị viên.", status: 403 });
 }

@@ -10,13 +10,13 @@ type CustomerRecord = {
   display_name: string;
 };
 type SiteRecord = { id: string; name: string; address_text: string };
-type MaterialRecord = { id: string; name: string; base_uom_id: string };
+type MaterialRecord = { id: string; code: string; name: string; base_uom_id: string };
 type ConversionRecord = { material_id: string; from_uom_id: string };
 
 export type SalesFormOptions = {
   availability?: WarehouseAvailability;
   customers: { id: string; name: string; sites: { id: string; name: string; address: string }[] }[];
-  materials: { id: string; name: string; uoms: { id: string; symbol: string }[] }[];
+  materials: { id: string; code: string; name: string; uoms: { id: string; symbol: string }[] }[];
 };
 
 export async function loadSalesFormOptions(branchId: string, selectedCustomerId?: string, selectedSiteId?: string, canReadInventory = false): Promise<SalesFormOptions> {
@@ -26,7 +26,7 @@ export async function loadSalesFormOptions(branchId: string, selectedCustomerId?
   const [customerResult, selectedCustomerResult, materialResult, conversionResult, uomResult] = await Promise.all([
     supabase.from("customers").select("id, display_name").eq("branch_id", branchId).eq("active", true).order("display_name").order("id").limit(25),
     validCustomerId ? supabase.from("customers").select("id, display_name").eq("branch_id", branchId).eq("id", validCustomerId).maybeSingle() : Promise.resolve({ data: null, error: null }),
-    supabase.from("materials").select("id, name, base_uom_id").eq("active", true).eq("sale_enabled", true).order("name"),
+    supabase.from("materials").select("id, code, name, base_uom_id").eq("active", true).eq("sale_enabled", true).order("name"),
     supabase.from("material_uom_conversions").select("material_id, from_uom_id").eq("active", true).eq("settlement_allowed", true),
     supabase.from("units_of_measure").select("id, symbol").eq("active", true),
   ]);
@@ -49,7 +49,7 @@ export async function loadSalesFormOptions(branchId: string, selectedCustomerId?
   const customers = allCustomers.map((customer) => ({ id: customer.id, name: customer.display_name, sites: customer.id === siteCustomerId ? sites : [] }));
   const materials = (materialResult.data as MaterialRecord[]).map((material) => {
     const uomIds = new Set([material.base_uom_id, ...conversions.filter((row) => row.material_id === material.id).map((row) => row.from_uom_id)]);
-    return { id: material.id, name: material.name, uoms: [...uomIds].map((id) => ({ id, symbol: uomSymbols.get(id) ?? "Đơn vị" })) };
+    return { id: material.id, code: material.code, name: material.name, uoms: [...uomIds].map((id) => ({ id, symbol: uomSymbols.get(id) ?? "Đơn vị" })) };
   });
   return { customers, materials, ...(canReadInventory ? { availability: await loadWarehouseAvailability(branchId, materials.map(row => row.id)) } : {}) };
 }

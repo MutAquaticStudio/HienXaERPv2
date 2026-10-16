@@ -13,7 +13,8 @@ describe("A4 business PDF", () => {
   it("paginates long tables, long individual rows, fields and multiline notes", async () => {
     const doc = await PDFDocument.load(await createBusinessDocument({ ...input, fields: [{ label: "Địa chỉ", value: "Địa chỉ dài ".repeat(900) }], rows: Array.from({ length: 80 }, (_, i) => ({ material: `${i + 1} ` + "Vật tư có quy cách ".repeat(i === 2 ? 900 : 2), quantity: "123,456789" })), notes: [{ title: "Điều khoản", text: "Giao nhiều đợt.\n".repeat(100) }] }));
     expect(doc.getPageCount()).toBeGreaterThan(10);
-  });
+  // Lays out and subsets the font for 10+ pages: ~4 s on a 4-core machine, too close to the 5 s default.
+  }, 20000);
   it("wraps long unbroken references without losing characters and preserves paragraphs", () => {
     const font = { widthOfTextAtSize: (s: string) => s.length * 5 };
     const token = "0123456789".repeat(20);

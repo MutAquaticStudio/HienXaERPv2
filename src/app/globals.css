@@ -264,7 +264,6 @@ tbody tr:hover { background: #f8fbff; }
 .document-sheet { max-width: 980px; margin: 0 auto; }
 .document-total { display: flex; justify-content: flex-end; gap: 20px; margin: 22px 0; font-size: 20px; }
 .portal-accept { margin-top: 24px; padding: 18px; border: 1px solid #a9cbed; border-radius: 12px; background: #f2f8ff; }
-.purchase-create-stack { display: grid; gap: 18px; }
 .quick-create summary { cursor: pointer; font-weight: 800; }
 .quick-create form { margin-top: 18px; }
 .compact-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -572,6 +571,28 @@ tbody tr:hover { background: #f8fbff; }
     linear-gradient(120deg, color-mix(in srgb, var(--accent) 7%, var(--paper)), var(--paper) 54%);
 }
 
+.profit-chart { margin-top: 0.75rem; }
+.profit-chart-legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1.25rem; margin: 0 0 0.5rem; padding: 0; list-style: none; font-size: var(--font-size-caption); color: var(--text); }
+.profit-chart-legend li { display: inline-flex; align-items: center; gap: 0.45rem; }
+.profit-chart-legend i, .profit-chart-tooltip i { display: inline-block; width: 14px; height: 2px; border-radius: 1px; }
+.profit-chart-scroll { overflow-x: auto; overscroll-behavior-x: contain; }
+.profit-chart-plot { position: relative; min-width: 600px; }
+.profit-chart-plot svg { display: block; width: 100%; height: auto; overflow: visible; touch-action: pan-y; }
+.profit-chart-plot svg:focus-visible { outline: 2px solid var(--primary); outline-offset: 4px; border-radius: 6px; }
+.profit-chart-grid { stroke: var(--border); stroke-width: 1; }
+.profit-chart-zero { stroke: var(--muted); stroke-width: 1; }
+.profit-chart-crosshair { stroke: var(--muted); stroke-width: 1; }
+.profit-chart-axis { fill: var(--muted); font-size: 12px; font-family: var(--font-sans); }
+.profit-chart-tooltip {
+  position: absolute; top: 0; transform: translateX(-50%); z-index: 2; display: grid; gap: 0.2rem;
+  min-width: 220px; padding: 0.55rem 0.75rem; pointer-events: none;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow);
+  font-size: var(--font-size-caption); color: var(--text);
+}
+.profit-chart-tooltip span { display: flex; align-items: center; gap: 0.45rem; white-space: nowrap; }
+.profit-chart-table { margin-top: 0.75rem; font-size: var(--font-size-caption); }
+.profit-chart-table summary { cursor: pointer; color: var(--primary); }
+
 .bar-row {
   display: grid;
   grid-template-columns: 150px minmax(120px, 1fr) 170px;
@@ -796,3 +817,159 @@ tbody tr:hover { background: #f8fbff; }
 @container (max-width: 500px) { .finance-metrics { grid-template-columns: 1fr; } }
 
 .identity { margin-left: auto; }
+
+/* Document editor (KiotViet-style order screens): lines on the left, party + totals on the right. */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.doc-editor { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 320px); gap: 1rem; align-items: start; }
+.doc-editor-main { padding: 1rem; display: grid; gap: 0.75rem; min-width: 0; }
+.doc-editor-side { display: grid; gap: 0.85rem; position: sticky; top: 1rem; }
+.doc-editor-search, .doc-editor-combo { position: relative; }
+.doc-editor-search input { width: 100%; min-height: 44px; font-size: var(--font-size-body); }
+.doc-editor-combo input { width: 100%; }
+.doc-editor-entity > strong { display: block; }
+.doc-editor-label { font-size: var(--font-size-label); color: var(--muted); }
+.doc-editor-listbox {
+  position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 20; max-height: 320px; overflow-y: auto;
+  margin: 0; padding: 0.25rem; list-style: none; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; box-shadow: var(--shadow);
+}
+.doc-editor-listbox [role="option"] { display: grid; gap: 0.1rem; padding: 0.5rem 0.65rem; border-radius: 8px; cursor: pointer; }
+.doc-editor-listbox [role="option"] small { color: var(--muted); font-size: var(--font-size-caption); }
+.doc-editor-listbox [role="option"][aria-selected="true"] { background: var(--surface-soft); }
+.doc-editor-listbox-note { padding: 0.5rem 0.65rem; color: var(--muted); font-size: var(--font-size-caption); }
+.doc-editor-empty { margin: 0; padding: 2rem 1rem; text-align: center; color: var(--muted); border: 1px dashed var(--border); border-radius: 10px; }
+.doc-editor-lines { position: relative; }
+/* Fits beside the app menu and the side panel at 1440px: tighter cells, and the name, code and stock note wrap
+   instead of pushing quantity/price/total off-screen (the global table style is nowrap with wide padding). */
+.doc-editor-lines table { min-width: 600px; }
+.doc-editor-lines th, .doc-editor-lines td { padding: 10px 8px; }
+.doc-editor-lines td.doc-editor-name, .doc-editor-line-detail td { white-space: normal; }
+.doc-editor-lines td.doc-editor-name { min-width: 10rem; overflow-wrap: anywhere; }
+.doc-editor-search input, .doc-editor-lines input, .doc-editor-lines select { min-width: 0; padding: 8px 10px; border: 1px solid #bdc7d5; border-radius: 9px; color: var(--text); background: #fff; }
+.doc-editor-search input { padding: 10px 14px; }
+.doc-editor-lines input, .doc-editor-lines select { min-height: 38px; }
+.doc-editor-lines th.numeric, .doc-editor-lines td.numeric { text-align: right; }
+.doc-editor-lines td { vertical-align: top; }
+.doc-editor-lines td.numeric input { width: 6.5rem; text-align: right; }
+.doc-editor-lines select { min-width: 5.5rem; }
+.doc-editor-line-invalid td { background: var(--danger-soft); }
+.doc-editor-line-detail td { padding-top: 0; border-top: 0; }
+.doc-editor-line-detail td > * + * { margin-left: 0.75rem; }
+.doc-editor-reason { display: inline-flex; align-items: center; gap: 0.5rem; font-size: var(--font-size-caption); }
+.doc-editor-reason input { min-width: 260px; }
+.doc-editor-stock summary { cursor: pointer; color: var(--primary); font-size: var(--font-size-caption); }
+.field-error { color: var(--danger); }
+.icon-button { display: inline-grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); cursor: pointer; }
+.icon-button:hover, .icon-button:focus-visible { background: var(--danger-soft); color: var(--danger); }
+.doc-editor-summary { display: grid; gap: 0.4rem; margin: 0; padding: 0.75rem 0 0; border-top: 1px solid var(--border); }
+.doc-editor-summary div { display: flex; justify-content: space-between; gap: 1rem; }
+.doc-editor-summary dt { color: var(--muted); }
+.doc-editor-summary dd { margin: 0; font-variant-numeric: tabular-nums; }
+.doc-editor-total dd { font-size: var(--font-size-section); font-weight: 700; color: var(--text); }
+.doc-editor-actions { display: grid; gap: 0.5rem; }
+.doc-editor-actions .button { width: 100%; justify-content: center; min-height: 48px; }
+.doc-editor-hint { margin: 0; font-size: var(--font-size-caption); }
+@media (max-width: 1439px) {
+  .doc-editor { grid-template-columns: 1fr; }
+  .doc-editor-side { position: static; order: -1; }
+}
+/* Line cards on phones and tablets: below ~1100px the 8-column table no longer fits beside the app menu. */
+@media (max-width: 1100px) {
+  .doc-editor-lines table { min-width: 0; }
+  .doc-editor-lines thead { display: none; }
+  .doc-editor-lines table, .doc-editor-lines tbody, .doc-editor-lines tr, .doc-editor-lines td { display: block; }
+  .doc-editor-lines tr:not(.doc-editor-line-detail) { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 0.75rem; padding: 0.75rem 0; border-top: 1px solid var(--border); position: relative; }
+  .doc-editor-lines td { padding: 0; border: 0; text-align: left; }
+  .doc-editor-lines td.numeric { text-align: left; }
+  .doc-editor-lines td[data-label]::before { content: attr(data-label); display: block; font-size: var(--font-size-caption); color: var(--muted); }
+  .doc-editor-lines td[data-label="#"] { display: none; }
+  .doc-editor-lines .doc-editor-name { grid-column: 1 / -1; padding-right: 2.5rem; }
+  .doc-editor-lines td.numeric input, .doc-editor-lines select { width: 100%; }
+  .doc-editor-lines .doc-editor-remove { position: absolute; top: 0.6rem; right: 0; }
+  .doc-editor-line-detail td:first-child { display: none; }
+  .doc-editor-reason { display: grid; }
+  .doc-editor-reason input { min-width: 0; width: 100%; }
+}
+
+/* List screens (KiotViet-style): filters on the left, table on the right, whole row opens the record. */
+.list-layout { display: grid; grid-template-columns: minmax(220px, 260px) minmax(0, 1fr); gap: 1rem; align-items: start; }
+.list-filters { display: grid; gap: 0.85rem; position: sticky; top: 1rem; }
+.list-filters label { display: grid; gap: 0.35rem; font-size: var(--font-size-label); font-weight: 700; color: var(--text); }
+.list-filters input, .list-filters select { width: 100%; min-height: 42px; padding: 8px 10px; border: 1px solid #bdc7d5; border-radius: 9px; color: var(--text); background: #fff; font-weight: 400; }
+.list-main { min-width: 0; }
+.list-main th.numeric, .list-main td.numeric { text-align: right; }
+.row-link-table tbody tr { position: relative; }
+.row-link-table tbody tr:hover { background: var(--surface-soft); }
+.row-link-table .row-link::after { content: ""; position: absolute; inset: 0; }
+.row-link-table .row-link:focus-visible { outline: none; }
+.row-link-table tbody tr:focus-within { outline: 2px solid var(--primary); outline-offset: -2px; }
+@media (max-width: 1080px) {
+  .list-layout { grid-template-columns: 1fr; }
+  .list-filters { position: static; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); align-items: end; }
+  .list-filters-search { grid-column: 1 / -1; }
+}
+@media (max-width: 760px) {
+  .row-link-table thead { display: none; }
+  .row-link-table, .row-link-table tbody, .row-link-table tr, .row-link-table td { display: block; }
+  .row-link-table tbody tr { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem 0.75rem; padding: 0.85rem 1rem; border-top: 1px solid var(--border); }
+  .row-link-table td { padding: 0; border: 0; white-space: normal; }
+  .row-link-table td.numeric { text-align: left; }
+  .row-link-table td[data-label]::before { content: attr(data-label); display: block; font-size: var(--font-size-caption); color: var(--muted); }
+  .row-link-table td.row-title { grid-column: 1 / -1; order: -1; padding-right: 2.5rem; }
+}
+.row-link-table .row-toggle { width: 40px; }
+.row-link-table .row-toggle .icon-button { position: relative; z-index: 1; }
+.row-link-table .row-toggle .icon-button:hover { background: var(--surface-soft); color: var(--primary); }
+.row-link-table tr.row-muted td { color: var(--muted); }
+.row-expansion td { background: var(--surface-soft); }
+.row-expansion-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; align-items: start; padding: 0.25rem 0.5rem; }
+.row-expansion-grid h3 { margin: 0 0 0.4rem; font-size: var(--font-size-label); }
+.more-actions { position: relative; }
+.more-actions > summary { list-style: none; }
+.more-actions > summary::-webkit-details-marker { display: none; }
+.more-actions-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; display: grid; min-width: 200px; padding: 0.35rem; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow); }
+.more-actions-menu a { padding: 0.55rem 0.75rem; border-radius: 8px; color: var(--text); text-decoration: none; }
+.more-actions-menu a:hover, .more-actions-menu a:focus-visible { background: var(--surface-soft); }
+@media (max-width: 760px) {
+  .material-list-table td.row-toggle { position: absolute; top: 0.6rem; right: 0.5rem; width: auto; }
+  .material-list-table tr.row-expansion { display: block; padding: 0.5rem 1rem 1rem; }
+  .material-list-table tr.row-expansion td { display: block; }
+}
+
+/* Price book (Thiết lập giá) */
+.price-book { display: grid; gap: 1rem; }
+.price-book-filters { display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; align-items: end; }
+.price-book-filters label, .price-book-tools label, .price-book-save label { display: grid; gap: 0.35rem; font-size: var(--font-size-label); font-weight: 700; }
+.price-book-filters input, .price-book-filters select, .price-book-tools input, .price-book-tools select, .price-book-save input, .price-book-table input[inputmode] {
+  min-height: 40px; padding: 8px 10px; border: 1px solid #bdc7d5; border-radius: 9px; color: var(--text); background: #fff; font-weight: 400;
+}
+.price-book-tools { display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; align-items: end; position: sticky; top: 0.5rem; z-index: 5; }
+.price-book-selection { align-self: center; font-weight: 700; }
+.price-book-notice { flex-basis: 100%; margin: 0; }
+.price-book-table th.numeric, .price-book-table td.numeric { text-align: right; }
+.price-book-table td input[inputmode] { width: 9.5rem; text-align: right; }
+.price-book-table tr.price-book-changed td { background: var(--warning-soft); }
+.price-up { color: var(--success); }
+.price-down { color: var(--danger); }
+.price-book-save { display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; align-items: end; position: sticky; bottom: 0.5rem; z-index: 5; }
+.price-book-reason { flex: 1 1 320px; }
+.price-book-reason input { width: 100%; }
+.price-book-save > p { flex-basis: 100%; margin: 0; }
+@media (max-width: 760px) {
+  .price-book-tools, .price-book-save { position: static; }
+  .price-book-table thead { display: none; }
+  .price-book-table, .price-book-table tbody, .price-book-table tr, .price-book-table td { display: block; }
+  .price-book-table tbody tr { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem 0.75rem; padding: 0.85rem 1rem; border-top: 1px solid var(--border); }
+  .price-book-table tbody tr.price-book-changed { background: var(--warning-soft); }
+  .price-book-table tr.price-book-changed td { background: transparent; }
+  .price-book-table td { padding: 0; border: 0; text-align: left; }
+  .price-book-table td.numeric { text-align: left; }
+  .price-book-table td[data-label]::before { content: attr(data-label); display: block; font-size: var(--font-size-caption); color: var(--muted); }
+  .price-book-table .price-book-name { order: -2; grid-column: 1 / -1; }
+  .price-book-table .price-book-code { order: -1; grid-column: 1 / -1; font-size: var(--font-size-caption); color: var(--muted); }
+  .price-book-table td.price-book-name::before, .price-book-table td.price-book-code::before { display: none; }
+  .price-book-table td.price-book-diff:empty { display: none; }
+  .price-book-selectable tbody tr { padding-left: 2.75rem; }
+  .price-book-table td.price-book-pick { position: absolute; left: 1rem; top: 0.95rem; }
+  .price-book-table td input[inputmode] { width: 100%; text-align: left; }
+}

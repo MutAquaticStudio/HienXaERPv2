@@ -1,5 +1,7 @@
 > Quy tắc hiện hành 12/10/2026: bỏ opening pending và kích hoạt thủ công khỏi vận hành. Thông tin đối chiếu lịch sử chỉ mô tả chất lượng dữ liệu, không khóa giao dịch mới. Các bằng chứng trạng thái/gate cũ bên dưới là lịch sử, không phải điều kiện đang áp dụng.
 
+> Quyết định Owner 15/10/2026 (đợt góp ý khách `FB-KIOTVIET-20261015`): **D1** tắt hẳn Báo giá ở nội bộ và cổng khách — mọi chỗ nhắc tới báo giá trong tài liệu này tạm không áp dụng (SPEC-140); **D2** KPI Tổng quan dùng lợi nhuận ròng thay lợi nhuận gộp (SPEC-DASH-001); **D3** biểu đồ Tổng quan là đường Thu / Chi / Lợi nhuận theo đúng bộ lọc (SPEC-DASH-009); **D4** thiết lập giá chung hàng loạt, lưu một lần nguyên tử (SPEC-PRI-005).
+
 # Spec.md — HIỀN XA ERP V2
 
 > **Bộ tài liệu:** `HX-V2-DOCSET-4.4`  
@@ -95,7 +97,7 @@ Legacy chỉ dùng để:
 ## SPEC-PRODUCT-003 — Phạm vi và ưu tiên
 
 Không bỏ các chức năng đã chốt. Xây và nghiệm thu theo lát cắt luồng thật thay vì chấm điểm hoàn tất theo số màn hình.
-- Lõi bắt buộc: xác thực/quyền; danh mục/đơn vị; khách/công trình/giá; báo giá; bán–mua–giao; kho; công nợ/thu chi; Dashboard.
+- Lõi bắt buộc: xác thực/quyền; danh mục/đơn vị; khách/công trình/giá; báo giá (đang tắt theo quyết định Owner D1 ngày 15/10/2026, xem SPEC-140); bán–mua–giao; kho; công nợ/thu chi; Dashboard.
 - Phần vận hành nối tiếp: thợ, dịch vụ, thu nhập/hoa hồng, cổng khách.
 - Tích hợp phải có nhưng chỉ bật khi điều kiện đủ: lộ trình/GPS/chat, hóa đơn điện tử. Thiếu API không cho phép đánh dấu tích hợp thật đã đạt.
 - Ngoài phạm vi: khai/nộp thuế, kế toán pháp định đầy đủ, ứng dụng di động chạy nền liên tục, bộ máy cấu hình quy trình tổng quát.
@@ -761,6 +763,15 @@ Override giá cần:
 - reason khi dưới ngưỡng/sàn;
 - audit.
 
+## SPEC-PRI-005 — Thiết lập giá chung hàng loạt (D4, 15/10/2026)
+
+- Chỉ áp cho giá chung (`Default`) theo vật tư + đơn vị tính gốc. Giá theo khách, nhóm vật tư của khách và hạng khách vẫn sửa từng phiên bản như SPEC-PRI-002.
+- Một lần lưu: tối đa 500 dòng, một lý do (3–500 ký tự), một ngày hiệu lực không trước hôm nay theo giờ kinh doanh; cần quyền quản lý giá.
+- **Nguyên tử:** một dòng không hợp lệ hoặc đã bị người khác đổi phiên bản thì không dòng nào được ghi; người dùng tải lại để xem giá mới nhất.
+- Mỗi dòng tạo phiên bản mới qua đúng lệnh lưu giá đơn lẻ (version, khóa lạc quan, audit từng dòng) và lô có thêm một audit + receipt. Gửi lại cùng mã thao tác trả lại kết quả cũ, không ghi lần hai; cùng mã thao tác nhưng nội dung khác bị từ chối.
+- Cách mặc định vẫn là nhập giá bán cuối (SPEC-CONFIG-002). Tăng/giảm theo % hoặc theo số tiền tính trên **giá bán hiện tại** (không phải trên giá vốn) và chỉ là công cụ tính giá mới trên giao diện; giá được lưu luôn là số VND nguyên dương tuyệt đối. Làm tròn mặc định đến 1.000 đ, có lựa chọn 100 đ hoặc không làm tròn; người dùng thấy giá mới và chênh lệch từng dòng trước khi lưu. Dòng chưa có giá hiện tại không được điều chỉnh theo %/số tiền, chỉ nhập giá trực tiếp.
+- Giá vốn chỉ hiển thị cho người có quyền xem giá vốn. Chứng từ đã chốt giữ snapshot (SPEC-PRI-003).
+
 ---
 
 # SPEC-130 — Credit
@@ -795,6 +806,8 @@ Override cần:
 ---
 
 # SPEC-140 — Quotation
+
+> **Trạng thái từ 15/10/2026: TẮT** (quyết định Owner D1). Không có lối vào Báo giá ở menu, hồ sơ khách, trang đích, cổng khách; route nội bộ/cổng khách và PDF báo giá trả "không tìm thấy"; lệnh tạo/sửa/gửi/hủy/chấp nhận báo giá bị server từ chối. Bảng, dữ liệu lịch sử, RPC và quyền trong database **giữ nguyên, không xóa**. Đơn bán cũ có nguồn báo giá vẫn mở được (nguồn hiển thị dạng chữ). Trước khi phát hành, Owner xác nhận không còn báo giá `SENT` đang chờ khách. Bật lại cần quyết định Owner mới và QA lại toàn bộ SPEC-140; nội dung bên dưới là hợp đồng khi được bật lại.
 
 ## SPEC-QUO-001 — Thực thể
 
@@ -1190,13 +1203,14 @@ AP payment:
 
 ## SPEC-DASH-001 — KPI
 
-Dashboard `/admin` phải hỗ trợ:
+Dashboard `/admin` phải hỗ trợ (hàng KPI theo quyết định Owner D2, 15/10/2026):
 
-- Revenue;
-- Gross Profit;
-- Operating Expense;
-- Operating Profit;
-- Operating Margin.
+- Revenue (Doanh thu);
+- Total Cost (Tổng chi phí) = giá vốn trực tiếp + Operating Expense; chỉ READY khi cả hai thành phần READY;
+- Net Profit (Lợi nhuận ròng) = Operating Profit hiện có = Revenue − giá vốn trực tiếp − Operating Expense;
+- Net Margin (Biên lợi nhuận ròng) = Operating Margin.
+
+Gross Profit vẫn được snapshot tính nhưng không còn hiển thị ở hàng KPI Tổng quan (trước đây đây là chỗ duy nhất hiển thị); đưa lại vào Báo cáo cần Owner quyết định. Không có công thức thứ hai: các nhãn mới đọc đúng chỉ số của snapshot tài chính hiện có.
 
 ## SPEC-DASH-002 — Balances
 
@@ -1245,6 +1259,14 @@ Dashboard không được aggregate bằng cách tải hàng trăm dòng detail 
 - một snapshot read logic chính;
 - top-N;
 - lazy detail.
+
+## SPEC-DASH-009 — Biểu đồ Thu / Chi / Lợi nhuận (D3, 15/10/2026)
+
+- Biểu đồ đường ba chuỗi theo thời gian: **Thu** = doanh thu ghi nhận; **Chi** = Total Cost; **Lợi nhuận** = Thu − Chi = Net Profit. Cùng công thức với KPI SPEC-DASH-001.
+- Dùng đúng bộ lọc Dashboard (SPEC-DASH-004) và `knowledge_cutoff`; đổi bộ lọc thì KPI và biểu đồ đổi cùng.
+- Mỗi điểm là một kỳ con `[from, to)`: theo ngày nếu kỳ ≤ 31 ngày, theo tuần nếu ≤ 217 ngày, còn lại theo tháng; tối đa 31 điểm, kỳ dài hơn bị từ chối với thông báo rõ. Không có điểm cho thời gian tương lai.
+- Mỗi điểm tính bằng cùng read logic snapshot (SPEC-DASH-007) với cùng kiểm quyền và `quality`; tổng các điểm READY bằng KPI cả kỳ.
+- Điểm không READY không vẽ thành 0 (SPEC-REPORT-002); chuỗi không áp dụng thì ẩn kèm lý do.
 
 ## SPEC-DASH-008 — Không đưa lên homepage
 

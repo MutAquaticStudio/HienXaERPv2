@@ -2647,3 +2647,127 @@ Customer credit funded từ negative release của allocation đã thu; refund/o
 ## 2026-10-11 — G01–G23 tiếp tục đến source649dd17/schema164
 
 Giữ nền3b83779/originalcheckout, triển khai G17–18(8f84c66),G19(9c3e425),G20/G22/G23(649dd17). Chi phí theo actualassignment/xe, chuyển kho theo custodylot/lossapproval, trảNCCphysical/accept/credit/refund/offsetsource; invoice matching source/APneutral vàbanknoticeboundedcoverage; operationalcompletion nhiềuaxes/ngoại lệ. G16 được kiểm riêng allsourcequality, không suy từgross1.04m. Hai advance races cũ không chạy lại. Final typed/build/lint/tests/evidence/representative136→164upgrade vàscoped browser/JWT/faults có tại reports/business-flow-remediation; T01–T42 nêu rõ missing/BLOCKED, không blanketacceptance. Realinvoiceprovider/Storage/deviceRealtime ngoài evidence, khôngfakeissued. PRnháp phụthuộcPR41, khôngmerge/deployProduction; CI phải gắnfinalPRhead.
+
+## 2026-10-16 — FB-KIOTVIET-20261015: góp ý khách kiểu KiotViet (Claude Code)
+
+Nguồn: chỉ thị Owner 15/10/2026 + quyết định D1–D4 (đầu Spec.md). Nhánh `nox/elegant-volta-kr29iz`, commit `75e8b48` (G0) → `bb2c1cf` (G1) → `89f5983` (G2) → `1720468` (G3) → `64e1481` (G4) → `7b890ce` (G5) → `d68dda4` (G6) → `761ce4f` (G7) → `2dc793b` (G8) → commit tài liệu G9. Không PR/merge/deploy; không truy cập Production hay QA cloud.
+
+Bằng chứng cục bộ tại `2dc793b` (loại: kiểm thử tự động cục bộ, không phải runtime):
+- `pnpm lint` 0 lỗi (14 warning nền không đổi); `pnpm typecheck`; `pnpm test` 110 file / 735 test PASS; `pnpm build` PASS; `node --test` evidence-reverification + source-binding 15/15.
+- DB native (`scripts/db-native/run.mjs`, PostgreSQL 16 cục bộ ở chế độ tương thích MAINTAIN; CI dùng 17): 191 migration áp sạch; RLS mọi bảng public; anon không có quyền bảng và không gọi được definer; definer có `search_path`; `010_access_isolation`, `020_dashboard_series`, `030_pricing_batch` PASS. Đã thử đột biến `save_pricing_rules_batch` (ghi một phần) để chắc `030_pricing_batch` bắt được lỗi.
+- Ảnh desktop 1440/mobile 390 dựng từ component (không có backend) cho Tổng quan, tạo đơn bán, bảng giá; lưu ngoài repo.
+
+Thay đổi hành vi đáng chú ý:
+- Lợi nhuận gộp không còn hiển thị ở đâu trên giao diện (trước đây chỉ có ở KPI Tổng quan); snapshot vẫn trả `gross_profit`.
+- "Tạo đơn"/"Tạo đơn mua" gọi lưu nháp rồi xác nhận bằng hai operationId do client giữ; xác nhận lỗi thì nháp vẫn còn.
+- Bộ lọc dùng `router.replace`: không tạo mục lịch sử cho mỗi lần gõ.
+
+Chưa có: QA-FB-B01…B14 trên QA project (khung `scripts/qa/feedback-20261015/` chưa chạy), UAT khách, kiểm tra read-only báo giá `SENT` ở Production, cho phép áp 2 migration (`20261015120000`, `20261015130000`) và deploy.
+
+## 2026-10-16 — FB-KIOTVIET-20261015: áp migration + QA database trên QA project
+
+Owner cho phép trong phiên: "migration lên QA project rồi chạy QA". Thực hiện qua kết nối Supabase (MCP) vào QA `ffrwiglcrlumfvhubaxg`
+(HienXaERPv2-QA, PG 17). Production `nbwynrwkdbtfsitafsxa`: chỉ đọc lịch sử migration, không ghi.
+
+Trước khi áp: QA có 188 dòng lịch sử; 8 chi nhánh đều là dữ liệu QA/kiểm thử; DB 183 MB. So với repo, QA thiếu
+`20261012211058_align_business_api_table_privileges` và `20261013105000_operational_role_presets` (Production đã có cả hai;
+bản sau trên Production mang version `20261013121739`). QA có `retire_opening_pending_rule` dưới version `20261014074344` và
+bản vá riêng QA `20261002114730`.
+
+Áp theo thứ tự, mỗi bản một transaction gồm nội dung file repo + một dòng `supabase_migrations.schema_migrations` đúng version repo
+(cột `statements` ghi sha256 file):
+
+| Version | sha256 file repo | Kiểm sau khi áp |
+|---|---|---|
+| `20261012211058` | `42ebcd9e…6eff017d29` | bảng public `authenticated` TRUNCATE được: 9 → 0 (migration tự kiểm quyền dòng không đổi) |
+| `20261013105000` | `8ec1e8f3…5f4814131` | 8 vai trò `builtin_*`, 100 quyền; invite có trần quyền; gán vai trò có chống ghi lặp |
+| `20261015120000` | `bf30b735…d07c6ca1` | `finance_dashboard_series` invoker, `search_path=""`, anon không EXECUTE |
+| `20261015130000` | `d6500bd1…dc0eeb9` | `save_pricing_rules_batch` definer, `search_path=""`, anon không EXECUTE; phụ thuộc + thứ tự cột `command_receipts` đã kiểm trước |
+
+Lịch sử QA sau: 192 dòng. md5(prosrc) của `finance_dashboard_series`, `save_pricing_rules_batch`, `register_invited_employee`,
+`assign_employee_role` trên QA trùng với DB native áp từ repo (`ce865532…`, `3f176340…`, `407a2a6b…`, `f9cb1069…`).
+
+QA database trên QA project (loại bằng chứng: truy vấn thật trên QA, không phải trình duyệt):
+- Bất biến: 0 bảng public thiếu RLS; anon 0 quyền bảng; 0 definer thiếu `search_path`; 0 definer anon gọi được.
+- Supabase security advisors: không cảnh báo mới do 4 migration. Tồn đọng: 25 ERROR `security_definer_view`, 162 WARN definer gọi được bởi
+  authenticated (thiết kế RPC tự kiểm quyền), 1 WARN chống mật khẩu lộ, 11 INFO bảng private không policy.
+- `supabase/tests/native/_setup.sql` + `020_dashboard_series.sql` và + `030_pricing_batch.sql`: PASS, mỗi lần bọc `begin … rollback`.
+  Đã chứng minh `assert` có hiệu lực (`assert false` → P0004). Số dòng `pricing_rules` 27, `audit_events` 1363, `command_receipts` 1653,
+  `branches` 8, `roles` 15, `employees` 15, `auth.users` 19, `materials` 17, `units_of_measure` 23 — trước và sau như nhau.
+- Smoke dữ liệu thật với `hxqa-owner` (rollback): HXQA Branch A, 30 ngày (DAY, 30 điểm) và 12 tháng (MONTH, 12 điểm): mọi điểm READY,
+  tổng Thu = KPI 13.397.000, tổng Lợi nhuận = KPI 3.475.024, Thu − Chi = Lợi nhuận từng điểm. Synthetic branch A: 0 = 0.
+  Lọc theo 3 khách: điểm có chi phí chung chưa phân bổ là `NOT_APPLICABLE` và không mang giá trị.
+  `finance_dashboard_series` 12 tháng: 279,6 ms thời gian thực thi phía DB (1 mẫu, EXPLAIN ANALYZE).
+
+Chưa chạy: QA-FB-B01…B14 trên trình duyệt — phiên cloud không ra mạng tới `*.supabase.co` (proxy 403) và không có mật khẩu tài khoản QA.
+
+Theo yêu cầu Owner (16/10/2026), đã đặt lại mật khẩu chung cho đúng 9 tài khoản UAT `hxqa-*@example.test` trên QA project
+(một transaction, kiểm đúng 9 dòng; đọc lại cả 9 khớp, bcrypt `$2a$`, email vẫn xác nhận). Tài khoản recovery và tài khoản không email
+không đổi; Production không đụng. Giá trị mật khẩu không ghi vào repo; `.env.qa.local` cũ cần cập nhật `HX_QA_PASSWORD`.
+Chưa thử đăng nhập thật (phiên không ra mạng tới QA).
+
+## 2026-10-16 — FB-KIOTVIET-20261015: QA trình duyệt trên QA project (phiên cloud)
+
+Owner mở domain QA cho môi trường cloud. App build local với env QA (file tạm ngoài repo, mật khẩu chỉ qua biến môi trường tiến trình),
+`NODE_USE_ENV_PROXY=1 pnpm start -p 3112`, runner `scripts/qa/feedback-20261015/feedback-browser.mjs`, Chromium desktop 1440 + mobile 390,
+chi nhánh "HXQA Branch A". Đăng nhập thật `hxqa-owner` qua Auth API: 200.
+
+Kết quả (lần chạy cuối, báo cáo PASS, 0 lỗi trang): B01 PASS (SO-2026-000064/065 CONFIRMED, đúng khách/công trình, 400.000, có credit commitment;
+đọc lại DB), B06 PASS, B07 PASS, B08 PASS (tổng LN biểu đồ = KPI: 2.399.904 cho 15 ngày; 3.475.024 cho 13 tuần), B11 PASS (404 nội bộ + cổng khách),
+B12 ma trận cột khớp quyền DB 6 vai trò, B13 PASS (`QPE44F1B7B-MATERIALB` v1 250.000 → v2 275.000, đúng 1 audit lô, phiên dữ liệu cũ không ghi gì;
+đơn mới lấy 275.000). B14 không đại diện: p95 3,4–3,9 s do mạng container → proxy → Supabase Seoul (130–420 ms/lượt; danh sách đơn p50 2,4 s);
+DB ~280 ms. B03 thấy gián tiếp: SO-2026-000062/063 để nháp khi xác nhận bị chặn (chưa hạn mức; nợ quá hạn) với thông báo tiếng Việt.
+
+Lỗi QA bắt được và đã sửa (mỗi lỗi có test; test cũ vẫn xanh): `7afec05` combobox chọn gợi ý cũ khi đang tìm (SO-2026-000062 bị lưu cho khách
+`HXAUD3009Q1` thay vì khách đã gõ); `cc83d25` hydration #418 Tổng quan (`<title>` nhiều con, chỉ ở production build; bisect: commit trước G2 sạch);
+`83407fc` route báo giá tắt trả 200 → rewrite `beforeFiles` trả 404 thật; `a6e9c36` bảng dòng đơn bán/mua cuộn ngang che giá ở 1440px
+(đo trên app thật 1920/1440/1366/1280/1024/390: không còn cuộn ngang); `856a3be` runner (đăng nhập theo trang đích của vai trò, `--order-role`).
+Kiểm tra cục bộ sau sửa: lint 0 lỗi, typecheck, 739 test, build mặc định, node test QA 19/19.
+
+Phát hiện chưa sửa: `proxy.ts` ở gốc repo, app ở `src/app` → Next 16 không đăng ký proxy (build không có dòng Proxy, manifest rỗng); làm mới phiên
+Supabase trong proxy chưa từng chạy từ 12/09/2026. Trang lỗi chung "Không thể mở trang" khi tài khoản thiếu quyền/không thuộc chi nhánh (đúng là chặn,
+nhưng thông báo chung chung). Cả hai cần Owner quyết; không tự đổi vì ảnh hưởng toàn app/Production.
+
+
+## 2026-10-16 — FB-PROXY: bật làm mới phiên Supabase (Owner giao toàn quyền)
+
+Owner giao toàn quyền xử lý các việc còn chờ (16/10/2026). `proxy.ts` chuyển từ gốc repo sang `src/proxy.ts` (cùng cấp `src/app`, theo
+`node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/proxy.md`); nội dung không đổi. Test `src/proxy.test.ts`: vị trí file
+(không còn proxy/middleware ở gốc), phạm vi matcher (trang/API có, tài nguyên tĩnh không) bằng `unstable_doesMiddlewareMatch`, ủy quyền cho
+`refreshAuthSession`. Bằng chứng: build in `ƒ Proxy (Middleware)` và `functions-config-manifest.json` có `/_middleware` (trước đây không có).
+Trên QA project: đăng nhập `hxqa-owner`, sửa cookie phiên cho access token hết hạn 1 giờ → `GET /admin` trả 200 kèm `Set-Cookie` phiên mới
+(access + refresh token đều xoay vòng, hạn mới ở tương lai), tải lại `/admin` vẫn đăng nhập. JWT QA ký ES256 → `getClaims()` xác minh tại chỗ,
+không thêm lượt gọi Auth mỗi request. Chạy lại runner B06/B07/B08/B11/B12: PASS/ghi nhận như trước, 0 lỗi trang.
+Kèm sửa test không ổn định `price-book-editor.test.tsx` (chỉ khi chạy cả bộ): thông báo "Chưa xác định kết quả" hiện trước khi transition kết thúc,
+nút còn nhãn "Đang lưu..." → test chờ nút sẵn sàng rồi mới bấm lại. Kiểm tra: lint 0 lỗi, typecheck, 742 test (2 lần), build, node test 19/19.
+
+## 2026-10-16 — FB-PREVIEW: bản preview Vercel cho Owner kiểm tra
+
+Owner yêu cầu "deploy preview cho tôi check trước" và cấp quyền team Vercel `hienxa` cho connector. Tạo deployment preview qua API
+(không đặt target; `vercel.json` vẫn tắt auto-deploy `nox/*`): `dpl_GkCW8cLqSyCmafHmi4ke3kQK6j9i`, nguồn `nox/elegant-volta-kr29iz@f76add7`,
+region icn1, build Vercel (Next 16.3.4, Turbopack) READY; alias nhánh `hien-xa-erp-v2-git-nox-elegant-volta-kr29iz-hienxa.vercel.app`.
+Không đổi biến môi trường hay cấu hình dự án Vercel. Env Preview có sẵn `HX_QA_PROJECT_REF` + `HX_QA_RUNTIME_APPROVED` nên guard
+`src/lib/supabase/config.ts` buộc URL là QA project và từ chối ref Production; tổ chức Supabase chỉ có 2 project (Production
+`nbwynrwkdbtfsitafsxa`, QA `ffrwiglcrlumfvhubaxg`) → preview dùng QA. Preview không có `SUPABASE_SECRET_KEY` (mời nhân viên, chứng từ không chạy).
+Kiểm tra (GET qua connector Vercel): `/admin/quotations` và `/customer/quotations` 404 (`x-nextjs-rewritten-path` `/…/__khong-tim-thay`);
+`/admin` chưa đăng nhập → chuyển `/login` (hàm chạy icn1, proxy + guard không lỗi); `/recovery/confirm` 200; runtime log của deployment: không có dòng nào.
+Chưa làm trên preview: đăng nhập tài khoản QA và đo B14 — mạng phiên cloud không tới `*.vercel.app` (proxy từ chối). Production không đổi.
+
+## 2026-10-16 — FB-REL: phát hành Production (Owner: "deploy lên production luôn")
+
+Lệnh Owner trong phiên: deploy Production ngay để thử bằng tài khoản Production. Production Supabase `nbwynrwkdbtfsitafsxa`:
+- Đọc trước: 0 báo giá (bảng `quotations` rỗng) → tắt báo giá (D1) không ảnh hưởng chứng từ nào. Lịch sử migration Production khác tên/version repo
+  (183 bản ghi; `operational_role_presets` = `20261013121739`; có bản gộp `pr44_reviewed_schema187_compact_forward_20261013`), nên đối chiếu bằng
+  mã nguồn: `finance_dashboard_snapshot`, `save_pricing_rule`, `private.has_permission`, `private.command_payload_hash` cùng md5 với QA; cột
+  `command_receipts`, `audit_events`, `pricing_rules` khớp QA. Hai hàm mới chưa tồn tại.
+- Áp `20261015120000_dashboard_profit_series` và `20261015130000_pricing_rules_batch` (mỗi file một transaction, ghi `schema_migrations` đúng
+  version repo, sha256 file như QA). Sau khi áp: md5 hai hàm = QA; anon không gọi được, authenticated gọi được; 0 bảng thiếu RLS; anon 0 quyền bảng;
+  0 definer thiếu `search_path`. Hàm definer anon gọi được duy nhất là `public.rls_auto_enable()` (event trigger nền tảng, có từ trước, ghi trong
+  baseline release cũ). Security advisors: 25 ERROR view definer, 163 WARN definer cho authenticated (thêm `save_pricing_rules_batch`, tự kiểm
+  `pricing.manage`), 1 WARN anon (`rls_auto_enable`), 1 WARN mật khẩu lộ, 11 INFO — không có cảnh báo mới ngoài thiết kế.
+Vercel: deployment Production `dpl_FmumGBwyCA4QHVL2x1fWXyzdPc2G` từ `nox/elegant-volta-kr29iz@70ba7cf` (env Production của dự án, không đổi env),
+READY, gán `hien-xa-erp-v2-nu.vercel.app` và `hien-xa-erp-v2-hienxa.vercel.app`. Kiểm: `/api/health` 200 `buildSha` = `70ba7cf…`; `/login` 200;
+`/admin/quotations/new` 404; runtime log không có lỗi. Phương án quay lui: promote `dpl_CsTHXxgFJNeyVhZJqZd9UMEaEbUD` (main `0130931`) — hai migration
+chỉ thêm hàm mới nên code cũ vẫn chạy được.
+Tồn tại (có từ trước, không do bản này): env dự án thiếu `NEXT_PUBLIC_APP_URL` → link "Quên mật khẩu" trỏ `http://localhost:3000`;
+`main` chưa chứa các commit của nhánh (cần PR để đồng bộ).

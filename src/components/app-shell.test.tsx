@@ -23,11 +23,17 @@ describe("grouped operational navigation", () => {
   it("keeps all existing destinations and exposes existing stock-count and purchase-document routes", () => {
     const { container } = render(shell());
     const hrefs = [...container.querySelectorAll("aside a")].map((link) => link.getAttribute("href"));
-    expect(new Set(hrefs).size).toBe(28);
+    expect(new Set(hrefs).size).toBe(27);
+    expect(hrefs).not.toContain("/admin/quotations");
     expect(hrefs).toContain("/admin/stock-counts");
     expect(hrefs).toContain("/admin/invoices/purchases");
     expect(hrefs).toContain("/admin/access");
     expect(hrefs).toContain("/admin/settings");
+  });
+
+  it("hides quotations even for actors who still hold quotation permissions (owner decision D1)", () => {
+    render(shell());
+    expect(screen.queryByRole("link", { name: "Báo giá" })).not.toBeInTheDocument();
   });
 
   it("does not render unauthorized links or empty groups", () => {
@@ -64,10 +70,10 @@ describe("grouped operational navigation", () => {
     const { rerender } = render(shell());
     fireEvent.click(screen.getByRole("button", { name: "Bán hàng" }));
     expect(screen.getByRole("button", { name: "Bán hàng" })).toHaveAttribute("aria-expanded", "false");
-    location.pathname = "/admin/quotations/new";
+    location.pathname = "/admin/customers/manage";
     rerender(shell());
     expect(screen.getByRole("button", { name: "Bán hàng" })).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("link", { name: "Báo giá" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "Khách hàng" })).toHaveAttribute("aria-current", "page");
   });
 
   it("marks only the most specific permitted invoice destination active", () => {

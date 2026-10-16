@@ -6,13 +6,14 @@ import styles from "@/components/portal/portal.module.css";
 import { getCustomerPortalOrder } from "@/modules/portal/actions";
 import { salesStateLabel } from "@/modules/sales/presentation";
 import { deliveryStateLabel } from "@/modules/delivery/presentation";
+import { QUOTATIONS_ENABLED } from "@/lib/features";
 
 
 export default async function CustomerOrderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const order = await getCustomerPortalOrder(id);
   const payments = order.payments ?? [];
-  const documents = order.documents ?? [];
+  const documents = (order.documents ?? []).filter((document) => QUOTATIONS_ENABLED || document.kind !== "QUOTATION");
   return (
     <div className={styles.page}>
       <header className={styles.hero}>

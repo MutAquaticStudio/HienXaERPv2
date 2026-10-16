@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { formatBusinessDate } from "@/lib/core/business-time";
 import { priceSourceLabel, pricingScopeLabel } from "@/modules/pricing/presentation";
 import { readPricingClock } from "@/modules/pricing/request-clock";
@@ -7,6 +8,7 @@ import { formatVnd, vnd } from "@/lib/core/money";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { portalRpc } from "@/modules/portal/server";
 import { PricingRuleEditor, type PriceOptions, type PriceRule } from "@/modules/pricing/editor";
+import { AutoFilterForm } from "@/components/ui/auto-filter-form";
 
 const emptyOptions: PriceOptions = { customers: [], materials: [], groups: [], units: [] };
 
@@ -30,9 +32,9 @@ export default async function PricingSettingsPage({ searchParams }: { searchPara
   const label = (list: { id: string; name: string }[], id: string | null) => id ? list.find((option) => option.id === id)?.name ?? id : "";
   return <>
     <header className="page-heading"><div><p className="eyebrow">Vật tư · {access.branchName}</p><h1 tabIndex={-1}>Chính sách giá</h1><p className="lede">Giá có hiệu lực theo phạm vi và ngày. Sửa giá bằng phiên bản mới, không viết lại chứng từ cũ.</p></div></header>
-    <form className="filter-bar"><label>Trạng thái<select name="state" defaultValue={query.state ?? ""}><option value="">Tất cả / lịch sử</option>{Object.entries(effectivePriceLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label><button className="button button-secondary">Áp dụng</button></form>
-    {canManage && <details className="card card-pad"><summary>Tạo chính sách giá</summary><PricingRuleEditor options={options} /></details>}
+    <AutoFilterForm><label>Trạng thái<select name="state" defaultValue={query.state ?? ""}><option value="">Tất cả / lịch sử</option>{Object.entries(effectivePriceLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label></AutoFilterForm>
+    {canManage && <details className="card card-pad"><summary>Tạo chính sách giá</summary><PricingRuleEditor options={options} command={{ targetId: randomUUID(), operationId: randomUUID() }} /></details>}
     <p className="muted">Hiển thị tối đa 100 phiên bản mới nhất theo ngày hiệu lực.</p>
-    {rules.map((rule) => <details className="card card-pad" key={rule.id} data-price-rule-id={rule.id}><summary>{rule.scope_type === "CUSTOMER_MATERIAL" || rule.scope_type === "CUSTOMER_GROUP" ? label(options.customers, rule.customer_id) : rule.scope_type === "CUSTOMER_TIER" ? `Nhóm ${rule.customer_tier_code}` : "Giá mặc định"} · {rule.material_id ? label(options.materials, rule.material_id) : label(options.groups, rule.material_group_id)} · {formatVnd(vnd(rule.unit_price_vnd))} · Phiên bản {rule.version} · {effectivePriceLabels[effectivePriceState(rule, now)]}</summary><p className="muted">Đơn vị: {label(options.units, rule.price_uom_id)} · Nguồn: {priceSourceLabel(rule.source_type)} · Từ {formatBusinessDate(rule.effective_from)}{rule.effective_to ? ` đến trước ${formatBusinessDate(rule.effective_to)}` : ""}</p>{canManage && rule.active && <PricingRuleEditor rule={rule} options={options} scopeLabel={[pricingScopeLabel(rule.scope_type), label(options.customers,rule.customer_id) || rule.customer_tier_code, rule.material_id ? label(options.materials,rule.material_id) : label(options.groups,rule.material_group_id), label(options.units,rule.price_uom_id)].filter(Boolean).join(" · ")} />}</details>)}
+    {rules.map((rule) => <details className="card card-pad" key={rule.id} data-price-rule-id={rule.id}><summary>{rule.scope_type === "CUSTOMER_MATERIAL" || rule.scope_type === "CUSTOMER_GROUP" ? label(options.customers, rule.customer_id) : rule.scope_type === "CUSTOMER_TIER" ? `Nhóm ${rule.customer_tier_code}` : "Giá mặc định"} · {rule.material_id ? label(options.materials, rule.material_id) : label(options.groups, rule.material_group_id)} · {formatVnd(vnd(rule.unit_price_vnd))} · Phiên bản {rule.version} · {effectivePriceLabels[effectivePriceState(rule, now)]}</summary><p className="muted">Đơn vị: {label(options.units, rule.price_uom_id)} · Nguồn: {priceSourceLabel(rule.source_type)} · Từ {formatBusinessDate(rule.effective_from)}{rule.effective_to ? ` đến trước ${formatBusinessDate(rule.effective_to)}` : ""}</p>{canManage && rule.active && <PricingRuleEditor rule={rule} options={options} command={{ targetId: randomUUID(), operationId: randomUUID() }} scopeLabel={[pricingScopeLabel(rule.scope_type), label(options.customers,rule.customer_id) || rule.customer_tier_code, rule.material_id ? label(options.materials,rule.material_id) : label(options.groups,rule.material_group_id), label(options.units,rule.price_uom_id)].filter(Boolean).join(" · ")} />}</details>)}
   </>;
 }

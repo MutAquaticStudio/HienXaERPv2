@@ -1,13 +1,16 @@
 import { formatBusinessDate, formatBusinessDateTime } from "@/lib/core/business-time";
-import { Suspense, type CSSProperties, type ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import Link from "next/link";
 import { DashboardDetails, type DashboardDetail } from "@/components/dashboard/dashboard-details";
+import { ProfitLineChart } from "@/components/dashboard/profit-line-chart";
 import { MetricNumber } from "@/components/ui/metric-number";
 import { requireInternalPermission } from "@/lib/access/context";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { dashboardSnapshotCutoff } from "@/modules/reports/dashboard-snapshot-cutoff";
+import { totalCostMetric, type ProfitSeries } from "@/modules/reports/profit-series";
 import { recordingScopeText } from "@/modules/operations/state";
+import { AutoFilterForm } from "@/components/ui/auto-filter-form";
 
 type Quality = "READY" | "INCOMPLETE" | "NOT_APPLICABLE" | "FORBIDDEN" | "UNAVAILABLE";
 type Metric = { value_vnd?: string | number | null; value?: string | number | null; quality: Quality };
@@ -81,7 +84,18 @@ async function DashboardFilters({ access, query, from, to }: { access: Dashboard
   const selectedCustomer = selectedCustomerResult.data;
   if (selectedCustomer && !customers.some((item) => item.id === selectedCustomer.id)) customers.unshift(selectedCustomer);
   const siteOptions = (siteResult.data ?? []) as Array<{ id: string; customer_id: string; name: string }>;
-  return <form className="filter-bar" method="get" data-uat-dashboard-filters={(customerResult.error || selectedCustomerResult.error || siteResult.error || salesResult.error) ? "error" : "ready"}><label>Từ ngày<input type="date" name="from" defaultValue={from} /></label><label>Đến trước ngày<input type="date" name="to" defaultValue={to} /></label><label>Tìm khách hàng<input type="search" name="customerSearch" defaultValue={customerSearch} maxLength={120} placeholder="Nhập tên khách rồi bấm Tìm khách" /></label><button className="button button-secondary" type="submit">Tìm khách</button><label>Khách hàng<select name="customer" defaultValue={query.customer ?? ""}><option value="">Tất cả</option>{customers.map((item) => <option key={item.id} value={item.id}>{item.display_name}</option>)}</select></label><label>Công trình<select name="site" defaultValue={query.site ?? ""}><option value="">Tất cả</option>{siteOptions.filter((item) => !query.customer || item.customer_id === query.customer).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label><label>Nhân viên bán hàng<select name="sales" defaultValue={query.sales ?? ""}><option value="">Tất cả</option>{(salesResult.data ?? []).map((item) => <option key={item.id} value={item.id}>{item.display_name}</option>)}</select></label><label>Hoạt động<select name="activity" defaultValue={query.activity ?? ""}><option value="">Tất cả</option><option value="DELIVERY">Giao hàng</option><option value="SALES">Bán hàng</option><option value="SERVICE">Dịch vụ</option><option value="ADMIN">Hành chính</option></select></label><button className="button button-primary" type="submit">Làm mới</button>{(customerResult.error || selectedCustomerResult.error) && <p role="status">Không thể tải danh sách khách hàng. Hãy thử lại.</p>}{!customerResult.error && customerSearch && customerResult.data?.length === 0 && <p role="status">Không tìm thấy khách phù hợp; khách đang chọn vẫn được giữ.</p>}{customerResult.data?.length === 200 && <p className="muted">Danh sách có giới hạn; hãy nhập tên cụ thể hơn để tìm khách chưa hiển thị.</p>}</form>;
+  return <AutoFilterForm aria-label="Bộ lọc tổng quan" data-uat-dashboard-filters={(customerResult.error || selectedCustomerResult.error || siteResult.error || salesResult.error) ? "error" : "ready"}><label>Từ ngày<input type="date" name="from" defaultValue={from} /></label><label>Đến trước ngày<input type="date" name="to" defaultValue={to} /></label><label>Tìm khách hàng<input type="search" name="customerSearch" defaultValue={customerSearch} maxLength={120} placeholder="Gõ tên để lọc danh sách khách" /></label><label>Khách hàng<select name="customer" defaultValue={query.customer ?? ""}><option value="">Tất cả</option>{customers.map((item) => <option key={item.id} value={item.id}>{item.display_name}</option>)}</select></label><label>Công trình<select name="site" defaultValue={query.site ?? ""}><option value="">Tất cả</option>{siteOptions.filter((item) => !query.customer || item.customer_id === query.customer).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label><label>Nhân viên bán hàng<select name="sales" defaultValue={query.sales ?? ""}><option value="">Tất cả</option>{(salesResult.data ?? []).map((item) => <option key={item.id} value={item.id}>{item.display_name}</option>)}</select></label><label>Hoạt động<select name="activity" defaultValue={query.activity ?? ""}><option value="">Tất cả</option><option value="DELIVERY">Giao hàng</option><option value="SALES">Bán hàng</option><option value="SERVICE">Dịch vụ</option><option value="ADMIN">Hành chính</option></select></label>{(customerResult.error || selectedCustomerResult.error) && <p role="status">Không thể tải danh sách khách hàng. Hãy thử lại.</p>}{!customerResult.error && customerSearch && customerResult.data?.length === 0 && <p role="status">Không tìm thấy khách phù hợp; khách đang chọn vẫn được giữ.</p>}{customerResult.data?.length === 200 && <p className="muted">Danh sách có giới hạn; hãy nhập tên cụ thể hơn để tìm khách chưa hiển thị.</p>}</AutoFilterForm>;
+}
+
+async function ProfitChartSection({ dashboardArgs }: { dashboardArgs: DashboardArgs }) {
+  const supabase = await createServerSupabase();
+  const { data, error } = await supabase.rpc("finance_dashboard_series", dashboardArgs);
+  const tooLong = error?.message?.includes("report_period_too_long");
+  return <section className="card card-pad result-chart" data-uat-dashboard-chart={error ? "error" : "ready"}>
+    <div className="section-head flush"><h2>Thu, chi và lợi nhuận</h2><span className="scope-chip">Cùng kỳ và bộ lọc</span></div>
+    {error ? <p className="empty-inline">{tooLong ? "Kỳ quá dài để vẽ biểu đồ (tối đa 31 tháng). Hãy chọn kỳ ngắn hơn." : "Chưa tải được biểu đồ. Thử lại."}</p>
+      : <ProfitLineChart series={data as ProfitSeries} />}
+  </section>;
 }
 
 async function DashboardSecondary({ access, query, to, dashboardArgs, snapshot }: { access: DashboardAccess; query: DashboardQuery; to: string; dashboardArgs: DashboardArgs; snapshot: Snapshot }) {
@@ -129,24 +143,14 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
     receivable: { quality: "UNAVAILABLE" }, payable: { quality: "UNAVAILABLE" }, salary_payable: { quality: "INCOMPLETE" }, commission_payable: { quality: "INCOMPLETE" },
   };
   const snapshot = (snapshotResult.data ?? fallback) as Snapshot;
-  const profitBars = [
-    { label: "Doanh thu", metric: snapshot.revenue },
-    { label: "LN gộp quản trị", metric: snapshot.gross_profit },
-    { label: "LN hoạt động", metric: snapshot.operating_profit },
-  ].filter((item) => item.metric.quality === "READY" && item.metric.value_vnd != null);
-  const maxBar = profitBars.reduce((max, item) => {
-    const value = BigInt(String(item.metric.value_vnd));
-    const absolute = value < 0n ? -value : value;
-    return absolute > max ? absolute : max;
-  }, 1n);
 
   return <><header className="page-heading" data-uat-dashboard-request={typeof query.uatTimingNonce === "string" && /^[a-zA-Z0-9-]{1,80}$/.test(query.uatTimingNonce) ? query.uatTimingNonce : ""}><div><p className="eyebrow">Tổng quan kinh doanh</p><h1>Tổng quan</h1><p className="lede">Doanh thu theo kỳ và công nợ tại thời điểm đã chọn. Thu tiền không làm tăng doanh thu lần nữa.</p></div>{access.permissions.has("finance.ar.read") && <Link className="button button-secondary" href="/admin/cashbook">Mở sổ tiền</Link>}</header>
     <Suspense fallback={null}><LowStockAlert access={access} /></Suspense>
     <Suspense fallback={<section className="card card-pad"><p className="muted">Đang tải bộ lọc...</p></section>}><DashboardFilters access={access} query={query} from={from} to={to} /></Suspense>
     <p className="report-cutoff">Kỳ {formatBusinessDate(instant(from))} đến trước {formatBusinessDate(instant(to))} · số dư tính đến {formatBusinessDateTime(effectiveCutoff)}</p>
     <p className="quality-callout" data-recording-scope="RECORDED_TRANSACTIONS">{recordingScopeText(snapshot.scope.historical_quality)}</p>
-    <div className="finance-metrics-container"><section className="metric-grid finance-metrics" data-uat-dashboard-kpi={snapshotResult.error || !snapshotResult.data ? "error" : "ready"}><Kpi label="Doanh thu" metric={snapshot.revenue} /><Kpi label="Lợi nhuận gộp quản trị" metric={snapshot.gross_profit} /><Kpi label="Chi phí vận hành" metric={snapshot.operating_expense} /><Kpi label="Lợi nhuận hoạt động" metric={snapshot.operating_profit} /><Kpi label="Biên lợi nhuận" metric={snapshot.operating_margin_bps}>{snapshot.operating_margin_bps.quality === "READY" && snapshot.operating_margin_bps.value != null ? `${(Number(snapshot.operating_margin_bps.value) / 100).toLocaleString("vi-VN")}%` : "—"}</Kpi></section></div>
-    <section className="card card-pad result-chart"><div className="section-head flush"><h2>Biểu đồ kết quả kinh doanh</h2><span className="scope-chip">Cùng kỳ và phạm vi</span></div>{profitBars.map((item) => { const value = BigInt(String(item.metric.value_vnd)); const absolute = value < 0n ? -value : value; const width = Number((absolute * 100n) / maxBar); return <div className="bar-row" key={item.label}><span>{item.label}</span><div className="bar-track" aria-hidden="true"><i style={{ "--bar-width": `${Math.max(width, 2)}%` } as CSSProperties} /></div><strong>{moneyMetric(item.metric)}</strong></div>; })}{!profitBars.length && <p className="empty-inline">Chưa có chỉ số đủ điều kiện hiển thị biểu đồ. Xem thông báo tại từng chỉ số.</p>}</section>
+    <div className="finance-metrics-container"><section className="metric-grid finance-metrics" data-uat-dashboard-kpi={snapshotResult.error || !snapshotResult.data ? "error" : "ready"}><Kpi label="Doanh thu" metric={snapshot.revenue} /><Kpi label="Tổng chi phí" metric={totalCostMetric(snapshot)} /><Kpi label="Lợi nhuận ròng" metric={snapshot.operating_profit} /><Kpi label="Biên lợi nhuận ròng" metric={snapshot.operating_margin_bps}>{snapshot.operating_margin_bps.quality === "READY" && snapshot.operating_margin_bps.value != null ? `${(Number(snapshot.operating_margin_bps.value) / 100).toLocaleString("vi-VN")}%` : "—"}</Kpi></section></div>
+    <Suspense fallback={<section className="card card-pad result-chart"><p className="muted">Đang tải biểu đồ...</p></section>}><ProfitChartSection dashboardArgs={dashboardArgs} /></Suspense>
     <Suspense fallback={<section className="card card-pad"><p className="muted">Đang tải phân tích và công nợ chi tiết...</p></section>}><DashboardSecondary access={access} query={query} to={to} dashboardArgs={dashboardArgs} snapshot={snapshot} /></Suspense>
   </>;
 }

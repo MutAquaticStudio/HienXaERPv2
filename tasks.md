@@ -25,6 +25,7 @@ QA_SCHEMA_MUTATION: PO_PATCH_ALREADY_APPLIED_NEW_PATCHES_NOT_AUTHORIZED
 QA_APPROVED_PATCH_SHA256: 9e74a7976728bb33b4401d642b79329e5d5ece9ac016e8509c06bbf238bf2f7d
 QA_SCHEMA_APPLY: APPLIED
 PRODUCTION_MUTATION: FORBIDDEN_WITHOUT_OWNER
+ACTIVE_FEEDBACK_BATCH: FB_KIOTVIET_20261015  # Claude Code, branch nox/elegant-volta-kr29iz; see section at end
 ```
 
 Historical R0–R9 tasks are not repeated here. Their source/evidence lives in implementation.md.
@@ -670,3 +671,29 @@ Forward candidate: 20261009224842_supplier_purchase_price_commands.sql. SHA256 0
 ## REM-G01-G23 active remediation
 
 Owner G01–G23 prompt authorizes source/schema, isolated QA, commits and Draft PR; no Production/merge/deploy. Supersedes OP-CUTOVER-01 mandatory opening/manual activation for new operations; protected historical import/immutability retained, not expanded. Single agent, sequential packages; stage1 G01/G05/G21 active. Track decisions/status/evidence in reports/business-flow-remediation. Old acceptance is reference only, not repair PASS.
+
+
+## FB-KIOTVIET-20261015 — Góp ý khách theo phong cách KiotViet
+
+Owner 15/10/2026: plan + thiết kế QA trước, không deploy vội. Quyết định D1–D4 ghi ở đầu Spec.md/UXUI.md; kế hoạch, ma trận QA và tiến độ tại `KE_HOACH_FEEDBACK_KIOTVIET_20261015.md`. Nhánh `nox/elegant-volta-kr29iz`; không PR/merge/deploy, không chạm Production.
+
+| Task | Nội dung | Trạng thái |
+|---|---|---|
+| FB-G0 | Harness DB native (`pnpm db:test:isolated`) + CI job `db-migrations` | DONE_LOCAL |
+| FB-G1 | Bộ lọc tự áp dụng (12 danh sách), bỏ "trừ đã hủy", tên khách bấm được | DONE_LOCAL |
+| FB-G2 | KPI Lợi nhuận ròng (D2) + biểu đồ đường Thu/Chi/Lợi nhuận theo bộ lọc (D3); migration `20261015120000_dashboard_profit_series` | DONE_LOCAL |
+| FB-G3 | Tắt Báo giá nội bộ + cổng khách (D1), không xóa dữ liệu/RPC | DONE_LOCAL |
+| FB-G4 | Tạo đơn bán kiểu KiotViet, "Tạo đơn" = lưu + xác nhận | DONE_LOCAL |
+| FB-G5 | Tạo đơn mua dùng chung bộ khối, "+" NCC nhanh | DONE_LOCAL |
+| FB-G6 | Danh sách khách hàng kiểu KiotViet | DONE_LOCAL |
+| FB-G7 | Danh sách vật tư kiểu KiotViet (giá/giá vốn/tồn theo quyền) | DONE_LOCAL |
+| FB-G8 | Thiết lập giá hàng loạt nguyên tử (D4); migration `20261015130000_pricing_rules_batch`; sửa idempotency `savePricingRuleAction` | DONE_LOCAL |
+| FB-G9 | Tài liệu + khung QA trình duyệt `scripts/qa/feedback-20261015/` | DONE_LOCAL |
+| FB-QA-DB | Áp migration lên QA project + QA database (bất biến, test 020/030, smoke dữ liệu thật) | PASS_QA_PROJECT_20261016 |
+| FB-QA | QA-FB-B01…B14 trên QA project (desktop 1440 + mobile 390) | PASS_AUTOMATED_20261016 (B01, B06, B07, B08, B11, B12, B13); B14 NOT_REPRESENTATIVE; B02–B05, B09, B10 MANUAL_UAT |
+| FB-PROXY | `proxy.ts` ở gốc không được Next đăng ký (app ở `src/app`) → làm mới phiên Supabase chưa từng chạy. Owner giao toàn quyền 16/10/2026 → chuyển `src/proxy.ts` (+ test vị trí/phạm vi) | PASS_QA_PROJECT_20261016 (build có `ƒ Proxy`; phiên hết hạn được làm mới trên QA; B06/B07/B08/B11/B12 chạy lại PASS) |
+| FB-PREVIEW | Preview Vercel cho Owner kiểm tra: `dpl_GkCW8cLqSyCmafHmi4ke3kQK6j9i` (`f76add7`, icn1), env Preview trỏ QA project | READY_20261016 (404 báo giá; `/admin` chưa đăng nhập → `/login`; không lỗi runtime). Chưa đăng nhập/đo B14 trên preview (mạng phiên không tới `*.vercel.app`) |
+| FB-UAT | Khách/Owner nghiệm thu từng góp ý (bảng số thao tác trước/sau) | PENDING_OWNER |
+| FB-REL | Owner 16/10/2026 "deploy lên production luôn": Production 0 báo giá; áp `20261015120000` + `20261015130000`; deploy `dpl_FmumGBwyCA4QHVL2x1fWXyzdPc2G` (`70ba7cf`) | RELEASED_20261016 (health `buildSha` khớp, báo giá 404, không lỗi runtime). Chờ Owner thử bằng tài khoản Production; `main` chưa có các commit này (cần PR) |
+
+DONE_LOCAL = lint/typecheck/unit/build/DB native PASS trên nhánh; không phải nghiệm thu runtime. Kịch bản trình duyệt lịch sử dùng form/nhãn cũ (QA-FB-B04a, B08a, B11a) là bằng chứng lịch sử, được kiểm lại bằng QA-FB-B mới.

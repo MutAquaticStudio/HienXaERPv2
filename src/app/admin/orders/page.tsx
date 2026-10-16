@@ -1,6 +1,7 @@
 import { applyDocumentListScope } from "@/lib/document-list-scope";
 import { formatBusinessDate } from "@/lib/core/business-time";
 import Link from "next/link";
+import { AutoFilterForm } from "@/components/ui/auto-filter-form";
 import { ButtonLink } from "@/components/ui/button-link";
 import { ListPager } from "@/components/ui/list-pager";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -43,12 +44,11 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
       {access.permissions.has("orders.create") && <ButtonLink href="/admin/orders/new">Tạo đơn bán</ButtonLink>}
     </header>
     <ActionNotice notice={query.notice} error={query.error} />
-    <form className="filter-bar" aria-label="Bộ lọc đơn bán">
+    <AutoFilterForm aria-label="Bộ lọc đơn bán">
       <label>Tìm kiếm<input type="search" name="q" defaultValue={list.q} placeholder="Mã đơn, tên khách hoặc công trình" /></label>
-      <label>Trạng thái đơn<select name="state" defaultValue={list.state}><option value="">Đang làm việc (trừ đã hủy)</option><option value="ALL">Tất cả, gồm lịch sử hủy</option><option value="DRAFT">Nháp</option><option value="CONFIRMED">Đã xác nhận</option><option value="CANCELLED">Đã hủy</option></select></label>
-      <button className="button button-secondary" type="submit">Áp dụng</button>
+      <label>Trạng thái đơn<select name="state" defaultValue={list.state}><option value="">Đang làm việc</option><option value="ALL">Tất cả</option><option value="DRAFT">Nháp</option><option value="CONFIRMED">Đã xác nhận</option><option value="CANCELLED">Đã hủy</option></select></label>
       {isFiltered && <Link className="code-link" href="/admin/orders">Xóa lọc</Link>}
-    </form>
+    </AutoFilterForm>
     <section className="card">
       <div className="section-head"><h2>Đơn bán</h2><span className="scope-chip">{CORE_LIST_PAGE_SIZE} / trang</span></div>
       {rows.length > 0 ? <>

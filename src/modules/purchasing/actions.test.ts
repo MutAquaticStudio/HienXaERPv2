@@ -87,3 +87,57 @@ describe("routine price reasons and exact VND",()=>{
  it("uses existing final-price policy for linked Sales without a routine note",async()=>{fixture.permissions.add("pricing.manage");const value=input();const result=await previewWarehousePurchaseAction({...value,lines:[{...value.lines[0],manualSalesPriceVnd:"110000",manualSalesReason:""}]});expect(result.success).toBe(true);expect(result.sales?.totalVnd).toBe("220000");expect(JSON.parse(result.sales!.lines[0].overrideReason!)).toMatchObject({beforeVnd:"120000",afterVnd:"110000"});});
  it("keeps increased cost an explicit exception",async()=>{fixture.permissions.add("purchasing.price.manage");const value=input();expect((await previewWarehousePurchaseAction({...value,lines:[{...value.lines[0],manualCostVnd:"90000",manualCostReason:""}]})).success).toBe(false)});
 });
+
+describe("'Tạo đơn mua' saves then confirms a warehouse PO", () => {
+  const confirmId = "10000000-0000-4000-8000-000000000009", order = "10000000-0000-4000-8000-00000000000a", warehouse = "10000000-0000-4000-8000-00000000000b";
+  async function warehouseForm(intent: string, confirm = confirmId) {
+    const value: Record<string, unknown> & { lines: ReturnType<typeof input>["lines"] } = { ...input(), mode: "WAREHOUSE", warehouseId: warehouse };
+    delete value.customerId;
+    delete value.siteId;
+    const preview = await previewWarehousePurchaseAction(value);
+    const form = new FormData();
+    for (const [key, data] of Object.entries(value)) if (key !== "lines") form.set(key, String(data));
+    for (const [key, data] of Object.entries(value.lines[0])) form.set(key, data);
+    form.set("costPreview", JSON.stringify(preview.lines));
+    form.set("intent", intent);
+    form.set("confirmOperationId", confirm);
+    return form;
+  }
+  const redirectTo = async () => String(vi.mocked((await import("next/navigation")).redirect).mock.calls[0]?.[0]);
+  beforeEach(async () => {
+    vi.mocked((await import("next/navigation")).redirect).mockClear();
+    fixture.rpc.mockResolvedValue({ data: order, error: null });
+  });
+
+  it("confirms with its own operation ID after the draft is created", async () => {
+    fixture.permissions.add("purchasing.confirm");
+    expect(await createPurchaseOrderAction(undefined, await warehouseForm("confirm"))).toBeUndefined();
+    expect(fixture.rpc.mock.calls.map((call) => call[0])).toEqual(["create_purchase_order_draft", "confirm_purchase_order"]);
+    expect(fixture.rpc.mock.calls[0][1]).toMatchObject({ operation_id: ids.operation });
+    expect(fixture.rpc.mock.calls[1][1]).toEqual({ target_purchase_order_id: order, operation_id: confirmId });
+    expect(await redirectTo()).toBe(`/admin/purchase-orders/${order}?notice=confirmed`);
+  });
+
+  it("keeps the draft and explains when confirmation is rejected", async () => {
+    fixture.permissions.add("purchasing.confirm");
+    fixture.rpc.mockImplementation(async (name: string) => name === "confirm_purchase_order" ? { data: null, error: { message: "purchase_order_not_confirmable" } } : { data: order, error: null });
+    await createPurchaseOrderAction(undefined, await warehouseForm("confirm"));
+    const target = new URL(await redirectTo(), "http://localhost");
+    expect(target.pathname).toBe(`/admin/purchase-orders/${order}`);
+    expect(target.searchParams.get("error")).toMatch(/^Đã lưu đơn mua nháp nhưng chưa xác nhận được: /);
+  });
+
+  it("creates nothing without purchasing.confirm, or with a reused operation ID", async () => {
+    expect((await createPurchaseOrderAction(undefined, await warehouseForm("confirm")))?.message).toBe("Bạn không có quyền xác nhận đơn mua. Hãy chọn Lưu nháp.");
+    fixture.permissions.add("purchasing.confirm");
+    expect((await createPurchaseOrderAction(undefined, await warehouseForm("confirm", ids.operation)))?.message).toContain("Thông tin xác nhận đơn mua chưa hợp lệ");
+    expect(fixture.rpc).not.toHaveBeenCalled();
+  });
+
+  it("'Lưu nháp' only creates the draft", async () => {
+    fixture.permissions.add("purchasing.confirm");
+    await createPurchaseOrderAction(undefined, await warehouseForm("draft"));
+    expect(fixture.rpc.mock.calls.map((call) => call[0])).toEqual(["create_purchase_order_draft"]);
+    expect(await redirectTo()).toBe(`/admin/purchase-orders/${order}?notice=created`);
+  });
+});

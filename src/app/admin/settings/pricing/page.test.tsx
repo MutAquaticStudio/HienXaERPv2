@@ -1,6 +1,7 @@
 import {cleanup,render,screen} from "@testing-library/react";
 import {afterEach,beforeEach,expect,it,vi} from "vitest";
 const m=vi.hoisted(()=>({access:vi.fn(),client:vi.fn(),rpc:vi.fn(),calls:[] as unknown[],rows:[] as unknown[]}));
+vi.mock("next/navigation",()=>({useRouter:()=>({replace:vi.fn()}),usePathname:()=>"/admin/settings/pricing"}));
 vi.mock("@/lib/access/context",()=>({requireInternalPermission:m.access}));
 vi.mock("@/lib/supabase/server",()=>({createServerSupabase:m.client}));
 vi.mock("@/modules/portal/server",()=>({portalRpc:m.rpc}));

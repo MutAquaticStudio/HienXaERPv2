@@ -219,6 +219,14 @@ async function saveWarehouseDocument(mode: "create" | "edit", formData: FormData
   const input = documentInput(formData);
   if (!input) return { message: "Đơn mua cần từ 1 đến 50 dòng hợp lệ." };
   const access = await requireInternalPermission("purchasing.create");
+  // "Tạo đơn mua" = save the warehouse draft, then confirm it, each with its own retry-safe operation ID.
+  let confirmOperationId: string | null = null;
+  if (mode === "create" && input.mode === "WAREHOUSE" && formData.get("intent") === "confirm") {
+    if (!access.permissions.has("purchasing.confirm")) return { message: "Bạn không có quyền xác nhận đơn mua. Hãy chọn Lưu nháp." };
+    const confirmId = z.uuid().safeParse(formData.get("confirmOperationId"));
+    if (!confirmId.success || confirmId.data === input.operationId) return { message: "Thông tin xác nhận đơn mua chưa hợp lệ. Hãy tải lại màn hình." };
+    confirmOperationId = confirmId.data;
+  }
   const supabase = await createServerSupabase();
   try {
     if (mode === "edit" && (!input.documentId || !input.expectedVersion)) return { message: "Bản nháp đơn mua không hợp lệ." };
@@ -286,6 +294,11 @@ async function saveWarehouseDocument(mode: "create" | "edit", formData: FormData
     if (rpcResult.error || !rpcResult.data) return { message: errorMessage(rpcResult.error?.message ?? "unknown") };
     revalidatePath("/admin/purchase-orders");
     revalidatePath(`/admin/purchase-orders/${rpcResult.data}`);
+    if (confirmOperationId) {
+      const confirmed = await supabase.rpc("confirm_purchase_order", { target_purchase_order_id: rpcResult.data, operation_id: confirmOperationId });
+      if (confirmed.error) redirect(`/admin/purchase-orders/${rpcResult.data}?error=${encodeURIComponent(`Đã lưu đơn mua nháp nhưng chưa xác nhận được: ${errorMessage(confirmed.error.message, true)}`)}`);
+      redirect(`/admin/purchase-orders/${rpcResult.data}?notice=confirmed`);
+    }
     redirect(`/admin/purchase-orders/${rpcResult.data}?notice=${mode === "edit" ? "updated" : "created"}`);
   } catch (error) {
     unstable_rethrow(error);

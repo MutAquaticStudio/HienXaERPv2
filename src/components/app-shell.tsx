@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { UatBrowserTiming } from "@/components/uat-browser-timing";
+import { QUOTATIONS_ENABLED } from "@/lib/features";
 
 type Surface = "admin" | "work" | "customer";
 
@@ -24,7 +25,7 @@ const navigation: Record<Surface, readonly NavigationItem[]> = {
   admin: [
     { href: "/admin", label: "Tổng quan", icon: LayoutDashboard, exact: true, permission: "dashboard.read" },
     { href: "/admin/orders", label: "Đơn bán", icon: ShoppingCart, permission: "orders.read", group: "sales" },
-    { href: "/admin/quotations", label: "Báo giá", icon: FileText, permission: "quotation.read", group: "sales" },
+    ...(QUOTATIONS_ENABLED ? [{ href: "/admin/quotations", label: "Báo giá", icon: FileText, permission: "quotation.read", group: "sales" }] : []),
     { href: "/admin/customers", label: "Khách hàng", icon: UsersRound, permission: "customers.read", managementPermission: "customers.manage", managementHref: "/admin/customers/manage", group: "sales" },
     { href: "/admin/purchase-orders", label: "Đơn mua", icon: PackageSearch, permission: "purchasing.read", group: "purchasing" },
     { href: "/admin/suppliers", label: "Nhà cung cấp", icon: Factory, permission: "suppliers.read", managementPermission: "suppliers.manage", managementHref: "/admin/suppliers/manage", group: "purchasing" },
@@ -58,7 +59,7 @@ const navigation: Record<Surface, readonly NavigationItem[]> = {
   ],
   customer: [
     { href: "/customer", label: "Tài khoản", icon: UserRound, exact: true },
-    { href: "/customer/quotations", label: "Báo giá", icon: FileText },
+    ...(QUOTATIONS_ENABLED ? [{ href: "/customer/quotations", label: "Báo giá", icon: FileText }] : []),
     { href: "/customer/orders", label: "Đơn của tôi", icon: ShoppingCart },
     { href: "/customer/debts", label: "Công nợ", icon: WalletCards },
   ],

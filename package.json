@@ -14,7 +14,7 @@
     "db:start": "supabase start",
     "db:reset": "supabase db reset --local --yes",
     "db:test": "supabase test db",
-    "db:test:isolated": "node scripts/test-r2-database.mjs",
+    "db:test:isolated": "node scripts/db-native/run.mjs",
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "qa:guard": "node --env-file=.env.qa.local scripts/qa/guard.mjs",
     "qa:seed": "node --env-file=.env.qa.local scripts/qa/seed.mjs",

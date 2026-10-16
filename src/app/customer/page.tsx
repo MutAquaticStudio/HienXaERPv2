@@ -3,6 +3,7 @@ import { salesStateLabel } from "@/modules/portal/presentation";
 import { randomUUID } from "node:crypto";
 
 import Link from "next/link";
+import { QUOTATIONS_ENABLED } from "@/lib/features";
 
 import styles from "@/components/portal/portal.module.css";
 import { getCustomerPortalSnapshot, requestQuotationChangeAction } from "@/modules/portal/actions";
@@ -16,10 +17,10 @@ export default async function CustomerHomePage() {
       <header className={styles.hero}>
         <p className={styles.heroEyebrow}>{snapshot.customer.code}</p>
         <h1>{snapshot.customer.display_name}</h1>
-        <p>Báo giá cần xử lý, đơn hàng, giao nhận và công nợ theo đúng vai trò truy cập.</p>
+        <p>{QUOTATIONS_ENABLED ? "Báo giá cần xử lý, đơn hàng, giao nhận" : "Đơn hàng, giao nhận"} và công nợ theo đúng vai trò truy cập.</p>
       </header>
 
-      {snapshot.quotation ? (
+      {QUOTATIONS_ENABLED && snapshot.quotation ? (
         <section className={styles.card + " " + styles.cardAccent}>
           <span className={styles.badge}>BÁO GIÁ · {salesStateLabel(snapshot.quotation.state)}</span>
           <h2>{snapshot.quotation.number ?? "Báo giá hiện tại"}</h2>
