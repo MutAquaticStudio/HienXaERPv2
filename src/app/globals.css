@@ -820,7 +820,7 @@ tbody tr:hover { background: #f8fbff; }
 
 /* Document editor (KiotViet-style order screens): lines on the left, party + totals on the right. */
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-.doc-editor { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 360px); gap: 1rem; align-items: start; }
+.doc-editor { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 320px); gap: 1rem; align-items: start; }
 .doc-editor-main { padding: 1rem; display: grid; gap: 0.75rem; min-width: 0; }
 .doc-editor-side { display: grid; gap: 0.85rem; position: sticky; top: 1rem; }
 .doc-editor-search, .doc-editor-combo { position: relative; }
@@ -839,13 +839,18 @@ tbody tr:hover { background: #f8fbff; }
 .doc-editor-listbox-note { padding: 0.5rem 0.65rem; color: var(--muted); font-size: var(--font-size-caption); }
 .doc-editor-empty { margin: 0; padding: 2rem 1rem; text-align: center; color: var(--muted); border: 1px dashed var(--border); border-radius: 10px; }
 .doc-editor-lines { position: relative; }
-.doc-editor-lines table { min-width: 720px; }
+/* Fits beside the app menu and the side panel at 1440px: tighter cells, and the name, code and stock note wrap
+   instead of pushing quantity/price/total off-screen (the global table style is nowrap with wide padding). */
+.doc-editor-lines table { min-width: 600px; }
+.doc-editor-lines th, .doc-editor-lines td { padding: 10px 8px; }
+.doc-editor-lines td.doc-editor-name, .doc-editor-line-detail td { white-space: normal; }
+.doc-editor-lines td.doc-editor-name { min-width: 10rem; overflow-wrap: anywhere; }
 .doc-editor-search input, .doc-editor-lines input, .doc-editor-lines select { min-width: 0; padding: 8px 10px; border: 1px solid #bdc7d5; border-radius: 9px; color: var(--text); background: #fff; }
 .doc-editor-search input { padding: 10px 14px; }
 .doc-editor-lines input, .doc-editor-lines select { min-height: 38px; }
 .doc-editor-lines th.numeric, .doc-editor-lines td.numeric { text-align: right; }
 .doc-editor-lines td { vertical-align: top; }
-.doc-editor-lines td.numeric input { width: 7.5rem; text-align: right; }
+.doc-editor-lines td.numeric input { width: 6.5rem; text-align: right; }
 .doc-editor-lines select { min-width: 5.5rem; }
 .doc-editor-line-invalid td { background: var(--danger-soft); }
 .doc-editor-line-detail td { padding-top: 0; border-top: 0; }
@@ -864,11 +869,12 @@ tbody tr:hover { background: #f8fbff; }
 .doc-editor-actions { display: grid; gap: 0.5rem; }
 .doc-editor-actions .button { width: 100%; justify-content: center; min-height: 48px; }
 .doc-editor-hint { margin: 0; font-size: var(--font-size-caption); }
-@media (max-width: 1080px) {
+@media (max-width: 1439px) {
   .doc-editor { grid-template-columns: 1fr; }
   .doc-editor-side { position: static; order: -1; }
 }
-@media (max-width: 760px) {
+/* Line cards on phones and tablets: below ~1100px the 8-column table no longer fits beside the app menu. */
+@media (max-width: 1100px) {
   .doc-editor-lines table { min-width: 0; }
   .doc-editor-lines thead { display: none; }
   .doc-editor-lines table, .doc-editor-lines tbody, .doc-editor-lines tr, .doc-editor-lines td { display: block; }

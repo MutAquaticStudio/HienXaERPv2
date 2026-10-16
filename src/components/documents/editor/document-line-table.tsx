@@ -52,7 +52,7 @@ export function DocumentLineTable<L extends EditorLine>({ lines, materials, canM
 
   if (!lines.length) return <p className="doc-editor-empty">{emptyText}</p>;
   return <div className="table-wrap doc-editor-lines"><table>
-    <thead><tr><th scope="col">#</th><th scope="col">Mã</th><th scope="col">Tên vật tư</th><th scope="col">{labels.uom}</th><th scope="col" className="numeric">Số lượng</th><th scope="col" className="numeric">{labels.price}</th><th scope="col" className="numeric">Thành tiền</th><th scope="col"><span className="sr-only">Xóa</span></th></tr></thead>
+    <thead><tr><th scope="col">#</th><th scope="col">Vật tư</th><th scope="col">{labels.uom}</th><th scope="col" className="numeric">Số lượng</th><th scope="col" className="numeric">{labels.price}</th><th scope="col" className="numeric">Thành tiền</th><th scope="col"><span className="sr-only">Xóa</span></th></tr></thead>
     <tbody>{lines.map((line, index) => {
       const material = materials.find((item) => item.id === line.materialId);
       const price = priced(index);
@@ -63,13 +63,14 @@ export function DocumentLineTable<L extends EditorLine>({ lines, materials, canM
       return <Fragment key={line.key}>
         <tr className={quantityValid ? undefined : "doc-editor-line-invalid"}>
           <td className="mono" data-label="#">{row}</td>
-          <td className="mono" data-label="Mã">{material?.code ?? "—"}</td>
-          <td className="doc-editor-name" data-label="Tên vật tư">
+          {/* Code sits under the name: beside the side panel there is no room for a separate code column. */}
+          <td className="doc-editor-name" data-label="Vật tư">
             <input type="hidden" name="sourceLineId" value={line.sourceLineId} />
             <input type="hidden" name="materialId" value={line.materialId} />
             {hiddenFields?.(line)}
             {!(canManagePrice && line.manualPriceVnd) && <input type="hidden" name={fields.reason} value={canManagePrice ? "" : line.manualReason} />}
             <strong>{material?.name ?? "Vật tư không còn khả dụng"}</strong>
+            {material?.code && <small className="table-subline mono">{material.code}</small>}
             {lockedMaterial?.(line) && <small className="table-subline">Theo dòng nguồn</small>}
           </td>
           <td data-label={labels.uom}>
