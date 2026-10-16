@@ -2701,3 +2701,8 @@ QA database trên QA project (loại bằng chứng: truy vấn thật trên QA,
 
 Chưa chạy: QA-FB-B01…B14 trên trình duyệt — phiên cloud không ra mạng tới `*.supabase.co` (proxy 403) và không có mật khẩu tài khoản QA.
 
+Theo yêu cầu Owner (16/10/2026), đã đặt lại mật khẩu chung cho đúng 9 tài khoản UAT `hxqa-*@example.test` trên QA project
+(một transaction, kiểm đúng 9 dòng; đọc lại cả 9 khớp, bcrypt `$2a$`, email vẫn xác nhận). Tài khoản recovery và tài khoản không email
+không đổi; Production không đụng. Giá trị mật khẩu không ghi vào repo; `.env.qa.local` cũ cần cập nhật `HX_QA_PASSWORD`.
+Chưa thử đăng nhập thật (phiên không ra mạng tới QA).
+
