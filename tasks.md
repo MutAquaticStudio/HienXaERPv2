@@ -689,7 +689,8 @@ Owner 15/10/2026: plan + thiết kế QA trước, không deploy vội. Quyết 
 | FB-G7 | Danh sách vật tư kiểu KiotViet (giá/giá vốn/tồn theo quyền) | DONE_LOCAL |
 | FB-G8 | Thiết lập giá hàng loạt nguyên tử (D4); migration `20261015130000_pricing_rules_batch`; sửa idempotency `savePricingRuleAction` | DONE_LOCAL |
 | FB-G9 | Tài liệu + khung QA trình duyệt `scripts/qa/feedback-20261015/` | DONE_LOCAL |
-| FB-QA | QA-FB-B01…B14 trên QA project (desktop 1440 + mobile 390) | BLOCKED_OWNER: cần cho phép áp 2 migration mới lên QA project |
+| FB-QA-DB | Áp migration lên QA project + QA database (bất biến, test 020/030, smoke dữ liệu thật) | PASS_QA_PROJECT_20261016 |
+| FB-QA | QA-FB-B01…B14 trên QA project (desktop 1440 + mobile 390) | BLOCKED_ENV: phiên cloud không ra mạng tới QA, không có mật khẩu QA; chạy `scripts/qa/feedback-20261015/` trên máy có `.env.qa.local` |
 | FB-UAT | Khách/Owner nghiệm thu từng góp ý (bảng số thao tác trước/sau) | PENDING_OWNER |
 | FB-REL | Read-only Production: đếm báo giá `SENT`; Owner cho phép riêng áp 2 migration + deploy | PENDING_OWNER |
 

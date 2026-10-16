@@ -2664,3 +2664,40 @@ Thay đổi hành vi đáng chú ý:
 
 Chưa có: QA-FB-B01…B14 trên QA project (khung `scripts/qa/feedback-20261015/` chưa chạy), UAT khách, kiểm tra read-only báo giá `SENT` ở Production, cho phép áp 2 migration (`20261015120000`, `20261015130000`) và deploy.
 
+## 2026-10-16 — FB-KIOTVIET-20261015: áp migration + QA database trên QA project
+
+Owner cho phép trong phiên: "migration lên QA project rồi chạy QA". Thực hiện qua kết nối Supabase (MCP) vào QA `ffrwiglcrlumfvhubaxg`
+(HienXaERPv2-QA, PG 17). Production `nbwynrwkdbtfsitafsxa`: chỉ đọc lịch sử migration, không ghi.
+
+Trước khi áp: QA có 188 dòng lịch sử; 8 chi nhánh đều là dữ liệu QA/kiểm thử; DB 183 MB. So với repo, QA thiếu
+`20261012211058_align_business_api_table_privileges` và `20261013105000_operational_role_presets` (Production đã có cả hai;
+bản sau trên Production mang version `20261013121739`). QA có `retire_opening_pending_rule` dưới version `20261014074344` và
+bản vá riêng QA `20261002114730`.
+
+Áp theo thứ tự, mỗi bản một transaction gồm nội dung file repo + một dòng `supabase_migrations.schema_migrations` đúng version repo
+(cột `statements` ghi sha256 file):
+
+| Version | sha256 file repo | Kiểm sau khi áp |
+|---|---|---|
+| `20261012211058` | `42ebcd9e…6eff017d29` | bảng public `authenticated` TRUNCATE được: 9 → 0 (migration tự kiểm quyền dòng không đổi) |
+| `20261013105000` | `8ec1e8f3…5f4814131` | 8 vai trò `builtin_*`, 100 quyền; invite có trần quyền; gán vai trò có chống ghi lặp |
+| `20261015120000` | `bf30b735…d07c6ca1` | `finance_dashboard_series` invoker, `search_path=""`, anon không EXECUTE |
+| `20261015130000` | `d6500bd1…dc0eeb9` | `save_pricing_rules_batch` definer, `search_path=""`, anon không EXECUTE; phụ thuộc + thứ tự cột `command_receipts` đã kiểm trước |
+
+Lịch sử QA sau: 192 dòng. md5(prosrc) của `finance_dashboard_series`, `save_pricing_rules_batch`, `register_invited_employee`,
+`assign_employee_role` trên QA trùng với DB native áp từ repo (`ce865532…`, `3f176340…`, `407a2a6b…`, `f9cb1069…`).
+
+QA database trên QA project (loại bằng chứng: truy vấn thật trên QA, không phải trình duyệt):
+- Bất biến: 0 bảng public thiếu RLS; anon 0 quyền bảng; 0 definer thiếu `search_path`; 0 definer anon gọi được.
+- Supabase security advisors: không cảnh báo mới do 4 migration. Tồn đọng: 25 ERROR `security_definer_view`, 162 WARN definer gọi được bởi
+  authenticated (thiết kế RPC tự kiểm quyền), 1 WARN chống mật khẩu lộ, 11 INFO bảng private không policy.
+- `supabase/tests/native/_setup.sql` + `020_dashboard_series.sql` và + `030_pricing_batch.sql`: PASS, mỗi lần bọc `begin … rollback`.
+  Đã chứng minh `assert` có hiệu lực (`assert false` → P0004). Số dòng `pricing_rules` 27, `audit_events` 1363, `command_receipts` 1653,
+  `branches` 8, `roles` 15, `employees` 15, `auth.users` 19, `materials` 17, `units_of_measure` 23 — trước và sau như nhau.
+- Smoke dữ liệu thật với `hxqa-owner` (rollback): HXQA Branch A, 30 ngày (DAY, 30 điểm) và 12 tháng (MONTH, 12 điểm): mọi điểm READY,
+  tổng Thu = KPI 13.397.000, tổng Lợi nhuận = KPI 3.475.024, Thu − Chi = Lợi nhuận từng điểm. Synthetic branch A: 0 = 0.
+  Lọc theo 3 khách: điểm có chi phí chung chưa phân bổ là `NOT_APPLICABLE` và không mang giá trị.
+  `finance_dashboard_series` 12 tháng: 279,6 ms thời gian thực thi phía DB (1 mẫu, EXPLAIN ANALYZE).
+
+Chưa chạy: QA-FB-B01…B14 trên trình duyệt — phiên cloud không ra mạng tới `*.supabase.co` (proxy 403) và không có mật khẩu tài khoản QA.
+

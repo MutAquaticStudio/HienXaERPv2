@@ -1,6 +1,6 @@
 # Kế hoạch & QA — Feedback khách theo phong cách KiotViet (15/10/2026)
 
-Trạng thái: **ĐÃ XONG CODE G0–G9 trên nhánh `nox/elegant-volta-kr29iz` — CHƯA QA TRÌNH DUYỆT, CHƯA DEPLOY**. Không áp migration lên QA cloud/Production khi chưa có lệnh của Owner.
+Trạng thái: **ĐÃ XONG CODE G0–G9; ĐÃ ÁP MIGRATION + QA DATABASE PASS TRÊN QA PROJECT (16/10/2026) — CHƯA QA TRÌNH DUYỆT, CHƯA DEPLOY**. Không áp migration lên Production khi chưa có lệnh riêng của Owner.
 
 ## 1. Quyết định của Owner
 
@@ -42,7 +42,20 @@ Trạng thái: **ĐÃ XONG CODE G0–G9 trên nhánh `nox/elegant-volta-kr29iz` 
 | G9 | commit tài liệu này | `node --test scripts/qa/feedback-20261015/support.test.mjs` |
 
 Tổng tại G8: lint 0 lỗi (14 warning nền), typecheck, 735 unit test, build, DB native (191 migration + 3 file test) đều PASS.
-QA-FB-B01…B14 **chưa chạy** (cần app local trỏ QA project + Owner cho áp 2 migration lên QA).
+### QA project `ffrwiglcrlumfvhubaxg` (16/10/2026, Owner cho phép)
+- Áp 4 migration (mỗi bản một transaction, ghi đúng version repo vào lịch sử): `20261012211058_align_business_api_table_privileges`
+  và `20261013105000_operational_role_presets` (Production đã có, QA còn thiếu) + `20261015120000_dashboard_profit_series`
+  + `20261015130000_pricing_rules_batch`. Lịch sử QA 188 → 192.
+- Mã nguồn 4 hàm trên QA trùng md5 với bản áp từ repo ở DB native.
+- Bất biến bảo mật trên QA PASS (RLS mọi bảng public, anon 0 quyền bảng, definer có `search_path`, anon không gọi được definer).
+  Supabase advisors: không cảnh báo mới do 4 migration; tồn đọng cũ: 25 ERROR `security_definer_view`, 1 WARN chống mật khẩu lộ.
+- `020_dashboard_series.sql` và `030_pricing_batch.sql` PASS trên QA (bọc rollback; đã xác nhận `assert` có hiệu lực; số dòng các bảng trước/sau không đổi).
+- Smoke dữ liệu thật (chủ QA, rollback): HXQA Branch A 30 ngày và 12 tháng — tổng Thu biểu đồ = KPI (13.397.000),
+  tổng Lợi nhuận = KPI (3.475.024), Thu − Chi = Lợi nhuận từng điểm. Lọc theo khách: điểm có chi phí chưa phân bổ là
+  `NOT_APPLICABLE`, không mang giá trị (B09 ở tầng DB). Biểu đồ 12 tháng chạy ~280 ms phía DB (1 lần đo, chưa phải p95 trình duyệt).
+
+QA-FB-B01…B14 (trình duyệt) **chưa chạy**: môi trường cloud của phiên không ra mạng tới `*.supabase.co` và không có mật khẩu
+tài khoản QA. Chạy bằng `scripts/qa/feedback-20261015/` trên máy có `.env.qa.local`, hoặc mở mạng + biến môi trường cho phiên cloud.
 
 ## 3. Ma trận QA
 
@@ -90,10 +103,11 @@ Checklist tiếng Việt theo từng góp ý; bảng số thao tác trước/sau
 
 ## 4. Cổng phát hành (chưa deploy)
 1. CI xanh: `phase-gate` + `db-migrations`.
-2. QA-FB-B01…B14 PASS trên QA project.
+2. QA-FB-B01…B14 PASS trên QA project. (Migration + QA database trên QA project: ĐÃ PASS 16/10/2026.)
 3. Owner UAT ký.
 4. Truy vấn read-only Production: số báo giá đang `SENT` → Owner xác nhận trước khi tắt báo giá.
-5. Owner cho phép riêng: áp 2 migration mới lên Production + deploy.
+5. Owner cho phép riêng: áp 2 migration mới lên Production + deploy. (Production đã có `align_business_api_table_privileges`
+   và `operational_role_presets` — bản sau mang version `20261013121739` trên Production, khác repo `20261013105000`.)
 
 ## 5. Chạy kiểm tra DB native tại máy dev
 ```bash
