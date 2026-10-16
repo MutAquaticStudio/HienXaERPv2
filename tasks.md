@@ -692,6 +692,7 @@ Owner 15/10/2026: plan + thiết kế QA trước, không deploy vội. Quyết 
 | FB-QA-DB | Áp migration lên QA project + QA database (bất biến, test 020/030, smoke dữ liệu thật) | PASS_QA_PROJECT_20261016 |
 | FB-QA | QA-FB-B01…B14 trên QA project (desktop 1440 + mobile 390) | PASS_AUTOMATED_20261016 (B01, B06, B07, B08, B11, B12, B13); B14 NOT_REPRESENTATIVE; B02–B05, B09, B10 MANUAL_UAT |
 | FB-PROXY | `proxy.ts` ở gốc không được Next đăng ký (app ở `src/app`) → làm mới phiên Supabase chưa từng chạy. Owner giao toàn quyền 16/10/2026 → chuyển `src/proxy.ts` (+ test vị trí/phạm vi) | PASS_QA_PROJECT_20261016 (build có `ƒ Proxy`; phiên hết hạn được làm mới trên QA; B06/B07/B08/B11/B12 chạy lại PASS) |
+| FB-PREVIEW | Preview Vercel cho Owner kiểm tra: `dpl_GkCW8cLqSyCmafHmi4ke3kQK6j9i` (`f76add7`, icn1), env Preview trỏ QA project | READY_20261016 (404 báo giá; `/admin` chưa đăng nhập → `/login`; không lỗi runtime). Chưa đăng nhập/đo B14 trên preview (mạng phiên không tới `*.vercel.app`) |
 | FB-UAT | Khách/Owner nghiệm thu từng góp ý (bảng số thao tác trước/sau) | PENDING_OWNER |
 | FB-REL | Read-only Production: đếm báo giá `SENT`; Owner cho phép riêng áp 2 migration + deploy | PENDING_OWNER |
 

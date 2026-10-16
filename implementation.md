@@ -2740,3 +2740,15 @@ Trên QA project: đăng nhập `hxqa-owner`, sửa cookie phiên cho access tok
 không thêm lượt gọi Auth mỗi request. Chạy lại runner B06/B07/B08/B11/B12: PASS/ghi nhận như trước, 0 lỗi trang.
 Kèm sửa test không ổn định `price-book-editor.test.tsx` (chỉ khi chạy cả bộ): thông báo "Chưa xác định kết quả" hiện trước khi transition kết thúc,
 nút còn nhãn "Đang lưu..." → test chờ nút sẵn sàng rồi mới bấm lại. Kiểm tra: lint 0 lỗi, typecheck, 742 test (2 lần), build, node test 19/19.
+
+## 2026-10-16 — FB-PREVIEW: bản preview Vercel cho Owner kiểm tra
+
+Owner yêu cầu "deploy preview cho tôi check trước" và cấp quyền team Vercel `hienxa` cho connector. Tạo deployment preview qua API
+(không đặt target; `vercel.json` vẫn tắt auto-deploy `nox/*`): `dpl_GkCW8cLqSyCmafHmi4ke3kQK6j9i`, nguồn `nox/elegant-volta-kr29iz@f76add7`,
+region icn1, build Vercel (Next 16.3.4, Turbopack) READY; alias nhánh `hien-xa-erp-v2-git-nox-elegant-volta-kr29iz-hienxa.vercel.app`.
+Không đổi biến môi trường hay cấu hình dự án Vercel. Env Preview có sẵn `HX_QA_PROJECT_REF` + `HX_QA_RUNTIME_APPROVED` nên guard
+`src/lib/supabase/config.ts` buộc URL là QA project và từ chối ref Production; tổ chức Supabase chỉ có 2 project (Production
+`nbwynrwkdbtfsitafsxa`, QA `ffrwiglcrlumfvhubaxg`) → preview dùng QA. Preview không có `SUPABASE_SECRET_KEY` (mời nhân viên, chứng từ không chạy).
+Kiểm tra (GET qua connector Vercel): `/admin/quotations` và `/customer/quotations` 404 (`x-nextjs-rewritten-path` `/…/__khong-tim-thay`);
+`/admin` chưa đăng nhập → chuyển `/login` (hàm chạy icn1, proxy + guard không lỗi); `/recovery/confirm` 200; runtime log của deployment: không có dòng nào.
+Chưa làm trên preview: đăng nhập tài khoản QA và đo B14 — mạng phiên cloud không tới `*.vercel.app` (proxy từ chối). Production không đổi.
