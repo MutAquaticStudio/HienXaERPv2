@@ -5,6 +5,7 @@ import { portalRpc } from "@/modules/portal/server";
 import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { requireInternalPermission } from "@/lib/access/context";
+import { passwordSetupUrl } from "@/lib/auth/app-origin";
 import { getSupabaseConfig } from "@/lib/supabase/config";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
@@ -47,10 +48,7 @@ export async function recoveryAction(_: AuthFormState, formData: FormData): Prom
   if (!parsed.success) return { message: "Vui lòng nhập địa chỉ thư điện tử hợp lệ." };
   try {
     const supabase = await createServerSupabase();
-    const origin = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-    const redirectTo = new URL("/recovery/confirm", origin);
-    redirectTo.searchParams.set("surface", parsed.data.surface);
-    await supabase.auth.resetPasswordForEmail(parsed.data.email, { redirectTo: redirectTo.toString() });
+    await supabase.auth.resetPasswordForEmail(parsed.data.email, { redirectTo: await passwordSetupUrl(parsed.data.surface) });
   } catch {
     return { message: "Không thể gửi yêu cầu lúc này. Vui lòng thử lại sau." };
   }
@@ -132,7 +130,8 @@ export async function inviteEmployeeAction(_: AuthFormState, formData: FormData)
   if (!secretKey) return { message: "Dịch vụ mời nhân viên chưa được cấu hình. Vui lòng liên hệ quản trị viên." };
   const { url } = getSupabaseConfig();
   const authAdmin = createClient(url, secretKey, { auth: { autoRefreshToken: false, persistSession: false } });
-  const { data: invite, error: inviteError } = await authAdmin.auth.admin.inviteUserByEmail(parsed.data.email);
+  // The invite link must land on the page that lets the new employee choose a password.
+  const { data: invite, error: inviteError } = await authAdmin.auth.admin.inviteUserByEmail(parsed.data.email, { redirectTo: await passwordSetupUrl("admin") });
   if (inviteError || !invite.user) return { message: "Không thể gửi lời mời. Vui lòng liên hệ quản trị viên để kiểm tra tài khoản." };
 
   const { error: registerError } = await supabase.rpc("register_invited_employee", {

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { EMAIL_LINK_HANDOFF_SCRIPT } from "@/components/auth/email-link-handoff";
 import { VietnameseFormValidation } from "@/components/vietnamese-form-validation";
 import "@fontsource/noto-sans/400.css";
 import "@fontsource/noto-sans/500.css";
@@ -18,6 +19,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="vi">
+      <head><script dangerouslySetInnerHTML={{ __html: EMAIL_LINK_HANDOFF_SCRIPT }} /></head>
       <body><VietnameseFormValidation />{children}</body>
     </html>
   );

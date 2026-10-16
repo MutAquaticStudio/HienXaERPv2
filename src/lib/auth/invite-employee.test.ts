@@ -5,7 +5,8 @@ vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: m.server }));
 vi.mock("@/lib/supabase/config", () => ({ getSupabaseConfig: () => ({ url: "https://qa.example.test" }) }));
 vi.mock("@supabase/supabase-js", () => ({ createClient: m.admin }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
-vi.mock("next/headers", () => ({ cookies: vi.fn() }));
+vi.mock("next/headers", () => ({ cookies: vi.fn(), headers: vi.fn(async () => new Headers({ host: "erp.example.test", "x-forwarded-proto": "https" })) }));
+vi.mock("server-only", () => ({}));
 vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
 vi.mock("@/modules/portal/server", () => ({ portalRpc: vi.fn() }));
 import { inviteEmployeeAction, assignRoleAction } from "./actions";
@@ -26,6 +27,13 @@ it("checks the active server role before sending an authorized worker invite", a
  expect(m.access).toHaveBeenCalledWith("roles.manage"); expect(m.eq.mock.calls).toEqual([["id",role],["active",true]]);
  expect(m.invite).toHaveBeenCalledOnce(); expect(m.rpc).toHaveBeenCalledWith("register_invited_employee", expect.objectContaining({ target_branch_id: branch, target_role_id: role }));
  expect(m.role.mock.invocationCallOrder[0]).toBeLessThan(m.invite.mock.invocationCallOrder[0]);
+});
+it("sends the invite to the app's password setup page, not the Supabase default", async () => {
+ await inviteEmployeeAction(undefined, form());
+ expect(m.invite).toHaveBeenCalledWith("qa-invite@example.test", { redirectTo: "https://erp.example.test/recovery/confirm?surface=admin" });
+ vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://app.example.test/");
+ await inviteEmployeeAction(undefined, form());
+ expect(m.invite).toHaveBeenLastCalledWith("qa-invite@example.test", { redirectTo: "https://app.example.test/recovery/confirm?surface=admin" });
 });
 it("does not send an invitation for a forged cross-branch target", async () => {
  expect((await inviteEmployeeAction(undefined, form("44444444-4444-4444-8444-444444444444")))?.success).not.toBe(true); expect(m.server).not.toHaveBeenCalled(); expect(m.invite).not.toHaveBeenCalled();
