@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
 import { effectivePriceState } from "@/modules/pricing/effective-state";
 
-export type ListPriceRule = { material_id: string | null; scope_type: string; price_uom_id: string; unit_price_vnd: string; version: number; active: boolean; effective_from: string; effective_to: string | null };
+export type ListPriceRule = { id?: string; material_id: string | null; scope_type: string; price_uom_id: string; unit_price_vnd: string; version: number; active: boolean; effective_from: string; effective_to: string | null };
 export type ListPosition = { material_id: string; warehouse_id: string; on_hand_base_quantity: string; available_base_quantity: string; inventory_value_vnd?: string | null };
 
 /** The general (DEFAULT-scope) selling price in force now; the base unit wins, then the newest version. */
@@ -10,6 +10,12 @@ export function currentDefaultPrice(rules: ListPriceRule[], materialId: string, 
     .sort((left, right) => Number(right.price_uom_id === baseUomId) - Number(left.price_uom_id === baseUomId) || right.version - left.version);
   const chosen = candidates[0];
   return chosen ? { unitPriceVnd: String(chosen.unit_price_vnd), uomId: chosen.price_uom_id } : null;
+}
+
+/** The rule a new general price for this material + unit must replace: the newest active version, whatever its dates. */
+export function latestDefaultRule(rules: ListPriceRule[], materialId: string, uomId: string): ListPriceRule | null {
+  return rules.filter((rule) => rule.material_id === materialId && rule.scope_type === "DEFAULT" && rule.price_uom_id === uomId && rule.active)
+    .sort((left, right) => right.version - left.version)[0] ?? null;
 }
 
 /**

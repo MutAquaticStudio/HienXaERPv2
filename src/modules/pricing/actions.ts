@@ -1,6 +1,5 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
@@ -16,16 +15,21 @@ export async function savePricingRuleAction(_: PricingState | undefined, form: F
   if (reason.length < 3 || reason.length > 500) return { message: "Cần lý do thay đổi từ 3 đến 500 ký tự." };
   const supersedesId = String(form.get("supersedesId") ?? "");
   const expectedVersion = Number(form.get("expectedVersion"));
+  // Retry-safe: the client keeps the same operation (and new rule) ID for a repeated submit.
+  const operationId = String(form.get("operationId") ?? "");
+  if (!z.uuid().safeParse(operationId).success) return { message: "Mã thao tác không hợp lệ. Hãy tải lại màn hình." };
   if (mode === "deactivate") {
     if (!z.uuid().safeParse(supersedesId).success || !Number.isInteger(expectedVersion) || expectedVersion < 1) return { message: "Bản giá không hợp lệ." };
     try {
-      await portalRpc(await createServerSupabase(), "deactivate_pricing_rule", { target_id: supersedesId, target_branch_id: access.branchId, expected_version: expectedVersion, change_reason: reason, operation_id: randomUUID() });
+      await portalRpc(await createServerSupabase(), "deactivate_pricing_rule", { target_id: supersedesId, target_branch_id: access.branchId, expected_version: expectedVersion, change_reason: reason, operation_id: operationId });
       revalidatePath("/admin/settings/pricing");
       revalidatePath("/admin/products/pricing");
       return { message: "Đã ngừng chính sách giá; chứng từ cũ giữ giá đã chốt.", success: true };
     } catch (error) { return pricingError(error); }
   }
   if (mode !== "create" && mode !== "replace") return { message: "Thao tác không hợp lệ." };
+  const targetId = String(form.get("targetId") ?? "");
+  if (!z.uuid().safeParse(targetId).success) return { message: "Mã thao tác không hợp lệ. Hãy tải lại màn hình." };
   if (mode === "replace" && (!z.uuid().safeParse(supersedesId).success || !Number.isInteger(expectedVersion) || expectedVersion < 1)) return { message: "Phiên bản cần thay không hợp lệ." };
   const amount = String(form.get("unitPriceVnd") ?? "").trim();
   if (!/^[1-9]\d*$/.test(amount) || amount.length > 19 || BigInt(amount) > 9223372036854775807n) return { message: "Giá phải là số VND nguyên dương hợp lệ." };
@@ -51,7 +55,7 @@ export async function savePricingRuleAction(_: PricingState | undefined, form: F
     Object.assign(values, { scope_type: scope, customer_id: scope === "CUSTOMER_MATERIAL" || scope === "CUSTOMER_GROUP" ? customer : null, material_id: scope === "CUSTOMER_GROUP" ? null : material, material_group_id: scope === "CUSTOMER_GROUP" ? group : null, customer_tier_code: scope === "CUSTOMER_TIER" ? tier : null, price_uom_id: uom });
   }
   try {
-    await portalRpc(await createServerSupabase(), "save_pricing_rule", { target_id: randomUUID(), target_branch_id: access.branchId, supersedes_id: mode === "replace" ? supersedesId : null, expected_version: mode === "replace" ? expectedVersion : null, values_json: values, change_reason: reason, operation_id: randomUUID() });
+    await portalRpc(await createServerSupabase(), "save_pricing_rule", { target_id: targetId, target_branch_id: access.branchId, supersedes_id: mode === "replace" ? supersedesId : null, expected_version: mode === "replace" ? expectedVersion : null, values_json: values, change_reason: reason, operation_id: operationId });
     revalidatePath("/admin/settings/pricing");
     revalidatePath("/admin/products/pricing");
     return { message: mode === "replace" ? "Đã tạo phiên bản giá mới; lịch sử giữ nguyên." : "Đã tạo chính sách giá.", success: true };
