@@ -955,6 +955,14 @@ Popup vật tư (D5/D7) có 2 tab: **Thông tin** và **Đơn vị tính & giá*
 quyền; "+ Thêm đơn vị bán", "Ngừng"; "Chia giá theo quy đổi"; một lý do, một nút lưu). Tạo vật tư mới xong tự chuyển sang tab Đơn vị tính.
 Trên điện thoại mỗi đơn vị là một thẻ. Trang Chính sách giá có mục **Nhóm giá khách** (bảng + popup thêm/sửa); ô "Nhóm giá" của khách là danh sách chọn.
 
+**Hàng cùng loại (D11, SPEC-CAT-002)**: nút "+ Hàng cùng loại" trên danh sách vật tư mở popup: Tên hàng chung, Mã gốc (gợi ý mã), Nhóm vật tư,
+Đơn vị cơ sở, Cho phép bán/mua; Thuộc tính (tên + giá trị cách nhau dấu phẩy, tối đa 3 thuộc tính); "Đơn vị bán cho loại mới" (như tab Đơn vị
+tính); bảng "Các loại" tự sinh mỗi tổ hợp giá trị một dòng với Mã/Tên gợi ý sửa được, Giá bán theo đơn vị chọn ("Nhập giá theo"), tùy chọn "Tự
+chia giá cho các đơn vị khác" (mặc định không làm tròn, hiện giá đã chia dưới ô giá); "Thêm vật tư có sẵn vào hàng này"; một lý do, một nút lưu.
+Danh sách vật tư: dưới tên mỗi loại hiện "Mác: PCB30 · Cùng loại …" (link lọc `?variant=`), bộ lọc "Hàng cùng loại", khi lọc có nút "Sửa hàng
+cùng loại" (thêm giá trị → chỉ đề xuất tổ hợp mới; "Bỏ khỏi hàng"). Chi tiết vật tư có mục "Hàng cùng loại" với các loại khác dạng thẻ. Ô tìm vật
+tư F3 trong đơn bán/mua gom các loại dưới tên hàng chung.
+
 `/admin/products/pricing` — Thiết lập giá (D4, SPEC-PRI-005; chọn "Bảng giá": Giá chung hoặc từng nhóm giá khách, D11): bảng Mã │ Tên │ ĐVT │ Giá vốn (theo quyền) │ Giá hiện tại │ Giá mới (sửa trực tiếp) │ Chênh lệch; chọn nhiều dòng → tăng/giảm theo % hoặc số tiền, chọn làm tròn (1.000 đ mặc định / 100 đ / không), xem chênh lệch từng dòng; một ngày áp dụng + một lý do; nút "Lưu bảng giá (N thay đổi)" lưu tất cả một lần. Thanh lưu dính đáy màn trên desktop. Không có quyền quản lý giá: chỉ xem. Giá theo khách và lịch sử ở "Giá theo khách & lịch sử".
 
 Detail:

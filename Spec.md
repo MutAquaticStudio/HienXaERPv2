@@ -673,6 +673,18 @@ Tối thiểu:
 - quy cách nếu có;
 - metadata vận hành cần thiết.
 
+## SPEC-CAT-002 — Hàng cùng loại / biến thể vật tư (D11, 16/10/2026)
+
+- Một **hàng cùng loại** (vd "Xi măng Bút Sơn", "Thép Hòa Phát") có tên và 1–3 **thuộc tính** (vd Mác; Phi; Màu). Mỗi **loại (biến thể)** là
+  **một vật tư đầy đủ**: mã riêng (sửa được), tồn kho, đơn vị bán, giá và lịch sử riêng; kho, giá, bán, mua, giao hàng không đổi cách tính.
+- Mỗi loại ghi giá trị cho đúng các thuộc tính của hàng (1–40 ký tự); hai loại của cùng một hàng không được trùng giá trị thuộc tính.
+- Tạo/sửa trong **một lệnh nguyên tử** (`save_material_variant_group`, quyền `catalog.manage`; đặt giá kèm theo cần `pricing.manage`): tạo/đổi tên/
+  ngừng hàng, tạo loại mới từ mẫu chung (nhóm vật tư, đơn vị cơ sở, đơn vị bán, cho phép bán/mua) qua lệnh danh mục và lệnh đơn vị tính hiện có,
+  thêm vật tư có sẵn (đang dùng, chưa thuộc hàng khác) vào hàng, đổi giá trị thuộc tính, bỏ một vật tư ra khỏi hàng (vật tư giữ nguyên).
+  Sửa hàng phải khớp phiên bản đã đọc (đổi tên thuộc tính thì mọi loại phải được ghi lại theo tên mới trong cùng lệnh).
+- Giá kèm khi tạo loại là giá chung theo từng đơn vị (SPEC-PRI-005); công cụ chia giá theo quy đổi (SPEC-UOM-004) mặc định **không làm tròn** và
+  hiện giá đã chia trước khi lưu.
+
 ## SPEC-UOM-001 — Đơn vị
 
 Transaction không dùng đơn vị dạng free text.

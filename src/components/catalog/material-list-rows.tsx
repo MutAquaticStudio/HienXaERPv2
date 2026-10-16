@@ -13,6 +13,8 @@ export type MaterialListRow = {
   price?: { unitPriceVnd: string; uom: string } | null;
   averageCostVnd?: string | null;
   stock?: { onHand: string; available: string; warehouses: { name: string; onHand: string; available: string }[] } | null;
+  /** Variant of a product ("hàng cùng loại", D11). */
+  variant?: { groupId: string; group: string; label: string } | null;
   conversions: string[];
 };
 
@@ -27,7 +29,8 @@ export function MaterialListRows({ rows, showPrice, showCost, showStock }: { row
       <tr className={row.active ? undefined : "row-muted"}>
         <td className="row-toggle"><button type="button" className="icon-button" aria-expanded={expanded} aria-controls={`material-${row.id}`} aria-label={`${expanded ? "Thu gọn" : "Mở rộng"} ${row.name}`} onClick={() => setOpen(expanded ? null : row.id)}>{expanded ? <ChevronDown size={16} aria-hidden="true" /> : <ChevronRight size={16} aria-hidden="true" />}</button></td>
         <td className="mono" data-label="Mã"><Link className="code-link" href={href} tabIndex={-1}>{row.code}</Link></td>
-        <td className="row-title" data-label="Tên vật tư"><Link className="code-link row-link" href={href}>{row.name}</Link>{row.specification && <small className="table-subline">{row.specification}</small>}</td>
+        <td className="row-title" data-label="Tên vật tư"><Link className="code-link row-link" href={href}>{row.name}</Link>{row.specification && <small className="table-subline">{row.specification}</small>}
+          {row.variant && <small className="table-subline">{row.variant.label} · <Link className="code-link" href={`/admin/products?variant=${row.variant.groupId}`}>Cùng loại {row.variant.group}</Link></small>}</td>
         <td data-label="Nhóm">{row.group}</td>
         <td data-label="ĐVT">{row.uom}</td>
         {showPrice && <td className="numeric mono" data-label="Giá bán">{row.price ? <>{formatVnd(vnd(row.price.unitPriceVnd))}{row.price.uom !== row.uom && <small className="table-subline">/{row.price.uom}</small>}</> : <span className="muted">Chưa có</span>}</td>}

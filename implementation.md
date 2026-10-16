@@ -2815,3 +2815,22 @@ sha256 trong bản ghi), 3 mã cũ thành nhóm, RLS bật, anon 0 quyền. QA t
 tự sang tab Đơn vị tính → thêm bao = 50 và bag = 1.000, giá 1 bag 6.000.000 → chia ra 6.000 / 300.000 → lưu (database: 2 quy đổi + 3 giá đúng);
 tạo nhóm "QA Sỉ"; bảng giá theo nhóm hiện cột Giá chung; popup khách có danh sách nhóm; tạo đơn bán chọn được bao/bag, 3 bao = 900.000 ₫;
 điện thoại 390 hiện thẻ. Production chưa áp (chờ Owner).
+
+## 2026-10-16 — FB2-D2B: Hàng cùng loại / biến thể vật tư (D11)
+
+Owner chỉ thị (16/10): làm hết các đợt rồi QA, gộp tất cả vào PR #52 để duyệt một lần. Nhánh `nox/elegant-volta-kr29iz`.
+- **Database** (migration `20261016170000_material_variants`): bảng `material_variant_groups` (tên, 1–3 `attribute_names`, `active`; RLS: nhân
+  viên đọc, không cấp ghi cho authenticated, anon 0 quyền); `materials.variant_group_id` + `variant_attributes` (jsonb object, cặp cùng null/không
+  null, unique theo (hàng, thuộc tính)). RPC `save_material_variant_group` (`catalog.manage`; có giá thì cần `pricing.manage`): tạo/sửa hàng theo
+  phiên bản đã đọc, tạo loại mới qua `save_catalog_record('materials')` rồi `save_material_units` (đơn vị bán + giá), thêm/đổi nhãn/bỏ vật tư có
+  sẵn; kiểm cuối mọi loại có đúng bộ thuộc tính; receipt + audit một lần; mã thao tác con suy ra từ mã lệnh (replay không ghi lại).
+- **Giao diện**: `variant-group-editor.tsx` (popup tạo/sửa, gợi ý mã/tên `variants.ts`, giá theo đơn vị chọn + tự chia không làm tròn mặc định,
+  hiện giá đã chia), `variant-actions.ts` (zod, lỗi tiếng Việt, UNKNOWN giữ được thao tác). Danh sách vật tư: nút "+ Hàng cùng loại", nhãn thuộc
+  tính + link "Cùng loại …", lọc `?variant=`, "Sửa hàng cùng loại". Chi tiết vật tư: mục Hàng cùng loại. Ô F3 đơn bán/mua gom loại dưới tên hàng.
+Kiểm: lint 0 lỗi; typecheck; vitest 130 file / 833+ test; native `060_material_variants.sql` (quyền, nguyên tử, trùng thuộc tính, replay/xung
+đột, phiên bản cũ, vật tư ngừng/thuộc hàng khác, đổi tên thuộc tính thiếu nhãn, tách ra) PASS cùng 010–050. QA project: áp migration (bản ghi
+`schema_migrations` kèm sha256 `e8051d66…`), md5 hàm khớp file repo. QA trình duyệt (owner, chi nhánh A): tạo "QA Xi măng …" Mác PCB30/PCB40 với
+bao = 50 kg, giá 90.000/95.000 một bao → 2 vật tư, mã gợi ý `QV…-PCB30`, giá kg chia tự động; danh sách hiện nhãn + link, chi tiết hiện 2 thẻ;
+sửa thêm PCB50 (đơn vị bao chép từ loại có sẵn) → 3 loại; F3 trong đơn bán hiện tiêu đề hàng và 3 loại; điện thoại 390 không tràn ngang.
+Phát hiện khi QA và đã sửa: chia giá mặc định làm tròn 1.000 đ làm giá kg lệch (1.800 → 2.000) mà không hiện ra → đổi mặc định không làm tròn và
+hiện giá đã chia; khi sửa, mã gợi ý theo phần đầu mã các loại sẵn có. Production chưa áp (chờ Owner).

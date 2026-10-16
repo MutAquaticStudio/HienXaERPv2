@@ -1,5 +1,5 @@
 export type EditorUom = { id: string; symbol: string };
-export type EditorMaterial = { id: string; code?: string; name: string; uoms: EditorUom[] };
+export type EditorMaterial = { id: string; code?: string; name: string; uoms: EditorUom[]; variant?: { groupId: string; name: string; label: string } };
 
 /** One document line as the editor holds it; field names match the server FormData contract. */
 export type EditorLine = {
