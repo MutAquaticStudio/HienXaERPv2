@@ -2771,3 +2771,25 @@ READY, gán `hien-xa-erp-v2-nu.vercel.app` và `hien-xa-erp-v2-hienxa.vercel.app
 chỉ thêm hàm mới nên code cũ vẫn chạy được.
 Tồn tại (có từ trước, không do bản này): env dự án thiếu `NEXT_PUBLIC_APP_URL` → link "Quên mật khẩu" trỏ `http://localhost:3000`;
 `main` chưa chứa các commit của nhánh (cần PR để đồng bộ).
+
+## 2026-10-16 — FB2-D1: Đợt tinh chỉnh 2, đợt 1 (sửa lỗi + popup chung)
+
+Owner duyệt kế hoạch đợt tinh chỉnh 2 (D5–D12, đầu Spec.md). Đợt 1, nhánh `nox/elegant-volta-kr29iz`, không migration:
+- **Mời nhân viên báo lỗi**: `inviteUserByEmail` không có `redirectTo` nên thư mời về Site URL; app không có trang nhận lời mời, và client
+  trình duyệt (PKCE) bỏ qua token dạng `#access_token=…&type=invite`. Sửa: `src/lib/auth/app-origin.ts` (gốc app từ `NEXT_PUBLIC_APP_URL`,
+  không có thì lấy host của request — không còn link `localhost` khi thiếu biến) dùng cho cả thư mời và "Quên mật khẩu"; trang
+  `/recovery/confirm` nhận token lời mời (xóa khỏi thanh địa chỉ trước, `setSession`, rồi đặt mật khẩu), báo "Liên kết đã hết hạn hoặc đã được
+  dùng" cho `otp_expired`; script nhỏ trong `<head>` chuyển link rơi về trang gốc/đăng nhập (`#…`) sang trang đặt mật khẩu trước khi trang gốc
+  chuyển hướng (meta refresh làm mất `#…`); `/?code=` chuyển sang trang đặt mật khẩu. Supabase vẫn chỉ đi theo Redirect URL đã cho phép:
+  Production cần `https://app.hienxavlxd.com/recovery/confirm?surface=admin` (đã có cho khôi phục theo RELEASE_APPROVAL 22/09).
+- **Tổng tiền không hiện**: giá cần đủ khách + công trình (NCC với đơn mua) nhưng ô tổng chỉ hiện "—"; ở <1440px ô tổng nằm trên đầu, không dính;
+  chọn lại cùng công trình/NCC không tính lại; "1,5"/"120.000" bị từ chối. Sửa: lời nhắc thiếu gì dưới tổng; cột phải xếp khách/công trình → tổng +
+  nút → ngày/ghi chú, ở <1440px tổng + nút dính đáy màn, khách/công trình 2 cột; `use-auto-price-preview` đếm lần đổi; `src/lib/core/vn-number.ts`
+  + `NumberEntry` giữ chữ người dùng gõ, gửi số chuẩn qua input ẩn (đúng Spec: UI dấu phẩy, DTO chuỗi decimal chuẩn).
+- Duyệt vượt hạn mức chuyển về `?notice=` (trang đơn chỉ đọc `notice`); mã khách tạo nhanh tự viết hoa (server) và hiện chữ hoa khi gõ.
+- `src/components/ui/dialog.tsx` (portal ra `<body>`, giữ tiêu điểm, Escape, toàn màn trên điện thoại) thay khung tạo nhanh khách/công trình/NCC;
+  ô tìm kiếm có danh sách gợi ý dùng Escape để đóng danh sách thì không đóng popup. Hộp xác nhận ngừng giá (`<dialog>` gốc) giữ nguyên.
+Kiểm: `pnpm check` PASS. QA trên app local trỏ QA project (chỉ đọc): đơn bán 1440/1366/390 — lời nhắc "Chọn khách hàng và công trình để tính giá",
+SL "1,5" gửi `1.5`, tổng 315.000 ₫ (1,5 × 210.000), thanh tổng + nút trong màn hình; đơn mua lời nhắc "Chọn nhà cung cấp để tính giá";
+link `#error_code=otp_expired` ở trang gốc → trang đặt mật khẩu báo hết hạn; `/?code=` → trang đặt mật khẩu; token giả bị xóa khỏi URL và từ chối;
+không lỗi console. Chưa gửi thư mời thật (env QA cục bộ không có secret key; dùng tài khoản thật sau khi deploy).

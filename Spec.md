@@ -1,6 +1,8 @@
 > Quy tắc hiện hành 12/10/2026: bỏ opening pending và kích hoạt thủ công khỏi vận hành. Thông tin đối chiếu lịch sử chỉ mô tả chất lượng dữ liệu, không khóa giao dịch mới. Các bằng chứng trạng thái/gate cũ bên dưới là lịch sử, không phải điều kiện đang áp dụng.
 
 > Quyết định Owner 15/10/2026 (đợt góp ý khách `FB-KIOTVIET-20261015`): **D1** tắt hẳn Báo giá ở nội bộ và cổng khách — mọi chỗ nhắc tới báo giá trong tài liệu này tạm không áp dụng (SPEC-140); **D2** KPI Tổng quan dùng lợi nhuận ròng thay lợi nhuận gộp (SPEC-DASH-001); **D3** biểu đồ Tổng quan là đường Thu / Chi / Lợi nhuận theo đúng bộ lọc (SPEC-DASH-009); **D4** thiết lập giá chung hàng loạt, lưu một lần nguyên tử (SPEC-PRI-005).
+>
+> Quyết định Owner 16/10/2026 (đợt tinh chỉnh 2 `FB2-20261016`, giữ nguyên nghiệp vụ): **D5** tạo/sửa danh mục và tạo nhanh mở trong popup (UX-160); **D6** nút chính khi tạo đơn bán là "Xác nhận đơn" qua popup kiểm tra, "Lưu nháp" là lối phụ; **D7** giữ mô hình quy đổi đơn vị (SPEC-UOM), giao diện "Đơn vị tính" kiểu KiotViet; **D8** tắt hẳn Báo chuyển khoản như cách tắt Báo giá, không xóa dữ liệu; **D9** Dịch vụ giữ là chứng từ riêng, tạo nhanh từ đơn/khách, không gộp vào dòng đơn bán; **D10** Cài đặt thêm Thông tin doanh nghiệp in trên chứng từ và Giao diện theo máy (sáng/tối, cỡ chữ, font); **D11** biến thể vật tư (mỗi biến thể là một vật tư đủ mã/tồn/giá) và gợi ý giá lẻ chia theo quy đổi (giá lưu vẫn là số VND tuyệt đối từng đơn vị); nhóm giá khách tự đặt theo `CUSTOMER_TIER`; **D12** vai trò tùy biến chỉ người có `roles.manage` (Owner) tạo/sửa, không gán được `roles.manage` vào vai trò tùy biến. Kế hoạch theo đợt: `tasks.md` mục FB2-20261016.
 
 # Spec.md — HIỀN XA ERP V2
 

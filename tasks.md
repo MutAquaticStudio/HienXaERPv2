@@ -697,3 +697,19 @@ Owner 15/10/2026: plan + thiết kế QA trước, không deploy vội. Quyết 
 | FB-REL | Owner 16/10/2026 "deploy lên production luôn": Production 0 báo giá; áp `20261015120000` + `20261015130000`; deploy `dpl_FmumGBwyCA4QHVL2x1fWXyzdPc2G` (`70ba7cf`) | RELEASED_20261016 (health `buildSha` khớp, báo giá 404, không lỗi runtime). Chờ Owner thử bằng tài khoản Production; `main` chưa có các commit này (cần PR) |
 
 DONE_LOCAL = lint/typecheck/unit/build/DB native PASS trên nhánh; không phải nghiệm thu runtime. Kịch bản trình duyệt lịch sử dùng form/nhãn cũ (QA-FB-B04a, B08a, B11a) là bằng chứng lịch sử, được kiểm lại bằng QA-FB-B mới.
+
+## FB2-20261016 — Đợt tinh chỉnh 2 (góp ý Owner 16/10/2026, theo luồng KiotViet)
+
+Owner duyệt kế hoạch 7 đợt; quyết định D5–D12 ở đầu Spec.md. Mỗi đợt một PR từ `nox/elegant-volta-kr29iz`: kiểm tra → QA trên QA project →
+preview → Owner OK → merge, áp migration Production (đối chiếu md5), deploy.
+
+| Task | Nội dung | Trạng thái |
+|---|---|---|
+| FB2-D1 | Đợt 1: mời nhân viên (link về trang đặt mật khẩu của app, nhận token lời mời, báo link hết hạn bằng tiếng Việt); tổng tiền đơn bán/mua (lời nhắc thiếu khách/công trình/NCC, thanh tổng + nút dính đáy ở <1440px, chọn lại cùng công trình/NCC tính lại giá, nhập số kiểu Việt "1,5"/"1.250"/"120.000"); thông báo duyệt vượt hạn mức; mã khách tạo nhanh tự viết hoa; popup chung `Dialog` | PASS_QA_PROJECT_20261016 (lint/typecheck/test/build; bố cục 1440/1366/390 và link mời/khôi phục kiểm trên app local trỏ QA) |
+| FB2-D2 | Đợt 2: popup danh mục, Đơn vị tính kiểu KiotViet (D7), giá chia theo quy đổi (D11), nhóm giá khách | PLANNED |
+| FB2-D2B | Đợt 2b: biến thể vật tư (D11) | PLANNED |
+| FB2-D3 | Đợt 3: tạo đơn bán − / +, tồn kho hiện luôn, xác nhận qua popup (D6), lập phiếu giao một bước, Dịch vụ tạo nhanh (D9) | PLANNED |
+| FB2-D4 | Đợt 4: Khách hàng 360 & NCC 360 dạng tab | PLANNED |
+| FB2-D5 | Đợt 5: Tồn kho & Kiểm kho kiểu KiotViet | PLANNED |
+| FB2-D6 | Đợt 6: Công nợ gộp, Sổ quỹ, Chi phí, tắt Báo chuyển khoản (D8), Hồ sơ hóa đơn gộp | PLANNED |
+| FB2-D7 | Đợt 7: Thu nhập, Nhân viên & quyền + vai trò tùy biến (D12), Lộ trình, Cài đặt (D10) | PLANNED |

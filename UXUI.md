@@ -1,6 +1,8 @@
 > Quy tắc hiện hành 12/10/2026: bỏ opening pending và kích hoạt thủ công khỏi vận hành. Thông tin đối chiếu lịch sử chỉ mô tả chất lượng dữ liệu, không khóa giao dịch mới. Các bằng chứng trạng thái/gate cũ bên dưới là lịch sử, không phải điều kiện đang áp dụng.
 
 > Quyết định Owner 15/10/2026 (`FB-KIOTVIET-20261015`, xem đầu Spec.md): Báo giá tắt (D1) — mọi màn/nút/hành trình báo giá trong tài liệu này tạm không hiển thị; KPI Tổng quan dùng lợi nhuận ròng (D2); biểu đồ đường Thu/Chi/Lợi nhuận theo bộ lọc (D3); thiết lập giá hàng loạt (D4). Màn tạo đơn bán/đơn mua, danh sách khách hàng, vật tư và bộ lọc tham chiếu bố cục KiotViet theo góp ý khách (UX-110.6, UX-ORD-002, UX-320, UX-340, UX-350, UX-FLOW-001).
+>
+> Quyết định Owner 16/10/2026 (`FB2-20261016`, chi tiết D5–D12 ở đầu Spec.md): tạo/sửa danh mục và tạo nhanh mở trong popup (D5, sửa UX-160); tạo đơn bán xác nhận qua popup kiểm tra (D6); "Đơn vị tính" kiểu KiotViet (D7); tắt Báo chuyển khoản (D8); Cài đặt có Thông tin doanh nghiệp và Giao diện (D10).
 
 # UXUI.md — HIỀN XA ERP V2
 
@@ -539,6 +541,11 @@ Không dùng modal cho:
 - edit order dài;
 - create complex entity;
 - reconciliation nhiều bước.
+
+Sửa đổi D5 (Owner 16/10/2026): tạo/sửa bản ghi danh mục (khách, công trình, NCC, vật tư, nhóm, đơn vị, xe, máy, chi nhánh, kho…) và
+tạo nhanh từ chứng từ **được** mở trong popup để không rời màn đang làm. Popup dùng component chung (`components/ui/dialog.tsx`):
+nằm ngoài form của trang, giữ tiêu điểm bên trong, Escape/"Đóng" để đóng (Escape đã dùng để đóng danh sách gợi ý thì không đóng popup),
+trên điện thoại chiếm toàn màn. Chứng từ dài (sửa đơn bán/mua, đối soát nhiều bước) vẫn ở trang riêng như trên.
 
 ---
 
