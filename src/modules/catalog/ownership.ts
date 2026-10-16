@@ -18,12 +18,12 @@ const destinations: Record<string, string> = {
   branches: "/admin/settings/branches",
 };
 
-export type CatalogQuery = { kind?: string; q?: string; id?: string; customerId?: string };
+export type CatalogQuery = { kind?: string; q?: string; id?: string; customerId?: string; tab?: string };
 
 export function catalogHref(kind: string | undefined, query: Omit<CatalogQuery, "kind"> = {}): string {
   if (!kind || !Object.hasOwn(destinations, kind)) return "/admin/settings";
   const params = new URLSearchParams({ kind });
-  for (const key of ["q", "id", "customerId"] as const) {
+  for (const key of ["q", "id", "customerId", "tab"] as const) {
     if (query[key]) params.set(key, query[key]);
   }
   return `${destinations[kind]}?${params}`;

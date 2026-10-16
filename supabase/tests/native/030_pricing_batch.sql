@@ -1,6 +1,8 @@
 -- QA-FB-A10: save_pricing_rules_batch is all-or-nothing, idempotent and reuses save_pricing_rule.
 insert into public.units_of_measure(id, code, name, symbol) values ('70000000-0000-4000-8000-000000000001', 'nt_bao', 'Bao thử', 'bao');
 insert into public.material_groups(id, code, name) values ('71000000-0000-4000-8000-000000000001', 'NT_G', 'Nhóm thử');
+-- Customer price groups are a branch catalog (20261016160000); the VIP group must exist before its prices.
+insert into public.customer_price_groups(branch_id, code, name) values ('20000000-0000-4000-8000-00000000000a', 'VIP', 'Khách VIP thử');
 insert into public.materials(id, group_id, code, name, base_uom_id) values
   ('72000000-0000-4000-8000-000000000001', '71000000-0000-4000-8000-000000000001', 'NT_M1', 'Vật tư thử 1', '70000000-0000-4000-8000-000000000001'),
   ('72000000-0000-4000-8000-000000000002', '71000000-0000-4000-8000-000000000001', 'NT_M2', 'Vật tư thử 2', '70000000-0000-4000-8000-000000000001');

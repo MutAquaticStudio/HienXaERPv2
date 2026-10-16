@@ -7,13 +7,14 @@ vi.mock("@/lib/supabase/server",()=>({createServerSupabase:m.client}));
 vi.mock("@/modules/portal/server",()=>({portalRpc:m.rpc}));
 vi.mock("@/modules/pricing/request-clock",()=>({readPricingClock:async()=>Date.now()}));
 vi.mock("@/modules/pricing/editor",()=>({PricingRuleEditor:()=>null}));
+vi.mock("server-only",()=>({}));
 import Page from "./page";
 beforeEach(()=>{
  vi.clearAllMocks();vi.spyOn(Date,"now").mockReturnValue(Date.parse("2026-10-09T17:00:00Z"));m.calls=[];m.rows=[];
  m.access.mockResolvedValue({branchId:"branch",branchName:"QA",permissions:new Set(["pricing.read"])});
- const q:Record<string,unknown>={};for(const method of ["select","eq","lte","gt","or","order","limit"])q[method]=(...args:unknown[])=>{m.calls.push({method,args});return q;};
- q.then=(resolve:unknown,reject:unknown)=>Promise.resolve({data:m.rows,error:null}).then(resolve as never,reject as never);
- m.client.mockResolvedValue({from:()=>q});
+ const query=(table:string)=>{const q:Record<string,unknown>={};for(const method of ["select","eq","lte","gt","or","order","limit","not"])q[method]=(...args:unknown[])=>{if(table==="pricing_rule_read")m.calls.push({method,args});return q;};
+  q.then=(resolve:unknown,reject:unknown)=>Promise.resolve({data:table==="pricing_rule_read"?m.rows:[],error:null}).then(resolve as never,reject as never);return q;};
+ m.client.mockResolvedValue({from:query});
 });
 afterEach(()=>{cleanup();vi.restoreAllMocks();});
 const base={id:"rule",scope_type:"DEFAULT",material_id:"material",unit_price_vnd:"9007199254740993",version:1,source_type:"LIST",price_uom_id:"uom",effective_from:"2026-10-10T00:00:00+07:00",effective_to:null,active:true};

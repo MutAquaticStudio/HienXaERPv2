@@ -84,7 +84,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
       {(can.manage || can.price) && <div className="action-cluster">
         {create && <CatalogCreateButton {...create} label="+ Vật tư" />}
         {can.price && <Link className="button button-secondary" href="/admin/products/pricing">Thiết lập giá</Link>}
-        {can.manage && <details className="more-actions"><summary className="button button-secondary">Danh mục khác</summary><div className="more-actions-menu"><Link href="/admin/products/manage?kind=groups">Nhóm vật tư</Link><Link href="/admin/products/manage?kind=units">Đơn vị tính</Link><Link href="/admin/products/manage?kind=conversions">Quy đổi</Link></div></details>}
+        {can.manage && <details className="more-actions"><summary className="button button-secondary">Danh mục khác</summary><div className="more-actions-menu"><Link href="/admin/products/manage?kind=groups">Nhóm vật tư</Link><Link href="/admin/products/manage?kind=units">Đơn vị tính</Link></div></details>}
       </div>}
     </header>
     <div className="list-layout">

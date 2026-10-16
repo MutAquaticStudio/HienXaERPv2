@@ -10,6 +10,8 @@ export type PriceBookResult = { success: boolean; message: string; count?: numbe
 const itemSchema = z.object({
   materialId: z.uuid(), uomId: z.uuid(), priceVnd: z.string().regex(/^[1-9]\d{0,18}$/),
   supersedesId: z.uuid().optional(), expectedVersion: z.number().int().positive().optional(),
+  /** Customer price group code; absent for the general price book. */
+  tierCode: z.string().regex(/^[A-Za-z0-9_-]{1,40}$/).optional(),
 }).refine((item) => Boolean(item.supersedesId) === Boolean(item.expectedVersion) && BigInt(item.priceVnd) <= 9223372036854775807n);
 const inputSchema = z.object({
   operationId: z.uuid(),
@@ -29,6 +31,7 @@ function priceBookError(message: string, code?: string): string {
   if (message.includes("effective_date_before_previous")) return "Ngày áp dụng phải từ ngày bắt đầu của giá hiện tại trở đi. Chưa có giá nào được lưu.";
   if (message.includes("material_inactive")) return "Có vật tư đã ngừng bán. Tải lại bảng giá; chưa có giá nào được lưu.";
   if (message.includes("too_many_price_items")) return "Mỗi lần lưu tối đa 500 dòng.";
+  if (message.includes("price_group_inactive")) return "Nhóm giá này đã ngừng dùng. Chọn bảng giá khác; chưa có giá nào được lưu.";
   return "Không thể lưu bảng giá. Chưa có giá nào được lưu.";
 }
 
@@ -42,6 +45,7 @@ export async function savePriceBookAction(input: unknown): Promise<PriceBookResu
   const { data, error } = await supabase.rpc("save_pricing_rules_batch", {
     target_branch_id: access.branchId,
     items: parsed.data.items.map((item) => ({ material_id: item.materialId, price_uom_id: item.uomId, unit_price_vnd: item.priceVnd,
+      ...(item.tierCode ? { customer_tier_code: item.tierCode } : {}),
       ...(item.supersedesId ? { supersedes_id: item.supersedesId, expected_version: item.expectedVersion } : {}) })),
     effective_from: `${parsed.data.effectiveDate}T00:00:00+07:00`,
     change_reason: parsed.data.reason,

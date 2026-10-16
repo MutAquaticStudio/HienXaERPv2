@@ -26,7 +26,7 @@ export default async function ModuleCatalogPage({searchParams,kinds}:{searchPara
  return <div className="page-stack"><header className="page-heading"><div><p className="eyebrow">Quản lý · {access.branchName}</p><h1>{config.title}</h1><p className="lede">Bấm “Thêm” hoặc “Sửa” để mở biểu mẫu ngay trên trang. Ngừng sử dụng thay vì xóa; lịch sử chứng từ không thay đổi.</p></div></header>
   {available.length>1&&<nav className="action-cluster" aria-label="Danh mục">{available.map(([k,c])=><Link className={`button ${k===kind?'button-primary':'button-secondary'}`} aria-current={k===kind?'page':undefined} key={k} href={catalogHref(k)}>{c.title}</Link>)}</nav>}
   <form className="form-actions"><input type="hidden" name="kind" value={kind}/><label htmlFor="catalog-search">Tìm theo tên</label><input id="catalog-search" name="q" defaultValue={params.q}/><button className="button button-secondary" type="submit">Tìm</button>{(params.q||params.id)&&<Link className="code-link" href={catalogHref(kind)}>Xem tất cả</Link>}</form>
-  <CatalogTable key={`${kind}:${params.id??''}`} kind={kind} rows={rows} options={options} permissions={[...access.permissions]} scopePrefix={`${access.authUserId}:${access.branchId}:CATALOG`} openId={params.id}
+  <CatalogTable key={`${kind}:${params.id??''}`} kind={kind} rows={rows} options={options} permissions={[...access.permissions]} scopePrefix={`${access.authUserId}:${access.branchId}:CATALOG`} openId={params.id} openTab={params.tab==='units'?'units':undefined}
    openNew={kind==='sites'&&!!params.customerId&&!params.id} initial={kind==='sites'&&params.customerId?{customer_id:params.customerId}:undefined}/>
   <p className="muted">Hiển thị tối đa 200 bản ghi. Dùng tìm kiếm để thu hẹp danh sách.</p></div>;
 }

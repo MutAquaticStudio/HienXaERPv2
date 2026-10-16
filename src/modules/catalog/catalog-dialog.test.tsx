@@ -6,6 +6,8 @@ vi.mock("./editor", () => ({
     <div><p>Biểu mẫu {kind} {record?.id ?? "mới"} {initial?.customer_id ?? ""} · {scope}</p><button type="button" onClick={() => onSaved({ id: "x", message: "Đã lưu danh mục." })}>Giả lập lưu</button></div>,
 }));
 
+vi.mock("@/components/catalog/material-units-editor", () => ({ MaterialUnitsEditor: ({ materialId }: { materialId: string }) => <p>Đơn vị của {materialId}</p> }));
+
 import { CatalogCreateButton, CatalogTable } from "./catalog-dialog";
 
 afterEach(cleanup);
@@ -45,4 +47,18 @@ it("creates from a list page without leaving it", () => {
   expect(screen.getByRole("dialog", { name: "Thêm nhà cung cấp" })).toHaveTextContent("u:b:CATALOG:suppliers:NEW");
   fireEvent.click(screen.getByRole("button", { name: "Đóng" }));
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+});
+
+it("moves a new material to its units tab after creating it, and opens an existing one on the units tab", () => {
+  const { unmount } = render(<CatalogCreateButton kind="materials" label="+ Vật tư" options={options} permissions={["catalog.manage"]} scope="u:b:CATALOG:materials:NEW" />);
+  fireEvent.click(screen.getByRole("button", { name: "+ Vật tư" }));
+  expect(screen.getByRole("tab", { name: "Đơn vị tính & giá" })).toBeDisabled();
+  fireEvent.click(screen.getByRole("button", { name: "Giả lập lưu" }));
+  const dialog = screen.getByRole("dialog", { name: "Thêm vật tư" });
+  expect(within(dialog).getByRole("tab", { name: "Đơn vị tính & giá" })).toHaveAttribute("aria-selected", "true");
+  expect(within(dialog).getByText("Đơn vị của x")).toBeVisible();
+  expect(within(dialog).getByRole("status")).toHaveTextContent("Thêm đơn vị bán và giá bên dưới");
+  unmount();
+  render(<CatalogTable kind="materials" rows={rows} options={options} permissions={[]} scopePrefix="s" openId="m1" openTab="units" />);
+  expect(screen.getByText("Đơn vị của m1")).toBeVisible();
 });

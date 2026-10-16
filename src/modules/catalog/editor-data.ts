@@ -24,6 +24,14 @@ export async function loadCatalogOptions(kind: string, access: Access, supabase:
   const visibleFields = visibleCatalogFields(kind, access.permissions);
   const options: Options = {};
   for (const optionKind of new Set(visibleFields.flatMap((field) => field.options ? [field.options] : []))) {
+    if (optionKind === "priceGroups") {
+      // The stored value is the group code; a stopped group stays visible on customers that still carry it.
+      const result = await supabase.from("customer_price_groups").select("code,name,active").eq("branch_id", access.branchId).order("name").limit(200);
+      if (result.error) throw new Error("Không tải được nhóm giá khách.");
+      options[optionKind] = ((result.data ?? []) as { code: string; name: string; active: boolean }[])
+        .map((group) => ({ id: group.code, name: `${group.name}${group.active ? "" : " (ngừng)"}`, assignable: group.active }));
+      continue;
+    }
     if (optionKind === "salesOwners") {
       const result = await supabase.rpc("customer_site_sales_owner_options", { target_branch_id: access.branchId });
       if (result.error) throw new Error("Không tải được nhân viên phụ trách.");

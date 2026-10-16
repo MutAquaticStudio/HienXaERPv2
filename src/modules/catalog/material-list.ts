@@ -12,6 +12,19 @@ export function currentDefaultPrice(rules: ListPriceRule[], materialId: string, 
   return chosen ? { unitPriceVnd: String(chosen.unit_price_vnd), uomId: chosen.price_uom_id } : null;
 }
 
+/** Price in force now for one material + unit among rules already narrowed to one price book (general or a group). */
+export function currentBookPrice(rules: ListPriceRule[], materialId: string, uomId: string, now: number): string | null {
+  const chosen = rules.filter((rule) => rule.material_id === materialId && rule.price_uom_id === uomId && effectivePriceState(rule, now) === "ACTIVE")
+    .sort((left, right) => right.version - left.version)[0];
+  return chosen ? String(chosen.unit_price_vnd) : null;
+}
+
+/** The newest active rule for one material + unit among rules already narrowed to one price book. */
+export function latestBookRule(rules: ListPriceRule[], materialId: string, uomId: string): ListPriceRule | null {
+  return rules.filter((rule) => rule.material_id === materialId && rule.price_uom_id === uomId && rule.active)
+    .sort((left, right) => right.version - left.version)[0] ?? null;
+}
+
 /** The rule a new general price for this material + unit must replace: the newest active version, whatever its dates. */
 export function latestDefaultRule(rules: ListPriceRule[], materialId: string, uomId: string): ListPriceRule | null {
   return rules.filter((rule) => rule.material_id === materialId && rule.scope_type === "DEFAULT" && rule.price_uom_id === uomId && rule.active)

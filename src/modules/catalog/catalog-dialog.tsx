@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { MaterialUnitsEditor } from "@/components/catalog/material-units-editor";
 import { Dialog } from "@/components/ui/dialog";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { CatalogEditor, type Options } from "./editor";
@@ -13,17 +14,39 @@ type EditorProps = { kind: string; options: Options; permissions: readonly strin
 
 const lower = (title: string) => title.charAt(0).toLowerCase() + title.slice(1);
 
-/** One catalog record (or a new one) edited in a popup; the page behind keeps its place. */
-export function CatalogDialog({ kind, record, options, permissions, initial, scope, onClose, onSaved }: EditorProps & {
-  record?: Row; scope: string; onClose: () => void; onSaved: (saved: Saved) => void;
+type DialogTab = "info" | "units";
+
+/**
+ * One catalog record (or a new one) edited in a popup; the page behind keeps its place. A material also has the
+ * "Đơn vị tính & giá" tab; a new material moves there right after it is created.
+ */
+export function CatalogDialog({ kind, record, options, permissions, initial, scope, onClose, onSaved, initialTab = "info" }: EditorProps & {
+  record?: Row; scope: string; onClose: () => void; onSaved: (saved: Saved) => void; initialTab?: DialogTab;
 }) {
   const [operationId] = useState(() => crypto.randomUUID());
+  const [createdId, setCreatedId] = useState<string | null>(null);
+  const [notice, setNotice] = useState("");
+  const materialId = kind === "materials" ? (record?.id ? String(record.id) : createdId) : null;
+  const [tab, setTab] = useState<DialogTab>(materialId ? initialTab : "info");
+  const [unitsOpened, setUnitsOpened] = useState(tab === "units");
   const title = catalogs[kind].title;
   const name = record ? String(record.name ?? record.display_name ?? record.code ?? "") : "";
+  const show = (next: DialogTab) => { setTab(next); if (next === "units") setUnitsOpened(true); };
+  const saved = kind === "materials" && !record
+    ? (result: Saved) => { setCreatedId(result.id); setNotice(`${result.message} Thêm đơn vị bán và giá bên dưới, hoặc bấm “Đóng”.`); show("units"); }
+    : onSaved;
   return <Dialog size="lg" eyebrow={record ? "Sửa" : "Thêm mới"} title={record ? `${title}${name ? ` · ${name}` : ""}` : `Thêm ${lower(title)}`} onClose={onClose}
     description="Ngừng sử dụng thay vì xóa; lịch sử chứng từ không thay đổi.">
-    <CatalogEditor kind={kind} record={record} options={options} permissions={permissions} initial={initial} operationId={operationId} scope={scope}
-      className="catalog-dialog-form" onSaved={onSaved} />
+    {kind === "materials" && <div className="dialog-tabs" role="tablist" aria-label="Phần thông tin vật tư">
+      <button type="button" role="tab" aria-selected={tab === "info"} onClick={() => show("info")}>Thông tin</button>
+      <button type="button" role="tab" aria-selected={tab === "units"} disabled={!materialId} title={materialId ? undefined : "Lưu vật tư trước để thêm đơn vị bán"} onClick={() => show("units")}>Đơn vị tính & giá</button>
+    </div>}
+    {notice && <p className="form-message success" role="status">{notice}</p>}
+    <div hidden={tab !== "info"}>
+      <CatalogEditor kind={kind} record={record} options={options} permissions={permissions} initial={initial} operationId={operationId} scope={scope}
+        className="catalog-dialog-form" onSaved={saved} />
+    </div>
+    {materialId && unitsOpened && <div hidden={tab !== "units"}><MaterialUnitsEditor materialId={materialId} /></div>}
   </Dialog>;
 }
 
@@ -52,8 +75,8 @@ function cellValue(kind: string, key: string, row: Row, options: Options) {
  * KiotViet-style catalog list: compact table, "Thêm" and "Sửa" open the editor in a popup.
  * `openId` (from `?id=`) opens that record directly, e.g. from "Sửa vật tư" on a detail page.
  */
-export function CatalogTable({ kind, rows, options, permissions, scopePrefix, openId, openNew = false, initial }: {
-  kind: string; rows: Row[]; options: Options; permissions: readonly string[]; scopePrefix: string; openId?: string;
+export function CatalogTable({ kind, rows, options, permissions, scopePrefix, openId, openTab, openNew = false, initial }: {
+  kind: string; rows: Row[]; options: Options; permissions: readonly string[]; scopePrefix: string; openId?: string; openTab?: DialogTab;
   /** Open the create popup straight away (e.g. "Thêm công trình" from a customer). */
   openNew?: boolean; initial?: Record<string, string>;
 }) {
@@ -82,7 +105,7 @@ export function CatalogTable({ kind, rows, options, permissions, scopePrefix, op
         <td className="table-actions"><button type="button" className="button button-secondary button-compact" aria-label={`Sửa ${String(row.code ?? row.name ?? "")}`} onClick={() => setEditing({ record: row })}>Sửa</button></td>
       </tr>)}</tbody>
     </table></div> : <p className="empty-inline">Chưa có {lower(config.title)} phù hợp.</p>}
-    {editing && <CatalogDialog kind={kind} record={editing.record} options={options} permissions={permissions} initial={editing.record ? undefined : initial}
+    {editing && <CatalogDialog kind={kind} record={editing.record} initialTab={editing.record?.id === openId ? openTab : undefined} options={options} permissions={permissions} initial={editing.record ? undefined : initial}
       scope={`${scopePrefix}:${kind}:${String(editing.record?.id ?? "NEW")}`} onClose={() => setEditing(null)}
       onSaved={(result) => { setSaved(result.message); setEditing(null); }} />}
   </section>;
