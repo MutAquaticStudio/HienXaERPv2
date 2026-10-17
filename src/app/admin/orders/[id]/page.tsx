@@ -42,7 +42,7 @@ export default async function OrderDetailPage({ params, searchParams }: { params
     supabase.from("sales_order_lines").select("id, material_id, base_uom_id, line_number, material_name_snapshot, quantity, unit_price_vnd::text, line_total_vnd::text, list_unit_price_vnd::text, discount_mode, discount_value::text, price_source_type, units_of_measure:ordered_uom_id(symbol)").eq("sales_order_id", id).order("line_number"),
     supabase.from("sales_line_supply_read").select("sales_order_line_id, allocated_base_quantity, remaining_base_quantity").eq("sales_order_id", id),
     access.permissions.has("delivery.read") ? supabase.from("delivery_read").select("id, delivery_number, execution_state").eq("sales_order_id", id) : Promise.resolve({ data: [] }),
-    access.permissions.has("purchasing.create") ? supabase.from("warehouses").select("id, name").eq("branch_id", access.branchId).eq("active", true).order("name").limit(100) : Promise.resolve({ data: [], error: null }),
+    access.permissions.has("purchasing.create") || access.permissions.has("delivery.create") ? supabase.from("warehouses").select("id, name").eq("branch_id", access.branchId).eq("active", true).order("name").limit(100) : Promise.resolve({ data: [], error: null }),
   ]);
   if (orderResult.error || !orderResult.data) notFound();
   const order = orderResult.data as Order;
@@ -56,7 +56,8 @@ export default async function OrderDetailPage({ params, searchParams }: { params
   const warehouses = warehouseResult.data ?? [];
   const availability = access.permissions.has("inventory.read") ? await loadWarehouseAvailability(access.branchId, lines.map(line => line.material_id)) : undefined;
   const query = await searchParams;
-  const deliveryPlan = order.commercial_state === "CONFIRMED" && access.permissions.has("delivery.create") && access.permissions.has("purchasing.create") && warehouses.length
+  // A1: a delivery from stock takes its warehouse source itself, so delivery.create is enough (no purchasing.create).
+  const deliveryPlan = order.commercial_state === "CONFIRMED" && access.permissions.has("delivery.create") && warehouses.length
     ? await loadDeliveryPlan(supabase, order.id, lines, access.branchId, access.permissions.has("delivery.assign")) : null;
   const localNow = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date()).replace(" ", "T");
   return <div className="page-stack">
