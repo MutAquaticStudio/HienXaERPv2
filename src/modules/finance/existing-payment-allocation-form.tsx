@@ -5,6 +5,7 @@ import { useState } from "react";
 import { allocateExistingPaymentAction } from "@/modules/finance/actions";
 import { formatVnd, vnd } from "@/lib/core/money";
 import type { PaymentTarget } from "@/modules/finance/payment-form";
+import { MoneyInput } from "@/components/ui/money-input";
 
 export type ExistingPayment = { id: string; payment_number: string; available_amount_vnd: string; advance_remaining_vnd: string };
 
@@ -58,8 +59,8 @@ export function ExistingPaymentAllocationForm({ direction, partyId, payments, ob
     <div className="filter-bar"><label>Tìm khoản để phân bổ tiền đã có<input value={search} onChange={event => setSearch(event.target.value)} maxLength={80} /></label><button className="button button-secondary" type="button" disabled={busy} onClick={() => void load(1)}>Tìm khoản</button></div>
     <div className="allocation-editor">{visible.map(item => <label className="allocation-row" key={item.id}>
       <span><strong>{item.sourceLabel}</strong><small>Còn {formatVnd(vnd(item.outstandingAmountVnd))}</small></span>
-      <input aria-label={`Phân bổ tiền đã có cho ${item.sourceLabel}`} value={values[item.id] ?? ""}
-        onChange={event => setValues(current => ({ ...current, [item.id]: event.target.value }))} inputMode="numeric" maxLength={19} placeholder="0" />
+      <MoneyInput aria-label={`Phân bổ tiền đã có cho ${item.sourceLabel}`} value={values[item.id] ?? ""}
+        onValue={value => setValues(current => ({ ...current, [item.id]: value }))} placeholder="0" />
     </label>)}</div>
     {!visible.length && <p className="empty-inline">Chưa có khoản nợ phù hợp để phân bổ; phiếu tiền đã nhận vẫn được giữ.</p>}
     {loadError && <p className="form-message" role="alert">{loadError}</p>}

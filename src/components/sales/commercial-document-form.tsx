@@ -151,6 +151,7 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
     : startMaterial ? [{ key: 0, sourceLineId: "", materialId: startMaterial.id, uomId: startMaterial.uoms[0]?.id ?? "", quantity: "1", manualPriceVnd: "", manualReason: "" }] : []);
   const nextLineKey = useRef(existing?.lines.length ?? 1);
   const [focusKey, setFocusKey] = useState<number | null>(null);
+  const [focusSeq, setFocusSeq] = useState(0);
   const searchRef = useRef<MaterialSearchHandle>(null);
   const siteRef = useRef<EntityComboboxHandle>(null);
   const formId = useId();
@@ -185,6 +186,7 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
     if (result.focusKey === nextLineKey.current) nextLineKey.current += 1;
     changeLines(() => result.lines);
     setFocusKey(result.focusKey);
+    setFocusSeq((seq) => seq + 1);
   }
   async function loadSites(targetCustomerId: string, term: string) {
     const revision = ++siteLoadRevision.current;
@@ -226,7 +228,7 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
         hint={availability ? (material) => { const stock = lineStock(availability, stockWarehouseId, material, material.uoms[0]?.id ?? "", ""); return stock ? `Có thể bán ${formatQuantity(stock.available)} ${stock.baseSymbol}` : stock === null ? "Chưa có tồn" : null; } : undefined} />
       {availability && availability.warehouses.length > 0 && <label className="doc-editor-stock-warehouse">Xem tồn tại<select value={stockWarehouseId} onChange={(event) => setStockWarehouseId(event.target.value)}>
         {availability.warehouses.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>}
-      <DocumentLineTable lines={lines} materials={options.materials} canManagePrice={canManagePrice} isValidQuantity={isPositiveSalesQuantity} focusKey={focusKey}
+      <DocumentLineTable lines={lines} materials={options.materials} canManagePrice={canManagePrice} isValidQuantity={isPositiveSalesQuantity} focusKey={focusKey} focusSeq={focusSeq}
         labels={{ uom: "ĐVT bán", price: "Đơn giá" }}
         priced={(index) => preview?.success && preview.lines?.[index] ? { unitPriceVnd: preview.lines[index].unitPriceVnd, lineTotalVnd: preview.lines[index].lineTotalVnd, sourceLabel: priceSourceLabel(preview.lines[index].priceSourceType) } : null}
         onChange={(key, change) => changeLines((current) => current.map((line) => line.key === key ? { ...line, ...change } : line))}

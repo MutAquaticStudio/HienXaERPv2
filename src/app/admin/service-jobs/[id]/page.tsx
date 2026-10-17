@@ -14,6 +14,7 @@ import {
   cancelScheduledServiceJobAction, publishWorkItemAction, startWorkItemAction,
   submitWorkResultAction, verifyServiceJobAction,
 } from "@/modules/workforce/actions";
+import { MoneyInput } from "@/components/ui/money-input";
 
 type Job = {
   id: string; job_number: string; customer_name: string; site_name: string; service_type: string;
@@ -93,7 +94,7 @@ export default async function ServiceJobDetail({ params, searchParams }: { param
           <input type="hidden" name="serviceJobId" value={job.id} /><input type="hidden" name="jobVersion" value={job.version} /><input type="hidden" name="workVersion" value={job.work_version ?? 1} /><input type="hidden" name="operationId" value={randomUUID()} />
           <div className="field"><label>Sản lượng tính khách</label><input name="billableQuantity" defaultValue={job.actual_quantity ?? ""} inputMode="decimal" required /></div>
           <div className="field"><label>Sản lượng tính công</label><input name="compensableQuantity" defaultValue={job.actual_quantity ?? ""} inputMode="decimal" required /></div>
-          <div className="field"><label>Giá trị tính khách (VND)</label><input name="billableAmount" inputMode="numeric" required /></div>
+          <div className="field"><label>Giá trị tính khách (VND)</label><MoneyInput name="billableAmount" required /></div>
           <div className="field"><label>Hạn thu</label><input type="date" name="dueDate" defaultValue={today()} required /></div>
           <div className="field field-full"><label>Căn cứ/chênh lệch</label><textarea name="note" defaultValue="Đã đối chiếu sản lượng thực tế, tính khách và tính công" minLength={3} required /></div>
           <button className="button button-primary" type="submit">Xác minh và tạo khoản phải thu</button>

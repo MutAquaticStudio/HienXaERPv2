@@ -7,7 +7,7 @@ import { NumberEntry } from "@/components/documents/editor/number-entry";
 import { Dialog } from "@/components/ui/dialog";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { formatQuantity } from "@/lib/core/quantity";
-import { decimalForEditing, normalizeDecimalInput, normalizeVndInput, vndForEditing } from "@/lib/core/vn-number";
+import { decimalForEditing, normalizeDecimalInput } from "@/lib/core/vn-number";
 import { catalogChoiceLabel } from "@/modules/catalog/presentation";
 import { loadVariantGroupAction, saveVariantGroupAction, type VariantGroupData, type VariantGroupResult, type VariantUnit } from "@/modules/catalog/variant-actions";
 import {
@@ -16,6 +16,7 @@ import {
 } from "@/modules/catalog/variants";
 import { ROUNDING_STEPS, type RoundingStep } from "@/modules/pricing/bulk-adjust";
 import { splitPriceByUnits, type UnitRatio } from "@/modules/pricing/unit-split";
+import { MoneyInput } from "@/components/ui/money-input";
 
 type UnitRow = { key: number; uomId: string; ratio: string; fixed?: { numerator: string; denominator: string }; type: VariantUnit["type"]; sourceNote: string };
 type MemberEdit = { values: string[]; detach: boolean };
@@ -270,8 +271,8 @@ function VariantGroupForm({ data, onSaved }: { data: VariantGroupData; onSaved: 
               onChange={(event) => setOverride(row.key, { code: event.target.value.toUpperCase() })} /></td>
             <td data-label="Tên vật tư"><input aria-label={`Tên loại ${row.values.join(" ")}`} value={row.name} maxLength={160} disabled={pending}
               onChange={(event) => setOverride(row.key, { name: event.target.value })} /></td>
-            {data.can.prices && <td className="numeric" data-label="Giá bán"><NumberEntry aria-label={`Giá bán loại ${row.values.join(" ")}`} inputMode="numeric" value={row.price}
-              normalize={normalizeVndInput} display={vndForEditing} placeholder="Để trống: đặt sau" onValue={(price) => setOverride(row.key, { price })} disabled={pending} />
+            {data.can.prices && <td className="numeric" data-label="Giá bán"><MoneyInput aria-label={`Giá bán loại ${row.values.join(" ")}`} value={row.price}
+              placeholder="Để trống: đặt sau" onValue={(price) => setOverride(row.key, { price })} disabled={pending} />
               {row.prices.length > 1 && <small className="table-subline">{row.prices.filter((price) => price.uomId !== priceFrom?.uomId).map((price) => `${symbol(price.uomId)} ${formatVnd(vnd(price.priceVnd))}`).join(" · ")}</small>}</td>}
             <td className="table-actions"><button type="button" className="button button-secondary button-compact" disabled={pending} aria-label={`Không tạo loại ${row.values.join(" ")}`}
               onClick={() => setOverride(row.key, { excluded: true })}>Bỏ</button></td>

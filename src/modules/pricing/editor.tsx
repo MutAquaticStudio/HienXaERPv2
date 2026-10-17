@@ -5,6 +5,7 @@ import { formatVnd, vnd } from "@/lib/core/money";
 import { pricingScopeLabel } from "./presentation";
 import { savePricingRuleAction } from "./actions";
 import { savePurchasePricingRuleAction } from "./purchase-actions";
+import { MoneyInput } from "@/components/ui/money-input";
 
 export type PriceRule = { id: string; scope_type: string; customer_id: string | null; material_id: string | null; material_group_id: string | null; customer_tier_code: string | null; price_uom_id: string; unit_price_vnd: string; version: number; source_type: string; effective_from: string; effective_to: string | null; active: boolean };
 export type PurchasePriceRule = { id:string; supplier_id:string; material_id:string; purchase_uom_id:string; unit_cost_vnd:string; version:number; source_type:string; effective_from:string; effective_to:string|null; active:boolean };
@@ -124,7 +125,7 @@ export function PricingRuleEditor({ rule, options, purchase = false, purchaseRul
         {scope === "CUSTOMER_GROUP" ? <div className="field"><label htmlFor={`${id}-group`}>Nhóm vật tư *</label><select id={`${id}-group`} name="groupId" required><option value="">Chọn...</option>{options.groups.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}</select></div> : <div className="field"><label htmlFor={`${id}-material`}>Vật tư *</label><select id={`${id}-material`} name="materialId" required><option value="">Chọn...</option>{options.materials.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}</select></div>}
         <div className="field"><label htmlFor={`${id}-uom`}>Đơn vị giá *</label><select id={`${id}-uom`} name="priceUomId" required><option value="">Chọn...</option>{options.units.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}</select></div>
       </>}
-      <div className="field"><label htmlFor={`${id}-price`}>Đơn giá (VND) *</label><input id={`${id}-price`} name="unitPriceVnd" inputMode="numeric" pattern="[1-9][0-9]*" defaultValue={purchase ? purchaseRule?.unit_cost_vnd : rule?.unit_price_vnd} required /></div>
+      <div className="field"><label htmlFor={`${id}-price`}>Đơn giá (VND) *</label><MoneyInput id={`${id}-price`} name="unitPriceVnd" defaultValue={purchase ? purchaseRule?.unit_cost_vnd : rule?.unit_price_vnd} required /></div>
       <div className="field"><label htmlFor={`${id}-source`}>Nguồn giá *</label><select id={`${id}-source`} name="sourceType" defaultValue={targetRule?.source_type ?? "LIST"}><option value="LIST">Bảng giá</option><option value="CONTRACT">Hợp đồng</option></select></div>
       <div className="field"><label htmlFor={`${id}-from`}>Hiệu lực từ ngày *</label><input id={`${id}-from`} name="effectiveFrom" type="date" required /></div>
       <div className="field"><label htmlFor={`${id}-to`}>Đến trước ngày</label><input id={`${id}-to`} name="effectiveTo" type="date" /></div>

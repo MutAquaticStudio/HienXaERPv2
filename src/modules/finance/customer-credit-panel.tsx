@@ -5,6 +5,7 @@ import { ReliableCommandForm, CommandRecoveryNotice } from "@/components/reliabl
 import { approveReturnCreditAction, refundCustomerCreditAction, offsetCustomerCreditAction } from "./credit-actions";
 import type { PaymentTarget } from "./payment-form";
 import { formatVnd, vnd } from "@/lib/core/money";
+import { MoneyInput } from "@/components/ui/money-input";
 
 export type ReturnFinanceRow = { id: string; delivery_number: string; order_number: string; material_name_snapshot: string;
   base_quantity: string; maximum_credit_vnd: string; legacy_adjustment_exists: boolean; legacy_credit_amount_vnd?: string | null };
@@ -41,7 +42,7 @@ function OffsetForm({ credit, customerId, targets, targetsHasNext, actorScope, o
       </select></div>
     <div className="action-cluster"><span>Trang {page}</span>{page > 1 && <button className="button button-secondary" type="button" disabled={busy} onClick={() => void load(page - 1)}>Trước</button>}{hasNext && <button className="button button-secondary" type="button" disabled={busy} onClick={() => void load(page + 1)}>Tiếp</button>}</div>
     {error && <p className="form-message" role="alert">{error}</p>}
-    <div className="field"><label htmlFor={"offset-amount-" + credit.id}>Số tiền cấn trừ (VND)</label><input id={"offset-amount-" + credit.id} name="amount" inputMode="numeric" maxLength={19} value={amount} onChange={event => setAmount(event.target.value)} required /></div>
+    <div className="field"><label htmlFor={"offset-amount-" + credit.id}>Số tiền cấn trừ (VND)</label><MoneyInput id={"offset-amount-" + credit.id} name="amount" value={amount} onValue={setAmount} required /></div>
     <button className="button button-secondary" type="submit">Ghi cấn trừ khoản có</button>
   </ReliableCommandForm>;
 }
@@ -61,7 +62,7 @@ export function CustomerCreditPanel({ customerId, pending, credits, accounts, ta
       {canApprove ? <ReliableCommandForm className="command-panel" command="adjust_return_receivable" action={approveReturnCreditAction}
           operationId={approvalOperations[row.id]} scope={`${actorScope}:RETURN:${row.id}`}>
           <input type="hidden" name="returnCaseId" value={row.id} />
-          <div className="field"><label htmlFor={"return-credit-" + row.id}>{row.legacy_adjustment_exists ? "Giá trị điều chỉnh đã ghi (VND)" : "Số tiền giảm cho hàng trả (VND)"}</label><input id={"return-credit-" + row.id} name="amount" inputMode="numeric" maxLength={19} readOnly={row.legacy_adjustment_exists} defaultValue={row.legacy_credit_amount_vnd ?? row.maximum_credit_vnd} required /></div>
+          <div className="field"><label htmlFor={"return-credit-" + row.id}>{row.legacy_adjustment_exists ? "Giá trị điều chỉnh đã ghi (VND)" : "Số tiền giảm cho hàng trả (VND)"}</label><MoneyInput id={"return-credit-" + row.id} name="amount" readOnly={row.legacy_adjustment_exists} defaultValue={row.legacy_credit_amount_vnd ?? row.maximum_credit_vnd} required /></div>
           <div className="field"><label htmlFor={"return-reason-" + row.id}>{row.legacy_adjustment_exists ? "Lý do đối chiếu nguồn tiền" : "Lý do duyệt giảm"}</label><input id={"return-reason-" + row.id} name="reason" minLength={3} maxLength={500} required /></div>
           <button className="button button-danger" type="submit">{row.legacy_adjustment_exists ? "Đối chiếu nguồn điều chỉnh đã ghi" : "Duyệt giảm theo hàng trả"}</button>
         </ReliableCommandForm> : <p className="muted">Cần người có quyền duyệt điều chỉnh công nợ.</p>}
@@ -74,7 +75,7 @@ export function CustomerCreditPanel({ customerId, pending, credits, accounts, ta
         {accounts.length > 0 ? <ReliableCommandForm className="command-panel" command="refund_customer_credit" action={refundCustomerCreditAction}
           operationId={refundOperations[credit.id]} scope={`${actorScope}:${credit.id}`}>
           <h3>Ghi hoàn tiền đã thực hiện</h3><input type="hidden" name="creditId" value={credit.id} />
-          <div className="field"><label htmlFor={"refund-amount-" + credit.id}>Số tiền hoàn từ khoản có (VND)</label><input id={"refund-amount-" + credit.id} name="amount" inputMode="numeric" maxLength={19} required /></div>
+          <div className="field"><label htmlFor={"refund-amount-" + credit.id}>Số tiền hoàn từ khoản có (VND)</label><MoneyInput id={"refund-amount-" + credit.id} name="amount" required /></div>
           <div className="field"><label htmlFor={"refund-account-" + credit.id}>Tài khoản chi hoàn</label><select id={"refund-account-" + credit.id} name="accountId" required><option value="">Chọn tài khoản chi</option>{accounts.map(account => <option key={account.id} value={account.id}>{account.code} · {account.name}</option>)}</select></div>
           <div className="field"><label htmlFor={"refund-at-" + credit.id}>Thời điểm hoàn tiền</label><input id={"refund-at-" + credit.id} name="refundedAt" type="datetime-local" defaultValue={defaultRefundedAt} required /></div>
           <div className="field"><label htmlFor={"refund-method-" + credit.id}>Phương thức hoàn</label><select id={"refund-method-" + credit.id} name="method" defaultValue="BANK_TRANSFER"><option value="BANK_TRANSFER">Chuyển khoản</option><option value="CASH">Tiền mặt</option><option value="CARD">Thẻ</option><option value="OTHER">Khác</option></select></div>

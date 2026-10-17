@@ -2,6 +2,7 @@
 
 import { ReliableCommandForm } from "@/components/reliable-command-form";
 import { createDeliveryExpenseAction, approveExpenseWithOutcomeAction } from "./delivery-expense-actions";
+import { MoneyInput } from "@/components/ui/money-input";
 
 type Option = { id: string; label: string };
 export function DeliveryExpenseForm({ operationId, scope, assignments, categories, suppliers, now, today }: {
@@ -13,7 +14,7 @@ export function DeliveryExpenseForm({ operationId, scope, assignments, categorie
   <label htmlFor="trip-expense-supplier">Nhà cung cấp chi phí chuyến</label><select id="trip-expense-supplier" name="supplierId" required><option value="">Chọn NCC</option>{suppliers.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select>
   <label htmlFor="trip-expense-reference">Tham chiếu chứng từ nhà cung cấp</label><input id="trip-expense-reference" name="supplierReference" minLength={3} maxLength={100} required />
   <label htmlFor="trip-expense-scope">Cách tính chi phí</label><select id="trip-expense-scope" name="costScope"><option value="DIRECT_DELIVERY">Trực tiếp của phiếu giao</option><option value="OVERHEAD">Chi phí chung, giữ liên kết chuyến</option></select>
-  <label htmlFor="trip-expense-amount">Số tiền chi phí chuyến</label><input id="trip-expense-amount" name="amount" inputMode="numeric" pattern="[1-9][0-9]*" required />
+  <label htmlFor="trip-expense-amount">Số tiền chi phí chuyến</label><MoneyInput id="trip-expense-amount" name="amount" required />
   <label htmlFor="trip-expense-time">Ngày phát sinh chi phí chuyến</label><input id="trip-expense-time" name="effectiveAt" type="datetime-local" defaultValue={now} required />
   <label htmlFor="trip-expense-due">Hạn trả chi phí chuyến</label><input id="trip-expense-due" name="dueDate" type="date" defaultValue={today} required />
   <label htmlFor="trip-expense-description">Mô tả chi phí chuyến</label><textarea id="trip-expense-description" name="description" minLength={3} maxLength={500} required />

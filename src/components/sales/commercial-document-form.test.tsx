@@ -82,7 +82,7 @@ it("does not passively reprice a stored draft when it first opens", async () => 
   render(<CommercialDocumentForm {...props} existing={{ id: "draft", version: 1, customerId: "customer-a", siteId: "site-a", effectiveAt: null, terms: "Original", lines: [{ sourceLineId: "old-line", materialId: "material", uomId: "uom-a", quantity: "2", manualPriceVnd: "90000", manualReason: "Old approved reason" }] }} />);
   await act(async () => { await new Promise(resolve => setTimeout(resolve, 350)); });
   expect(mocks.preview).not.toHaveBeenCalled();
-  expect(screen.getByLabelText("Đơn giá thủ công dòng 1")).toHaveValue("90000");
+  expect(screen.getByLabelText("Đơn giá thủ công dòng 1")).toHaveValue("90.000");
   expect(screen.getByLabelText("Lý do giá thủ công dòng 1")).toHaveValue("Old approved reason");
   expect(screen.getByText("Khách A")).toBeInTheDocument();
 });
