@@ -1,6 +1,6 @@
 /** A unit a line can use; `ratio` is "1 unit = numerator/denominator base units" when known (base unit 1/1). */
 export type EditorUom = { id: string; symbol: string; ratio?: { numerator: string; denominator: string } };
-export type EditorMaterial = { id: string; code?: string; name: string; uoms: EditorUom[]; variant?: { groupId: string; name: string; label: string } };
+export type EditorMaterial = { id: string; code?: string; name: string; uoms: EditorUom[]; variant?: { groupId: string; name: string; label: string }; /** Material group, used to group the drop-down list. */ group?: string };
 
 /** One document line as the editor holds it; field names match the server FormData contract. */
 export type EditorLine = {

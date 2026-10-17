@@ -927,6 +927,10 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .doc-editor-lines td.doc-editor-name { min-width: 10rem; overflow-wrap: anywhere; }
 .doc-editor-search input, .doc-editor-lines input, .doc-editor-lines select { min-width: 0; padding: 8px 10px; border: 1px solid #bdc7d5; border-radius: 9px; color: var(--text); background: #fff; }
 .doc-editor-search input { padding: 10px 14px; }
+.doc-editor-search input[role="combobox"], .doc-editor-combo input[role="combobox"] { padding-right: 40px; }
+.doc-editor-search-toggle { position: absolute; top: 0; right: 0; bottom: 0; display: grid; place-items: center; width: 40px; min-height: 40px; max-height: 48px; border: 0; background: transparent; color: var(--muted); cursor: pointer; }
+.doc-editor-search-toggle:disabled { cursor: not-allowed; opacity: 0.5; }
+.doc-editor-listbox-section { position: sticky; top: 0; z-index: 1; padding: 0.4rem 0.65rem; background: var(--surface); border-bottom: 1px solid var(--border); color: var(--muted); font-size: var(--font-size-caption); font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
 .doc-editor-lines input, .doc-editor-lines select { min-height: 38px; }
 .doc-editor-lines th.numeric, .doc-editor-lines td.numeric { text-align: right; }
 .doc-editor-lines td { vertical-align: top; }

@@ -1,6 +1,7 @@
 "use client";
 
 import { forwardRef, useEffect, useId, useImperativeHandle, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { ChevronDown } from "lucide-react";
 import type { EntityOption } from "./types";
 
 export const ENTITY_SEARCH_DEBOUNCE_MS = 300;
@@ -128,6 +129,10 @@ export const EntityCombobox = forwardRef<EntityComboboxHandle, Props>(function E
         onBlur={() => { cancelSearch(); setOpen(false); setQuery(null); setResults(null); }}
         onChange={(event) => { setQuery(event.target.value); setOpen(true); setHighlight(0); if (value) onSelect(null); search(event.target.value.trim()); }}
         onKeyDown={keyDown} />
+      <button type="button" className="doc-editor-search-toggle" tabIndex={-1} disabled={disabled} aria-label={`Xem danh sách ${label.toLowerCase()}`}
+        onMouseDown={(event) => { event.preventDefault(); if (document.activeElement === inputRef.current) setOpen((current) => !current); else inputRef.current?.focus(); }}>
+        <ChevronDown size={18} aria-hidden="true" />
+      </button>
       {open && <ul id={listId} role="listbox" aria-label={label} className="doc-editor-listbox">
         {shown.map((option, index) => <li key={option.id} id={`${listId}-${index}`} role="option" aria-selected={index === highlight}
           onMouseDown={(event) => { event.preventDefault(); choose(option); }} onMouseEnter={() => setHighlight(index)}>
