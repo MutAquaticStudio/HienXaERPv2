@@ -30,8 +30,12 @@ export type WorkerJob = {
     state: string;
     assignment_version: number | null;
     can_submit_result: boolean;
+    /** The job is on the worker's list but the warehouse has not handed the goods over yet. */
+    awaiting_handoff?: boolean;
     lines: { id: string; material_name: string; unit: string; planned_base_quantity: string;
-      loaded_base_quantity?: string | null; reportable_base_quantity: string }[];
+      loaded_base_quantity?: string | null; reportable_base_quantity: string;
+      /** Unit the order was sold in and its ratio to the base unit (1 bao = 50 kg). */
+      sold_unit?: string | null; sold_numerator?: string | null; sold_denominator?: string | null }[];
   };
 };
 
@@ -47,6 +51,8 @@ export type WorkerPortalSnapshot = {
   employee: { id: string; code: string; display_name: string };
   current: WorkerJob | null;
   next: WorkerJob | null;
+  /** Every open job of the worker by scheduled time. */
+  jobs?: WorkerJob[];
   pool: WorkerJob[];
   earnings: WorkerEarning[];
 };

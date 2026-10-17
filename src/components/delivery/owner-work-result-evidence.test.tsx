@@ -8,11 +8,13 @@ vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({ f
 } }) }));
 beforeEach(() => { mocks.report.data = { source_work_item_result_id: "work-result" }; mocks.report.error = null; mocks.evidence.error = null; mocks.requested = []; });
 afterEach(cleanup);
-it("opens private authorization-gated download routes linked to the exact worker result and exposes adjustment reason", async () => {
+it("shows private authorization-gated photos linked to the exact worker result and exposes adjustment reason", async () => {
   render(await OwnerWorkResultEvidence({ deliveryId: "delivery" }));
   expect(mocks.requested).toContainEqual(["delivery_id", "delivery"]);
   expect(mocks.requested).toContainEqual(["work_result_id", "work-result"]);
-  expect(screen.getAllByRole("link").map(link => link.getAttribute("href"))).toEqual(["/api/evidence/proof-a/download", "/api/evidence/proof-b/download"]);
+  // Photos show as thumbnails read through the permission-checked route (A3b).
+  expect(screen.getAllByRole("button", { name: /Xem ảnh/ })).toHaveLength(2);
+  expect([...document.querySelectorAll("img")].map(image => image.getAttribute("src"))).toEqual(["/api/evidence/proof-a/download", "/api/evidence/proof-b/download"]);
   expect(screen.getByLabelText("Lý do điều chỉnh số lượng thợ (nếu thay đổi)")).toHaveAttribute("maxlength", "500");
 });
 it("does not expose evidence links after an RLS/read failure", async () => {

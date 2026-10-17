@@ -451,3 +451,38 @@
 .quantityScope { display: grid; gap: 0.2rem; font-variant-numeric: tabular-nums; }
 .quantityScope > span { min-width: 0; overflow-wrap: anywhere; }
 .kv .quantityScope > span:first-child { color: inherit; }
+
+.photoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 10px;
+  align-items: start;
+}
+
+.photo {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+}
+
+.photo img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--portal-line);
+  background: var(--portal-paper);
+}
+
+.photo figcaption {
+  font-size: 12px;
+  color: var(--portal-muted);
+}
+
+.jobList {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

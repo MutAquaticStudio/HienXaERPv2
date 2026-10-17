@@ -37,12 +37,14 @@ export default async function OrderDetailPage({ params, searchParams }: { params
   const access = await requireInternalPermission("orders.read");
   const { id } = await params;
   const supabase = await createServerSupabase();
-  const [orderResult, lineResult, supplyResult, deliveryResult, warehouseResult] = await Promise.all([
+  // A5: independent reads in one round trip.
+  const [orderResult, lineResult, supplyResult, deliveryResult, warehouseResult, allocationResult] = await Promise.all([
     supabase.from("sales_order_read").select("id, customer_id, site_id, order_number, commercial_state, fulfillment_state, payment_state, customer_name_snapshot, site_name_snapshot, delivery_address_snapshot, total_vnd::text, requested_delivery_at, quotation_revision_id, created_at").eq("id", id).eq("branch_id", access.branchId).maybeSingle(),
     supabase.from("sales_order_lines").select("id, material_id, base_uom_id, line_number, material_name_snapshot, quantity, unit_price_vnd::text, line_total_vnd::text, list_unit_price_vnd::text, discount_mode, discount_value::text, price_source_type, units_of_measure:ordered_uom_id(symbol)").eq("sales_order_id", id).order("line_number"),
     supabase.from("sales_line_supply_read").select("sales_order_line_id, allocated_base_quantity, remaining_base_quantity").eq("sales_order_id", id),
     access.permissions.has("delivery.read") ? supabase.from("delivery_read").select("id, delivery_number, execution_state").eq("sales_order_id", id) : Promise.resolve({ data: [] }),
     access.permissions.has("purchasing.create") || access.permissions.has("delivery.create") ? supabase.from("warehouses").select("id, name").eq("branch_id", access.branchId).eq("active", true).order("name").limit(100) : Promise.resolve({ data: [], error: null }),
+    supabase.from("supply_allocations").select("id, sales_order_line_id, supply_mode, allocated_base_quantity, warehouse_id, sales_order_lines!inner(sales_order_id)").eq("sales_order_lines.sales_order_id", id).order("id"),
   ]);
   if (orderResult.error || !orderResult.data) notFound();
   const order = orderResult.data as Order;
@@ -50,15 +52,16 @@ export default async function OrderDetailPage({ params, searchParams }: { params
   // Discounts lower each line's unit price; the gross amount is what the lines would cost at their prices before discount.
   const discountVnd = lines.some((line) => line.list_unit_price_vnd) ? salesGrossTotal(lines) - BigInt(order.total_vnd ?? "0") : 0n;
   const supplies = new Map(((supplyResult.data ?? []) as Supply[]).map((row) => [row.sales_order_line_id, row]));
-  const { data: allocationData } = await supabase.from("supply_allocations").select("id, sales_order_line_id, supply_mode, allocated_base_quantity, warehouse_id").in("sales_order_line_id", lines.map((line) => line.id)).order("id");
-  const allocations = (allocationData ?? []) as Allocation[];
+  const allocations = (allocationResult.data ?? []) as unknown as Allocation[];
   const deliveries = (deliveryResult.data ?? []) as Delivery[];
   const warehouses = warehouseResult.data ?? [];
-  const availability = access.permissions.has("inventory.read") ? await loadWarehouseAvailability(access.branchId, lines.map(line => line.material_id)) : undefined;
-  const query = await searchParams;
   // A1: a delivery from stock takes its warehouse source itself, so delivery.create is enough (no purchasing.create).
-  const deliveryPlan = order.commercial_state === "CONFIRMED" && access.permissions.has("delivery.create") && warehouses.length
-    ? await loadDeliveryPlan(supabase, order.id, lines, access.branchId, access.permissions.has("delivery.assign")) : null;
+  const [availability, deliveryPlan, query] = await Promise.all([
+    access.permissions.has("inventory.read") ? loadWarehouseAvailability(access.branchId, lines.map(line => line.material_id)) : Promise.resolve(undefined),
+    order.commercial_state === "CONFIRMED" && access.permissions.has("delivery.create") && warehouses.length
+      ? loadDeliveryPlan(supabase, order.id, lines, access.branchId, access.permissions.has("delivery.assign")) : Promise.resolve(null),
+    searchParams,
+  ]);
   const now = new Date();
   const localNow = businessInputValue(now);
   // A4: "Lập phiếu giao" starts on the customer's requested time while it is still ahead.
