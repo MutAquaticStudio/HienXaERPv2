@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import Link from "next/link";
-import { permissionLabel, roleLabel } from "@/components/access/presentation";
+import { permissionLabel, roleDisplayName } from "@/components/access/presentation";
 import { InviteEmployeeForm } from "@/components/access/invite-employee-form";
 import { ExplicitPermissionForm, ManageAccessForm, ReactivateAccessForm, RevokeAccessForm } from "@/components/access/manage-access-form";
 import { RoleEditorButton, type EditorPermission, type EditorRole } from "@/components/access/role-editor";
@@ -14,7 +14,7 @@ import { OWNER_ONLY_PERMISSIONS } from "@/lib/access/permission-groups";
 import { CORE_LIST_PAGE_SIZE, ilikePattern, parseCoreListQuery } from "@/lib/core-list";
 import { createServerSupabase } from "@/lib/supabase/server";
 
-type RoleRelation = { id: string; name: string; role_permissions: { permission_code: string }[] };
+type RoleRelation = { id: string; name: string; system_role: boolean; role_permissions: { permission_code: string }[] };
 type Assignment = { id: string; active: boolean; branch_id: string; branches: { id: string; name: string } | null; roles: RoleRelation | null };
 type Employee = { id: string; code: string; display_name: string; active: boolean; employee_branch_access: Assignment[] };
 type RoleRow = { id: string; code: string; name: string; system_role: boolean; role_permissions: { permission_code: string }[] };
@@ -31,7 +31,7 @@ export default async function AccessManagementPage({ searchParams }: { searchPar
   const tab = query.tab === "roles" ? "roles" : "employees";
   const list = parseCoreListQuery(query);
   const supabase = await createServerSupabase();
-  let employeeQuery = supabase.from("employees").select("id, code, display_name, active, employee_branch_access(id, active, branch_id, branches(id, name), roles(id, name, role_permissions(permission_code)))", { count: "exact" });
+  let employeeQuery = supabase.from("employees").select("id, code, display_name, active, employee_branch_access(id, active, branch_id, branches(id, name), roles(id, name, system_role, role_permissions(permission_code)))", { count: "exact" });
   if (list.q) employeeQuery = employeeQuery.or(`code.ilike.${ilikePattern(list.q)},display_name.ilike.${ilikePattern(list.q)}`);
   const [employees, branches, roles, permissions, grants, assignments] = await Promise.all([
     employeeQuery.order("display_name").order("id").range(list.from, list.to),
@@ -48,7 +48,7 @@ export default async function AccessManagementPage({ searchParams }: { searchPar
   const grantRows = grants.data as GrantRow[];
   const permissionName = (code: string) => permissionLabel(permissionRows.find((item) => item.code === code)?.name ?? code);
   const assignableRoles = roleRows.filter((role) => role.role_permissions.every((permission) => actor.permissions.has(permission.permission_code)));
-  const roleOptions = assignableRoles.map((role) => ({ id: role.id, name: role.name }));
+  const roleOptions = assignableRoles.map((role) => ({ id: role.id, name: role.name, label: roleDisplayName(role) }));
   const permissionOptions = permissionRows.filter((permission) => actor.permissions.has(permission.code));
   const editorPermissions: EditorPermission[] = permissionRows.filter((item) => !(OWNER_ONLY_PERMISSIONS as readonly string[]).includes(item.code))
     .map((item) => ({ code: item.code, label: permissionLabel(item.name), granted: actor.permissions.has(item.code) }));
@@ -85,8 +85,8 @@ export default async function AccessManagementPage({ searchParams }: { searchPar
             const canAct = employee.active && employee.id !== actor.employeeId;
             return <tr key={employee.id} className={employee.active ? undefined : "row-muted"}>
               <td data-label="Nhân viên"><strong>{employee.display_name}</strong><small className="table-subline mono">{employee.code}</small>
-                {elsewhere.length > 0 && <small className="table-subline">Chi nhánh khác: {elsewhere.map((assignment) => `${assignment.branches?.name ?? "Chi nhánh"} (${assignment.roles ? roleLabel(assignment.roles.name) : "vai trò ẩn"})`).join(", ")}</small>}</td>
-              <td data-label="Vai trò">{current?.roles ? roleLabel(current.roles.name) : <span className="muted">Chưa có</span>}</td>
+                {elsewhere.length > 0 && <small className="table-subline">Chi nhánh khác: {elsewhere.map((assignment) => `${assignment.branches?.name ?? "Chi nhánh"} (${assignment.roles ? roleDisplayName(assignment.roles) : "vai trò ẩn"})`).join(", ")}</small>}</td>
+              <td data-label="Vai trò">{current?.roles ? roleDisplayName(current.roles) : <span className="muted">Chưa có</span>}</td>
               <td data-label="Quyền bổ sung">{explicit.length ? explicit.map(permissionName).join(", ") : <span className="muted">Không có</span>}</td>
               <td data-label="Trạng thái"><StatusBadge tone={!employee.active ? "danger" : current?.active ? "success" : "warning"}>{!employee.active ? "Ngừng hoạt động" : current?.active ? "Đang có hiệu lực" : current ? "Đã thu hồi" : "Chưa cấp quyền"}</StatusBadge></td>
               <td className="table-actions" data-label="Thao tác">{canAct && <div className="action-cluster">
@@ -110,7 +110,7 @@ export default async function AccessManagementPage({ searchParams }: { searchPar
         <thead><tr><th scope="col">Vai trò</th><th scope="col">Loại</th><th scope="col" className="numeric">Số quyền</th><th scope="col" className="numeric">Đang dùng</th><th scope="col">Thao tác</th></tr></thead>
         <tbody>{roleRows.map((role) => {
           const editor = editorRole(role);
-          return <tr key={role.id}><td data-label="Vai trò"><strong>{roleLabel(role.name)}</strong></td>
+          return <tr key={role.id}><td data-label="Vai trò"><strong>{roleDisplayName(role)}</strong></td>
             <td data-label="Loại">{role.system_role ? "Vai trò mẫu" : editor.editable ? "Tùy biến" : "Quản trị"}</td>
             <td className="numeric" data-label="Số quyền">{role.role_permissions.length}</td>
             <td className="numeric" data-label="Đang dùng">{editor.assigned}</td>

@@ -32,7 +32,7 @@ beforeEach(() => {
       { id: "me", code: "NV00", display_name: "Chủ", active: true, employee_branch_access: [] },
     ],
     branches: [{ id: "b1", name: "Chi nhánh A" }],
-    roles: [role("r1", "Thủ kho", ["inventory.read"], true), role("r2", "Kho đêm", ["inventory.read", "inventory.count"]), role("owner", "Owner", ["roles.manage", "orders.read"])],
+    roles: [role("r1", "Thủ kho", ["inventory.read"], true), role("r2", "Kho đêm", ["inventory.read", "inventory.count"]), role("r3", "Thu kho ca toi", ["inventory.read"]), role("owner", "Owner", ["roles.manage", "orders.read"])],
     permissions: [{ code: "inventory.read", name: "Xem tồn kho" }, { code: "inventory.count", name: "Kiểm kho" }, { code: "orders.read", name: "Xem đơn" }, { code: "roles.manage", name: "Quản lý quyền" }],
     employee_permission_grants: [],
     employee_branch_access: [{ role_id: "r2" }, { role_id: "r2" }],
@@ -63,6 +63,8 @@ it("shows preset and administrator roles read-only and custom roles editable", a
   expect(byName("Kho đêm")).toHaveTextContent("2");
   expect(byName("Thủ kho")).toHaveTextContent("Vai trò mẫu");
   expect(within(byName("Thủ kho")).getByRole("button", { name: "Xem" })).toBeInTheDocument();
+  // A custom name without diacritics is shown as written, not as a generic label.
+  expect(byName("Thu kho ca toi")).toHaveTextContent("Tùy biến");
   expect(byName("Chủ doanh nghiệp")).toHaveTextContent("Quản trị");
   expect(within(byName("Chủ doanh nghiệp")).getByRole("button", { name: "Xem" })).toBeInTheDocument();
 });

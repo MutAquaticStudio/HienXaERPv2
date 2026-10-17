@@ -1194,6 +1194,9 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .route-step-number { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 13px; }
 .route-step-note { align-self: end; margin: 0; }
 .route-delivery-table td[data-label="Công trình"] { min-width: 200px; white-space: normal; }
+/* Many open deliveries must not push steps 2 and 3 off screen: the list scrolls inside its step. */
+.route-step .table-wrap { max-height: min(60vh, 520px); overflow-y: auto; }
+.route-step .table-wrap thead th { position: sticky; top: 0; z-index: 1; }
 .route-stop-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
 .route-stop { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px; }
 .route-stop.warning { border-color: #f3d39b; background: var(--warning-soft); }
@@ -1235,6 +1238,7 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 :root[data-color="dark"]:has(.app-shell) .identity-avatar,
 :root[data-color="dark"]:has(.app-shell) .route-step-number { background: #2b74c6; color: #fff; }
 :root[data-color="dark"]:has(.app-shell) th { background: var(--surface-soft); }
+:root[data-color="dark"]:has(.app-shell) .topbar { background: rgba(15, 22, 32, 0.9); }
 :root[data-color="dark"]:has(.app-shell) tbody tr:hover { background: #1b2736; }
 :root[data-color="dark"]:has(.app-shell) .status-info { background: #16304d; }
 :root[data-color="dark"]:has(.app-shell) .mock-banner { border-color: #2f5f92; color: #9cc8f7; background: #13263b; }
@@ -1255,3 +1259,5 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .company-preview span { color: var(--muted); font-size: var(--font-size-caption); }
 .appearance-options { display: grid; gap: 0.9rem; }
 .appearance-options .segmented-radio { margin: 0; }
+/* Inline row forms (e.g. "Tính thu nhập" per manual basis): a long rule name must not widen a phone screen. */
+.inline-actions select { max-width: 100%; }

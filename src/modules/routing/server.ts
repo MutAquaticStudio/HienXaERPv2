@@ -1,6 +1,17 @@
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 
+type OpenDelivery = { id: string; delivery_number: string; site_name_snapshot: string; delivery_address_snapshot: string; scheduled_at: string | null; scheduled_end_at: string | null; execution_state: string; version: number };
+
+/** The first 100 open deliveries by schedule (unscheduled last), from the per-state pages. */
+export function mergeOpenDeliveries(pages: { data: unknown[] | null; error: unknown }[]) {
+  const error = pages.find((page) => page.error)?.error ?? null;
+  const rows = pages.flatMap((page) => (page.data ?? []) as OpenDelivery[]);
+  const key = (row: OpenDelivery) => row.scheduled_at ? Date.parse(row.scheduled_at) : Number.POSITIVE_INFINITY;
+  rows.sort((a, b) => key(a) - key(b) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  return { data: error ? null : rows.slice(0, 100), error };
+}
+
 export async function loadRoutingWorkspace(selectedPlanId?: string) {
   const access = await requireInternalPermission("delivery.read");
   const supabase = await createServerSupabase();
@@ -12,14 +23,16 @@ export async function loadRoutingWorkspace(selectedPlanId?: string) {
       .order("created_at", { ascending: false })
       .order("id", { ascending: false })
       .limit(20),
-    supabase
+    // One query per state follows the (branch, state, scheduled_at, id) index and stops after 100 rows; a single IN query
+    // had to check row security on every open delivery before sorting (12 s with 20 000 open deliveries on the QA project).
+    Promise.all((["PLANNED", "ASSIGNED"] as const).map((state) => supabase
       .from("deliveries")
       .select("id,delivery_number,site_name_snapshot,delivery_address_snapshot,scheduled_at,scheduled_end_at,execution_state,version")
       .eq("branch_id", access.branchId)
-      .in("execution_state", ["PLANNED", "ASSIGNED"])
+      .eq("execution_state", state)
       .order("scheduled_at", { ascending: true, nullsFirst: false })
       .order("id", { ascending: true })
-      .limit(100),
+      .limit(100))).then(mergeOpenDeliveries),
     supabase
       .from("vehicles")
       .select("id,code,plate_number,capacity_quantity,capacity_uom_id")

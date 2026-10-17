@@ -2943,4 +2943,11 @@ người sửa, vai trò đang dùng), 120 (người chỉ xem; khung trước g
 MST sai, tạo/replay/xung đột, người chỉ xem đọc được, version lệch, audit, `anon`) cùng 010–100 PASS; vitest 156 file / 918 test; typecheck, lint 0 lỗi, build.
 QA project: **chưa áp** 3 migration — lệnh ghi qua công cụ Supabase cần Owner duyệt trong phiên (lần thử 17/10 trả "requires approval"); áp xong sẽ
 kiểm md5 hàm (`save_custom_role` 27efa32a…, `create_route_plan` a9a36e76…, `apply_route_plan` 1195121d…, `save_company_profile` 6d575a17…) và QA trình
-duyệt. Production chưa áp.
+duyệt phần ghi (tạo/sửa/ngừng vai trò, lập + áp dụng lộ trình có phiếu chưa lịch, lưu thông tin doanh nghiệp + PDF). Production chưa áp.
+QA trình duyệt phần không cần migration (app cục bộ trỏ QA, owner, không ghi dữ liệu): Nhân viên & quyền 2 tab, popup Đổi vai trò/Mời/Xem vai trò
+mẫu/Tạo vai trò (7 nhóm, 68 quyền, không có quyền quản lý nhân viên); Thu nhập 3 nút popup, bảng 6 quy tắc; Lộ trình 3 bước, chọn 2 phiếu → "Giữ lịch
+phiếu"; Cài đặt: xem trước tiêu đề, Tối áp dụng ngay và giữ sau tải lại, cỡ Lớn = 20px, Be Vietnam Pro, Theo thiết bị → sáng; 390px: 5 trang rộng 390.
+Sửa khi QA: (1) Lộ trình hết thời gian trên QA (20.079 phiếu giao mở; một truy vấn `in(PLANNED, ASSIGNED)` sắp theo lịch phải kiểm quyền từng dòng,
+12,4 s) → tách truy vấn theo trạng thái theo đúng index rồi gộp (61 ms), danh sách bước 1 cuộn trong khung; (2) tên vai trò tùy biến không dấu bị hiện
+"Vai trò được phân công" → `roleDisplayName` hiện đúng tên vai trò tùy biến; (3) Thu nhập 390px rộng 484 do ô chọn quy tắc dài → giới hạn chiều rộng;
+(4) thanh trên cùng còn sáng ở chế độ tối.
