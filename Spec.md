@@ -8,6 +8,8 @@
 >
 > Quyết định Owner 17/10/2026 (đợt `FB3-20261017`): **D14** tài khoản cổng khách — doanh nghiệp tạo tài khoản (email + mật khẩu, bắt đổi mật khẩu lần đầu) đồng bộ với hồ sơ khách, và khách mới tự đăng ký tạo hồ sơ khách "Tự đăng ký"; **D15** khách tự đặt hàng, thấy giá theo nhóm giá của mình, đơn chờ doanh nghiệp duyệt; **D16** khi duyệt đơn khách: dòng kho đủ → phiếu giao từ kho, dòng thiếu → đơn mua NCC giao thẳng công trình; **D17** báo NCC qua Zalo (nút gửi thủ công; Zalo tự động khi có Zalo OA); **D18** danh mục có nút Xóa (chỉ khi chưa phát sinh chứng từ, SPEC-CAT-003), ô tiền tự phân cách hàng nghìn khi gõ, ô chọn vật tư tự xổ danh sách, giảm giá đơn bán theo VND hoặc % từng dòng và cả đơn (SPEC-PRI-007). D14–D17 chưa triển khai (kế hoạch FB3 Phần A–C); D18 làm trước và phát hành riêng.
 
+> Quyết định Owner 17/10/2026 tối (P0): **D24** mời nhân viên không phụ thuộc email — mặc định hệ thống tạo **link kích hoạt dùng một lần** để quản lý sao chép gửi qua Zalo/tin nhắn (vẫn chọn được gửi thư mời; thư không gửi được thì tự tạo link); danh sách Nhân viên & quyền có nút "Link kích hoạt" tạo link mới cho người chưa đặt mật khẩu hoặc quên mật khẩu (link mới thay link cũ; không tạo cho chính mình, chỉ trong chi nhánh đang quản lý, không vượt quyền người tạo). Link mở thẳng trang đặt mật khẩu của ứng dụng và được xác minh trong trình duyệt, nên không phụ thuộc danh sách chuyển hướng của Supabase và không bị bản xem trước của ứng dụng chat dùng mất.
+
 # Spec.md — HIỀN XA ERP V2
 
 > **Bộ tài liệu:** `HX-V2-DOCSET-4.4`  

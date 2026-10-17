@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, expect, it, vi } from "vitest";
-const m = vi.hoisted(() => ({ access: vi.fn(), server: vi.fn(), from: vi.fn(), select: vi.fn(), eq: vi.fn(), role: vi.fn(), rpc: vi.fn(), admin: vi.fn(), invite: vi.fn() }));
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+const m = vi.hoisted(() => ({ access: vi.fn(), server: vi.fn(), from: vi.fn(), select: vi.fn(), eq: vi.fn(), role: vi.fn(), rpc: vi.fn(), admin: vi.fn(), invite: vi.fn(), generate: vi.fn(), getUser: vi.fn() }));
 vi.mock("@/lib/access/context", () => ({ requireInternalPermission: m.access }));
 vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: m.server }));
 vi.mock("@/lib/supabase/config", () => ({ getSupabaseConfig: () => ({ url: "https://qa.example.test" }) }));
@@ -9,17 +9,19 @@ vi.mock("next/headers", () => ({ cookies: vi.fn(), headers: vi.fn(async () => ne
 vi.mock("server-only", () => ({}));
 vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
 vi.mock("@/modules/portal/server", () => ({ portalRpc: vi.fn() }));
-import { inviteEmployeeAction, assignRoleAction } from "./actions";
+import { inviteEmployeeAction, assignRoleAction, createActivationLinkAction } from "./actions";
 const branch = "11111111-1111-4111-8111-111111111111", role = "22222222-2222-4222-8222-222222222222";
-function form(otherBranch = branch) { const f = new FormData(); Object.entries({ email: "qa-invite@example.test", code: "QA_RBAC", name: "QA nhân viên", branchId: otherBranch, roleId: role, reason: "QA cấp quyền" }).forEach(([k,v]) => f.set(k,v)); return f; }
+function form(otherBranch = branch, delivery = "email") { const f = new FormData(); Object.entries({ email: "qa-invite@example.test", code: "QA_RBAC", name: "QA nhân viên", branchId: otherBranch, roleId: role, reason: "QA cấp quyền", delivery }).forEach(([k,v]) => f.set(k,v)); return f; }
+const newUser = "33333333-3333-4333-8333-333333333333";
 beforeEach(() => {
  vi.clearAllMocks(); vi.stubEnv("SUPABASE_SECRET_KEY", "test-only-not-a-credential");
- m.access.mockResolvedValue({ branchId: branch, permissions: new Set(["roles.manage", "work.read", "work.claim"]) });
+ m.access.mockResolvedValue({ branchId: branch, employeeId: "99999999-9999-4999-8999-999999999999", permissions: new Set(["roles.manage", "work.read", "work.claim", "dashboard.read"]) });
  const builder = { select: m.select, eq: m.eq, maybeSingle: m.role }; m.from.mockReturnValue(builder); m.select.mockReturnValue(builder); m.eq.mockReturnValue(builder);
- m.role.mockResolvedValue({ data: { id: role, role_permissions: [{ permission_code: "work.read" }, { permission_code: "work.claim" }] }, error: null });
+ m.role.mockResolvedValue({ data: { id: role, role_permissions: [{ permission_code: "work.read" }, { permission_code: "dashboard.read" }] }, error: null });
  m.server.mockResolvedValue({ from: m.from, rpc: m.rpc }); m.rpc.mockResolvedValue({ error: null });
- m.admin.mockReturnValue({ auth: { admin: { inviteUserByEmail: m.invite } } });
- m.invite.mockResolvedValue({ data: { user: { id: "33333333-3333-4333-8333-333333333333" } }, error: null });
+ m.admin.mockReturnValue({ auth: { admin: { inviteUserByEmail: m.invite, generateLink: m.generate, getUserById: m.getUser } } });
+ m.invite.mockResolvedValue({ data: { user: { id: newUser } }, error: null });
+ m.generate.mockResolvedValue({ data: { user: { id: newUser }, properties: { hashed_token: "hash-1" } }, error: null });
 });
 afterEach(() => vi.unstubAllEnvs());
 it("checks the active server role before sending an authorized worker invite", async () => {
@@ -55,3 +57,75 @@ it("does not report linkage success if the DB recheck rejects a changed role aft
 
 it("forwards a stable role-assignment operation id for retry",async()=>{const f=form();f.set('employeeId','55555555-5555-4555-8555-555555555555');f.set('operationId','66666666-6666-4666-8666-666666666666');await assignRoleAction(undefined,f);await assignRoleAction(undefined,f);expect(m.rpc.mock.calls.map(c=>c[1].operation_id)).toEqual(['66666666-6666-4666-8666-666666666666','66666666-6666-4666-8666-666666666666']);});
 it("rejects missing assignment operation ids and cross-branch intent without a mutation",async()=>{const f=form();f.set('employeeId','55555555-5555-4555-8555-555555555555');await assignRoleAction(undefined,f);expect(m.rpc).not.toHaveBeenCalled();f.set('operationId','66666666-6666-4666-8666-666666666666');f.set('branchId','44444444-4444-4444-8444-444444444444');await assignRoleAction(undefined,f);expect(m.rpc).not.toHaveBeenCalled();});
+
+it("creates the account with a one-time activation link by default, without relying on email", async () => {
+ const result = await inviteEmployeeAction(undefined, form(branch, "link"));
+ expect(result?.success).toBe(true);
+ expect(m.invite).not.toHaveBeenCalled();
+ expect(m.generate).toHaveBeenCalledWith({ type: "invite", email: "qa-invite@example.test", options: { redirectTo: "https://erp.example.test/recovery/confirm?surface=admin" } });
+ expect(result?.activationLink).toBe("https://erp.example.test/recovery/confirm?surface=admin&token_hash=hash-1&type=invite");
+ expect(m.rpc).toHaveBeenCalledWith("register_invited_employee", expect.objectContaining({ invited_auth_user_id: newUser }));
+});
+
+it("falls back to an activation link when the invite email cannot be sent", async () => {
+ m.invite.mockResolvedValue({ data: { user: null }, error: { message: "Email address not authorized", status: 400 } });
+ const result = await inviteEmployeeAction(undefined, form());
+ expect(result?.success).toBe(true);
+ expect(result?.message).toContain("Không gửi được thư mời");
+ expect(result?.activationLink).toContain("token_hash=hash-1&type=invite");
+});
+
+it("sends field staff (work-only roles) to the worker portal password page", async () => {
+ m.role.mockResolvedValue({ data: { id: role, role_permissions: [{ permission_code: "work.read" }, { permission_code: "work.claim" }] }, error: null });
+ const result = await inviteEmployeeAction(undefined, form(branch, "link"));
+ expect(result?.activationLink).toBe("https://erp.example.test/recovery/confirm?surface=work&token_hash=hash-1&type=invite");
+});
+
+it("returns no link when the account cannot be created", async () => {
+ m.generate.mockResolvedValue({ data: { user: null, properties: null }, error: { message: "already registered" } });
+ const result = await inviteEmployeeAction(undefined, form(branch, "link"));
+ expect(result?.success).not.toBe(true);
+ expect(result?.activationLink).toBeUndefined();
+ expect(m.rpc).not.toHaveBeenCalled();
+});
+
+describe("createActivationLinkAction", () => {
+ const employee = "55555555-5555-4555-8555-555555555555", account = "66666666-6666-4666-8666-666666666666";
+ const row = (overrides = {}) => ({ data: { id: employee, auth_user_id: account, active: true, employee_branch_access: [{ branch_id: branch, active: true, roles: { role_permissions: [{ permission_code: "work.read" }, { permission_code: "work.claim" }] } }], ...overrides }, error: null });
+ const linkForm = (id = employee) => { const f = new FormData(); f.set("employeeId", id); return f; };
+ beforeEach(() => {
+  m.role.mockResolvedValue(row());
+  m.getUser.mockResolvedValue({ data: { user: { id: account, email: "nv@example.test", email_confirmed_at: null } }, error: null });
+  m.generate.mockResolvedValue({ data: { user: { id: account }, properties: { hashed_token: "hash-2" } }, error: null });
+ });
+
+ it("gives a not yet activated employee a fresh invite link", async () => {
+  const result = await createActivationLinkAction(undefined, linkForm());
+  expect(result?.success).toBe(true);
+  expect(m.generate).toHaveBeenCalledWith(expect.objectContaining({ type: "invite", email: "nv@example.test" }));
+  expect(result?.activationLink).toBe("https://erp.example.test/recovery/confirm?surface=work&token_hash=hash-2&type=invite");
+ });
+
+ it("gives a confirmed account a password link instead", async () => {
+  m.getUser.mockResolvedValue({ data: { user: { id: account, email: "nv@example.test", email_confirmed_at: "2026-10-17T10:30:52Z" } }, error: null });
+  const result = await createActivationLinkAction(undefined, linkForm());
+  expect(m.generate).toHaveBeenCalledWith(expect.objectContaining({ type: "recovery" }));
+  expect(result?.activationLink).toContain("type=recovery");
+ });
+
+ it("refuses the manager's own account, other branches and stronger roles", async () => {
+  expect((await createActivationLinkAction(undefined, linkForm("99999999-9999-4999-8999-999999999999")))?.success).not.toBe(true);
+  m.role.mockResolvedValue(row({ employee_branch_access: [{ branch_id: "44444444-4444-4444-8444-444444444444", active: true, roles: null }] }));
+  expect((await createActivationLinkAction(undefined, linkForm()))?.success).not.toBe(true);
+  m.role.mockResolvedValue(row({ employee_branch_access: [{ branch_id: branch, active: true, roles: { role_permissions: [{ permission_code: "finance.payment.post" }] } }] }));
+  expect((await createActivationLinkAction(undefined, linkForm()))?.success).not.toBe(true);
+  expect(m.generate).not.toHaveBeenCalled();
+ });
+
+ it("does not hand out a link that belongs to another account", async () => {
+  m.generate.mockResolvedValue({ data: { user: { id: newUser }, properties: { hashed_token: "hash-3" } }, error: null });
+  const result = await createActivationLinkAction(undefined, linkForm());
+  expect(result?.success).not.toBe(true);
+  expect(result?.activationLink).toBeUndefined();
+ });
+});

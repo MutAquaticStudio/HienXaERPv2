@@ -5,6 +5,7 @@ const m = vi.hoisted(() => ({ tables: {} as Record<string, unknown[]> }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn(), refresh: vi.fn() }), usePathname: () => "/admin/access" }));
 vi.mock("@/lib/access/context", () => ({ requireInternalPermission: async () => ({ branchId: "b1", branchName: "Chi nhánh A", employeeId: "me", permissions: new Set(["roles.manage", "inventory.read", "inventory.count", "orders.read"]) }) }));
 vi.mock("@/components/access/invite-employee-form", () => ({ InviteEmployeeForm: () => <form>Biểu mẫu mời</form> }));
+vi.mock("@/components/access/activation-link", () => ({ ActivationLinkForm: () => <form>Link kích hoạt</form> }));
 vi.mock("@/components/access/manage-access-form", () => ({
   ManageAccessForm: () => <form>Đổi vai trò</form>, ExplicitPermissionForm: () => <form>Quyền riêng</form>,
   RevokeAccessForm: () => <form>Thu hồi</form>, ReactivateAccessForm: () => <form>Kích hoạt</form>,

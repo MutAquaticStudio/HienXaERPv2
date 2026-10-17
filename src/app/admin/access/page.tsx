@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import Link from "next/link";
 import { permissionLabel, roleDisplayName } from "@/components/access/presentation";
 import { InviteEmployeeForm } from "@/components/access/invite-employee-form";
+import { ActivationLinkForm } from "@/components/access/activation-link";
 import { ExplicitPermissionForm, ManageAccessForm, ReactivateAccessForm, RevokeAccessForm } from "@/components/access/manage-access-form";
 import { RoleEditorButton, type EditorPermission, type EditorRole } from "@/components/access/role-editor";
 import { AutoFilterForm } from "@/components/ui/auto-filter-form";
@@ -65,7 +66,7 @@ export default async function AccessManagementPage({ searchParams }: { searchPar
     <header className="page-heading"><div><p className="eyebrow">Quản trị truy cập</p><h1>Nhân viên & quyền</h1><p className="lede">Đang quản lý {actor.branchName}. Chuyển chi nhánh để quản lý phạm vi khác; không tự thay đổi quyền của chính mình.</p></div>
       <div className="action-cluster">
         <FormDialog label="Mời nhân viên" title="Mời nhân viên" buttonClassName={tab === "employees" ? "button button-primary" : "button button-secondary"}
-          description="Nhân viên nhận thư mời để đặt mật khẩu; vai trò áp dụng tại chi nhánh đang chọn."><InviteEmployeeForm branches={branches.data} roles={roleOptions} /></FormDialog>
+          description="Tạo link kích hoạt (gửi qua Zalo) hoặc thư mời để nhân viên tự đặt mật khẩu; vai trò áp dụng tại chi nhánh đang chọn."><InviteEmployeeForm branches={branches.data} roles={roleOptions} /></FormDialog>
         <RoleEditorButton label="Tạo vai trò" permissions={editorPermissions} buttonClassName={tab === "roles" ? "button button-primary" : "button button-secondary"} />
       </div>
     </header>
@@ -94,6 +95,8 @@ export default async function AccessManagementPage({ searchParams }: { searchPar
                   <ManageAccessForm operationId={randomUUID()} employeeId={employee.id} branches={branches.data} roles={roleOptions} /></FormDialog>
                 {current?.active && <FormDialog label="Quyền riêng" title={`Quyền riêng · ${employee.display_name}`} buttonClassName="button button-secondary button-compact" triggerData={{ "employee-id": employee.id, action: "explicit" }}
                   description="Quyền cộng thêm ngoài vai trò, chỉ tại chi nhánh đang chọn."><ExplicitPermissionForm employeeId={employee.id} branchId={current.branch_id} permissions={permissionOptions.filter((permission) => !baseline.has(permission.code))} selected={explicit} /></FormDialog>}
+                {current?.active && <FormDialog label="Link kích hoạt" title={`Link kích hoạt · ${employee.display_name}`} buttonClassName="button button-secondary button-compact" triggerData={{ "employee-id": employee.id, action: "activation" }}
+                  description="Cho nhân viên chưa đặt mật khẩu hoặc quên mật khẩu."><ActivationLinkForm employeeId={employee.id} /></FormDialog>}
                 {current?.active && <FormDialog label="Thu hồi" title={`Thu hồi quyền · ${employee.display_name}`} buttonClassName="button button-danger button-compact" triggerData={{ "access-id": current.id, action: "revoke" }}
                   description="Nhân viên mất quyền tại chi nhánh này ngay cả khi đang đăng nhập."><RevokeAccessForm accessId={current.id} /></FormDialog>}
                 {current && !current.active && <FormDialog label="Kích hoạt lại" title={`Kích hoạt lại · ${employee.display_name}`} buttonClassName="button button-secondary button-compact" triggerData={{ "access-id": current.id, action: "reactivate" }}>

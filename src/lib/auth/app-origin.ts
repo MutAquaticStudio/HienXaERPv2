@@ -24,3 +24,15 @@ export async function passwordSetupUrl(surface: "admin" | "work" | "customer"): 
   url.searchParams.set("surface", surface);
   return url.toString();
 }
+
+/**
+ * Activation link a manager copies to a new employee (Zalo, SMS…), so activation does not depend on email delivery.
+ * It opens the app's password page directly with the hashed one-time token; the page verifies it in the browser,
+ * so link previews (which do not run scripts) cannot use it up, and Supabase's redirect allow list is not involved.
+ */
+export async function activationUrl(surface: "admin" | "work" | "customer", tokenHash: string, type: "invite" | "recovery"): Promise<string> {
+  const url = new URL(await passwordSetupUrl(surface));
+  url.searchParams.set("token_hash", tokenHash);
+  url.searchParams.set("type", type);
+  return url.toString();
+}
