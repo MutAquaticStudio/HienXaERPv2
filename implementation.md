@@ -3005,3 +3005,22 @@ phải có dấu phân cách khi gõ; chọn vật tư phải tự xổ danh sá
   ô vật tư xổ 20 vật tư theo nhóm; giảm 5% dòng + 10.000 đơn → 2.100.000 / −115.000 / 1.985.000, trang đơn + PDF đúng; 390px không tràn.
   **Lỗi tìm thấy và sửa**: sửa nháp đã lưu chỉ đổi giảm giá thì không tính giá (bản nháp chỉ tính lại khi đổi dòng) → nút lưu mờ, popup giá "—".
   Đổi giảm giá hoặc mở popup giá giờ cũng yêu cầu tính giá; test component mới; QA: đổi giảm đơn 20.000 → lưu, DB 197.500 × 10 = 1.975.000.
+
+## 2026-10-17 — P0: link kích hoạt tài khoản khi mời nhân viên (D24)
+
+Owner 17/10 tối: mời user thì link kích hoạt lỗi hoặc trỏ về Vercel cũ. Kiểm tra chỉ đọc:
+- Supabase Production auth/edge log: lời mời 10:30 UTC gửi bằng SMTP mặc định; bấm link → `/verify` 303 nhưng `redirect_to=https://app.hienxavlxd.com`
+  (trang gốc), không phải `/recovery/confirm?surface=…` → đường dẫn không nằm trong Redirect URLs nên Supabase dùng Site URL; bấm lại → "Email link
+  is invalid or has expired" (một lần).
+- Vercel: tên miền `app.hienxavlxd.com` trong project `hienxa/hien-xa-erp-v2` ở trạng thái chưa xác minh (cần TXT `_vercel`), DNS Wix vẫn CNAME về
+  project của tài khoản cũ → tên miền đang chạy bản build cũ; bản mới chỉ ở `hien-xa-erp-v2-nu.vercel.app`. Không có `NEXT_PUBLIC_APP_URL`.
+Sửa (code):
+- `inviteEmployeeAction`: mặc định tạo tài khoản bằng `auth.admin.generateLink({type:"invite"})` và trả link `…/recovery/confirm?surface=…&token_hash=…&type=invite`
+  (`activationUrl` trong `app-origin.ts`); chọn "Gửi thư mời qua email" thì dùng `inviteUserByEmail`, lỗi gửi thì tự tạo link. Vai trò chỉ có quyền
+  `work.*` đặt mật khẩu ở cổng thợ. Không thêm chỗ dùng secret key mới (vẫn trong `src/lib/auth/actions.ts`).
+- `createActivationLinkAction` + nút "Link kích hoạt" ở Nhân viên & quyền: link mới (invite nếu chưa xác nhận, recovery nếu đã xác nhận), chặn chính
+  mình, chi nhánh khác, vai trò vượt quyền, link trả về của tài khoản khác.
+- `RecoveryConfirmForm`: nhận `token_hash` + `type`, gỡ khỏi thanh địa chỉ, `verifyOtp` trong trình duyệt; link đã dùng → hướng dẫn tạo link mới.
+- Kiểm: `pnpm check` (163 file / 968 test, build), QA trình duyệt trên QA project (link sai/đã dùng ở 390px, popup mời có 2 cách gửi, nút "Link
+  kích hoạt" ở 5 dòng; app cục bộ không có secret key nên không tạo tài khoản thử).
+Owner cần làm: Wix DNS (TXT `_vercel` + CNAME `app` về project hiện tại), Supabase URL Configuration (Site URL + Redirect URLs).

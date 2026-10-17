@@ -1,7 +1,7 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
-const m = vi.hoisted(() => ({ create: vi.fn(), setSession: vi.fn(), updateUser: vi.fn(), onAuthStateChange: vi.fn(), unsubscribe: vi.fn() }));
+const m = vi.hoisted(() => ({ create: vi.fn(), setSession: vi.fn(), verifyOtp: vi.fn(), updateUser: vi.fn(), onAuthStateChange: vi.fn(), unsubscribe: vi.fn() }));
 vi.mock("@/lib/supabase/browser", () => ({ createBrowserSupabase: m.create }));
 
 import { EMAIL_LINK_HANDOFF_SCRIPT } from "./email-link-handoff";
@@ -11,7 +11,8 @@ let authListener: ((event: string, session: unknown) => void) | null = null;
 beforeEach(() => {
   vi.clearAllMocks();
   authListener = null;
-  m.create.mockReturnValue({ auth: { setSession: m.setSession, updateUser: m.updateUser, onAuthStateChange: m.onAuthStateChange } });
+  m.create.mockReturnValue({ auth: { setSession: m.setSession, verifyOtp: m.verifyOtp, updateUser: m.updateUser, onAuthStateChange: m.onAuthStateChange } });
+  m.verifyOtp.mockResolvedValue({ data: {}, error: null });
   m.setSession.mockResolvedValue({ data: {}, error: null });
   m.updateUser.mockResolvedValue({ data: {}, error: null });
   m.onAuthStateChange.mockImplementation((listener) => { authListener = listener; return { data: { subscription: { unsubscribe: m.unsubscribe } } }; });
@@ -50,7 +51,7 @@ it("explains an expired or already used link without contacting Supabase", async
   window.history.replaceState(null, "", "/recovery/confirm#error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired");
   render(<RecoveryConfirmForm surface="admin" hasAuthError={false} />);
   expect(await screen.findByRole("heading", { name: "Liên kết đã hết hạn hoặc đã được dùng" })).toBeInTheDocument();
-  expect(screen.getByRole("alert")).toHaveTextContent("gửi lại lời mời");
+  expect(screen.getByRole("alert")).toHaveTextContent("Link kích hoạt");
   expect(m.create).not.toHaveBeenCalled();
 });
 
@@ -78,4 +79,23 @@ it("sends an invite fragment that landed on another page to the password page", 
   expect(handoff("/recovery/confirm", "#access_token=a&refresh_token=b")).toBeNull();
   expect(handoff("/login", "")).toBeNull();
   expect(handoff("/admin/orders", "#section")).toBeNull();
+});
+
+it("verifies a copied activation link in the browser, drops the token from the address bar and sets the password", async () => {
+  window.history.replaceState(null, "", "/recovery/confirm?surface=work&token_hash=hash-1&type=invite");
+  render(<RecoveryConfirmForm surface="work" hasAuthError={false} />);
+  expect(window.location.search).toBe("?surface=work");
+  expect(await screen.findByRole("heading", { name: "Đặt mật khẩu cho tài khoản mới" })).toBeInTheDocument();
+  expect(m.verifyOtp).toHaveBeenCalledWith({ token_hash: "hash-1", type: "invite" });
+  setPassword("mat-khau-moi");
+  fireEvent.click(screen.getByRole("button", { name: "Đặt mật khẩu" }));
+  expect(await screen.findByRole("heading", { name: "Tài khoản đã sẵn sàng" })).toBeInTheDocument();
+});
+
+it("tells the employee to ask for a new link when a copied link was already used", async () => {
+  m.verifyOtp.mockResolvedValue({ data: {}, error: { message: "Token has expired or is invalid" } });
+  window.history.replaceState(null, "", "/recovery/confirm?surface=admin&token_hash=used&type=recovery");
+  render(<RecoveryConfirmForm surface="admin" hasAuthError={false} />);
+  expect(await screen.findByRole("heading", { name: "Liên kết đã hết hạn hoặc đã được dùng" })).toBeInTheDocument();
+  expect(screen.getByRole("alert")).toHaveTextContent("Link kích hoạt");
 });

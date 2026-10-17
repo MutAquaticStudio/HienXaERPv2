@@ -1289,3 +1289,8 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .discount-mode button[aria-pressed="true"] { background: var(--primary, #1d4ed8); color: #fff; }
 .doc-editor-footer .discount-field { margin-top: 10px; }
 .line-price-result { margin: 0; }
+
+/* P0 17/10: activation link a manager passes on through Zalo instead of relying on email. */
+.activation-link { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius-md, 10px); background: var(--surface-muted, var(--surface)); }
+.activation-link input { width: 100%; font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.85rem; }
+.activation-link .form-actions { flex-wrap: wrap; }
