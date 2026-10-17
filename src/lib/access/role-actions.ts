@@ -44,6 +44,8 @@ export async function saveCustomRoleAction(input: unknown): Promise<RoleSaveResu
       target_branch_id: access.branchId, target_role_id: data.roleId, role_name: data.name, permission_codes: data.permissions,
       expected_permission_codes: data.expected, role_active: data.active, operation_id: data.operationId,
     });
+    // PGRST202: the database does not have save_custom_role yet (migration 20261017120000 not applied); nothing was written.
+    if (error?.code === "PGRST202") return { status: "FAILED", message: "Máy chủ chưa bật chức năng vai trò tùy biến. Liên hệ người quản trị hệ thống; vai trò mẫu vẫn dùng bình thường." };
     if (error) return isAuthoritativeRejection(error.code) ? { status: "FAILED", message: roleMessage(error.message) } : { status: "UNKNOWN", message: "Chưa xác định được kết quả. Bấm lại đúng thao tác này để kiểm tra." };
     revalidatePath("/admin/access");
     return { status: "SUCCESS", roleId: String(roleId), message: data.roleId ? (data.active ? "Đã lưu vai trò. Quyền mới áp dụng ngay cho người đang dùng." : "Đã ngừng dùng vai trò.") : "Đã tạo vai trò. Có thể gán cho nhân viên ở tab Nhân viên." };

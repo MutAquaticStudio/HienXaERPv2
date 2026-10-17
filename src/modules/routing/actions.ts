@@ -5,6 +5,7 @@ import { userFacingError } from "@/lib/core/errors";
 import { revalidatePath } from "next/cache";
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { deliveryCommandMessage } from "@/modules/delivery/errors";
 import { recommendRoute } from "@/modules/routing/provider";
 import { effectiveWindow, overlappingIndexes, parseStopMinutes, stopWindows } from "@/modules/routing/stop-schedule";
 
@@ -170,6 +171,8 @@ export async function applyRoutePlanAction(_previous: RouteActionState, formData
     const stale = error.message.includes("stale") || error.message.includes("version_conflict");
     if (error.message.includes("schedule_collision")) return initialError("Khung giờ phân giao đang chồng lấn. Mở từng phiếu giao để chốt giờ bắt đầu và kết thúc, rồi tạo lại đề xuất lộ trình theo dữ liệu mới.");
     if (error.message.includes("route_stop_schedule_required")) return initialError("Lộ trình này lập trước khi có giờ dự kiến từng điểm nên chưa xếp lịch được phiếu chưa có lịch. Tạo lại đề xuất lộ trình.");
+    // Assignment refusals from a stop (vehicle capacity basis, driver eligibility…) read like on the delivery page.
+    if (/vehicle_|delivery_employee|delivery_reassignment|delivery_external|schedule_window/.test(error.message)) return initialError(deliveryCommandMessage(error.message));
     return initialError(stale ? "Dữ liệu giao hàng đã thay đổi. Tạo lại lộ trình trước khi áp dụng." : error.message);
   }
   revalidatePath("/admin/routes");

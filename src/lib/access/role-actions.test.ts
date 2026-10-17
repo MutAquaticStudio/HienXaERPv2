@@ -26,6 +26,8 @@ it("explains refusals and keeps an unknown outcome retryable", async () => {
     m.rpc.mockResolvedValueOnce({ data: null, error: { code: "42501", message: code } });
     expect((await saveCustomRoleAction(base)).message).toContain(text);
   }
+  m.rpc.mockResolvedValueOnce({ data: null, error: { code: "PGRST202", message: "Could not find the function public.save_custom_role" } });
+  expect(await saveCustomRoleAction(base)).toMatchObject({ status: "FAILED", message: expect.stringContaining("chưa bật chức năng vai trò tùy biến") });
   m.rpc.mockResolvedValueOnce({ data: null, error: { message: "fetch failed" } });
   expect((await saveCustomRoleAction(base)).status).toBe("UNKNOWN");
 });

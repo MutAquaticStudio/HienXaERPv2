@@ -2961,3 +2961,14 @@ sau bàn giao chuyển `app.hienxavlxd.com` (ghi D13 đầu Spec.md).
 - `lib/company/profile.ts`: `loadCompanyLogo`, `loadCompanyDocumentHeading` (hồ sơ + logo một lần đọc cho PDF), `logoMatchesType`;
   `pdf/business-document.ts` + `standard-document.ts` in logo (`embedLogo`, `fitInside`; logo lỗi → bỏ logo); action `saveCompanyLogoAction`;
   `components/settings/company-logo-form.tsx` (FilePicker, kiểm loại/cỡ trên trình duyệt, Lưu/Xóa, kết quả chưa rõ giữ đúng thao tác).
+- Phát hành 17/10: QA project áp `20261017130000`, `…140000`, `…150000` (md5 khớp file). QA trình duyệt ghi (owner): lưu thông tin DN + logo PNG → PDF
+  phiếu thu và đơn bán (tải trong trang) in tên DN, địa chỉ, MST, STK và logo, 1 trang; lập lộ trình 2 phiếu chưa lịch, 45 phút/điểm → giờ dự kiến
+  07:00–07:45, 07:45–08:30 lưu trong lộ trình; áp dụng bị chặn chồng lịch do 9 phiếu cũ của xe/tài xế QA đã phân mà không có lịch (quy tắc có sẵn coi
+  phiếu không lịch chiếm mọi giờ; Production không có dữ liệu kiểu này). Thông báo lỗi phân giao khi áp dụng lộ trình dùng chung `deliveryCommandMessage`.
+- Production (`nbwynrwkdbtfsitafsxa`, Owner "Hoàn thành hết và deploy production luôn"): đọc trước — bản cuối `20261015130000`, chưa có hàm/bảng mới,
+  không có mã nhóm giá cũ, các hàm nền khớp md5 QA (riêng `current_employee_id` khác khoảng trắng). Áp 10 migration theo thứ tự (mỗi file một transaction
+  + `schema_migrations` đúng version repo): `20261016150000`–`180000`, `20261017090000`–`110000`, `130000`–`150000`; 16 hàm mới/đổi khớp md5 QA; 0 bảng
+  thiếu RLS, `anon` 0 quyền bảng, 0 definer thiếu `search_path`, definer `anon` gọi được chỉ `rls_auto_enable` (có từ trước).
+- **Chưa áp `20261017120000_custom_roles`** ở QA và Production: lệnh ghi chứa hàm sửa vai trò/quyền bị tầng an toàn của công cụ hủy (các migration khác
+  chạy được). Owner chạy file SQL này trong Supabase SQL Editor; đến lúc đó "Tạo/Sửa vai trò" báo "Máy chủ chưa bật chức năng vai trò tùy biến"
+  (`PGRST202`), không ghi gì.
