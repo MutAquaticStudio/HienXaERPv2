@@ -1,97 +1,196 @@
-import { formatVnd, vnd } from "@/lib/core/money";
-import { formatQuantity } from "@/lib/core/quantity";
-import { formatBusinessDateTime } from "@/lib/core/business-time";
+import Decimal from "decimal.js";
 import Link from "next/link";
-import { ButtonLink } from "@/components/ui/button-link";
+import { ThresholdButton, type ThresholdSetting } from "@/components/inventory/threshold-button";
+import { AutoFilterForm } from "@/components/ui/auto-filter-form";
+import { ListPager } from "@/components/ui/list-pager";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { requireInternalPermission } from "@/lib/access/context";
+import { formatBusinessDateTime } from "@/lib/core/business-time";
+import { ilikePattern, parseCoreListQuery } from "@/lib/core-list";
+import { formatVnd, vnd } from "@/lib/core/money";
+import { formatQuantity } from "@/lib/core/quantity";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { inventoryMovementLabel } from "@/modules/inventory/presentation";
-import { saveInventoryThresholdAction } from "./actions";
+import { inUnit, largestUnit, stockCard, type CardMovement, type DisplayUnit } from "@/modules/inventory/stock-view";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const STOCK = ["in", "out", "low"] as const;
+/** Materials read for one view; the list is filtered and paged on the server from these. */
+const MATERIAL_LIMIT = 3000;
 
-type Query = { warehouse?: string; material?: string; q?: string; notice?: string; error?: string };
-type Position = { warehouse_id: string; material_id: string; base_uom_id: string; on_hand_base_quantity: string; reserved_base_quantity: string; available_base_quantity: string; inventory_value_vnd: string | null; average_cost_vnd_per_base: string | null };
-type Movement = { id: string; material_id: string; warehouse_id: string | null; delivery_id: string | null; movement_type: string; base_quantity_delta: string; inventory_value_delta_vnd: string | null; occurred_at: string };
-type Threshold = { id: string; warehouse_id: string; material_id: string; threshold_base_quantity: string; active: boolean; version: number };
-type Alert = { threshold_id: string; warehouse_id: string; warehouse_name: string; material_id: string; material_name: string; base_uom_symbol: string; threshold_base_quantity: string; on_hand_base_quantity: string; reserved_base_quantity: string; available_base_quantity: string };
+type Query = { q?: string; warehouse?: string; group?: string; stock?: string; unit?: string; page?: string; card?: string; material?: string; notice?: string; error?: string };
+type Material = { id: string; code: string; name: string; group_id: string; base_uom_id: string };
+type Position = { warehouse_id: string; material_id: string; on_hand_base_quantity: string; reserved_base_quantity: string; available_base_quantity: string; inventory_value_vnd: string | null };
+type Threshold = { warehouse_id: string; material_id: string; threshold_base_quantity: string; active: boolean };
+type Alert = { warehouse_id: string; material_id: string };
+type Conversion = { material_id: string | null; from_uom_id: string; to_uom_id: string; numerator: string; denominator: string };
+type Movement = CardMovement & { movement_type: string; delivery_id: string | null };
 
+const zero = new Decimal(0);
+const sum = (rows: Position[], key: "on_hand_base_quantity" | "reserved_base_quantity" | "available_base_quantity") => rows.reduce((total, row) => total.plus(row[key]), zero);
+
+/**
+ * Inventory (FB2 Đợt 5, KiotViet style): one row per material with on hand, held for orders, available to sell and value,
+ * filtered by warehouse, group and stock state. A row opens its stock card (movements with the balance after each) and
+ * per-warehouse stock; low-stock thresholds are edited in a popup. Balances are never edited here (UX-360).
+ */
 export default async function InventoryPage({ searchParams }: { searchParams: Promise<Query> }) {
   const access = await requireInternalPermission("inventory.read");
-  const supabase = await createServerSupabase();
   const query = await searchParams;
-  const warehouseId = UUID.test(query.warehouse ?? "") ? query.warehouse! : null;
-  const materialId = UUID.test(query.material ?? "") ? query.material! : null;
-  const term = query.q?.trim() ?? "";
+  const list = parseCoreListQuery({ q: query.q, page: query.page });
+  const warehouseId = UUID.test(query.warehouse ?? "") ? query.warehouse! : "";
+  const group = UUID.test(query.group ?? "") ? query.group! : "";
+  const stockFilter = (STOCK as readonly string[]).includes(query.stock ?? "") ? query.stock! : "";
+  const largeUnit = query.unit === "large";
+  const only = UUID.test(query.material ?? "") ? query.material! : "";
+  const cardId = UUID.test(query.card ?? "") ? query.card! : only;
+  const can = { adjust: access.permissions.has("inventory.adjust"), cost: access.permissions.has("inventory.cost.read"), purchase: access.permissions.has("purchasing.create"), count: access.permissions.has("inventory.count") };
+  const supabase = await createServerSupabase();
 
-  let materialRequest = supabase.from("materials").select("id, name, base_uom_id").eq("active", true).order("name").limit(300);
-  if (materialId) materialRequest = materialRequest.eq("id", materialId);
-  else if (term) materialRequest = materialRequest.ilike("name", `%${term.replaceAll("%", "\\%").replaceAll("_", "\\_")}%`);
-
-  const [warehouseResult, materialResult, uomResult] = await Promise.all([
-    supabase.from("warehouses").select("id, name").eq("branch_id", access.branchId).eq("active", true).order("name").limit(200),
-    materialRequest,
-    supabase.from("units_of_measure").select("id, symbol").limit(200),
-  ]);
-  const materialIds = (materialResult.data ?? []).map((row) => row.id);
-
-  let positionRequest = supabase.from("warehouse_inventory_read").select("warehouse_id, material_id, base_uom_id, on_hand_base_quantity, reserved_base_quantity, available_base_quantity, inventory_value_vnd::text, average_cost_vnd_per_base").eq("branch_id", access.branchId).order("warehouse_id").order("material_id").limit(200);
-  let movementRequest = supabase.from("inventory_movement_read").select("id, material_id, warehouse_id, delivery_id, movement_type, base_quantity_delta, inventory_value_delta_vnd::text, occurred_at").eq("branch_id", access.branchId).order("occurred_at", { ascending: false }).limit(30);
-  let alertRequest = supabase.from("low_stock_alert_read").select("threshold_id, warehouse_id, warehouse_name, material_id, material_name, base_uom_symbol, threshold_base_quantity, on_hand_base_quantity, reserved_base_quantity, available_base_quantity").eq("branch_id", access.branchId).order("available_base_quantity").limit(100);
-  let thresholdRequest = supabase.from("inventory_stock_thresholds").select("id, warehouse_id, material_id, threshold_base_quantity, active, version").eq("branch_id", access.branchId).order("updated_at", { ascending: false }).limit(100);
-
+  let materialRequest = supabase.from("materials").select("id, code, name, group_id, base_uom_id").eq("active", true);
+  if (only) materialRequest = materialRequest.eq("id", only);
+  if (list.q) materialRequest = materialRequest.or(`code.ilike.${ilikePattern(list.q)},name.ilike.${ilikePattern(list.q)}`);
+  if (group) materialRequest = materialRequest.eq("group_id", group);
+  let positionRequest = supabase.from("warehouse_inventory_read").select(`warehouse_id, material_id, on_hand_base_quantity, reserved_base_quantity, available_base_quantity${can.cost ? ", inventory_value_vnd" : ""}`).eq("branch_id", access.branchId);
+  let thresholdRequest = supabase.from("inventory_stock_thresholds").select("warehouse_id, material_id, threshold_base_quantity, active").eq("branch_id", access.branchId);
+  let alertRequest = supabase.from("low_stock_alert_read").select("warehouse_id, material_id").eq("branch_id", access.branchId);
   if (warehouseId) {
     positionRequest = positionRequest.eq("warehouse_id", warehouseId);
-    movementRequest = movementRequest.eq("warehouse_id", warehouseId);
-    alertRequest = alertRequest.eq("warehouse_id", warehouseId);
     thresholdRequest = thresholdRequest.eq("warehouse_id", warehouseId);
+    alertRequest = alertRequest.eq("warehouse_id", warehouseId);
   }
-  if (materialId) {
-    positionRequest = positionRequest.eq("material_id", materialId);
-    movementRequest = movementRequest.eq("material_id", materialId);
-    alertRequest = alertRequest.eq("material_id", materialId);
-    thresholdRequest = thresholdRequest.eq("material_id", materialId);
-  } else if (term && materialIds.length) {
-    positionRequest = positionRequest.in("material_id", materialIds);
-    movementRequest = movementRequest.in("material_id", materialIds);
-    alertRequest = alertRequest.in("material_id", materialIds);
-    thresholdRequest = thresholdRequest.in("material_id", materialIds);
-  }
-
-  const emptySearch = Boolean(term && !materialIds.length);
-  const [positionResult, movementResult, alertResult, thresholdResult] = emptySearch
-    ? [{ data: [] }, { data: [] }, { data: [] }, { data: [] }]
-    : await Promise.all([positionRequest, movementRequest, alertRequest, thresholdRequest]);
-
-  const warehouses = new Map((warehouseResult.data ?? []).map((row) => [row.id, row.name]));
-  const materials = new Map((materialResult.data ?? []).map((row) => [row.id, row.name]));
-  const symbols = new Map((uomResult.data ?? []).map((row) => [row.id, row.symbol]));
-  const positions = (positionResult.data ?? []) as Position[];
-  const movements = (movementResult.data ?? []) as Movement[];
-  const alerts = (alertResult.data ?? []) as Alert[];
+  const [materialResult, positionResult, thresholdResult, alertResult, warehouseResult, groupResult, unitResult] = await Promise.all([
+    materialRequest.order("name").order("id").limit(MATERIAL_LIMIT),
+    positionRequest.limit(10000),
+    thresholdRequest.limit(5000),
+    alertRequest.limit(5000),
+    supabase.from("warehouses").select("id, name").eq("branch_id", access.branchId).eq("active", true).order("name").limit(200),
+    supabase.from("material_groups").select("id, name").order("name").limit(500),
+    supabase.from("units_of_measure").select("id, symbol").limit(1000),
+  ]);
+  if (materialResult.error || positionResult.error || warehouseResult.error) throw new Error("Không thể tải tồn kho.");
+  const positions = (positionResult.data ?? []) as unknown as Position[];
   const thresholds = (thresholdResult.data ?? []) as Threshold[];
-  const canAdjust = access.permissions.has("inventory.adjust");
-  const canCreatePurchase = access.permissions.has("purchasing.create");
-  const filterContextKey = JSON.stringify([warehouseId, materialId, term]);
-  const clearMaterialParams = new URLSearchParams();
-  if (warehouseId) clearMaterialParams.set("warehouse", warehouseId);
-  if (term) clearMaterialParams.set("q", term);
-  const clearMaterialHref = `/admin/inventory${clearMaterialParams.size ? `?${clearMaterialParams}` : ""}`;
+  const alerts = (alertResult.data ?? []) as Alert[];
+  const warehouses = (warehouseResult.data ?? []) as { id: string; name: string }[];
+  const warehouseName = new Map(warehouses.map((row) => [row.id, row.name]));
+  const groups = new Map((groupResult.data ?? []).map((row) => [row.id, row.name]));
+  const symbols = new Map((unitResult.data ?? []).map((row) => [row.id, row.symbol]));
+  const lowIds = new Set(alerts.map((row) => row.material_id));
+  const byMaterial = new Map<string, Position[]>();
+  for (const row of positions) byMaterial.set(row.material_id, [...(byMaterial.get(row.material_id) ?? []), row]);
+  const onHandOf = (materialId: string) => sum(byMaterial.get(materialId) ?? [], "on_hand_base_quantity");
+
+  const materials = (materialResult.data ?? []) as Material[];
+  const inScope = materials.filter((material) => stockFilter === "in" ? onHandOf(material.id).gt(0)
+    : stockFilter === "out" ? onHandOf(material.id).lte(0) : stockFilter === "low" ? lowIds.has(material.id) : true);
+  const pageRows = inScope.slice(list.from, list.to + 1);
+  const pageIds = pageRows.map((row) => row.id);
+  const none = Promise.resolve({ data: [] as never[] });
+  const [conversionResult, movementResult] = await Promise.all([
+    largeUnit && pageIds.length ? supabase.from("material_uom_conversions").select("material_id, from_uom_id, to_uom_id, numerator::text, denominator::text").eq("active", true).in("material_id", pageIds).limit(2000) : none,
+    cardId ? (() => {
+      let request = supabase.from("inventory_movement_read").select("id, location_kind, warehouse_id, delivery_id, movement_type, base_quantity_delta, occurred_at").eq("branch_id", access.branchId).eq("material_id", cardId);
+      if (warehouseId) request = request.eq("warehouse_id", warehouseId);
+      return request.order("occurred_at", { ascending: false }).order("id", { ascending: false }).limit(50);
+    })() : none,
+  ]);
+  const conversions = (conversionResult.data ?? []) as unknown as Conversion[];
+  const card = cardId ? stockCard((movementResult.data ?? []) as Movement[], onHandOf(cardId).toFixed()) : [];
+
+  // KPIs over every material in the warehouse/group/search scope, not only this page.
+  const scoped = materials.flatMap((material) => byMaterial.get(material.id) ?? []);
+  const inStock = materials.filter((material) => onHandOf(material.id).gt(0)).length;
+  const valued = can.cost && scoped.every((row) => row.inventory_value_vnd != null);
+  const totalValue = valued ? scoped.reduce((total, row) => total + BigInt(row.inventory_value_vnd ?? "0"), 0n) : null;
+
+  const params = { q: list.q || undefined, warehouse: warehouseId || undefined, group: group || undefined, stock: stockFilter || undefined, unit: largeUnit ? "large" : undefined, material: only || undefined };
+  const href = (patch: Record<string, string | undefined>) => {
+    const search = new URLSearchParams();
+    for (const [key, value] of Object.entries({ ...params, page: list.page > 1 ? String(list.page) : undefined, ...patch })) if (value) search.set(key, value);
+    return `/admin/inventory${search.size ? `?${search}` : ""}`;
+  };
+  const back = href({ card: cardId || undefined });
+  const filtered = Boolean(list.q || warehouseId || group || stockFilter || only);
+  const columns = 5 + (can.cost ? 1 : 0);
 
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Kho hàng</p><h1>Tồn kho</h1><p className="lede">Theo dõi tồn đã ghi nhận, hàng đã giữ cho đơn bán và lượng còn khả dụng.</p></div><div className="form-actions">{access.permissions.has("roles.manage") && <ButtonLink href="/admin/inventory/warehouses" variant="secondary">Quản lý kho</ButtonLink>}<ButtonLink href="/admin/stock-counts" variant="secondary">Kiểm kho</ButtonLink></div></header>
-    <Link className="button button-secondary" href="/admin/inventory/transfers">Chuyển kho</Link>
+    <header className="page-heading"><div><p className="eyebrow">Kho hàng</p><h1>Tồn kho</h1><p className="lede">Tồn theo từng vật tư: đã ghi nhận, đang giữ cho đơn và có thể bán. Bấm một dòng để xem thẻ kho.</p></div>
+      <div className="action-cluster">
+        <Link className="button button-secondary" href="/admin/inventory/transfers">Chuyển kho</Link>
+        <Link className={`button ${can.count ? "button-primary" : "button-secondary"}`} href="/admin/stock-counts">Kiểm kho</Link>
+        {access.permissions.has("roles.manage") && <Link className="button button-secondary" href="/admin/inventory/warehouses">Quản lý kho</Link>}
+      </div>
+    </header>
     {query.notice === "threshold-saved" && <p className="form-message success" role="status">Đã lưu ngưỡng cảnh báo.</p>}
     {query.error && <p className="form-message" role="alert">Không thể lưu ngưỡng. Kiểm tra kho, vật tư và số lượng rồi thử lại.</p>}
-    <form key={filterContextKey} className="card filter-bar" method="get">{materialId && <input type="hidden" name="material" value={materialId} />}<label>Kho<select name="warehouse" defaultValue={warehouseId ?? ""}><option value="">Tất cả kho</option>{[...warehouses].map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></label><label>Tìm vật tư<input name="q" defaultValue={term} placeholder="Tên vật tư" /></label><button className="button button-secondary" type="submit">Lọc</button></form>
-    {materialId && <p className="card-scope-note">Vật tư đang lọc: {materials.get(materialId) ?? "Vật tư đã chọn"} · <Link className="code-link" href={clearMaterialHref}>Xóa lọc vật tư</Link></p>}
-
-    <section className="card" id="low-stock-alerts"><div className="section-head"><div><p className="eyebrow">Cảnh báo trong ứng dụng</p><h2>Tồn khả dụng dưới ngưỡng</h2></div><StatusBadge tone={alerts.length ? "warning" : "success"}>{alerts.length} cảnh báo</StatusBadge></div>{alerts.length ? <ul className="rank-list">{alerts.map((alert) => <li key={alert.threshold_id}><span><strong>{alert.material_name} · {alert.warehouse_name}</strong><small>Khả dụng {formatQuantity(String(alert.available_base_quantity))} / ngưỡng {formatQuantity(String(alert.threshold_base_quantity))} {alert.base_uom_symbol}</small></span><span className="inline-actions"><Link className="code-link" href={`/admin/inventory?warehouse=${alert.warehouse_id}&material=${alert.material_id}`}>Xem tồn kho</Link>{canCreatePurchase && <Link className="code-link" href={`/admin/purchase-orders/new?warehouse=${alert.warehouse_id}&material=${alert.material_id}`}>Tạo đơn mua nháp</Link>}</span></li>)}</ul> : <p className="empty-inline">Không có vật tư nào dưới ngưỡng trong phạm vi đang lọc.</p>}<p className="card-scope-note">Mỗi vật tư tại một kho chỉ có một cảnh báo. Hệ thống không tự đặt hàng.</p></section>
-
-    {canAdjust && <section className="card card-pad"><div className="section-head flush"><div><p className="eyebrow">Cấu hình</p><h2>Ngưỡng theo kho và vật tư</h2></div><span className="scope-chip">Đơn vị cơ sở</span></div><form key={`${warehouseId ?? ""}:${materialId ?? ""}`} action={saveInventoryThresholdAction} className="form-grid"><label className="field">Kho<select name="warehouseId" required defaultValue={warehouseId ?? ""}><option value="" disabled>Chọn kho</option>{[...warehouses].map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></label><label className="field">Vật tư<select name="materialId" required defaultValue={materialId ?? ""}><option value="" disabled>Chọn vật tư</option>{[...materials].map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></label><label className="field">Ngưỡng khả dụng<input name="threshold" inputMode="decimal" pattern="\d+(?:\.\d{1,6})?" required /></label><label className="field">Trạng thái<select name="active" defaultValue="true"><option value="true">Bật cảnh báo</option><option value="false">Tắt cảnh báo</option></select></label><div className="form-actions"><button className="button button-primary" type="submit">Lưu ngưỡng</button></div></form>{thresholds.length > 0 && <div className="table-wrap"><table><thead><tr><th>Kho</th><th>Vật tư</th><th>Ngưỡng</th><th>Trạng thái</th><th>Cập nhật</th></tr></thead><tbody>{thresholds.map((row) => <tr key={row.id}><td>{warehouses.get(row.warehouse_id) ?? "Kho đang cập nhật"}</td><td>{materials.get(row.material_id) ?? "Vật tư đang cập nhật"}</td><td>{formatQuantity(String(row.threshold_base_quantity))}</td><td>{row.active ? "Đang bật" : "Đã tắt"}</td><td><form action={saveInventoryThresholdAction} className="inline-actions"><input type="hidden" name="warehouseId" value={row.warehouse_id} /><input type="hidden" name="materialId" value={row.material_id} /><input name="threshold" defaultValue={row.threshold_base_quantity} inputMode="decimal" pattern="\d+(?:\.\d{1,6})?" aria-label="Ngưỡng mới" required /><select name="active" defaultValue={String(row.active)} aria-label="Trạng thái"><option value="true">Bật</option><option value="false">Tắt</option></select><button className="button button-secondary" type="submit">Lưu</button></form></td></tr>)}</tbody></table></div>}</section>}
-
-    <section className="card"><div className="section-head"><h2>Vị trí kho</h2><StatusBadge tone="info">{positions.length} dòng</StatusBadge></div><div className="table-wrap"><table><thead><tr><th>Kho</th><th>Vật tư</th><th>Tồn đã ghi nhận</th><th>Đã giữ</th><th>Khả dụng</th><th>Giá trị / Giá vốn bình quân</th></tr></thead><tbody>{positions.map((row) => <tr key={`${row.warehouse_id}-${row.material_id}`}><td>{warehouses.get(row.warehouse_id)}</td><td>{materials.get(row.material_id)}</td><td className="mono">{formatQuantity(String(row.on_hand_base_quantity))} {symbols.get(row.base_uom_id)}</td><td className="mono">{formatQuantity(String(row.reserved_base_quantity))}</td><td><strong className="mono">{formatQuantity(String(row.available_base_quantity))}</strong></td><td>{row.inventory_value_vnd == null ? "Ẩn theo quyền" : <span className="mono">{formatVnd(vnd(String(row.inventory_value_vnd)))} · {row.average_cost_vnd_per_base == null ? "Chưa có giá vốn" : `${formatQuantity(row.average_cost_vnd_per_base)} ₫/đơn vị cơ sở`}</span>}</td></tr>)}</tbody></table>{positions.length === 0 && <p className="empty-inline">Chưa có phát sinh kho phù hợp bộ lọc.</p>}</div></section>
-    <section className="card inventory-ledger"><div className="section-head"><h2>Phát sinh kho gần nhất</h2><span className="muted">Lưu đầy đủ lịch sử · tối đa 30 dòng</span></div><div className="table-wrap"><table><thead><tr><th>Thời điểm</th><th>Loại</th><th>Vật tư</th><th>Vị trí</th><th>Tăng / giảm</th><th>Nguồn</th></tr></thead><tbody>{movements.map((row) => <tr key={row.id}><td>{formatBusinessDateTime(row.occurred_at)}</td><td>{inventoryMovementLabel(row.movement_type)}</td><td>{materials.get(row.material_id) ?? "Vật tư đang cập nhật"}</td><td>{row.warehouse_id ? warehouses.get(row.warehouse_id) : "Đang giao"}</td><td className="mono">{formatQuantity(String(row.base_quantity_delta))}</td><td>{row.delivery_id ? <Link className="code-link" href={`/admin/deliveries/${row.delivery_id}`}>Phiếu giao</Link> : "Chứng từ kho"}</td></tr>)}</tbody></table></div></section>
+    <section className="metric-grid" aria-label="Tổng quan tồn kho">
+      <Link className="card metric-card metric-link" href={href({ stock: "in", page: undefined, card: undefined })}><span className="metric-label">Vật tư còn hàng</span><strong className="metric-value">{inStock}</strong></Link>
+      <Link className="card metric-card metric-link" href={href({ stock: "out", page: undefined, card: undefined })}><span className="metric-label">Hết hàng</span><strong className="metric-value">{materials.length - inStock}</strong></Link>
+      <Link className="card metric-card metric-link" href={href({ stock: "low", page: undefined, card: undefined })}><span className="metric-label">Dưới ngưỡng</span><strong className={`metric-value${lowIds.size ? " text-danger" : ""}`}>{lowIds.size}</strong></Link>
+      <article className="card metric-card"><span className="metric-label">Giá trị tồn</span><strong className="metric-value">{totalValue === null ? "—" : formatVnd(vnd(totalValue))}</strong></article>
+    </section>
+    <div className="list-layout">
+      <AutoFilterForm className="card card-pad list-filters" aria-label="Bộ lọc tồn kho">
+        <label className="list-filters-search">Tìm kiếm<input type="search" name="q" defaultValue={list.q} placeholder="Mã hoặc tên vật tư" /></label>
+        <label>Kho<select name="warehouse" defaultValue={warehouseId}><option value="">Tất cả kho</option>{warehouses.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
+        <label>Nhóm vật tư<select name="group" defaultValue={group}><option value="">Tất cả</option>{[...groups].map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></label>
+        <label>Tồn kho<select name="stock" defaultValue={stockFilter}><option value="">Tất cả</option><option value="in">Còn hàng</option><option value="out">Hết hàng</option><option value="low">Dưới ngưỡng</option></select></label>
+        <label>Hiển thị theo<select name="unit" defaultValue={largeUnit ? "large" : ""}><option value="">Đơn vị cơ sở</option><option value="large">Đơn vị lớn nhất (tấn, bao…)</option></select></label>
+        {only && <input type="hidden" name="material" value={only} />}
+        {filtered && <Link className="code-link" href="/admin/inventory">Xóa lọc</Link>}
+      </AutoFilterForm>
+      <section className="card list-main">
+        <div className="section-head"><h2>{inScope.length} vật tư</h2><span className="scope-chip">{warehouseId ? warehouseName.get(warehouseId) ?? "Kho" : "Tất cả kho"}</span></div>
+        {materials.length >= MATERIAL_LIMIT && <p className="card-scope-note">Đang xem {MATERIAL_LIMIT} vật tư đầu tiên; thu hẹp bằng tìm kiếm hoặc nhóm.</p>}
+        <div className="table-wrap"><table className="row-link-table inventory-table">
+          <thead><tr><th scope="col">Vật tư</th><th scope="col" className="numeric">Tồn kho</th><th scope="col" className="numeric">Đang giữ</th><th scope="col" className="numeric">Có thể bán</th>
+            {can.cost && <th scope="col" className="numeric">Giá trị tồn</th>}<th scope="col">Ngưỡng</th></tr></thead>
+          <tbody>{pageRows.map((material) => {
+            const rows = byMaterial.get(material.id) ?? [];
+            const symbol = symbols.get(material.base_uom_id) ?? "đơn vị";
+            const unit: DisplayUnit | null = largeUnit ? largestUnit(conversions, material.id, material.base_uom_id, symbols) : null;
+            const show = (value: Decimal) => unit ? <>{inUnit(value.toFixed(), unit)}<small className="table-subline">{formatQuantity(value.toFixed())} {symbol}</small></> : <>{formatQuantity(value.toFixed())} {symbol}</>;
+            const value = can.cost && rows.length && rows.every((row) => row.inventory_value_vnd != null) ? rows.reduce((total, row) => total + BigInt(row.inventory_value_vnd!), 0n) : null;
+            const settings: ThresholdSetting[] = thresholds.filter((row) => row.material_id === material.id).map((row) => ({ warehouseId: row.warehouse_id, threshold: String(row.threshold_base_quantity), active: row.active }));
+            const low = alerts.filter((row) => row.material_id === material.id);
+            const opened = cardId === material.id;
+            return [<tr key={material.id} className={opened ? "row-open" : undefined}>
+              <td className="row-title" data-label="Vật tư"><Link className="row-link" href={href({ card: opened ? undefined : material.id })} scroll={false} aria-expanded={opened}><strong>{material.name}</strong></Link><small className="table-subline"><span className="mono">{material.code}</span> · {groups.get(material.group_id) ?? "Chưa phân nhóm"}</small></td>
+              <td className="numeric mono" data-label="Tồn kho">{show(sum(rows, "on_hand_base_quantity"))}</td>
+              <td className="numeric mono" data-label="Đang giữ">{show(sum(rows, "reserved_base_quantity"))}</td>
+              <td className="numeric mono" data-label="Có thể bán"><strong>{show(sum(rows, "available_base_quantity"))}</strong></td>
+              {can.cost && <td className="numeric mono" data-label="Giá trị tồn">{value === null ? "—" : formatVnd(vnd(value))}</td>}
+              <td className="table-actions" data-label="Ngưỡng"><div className="inventory-threshold">{low.length ? <StatusBadge tone="warning">Dưới ngưỡng{warehouseId ? "" : ` · ${low.length} kho`}</StatusBadge>
+                : warehouseId && settings[0] ? <span className="muted">{settings[0].active ? `${formatQuantity(settings[0].threshold)} ${symbol}` : "Đã tắt"}</span> : <span className="muted">—</span>}
+                {can.adjust && warehouses.length > 0 && <ThresholdButton material={{ id: material.id, name: material.name, symbol }} warehouses={warehouses} settings={settings} defaultWarehouseId={warehouseId || undefined} back={back} />}
+                {low.length > 0 && can.purchase && <Link className="code-link" href={`/admin/purchase-orders/new?warehouse=${low[0].warehouse_id}&material=${material.id}`}>Đặt mua</Link>}
+              </div></td>
+            </tr>,
+            opened && <tr key={`${material.id}-card`} className="row-expansion"><td colSpan={columns}>
+              <div className="stock-card">
+                <section><h3>Tồn theo kho</h3>{rows.length ? <ul className="clean-list">{rows.map((row) => <li key={row.warehouse_id}><span>{warehouseName.get(row.warehouse_id) ?? "Kho"}</span>
+                  <small>Tồn {formatQuantity(row.on_hand_base_quantity)} · giữ {formatQuantity(row.reserved_base_quantity)} · có thể bán {formatQuantity(row.available_base_quantity)} {symbol}</small></li>)}</ul> : <p className="muted">Chưa có tồn ở kho nào.</p>}
+                  <Link className="code-link" href={`/admin/products/${material.id}`}>Mở vật tư</Link></section>
+                <section><h3>Thẻ kho{warehouseId ? ` · ${warehouseName.get(warehouseId) ?? "Kho"}` : ""}</h3>{card.length ? <div className="table-wrap"><table>
+                  <thead><tr><th scope="col">Thời điểm</th><th scope="col">Loại</th>{!warehouseId && <th scope="col">Vị trí</th>}<th scope="col" className="numeric">Nhập / xuất</th><th scope="col" className="numeric">Tồn sau</th><th scope="col">Chứng từ</th></tr></thead>
+                  <tbody>{card.map((row) => <tr key={row.id}>
+                    <td data-label="Thời điểm">{formatBusinessDateTime(row.occurred_at)}</td>
+                    <td data-label="Loại">{inventoryMovementLabel(row.movement_type)}</td>
+                    {!warehouseId && <td data-label="Vị trí">{row.warehouse_id ? warehouseName.get(row.warehouse_id) ?? "Kho" : "Đang giao"}</td>}
+                    <td className={`numeric mono${new Decimal(row.base_quantity_delta).gt(0) ? " text-success" : ""}`} data-label="Nhập / xuất">{new Decimal(row.base_quantity_delta).gt(0) ? "+" : ""}{formatQuantity(row.base_quantity_delta)}</td>
+                    <td className="numeric mono" data-label="Tồn sau">{row.balanceAfter === null ? "—" : formatQuantity(row.balanceAfter)}</td>
+                    <td data-label="Chứng từ">{row.delivery_id ? <Link className="code-link" href={`/admin/deliveries/${row.delivery_id}`}>Phiếu giao</Link> : "Chứng từ kho"}</td>
+                  </tr>)}</tbody>
+                </table></div> : <p className="muted">Chưa có phát sinh kho.</p>}
+                  {card.length === 50 && <p className="card-scope-note">50 phát sinh gần nhất.</p>}</section>
+              </div>
+            </td></tr>,
+            ];
+          })}</tbody>
+        </table>{!pageRows.length && <p className="empty-inline">{filtered ? "Không có vật tư phù hợp bộ lọc." : "Chưa có vật tư đang dùng."}</p>}</div>
+        <ListPager page={list.page} total={inScope.length} params={params} />
+      </section>
+    </div>
   </div>;
 }

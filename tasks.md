@@ -710,6 +710,6 @@ preview → Owner OK → merge, áp migration Production (đối chiếu md5), d
 | FB2-D2B | Đợt 2b: hàng cùng loại / biến thể vật tư (D11, SPEC-CAT-002): bảng `material_variant_groups`, cột `materials.variant_group_id`/`variant_attributes`, RPC `save_material_variant_group` (migration `20261016170000`), popup tạo/sửa, lọc + nhãn trong danh sách, chi tiết vật tư, F3 gom theo hàng | DONE_LOCAL; QA project migrated + QA trình duyệt PASS 16/10 (gộp PR #52 theo chỉ thị Owner) |
 | FB2-D3 | Đợt 3: tạo đơn bán − / +, tồn kho hiện luôn, xác nhận qua popup (D6), lập phiếu giao một bước (SPEC-DEL-006, migration `20261016180000`: `order_delivery_plan`, `create_delivery_for_order`), thanh tiến trình phiếu giao, Dịch vụ tạo nhanh + menu (D9) | DONE_LOCAL; QA project migrated + QA trình duyệt PASS 17/10 (gộp PR #52) |
 | FB2-D4 | Đợt 4: Khách hàng 360 & NCC 360 dạng tab (SPEC-CUS-004, UX-330/UX-340; migration `20261017090000`: `customer_credit_summary`) | DONE_LOCAL; QA project migrated + QA trình duyệt PASS 17/10 (gộp PR #52) |
-| FB2-D5 | Đợt 5: Tồn kho & Kiểm kho kiểu KiotViet | PLANNED |
+| FB2-D5 | Đợt 5: Tồn kho & Kiểm kho kiểu KiotViet (SPEC-INVTRY-005, UX-360/UX-370; migration `20261017100000`: `record_stock_count_lines_batch`, `cancel_stock_count`) | DONE_LOCAL; QA project migrated + QA trình duyệt PASS 17/10 (gộp PR #52) |
 | FB2-D6 | Đợt 6: Công nợ gộp, Sổ quỹ, Chi phí, tắt Báo chuyển khoản (D8), Hồ sơ hóa đơn gộp | PLANNED |
 | FB2-D7 | Đợt 7: Thu nhập, Nhân viên & quyền + vai trò tùy biến (D12), Lộ trình, Cài đặt (D10) | PLANNED |

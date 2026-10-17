@@ -2869,3 +2869,27 @@ md5 hàm khớp file). QA trình duyệt (owner, chi nhánh A): khách "HXQA Aud
 chọn sẵn khách; NCC — 5 chỉ số, 5 tab. Sửa khi QA: trang khách rộng 588px ở điện thoại do chữ ẩn cho trình đọc màn hình (`sr-only`, định vị
 tuyệt đối) trong tiêu đề cột thoát khỏi khung cuộn bảng → `.table-wrap { position: relative }` (áp mọi bảng); bảng công trình chuyển sang cột rộng,
 hai bảng nhập kho/giao thẳng của NCC xếp chồng. Đo lại 390/390 (khách, NCC, danh sách khách/vật tư/NCC). Production chưa áp.
+
+## 2026-10-17 — FB2-D5: Tồn kho & Kiểm kho kiểu KiotViet (Đợt 5)
+
+Nhánh `nox/elegant-volta-kr29iz` (PR #52).
+- **Kiểm kho nhiều dòng** (migration `20261017100000_stock_count_batch`): `record_stock_count_lines_batch` gọi lại `record_stock_count_line`
+  cho từng dòng trong một transaction (mã thao tác con `md5(op||':line:'||n)`, mỗi dòng tăng version phiếu), `cancel_stock_count` (OPEN →
+  CANCELLED, không phát sinh kho, audit kèm lý do). Action `inventory/stock-count-actions.ts`: "Lưu tạm" = lô dòng mới/đã sửa; "Hoàn thành &
+  cân bằng kho" = lô rồi `approve_stock_count` trên version lô để lại (duyệt bị từ chối sau khi lô đã lưu → báo "Đã lưu số đếm nhưng chưa cân
+  bằng kho: …"; kết quả không rõ → thử lại đúng lệnh cũ). Bảng phiếu `components/inventory/stock-count-sheet.tsx` (+ `stock-count-sheet.ts`:
+  lệch, lý do chung, giá vốn khi sổ 0, chỉ gửi dòng đổi). Người chỉ có quyền duyệt vẫn hoàn thành được phiếu đã lưu. Bỏ form ghi từng dòng
+  và form duyệt cũ; thông báo lỗi kho tách sang `inventory/errors.ts`.
+- **Tồn kho** (`admin/inventory/page.tsx`): bảng theo vật tư cộng các kho, KPI bấm để lọc, lọc kho/nhóm/tồn/đơn vị lớn nhất (`stock-view.ts`),
+  thẻ kho `?card=` với "Tồn sau" tính lùi từ tồn hiện tại, popup ngưỡng (`threshold-button.tsx`; action lưu ngưỡng quay về đúng bộ lọc qua `back`
+  chỉ nhận đường dẫn `/admin/inventory`), "Đặt mua" khi dưới ngưỡng. Link Tổng quan → `/admin/inventory?stock=low`.
+- Script QA cập nhật selector: `scripts/qa/remediation/package1-browser.mjs` (Hoàn thành & cân bằng kho + popup), `scripts/qa/go-live/
+  configuration-browser.mjs` (ngưỡng qua popup).
+Kiểm: native `090_stock_count_batch.sql` (người chỉ xem/khác chi nhánh bị từ chối, lô rỗng/trùng vật tư bị từ chối, một dòng thiếu lý do làm
+cả lô không ghi, version tăng theo dòng, quan sát + audit, replay/xung đột/version cũ, duyệt sau lô ra đúng phát sinh, phiếu đã duyệt không hủy,
+hủy cần lý do, không phát sinh kho, phiếu đã hủy không nhận dòng/không duyệt, `anon` không chạy) cùng 010–080 PASS; vitest các file mới.
+QA project: áp migration (sha256 `374c1f78…`, md5 2 hàm khớp file). QA trình duyệt (owner, kho "QA-PO-20261004T124129Z warehouseValid"):
+lọc kho + tìm → thẻ kho, đơn vị lớn, popup ngưỡng 1,5 lưu và quay về đúng bộ lọc; tạo phiếu SC-2026-000011 → A 500 (khớp), B 3 (+1) → thiếu lý do
+bị chặn → lý do chung → Lưu tạm 2 dòng → tải lại giữ số → Hoàn thành (popup +1 · 200.000 ₫) → Đã cân bằng kho, tồn B 2 → 3; phiếu thứ hai Hủy
+→ Đã hủy. 1440/1366/390px: trang không tràn (sửa khi QA: gộp mã vào ô Vật tư, gộp nút ngưỡng vào cột Ngưỡng, cho phép xuống dòng tên dài,
+xếp chồng tồn theo kho trên thẻ kho, thanh dưới phiếu gọn và chỉ dính đáy khi còn thao tác). Production chưa áp.

@@ -1106,3 +1106,60 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
   .price-book-table td.price-book-pick { position: absolute; left: 1rem; top: 0.95rem; }
   .price-book-table td input[inputmode] { width: 100%; text-align: left; }
 }
+
+/* FB2 Đợt 5 — Tồn kho (one row per material, stock card in the row) and the count sheet. */
+.text-success { color: var(--success); font-weight: 700; }
+.metric-link { color: inherit; text-decoration: none; }
+.metric-link:hover, .metric-link:focus-visible { border-color: var(--primary); }
+.row-link-table .table-actions > * { position: relative; z-index: 1; }
+.row-link-table .table-actions { white-space: nowrap; }
+.inventory-table tr.row-open { background: var(--surface-soft); }
+/* Long material and warehouse names wrap instead of widening the table past the card. */
+.inventory-table td.row-title, .stock-count-table td[data-label="Vật tư"] { min-width: 200px; white-space: normal; }
+.stock-card td, .stock-card li { white-space: normal; }
+.inventory-threshold { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+@media (max-width: 760px) { .inventory-table td[data-label="Ngưỡng"] { grid-column: 1 / -1; } }
+.stock-card { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; padding: 0.25rem 0.5rem; }
+.stock-card .clean-list { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; }
+.stock-card > section { min-width: 0; }
+.stock-card h3 { margin: 0 0 0.4rem; font-size: var(--font-size-label); }
+.stock-card .clean-list li { display: grid; gap: 2px; }
+.segmented { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 3px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-soft); }
+.segmented button { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 6px 12px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-weight: 700; cursor: pointer; }
+.segmented button.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(23, 44, 73, 0.12); }
+.stock-count-toolbar { flex-wrap: wrap; align-items: end; }
+.stock-count-search, .stock-count-add, .stock-count-shared { display: grid; gap: 4px; font-size: var(--font-size-label); font-weight: 600; }
+.stock-count-search, .stock-count-add { flex: 1 1 220px; min-width: 0; }
+.stock-count-shared { max-width: 520px; }
+.stock-count-sheet input, .stock-count-sheet select { width: 100%; min-width: 0; min-height: 40px; padding: 7px 10px; border: 1px solid #bdc7d5; border-radius: 9px; color: var(--text); background: #fff; font: inherit; font-weight: 400; }
+.stock-count-table .unit-ratio { display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
+.stock-count-table .unit-ratio input { max-width: 140px; text-align: right; }
+.stock-count-table .unit-ratio span { color: var(--muted); white-space: nowrap; }
+.stock-count-cost { display: grid; gap: 2px; justify-items: end; margin-top: 6px; color: var(--muted); font-size: var(--font-size-caption); }
+.stock-count-cost input { max-width: 140px; text-align: right; }
+.stock-count-table tr.row-variance td { background: #fffaf0; }
+.stock-count-table tr.row-problem td { background: var(--danger-soft); }
+.stock-count-table td .field-error { display: block; margin-top: 4px; font-size: var(--font-size-caption); }
+.stock-count-footer { display: flex; flex-wrap: wrap; align-items: end; gap: 0.6rem 1rem; padding: 0.85rem 1.1rem; border-top: 1px solid var(--border); border-radius: 0 0 var(--radius) var(--radius); background: var(--surface); }
+.stock-count-footer-sticky { position: sticky; bottom: 0; z-index: 5; box-shadow: 0 -6px 18px rgba(23, 44, 73, 0.06); }
+.stock-count-summary { flex: 1 1 100%; margin: 0; }
+.stock-count-footer .stock-count-shared { flex: 1 1 260px; }
+.stock-count-footer .form-message { flex: 1 1 100%; margin: 0; }
+.stock-count-footer .form-actions { flex: 0 1 auto; justify-content: flex-end; margin-left: auto; }
+@media (max-width: 760px) {
+  .stock-card { padding: 0; }
+  .inventory-table tr.row-expansion { display: block; padding: 0.5rem 1rem 1rem; }
+  .inventory-table tr.row-expansion > td { display: block; }
+  .stock-count-table thead { display: none; }
+  .stock-count-table, .stock-count-table tbody, .stock-count-table tr, .stock-count-table td { display: block; }
+  .stock-count-table tbody tr { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem 0.75rem; padding: 0.85rem 1rem; border-top: 1px solid var(--border); }
+  .stock-count-table td { padding: 0; border: 0; white-space: normal; }
+  .stock-count-table td.numeric { text-align: left; }
+  .stock-count-table td[data-label]::before { content: attr(data-label); display: block; color: var(--muted); font-size: var(--font-size-caption); }
+  .stock-count-table td[data-label="Vật tư"], .stock-count-table td[data-label="Lý do"] { grid-column: 1 / -1; }
+  .stock-count-table .unit-ratio { justify-content: flex-start; }
+  .stock-count-table .unit-ratio input, .stock-count-cost input { max-width: none; text-align: left; }
+  .stock-count-cost { justify-items: start; }
+  .stock-count-footer .form-actions { flex: 1 1 100%; justify-content: stretch; margin-left: 0; }
+  .stock-count-footer .form-actions .button { flex: 1 1 auto; }
+}

@@ -1053,6 +1053,16 @@ open count
 
 Không sửa balance trực tiếp.
 
+**FB2 Đợt 5 (17/10/2026, kiểu KiotViet):** phiếu kiểm nhập **nhiều dòng một lần** bằng
+`record_stock_count_lines_batch(target_stock_count_id, count_lines jsonb, expected_count_version, operation_id)` — tối đa 500 dòng
+`{material_id, counted_base_quantity, adjustment_unit_cost_vnd?, reason?}`, không trùng vật tư; gọi lại `record_stock_count_line` cho từng
+dòng trong **một transaction** (giữ nguyên quyền `inventory.count`, kiểm cutoff/biến động sau mốc chốt, số lượng chính xác, lý do khi lệch,
+fingerprint căn cứ và lịch sử quan sát; mã thao tác con suy ra từ mã của lô), một dòng lỗi thì cả lô không ghi; receipt + audit
+`stock_count.lines_batch_recorded`. "Hoàn thành & cân bằng kho" = lưu các dòng mới/đã sửa rồi `approve_stock_count` hiện có (quyền
+`inventory.adjust`); chỉ vật tư đã đếm được điều chỉnh. **Hủy phiếu** `cancel_stock_count(target_stock_count_id, expected_count_version,
+cancel_reason, operation_id)`: chỉ phiếu `OPEN`, cần lý do ≥ 3 ký tự, chuyển `CANCELLED`, **không** sinh phát sinh kho; dòng đã đếm giữ làm
+lịch sử; audit `stock_count.cancelled` kèm lý do. Phiếu đã cân bằng không hủy được.
+
 ## SPEC-INVTRY-006 — Costing
 
 Ban đầu dùng Moving Weighted Average nếu phù hợp dữ liệu.

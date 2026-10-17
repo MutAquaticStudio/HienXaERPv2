@@ -1010,6 +1010,13 @@ Click row:
 
 Không cho inline edit balance.
 
+**Tồn kho kiểu KiotViet (FB2 Đợt 5, 17/10/2026)**: nút Chuyển kho, Kiểm kho, Quản lý kho; 4 thẻ (Vật tư còn hàng │ Hết hàng │ Dưới ngưỡng —
+bấm để lọc │ Giá trị tồn khi có quyền giá vốn); lọc trái tự áp dụng: Tìm kiếm, Kho, Nhóm vật tư, Tồn kho (Còn hàng/Hết hàng/Dưới ngưỡng),
+Hiển thị theo (Đơn vị cơ sở / Đơn vị lớn nhất của vật tư, kèm số theo đơn vị cơ sở chữ nhỏ). Bảng mỗi vật tư một dòng: Vật tư (tên, mã · nhóm)
+│ Tồn kho │ Đang giữ │ Có thể bán │ Giá trị tồn (theo quyền) │ Ngưỡng (giá trị hoặc "Dưới ngưỡng", nút "Ngưỡng" mở popup chọn kho + ngưỡng +
+bật/tắt, "Đặt mua" khi dưới ngưỡng). Bấm dòng mở ngay dưới dòng: **Tồn theo kho** và **Thẻ kho** (50 phát sinh gần nhất: Thời điểm │ Loại │
+Vị trí (khi xem tất cả kho) │ Nhập / xuất │ Tồn sau │ Chứng từ). Không sửa số tồn trực tiếp.
+
 ---
 
 # UX-370 — `/admin/stock-counts`
@@ -1026,6 +1033,14 @@ Tạo đợt kiểm
 ```
 
 Variance nổi bật.
+
+**Kiểm kho kiểu KiotViet (FB2 Đợt 5)**: danh sách phiếu (lọc Tìm mã, Kho, Trạng thái; cột Mã phiếu │ Kho │ Chốt sổ lúc │ Đã đếm │ Lệch tăng │
+Lệch giảm │ Trạng thái Đang kiểm/Đã cân bằng kho/Đã hủy); "+ Tạo phiếu kiểm" mở popup chọn kho (mốc chốt sổ = lúc mở popup). Trang phiếu là
+**bảng điền sẵn mọi vật tư đang có tồn ở kho**: Vật tư (tên, mã) │ Tồn sổ sách │ Thực tế (nhập kiểu Việt, Enter xuống dòng) │ Lệch (xanh tăng,
+đỏ giảm, "Khớp") │ Giá trị lệch (theo quyền giá vốn) │ Lý do (chỉ khi lệch); dòng tăng tồn khi sổ đang 0 hiện thêm ô "Giá vốn / đơn vị". Thanh công
+cụ: tìm trong phiếu, lọc Tất cả/Chưa đếm/Lệch/Khớp, "Thêm vật tư khác" (vật tư chưa có tồn). Thanh dưới dính đáy: "Đã đếm x/y · Lệch tăng · Lệch
+giảm (giá trị) · Khớp", "Lý do chung cho dòng lệch", nút Hủy phiếu (popup lý do), Lưu tạm (N dòng), Hoàn thành & cân bằng kho (popup tóm tắt →
+"Cân bằng kho"). Dòng thiếu lý do/giá vốn tô đỏ kèm lời nhắc, không gửi. Phiếu đã cân bằng hoặc đã hủy chỉ xem.
 
 ---
 

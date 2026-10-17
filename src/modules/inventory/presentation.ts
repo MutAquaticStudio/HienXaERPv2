@@ -18,5 +18,9 @@ export function inventoryMovementLabel(value: string) {
 }
 
 export function stockCountStateLabel(value: string) {
-  return lookupLabel({ OPEN: "Đang kiểm", APPROVED: "Đã duyệt", CANCELLED: "Đã hủy" }, value, "Trạng thái đang cập nhật");
+  return lookupLabel({ OPEN: "Đang kiểm", APPROVED: "Đã cân bằng kho", CANCELLED: "Đã hủy" }, value, "Trạng thái đang cập nhật");
+}
+
+export function stockCountTone(value: string): "success" | "info" | "warning" {
+  return value === "APPROVED" ? "success" : value === "CANCELLED" ? "info" : "warning";
 }
