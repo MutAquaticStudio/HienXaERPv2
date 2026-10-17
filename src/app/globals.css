@@ -196,13 +196,23 @@ h3 { font-size: var(--font-size-body); }
 .card-pad { padding: 22px; }
 .content > .card + .card { margin-top: 24px; }
 .metric-card { position: relative; overflow: hidden; padding: 20px; }
+.metric-grid-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+@media (max-width: 1100px) { .metric-grid-5 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .metric-grid-5 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .metric-grid-5 .metric-value { font-size: 20px; } }
+/* Record pages (Khách hàng 360, NCC 360): one tab per subject, each a real address. */
+.detail-tabs { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--border); scrollbar-width: thin; }
+.detail-tabs a { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; min-height: 42px; padding: 8px 14px; border-bottom: 3px solid transparent; color: var(--muted); font-weight: 700; text-decoration: none; white-space: nowrap; }
+.detail-tabs a[aria-current="page"] { border-bottom-color: var(--primary); color: var(--text); }
+.detail-tabs a:hover, .detail-tabs a:focus-visible { color: var(--text); }
+.detail-tab-count { min-width: 22px; padding: 1px 7px; border-radius: 999px; background: var(--surface-soft); font-size: var(--font-size-caption); text-align: center; }
 .metric-card::after { position: absolute; right: -24px; bottom: -40px; width: 100px; height: 100px; border-radius: 50%; background: rgba(8, 102, 204, 0.06); content: ""; }
 .metric-label { color: var(--muted); font-size: var(--font-size-caption); font-weight: 600; }
 .metric-value { display: block; margin: 7px 0 1px; font-family: var(--font-sans); font-variant-numeric: tabular-nums; font-size: 27px; font-weight: 800; letter-spacing: -0.045em; }
 .metric-note { color: var(--success); font-size: var(--font-size-caption); font-weight: 700; }
 .section-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 20px 22px 12px; }
 .section-head h2 { margin-bottom: 0; }
-.table-wrap { overflow-x: auto; }
+/* Positioned so screen-reader-only header text cannot escape the scroller and widen a phone page. */
+.table-wrap { position: relative; overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: var(--font-size-table); }
 th, td { padding: 15px 18px; border-top: 1px solid var(--border); text-align: left; white-space: nowrap; }
 th { color: var(--muted); background: #fafbfd; font-size: var(--font-size-caption); letter-spacing: 0.03em; text-transform: uppercase; }

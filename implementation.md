@@ -2852,3 +2852,20 @@ từ chối) cùng 010–060 PASS; vitest 133 file; QA project: áp migration (s
 F3 → + → "Có thể bán: 170 unit · Kho nghiệm thu QA" → popup xác nhận (420.000 ₫) → đơn đã xác nhận → popup lập phiếu điền sẵn 2 → phiếu giao có thanh
 tiến trình → "Tạo dịch vụ" chọn sẵn khách/công trình. Sửa khi QA: trang tạo đơn tràn ngang ở 390px do tên kho dài trong ô chọn (cột lưới nở theo
 chữ) → khung dòng hàng dùng `minmax(0, 1fr)`; đo lại 390/390. Production chưa áp.
+
+## 2026-10-17 — FB2-D4: Khách hàng 360 & NCC 360 dạng tab (Đợt 4)
+
+Nhánh `nox/elegant-volta-kr29iz` (PR #52).
+- **Khách hàng** (`admin/customers/[id]/page.tsx`): đầu trang + 5 chỉ số (nợ hiện tại/quá hạn/hạn mức còn qua RPC chỉ đọc mới
+  `customer_credit_summary` — migration `20261017090000`, cần vì `customer_credit_exposure` đọc cột hạn mức đã thu hồi quyền với vai trò API;
+  tổng bán/đơn đang giao dở từ `sales_order_read`); tab thật `?tab=` (`components/ui/detail-tabs.tsx`), mỗi tab là một hàm async chỉ đọc
+  dữ liệu của nó. "Sửa" mở popup danh mục tại chỗ (`CatalogEditButton` + `catalog/editor-data.ts` `catalogRecordProps`), "+ Công trình" mở
+  popup tạo công trình chọn sẵn khách; tạo/sửa xong làm mới trang.
+- **NCC** (`admin/suppliers/[id]/page.tsx`): cùng bố cục; chỉ số từ `payable_read`/`purchase_order_read`; tab Thông tin & liên hệ, Đơn mua,
+  Nhập kho & giao thẳng, Công nợ & thanh toán, Bảng giá mua.
+Kiểm: native `080_customer_credit_summary.sql` (không có `finance.ar.read`/khác chi nhánh bị từ chối, số khớp, khách chưa duyệt hạn mức trả
+null, `anon` không chạy được) cùng 010–070 PASS; vitest trang khách (3), NCC (2), popup danh mục (5). QA project: áp migration (sha256 `56e32b0e…`,
+md5 hàm khớp file). QA trình duyệt (owner, chi nhánh A): khách "HXQA Audit Quick" — chỉ số, 6 tab đúng số dòng, popup Sửa, popup + Công trình
+chọn sẵn khách; NCC — 5 chỉ số, 5 tab. Sửa khi QA: trang khách rộng 588px ở điện thoại do chữ ẩn cho trình đọc màn hình (`sr-only`, định vị
+tuyệt đối) trong tiêu đề cột thoát khỏi khung cuộn bảng → `.table-wrap { position: relative }` (áp mọi bảng); bảng công trình chuyển sang cột rộng,
+hai bảng nhập kho/giao thẳng của NCC xếp chồng. Đo lại 390/390 (khách, NCC, danh sách khách/vật tư/NCC). Production chưa áp.

@@ -6,9 +6,11 @@ vi.mock("./editor", () => ({
     <div><p>Biểu mẫu {kind} {record?.id ?? "mới"} {initial?.customer_id ?? ""} · {scope}</p><button type="button" onClick={() => onSaved({ id: "x", message: "Đã lưu danh mục." })}>Giả lập lưu</button></div>,
 }));
 
+const refresh = vi.hoisted(() => vi.fn());
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
 vi.mock("@/components/catalog/material-units-editor", () => ({ MaterialUnitsEditor: ({ materialId }: { materialId: string }) => <p>Đơn vị của {materialId}</p> }));
 
-import { CatalogCreateButton, CatalogTable } from "./catalog-dialog";
+import { CatalogCreateButton, CatalogEditButton, CatalogTable } from "./catalog-dialog";
 
 afterEach(cleanup);
 const options = { groups: [{ id: "g1", name: "Xi măng" }], units: [{ id: "kg", name: "Kilôgam" }] };
@@ -61,4 +63,16 @@ it("moves a new material to its units tab after creating it, and opens an existi
   unmount();
   render(<CatalogTable kind="materials" rows={rows} options={options} permissions={[]} scopePrefix="s" openId="m1" openTab="units" />);
   expect(screen.getByText("Đơn vị của m1")).toBeVisible();
+});
+
+it("edits a record from its own page and refreshes it after saving", () => {
+  refresh.mockClear();
+  render(<CatalogEditButton kind="customers" record={{ id: "c1", code: "KH01", display_name: "Khách A", active: true }} options={{}} permissions={[]} scope="s:customers:c1" label="Sửa" />);
+  fireEvent.click(screen.getByRole("button", { name: "Sửa" }));
+  const dialog = screen.getByRole("dialog", { name: /Khách A/ });
+  expect(within(dialog).getByText(/Biểu mẫu customers c1/)).toBeInTheDocument();
+  fireEvent.click(within(dialog).getByRole("button", { name: "Giả lập lưu" }));
+  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  expect(screen.getByRole("status")).toHaveTextContent("Đã lưu danh mục.");
+  expect(refresh).toHaveBeenCalled();
 });

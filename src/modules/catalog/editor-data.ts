@@ -65,3 +65,27 @@ export async function loadCatalogOptions(kind: string, access: Access, supabase:
 export async function catalogCreateProps(kind: string, access: Access, supabase: Supabase) {
   return { kind, options: await loadCatalogOptions(kind, access, supabase), permissions: [...access.permissions], scope: catalogEditorScope(access, kind) };
 }
+
+/**
+ * Everything a page needs to edit one catalog record in a popup (e.g. "Sửa" on a customer or supplier page): the record
+ * with the fields the actor may see (customers add their private fields through customer_private_fields), its choices
+ * and the recovery scope. `null` when the record is not in the actor's branch.
+ */
+export async function catalogRecordProps(kind: string, id: string, access: Access, supabase: Supabase) {
+  const config = catalogs[kind];
+  const fields = visibleCatalogFields(kind, access.permissions).map((field) => field.key)
+    .filter((key) => kind !== "customers" || !["credit_limit_vnd", "internal_note"].includes(key));
+  let request = supabase.from(config.table as "materials").select(["id", ...fields].join(",")).eq("id", id);
+  if (["customers", "suppliers", "warehouses", "vehicles", "machines"].includes(kind)) request = request.eq("branch_id", access.branchId);
+  const { data, error } = await request.maybeSingle();
+  if (error) throw new Error("Không tải được bản ghi danh mục.");
+  if (!data) return null;
+  let record = data as unknown as Record<string, unknown>;
+  if (kind === "customers") {
+    const privateResult = await supabase.rpc("customer_private_fields", { target_customer_ids: [id] }).select("customer_id,credit_limit_vnd::text,internal_note");
+    if (privateResult.error) throw new Error("Không tải được thông tin riêng tư khách hàng.");
+    const privateRow = (Array.isArray(privateResult.data) ? privateResult.data[0] : privateResult.data) as { credit_limit_vnd: string | null; internal_note: string | null } | null;
+    if (privateRow) record = { ...record, credit_limit_vnd: privateRow.credit_limit_vnd, internal_note: privateRow.internal_note };
+  }
+  return { kind, record, options: await loadCatalogOptions(kind, access, supabase, [record]), permissions: [...access.permissions], scope: catalogEditorScope(access, kind, id) };
+}

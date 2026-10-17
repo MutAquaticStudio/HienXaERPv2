@@ -656,6 +656,16 @@ Trang chi tiết khách phải tổng hợp bằng read model:
 
 Không tạo một shadow ledger riêng.
 
+**FB2 Đợt 4 (17/10/2026, kiểu KiotViet):** đầu trang khách có tên, mã, điện thoại, địa chỉ, nhóm giá và các nút Tạo đơn, Ghi thu,
+Tạo dịch vụ, Sửa (popup), + Công trình (popup) theo quyền; 5 chỉ số: Nợ hiện tại, Nợ quá hạn, Hạn mức còn lại — đọc bằng RPC chỉ đọc
+`customer_credit_summary(target_customer_id)` (`security definer`, chỉ người có `finance.ar.read` ở chi nhánh của khách, không cấp `anon`;
+trả đúng số của `customer_credit_exposure` + tổng phải thu `OVERDUE` từ `receivable_read`, không lưu thêm gì) — và Tổng bán (đơn
+`CONFIRMED`/`CLOSED`), Đơn đang giao dở (`CONFIRMED` chưa `FULFILLED`/`CLOSED_REMAINDER`) từ `sales_order_read`. Nội dung chia tab thật
+`?tab=`: Thông tin & công trình │ Đơn bán │ Giao hàng │ Công nợ & thanh toán │ Giá riêng │ Tài liệu; tab chỉ hiện khi có quyền và chỉ
+đọc dữ liệu của tab đang mở. Trang chi tiết NCC cùng cách: chỉ số Còn phải trả, Quá hạn (từ `payable_read`), Tổng mua (đơn đã xác nhận,
+khi có quyền xem giá mua), Đơn mua đang mở, Điều khoản; tab Thông tin & liên hệ │ Đơn mua │ Nhập kho & giao thẳng │ Công nợ & thanh toán │
+Bảng giá mua. Không tạo sổ phụ.
+
 ---
 
 # SPEC-110 — Catalog, Material, UOM

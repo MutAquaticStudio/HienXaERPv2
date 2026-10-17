@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { MaterialUnitsEditor } from "@/components/catalog/material-units-editor";
 import { Dialog } from "@/components/ui/dialog";
@@ -52,12 +53,25 @@ export function CatalogDialog({ kind, record, options, permissions, initial, sco
 
 /** "+ Thêm …" button that creates a catalog record in a popup, without leaving the list page. */
 export function CatalogCreateButton({ label, scope, className = "button button-primary", ...editor }: EditorProps & { label: string; scope: string; className?: string }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [saved, setSaved] = useState("");
   return <>
     <button type="button" className={className} onClick={() => { setSaved(""); setOpen(true); }}>{label}</button>
     {saved && <p className="form-message success catalog-saved" role="status">{saved}</p>}
-    {open && <CatalogDialog {...editor} scope={scope} onClose={() => setOpen(false)} onSaved={(result) => { setSaved(result.message); setOpen(false); }} />}
+    {open && <CatalogDialog {...editor} scope={scope} onClose={() => setOpen(false)} onSaved={(result) => { setSaved(result.message); setOpen(false); router.refresh(); }} />}
+  </>;
+}
+
+/** "Sửa" button that edits one catalog record in a popup on its own detail page, then shows the saved state. */
+export function CatalogEditButton({ label, record, scope, className = "button button-secondary", ...editor }: EditorProps & { label: string; record: Row; scope: string; className?: string }) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [saved, setSaved] = useState("");
+  return <>
+    <button type="button" className={className} onClick={() => { setSaved(""); setOpen(true); }}>{label}</button>
+    {saved && <p className="form-message success catalog-saved" role="status">{saved}</p>}
+    {open && <CatalogDialog {...editor} record={record} scope={scope} onClose={() => setOpen(false)} onSaved={(result) => { setSaved(result.message); setOpen(false); router.refresh(); }} />}
   </>;
 }
 

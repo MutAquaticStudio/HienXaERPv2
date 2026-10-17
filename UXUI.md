@@ -914,6 +914,10 @@ Detail nên có:
 - recent payments;
 - related materials nếu hữu ích.
 
+**NCC 360 (FB2 Đợt 4, 17/10/2026)**: bố cục như Khách hàng 360 — nút Tạo đơn mua (chính), Ghi chi, Sửa (popup); 5 thẻ Còn phải trả │
+Quá hạn │ Tổng mua (đơn đã xác nhận) │ Đơn mua đang mở │ Điều khoản; tab Thông tin & liên hệ │ Đơn mua │ Nhập kho & giao thẳng (hai bảng
+xếp chồng) │ Công nợ & thanh toán │ Bảng giá mua.
+
 Payable click → exact detail.
 
 ---
@@ -936,6 +940,14 @@ Detail:
 - documents.
 
 Customer 360 là read composition, không shadow ledger.
+
+**Khách hàng 360 (FB2 Đợt 4, 17/10/2026, SPEC-CUS-004)**: đầu trang = tên + "Khách hàng · mã", dòng điện thoại · địa chỉ · nhóm giá,
+nút Tạo đơn (chính), Ghi thu, Tạo dịch vụ, Sửa (popup danh mục), + Công trình (popup đã chọn sẵn khách), nhãn trạng thái. Hàng 5 thẻ chỉ số
+(Nợ hiện tại │ Nợ quá hạn (đỏ khi > 0) │ Tổng bán (đơn đã xác nhận) │ Đơn đang giao dở │ Hạn mức còn lại + "Hạn mức …"); không có quyền
+thì hiện "—". Thanh tab (link thật `?tab=`, cuộn ngang trên điện thoại, số đếm cạnh tên): Thông tin & công trình (bảng công trình ở cột rộng
+với Tạo đơn / Tạo dịch vụ / Sửa từng công trình; hồ sơ + ghi chú nội bộ ở cột hẹp) │ Đơn bán │ Giao hàng │ Công nợ & thanh toán (phải thu,
+thanh toán, tải bảng đối chiếu, Ghi thu) │ Giá riêng │ Tài liệu. Desktop 5 thẻ một hàng, ≤1100px 3 cột, điện thoại 2 cột; trang không
+rộng quá màn hình 390px.
 
 ---
 
