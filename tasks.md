@@ -726,7 +726,29 @@ Production → deploy); sau đó Phần A (giao hàng/thợ), B (cổng khách),
 | FB3-P3 | Ô tiền tự phân cách hàng nghìn khi gõ (`MoneyInput`, mọi ô tiền VND) | DONE_LOCAL |
 | FB3-P4 | Ô tìm vật tư tự xổ danh sách theo nhóm; ô chọn khách/công trình/NCC có nút ▾ | DONE_LOCAL |
 | FB3-P5 | Giảm giá đơn bán VND/% từng dòng và cả đơn (SPEC-PRI-007; migration `20261017170000`: cột giảm giá, `create/update_sales_order_draft` nhận `order_discount`) | DONE_LOCAL; native 155 PASS |
-| FB3-R1 | Phát hành P1–P5: QA project, PR, merge, Production, deploy | IN_PROGRESS |
-| FB3-A | Luồng giao hàng/thợ: Điều phối lập phiếu, phân xe tự sang cổng thợ, "Đã giao" + ảnh, ảnh trên phiếu giao, Giao ngay/Hẹn giờ, index | TODO |
+| FB3-R1 | Phát hành P1–P5: QA project, PR, merge, Production, deploy | DONE (17/10: migration QA + Production, deploy Production) |
+| FB3-P0 | Mời nhân viên bằng link kích hoạt sao chép được (D24) | DONE (deploy Production); chờ Owner sửa DNS Wix + Supabase URL Configuration rồi đặt `NEXT_PUBLIC_APP_URL` |
+| FB3-A1 | Điều phối lập phiếu giao từ kho chỉ cần `delivery.create` (SPEC-DEL-007; migration `20261018100000`) | DONE_LOCAL; native 170 PASS |
+| FB3-A2 | Phân xe tự tạo việc cổng thợ cho tài xế (SPEC-DEL-007; migration `20261018110000`) | DONE_LOCAL; native 175 PASS |
+| FB3-A3 | Cổng thợ "Đã giao" kèm 0–5 ảnh, lượng theo đơn vị bán, việc hôm nay/sắp tới theo giờ (SPEC-WORKPORTAL-004; migration `20261018120000`) | DONE_LOCAL; native 180 PASS |
+| FB3-A3b | Lưới "Ảnh giao hàng" trên phiếu giao và bước xác minh | DONE_LOCAL |
+| FB3-A4 | Hộp lập phiếu: Giao ngay / Hẹn ngày giờ, phân xe mặc định, chặn thiếu tồn, giờ trống gần nhất | DONE_LOCAL |
+| FB3-A5 | Index kiểm lịch/giữ tồn (migration `20261018130000`), đọc song song trang đơn/phiếu giao, giới hạn bể việc cổng thợ | DONE_LOCAL |
+| FB3-A6 | Kiểm E2E trên QA (1440 + 390px) rồi phát hành R2 cùng FB4-F2, FB4-F4 | IN_PROGRESS |
 | FB3-B | Cổng khách: tài khoản (D14), đặt hàng + duyệt (D15–D16), thông báo trong app, gửi NCC qua Zalo (D17) | TODO |
-| FB3-C | Đăng nhập SĐT, thợ từ chối việc, thông báo đẩy, Zalo tự động (cần Zalo OA), dọn dữ liệu test Production (cần Owner xác nhận) | TODO |
+| FB3-C | Đăng nhập SĐT, thợ từ chối việc, thông báo đẩy, Zalo tự động (cần Zalo OA) | TODO |
+| FB3-C5 | Dọn dữ liệu test Production (Owner 18/10: "về trắng", giữ chi nhánh, vai trò, quyền, hồ sơ doanh nghiệp, tài khoản owner; tạo sẵn 1 tài khoản thợ) | DONE (Owner chạy SQL; sao lưu schema `qa_backup_20261018`, không mở qua API) |
+
+## FB4-20261017 — Tự phân nguồn, nhiều phiếu một thợ, tự điều phối, danh mục dịch vụ (góp ý Owner 17/10/2026 tối)
+
+Quyết định D19–D23 ở đầu Spec.md. Phát hành theo đợt: R2 = FB3 Phần A + F2 + F4; R3 = thông báo trong app + F1 + F3 + C2 thợ từ chối việc +
+gửi NCC qua Zalo; sau đó Phần B (cổng khách) và F5 (tự động hóa không tốn phí: `pg_cron`/`pg_net`, chuông, web push, Telegram, email).
+
+| Task | Nội dung | Trạng thái |
+|---|---|---|
+| FB4-F1 | Tự phân nguồn khi xác nhận đơn (D19): kho trước, phần thiếu thành đơn mua NCC giao thẳng nháp, tách theo chi phí | TODO (R3) |
+| FB4-F2 | Một thợ nhiều phiếu (D21): thời gian mỗi điểm giao theo chi nhánh, "Giao ngay" xếp nối tiếp, giờ trống gần nhất (SPEC-DEL-007; migration `20261018110000`, bảng `branch_operation_settings`) | DONE_LOCAL; native 175 PASS |
+| FB4-F3 | Tự điều phối "Tự động, sửa được" (D22): tài xế mặc định của xe, trang Điều phối, "Tự chia việc" | TODO (R3) |
+| FB4-F4 | Danh mục loại dịch vụ (D23; SPEC-SRV-003; migration `20261018090000`): popup danh mục, lập lịch chọn loại, gợi ý giá trị tính khách | DONE_LOCAL; native 160 PASS |
+| FB4-F5 | Tự động hóa không tốn phí: `outbound_jobs`, `pg_cron`/`pg_net`, quy tắc tự động, kênh miễn phí | TODO |
+| FB4-R2 | Phát hành R2: QA project (Owner chạy SQL), E2E, PR, merge, Production (hỏi Owner trước), deploy | IN_PROGRESS |

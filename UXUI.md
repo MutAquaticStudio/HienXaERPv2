@@ -1078,6 +1078,15 @@ Detail:
 - timeline;
 - source.
 
+**FB3 Phần A (18/10/2026, SPEC-DEL-007, SPEC-WORKPORTAL-004):** hộp "Lập phiếu giao" trên trang đơn mở cho người có quyền lập phiếu (vai trò
+Điều phối dùng được). Hộp có hai lựa chọn **Giao ngay** (mặc định) │ **Hẹn ngày giờ** (ô ngày giờ, mặc định ngày khách yêu cầu nếu chưa qua); khung
+phân xe mở sẵn, chỉ có một người/một xe thì chọn sẵn; dòng thiếu tồn hoặc vượt phần còn phải giao được đánh dấu ngay tại dòng, nút gửi mờ, có link
+"Đặt NCC giao thẳng" cho người có quyền mua hàng. Hộp ghi "Việc tự hiện ở cổng thợ của người giao. Mỗi điểm giao tính N phút"; người/xe đang bận
+thì Giao ngay tự xếp ngay sau việc trước; hẹn giờ trùng thì báo "Giờ trống gần nhất: …" kèm nút "Hẹn lúc …". Lập xong mở trang phiếu giao kèm
+thông báo. Phân xe xong là việc tự sang cổng thợ — khung cổng thợ trên phiếu ghi "Đã giao việc cho <tên> · <giờ>"
+hoặc chỉ rõ còn thiếu tên/SĐT/địa chỉ người nhận. Trang phiếu có khung **"Ảnh giao hàng"**: lưới ảnh thu nhỏ, bấm để phóng to; bước xác minh dùng
+cùng lưới thay các nút "Mở bằng chứng".
+
 ---
 
 # UX-400 — `/admin/routes` và tracking
@@ -1123,6 +1132,12 @@ Detail:
 - compensable;
 - proof;
 - AR link.
+
+**Loại dịch vụ (D23, 18/10/2026, SPEC-SRV-003):** trang Dịch vụ có link "Loại dịch vụ" (`/admin/service-jobs/types`, danh mục popup như UX-160:
+Mã, Tên, Đơn vị tính có gợi ý chuyến/giờ/ngày/ca/m³/km, Đơn giá mặc định, Cần xe / Cần máy / Không, Xóa / Ngừng dùng). Form lập lịch: ô "Loại dịch vụ"
+chọn từ danh sách, "+ Thêm loại" mở popup ngay tại chỗ; chọn xong hiện đơn vị và đơn giá, chỉ hiện ô Xe hoặc Máy theo loại. Chi tiết việc hiện đơn
+giá; lúc xác minh, dưới ô "Giá trị tính khách" có dòng "Đơn giá …/đơn vị · gợi ý …" (khối lượng tính khách × đơn giá) và nút "Dùng giá gợi ý" khi
+người xác minh đã gõ số khác (vẫn sửa được).
 
 ---
 
@@ -1300,6 +1315,9 @@ trò: bảng (Vai trò, Loại Vai trò mẫu/Tùy biến/Quản trị, Số quy
 hàng, Kho hàng, Giao hàng, Tài chính, Nhân công, Khác (ô nhóm chọn cả nhóm; quyền mình không có bị khóa), cảnh báo "đang dùng cho N nhân viên",
 "Ngừng dùng vai trò này" chỉ khi không ai dùng; vai trò mẫu chỉ xem.
 
+**Vận hành giao hàng (D21, 18/10/2026):** Cài đặt có khung "Vận hành giao hàng" với ô "Thời gian mỗi điểm giao (phút)" (5–720, mặc định 60), nút
+"Lưu cài đặt giao hàng" (kết quả chưa rõ: "Lưu lại đúng thao tác"). Ô lịch trên trang phiếu giao điền sẵn giờ kết thúc dự kiến theo số phút này.
+
 ---
 
 # UX-510 — `/admin/audit`
@@ -1374,6 +1392,15 @@ Không form văn phòng dài.
 Không yêu cầu tài xế bấm nút định kỳ khi đang lái.
 
 Touch target >=48px; primary ~56px.
+
+## UX-WORK-007 — "Đã giao" kèm ảnh (FB3 A3, 18/10/2026, SPEC-WORKPORTAL-004)
+
+- Trang chủ: **Việc hôm nay** rồi **Sắp tới**, xếp theo giờ hẹn; thẻ việc có giờ, địa chỉ, lượng theo đơn vị bán ("60 bao (3.000 kg)").
+- Chi tiết việc giao hàng: nút chính **"Đã giao · chụp ảnh"** mở camera; ảnh hiện thành lưới (Đang tải / Đã tải / Lỗi tải, nút Xóa, "+ Chụp thêm", tối
+  đa 5); có ảnh thì nút thành **"Xác nhận đã giao (N ảnh)"**. Ô "Người nhận" điền sẵn từ phiếu. Link phụ **"Giao thiếu / Không giao được"** mở ô số
+  lượng từng dòng (theo đơn vị bán) và "Lý do / ghi chú"; giao thiếu vẫn cần ảnh, không giao được cần lý do.
+- Kho chưa bàn giao hàng lên xe: nút mờ "Chờ kho bàn giao hàng lên xe" và hướng dẫn tải lại.
+- Gửi xong quay về trang chủ với thông báo "Đã báo giao hàng"; mất kết nối thì ảnh đã tải vẫn giữ, bấm gửi lại chỉ kiểm tra, không ghi hai lần.
 
 ---
 

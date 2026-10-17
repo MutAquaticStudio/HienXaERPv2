@@ -8,6 +8,8 @@
 >
 > Quyết định Owner 17/10/2026 (đợt `FB3-20261017`): **D14** tài khoản cổng khách — doanh nghiệp tạo tài khoản (email + mật khẩu, bắt đổi mật khẩu lần đầu) đồng bộ với hồ sơ khách, và khách mới tự đăng ký tạo hồ sơ khách "Tự đăng ký"; **D15** khách tự đặt hàng, thấy giá theo nhóm giá của mình, đơn chờ doanh nghiệp duyệt; **D16** khi duyệt đơn khách: dòng kho đủ → phiếu giao từ kho, dòng thiếu → đơn mua NCC giao thẳng công trình; **D17** báo NCC qua Zalo (nút gửi thủ công; Zalo tự động khi có Zalo OA); **D18** danh mục có nút Xóa (chỉ khi chưa phát sinh chứng từ, SPEC-CAT-003), ô tiền tự phân cách hàng nghìn khi gõ, ô chọn vật tư tự xổ danh sách, giảm giá đơn bán theo VND hoặc % từng dòng và cả đơn (SPEC-PRI-007). D14–D17 chưa triển khai (kế hoạch FB3 Phần A–C); D18 làm trước và phát hành riêng.
 
+> Quyết định Owner 17/10/2026 tối (đợt `FB4-20261017`): **D19** tự phân nguồn khi xác nhận đơn — hệ thống tự giải cho cả đơn (ưu tiên kho; phần thiếu thành đơn mua NCC giao thẳng **nháp, chờ duyệt**; kho đủ một phần thì tự quyết tách hay mua cả dòng theo chi phí), người dùng chỉ xem kết quả và đổi khi cần; **D20** hai luồng phiếu giao giữ như hiện có và làm rõ trên giao diện: *giao từ kho* (xe nhà, tài xế/thợ, cổng thợ, ảnh "Đã giao") và *NCC giao thẳng* (phiếu riêng theo đơn mua, đầu mối là NCC); **D21** một thợ/tài xế nhận nhiều phiếu: mỗi điểm giao chiếm "thời gian mỗi điểm giao" (Cài đặt, mặc định 60 phút) thay mặc định 4 giờ, "Giao ngay" cho người đang bận được xếp nối tiếp, hẹn giờ trùng thì báo giờ trống gần nhất (SPEC-DEL-007); **D22** tự điều phối mức "Tự động, sửa được" (Cài đặt Tắt / Gợi ý / Tự động, mặc định Tự động); **D23** danh mục loại dịch vụ có đơn vị tính, đơn giá mặc định và loại cần xe/máy (SPEC-SRV-003). Cùng đợt (FB3 Phần A): điều phối lập phiếu giao từ kho không cần quyền mua hàng, phân xe là việc tự sang cổng thợ, cổng thợ "Đã giao" kèm ảnh (SPEC-DEL-007, SPEC-WORKPORTAL-004). D21, D23 và Phần A phát hành ở đợt R2; D19, D22 ở đợt R3, chưa triển khai.
+
 > Quyết định Owner 17/10/2026 tối (P0): **D24** mời nhân viên không phụ thuộc email — mặc định hệ thống tạo **link kích hoạt dùng một lần** để quản lý sao chép gửi qua Zalo/tin nhắn (vẫn chọn được gửi thư mời; thư không gửi được thì tự tạo link); danh sách Nhân viên & quyền có nút "Link kích hoạt" tạo link mới cho người chưa đặt mật khẩu hoặc quên mật khẩu (link mới thay link cũ; không tạo cho chính mình, chỉ trong chi nhánh đang quản lý, không vượt quyền người tạo). Link mở thẳng trang đặt mật khẩu của ứng dụng và được xác minh trong trình duyệt, nên không phụ thuộc danh sách chuyển hướng của Supabase và không bị bản xem trước của ứng dụng chat dùng mất.
 
 # Spec.md — HIỀN XA ERP V2
@@ -1148,6 +1150,27 @@ Proof mặc định private trừ khi policy cho phép customer xem.
 - `order_delivery_plan` chỉ đọc (cần `delivery.create`): lượng phải giao, các phân nguồn và phần đã dùng của từng phân nguồn, để điền sẵn
   "Còn phải giao" theo kho được chọn.
 
+## SPEC-DEL-007 — Điều phối lập phiếu, nhiều điểm giao một người, phân xe tự giao việc (FB3 A1–A4, D21, 18/10/2026)
+
+- **Quyền (A1):** `create_delivery_for_order` chỉ cần `delivery.create`. Nguồn kho lấy khi lập phiếu đi qua `private.allocate_warehouse_source`
+  (cùng kiểm tra nhánh WAREHOUSE của `upsert_supply_allocation`: kho đang dùng cùng chi nhánh với đơn, lượng chính xác, sức chứa phân nguồn,
+  version của phân nguồn đã có), hàm nội bộ chỉ gọi từ trong lệnh lập phiếu. Nguồn NCC và lệnh "Chọn nguồn kho" vẫn cần `purchasing.create`.
+- **Thời gian mỗi điểm giao (D21):** bảng `branch_operation_settings` (một dòng mỗi chi nhánh: `stop_minutes` 5–720, `version`; chưa có dòng =
+  60 phút), RLS bật, thành viên chi nhánh đọc, `anon` không có quyền; chỉ ghi qua `save_branch_operation_settings(branch, {"stop_minutes"},
+  version_đã_đọc, op)` với `roles.manage`, idempotent, audit. Phiếu không lưu giờ kết thúc chiếm `scheduled_at + stop_minutes` (thay 4 giờ) trong
+  mọi kiểm tra trùng lịch người/xe của phiếu giao và việc cổng thợ; giờ kết thúc đã lưu giữ nguyên.
+- **Giao ngay / Hẹn giờ:** phân công trong `create_delivery_for_order` nhận `schedule_mode`: `NOW` → giờ bắt đầu là lúc sớm nhất từ khi bấm mà
+  người và xe cùng rảnh đủ một điểm giao (xếp nối tiếp sau việc đang có, cùng cửa sổ bận mà kiểm tra trùng lịch dùng); `AT` → đúng giờ đã chọn,
+  trùng thì từ chối và gửi kèm giờ trống gần nhất (hint `next_free_at=<UTC>`) để giao diện đề xuất "Hẹn lúc …". Lệnh trả giờ đã xếp. Trùng lịch
+  khi phân xe trên trang phiếu giao cũng báo giờ trống gần nhất.
+- **Phân xe là giao việc (A2):** `assign_delivery`, `assign_delivery_scheduled` và `update_delivery_receiver` gọi `private.sync_delivery_work_item`:
+  phiếu có người giao nội bộ mà chưa có việc → tạo việc DIRECT, CLAIMED cho người đó như `publish_work_item` (người phân xe có `delivery.assign`
+  là đủ, không cần `work.manage`); đổi người khi việc chưa bắt đầu → việc chuyển theo như trước; thiếu tên, SĐT hoặc địa chỉ người nhận → chưa tạo,
+  trang phiếu hiện điều còn thiếu, bổ sung người nhận xong thì việc tự tạo. Nút "Giao việc qua cổng thợ" chỉ còn cho phiếu cũ chưa có việc.
+- **Hộp lập phiếu (A4):** chọn *Giao ngay* hoặc *Hẹn ngày giờ* (mặc định ngày khách yêu cầu nếu chưa qua); mặc định phân xe luôn, chỉ có một
+  người/một xe thì chọn sẵn; chặn gửi khi dòng vượt tồn khả dụng của kho hoặc vượt phần còn phải giao, chỉ rõ dòng và link "Đặt NCC giao thẳng"
+  khi người dùng có quyền mua hàng; lỗi hiện ngay trong hộp, không rời trang đơn. Giờ bàn giao lên xe trên trang phiếu giao là lúc bấm.
+
 ## SPEC-DEL-005 — Xác minh giao hàng và ghi sổ đúng một lần
 
 `verifyDelivery` khóa phiếu, kiểm tra phiên bản, lượng bàn giao, lượng chấp nhận/tính tiền và bằng chứng; rồi cùng một giao dịch:
@@ -1516,6 +1539,20 @@ Tách:
 - billable work;
 - compensable work.
 
+## SPEC-SRV-003 — Danh mục loại dịch vụ (D23, 18/10/2026)
+
+- Bảng `service_types` theo chi nhánh: mã (`^[A-Z0-9_-]{2,24}$`, duy nhất trong chi nhánh), tên, đơn vị tính (chuyến, giờ, ngày, ca, m³, km… —
+  gõ hoặc chọn gợi ý), đơn giá mặc định VND (được để trống), cần xe / cần máy / không (`resource_kind` `VEHICLE` / `MACHINE` / `NONE`), đang dùng.
+  RLS bật, đọc khi có `service.read` hoặc `service.manage`, `anon` không có quyền. Lưu và xóa qua `save_catalog_record` / `delete_catalog_record`
+  (kind `service_types`, quyền `service.manage`); loại đã có việc dùng thì không xóa được, chỉ ngừng dùng (SPEC-CAT-003).
+- `schedule_service_job(...)`: cùng kiểm tra như `create_service_job`; loại phải đang dùng và cùng chi nhánh (`invalid_service_type`). Việc chụp tên,
+  đơn vị và đơn giá của loại (`service_jobs.service_type_id`, `unit_price_vnd`); đổi loại sau đó không đổi việc đã lập. Loại không cần xe/máy thì
+  không gắn được xe hay máy; loại cần xe thì không gắn máy và ngược lại (`service_resource_mismatch`). Việc cũ giữ loại gõ tự do, không có đơn giá;
+  `create_service_job` giữ nguyên.
+- Giao diện: Dịch vụ → "Loại dịch vụ" (danh mục popup như UX-160); lập lịch chọn loại từ danh sách, "+ Thêm loại" mở popup; chỉ hiện ô Xe hoặc
+  Máy theo loại. Lúc xác minh, ứng dụng gợi ý "Giá trị tính khách" = khối lượng tính khách × đơn giá (làm tròn tới đồng, nửa đồng làm tròn lên);
+  người xác minh vẫn nhập/sửa số cuối. D9 giữ nguyên (dịch vụ là chứng từ riêng).
+
 ---
 
 # SPEC-250 — Worker Portal
@@ -1540,6 +1577,21 @@ Không hiển thị ERP table dày đặc.
 ## SPEC-WORKPORTAL-003
 
 Không yêu cầu tài xế thao tác nguy hiểm khi đang lái.
+
+## SPEC-WORKPORTAL-004 — Báo "Đã giao" kèm ảnh, việc theo giờ, ảnh trên phiếu giao (FB3 A3/A3b/A5, 18/10/2026)
+
+- `submit_portal_delivery_done(work_item, lines | null, receiver_name, note, evidence_ids, version việc/phiếu/phân công, op)`: chỉ người đang được
+  giao việc; việc CLAIMED hoặc IN_PROGRESS (chưa bắt đầu thì tính là bắt đầu), phiếu DISPATCHED hoặc ARRIVED (đang đi đường thì tính là tới nơi,
+  không bắt gõ lý do). `lines` null = giao đủ theo lượng kho đã bàn giao lên xe; có `lines` = lượng thợ nhập, không vượt lượng đã lên xe. 0–5 ảnh
+  tải qua cổng thợ cho đúng việc đó; có giao hàng (đủ hoặc thiếu) bắt ít nhất 1 ảnh, không giao được bắt lý do; người nhận để trống thì lấy từ phiếu.
+  Việc → DONE, phiếu chờ xác minh như `submit_portal_delivery_result`; idempotent theo mã thao tác, đối chiếu các version.
+- Hàng chưa bàn giao lên xe: nút mờ "Chờ kho bàn giao hàng lên xe". Ảnh được thu nhỏ trên điện thoại (cạnh dài tối đa 1600 px, JPEG) trước khi tải.
+  Thợ thấy lượng theo đơn vị đã bán kèm đơn vị cơ sở (ví dụ "60 bao (3.000 kg)") theo tỉ lệ đã chụp trên dòng đơn.
+- `worker_portal_snapshot`: việc của thợ xếp theo giờ hẹn (Hôm nay / Sắp tới, tối đa 30); bể việc nhận được giới hạn 50 việc trong 14 ngày tới.
+- Nội bộ (A3b): trang phiếu giao có khung "Ảnh giao hàng" dạng lưới ảnh thu nhỏ (ảnh thợ gửi và ảnh nội bộ), bấm để phóng to; ảnh lấy qua route
+  kiểm quyền `/api/evidence/[id]/download`, tệp PDF hiện nút mở tệp. Bước xác minh kết quả dùng cùng lưới ảnh.
+- Hiệu năng (A5): index cho kiểm tra phân nguồn, giữ tồn và trùng lịch (`20261018130000_delivery_indexes`); trang đơn và trang phiếu giao đọc các
+  phần dữ liệu độc lập song song.
 
 ---
 
