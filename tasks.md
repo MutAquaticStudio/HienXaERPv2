@@ -713,3 +713,20 @@ preview → Owner OK → merge, áp migration Production (đối chiếu md5), d
 | FB2-D5 | Đợt 5: Tồn kho & Kiểm kho kiểu KiotViet (SPEC-INVTRY-005, UX-360/UX-370; migration `20261017100000`: `record_stock_count_lines_batch`, `cancel_stock_count`) | DONE_LOCAL; QA project migrated + QA trình duyệt PASS 17/10 (gộp PR #52) |
 | FB2-D6 | Đợt 6: Công nợ gộp, Sổ quỹ theo kỳ, Chi phí, tắt Báo chuyển khoản (D8), Hóa đơn gộp (SPEC-FIN-004/008, UX-420–470; migration `20261017110000`: `cashbook_period_summary`) | DONE_LOCAL; QA project migrated + QA trình duyệt PASS 17/10 (gộp PR #52) |
 | FB2-D7 | Đợt 7: Thu nhập (popup), Nhân viên & quyền + vai trò tùy biến (D12), Lộ trình 3 bước + giờ dự kiến điểm dừng, Cài đặt: thông tin doanh nghiệp + logo trên PDF + giao diện theo thiết bị (D10) (SPEC-ACC-001, SPEC-DATA-004, SPEC-CONFIG-003, UX-400/460/500; migration `20261017120000` `save_custom_role`, `20261017130000` giờ điểm dừng, `20261017140000` `company_profile`, `20261017150000` logo) | DONE_LOCAL; native 110–140 PASS; QA trình duyệt phần không ghi PASS; chờ áp QA + Production (Owner 17/10: "Hoàn thành hết và deploy production luôn") |
+
+## FB3-20261017 — Kiểm luồng bán → giao → thợ, cổng khách tự đặt hàng (góp ý Owner 17/10/2026)
+
+Owner duyệt kế hoạch FB3; quyết định D14–D18 ở đầu Spec.md. Ưu tiên 1 (D18) làm trước rồi phát hành riêng (R1: QA → PR → merge →
+Production → deploy); sau đó Phần A (giao hàng/thợ), B (cổng khách), C (đăng nhập SĐT, từ chối việc, thông báo đẩy, Zalo, dọn dữ liệu test).
+
+| Task | Nội dung | Trạng thái |
+|---|---|---|
+| FB3-P1 | Danh mục có Xóa + Ngừng dùng / Dùng lại (SPEC-CAT-003; migration `20261017160000`: `delete_catalog_record`) | DONE_LOCAL; native 150 PASS |
+| FB3-P2 | Ô giá đơn bán/mua không còn nhảy về ô số lượng khi gõ | DONE_LOCAL |
+| FB3-P3 | Ô tiền tự phân cách hàng nghìn khi gõ (`MoneyInput`, mọi ô tiền VND) | DONE_LOCAL |
+| FB3-P4 | Ô tìm vật tư tự xổ danh sách theo nhóm; ô chọn khách/công trình/NCC có nút ▾ | DONE_LOCAL |
+| FB3-P5 | Giảm giá đơn bán VND/% từng dòng và cả đơn (SPEC-PRI-007; migration `20261017170000`: cột giảm giá, `create/update_sales_order_draft` nhận `order_discount`) | DONE_LOCAL; native 155 PASS |
+| FB3-R1 | Phát hành P1–P5: QA project, PR, merge, Production, deploy | IN_PROGRESS |
+| FB3-A | Luồng giao hàng/thợ: Điều phối lập phiếu, phân xe tự sang cổng thợ, "Đã giao" + ảnh, ảnh trên phiếu giao, Giao ngay/Hẹn giờ, index | TODO |
+| FB3-B | Cổng khách: tài khoản (D14), đặt hàng + duyệt (D15–D16), thông báo trong app, gửi NCC qua Zalo (D17) | TODO |
+| FB3-C | Đăng nhập SĐT, thợ từ chối việc, thông báo đẩy, Zalo tự động (cần Zalo OA), dọn dữ liệu test Production (cần Owner xác nhận) | TODO |

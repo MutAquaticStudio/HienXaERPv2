@@ -5,6 +5,8 @@
 > Quyết định Owner 16/10/2026 (đợt tinh chỉnh 2 `FB2-20261016`, giữ nguyên nghiệp vụ): **D5** tạo/sửa danh mục và tạo nhanh mở trong popup (UX-160); **D6** nút chính khi tạo đơn bán là "Xác nhận đơn" qua popup kiểm tra, "Lưu nháp" là lối phụ; **D7** giữ mô hình quy đổi đơn vị (SPEC-UOM), giao diện "Đơn vị tính" kiểu KiotViet; **D8** tắt hẳn Báo chuyển khoản như cách tắt Báo giá, không xóa dữ liệu; **D9** Dịch vụ giữ là chứng từ riêng, tạo nhanh từ đơn/khách, không gộp vào dòng đơn bán; **D10** Cài đặt thêm Thông tin doanh nghiệp in trên chứng từ và Giao diện theo máy (sáng/tối, cỡ chữ, font); **D11** biến thể vật tư (mỗi biến thể là một vật tư đủ mã/tồn/giá) và gợi ý giá lẻ chia theo quy đổi (giá lưu vẫn là số VND tuyệt đối từng đơn vị); nhóm giá khách tự đặt theo `CUSTOMER_TIER`; **D12** vai trò tùy biến chỉ người có `roles.manage` (Owner) tạo/sửa, không gán được `roles.manage` vào vai trò tùy biến. Kế hoạch theo đợt: `tasks.md` mục FB2-20261016.
 >
 > Quyết định Owner 17/10/2026: **D13** tên miền — tạm dùng tên miền mặc định Vercel của dự án; sau bàn giao và thanh toán gói chuyển sang `app.hienxavlxd.com`. Link mời nhân viên/quên mật khẩu lấy theo tên miền đang mở; Supabase Auth (Site URL, Redirect URLs) phải khai báo đúng tên miền đang dùng. Logo doanh nghiệp tải lên trong Cài đặt (SPEC-CONFIG-003).
+>
+> Quyết định Owner 17/10/2026 (đợt `FB3-20261017`): **D14** tài khoản cổng khách — doanh nghiệp tạo tài khoản (email + mật khẩu, bắt đổi mật khẩu lần đầu) đồng bộ với hồ sơ khách, và khách mới tự đăng ký tạo hồ sơ khách "Tự đăng ký"; **D15** khách tự đặt hàng, thấy giá theo nhóm giá của mình, đơn chờ doanh nghiệp duyệt; **D16** khi duyệt đơn khách: dòng kho đủ → phiếu giao từ kho, dòng thiếu → đơn mua NCC giao thẳng công trình; **D17** báo NCC qua Zalo (nút gửi thủ công; Zalo tự động khi có Zalo OA); **D18** danh mục có nút Xóa (chỉ khi chưa phát sinh chứng từ, SPEC-CAT-003), ô tiền tự phân cách hàng nghìn khi gõ, ô chọn vật tư tự xổ danh sách, giảm giá đơn bán theo VND hoặc % từng dòng và cả đơn (SPEC-PRI-007). D14–D17 chưa triển khai (kế hoạch FB3 Phần A–C); D18 làm trước và phát hành riêng.
 
 # Spec.md — HIỀN XA ERP V2
 
@@ -685,6 +687,13 @@ Tối thiểu:
 - quy cách nếu có;
 - metadata vận hành cần thiết.
 
+## SPEC-CAT-003 — Xóa và ngừng dùng danh mục (D18, 17/10/2026)
+
+- Danh mục (vật tư, nhóm, đơn vị, khách hàng, công trình, NCC, kho, xe, máy) có **Xóa** và **Ngừng dùng / Dùng lại** (thay ô tick "Đang sử dụng").
+- Xóa chỉ thực hiện khi chưa có chứng từ hay dữ liệu nghiệp vụ nào dùng bản ghi (đơn, phiếu giao, tồn kho, công nợ, thanh toán, hội thoại…);
+  database chặn bằng khóa ngoại và không xóa gì (`catalog_record_in_use`). Thiết lập riêng của bản ghi (đơn vị bán, giá bán, giá mua, ngưỡng tồn,
+  công trình chưa dùng, quyền cổng khách) xóa theo. Đã dùng thì chỉ ngừng dùng; lịch sử không đổi. Cùng quyền như tạo/sửa; có audit.
+
 ## SPEC-CAT-002 — Hàng cùng loại / biến thể vật tư (D11, 16/10/2026)
 
 - Một **hàng cùng loại** (vd "Xi măng Bút Sơn", "Thép Hòa Phát") có tên và 1–3 **thuộc tính** (vd Mác; Phi; Màu). Mỗi **loại (biến thể)** là
@@ -817,6 +826,18 @@ Override giá cần:
 - `customers.tier_code` và giá nhóm (`pricing_rules.customer_tier_code`) chỉ nhận mã là nhóm của cùng chi nhánh (khóa ngoại trong database).
 - Khách không thuộc nhóm nào dùng giá chung (giá lẻ). Ngừng nhóm: không gán cho khách mới, không đặt giá nhóm mới; khách đang ở nhóm giữ nguyên.
 - Thứ tự ưu tiên giá không đổi (SPEC-PRI-001).
+
+## SPEC-PRI-007 — Giảm giá đơn bán (D18, 17/10/2026)
+
+- Giống KiotViet: **giảm giá từng dòng** (bấm đơn giá → "Đơn giá · Giảm giá [VND | %] · Giá bán") và **giảm giá cả đơn** ở khung tổng
+  ("Tổng tiền hàng · Giảm giá [VND | %] · Khách cần trả"). Cần `pricing.manage` (cấp cho nhân viên qua vai trò tùy biến).
+- Giảm tính theo **mỗi đơn vị**: `unit_price_vnd` là giá bán sau giảm (số đồng nguyên, > 0), `list_unit_price_vnd` giữ giá trước giảm (giá
+  bảng giá đã kiểm theo SPEC-PRI-001/003 hoặc giá thủ công đã duyệt), `discount_unit_vnd` = chênh lệch; `discount_mode`/`discount_value` lưu
+  đúng điều đã nhập cho dòng. Vì vậy tổng đơn, giữ hạn mức, phiếu giao, xác minh công nợ lũy kế và trả hàng dùng giá sau giảm mà không đổi công thức.
+- Giảm % làm tròn mỗi đơn vị về đồng (HALF_UP); giảm phải nhỏ hơn đơn giá, phần trăm dưới 100.
+- Giảm cả đơn được chia vào giá đơn vị các dòng theo tỉ lệ thành tiền, khớp đúng số đồng khi số lượng cho phép; nếu giá đơn vị nguyên đồng
+  không đạt đúng số yêu cầu, màn hình báo số giảm thực tế và phần lệch trước khi lưu. Đơn lưu kiểu + giá trị giảm cả đơn đã nhập để sửa lại.
+- Đơn không giảm giá lưu và băm lệnh y như trước (bản ghi thao tác cũ vẫn phát lại được).
 
 ---
 

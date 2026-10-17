@@ -3,6 +3,8 @@
 > Quyết định Owner 15/10/2026 (`FB-KIOTVIET-20261015`, xem đầu Spec.md): Báo giá tắt (D1) — mọi màn/nút/hành trình báo giá trong tài liệu này tạm không hiển thị; KPI Tổng quan dùng lợi nhuận ròng (D2); biểu đồ đường Thu/Chi/Lợi nhuận theo bộ lọc (D3); thiết lập giá hàng loạt (D4). Màn tạo đơn bán/đơn mua, danh sách khách hàng, vật tư và bộ lọc tham chiếu bố cục KiotViet theo góp ý khách (UX-110.6, UX-ORD-002, UX-320, UX-340, UX-350, UX-FLOW-001).
 >
 > Quyết định Owner 16/10/2026 (`FB2-20261016`, chi tiết D5–D12 ở đầu Spec.md): tạo/sửa danh mục và tạo nhanh mở trong popup (D5, sửa UX-160); tạo đơn bán xác nhận qua popup kiểm tra (D6); "Đơn vị tính" kiểu KiotViet (D7); tắt Báo chuyển khoản (D8); Cài đặt có Thông tin doanh nghiệp và Giao diện (D10).
+>
+> Quyết định Owner 17/10/2026 (D18, `FB3`): popup sửa danh mục có "Ngừng dùng / Dùng lại" và "Xóa" (xác nhận lại; đã có chứng từ thì báo không xóa được); ô tiền hiện dấu chấm phân cách khi gõ (60000 → 60.000); ô "Tìm vật tư" bấm vào là xổ danh sách theo nhóm (nút ▾), ô chọn khách/công trình/NCC có nút ▾; đơn bán: bấm đơn giá mở popup "Đơn giá · Giảm giá [VND | %] · Giá bán", khung tổng có "Giảm giá đơn" và "Khách cần trả" (SPEC-PRI-007).
 
 # UXUI.md — HIỀN XA ERP V2
 
