@@ -5,6 +5,7 @@ import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
 import { isAuthoritativeRejection } from "@/lib/core/command-outcome";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { LOGO_MAX_BYTES, LOGO_MIME_TYPES, logoMatchesType } from "@/lib/company/profile";
 
 export type CompanySaveResult = { status: "SUCCESS" | "FAILED" | "UNKNOWN"; message: string; version?: number };
 
@@ -52,6 +53,49 @@ export async function saveCompanyProfileAction(input: unknown): Promise<CompanyS
     }
     revalidatePath("/admin/settings");
     return { status: "SUCCESS", version: Number(version), message: "Đã lưu. Chứng từ in từ bây giờ dùng thông tin này." };
+  } catch {
+    return { status: "UNKNOWN", message: "Chưa xác định được kết quả. Bấm lại đúng thao tác này để kiểm tra." };
+  }
+}
+
+export type CompanyLogoResult = { status: "SUCCESS" | "FAILED" | "UNKNOWN"; message: string; sha256?: string | null };
+
+const logoSchema = z.object({
+  operationId: z.uuid(),
+  /** The logo shown when the owner chose the file; replacing a logo changed elsewhere is refused. */
+  expectedSha256: z.string().regex(/^[0-9a-f]{64}$/).nullable(),
+  /** Both null removes the logo. */
+  mime: z.enum(LOGO_MIME_TYPES).nullable(),
+  base64: z.string().regex(/^[A-Za-z0-9+/]+={0,2}$/).max(Math.ceil(LOGO_MAX_BYTES / 3) * 4).nullable(),
+});
+
+function logoMessage(value?: string) {
+  if (value?.includes("company_logo_changed")) return "Logo vừa được đổi ở nơi khác. Hãy tải lại trang rồi chọn lại.";
+  if (value?.includes("company_logo_too_large")) return "Logo tối đa 300 KB.";
+  if (value?.includes("company_logo_invalid")) return "Tệp không phải ảnh PNG hoặc JPG hợp lệ.";
+  if (value?.includes("company_name_required")) return "Lưu thông tin doanh nghiệp (tên doanh nghiệp) trước khi tải logo.";
+  if (value?.includes("operation_payload_conflict")) return "Mã thao tác đã được dùng với dữ liệu khác. Hãy tải lại.";
+  if (value?.includes("forbidden")) return "Chỉ chủ doanh nghiệp được đổi logo.";
+  return "Không thể lưu logo. Không có thay đổi nào được ghi.";
+}
+
+/** "Lưu logo" / "Xóa logo": save_company_logo checks permission, file type, size and the logo last read. */
+export async function saveCompanyLogoAction(input: unknown): Promise<CompanyLogoResult> {
+  const parsed = logoSchema.safeParse(input);
+  const data = parsed.success ? parsed.data : null;
+  const bytes = data?.base64 ? Uint8Array.from(Buffer.from(data.base64, "base64")) : null;
+  if (!data || (data.mime === null) !== (data.base64 === null) || (bytes && (bytes.length > LOGO_MAX_BYTES || !logoMatchesType(data.mime!, bytes)))) {
+    return { status: "FAILED", message: "Chọn ảnh PNG hoặc JPG, tối đa 300 KB." };
+  }
+  const access = await requireInternalPermission("roles.manage");
+  const supabase = await createServerSupabase();
+  try {
+    const { data: sha256, error } = await supabase.rpc("save_company_logo", {
+      target_branch_id: access.branchId, logo_mime: data.mime, logo_base64: data.base64, expected_logo_sha256: data.expectedSha256, operation_id: data.operationId,
+    });
+    if (error) return isAuthoritativeRejection(error.code) ? { status: "FAILED", message: logoMessage(error.message) } : { status: "UNKNOWN", message: "Chưa xác định được kết quả. Bấm lại đúng thao tác này để kiểm tra." };
+    revalidatePath("/admin/settings");
+    return { status: "SUCCESS", sha256: (sha256 as string | null) ?? null, message: data.base64 ? "Đã lưu logo. Chứng từ in từ bây giờ có logo." : "Đã xóa logo." };
   } catch {
     return { status: "UNKNOWN", message: "Chưa xác định được kết quả. Bấm lại đúng thao tác này để kiểm tra." };
   }

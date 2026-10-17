@@ -1287,7 +1287,8 @@ Dangerous settings:
 
 **FB2 Đợt 7 (17/10/2026, D10):** tiêu đề "Cài đặt"; hai khung đầu: **Thông tin doanh nghiệp** (tên *, MST, điện thoại, địa chỉ, email, ngân hàng,
 số tài khoản, chủ tài khoản; khung "Xem trước tiêu đề chứng từ" cập nhật khi gõ; nút "Lưu thông tin doanh nghiệp"; kết quả chưa rõ giữ đúng thao
-tác "Lưu lại đúng thao tác") và **Giao diện** (Chế độ màu Sáng/Tối/Theo thiết bị, Cỡ chữ Nhỏ/Vừa/Lớn, Phông chữ Noto Sans/Be Vietnam Pro; áp dụng
+tác "Lưu lại đúng thao tác"; dưới cùng là **Logo**: khung xem logo, chọn tệp PNG/JPG ≤ 300 KB, "Lưu logo", "Xóa logo" — chỉ bật khi đã lưu tên
+doanh nghiệp, khung xem trước tiêu đề hiện logo) và **Giao diện** (Chế độ màu Sáng/Tối/Theo thiết bị, Cỡ chữ Nhỏ/Vừa/Lớn, Phông chữ Noto Sans/Be Vietnam Pro; áp dụng
 ngay, chỉ trên thiết bị này). Mọi nhân viên đổi Giao diện được từ nút "Giao diện" ở chân menu trái (popup). Chế độ tối phủ các màn nội bộ có menu
 trái; cổng khách/thợ và đăng nhập giữ màu riêng. Các mục Phạm vi dữ liệu, Chi nhánh, Tài khoản & quyền giữ nguyên bên dưới.
 

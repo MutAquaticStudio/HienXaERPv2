@@ -3,6 +3,8 @@
 > Quyết định Owner 15/10/2026 (đợt góp ý khách `FB-KIOTVIET-20261015`): **D1** tắt hẳn Báo giá ở nội bộ và cổng khách — mọi chỗ nhắc tới báo giá trong tài liệu này tạm không áp dụng (SPEC-140); **D2** KPI Tổng quan dùng lợi nhuận ròng thay lợi nhuận gộp (SPEC-DASH-001); **D3** biểu đồ Tổng quan là đường Thu / Chi / Lợi nhuận theo đúng bộ lọc (SPEC-DASH-009); **D4** thiết lập giá chung hàng loạt, lưu một lần nguyên tử (SPEC-PRI-005).
 >
 > Quyết định Owner 16/10/2026 (đợt tinh chỉnh 2 `FB2-20261016`, giữ nguyên nghiệp vụ): **D5** tạo/sửa danh mục và tạo nhanh mở trong popup (UX-160); **D6** nút chính khi tạo đơn bán là "Xác nhận đơn" qua popup kiểm tra, "Lưu nháp" là lối phụ; **D7** giữ mô hình quy đổi đơn vị (SPEC-UOM), giao diện "Đơn vị tính" kiểu KiotViet; **D8** tắt hẳn Báo chuyển khoản như cách tắt Báo giá, không xóa dữ liệu; **D9** Dịch vụ giữ là chứng từ riêng, tạo nhanh từ đơn/khách, không gộp vào dòng đơn bán; **D10** Cài đặt thêm Thông tin doanh nghiệp in trên chứng từ và Giao diện theo máy (sáng/tối, cỡ chữ, font); **D11** biến thể vật tư (mỗi biến thể là một vật tư đủ mã/tồn/giá) và gợi ý giá lẻ chia theo quy đổi (giá lưu vẫn là số VND tuyệt đối từng đơn vị); nhóm giá khách tự đặt theo `CUSTOMER_TIER`; **D12** vai trò tùy biến chỉ người có `roles.manage` (Owner) tạo/sửa, không gán được `roles.manage` vào vai trò tùy biến. Kế hoạch theo đợt: `tasks.md` mục FB2-20261016.
+>
+> Quyết định Owner 17/10/2026: **D13** tên miền — tạm dùng tên miền mặc định Vercel của dự án; sau bàn giao và thanh toán gói chuyển sang `app.hienxavlxd.com`. Link mời nhân viên/quên mật khẩu lấy theo tên miền đang mở; Supabase Auth (Site URL, Redirect URLs) phải khai báo đúng tên miền đang dùng. Logo doanh nghiệp tải lên trong Cài đặt (SPEC-CONFIG-003).
 
 # Spec.md — HIỀN XA ERP V2
 
@@ -2284,8 +2286,12 @@ hoặc 13 số dạng `0101234567-001`, địa chỉ, điện thoại, email, ng
 được đọc (in trên chứng từ gửi khách), `anon` không có quyền; chỉ ghi qua `save_company_profile(branch, profile, version_đã_đọc, op)` với
 `roles.manage`, đối chiếu version, idempotent, audit `company_profile.saved`. PDF đơn bán, đơn mua, phiếu giao, phiếu thu/chi, bảng đối chiếu công
 nợ, bản xem hóa đơn in tên + địa chỉ + MST/điện thoại/email + tài khoản ngân hàng thay chữ cố định "Hiền Xa ERP"; chưa khai báo thì giữ chữ cũ;
-lỗi đọc hồ sơ không chặn xuất chứng từ. Chưa có logo (để sau nếu Owner cần). Migration `20261017140000_company_profile`, test native
-`130_company_profile.sql`. **Giao diện theo thiết bị** (sáng/tối/theo thiết bị, cỡ chữ, phông) lưu ở cookie `hx-appearance`, không ghi DB.
+lỗi đọc hồ sơ không chặn xuất chứng từ. Migration `20261017140000_company_profile`, test native `130_company_profile.sql`.
+**Logo (Owner 17/10/2026):** một ảnh PNG hoặc JPEG ≤ 300 KB lưu trong chính dòng `company_profile` (`logo_mime`, `logo_base64`,
+`logo_sha256`; không dùng Storage, không dùng khóa bí mật), ghi qua `save_company_logo(branch, mime, base64, sha_đã_đọc, op)` với
+`roles.manage`: kiểm chữ ký tệp khớp loại, cần đã có tên doanh nghiệp, thay/xóa đối chiếu logo đã đọc (không đổi `version` hồ sơ), idempotent,
+audit `company_profile.logo_saved`/`logo_removed`. PDF in logo cạnh tên doanh nghiệp; logo không đọc được thì bỏ logo, vẫn in chứng từ.
+Migration `20261017150000_company_logo`, test native `140_company_logo.sql`. **Giao diện theo thiết bị** (sáng/tối/theo thiết bị, cỡ chữ, phông) lưu ở cookie `hx-appearance`, không ghi DB.
 
 Điều chỉnh công nợ, stock adjustment, reversal tiền và ngoại lệ lượng tính tiền cần lý do + tài liệu/bằng chứng. Bằng chứng là object Storage private với owner/nguồn/audience/checksum, không chỉ URL công khai. Upload lỗi phải thử lại riêng, không mất form. Giao nội bộ có thể lưu nháp thiếu ảnh; muốn duyệt thiếu chứng cứ cần quyền ngoại lệ, lý do và audit, không được lặng lẽ bỏ qua.
 

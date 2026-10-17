@@ -3,6 +3,7 @@ import path from "node:path";
 import fontkit from "@pdf-lib/fontkit";
 import { PDFDocument, PDFFont, PDFPage, rgb } from "pdf-lib";
 import { FALLBACK_COMPANY_NAME, type CompanyHeading } from "@/lib/company/profile";
+import { embedLogo, fitInside } from "./business-document";
 
 type Field = { label: string; value: string };
 type Column = { label: string; key: string; width: number; align?: "left" | "right" };
@@ -55,6 +56,9 @@ export async function createStandardPdf(input: StandardPdfInput) {
   document.setTitle(`${input.title} - ${input.reference}`);
   const company = input.company ?? { name: FALLBACK_COMPANY_NAME, lines: [] };
   document.setAuthor(company.name);
+  const logo = await embedLogo(document, company.logo);
+  const logoSize = logo ? fitInside(logo, 64, 30) : { width: 0, height: 0 };
+  const companyLeft = 330 + (logo ? logoSize.width + 12 : 0), companyWidth = PAGE_WIDTH - LEFT - companyLeft;
   document.setCreator("Hiền Xa ERP V2");
   document.setProducer("Hiền Xa ERP V2");
 
@@ -68,9 +72,14 @@ export async function createStandardPdf(input: StandardPdfInput) {
     page.drawText(input.reference, { x: LEFT, y: PAGE_HEIGHT - 76, size: 10, font, color: rgb(0.93, 0.95, 0.97) });
     if (input.subtitle) page.drawText(input.subtitle.slice(0, 70), { x: 330, y: PAGE_HEIGHT - 90, size: 8, font, color: rgb(0.82, 0.87, 0.9) });
     // Company heading in the right half of the band: name, then at most three short detail lines.
-    page.drawText(wrap(font, company.name, 10, 223)[0], { x: 330, y: PAGE_HEIGHT - 30, size: 10, font, color: rgb(1, 1, 1) });
-    company.lines.flatMap((line) => wrap(font, line, 7, 223)).slice(0, 4)
-      .forEach((line, index) => page.drawText(line, { x: 330, y: PAGE_HEIGHT - 43 - index * 10, size: 7, font, color: rgb(0.82, 0.87, 0.9) }));
+    // A white tile keeps a dark logo readable on the navy band.
+    if (logo) {
+      page.drawRectangle({ x: 327, y: PAGE_HEIGHT - 19 - logoSize.height, width: logoSize.width + 6, height: logoSize.height + 6, color: rgb(1, 1, 1) });
+      page.drawImage(logo, { x: 330, y: PAGE_HEIGHT - 16 - logoSize.height, ...logoSize });
+    }
+    page.drawText(wrap(font, company.name, 10, companyWidth)[0], { x: companyLeft, y: PAGE_HEIGHT - 30, size: 10, font, color: rgb(1, 1, 1) });
+    company.lines.flatMap((line) => wrap(font, line, 7, companyWidth)).slice(0, 4)
+      .forEach((line, index) => page.drawText(line, { x: companyLeft, y: PAGE_HEIGHT - 43 - index * 10, size: 7, font, color: rgb(0.82, 0.87, 0.9) }));
     y = PAGE_HEIGHT - 137;
   };
   addPage();

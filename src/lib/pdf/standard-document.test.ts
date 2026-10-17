@@ -2,6 +2,7 @@
 import { expect, it } from "vitest";
 import { PDFDocument } from "pdf-lib";
 import { createStandardPdf, type StandardPdfInput } from "./standard-document";
+import { logoBytes, PNG_LOGO_BASE64 } from "@/test/logo-fixtures";
 
 const input: StandardPdfInput = {
   title: "PHIẾU THU", reference: "PT-0001", subtitle: "Đã ghi sổ / Chưa đối soát",
@@ -13,5 +14,10 @@ it("prints the company heading in the band and keeps the former name without a p
   expect((await PDFDocument.load(await createStandardPdf(input))).getAuthor()).toBe("Hiền Xa ERP");
   const doc = await PDFDocument.load(await createStandardPdf({ ...input, company: { name: "Công ty TNHH Hiền Xa", lines: ["Thôn Đông, Hà Nội", "MST: 0101234567", "STK: 0011001234567 · Vietcombank"] } }));
   expect(doc.getAuthor()).toBe("Công ty TNHH Hiền Xa");
+  expect(doc.getPageCount()).toBe(1);
+});
+
+it("prints the logo in the band next to the company name", async () => {
+  const doc = await PDFDocument.load(await createStandardPdf({ ...input, company: { name: "Công ty TNHH Hiền Xa", lines: ["MST: 0101234567"], logo: { mime: "image/png", bytes: logoBytes(PNG_LOGO_BASE64) } } }));
   expect(doc.getPageCount()).toBe(1);
 });

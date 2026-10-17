@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import fontkit from "@pdf-lib/fontkit";
-import { PDFDocument, type PDFFont, type PDFPage, rgb } from "pdf-lib";
+import { PDFDocument, type PDFFont, type PDFImage, type PDFPage, rgb } from "pdf-lib";
 import { FALLBACK_COMPANY_NAME, type CompanyHeading } from "@/lib/company/profile";
 
 export type DocumentField = { label: string; value: string };
@@ -51,6 +51,9 @@ export async function createBusinessDocument(input: BusinessDocumentInput): Prom
   doc.setTitle(`${input.title} - ${input.reference}`);
   const company = input.company ?? { name: FALLBACK_COMPANY_NAME, lines: [] };
   doc.setAuthor(company.name); doc.setCreator("Hiền Xa ERP");
+  const logo = await embedLogo(doc, company.logo);
+  const logoSize = logo ? fitInside(logo, 96, 40) : { width: 0, height: 0 };
+  const textLeft = M + (logo ? logoSize.width + 12 : 0);
   doc.setSubject(`Nguồn: ${input.sourceId}; xuất lúc: ${input.generatedAt}`);
   let page!: PDFPage;
   let y = 0;
@@ -58,11 +61,13 @@ export async function createBusinessDocument(input: BusinessDocumentInput): Prom
   const right = (text: string, x: number, baseline: number, size = 9) => draw(text, x - font.widthOfTextAtSize(text, size), baseline, size);
   const addPage = () => {
     page = doc.addPage([W, H]);
-    const nameLines = wrapDocumentText(font, company.name, 12, CW - 150);
-    nameLines.forEach((line, k) => draw(line, M, H - 47 - k * 15, 12, blue));
+    if (logo) page.drawImage(logo, { x: M, y: H - 34 - logoSize.height, ...logoSize });
+    const nameLines = wrapDocumentText(font, company.name, 12, CW - 150 - (textLeft - M));
+    nameLines.forEach((line, k) => draw(line, textLeft, H - 47 - k * 15, 12, blue));
     right(input.reference, W - M, H - 47, 10);
     let hy = H - 65 - (nameLines.length - 1) * 15;
-    for (const line of [...company.lines, input.branch].flatMap((text) => wrapDocumentText(font, text, 8, CW))) { draw(line, M, hy, 8, muted); hy -= 11; }
+    for (const line of [...company.lines, input.branch].flatMap((text) => wrapDocumentText(font, text, 8, CW - (textLeft - M)))) { draw(line, textLeft, hy, 8, muted); hy -= 11; }
+    hy = Math.min(hy, H - 34 - logoSize.height - 6);
     hy -= 20;
     for (const line of wrapDocumentText(font, input.title, 19, CW)) { draw(line, M, hy, 19); hy -= 24; }
     for (const line of wrapDocumentText(font, `${input.sample ? "MẪU MINH HỌA - " : ""}${input.status}`, 9, CW)) { draw(line, M, hy, 9, muted); hy -= 13; }
@@ -161,4 +166,20 @@ export async function createBusinessDocument(input: BusinessDocumentInput): Prom
     right(`Trang ${i + 1}/${pages.length}`, W - M, 24, 7);
   });
   return doc.save();
+}
+
+/** The company logo for the heading; a file pdf-lib cannot read is left out rather than blocking the document. */
+export async function embedLogo(doc: PDFDocument, logo: CompanyHeading["logo"]): Promise<PDFImage | null> {
+  if (!logo) return null;
+  try {
+    return logo.mime === "image/png" ? await doc.embedPng(logo.bytes) : await doc.embedJpg(logo.bytes);
+  } catch {
+    return null;
+  }
+}
+
+/** Scales an image to fit a box, keeping its proportions. */
+export function fitInside(image: { width: number; height: number }, maxWidth: number, maxHeight: number) {
+  const scale = Math.min(maxWidth / image.width, maxHeight / image.height);
+  return { width: image.width * scale, height: image.height * scale };
 }

@@ -1,18 +1,19 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
-const m = vi.hoisted(() => ({ profile: null as unknown, cookie: undefined as string | undefined, save: vi.fn(), refresh: vi.fn() }));
+const m = vi.hoisted(() => ({ profile: null as unknown, logo: null as unknown, cookie: undefined as string | undefined, save: vi.fn(), saveLogo: vi.fn(), refresh: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: m.refresh }) }));
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => m.cookie === undefined ? undefined : { value: m.cookie } }) }));
 vi.mock("@/lib/access/context", () => ({ requireInternalPermission: async () => ({ branchId: "b", branchName: "Chi nhánh Đông Anh", permissions: new Set(["roles.manage"]) }) }));
 vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({}) }));
-vi.mock("@/lib/company/profile", async (original) => ({ ...(await original<typeof import("@/lib/company/profile")>()), loadCompanyProfile: async () => m.profile }));
-vi.mock("@/modules/settings/company-actions", () => ({ saveCompanyProfileAction: m.save }));
+vi.mock("@/lib/company/profile", async (original) => ({ ...(await original<typeof import("@/lib/company/profile")>()), loadCompanyProfile: async () => m.profile, loadCompanyLogo: async () => m.logo }));
+vi.mock("@/modules/settings/company-actions", () => ({ saveCompanyProfileAction: m.save, saveCompanyLogoAction: m.saveLogo }));
 
 import Page from "./page";
+import { JPEG_LOGO_BASE64, logoBytes, PNG_LOGO_BASE64 } from "@/test/logo-fixtures";
 
 beforeEach(() => {
-  m.profile = null; m.cookie = undefined; m.save.mockReset(); m.refresh.mockReset();
+  m.profile = null; m.logo = null; m.cookie = undefined; m.save.mockReset(); m.saveLogo.mockReset(); m.refresh.mockReset();
   document.documentElement.removeAttribute("data-color");
 });
 afterEach(() => { cleanup(); document.cookie = "hx-appearance=; path=/; max-age=0"; });
@@ -53,4 +54,34 @@ it("switches this device to dark mode at once and remembers it", async () => {
   expect(document.documentElement.getAttribute("data-font-size")).toBe("lg");
   expect(document.cookie).toContain("hx-appearance=dark.lg.noto");
   expect(screen.getByText("Đã áp dụng trên thiết bị này.")).toBeInTheDocument();
+});
+
+it("uploads a logo once the company name is saved and shows it in the document heading", async () => {
+  render(await Page());
+  expect(screen.getByText("Lưu tên doanh nghiệp trước, sau đó tải logo.")).toBeInTheDocument();
+  cleanup();
+  m.profile = { legal_name: "Công ty TNHH Hiền Xa", tax_code: null, address: null, phone: null, email: null, bank_name: null, bank_account_number: null, bank_account_holder: null, version: 1 };
+  m.saveLogo.mockResolvedValue({ status: "SUCCESS", sha256: "d".repeat(64), message: "Đã lưu logo. Chứng từ in từ bây giờ có logo." });
+  render(await Page());
+  const input = screen.getByLabelText(/Logo \(PNG hoặc JPG/) as HTMLInputElement;
+  fireEvent.change(input, { target: { files: [new File([logoBytes(JPEG_LOGO_BASE64)], "logo.png", { type: "image/png" })] } });
+  expect(await screen.findByText("Chọn ảnh PNG hoặc JPG.")).toBeInTheDocument();
+  fireEvent.change(input, { target: { files: [new File([logoBytes(PNG_LOGO_BASE64)], "logo.png", { type: "image/png" })] } });
+  await waitFor(() => expect(screen.getByRole("button", { name: "Lưu logo" })).toBeEnabled());
+  expect(screen.getByAltText("Logo doanh nghiệp")).toHaveAttribute("src", `data:image/png;base64,${PNG_LOGO_BASE64}`);
+  fireEvent.click(screen.getByRole("button", { name: "Lưu logo" }));
+  await waitFor(() => expect(m.refresh).toHaveBeenCalled());
+  expect(m.saveLogo).toHaveBeenCalledWith(expect.objectContaining({ expectedSha256: null, mime: "image/png", base64: PNG_LOGO_BASE64 }));
+  expect(screen.getByRole("button", { name: "Xóa logo" })).toBeInTheDocument();
+});
+
+it("prints the saved logo in the preview and removes it against its fingerprint", async () => {
+  m.profile = { legal_name: "Công ty TNHH Hiền Xa", tax_code: null, address: null, phone: null, email: null, bank_name: null, bank_account_number: null, bank_account_holder: null, version: 1 };
+  m.logo = { mime: "image/png", base64: PNG_LOGO_BASE64, sha256: "e".repeat(64) };
+  m.saveLogo.mockResolvedValue({ status: "SUCCESS", sha256: null, message: "Đã xóa logo." });
+  render(await Page());
+  expect(screen.getByLabelText("Xem trước tiêu đề chứng từ").querySelector("img")).toHaveAttribute("src", `data:image/png;base64,${PNG_LOGO_BASE64}`);
+  fireEvent.click(screen.getByRole("button", { name: "Xóa logo" }));
+  await waitFor(() => expect(m.saveLogo).toHaveBeenCalledWith(expect.objectContaining({ expectedSha256: "e".repeat(64), mime: null, base64: null })));
+  expect(await screen.findByText("Chưa có logo")).toBeInTheDocument();
 });

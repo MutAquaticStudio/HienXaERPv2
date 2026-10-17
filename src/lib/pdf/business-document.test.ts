@@ -1,7 +1,8 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { PDFDocument } from "pdf-lib";
-import { createBusinessDocument, wrapDocumentText, type BusinessDocumentInput } from "./business-document";
+import { createBusinessDocument, fitInside, wrapDocumentText, type BusinessDocumentInput } from "./business-document";
+import { JPEG_LOGO_BASE64, logoBytes, PNG_LOGO_BASE64 } from "@/test/logo-fixtures";
 const input: BusinessDocumentInput = { title: "ĐƠN BÁN HÀNG", reference: "SO-MAU", branch: "Chi nhánh mẫu", status: "MẪU MINH HỌA", fields: [{ label: "Khách", value: "Khách mẫu" }], columns: [{ label: "Vật tư", key: "material", width: 300 }, { label: "Số lượng", key: "quantity", width: 100 }], rows: [{ material: "Xi măng", quantity: "0,123456" }], notes: [{ title: "Điều khoản", text: "Điều khoản mẫu" }], signatures: ["Người lập", "Khách hàng"], generatedAt: "14/10/2026 09:00", sourceId: "MẪU-KHÔNG-GHI-SỔ" };
 describe("A4 business PDF", () => {
   it("embeds a Vietnamese font and fits a short complete document on A4", async () => {
@@ -16,6 +17,13 @@ describe("A4 business PDF", () => {
     const doc = await PDFDocument.load(await createBusinessDocument({ ...input, company }));
     expect(doc.getAuthor()).toBe(company.name);
     expect(doc.getPageCount()).toBe(1);
+  });
+  it("prints a PNG or JPEG logo and skips a logo that cannot be read", async () => {
+    for (const logo of [{ mime: "image/png" as const, bytes: logoBytes(PNG_LOGO_BASE64) }, { mime: "image/jpeg" as const, bytes: logoBytes(JPEG_LOGO_BASE64) }, { mime: "image/png" as const, bytes: new Uint8Array([1, 2, 3]) }]) {
+      const doc = await PDFDocument.load(await createBusinessDocument({ ...input, company: { name: "Công ty TNHH Hiền Xa", lines: ["MST: 0101234567"], logo } }));
+      expect(doc.getPageCount()).toBe(1);
+    }
+    expect(fitInside({ width: 400, height: 100 }, 96, 40)).toEqual({ width: 96, height: 24 });
   });
   it("paginates long tables, long individual rows, fields and multiline notes", async () => {
     const doc = await PDFDocument.load(await createBusinessDocument({ ...input, fields: [{ label: "Địa chỉ", value: "Địa chỉ dài ".repeat(900) }], rows: Array.from({ length: 80 }, (_, i) => ({ material: `${i + 1} ` + "Vật tư có quy cách ".repeat(i === 2 ? 900 : 2), quantity: "123,456789" })), notes: [{ title: "Điều khoản", text: "Giao nhiều đợt.\n".repeat(100) }] }));

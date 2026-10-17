@@ -2951,3 +2951,13 @@ Sửa khi QA: (1) Lộ trình hết thời gian trên QA (20.079 phiếu giao m�
 12,4 s) → tách truy vấn theo trạng thái theo đúng index rồi gộp (61 ms), danh sách bước 1 cuộn trong khung; (2) tên vai trò tùy biến không dấu bị hiện
 "Vai trò được phân công" → `roleDisplayName` hiện đúng tên vai trò tùy biến; (3) Thu nhập 390px rộng 484 do ô chọn quy tắc dài → giới hạn chiều rộng;
 (4) thanh trên cùng còn sáng ở chế độ tối.
+
+## 2026-10-17 — FB2-D7b: logo doanh nghiệp + chuẩn bị phát hành
+
+Owner 17/10: duyệt áp migration QA; thêm tải logo trong Cài đặt; "Hoàn thành hết và deploy production luôn"; tên miền tạm dùng mặc định Vercel,
+sau bàn giao chuyển `app.hienxavlxd.com` (ghi D13 đầu Spec.md).
+- Migration `20261017150000_company_logo`: cột `logo_mime`/`logo_base64`/`logo_sha256` trên `company_profile` + `save_company_logo` (roles.manage,
+  PNG/JPEG ≤ 300 KB, chữ ký tệp khớp loại, cần đã có tên DN, đối chiếu logo đã đọc, idempotent, audit). Native `140_company_logo.sql` PASS.
+- `lib/company/profile.ts`: `loadCompanyLogo`, `loadCompanyDocumentHeading` (hồ sơ + logo một lần đọc cho PDF), `logoMatchesType`;
+  `pdf/business-document.ts` + `standard-document.ts` in logo (`embedLogo`, `fitInside`; logo lỗi → bỏ logo); action `saveCompanyLogoAction`;
+  `components/settings/company-logo-form.tsx` (FilePicker, kiểm loại/cỡ trên trình duyệt, Lưu/Xóa, kết quả chưa rõ giữ đúng thao tác).
