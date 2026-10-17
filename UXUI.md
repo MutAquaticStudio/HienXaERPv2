@@ -1169,6 +1169,19 @@ Reconciliation:
 
 Không ẩn difference quan trọng.
 
+**Sổ quỹ (FB2 Đợt 6, 17/10/2026)**: menu "Sổ quỹ"; nút Lập phiếu thu (chọn khách trong popup → mở popup Ghi thu ở Công nợ với các khoản
+của khách), Lập phiếu chi (chọn NCC), Tạo tài khoản tiền (popup). Hàng 4 thẻ của kỳ: Quỹ đầu kỳ │ Tổng thu (xanh) │ Tổng chi (đỏ) │ Tồn quỹ cuối
+kỳ; hàng phụ: Dòng tiền ròng (toàn bộ), Chưa đối soát, Tài khoản, Vị thế ứng trước. Lọc trái tự áp dụng: Từ ngày, Đến ngày (mặc định đầu tháng →
+hôm nay), Tài khoản, Loại (Thu/Chi). Bảng: Phiếu (mã + ngày) │ Đối tác │ Tài khoản │ Loại │ Số tiền (+/−) │ Đối soát (lệch) │ Thao tác: "In phiếu
+thu/chi", "Xử lý" mở popup gồm Đối soát ngân hàng và Đảo giao dịch (lý do).
+
+**Công nợ và Hóa đơn (FB2 Đợt 6)**: menu Tài chính còn Công nợ, Sổ quỹ, Chi phí, Hóa đơn. "Công nợ" có tab Phải thu khách hàng │ Phải trả nhà
+cung cấp (theo quyền); "Hóa đơn" có tab Hóa đơn bán ra │ Chứng từ mua vào │ Đối chiếu chứng từ NCC. Địa chỉ trang cũ giữ nguyên. Chọn một khách
+(`?customer=`) / NCC (`?supplier=`) tự mở popup "Ghi thu" / "Ghi chi" (biểu mẫu thu chi sẵn có); đóng popup để xem công nợ, khoản có, phân
+bổ tiền đã có của khách đó; nút Ghi thu/Ghi chi mở lại. **Chi phí**: tab Tất cả │ Chờ duyệt │ Đã duyệt (số đếm, tối đa "99+"); "Ghi chi phí" mở
+popup chọn Chi phí chung hoặc Chi phí chuyến (gắn phiếu giao và xe); "Nhóm chi phí" mở popup danh sách + tạo nhóm; "Duyệt" từng dòng mở popup
+xác nhận (nhóm, NCC, số tiền, nhắc không sửa lại được) — tự mở khi tới bằng `?focus=`. Báo chuyển khoản đã tắt (D8).
+
 ---
 
 # UX-450 — `/admin/workforce`

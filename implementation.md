@@ -2893,3 +2893,28 @@ lọc kho + tìm → thẻ kho, đơn vị lớn, popup ngưỡng 1,5 lưu và q
 bị chặn → lý do chung → Lưu tạm 2 dòng → tải lại giữ số → Hoàn thành (popup +1 · 200.000 ₫) → Đã cân bằng kho, tồn B 2 → 3; phiếu thứ hai Hủy
 → Đã hủy. 1440/1366/390px: trang không tràn (sửa khi QA: gộp mã vào ô Vật tư, gộp nút ngưỡng vào cột Ngưỡng, cho phép xuống dòng tên dài,
 xếp chồng tồn theo kho trên thẻ kho, thanh dưới phiếu gọn và chỉ dính đáy khi còn thao tác). Production chưa áp.
+
+## 2026-10-17 — FB2-D6: Tài chính gọn (Đợt 6)
+
+Nhánh `nox/elegant-volta-kr29iz` (PR #52).
+- **D8 tắt Báo chuyển khoản** như báo giá: `PAYMENT_NOTICES_ENABLED = false`, rewrite 404 `/admin/payment-notices` (`next.config.ts`) + layout
+  `notFound`, API cổng khách 404, `paymentNoticeCommandAction` và action cũ ở `portal/actions.ts` chặn trước mọi gọi DB, menu/trang đích bỏ, cổng
+  khách ẩn danh sách + form, link "Xem công nợ".
+- **Menu Tài chính**: Công nợ (`/admin/debts` chuyển tới tab được phép; `activePrefixes` để mục sáng ở `/admin/receivables`, `/admin/payables`),
+  Sổ quỹ, Chi phí, Hóa đơn (người chỉ đọc phải trả → `/admin/invoices/purchases`). Tab chung `components/finance/finance-tabs.tsx` (`DetailTabs`).
+  Giữ nguyên địa chỉ cũ vì liên kết, `redirectTo` của phiếu thu chi, `revalidatePath` và script QA đều trỏ vào đó.
+- **Popup**: `components/ui/form-dialog.tsx` bọc biểu mẫu server sẵn có (server action, mã thao tác, khôi phục giữ nguyên): Ghi thu/Ghi chi (tự mở
+  khi tới bằng `?customer=`/`?supplier=`, không mở lại khi phân trang hoặc có thông báo), Xử lý/Tạo tài khoản ở Sổ quỹ, Ghi chi phí (chọn chung |
+  chuyến — `expense-create-chooser.tsx`), Nhóm chi phí, Duyệt chi phí (tự mở khi `?focus=`).
+- **Sổ quỹ**: migration `20261017110000_cashbook_period_summary` (RPC chỉ đọc), lọc kỳ/tài khoản/loại, "Lập phiếu thu/chi"
+  (`party-payment-launcher.tsx`), bảng gộp Mã + Ngày.
+- **Hóa đơn**: tab + bộ lọc tự áp dụng; bỏ các nút liên kết chéo thừa.
+- Script QA cập nhật: `go-live/finance-config-browser.mjs`, `ux-refinement-browser.mjs`, `remediation/package9-expense-browser.mjs`.
+Kiểm: native `100_cashbook_period_summary.sql` (không quyền/khác chi nhánh/kỳ ngược bị từ chối; đầu kỳ, thu, chi, cuối kỳ đúng biên kỳ, theo tài khoản;
+cuối kỳ bằng `cashbook_summary`; `anon` không chạy) cùng 010–090 PASS; vitest các file mới + cập nhật. QA project: áp migration (sha256 `03c275d9…`,
+md5 hàm khớp). QA trình duyệt (owner, không ghi tiền): menu 4 mục, `/admin/debts` → Phải thu, tab Phải trả; `?customer=` mở popup Ghi thu (3 khoản);
+Sổ quỹ tháng 10: đầu kỳ 2.780.731 + thu 9.921.000 − chi 10.201.000 = cuối kỳ 2.500.731 ₫, từ 1/1: 0 + 16.042.001 − 13.541.270 = 2.500.731 ₫ (khớp dòng tiền
+ròng); lọc Phiếu thu; Lập phiếu thu → chọn khách → popup Ghi thu; Xử lý/Tạo tài khoản popup; Chi phí: tab, popup chung/chuyến, nhóm, duyệt (đóng không
+duyệt); Hóa đơn 3 tab, menu "Hóa đơn" sáng ở trang đối chiếu; `/admin/payment-notices` → 404. 390px: 6 trang 390. Sửa khi QA: số đếm "Chờ duyệt"
+rỗng vì QA có 10.050 chi phí nháp (đếm chính xác quá chậm) → đếm tối đa 100 dòng, hiện "99+"; popup Ghi thu bỏ tiêu đề lặp; bảng Sổ quỹ gọn cột.
+Production chưa áp.

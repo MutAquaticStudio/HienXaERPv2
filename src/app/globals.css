@@ -1163,3 +1163,19 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
   .stock-count-footer .form-actions { flex: 1 1 100%; justify-content: stretch; margin-left: 0; }
   .stock-count-footer .form-actions .button { flex: 1 1 auto; }
 }
+
+/* FB2 Đợt 6 — Tài chính: secondary KPI row, party picker of "Lập phiếu thu/chi", forms inside popups. */
+.metric-grid-compact .metric-value { font-size: 21px; }
+.metric-grid-compact .metric-card { padding-block: 14px; }
+.party-pick { display: grid; gap: 4px; max-height: min(50vh, 420px); overflow-y: auto; margin: 0.75rem 0; padding: 4px; border: 1px solid var(--border); border-radius: 10px; }
+.party-pick-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; cursor: pointer; }
+.party-pick-item:hover, .party-pick-item.selected { background: var(--surface-soft); }
+.dialog-panel .mini-command { display: grid; gap: 0.6rem; padding: 0.75rem 0; border-top: 1px solid var(--border); }
+.dialog-panel .mini-command:first-child { border-top: 0; }
+.dialog-panel .mini-command h3 { margin: 0; font-size: var(--font-size-label); }
+.dialog-panel .payment-editor { border: 0; box-shadow: none; padding: 0; }
+.segmented-radio { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; margin: 0 0 1rem; padding: 0.6rem 0.85rem; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-soft); }
+.segmented-radio legend { padding: 0 4px; font-size: var(--font-size-label); font-weight: 700; }
+.segmented-radio label { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+.expense-categories { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-bottom: 0.75rem; }
+.cashbook-table td.cashbook-party { min-width: 180px; white-space: normal; }

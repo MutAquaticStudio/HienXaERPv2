@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export type DetailTab = { id: string; label: string; count?: number };
+export type DetailTab = { id: string; label: string; count?: number | string };
 
 /**
  * Tabs of a record page (KiotViet-style "360" view). Each tab is a real address (`?tab=`), so only the open tab's data

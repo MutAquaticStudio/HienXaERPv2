@@ -6,8 +6,10 @@ import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { checkSavedCommandFieldsAction } from "@/lib/core/command-outcome-actions";
 import { isAuthoritativeRejection, type CommandOutcome } from "@/lib/core/command-outcome";
+import { PAYMENT_NOTICES_DISABLED_MESSAGE, PAYMENT_NOTICES_ENABLED } from "@/lib/features";
 
 export async function paymentNoticeCommandAction(form: FormData): Promise<CommandOutcome> {
+ if (!PAYMENT_NOTICES_ENABLED) return { status: "FAILED", message: PAYMENT_NOTICES_DISABLED_MESSAGE };
  const parsed = z.object({ kind: z.enum(["REVIEW", "MATCH", "REVERSE_MATCH"]), noticeId: z.uuid(), version: z.coerce.number().int().positive(), reason: z.string().trim().min(3).max(500), operationId: z.uuid() }).safeParse(Object.fromEntries(form));
  if (!parsed.success) return { status: "FAILED", message: "Kiểm tra phiên bản thông báo và ghi căn cứ đối chiếu." };
  const access = await requireInternalPermission("finance.payment_notice.review"), db = await createServerSupabase();

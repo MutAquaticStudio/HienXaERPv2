@@ -1177,6 +1177,11 @@ Một chứng từ nhận và hóa đơn NCC có thể cùng chỉ về một ng
 
 POSTED ghi tiền đúng một lần; đối soát ngân hàng không ghi tiền lại. REVERSED thêm giao dịch đảo và đảo phân bổ tương ứng, không xóa lịch sử. Cùng pháp nhân/currency mới được phân bổ; nếu khác chi nhánh cần quyền cả hai và chính sách kế toán đã duyệt.
 
+**Sổ quỹ theo kỳ (FB2 Đợt 6, 17/10/2026):** `cashbook_period_summary(target_branch_id, from_at, to_at, target_account_id?)` — RPC chỉ đọc,
+quyền `finance.ar.read` như `cashbook_summary`, cùng nguồn `payment_read` và quy tắc dấu (mọi phiếu đã ghi sổ và phiếu đảo; thu cộng, chi trừ):
+quỹ đầu kỳ = tổng trước `from_at`, tổng thu / tổng chi = phiếu trong `[from_at, to_at)`, tồn quỹ cuối kỳ = tổng trước `to_at`; số trả về dạng chuỗi.
+Không lưu thêm sổ nào.
+
 ## SPEC-FIN-005 — Allocation
 
 PaymentAllocation many-to-many.
@@ -1209,6 +1214,11 @@ PaymentNotice:
 - status review.
 
 Không tác động AR trước khi Payment được POSTED.
+
+**D8 (Owner 16/10/2026, áp dụng FB2 Đợt 6 17/10/2026): Báo chuyển khoản tắt hẳn trên mọi bề mặt**, như báo giá (D1): cờ
+`PAYMENT_NOTICES_ENABLED = false` (`src/lib/features.ts`); `/admin/payment-notices` trả 404 thật (rewrite trước định tuyến), menu và trang đích
+mặc định bỏ mục này, cổng khách `/customer/debts` không còn danh sách/form gửi thông báo, API gửi thông báo trả 404, lệnh rà soát/nối/sửa nối
+bị từ chối trước mọi gọi DB. Dữ liệu, RPC và quyền giữ nguyên; bật lại cờ là khôi phục. Tiền khách chuyển được ghi thu tại Công nợ.
 
 ---
 

@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 
+import { PAYMENT_NOTICES_ENABLED } from "@/lib/features";
 import { authenticatedPortalClient, portalRpc } from "@/modules/portal/server";
 
 export async function POST(request: Request) {
+  if (!PAYMENT_NOTICES_ENABLED) return NextResponse.json({ error: "Không tìm thấy." }, { status: 404 });
   const context = await authenticatedPortalClient();
   if (!context) return NextResponse.json({ error: "Phiên đăng nhập đã hết hạn" }, { status: 401 });
   try {

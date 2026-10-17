@@ -5,11 +5,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { UatBrowserTiming } from "@/components/uat-browser-timing";
-import { QUOTATIONS_ENABLED } from "@/lib/features";
+import { PAYMENT_NOTICES_ENABLED, QUOTATIONS_ENABLED } from "@/lib/features";
 
 type Surface = "admin" | "work" | "customer";
 
-type NavigationItem = { href: string; label: string; icon: LucideIcon; exact?: boolean; permission?: string; permissionsAny?: readonly string[]; group?: string; managementPermission?: string; managementHref?: string };
+type NavigationItem = { href: string; label: string; icon: LucideIcon; exact?: boolean; permission?: string; permissionsAny?: readonly string[]; group?: string; managementPermission?: string; managementHref?: string;
+  /** Other sections shown under this one, e.g. "Công nợ" covers the receivable and payable pages. */
+  activePrefixes?: readonly string[] };
 
 const adminGroups = [
   { id: "sales", label: "Bán hàng", icon: ShoppingCart },
@@ -37,13 +39,11 @@ const navigation: Record<Surface, readonly NavigationItem[]> = {
     { href: "/admin/dispatch", label: "Điều phối", icon: ClipboardCheck, permission: "delivery.read", managementPermission: "roles.manage", managementHref: "/admin/dispatch/resources", group: "delivery" },
     { href: "/admin/deliveries", label: "Phiếu giao", icon: Truck, permission: "delivery.read", group: "delivery" },
     { href: "/admin/routes", label: "Lộ trình", icon: Route, permission: "delivery.read", group: "delivery" },
-    { href: "/admin/receivables", label: "Công nợ phải thu", icon: WalletCards, permission: "finance.ar.read", group: "finance" },
-    { href: "/admin/payables", label: "Công nợ phải trả", icon: WalletCards, permission: "finance.ap.read", group: "finance" },
-    { href: "/admin/cashbook", label: "Sổ tiền", icon: WalletCards, permission: "finance.ar.read", group: "finance" },
+    { href: "/admin/debts", label: "Công nợ", icon: WalletCards, permissionsAny: ["finance.ar.read", "finance.ap.read"], activePrefixes: ["/admin/receivables", "/admin/payables"], group: "finance" },
+    { href: "/admin/cashbook", label: "Sổ quỹ", icon: WalletCards, permission: "finance.ar.read", group: "finance" },
     { href: "/admin/expenses", label: "Chi phí", icon: FileText, permission: "finance.expense.read", group: "finance" },
-    { href: "/admin/payment-notices", label: "Báo chuyển khoản", icon: WalletCards, permission: "finance.payment_notice.review", group: "finance" },
-    { href: "/admin/invoices", label: "Hồ sơ hóa đơn bán", icon: FileText, permission: "finance.ar.read", group: "finance" },
-    { href: "/admin/invoices/purchases", label: "Chứng từ mua", icon: FileText, permission: "finance.ap.read", group: "finance" },
+    ...(PAYMENT_NOTICES_ENABLED ? [{ href: "/admin/payment-notices", label: "Báo chuyển khoản", icon: WalletCards, permission: "finance.payment_notice.review", group: "finance" }] : []),
+    { href: "/admin/invoices", label: "Hóa đơn", icon: FileText, permissionsAny: ["finance.ar.read", "finance.ap.read"], group: "finance" },
     { href: "/admin/workforce", label: "Nhân sự & công việc", icon: UsersRound, permission: "workforce.read", group: "workforce" },
     { href: "/admin/compensation", label: "Thu nhập", icon: WalletCards, permission: "compensation.read", group: "workforce" },
     { href: "/admin/access", label: "Nhân viên & quyền", icon: ShieldCheck, permission: "roles.manage", group: "administration" },
@@ -79,7 +79,8 @@ export function AppShell({ surface, children, permissions, actorName }: { surfac
     : !item.permission || permissions?.includes(item.permission) || Boolean(item.managementPermission && permissions?.includes(item.managementPermission)))
     .map((item) => item.managementHref && item.permission && !permissions?.includes(item.permission)
       ? { ...item, href: item.managementHref } : item);
-  const activeHref = visibleItems.filter((item) => pathname === item.href || (!item.exact && pathname.startsWith(`${item.href}/`)))
+  const under = (prefix: string) => pathname === prefix || pathname.startsWith(`${prefix}/`);
+  const activeHref = visibleItems.filter((item) => pathname === item.href || (!item.exact && pathname.startsWith(`${item.href}/`)) || item.activePrefixes?.some(under))
     .sort((left, right) => right.href.length - left.href.length)[0]?.href;
   const initials = actorName?.trim().split(/\s+/).filter(Boolean).slice(-2).map((part) => part[0]?.toLocaleUpperCase("vi-VN")).join("") ?? "";
 

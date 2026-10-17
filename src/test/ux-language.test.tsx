@@ -89,7 +89,7 @@ describe("Vietnamese display boundaries", () => {
     expect(mocks.rpc).not.toHaveBeenCalled();
   });
 
-  it("shows accepted payment notice separately from posting and preserves its code, date and amount", async () => {
+  it("shows the customer's debt without the switched-off payment notices (owner decision D8)", async () => {
     const notice = { id: "notice", state: "ACCEPTED", amount_vnd: "2000000", paid_on: "2026-10-10", reference: "UNC_2026_00012", evidence_id: "evidence" };
     mocks.customer.mockResolvedValue({
       customer: { id: "customer" }, can_view_debt: true,
@@ -97,11 +97,11 @@ describe("Vietnamese display boundaries", () => {
       payment_notices: [notice],
     });
     const view = render(await CustomerDebtsPage());
-    expect(screen.getByText("Đã chấp nhận")).toBeInTheDocument();
-    expect(view.container.textContent).not.toMatch(/ACCEPTED|Đã ghi sổ|Đã tất toán/);
-    expect(screen.getByText(/10\/10\/2026 · UNC_2026_00012/)).toBeInTheDocument();
     expect(view.container.textContent).toContain("2.000.000");
-    expect(notice).toMatchObject({ state: "ACCEPTED", amount_vnd: "2000000", paid_on: "2026-10-10", reference: "UNC_2026_00012" });
+    expect(view.container.textContent).not.toMatch(/ACCEPTED|Đã ghi sổ|Đã tất toán/);
+    expect(screen.queryByText("Thông báo đã gửi")).not.toBeInTheDocument();
+    expect(screen.queryByText("Thông báo đã chuyển tiền")).not.toBeInTheDocument();
+    expect(screen.queryByText(/UNC_2026_00012/)).not.toBeInTheDocument();
     expect(mocks.rpc).not.toHaveBeenCalled();
   });
 

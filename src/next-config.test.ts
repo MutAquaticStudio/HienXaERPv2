@@ -2,7 +2,7 @@
 import { expect, it } from "vitest";
 import nextConfig, { NOT_FOUND_SEGMENT } from "../next.config";
 
-it("sends every switched-off quotation route to a real 404 before routing (owner decision D1)", async () => {
+it("sends every switched-off quotation and payment-notice route to a real 404 before routing (owner decisions D1, D8)", async () => {
   const rewrites = await nextConfig.rewrites!();
   expect(Array.isArray(rewrites)).toBe(false);
   const before = Array.isArray(rewrites) ? [] : rewrites.beforeFiles;
@@ -11,5 +11,7 @@ it("sends every switched-off quotation route to a real 404 before routing (owner
     { source: "/admin/quotations/:path*", destination: `/admin/${NOT_FOUND_SEGMENT}` },
     { source: "/customer/quotations", destination: `/customer/${NOT_FOUND_SEGMENT}` },
     { source: "/customer/quotations/:path*", destination: `/customer/${NOT_FOUND_SEGMENT}` },
+    { source: "/admin/payment-notices", destination: `/admin/${NOT_FOUND_SEGMENT}` },
+    { source: "/admin/payment-notices/:path*", destination: `/admin/${NOT_FOUND_SEGMENT}` },
   ]);
 });
