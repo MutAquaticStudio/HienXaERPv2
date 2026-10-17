@@ -1,6 +1,7 @@
 import { formatBusinessDate, formatBusinessDateTime } from "@/lib/core/business-time";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { createStandardPdf, pdfResponse } from "@/lib/pdf/standard-document";
+import { companyHeading, loadCompanyProfile } from "@/lib/company/profile";
 
 type Obligation = { obligation_id: string; party_name: string; site_name: string | null; source_type: string; source_id: string; due_date: string; outstanding_amount_vnd: string };
 const money = (value: string) => `${new Intl.NumberFormat("vi-VN").format(BigInt(value))} VND`;
@@ -43,6 +44,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   }
   const total = obligations.reduce((sum, row) => sum + BigInt(row.outstanding_amount_vnd), 0n);
   const bytes = await createStandardPdf({
+    company: companyHeading(await loadCompanyProfile(supabase)),
     title: "BẢNG ĐỐI CHIẾU CÔNG NỢ",
     reference: `AR-${customerResult.data.id.slice(0, 8)}-${asOf.replaceAll("-", "")}`,
     subtitle: `Số dư đến hết ${formatBusinessDate(`${asOf}T12:00:00+07:00`)}`,

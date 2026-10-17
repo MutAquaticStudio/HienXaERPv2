@@ -56,11 +56,12 @@ async function setPermissionsInUI(owner, requested, reason) {
   const [employee] = await qa.sql`select code from public.employees where id=${d.personas.worker.employee} and auth_user_id=${d.personas.worker.subject}`;
   assert.ok(employee?.code);
   await owner.goto(origin + "/admin/access?q=" + encodeURIComponent(employee.code));
-  const form = owner.locator("form").filter({ has: owner.locator(`input[name=employeeId][value="${d.personas.worker.employee}"]`) })
+  // FB2 Đợt 7: "Quyền riêng" opens in a popup.
+  await owner.locator(`button[data-employee-id="${d.personas.worker.employee}"][data-action="explicit"]`).click();
+  const form = owner.getByRole("dialog").locator("form").filter({ has: owner.locator(`input[name=employeeId][value="${d.personas.worker.employee}"]`) })
     .filter({ has: owner.locator(`input[name=branchId][value="${d.branch}"]`) });
   await form.locator('input[name=reason]').waitFor({ state: "attached" });
   assert.equal(await form.count(), 1);
-  if (!await form.getByRole("button", { name: "Lưu quyền bổ sung", exact: true }).isVisible()) await form.locator("xpath=..").locator("summary").click();
   const inputs = await form.locator('input[name=permissionCode]').all();
   const available = await Promise.all(inputs.map(input => input.getAttribute("value")));
   assert.ok(requested.every(code => available.includes(code)), "Original/requested QA grants must be expressible by the real form");

@@ -1688,6 +1688,13 @@ Một nhân viên có thể có access nhiều branch.
 
 Role có thể khác theo branch nếu business yêu cầu.
 
+**Vai trò tùy biến (D12, FB2 Đợt 7, 17/10/2026):** ngoài vai trò mẫu (`system_role`, chỉ xem), người có `roles.manage` (chủ doanh nghiệp;
+không vai trò mẫu nào có quyền này) tạo/sửa vai trò tùy biến bằng RPC `save_custom_role(branch, role?, tên, quyền[], quyền_đã_đọc[], đang_dùng, op)`:
+không bao giờ chứa `roles.manage`, không chứa quyền mà chính người sửa không có tại chi nhánh đang chọn, không sửa vai trò mẫu hay vai trò đang có
+`roles.manage`; sửa đối chiếu danh sách quyền đã đọc (đổi ở nơi khác → từ chối, không ghi đè); đổi quyền có hiệu lực ngay với mọi người đang giữ vai
+trò; vai trò còn người dùng không ngừng dùng được; tên không trùng vai trò đang dùng; idempotent theo `operation_id`, ghi audit
+`role.custom_created`/`role.custom_updated`. Migration `20261017120000_custom_roles`, test native `110_custom_roles.sql`.
+
 ## SPEC-ACC-002 — Customer model
 
 ```text
@@ -2272,6 +2279,14 @@ Không có giá hợp lệ: cho nhập giá thủ công với đúng quyền, ng
 
 Mẫu có sẵn: báo giá A4, phiếu giao, phiếu thu/chi, bảng đối chiếu công nợ. Báo giá PDF cố định theo revision; đổi mẫu không đổi file đã gửi. Tệp xuất không bị gọi là hóa đơn thuế khi chỉ là báo giá/phiếu giao.
 
+**Thông tin doanh nghiệp trên chứng từ (D10, FB2 Đợt 7, 17/10/2026):** bảng `company_profile` một dòng (tên doanh nghiệp bắt buộc; mã số thuế 10
+hoặc 13 số dạng `0101234567-001`, địa chỉ, điện thoại, email, ngân hàng, số tài khoản, chủ tài khoản — tùy chọn), RLS bật, mọi người đã đăng nhập
+được đọc (in trên chứng từ gửi khách), `anon` không có quyền; chỉ ghi qua `save_company_profile(branch, profile, version_đã_đọc, op)` với
+`roles.manage`, đối chiếu version, idempotent, audit `company_profile.saved`. PDF đơn bán, đơn mua, phiếu giao, phiếu thu/chi, bảng đối chiếu công
+nợ, bản xem hóa đơn in tên + địa chỉ + MST/điện thoại/email + tài khoản ngân hàng thay chữ cố định "Hiền Xa ERP"; chưa khai báo thì giữ chữ cũ;
+lỗi đọc hồ sơ không chặn xuất chứng từ. Chưa có logo (để sau nếu Owner cần). Migration `20261017140000_company_profile`, test native
+`130_company_profile.sql`. **Giao diện theo thiết bị** (sáng/tối/theo thiết bị, cỡ chữ, phông) lưu ở cookie `hx-appearance`, không ghi DB.
+
 Điều chỉnh công nợ, stock adjustment, reversal tiền và ngoại lệ lượng tính tiền cần lý do + tài liệu/bằng chứng. Bằng chứng là object Storage private với owner/nguồn/audience/checksum, không chỉ URL công khai. Upload lỗi phải thử lại riêng, không mất form. Giao nội bộ có thể lưu nháp thiếu ảnh; muốn duyệt thiếu chứng cứ cần quyền ngoại lệ, lý do và audit, không được lặng lẽ bỏ qua.
 
 ## SPEC-CONFIG-004 — Cảnh báo nhập thêm
@@ -2412,6 +2427,13 @@ Legacy schema và V2 schema có thể cùng tồn tại tạm trong một databa
 Tracking chỉ trong lần giao active được giao đúng worker/vehicle, user cho phép và browser foreground. Phiên có `assignment_version`, sequence hoặc timestamp + accepted-ordering; không tin clock client hoàn toàn. Điểm cũ/offline không ghi đè vị trí mới; nhận telemetry sau thu hồi phải deny. Ngưỡng gửi/freshness/retention do cấu hình vận hành, không GPS 24/7; không giữ lịch sử vô hạn, case tranh chấp có hold được kiểm soát.
 
 Route có giờ khởi hành thực theo múi giờ, thời gian chạy/chờ/bốc dỡ, capacity theo từng chặng pickup/drop và road restrictions provider thực hỗ trợ. Không hardcode giờ UTC hoặc coi dữ liệu thiếu thành 0 phút/tải trọng vô hạn. Provider unavailable: gợi ý thứ tự thủ công với nhãn rõ. Apply kiểm lại assignment_version/readiness dưới lock; không tự claim công việc trong bể.
+
+**Giờ dự kiến từng điểm dừng (FB2 Đợt 7, 17/10/2026):** khi lập lộ trình, điều phối nhập giờ khởi hành và "thời gian mỗi điểm" (phút, gồm chạy xe
+và bốc dỡ; 10–480, gợi ý sẵn 60, sửa được); điểm thứ n có khung `[giờ đi + (n−1)×phút, giờ đi + n×phút)` lưu ở `route_plan_stops.planned_start_at/
+planned_end_at` (DB kiểm: bắt đầu không trước giờ đi, theo đúng thứ tự, không chồng nhau, mỗi khung ≤ 24 giờ). Áp dụng: phiếu **chưa có lịch** nhận
+khung của điểm dừng (`assign_delivery_scheduled`), phiếu **đã có lịch** giữ nguyên lịch (`assign_delivery`) — không âm thầm dời lịch đã hẹn khách
+(SPEC-JOURNEY-003). Chồng lịch trên cùng xe/tài xế vẫn bị từ chối nguyên khối như trước; lộ trình cũ không có khung cho phiếu chưa lịch → báo
+`route_stop_schedule_required`, tạo lại đề xuất. Migration `20261017130000_route_plan_stop_schedule`, test native `120_route_plan_schedule.sql`.
 
 ## SPEC-DATA-005 — Thiết bị yếu và an toàn người dùng
 

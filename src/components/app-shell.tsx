@@ -4,6 +4,7 @@ import { BarChart3, Boxes, ChevronDown, ClipboardCheck, Factory, FileText, Layou
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { AppearanceButton } from "@/components/settings/appearance-button";
 import { UatBrowserTiming } from "@/components/uat-browser-timing";
 import { PAYMENT_NOTICES_ENABLED, QUOTATIONS_ENABLED } from "@/lib/features";
 
@@ -138,6 +139,7 @@ export function AppShell({ surface, children, permissions, actorName }: { surfac
           </>}
         </nav>
         <div className="sidebar-foot">
+          <AppearanceButton />
           <form action="/auth/logout" method="post"><button className="logout-button" type="submit"><LogOut size={17} />Đăng xuất</button></form>
           Phiên làm việc có phân quyền
         </div>

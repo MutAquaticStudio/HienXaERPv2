@@ -2918,3 +2918,29 @@ ròng); lọc Phiếu thu; Lập phiếu thu → chọn khách → popup Ghi thu
 duyệt); Hóa đơn 3 tab, menu "Hóa đơn" sáng ở trang đối chiếu; `/admin/payment-notices` → 404. 390px: 6 trang 390. Sửa khi QA: số đếm "Chờ duyệt"
 rỗng vì QA có 10.050 chi phí nháp (đếm chính xác quá chậm) → đếm tối đa 100 dòng, hiện "99+"; popup Ghi thu bỏ tiêu đề lặp; bảng Sổ quỹ gọn cột.
 Production chưa áp.
+
+## 2026-10-17 — FB2-D7: Thu nhập, Nhân viên & quyền, Lộ trình, Cài đặt (Đợt 7)
+
+Nhánh `nox/elegant-volta-kr29iz` (PR #52).
+- **Vai trò tùy biến (D12)**: migration `20261017120000_custom_roles` — `save_custom_role` (chỉ `roles.manage`; không gán `roles.manage` hay quyền
+  người sửa không có; vai trò mẫu/vai trò quản trị chỉ xem; đối chiếu quyền đã đọc; vai trò còn người dùng không ngừng được; audit + receipt).
+  `lib/access/permission-groups.ts` (nhóm quyền theo menu, `OWNER_ONLY_PERMISSIONS`), `lib/access/role-actions.ts`, `components/access/role-editor.tsx`.
+  Trang `/admin/access`: tab Nhân viên │ Vai trò, Mời/Đổi vai trò/Quyền riêng/Thu hồi/Kích hoạt lại trong popup (`FormDialog` thêm `triggerData` để
+  script QA chọn đúng dòng). Script QA cập nhật: `go-live/role-lifecycle-browser.mjs`, `go-live/access-messaging-browser.mjs`.
+- **Thu nhập**: ba form tạo mở bằng popup, bảng "Quy tắc thu nhập" hiện mức (% hoặc ₫ / đơn vị).
+- **Lộ trình**: migration `20261017130000_route_plan_stop_schedule` — `route_plan_stops.planned_start_at/planned_end_at`; `create_route_plan` lưu
+  khung từng điểm (kiểm thứ tự, không chồng, không trước giờ đi); `apply_route_plan` xếp lịch phiếu chưa có lịch bằng khung điểm dừng
+  (`assign_delivery_scheduled`), phiếu đã có lịch giữ nguyên; mã thao tác con suy từ mã áp dụng. `modules/routing/stop-schedule.ts` (khung, chồng
+  lịch), form 3 bước, bảng lộ trình + bảng điểm dừng; thông báo lỗi tiếng Việt cho khung sai/lộ trình cũ.
+- **Cài đặt (D10)**: migration `20261017140000_company_profile` — bảng một dòng + `save_company_profile`; `lib/company/profile.ts` (đọc, tiêu đề in);
+  PDF `business-document.ts` (đơn bán/mua, phiếu giao) và `standard-document.ts` (phiếu thu/chi, đối chiếu công nợ, xem hóa đơn) in thông tin doanh
+  nghiệp, thiếu thì giữ "Hiền Xa ERP". Giao diện theo thiết bị: `lib/appearance.ts` (cookie `hx-appearance`, thuộc tính `<html>` render từ server,
+  script đầu trang giải "Theo thiết bị"), CSS cỡ chữ/phông/tối (tối chỉ phủ màn nội bộ có menu trái, trình duyệt thiếu `:has()` giữ sáng), font
+  `@fontsource/be-vietnam-pro` 5.3.0 (lockfile cập nhật bằng pnpm 11 như CI); nút "Giao diện" ở chân menu cho mọi nhân viên.
+Kiểm: native 110 (quyền, chi nhánh khác, `roles.manage`, quyền lạ, rỗng, trùng tên, replay/xung đột payload, sửa lệch, vai trò mẫu/quản trị, vượt quyền
+người sửa, vai trò đang dùng), 120 (người chỉ xem; khung trước giờ đi/chồng nhau bị từ chối; lộ trình không khung → từ chối, không phân giao gì;
+07:00/60 phút: phiếu 1 07–08, phiếu 2 08–09, phiếu 3 giữ 10–11, 3 phân giao, replay; chồng lịch ngày 2 từ chối nguyên khối), 130 (quyền, tên bắt buộc,
+MST sai, tạo/replay/xung đột, người chỉ xem đọc được, version lệch, audit, `anon`) cùng 010–100 PASS; vitest 156 file / 918 test; typecheck, lint 0 lỗi, build.
+QA project: **chưa áp** 3 migration — lệnh ghi qua công cụ Supabase cần Owner duyệt trong phiên (lần thử 17/10 trả "requires approval"); áp xong sẽ
+kiểm md5 hàm (`save_custom_role` 27efa32a…, `create_route_plan` a9a36e76…, `apply_route_plan` 1195121d…, `save_company_profile` 6d575a17…) và QA trình
+duyệt. Production chưa áp.

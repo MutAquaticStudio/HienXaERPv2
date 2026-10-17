@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import fontkit from "@pdf-lib/fontkit";
 import { PDFDocument, type PDFFont, type PDFPage, rgb } from "pdf-lib";
+import { FALLBACK_COMPANY_NAME, type CompanyHeading } from "@/lib/company/profile";
 
 export type DocumentField = { label: string; value: string };
 export type BusinessDocumentInput = {
@@ -15,6 +16,8 @@ export type BusinessDocumentInput = {
   generatedAt: string;
   sourceId: string;
   sample?: boolean;
+  /** Company details from Cài đặt (D10); without them the former fixed heading is printed. */
+  company?: CompanyHeading;
 };
 const W = 595.28, H = 841.89, M = 42, CW = W - M * 2, BOTTOM = 80;
 const ink = rgb(.08, .15, .24), blue = rgb(.025, .36, .72), muted = rgb(.35, .42, .5);
@@ -46,7 +49,8 @@ export async function createBusinessDocument(input: BusinessDocumentInput): Prom
   doc.registerFontkit(fontkit);
   const font = await doc.embedFont(await readFile(path.join(process.cwd(), "public/fonts/NotoSansVietnamese-Regular.ttf")), { subset: true });
   doc.setTitle(`${input.title} - ${input.reference}`);
-  doc.setAuthor("Hiền Xa ERP"); doc.setCreator("Hiền Xa ERP");
+  const company = input.company ?? { name: FALLBACK_COMPANY_NAME, lines: [] };
+  doc.setAuthor(company.name); doc.setCreator("Hiền Xa ERP");
   doc.setSubject(`Nguồn: ${input.sourceId}; xuất lúc: ${input.generatedAt}`);
   let page!: PDFPage;
   let y = 0;
@@ -54,10 +58,11 @@ export async function createBusinessDocument(input: BusinessDocumentInput): Prom
   const right = (text: string, x: number, baseline: number, size = 9) => draw(text, x - font.widthOfTextAtSize(text, size), baseline, size);
   const addPage = () => {
     page = doc.addPage([W, H]);
-    draw("Hiền Xa ERP", M, H - 47, 12, blue);
+    const nameLines = wrapDocumentText(font, company.name, 12, CW - 150);
+    nameLines.forEach((line, k) => draw(line, M, H - 47 - k * 15, 12, blue));
     right(input.reference, W - M, H - 47, 10);
-    let hy = H - 65;
-    for (const line of wrapDocumentText(font, input.branch, 8, CW)) { draw(line, M, hy, 8, muted); hy -= 11; }
+    let hy = H - 65 - (nameLines.length - 1) * 15;
+    for (const line of [...company.lines, input.branch].flatMap((text) => wrapDocumentText(font, text, 8, CW))) { draw(line, M, hy, 8, muted); hy -= 11; }
     hy -= 20;
     for (const line of wrapDocumentText(font, input.title, 19, CW)) { draw(line, M, hy, 19); hy -= 24; }
     for (const line of wrapDocumentText(font, `${input.sample ? "MẪU MINH HỌA - " : ""}${input.status}`, 9, CW)) { draw(line, M, hy, 9, muted); hy -= 13; }

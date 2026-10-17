@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import fontkit from "@pdf-lib/fontkit";
 import { PDFDocument, PDFFont, PDFPage, rgb } from "pdf-lib";
+import { FALLBACK_COMPANY_NAME, type CompanyHeading } from "@/lib/company/profile";
 
 type Field = { label: string; value: string };
 type Column = { label: string; key: string; width: number; align?: "left" | "right" };
@@ -16,6 +17,8 @@ export type StandardPdfInput = {
   totals?: Field[];
   trace: string;
   disclaimer: string;
+  /** Company details from Cài đặt (D10), printed in the header band. */
+  company?: CompanyHeading;
 };
 
 const PAGE_WIDTH = 595;
@@ -50,7 +53,8 @@ export async function createStandardPdf(input: StandardPdfInput) {
   const fontBytes = await readFile(path.join(process.cwd(), "public/fonts/NotoSansVietnamese-Regular.ttf"));
   const font = await document.embedFont(fontBytes);
   document.setTitle(`${input.title} - ${input.reference}`);
-  document.setAuthor("Hiền Xa ERP V2");
+  const company = input.company ?? { name: FALLBACK_COMPANY_NAME, lines: [] };
+  document.setAuthor(company.name);
   document.setCreator("Hiền Xa ERP V2");
   document.setProducer("Hiền Xa ERP V2");
 
@@ -62,7 +66,11 @@ export async function createStandardPdf(input: StandardPdfInput) {
     page.drawRectangle({ x: LEFT, y: PAGE_HEIGHT - 111, width: 72, height: 4, color: ACCENT });
     page.drawText(input.title, { x: LEFT, y: PAGE_HEIGHT - 42, size: 21, font, color: rgb(1, 1, 1) });
     page.drawText(input.reference, { x: LEFT, y: PAGE_HEIGHT - 76, size: 10, font, color: rgb(0.93, 0.95, 0.97) });
-    if (input.subtitle) page.drawText(input.subtitle.slice(0, 70), { x: 330, y: PAGE_HEIGHT - 74, size: 8, font, color: rgb(0.82, 0.87, 0.9) });
+    if (input.subtitle) page.drawText(input.subtitle.slice(0, 70), { x: 330, y: PAGE_HEIGHT - 90, size: 8, font, color: rgb(0.82, 0.87, 0.9) });
+    // Company heading in the right half of the band: name, then at most three short detail lines.
+    page.drawText(wrap(font, company.name, 10, 223)[0], { x: 330, y: PAGE_HEIGHT - 30, size: 10, font, color: rgb(1, 1, 1) });
+    company.lines.flatMap((line) => wrap(font, line, 7, 223)).slice(0, 4)
+      .forEach((line, index) => page.drawText(line, { x: 330, y: PAGE_HEIGHT - 43 - index * 10, size: 7, font, color: rgb(0.82, 0.87, 0.9) }));
     y = PAGE_HEIGHT - 137;
   };
   addPage();

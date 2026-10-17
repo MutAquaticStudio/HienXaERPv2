@@ -10,6 +10,13 @@ describe("A4 business PDF", () => {
     expect(doc.getTitle()).toContain("SO-MAU");
     expect(doc.getPage(0).getSize().width).toBeCloseTo(595.28);
   });
+  it("prints the company from Cài đặt instead of the fixed heading", async () => {
+    expect((await PDFDocument.load(await createBusinessDocument(input))).getAuthor()).toBe("Hiền Xa ERP");
+    const company = { name: "Công ty TNHH Vật liệu xây dựng Hiền Xa ".repeat(3).trim(), lines: ["Thôn Đông, Hà Nội", "MST: 0101234567 · ĐT: 0912 345 678"] };
+    const doc = await PDFDocument.load(await createBusinessDocument({ ...input, company }));
+    expect(doc.getAuthor()).toBe(company.name);
+    expect(doc.getPageCount()).toBe(1);
+  });
   it("paginates long tables, long individual rows, fields and multiline notes", async () => {
     const doc = await PDFDocument.load(await createBusinessDocument({ ...input, fields: [{ label: "Địa chỉ", value: "Địa chỉ dài ".repeat(900) }], rows: Array.from({ length: 80 }, (_, i) => ({ material: `${i + 1} ` + "Vật tư có quy cách ".repeat(i === 2 ? 900 : 2), quantity: "123,456789" })), notes: [{ title: "Điều khoản", text: "Giao nhiều đợt.\n".repeat(100) }] }));
     expect(doc.getPageCount()).toBeGreaterThan(10);

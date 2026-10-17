@@ -7,7 +7,7 @@ import { Dialog } from "@/components/ui/dialog";
  * A button that opens an existing form in a popup (UX decision D5). The form itself is rendered by the server page and
  * passed as children, so its server action, operation id and recovery behaviour are unchanged.
  */
-export function FormDialog({ label, title, eyebrow, description, defaultOpen = false, buttonClassName = "button button-secondary", size = "md", children }: {
+export function FormDialog({ label, title, eyebrow, description, defaultOpen = false, buttonClassName = "button button-secondary", size = "md", triggerData, children }: {
   label: string;
   title: string;
   eyebrow?: string;
@@ -16,11 +16,13 @@ export function FormDialog({ label, title, eyebrow, description, defaultOpen = f
   defaultOpen?: boolean;
   buttonClassName?: string;
   size?: "md" | "lg";
+  /** data-* attributes on the button, e.g. the record it acts on, for scripted checks. */
+  triggerData?: Record<string, string>;
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return <>
-    <button type="button" className={buttonClassName} onClick={() => setOpen(true)}>{label}</button>
+    <button type="button" className={buttonClassName} onClick={() => setOpen(true)} {...Object.fromEntries(Object.entries(triggerData ?? {}).map(([key, value]) => [`data-${key}`, value]))}>{label}</button>
     {open && <Dialog title={title} eyebrow={eyebrow} description={description} size={size} onClose={() => setOpen(false)}>{children}</Dialog>}
   </>;
 }

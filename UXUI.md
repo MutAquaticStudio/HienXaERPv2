@@ -1095,6 +1095,12 @@ Tracking:
 - stale badge;
 - không suy diễn failed từ stale.
 
+**FB2 Đợt 7 (17/10/2026):** trang có nút "Tạo lộ trình" (neo tới khung tạo); khung tạo 3 bước đánh số: (1) Chọn phiếu giao — lọc "Ngày giao" (hiện
+phiếu có lịch trong ngày + phiếu chưa lịch), bảng chọn; (2) Xe, tài xế và giờ đi + "Thời gian mỗi điểm (phút)"; (3) Thứ tự và giờ dự kiến — mỗi
+điểm hiện "Giờ dự kiến: 07:00–08:00 · 01/03" hoặc "Giữ lịch phiếu: …", cảnh báo vàng khi lịch chồng nhau trên cùng xe, nút ↑/↓. "Lộ trình gần
+đây" là bảng (Khởi hành, Xe · tài xế, Điểm dừng, Thứ tự, Trạng thái), bấm dòng mở lộ trình ở đầu trang: bảng điểm dừng (#, Phiếu giao, Giờ dự
+kiến, Lịch khi áp dụng, Lưu ý) + "Áp dụng và phân giao". Không tự mở lộ trình mới nhất khi chưa chọn.
+
 ---
 
 # UX-410 — `/admin/service-jobs`
@@ -1213,6 +1219,10 @@ Filter:
 
 Commission có label riêng dễ hiểu nhưng dùng cùng source model.
 
+**FB2 Đợt 7 (17/10/2026):** "Ghi căn cứ tính thủ công", "Tạo phiên bản quy tắc", "Phê duyệt ghi nhận tự động theo sự kiện" là nút mở popup (D5,
+form và ràng buộc RPC giữ nguyên); bảng "Quy tắc thu nhập" (mã, tên, phiên bản, người áp dụng, loại, mức: `2,5%` cho tỉ lệ, `350.000 ₫ / đơn vị`
+cho mức cố định, hiệu lực). Duyệt/chi trả giữ trên từng dòng.
+
 ---
 
 # UX-470 — `/admin/invoices`
@@ -1274,6 +1284,18 @@ Dangerous settings:
 - warning;
 - permission;
 - audit.
+
+**FB2 Đợt 7 (17/10/2026, D10):** tiêu đề "Cài đặt"; hai khung đầu: **Thông tin doanh nghiệp** (tên *, MST, điện thoại, địa chỉ, email, ngân hàng,
+số tài khoản, chủ tài khoản; khung "Xem trước tiêu đề chứng từ" cập nhật khi gõ; nút "Lưu thông tin doanh nghiệp"; kết quả chưa rõ giữ đúng thao
+tác "Lưu lại đúng thao tác") và **Giao diện** (Chế độ màu Sáng/Tối/Theo thiết bị, Cỡ chữ Nhỏ/Vừa/Lớn, Phông chữ Noto Sans/Be Vietnam Pro; áp dụng
+ngay, chỉ trên thiết bị này). Mọi nhân viên đổi Giao diện được từ nút "Giao diện" ở chân menu trái (popup). Chế độ tối phủ các màn nội bộ có menu
+trái; cổng khách/thợ và đăng nhập giữ màu riêng. Các mục Phạm vi dữ liệu, Chi nhánh, Tài khoản & quyền giữ nguyên bên dưới.
+
+**`/admin/access` (FB2 Đợt 7, D5/D12):** tab Nhân viên │ Vai trò (`?tab=roles`). Đầu trang "Mời nhân viên" (popup) và "Tạo vai trò". Bảng nhân viên:
+vai trò tại chi nhánh đang chọn, quyền bổ sung, trạng thái, thao tác Đổi/Cấp vai trò, Quyền riêng, Thu hồi, Kích hoạt lại — đều mở popup. Tab Vai
+trò: bảng (Vai trò, Loại Vai trò mẫu/Tùy biến/Quản trị, Số quyền, Đang dùng, Sửa/Xem); popup vai trò có tên + quyền tích theo nhóm Bán hàng, Mua
+hàng, Kho hàng, Giao hàng, Tài chính, Nhân công, Khác (ô nhóm chọn cả nhóm; quyền mình không có bị khóa), cảnh báo "đang dùng cho N nhân viên",
+"Ngừng dùng vai trò này" chỉ khi không ai dùng; vai trò mẫu chỉ xem.
 
 ---
 
