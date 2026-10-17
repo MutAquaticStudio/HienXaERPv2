@@ -3,15 +3,16 @@ import "server-only";
 import Decimal from "decimal.js";
 import { z } from "zod";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { editorVariant, VARIANT_MATERIAL_COLUMNS, type EditorVariant } from "@/modules/catalog/variants";
 
 type CustomerRow = { id: string; display_name: string; customer_sites: { id: string; name: string; address_text: string }[] | { id: string; name: string; address_text: string } | null };
-type MaterialRow = { id: string; code: string; name: string; base_uom_id: string };
+type MaterialRow = { id: string; code: string; name: string; base_uom_id: string } & Parameters<typeof editorVariant>[0];
 
 export type PurchaseFormOptions = {
   suppliers: { id: string; name: string }[];
   warehouses: { id: string; name: string; address: string | null }[];
   customers: { id: string; name: string; sites: { id: string; name: string; address: string }[] }[];
-  materials: { id: string; code: string; name: string; uoms: { id: string; symbol: string }[] }[];
+  materials: { id: string; code: string; name: string; uoms: { id: string; symbol: string }[]; variant?: EditorVariant }[];
 };
 
 export type SalesLineContext = {
@@ -57,7 +58,7 @@ export async function loadPurchaseFormOptions(branchId: string, selectedSupplier
     loadPurchaseSuppliers(branchId, "", selectedSupplierId),
     supabase.from("warehouses").select("id, name, address_text").eq("branch_id", branchId).eq("active", true).order("name"),
     supabase.from("customers").select("id, display_name, customer_sites(id, name, address_text)").eq("branch_id", branchId).eq("active", true).order("display_name"),
-    supabase.from("materials").select("id, code, name, base_uom_id").eq("active", true).eq("purchase_enabled", true).order("name"),
+    supabase.from("materials").select(`id, code, name, base_uom_id, ${VARIANT_MATERIAL_COLUMNS}`).eq("active", true).eq("purchase_enabled", true).order("name"),
     supabase.from("material_uom_conversions").select("material_id, from_uom_id").eq("active", true).eq("settlement_allowed", true),
     supabase.from("units_of_measure").select("id, symbol").eq("active", true),
   ]);
@@ -68,9 +69,9 @@ export async function loadPurchaseFormOptions(branchId: string, selectedSupplier
     const sites = Array.isArray(customer.customer_sites) ? customer.customer_sites : customer.customer_sites ? [customer.customer_sites] : [];
     return { id: customer.id, name: customer.display_name, sites: sites.map((site) => ({ id: site.id, name: site.name, address: site.address_text })) };
   });
-  const materials = (materialResult.data as MaterialRow[]).map((material) => {
+  const materials = (materialResult.data as unknown as MaterialRow[]).map((material) => {
     const ids = new Set([material.base_uom_id, ...conversions.filter((row) => row.material_id === material.id).map((row) => row.from_uom_id)]);
-    return { id: material.id, code: material.code, name: material.name, uoms: [...ids].map((id) => ({ id, symbol: symbols.get(id) ?? "Đơn vị" })) };
+    return { id: material.id, code: material.code, name: material.name, uoms: [...ids].map((id) => ({ id, symbol: symbols.get(id) ?? "Đơn vị" })), variant: editorVariant(material) };
   });
   return {
     suppliers,

@@ -11,6 +11,7 @@ try {
     await sql.begin(async tx => {
       const s = await stockFixture(tx, qa, "1"); await tx.unsafe("set local role postgres");
       const [material] = await tx`select group_id from public.materials where id=${s.material}`;
+      await tx`insert into public.customer_price_groups(branch_id,code,name) values(${f.branch},'QA_PRICE','QA_PRICE') on conflict do nothing`;
       await tx`update public.customers set tier_code='QA_PRICE' where id=${s.customer}`;
       const tier = randomUUID(), group = randomUUID(), customer = randomUUID();
       await tx`insert into public.pricing_rules(id,branch_id,scope_type,customer_tier_code,material_id,price_uom_id,unit_price_vnd,version,source_type,effective_from,created_by)

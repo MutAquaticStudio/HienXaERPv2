@@ -42,9 +42,10 @@ try {
   const [grant] = await q.sql`select id,active from public.employee_branch_access where employee_id=${d.personas.worker.employee} and branch_id=${d.branch}`;
   assert.equal(grant.active, true); accessId = grant.id;
   await owner.goto(origin + "/admin/access");
-  const revoke = owner.locator("form").filter({ has: owner.locator(`input[name=accessId][value="${accessId}"]`) });
+  // FB2 Đợt 7: access actions open in popups from buttons tagged with the assignment they act on.
+  await owner.locator(`button[data-access-id="${accessId}"][data-action="revoke"]`).click();
+  const revoke = owner.getByRole("dialog").locator("form").filter({ has: owner.locator(`input[name=accessId][value="${accessId}"]`) });
   await revoke.locator("input[name=reason]").waitFor({ state: "attached" });
-  await revoke.locator("xpath=..").locator("summary").click();
   await revoke.locator("input[name=reason]").fill("QA thu hồi quyền với phiên đang mở");
   await revoke.locator("input[name=confirmed]").check();
   await revoke.getByRole("button", { name: "Thu hồi quyền", exact: true }).click();
@@ -61,9 +62,9 @@ try {
   await worker.waitForURL(u => u.pathname === "/work" && u.searchParams.get("notice") === "work-unavailable");
   report.checks.push({ name: "OWNER_UI_REVOKE_STALE_WORKER_SESSION_CANNOT_READ_OR_START", status: "PASS", deniedStatus: denied.status() });
   await owner.reload();
-  const restore = owner.locator("form").filter({ has: owner.locator(`input[name=accessId][value="${accessId}"]`) });
+  await owner.locator(`button[data-access-id="${accessId}"][data-action="reactivate"]`).click();
+  const restore = owner.getByRole("dialog").locator("form").filter({ has: owner.locator(`input[name=accessId][value="${accessId}"]`) });
   await restore.locator("input[name=reason]").waitFor({ state: "attached" });
-  await restore.locator("xpath=..").locator("summary").click();
   await restore.locator("input[name=reason]").fill("QA khôi phục đúng vai trò sau kiểm chứng");
   await restore.locator("input[name=confirmed]").check();
   await restore.getByRole("button", { name: "Kích hoạt lại", exact: true }).click();

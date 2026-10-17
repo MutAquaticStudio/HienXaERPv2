@@ -3,6 +3,7 @@ import { formatBusinessDate } from "@/lib/core/business-time";
 import { financeSourceLabel, financeStateLabel } from "@/modules/finance/presentation";
 import styles from "@/components/portal/portal.module.css";
 import { PaymentNoticeForm } from "@/components/portal/payment-notice-form";
+import { PAYMENT_NOTICES_ENABLED } from "@/lib/features";
 import { getCustomerPortalSnapshot } from "@/modules/portal/actions";
 
 
@@ -34,8 +35,8 @@ export default async function CustomerDebtsPage() {
               <strong>{money(item.outstanding_amount_vnd ?? 0)}</strong>
             </article>
           )) : <p className={styles.empty}>Không có dư nợ.</p>}
-          <h2>Thông báo đã gửi</h2>
-          {snapshot.payment_notices.map((notice) => (
+          {PAYMENT_NOTICES_ENABLED && <h2>Thông báo đã gửi</h2>}
+          {PAYMENT_NOTICES_ENABLED && snapshot.payment_notices.map((notice) => (
             <article className={styles.card} key={notice.id}>
               <span className={styles.badge}>{financeStateLabel(notice.state)}</span>
               <strong>{money(notice.amount_vnd)}</strong>
@@ -45,10 +46,10 @@ export default async function CustomerDebtsPage() {
             </article>
           ))}
         </section>
-        <section className={styles.card}>
+        {PAYMENT_NOTICES_ENABLED && <section className={styles.card}>
           <h2>Thông báo đã chuyển tiền</h2>
           <PaymentNoticeForm customerId={snapshot.customer.id} />
-        </section>
+        </section>}
       </div>
     </div>
   );

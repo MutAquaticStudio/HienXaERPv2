@@ -2771,3 +2771,204 @@ READY, gán `hien-xa-erp-v2-nu.vercel.app` và `hien-xa-erp-v2-hienxa.vercel.app
 chỉ thêm hàm mới nên code cũ vẫn chạy được.
 Tồn tại (có từ trước, không do bản này): env dự án thiếu `NEXT_PUBLIC_APP_URL` → link "Quên mật khẩu" trỏ `http://localhost:3000`;
 `main` chưa chứa các commit của nhánh (cần PR để đồng bộ).
+
+## 2026-10-16 — FB2-D1: Đợt tinh chỉnh 2, đợt 1 (sửa lỗi + popup chung)
+
+Owner duyệt kế hoạch đợt tinh chỉnh 2 (D5–D12, đầu Spec.md). Đợt 1, nhánh `nox/elegant-volta-kr29iz`, không migration:
+- **Mời nhân viên báo lỗi**: `inviteUserByEmail` không có `redirectTo` nên thư mời về Site URL; app không có trang nhận lời mời, và client
+  trình duyệt (PKCE) bỏ qua token dạng `#access_token=…&type=invite`. Sửa: `src/lib/auth/app-origin.ts` (gốc app từ `NEXT_PUBLIC_APP_URL`,
+  không có thì lấy host của request — không còn link `localhost` khi thiếu biến) dùng cho cả thư mời và "Quên mật khẩu"; trang
+  `/recovery/confirm` nhận token lời mời (xóa khỏi thanh địa chỉ trước, `setSession`, rồi đặt mật khẩu), báo "Liên kết đã hết hạn hoặc đã được
+  dùng" cho `otp_expired`; script nhỏ trong `<head>` chuyển link rơi về trang gốc/đăng nhập (`#…`) sang trang đặt mật khẩu trước khi trang gốc
+  chuyển hướng (meta refresh làm mất `#…`); `/?code=` chuyển sang trang đặt mật khẩu. Supabase vẫn chỉ đi theo Redirect URL đã cho phép:
+  Production cần `https://app.hienxavlxd.com/recovery/confirm?surface=admin` (đã có cho khôi phục theo RELEASE_APPROVAL 22/09).
+- **Tổng tiền không hiện**: giá cần đủ khách + công trình (NCC với đơn mua) nhưng ô tổng chỉ hiện "—"; ở <1440px ô tổng nằm trên đầu, không dính;
+  chọn lại cùng công trình/NCC không tính lại; "1,5"/"120.000" bị từ chối. Sửa: lời nhắc thiếu gì dưới tổng; cột phải xếp khách/công trình → tổng +
+  nút → ngày/ghi chú, ở <1440px tổng + nút dính đáy màn, khách/công trình 2 cột; `use-auto-price-preview` đếm lần đổi; `src/lib/core/vn-number.ts`
+  + `NumberEntry` giữ chữ người dùng gõ, gửi số chuẩn qua input ẩn (đúng Spec: UI dấu phẩy, DTO chuỗi decimal chuẩn).
+- Duyệt vượt hạn mức chuyển về `?notice=` (trang đơn chỉ đọc `notice`); mã khách tạo nhanh tự viết hoa (server) và hiện chữ hoa khi gõ.
+- `src/components/ui/dialog.tsx` (portal ra `<body>`, giữ tiêu điểm, Escape, toàn màn trên điện thoại) thay khung tạo nhanh khách/công trình/NCC;
+  ô tìm kiếm có danh sách gợi ý dùng Escape để đóng danh sách thì không đóng popup. Hộp xác nhận ngừng giá (`<dialog>` gốc) giữ nguyên.
+Kiểm: `pnpm check` PASS. QA trên app local trỏ QA project (chỉ đọc): đơn bán 1440/1366/390 — lời nhắc "Chọn khách hàng và công trình để tính giá",
+SL "1,5" gửi `1.5`, tổng 315.000 ₫ (1,5 × 210.000), thanh tổng + nút trong màn hình; đơn mua lời nhắc "Chọn nhà cung cấp để tính giá";
+link `#error_code=otp_expired` ở trang gốc → trang đặt mật khẩu báo hết hạn; `/?code=` → trang đặt mật khẩu; token giả bị xóa khỏi URL và từ chối;
+không lỗi console. Chưa gửi thư mời thật (env QA cục bộ không có secret key; dùng tài khoản thật sau khi deploy).
+
+## 2026-10-16 — FB2-D2: Đợt 2 (popup danh mục, Đơn vị tính, nhóm giá khách)
+
+Nhánh `nox/elegant-volta-kr29iz`, sau Đợt 1 (PR #52 chờ Owner). Chưa đẩy lên để không lẫn vào #52.
+- **Popup danh mục (D5)**: `ModuleCatalogPage` thành bảng gọn (`catalog-dialog.tsx`: `CatalogTable`/`CatalogDialog`/`CatalogCreateButton`, cột theo
+  `fields.ts` `list`), "Thêm"/"Sửa" mở `CatalogEditor` trong popup; `?id=` mở thẳng, `?tab=units` mở tab đơn vị. Nút "+ Khách hàng", "+ Vật tư",
+  "+ Nhà cung cấp" tạo tại chỗ. `ReliableCommandForm` thêm `onSuccess` (đóng popup), giữ nguyên idempotency/UNKNOWN. Trang NCC kiểu bảng như Khách
+  hàng (tên → chi tiết, cột "Còn phải trả" chỉ với `finance.ap.read`). Chính sách giá và Bảng giá mua: bảng + popup tạo/đổi giá (`rule-list.tsx`).
+- **Đơn vị tính (D7)**: RPC `save_material_units` (migration `20261016150000`): ngừng trước rồi thêm đơn vị bán (qua `save_catalog_record`
+  `conversions`, luôn quy về đơn vị cơ sở, `settlement_allowed`), rồi giá từng đơn vị qua `save_pricing_rules_batch`; tất cả một giao dịch, receipt
+  riêng, mã thao tác con suy ra từ mã lệnh; chặn tỉ lệ quá 6 số lẻ, đơn vị trùng, giá cho đơn vị không bán được, ước lượng thiếu nguồn.
+  Giao diện `material-units-editor.tsx` (tab trong popup vật tư) + công cụ chia giá `unit-split.ts` (Decimal, làm tròn half-up theo bước).
+- **Nhóm giá khách (D11)**: bảng `customer_price_groups` (RLS theo chi nhánh, chỉ đọc cho authenticated, không cho anon), backfill từ mã cũ, khóa
+  ngoại (chi nhánh, mã) trên `customers.tier_code` và `pricing_rules.customer_tier_code`; RPC `save_customer_price_group` (`pricing.manage`);
+  `save_pricing_rules_batch` nhận `customer_tier_code` (CUSTOMER_TIER, nhóm phải đang dùng). Ô "Nhóm giá" của khách là danh sách chọn; Chính sách
+  giá có mục Nhóm giá khách; Thiết lập giá chọn "Bảng giá" theo nhóm, hiện giá chung để so và giá các đơn vị bán khác. Test native 030 thêm nhóm VIP
+  làm fixture; script QA cũ (`package7`, `isolated-branch-fixture`) tạo nhóm trước khi gán mã.
+Kiểm: `pnpm check` PASS (127 file / 819+ test); `db:test:isolated` PASS (040, 050 mới). QA project: áp 2 migration (ghi `schema_migrations`,
+sha256 trong bản ghi), 3 mã cũ thành nhóm, RLS bật, anon 0 quyền. QA trình duyệt (app local trỏ QA, owner chi nhánh A): tạo vật tư trong popup →
+tự sang tab Đơn vị tính → thêm bao = 50 và bag = 1.000, giá 1 bag 6.000.000 → chia ra 6.000 / 300.000 → lưu (database: 2 quy đổi + 3 giá đúng);
+tạo nhóm "QA Sỉ"; bảng giá theo nhóm hiện cột Giá chung; popup khách có danh sách nhóm; tạo đơn bán chọn được bao/bag, 3 bao = 900.000 ₫;
+điện thoại 390 hiện thẻ. Production chưa áp (chờ Owner).
+
+## 2026-10-16 — FB2-D2B: Hàng cùng loại / biến thể vật tư (D11)
+
+Owner chỉ thị (16/10): làm hết các đợt rồi QA, gộp tất cả vào PR #52 để duyệt một lần. Nhánh `nox/elegant-volta-kr29iz`.
+- **Database** (migration `20261016170000_material_variants`): bảng `material_variant_groups` (tên, 1–3 `attribute_names`, `active`; RLS: nhân
+  viên đọc, không cấp ghi cho authenticated, anon 0 quyền); `materials.variant_group_id` + `variant_attributes` (jsonb object, cặp cùng null/không
+  null, unique theo (hàng, thuộc tính)). RPC `save_material_variant_group` (`catalog.manage`; có giá thì cần `pricing.manage`): tạo/sửa hàng theo
+  phiên bản đã đọc, tạo loại mới qua `save_catalog_record('materials')` rồi `save_material_units` (đơn vị bán + giá), thêm/đổi nhãn/bỏ vật tư có
+  sẵn; kiểm cuối mọi loại có đúng bộ thuộc tính; receipt + audit một lần; mã thao tác con suy ra từ mã lệnh (replay không ghi lại).
+- **Giao diện**: `variant-group-editor.tsx` (popup tạo/sửa, gợi ý mã/tên `variants.ts`, giá theo đơn vị chọn + tự chia không làm tròn mặc định,
+  hiện giá đã chia), `variant-actions.ts` (zod, lỗi tiếng Việt, UNKNOWN giữ được thao tác). Danh sách vật tư: nút "+ Hàng cùng loại", nhãn thuộc
+  tính + link "Cùng loại …", lọc `?variant=`, "Sửa hàng cùng loại". Chi tiết vật tư: mục Hàng cùng loại. Ô F3 đơn bán/mua gom loại dưới tên hàng.
+Kiểm: lint 0 lỗi; typecheck; vitest 130 file / 833+ test; native `060_material_variants.sql` (quyền, nguyên tử, trùng thuộc tính, replay/xung
+đột, phiên bản cũ, vật tư ngừng/thuộc hàng khác, đổi tên thuộc tính thiếu nhãn, tách ra) PASS cùng 010–050. QA project: áp migration (bản ghi
+`schema_migrations` kèm sha256 `e8051d66…`), md5 hàm khớp file repo. QA trình duyệt (owner, chi nhánh A): tạo "QA Xi măng …" Mác PCB30/PCB40 với
+bao = 50 kg, giá 90.000/95.000 một bao → 2 vật tư, mã gợi ý `QV…-PCB30`, giá kg chia tự động; danh sách hiện nhãn + link, chi tiết hiện 2 thẻ;
+sửa thêm PCB50 (đơn vị bao chép từ loại có sẵn) → 3 loại; F3 trong đơn bán hiện tiêu đề hàng và 3 loại; điện thoại 390 không tràn ngang.
+Phát hiện khi QA và đã sửa: chia giá mặc định làm tròn 1.000 đ làm giá kg lệch (1.800 → 2.000) mà không hiện ra → đổi mặc định không làm tròn và
+hiện giá đã chia; khi sửa, mã gợi ý theo phần đầu mã các loại sẵn có. Production chưa áp (chờ Owner).
+
+## 2026-10-17 — FB2-D3: Tạo đơn bán và giao hàng gọn (Đợt 3)
+
+Nhánh `nox/elegant-volta-kr29iz` (PR #52, gộp theo chỉ thị Owner 16/10).
+- **Tạo đơn**: nút − / + số lượng (`stepQuantity`, Decimal, không xuống ≤ 0); dòng tồn kho luôn hiện (`editor/line-stock.tsx`) theo đơn vị của
+  dòng nhờ tỉ lệ quy đổi nạp trong `sales/form-options.ts`, kho xem tồn chọn được, F3 kèm "Có thể bán". "Xác nhận đơn" (D6) mở popup
+  `OrderReview` (nợ hiện tại/quá hạn qua `sales/customer-debt-actions.ts`, chỉ với `finance.ar.read`); gửi form với intent `confirm` như cũ.
+- **Lập phiếu giao một bước** (migration `20261016180000_delivery_for_order`): `order_delivery_plan` (đọc) + `create_delivery_for_order` (gọi lại
+  `upsert_supply_allocation`, `create_delivery_from_allocations`, `assign_delivery_scheduled` với mã thao tác con suy ra; khóa theo thứ tự phân
+  nguồn → dòng đơn → đơn; receipt + audit `delivery.create_for_order`). Popup `order-delivery-dialog.tsx` + action `order-delivery-actions.ts`;
+  thông báo lỗi giao hàng gom về `delivery/errors.ts`. Trang phiếu giao: `DeliveryProgress` + lượng theo đơn vị bán.
+- **Dịch vụ (D9)**: menu sang Bán hàng, nhóm "Nhân công"; "Tạo dịch vụ" từ đơn/khách/công trình mở form chọn sẵn.
+Kiểm: native `070_delivery_for_order.sql` (người chỉ xem bị từ chối, đơn nháp/dòng đơn khác bị từ chối, thiếu tồn → không còn phân nguồn, phân
+xe lỗi → không còn phiếu, 2 bao = 100 kg đúng phân nguồn/kế hoạch/giữ tồn, replay/xung đột, lần 2 tăng đúng phân nguồn của kho, vượt lượng bán bị
+từ chối) cùng 010–060 PASS; vitest 133 file; QA project: áp migration (sha256 `d5d4d58a…`, md5 2 hàm khớp file). QA trình duyệt (owner, chi nhánh A):
+F3 → + → "Có thể bán: 170 unit · Kho nghiệm thu QA" → popup xác nhận (420.000 ₫) → đơn đã xác nhận → popup lập phiếu điền sẵn 2 → phiếu giao có thanh
+tiến trình → "Tạo dịch vụ" chọn sẵn khách/công trình. Sửa khi QA: trang tạo đơn tràn ngang ở 390px do tên kho dài trong ô chọn (cột lưới nở theo
+chữ) → khung dòng hàng dùng `minmax(0, 1fr)`; đo lại 390/390. Production chưa áp.
+
+## 2026-10-17 — FB2-D4: Khách hàng 360 & NCC 360 dạng tab (Đợt 4)
+
+Nhánh `nox/elegant-volta-kr29iz` (PR #52).
+- **Khách hàng** (`admin/customers/[id]/page.tsx`): đầu trang + 5 chỉ số (nợ hiện tại/quá hạn/hạn mức còn qua RPC chỉ đọc mới
+  `customer_credit_summary` — migration `20261017090000`, cần vì `customer_credit_exposure` đọc cột hạn mức đã thu hồi quyền với vai trò API;
+  tổng bán/đơn đang giao dở từ `sales_order_read`); tab thật `?tab=` (`components/ui/detail-tabs.tsx`), mỗi tab là một hàm async chỉ đọc
+  dữ liệu của nó. "Sửa" mở popup danh mục tại chỗ (`CatalogEditButton` + `catalog/editor-data.ts` `catalogRecordProps`), "+ Công trình" mở
+  popup tạo công trình chọn sẵn khách; tạo/sửa xong làm mới trang.
+- **NCC** (`admin/suppliers/[id]/page.tsx`): cùng bố cục; chỉ số từ `payable_read`/`purchase_order_read`; tab Thông tin & liên hệ, Đơn mua,
+  Nhập kho & giao thẳng, Công nợ & thanh toán, Bảng giá mua.
+Kiểm: native `080_customer_credit_summary.sql` (không có `finance.ar.read`/khác chi nhánh bị từ chối, số khớp, khách chưa duyệt hạn mức trả
+null, `anon` không chạy được) cùng 010–070 PASS; vitest trang khách (3), NCC (2), popup danh mục (5). QA project: áp migration (sha256 `56e32b0e…`,
+md5 hàm khớp file). QA trình duyệt (owner, chi nhánh A): khách "HXQA Audit Quick" — chỉ số, 6 tab đúng số dòng, popup Sửa, popup + Công trình
+chọn sẵn khách; NCC — 5 chỉ số, 5 tab. Sửa khi QA: trang khách rộng 588px ở điện thoại do chữ ẩn cho trình đọc màn hình (`sr-only`, định vị
+tuyệt đối) trong tiêu đề cột thoát khỏi khung cuộn bảng → `.table-wrap { position: relative }` (áp mọi bảng); bảng công trình chuyển sang cột rộng,
+hai bảng nhập kho/giao thẳng của NCC xếp chồng. Đo lại 390/390 (khách, NCC, danh sách khách/vật tư/NCC). Production chưa áp.
+
+## 2026-10-17 — FB2-D5: Tồn kho & Kiểm kho kiểu KiotViet (Đợt 5)
+
+Nhánh `nox/elegant-volta-kr29iz` (PR #52).
+- **Kiểm kho nhiều dòng** (migration `20261017100000_stock_count_batch`): `record_stock_count_lines_batch` gọi lại `record_stock_count_line`
+  cho từng dòng trong một transaction (mã thao tác con `md5(op||':line:'||n)`, mỗi dòng tăng version phiếu), `cancel_stock_count` (OPEN →
+  CANCELLED, không phát sinh kho, audit kèm lý do). Action `inventory/stock-count-actions.ts`: "Lưu tạm" = lô dòng mới/đã sửa; "Hoàn thành &
+  cân bằng kho" = lô rồi `approve_stock_count` trên version lô để lại (duyệt bị từ chối sau khi lô đã lưu → báo "Đã lưu số đếm nhưng chưa cân
+  bằng kho: …"; kết quả không rõ → thử lại đúng lệnh cũ). Bảng phiếu `components/inventory/stock-count-sheet.tsx` (+ `stock-count-sheet.ts`:
+  lệch, lý do chung, giá vốn khi sổ 0, chỉ gửi dòng đổi). Người chỉ có quyền duyệt vẫn hoàn thành được phiếu đã lưu. Bỏ form ghi từng dòng
+  và form duyệt cũ; thông báo lỗi kho tách sang `inventory/errors.ts`.
+- **Tồn kho** (`admin/inventory/page.tsx`): bảng theo vật tư cộng các kho, KPI bấm để lọc, lọc kho/nhóm/tồn/đơn vị lớn nhất (`stock-view.ts`),
+  thẻ kho `?card=` với "Tồn sau" tính lùi từ tồn hiện tại, popup ngưỡng (`threshold-button.tsx`; action lưu ngưỡng quay về đúng bộ lọc qua `back`
+  chỉ nhận đường dẫn `/admin/inventory`), "Đặt mua" khi dưới ngưỡng. Link Tổng quan → `/admin/inventory?stock=low`.
+- Script QA cập nhật selector: `scripts/qa/remediation/package1-browser.mjs` (Hoàn thành & cân bằng kho + popup), `scripts/qa/go-live/
+  configuration-browser.mjs` (ngưỡng qua popup).
+Kiểm: native `090_stock_count_batch.sql` (người chỉ xem/khác chi nhánh bị từ chối, lô rỗng/trùng vật tư bị từ chối, một dòng thiếu lý do làm
+cả lô không ghi, version tăng theo dòng, quan sát + audit, replay/xung đột/version cũ, duyệt sau lô ra đúng phát sinh, phiếu đã duyệt không hủy,
+hủy cần lý do, không phát sinh kho, phiếu đã hủy không nhận dòng/không duyệt, `anon` không chạy) cùng 010–080 PASS; vitest các file mới.
+QA project: áp migration (sha256 `374c1f78…`, md5 2 hàm khớp file). QA trình duyệt (owner, kho "QA-PO-20261004T124129Z warehouseValid"):
+lọc kho + tìm → thẻ kho, đơn vị lớn, popup ngưỡng 1,5 lưu và quay về đúng bộ lọc; tạo phiếu SC-2026-000011 → A 500 (khớp), B 3 (+1) → thiếu lý do
+bị chặn → lý do chung → Lưu tạm 2 dòng → tải lại giữ số → Hoàn thành (popup +1 · 200.000 ₫) → Đã cân bằng kho, tồn B 2 → 3; phiếu thứ hai Hủy
+→ Đã hủy. 1440/1366/390px: trang không tràn (sửa khi QA: gộp mã vào ô Vật tư, gộp nút ngưỡng vào cột Ngưỡng, cho phép xuống dòng tên dài,
+xếp chồng tồn theo kho trên thẻ kho, thanh dưới phiếu gọn và chỉ dính đáy khi còn thao tác). Production chưa áp.
+
+## 2026-10-17 — FB2-D6: Tài chính gọn (Đợt 6)
+
+Nhánh `nox/elegant-volta-kr29iz` (PR #52).
+- **D8 tắt Báo chuyển khoản** như báo giá: `PAYMENT_NOTICES_ENABLED = false`, rewrite 404 `/admin/payment-notices` (`next.config.ts`) + layout
+  `notFound`, API cổng khách 404, `paymentNoticeCommandAction` và action cũ ở `portal/actions.ts` chặn trước mọi gọi DB, menu/trang đích bỏ, cổng
+  khách ẩn danh sách + form, link "Xem công nợ".
+- **Menu Tài chính**: Công nợ (`/admin/debts` chuyển tới tab được phép; `activePrefixes` để mục sáng ở `/admin/receivables`, `/admin/payables`),
+  Sổ quỹ, Chi phí, Hóa đơn (người chỉ đọc phải trả → `/admin/invoices/purchases`). Tab chung `components/finance/finance-tabs.tsx` (`DetailTabs`).
+  Giữ nguyên địa chỉ cũ vì liên kết, `redirectTo` của phiếu thu chi, `revalidatePath` và script QA đều trỏ vào đó.
+- **Popup**: `components/ui/form-dialog.tsx` bọc biểu mẫu server sẵn có (server action, mã thao tác, khôi phục giữ nguyên): Ghi thu/Ghi chi (tự mở
+  khi tới bằng `?customer=`/`?supplier=`, không mở lại khi phân trang hoặc có thông báo), Xử lý/Tạo tài khoản ở Sổ quỹ, Ghi chi phí (chọn chung |
+  chuyến — `expense-create-chooser.tsx`), Nhóm chi phí, Duyệt chi phí (tự mở khi `?focus=`).
+- **Sổ quỹ**: migration `20261017110000_cashbook_period_summary` (RPC chỉ đọc), lọc kỳ/tài khoản/loại, "Lập phiếu thu/chi"
+  (`party-payment-launcher.tsx`), bảng gộp Mã + Ngày.
+- **Hóa đơn**: tab + bộ lọc tự áp dụng; bỏ các nút liên kết chéo thừa.
+- Script QA cập nhật: `go-live/finance-config-browser.mjs`, `ux-refinement-browser.mjs`, `remediation/package9-expense-browser.mjs`.
+Kiểm: native `100_cashbook_period_summary.sql` (không quyền/khác chi nhánh/kỳ ngược bị từ chối; đầu kỳ, thu, chi, cuối kỳ đúng biên kỳ, theo tài khoản;
+cuối kỳ bằng `cashbook_summary`; `anon` không chạy) cùng 010–090 PASS; vitest các file mới + cập nhật. QA project: áp migration (sha256 `03c275d9…`,
+md5 hàm khớp). QA trình duyệt (owner, không ghi tiền): menu 4 mục, `/admin/debts` → Phải thu, tab Phải trả; `?customer=` mở popup Ghi thu (3 khoản);
+Sổ quỹ tháng 10: đầu kỳ 2.780.731 + thu 9.921.000 − chi 10.201.000 = cuối kỳ 2.500.731 ₫, từ 1/1: 0 + 16.042.001 − 13.541.270 = 2.500.731 ₫ (khớp dòng tiền
+ròng); lọc Phiếu thu; Lập phiếu thu → chọn khách → popup Ghi thu; Xử lý/Tạo tài khoản popup; Chi phí: tab, popup chung/chuyến, nhóm, duyệt (đóng không
+duyệt); Hóa đơn 3 tab, menu "Hóa đơn" sáng ở trang đối chiếu; `/admin/payment-notices` → 404. 390px: 6 trang 390. Sửa khi QA: số đếm "Chờ duyệt"
+rỗng vì QA có 10.050 chi phí nháp (đếm chính xác quá chậm) → đếm tối đa 100 dòng, hiện "99+"; popup Ghi thu bỏ tiêu đề lặp; bảng Sổ quỹ gọn cột.
+Production chưa áp.
+
+## 2026-10-17 — FB2-D7: Thu nhập, Nhân viên & quyền, Lộ trình, Cài đặt (Đợt 7)
+
+Nhánh `nox/elegant-volta-kr29iz` (PR #52).
+- **Vai trò tùy biến (D12)**: migration `20261017120000_custom_roles` — `save_custom_role` (chỉ `roles.manage`; không gán `roles.manage` hay quyền
+  người sửa không có; vai trò mẫu/vai trò quản trị chỉ xem; đối chiếu quyền đã đọc; vai trò còn người dùng không ngừng được; audit + receipt).
+  `lib/access/permission-groups.ts` (nhóm quyền theo menu, `OWNER_ONLY_PERMISSIONS`), `lib/access/role-actions.ts`, `components/access/role-editor.tsx`.
+  Trang `/admin/access`: tab Nhân viên │ Vai trò, Mời/Đổi vai trò/Quyền riêng/Thu hồi/Kích hoạt lại trong popup (`FormDialog` thêm `triggerData` để
+  script QA chọn đúng dòng). Script QA cập nhật: `go-live/role-lifecycle-browser.mjs`, `go-live/access-messaging-browser.mjs`.
+- **Thu nhập**: ba form tạo mở bằng popup, bảng "Quy tắc thu nhập" hiện mức (% hoặc ₫ / đơn vị).
+- **Lộ trình**: migration `20261017130000_route_plan_stop_schedule` — `route_plan_stops.planned_start_at/planned_end_at`; `create_route_plan` lưu
+  khung từng điểm (kiểm thứ tự, không chồng, không trước giờ đi); `apply_route_plan` xếp lịch phiếu chưa có lịch bằng khung điểm dừng
+  (`assign_delivery_scheduled`), phiếu đã có lịch giữ nguyên; mã thao tác con suy từ mã áp dụng. `modules/routing/stop-schedule.ts` (khung, chồng
+  lịch), form 3 bước, bảng lộ trình + bảng điểm dừng; thông báo lỗi tiếng Việt cho khung sai/lộ trình cũ.
+- **Cài đặt (D10)**: migration `20261017140000_company_profile` — bảng một dòng + `save_company_profile`; `lib/company/profile.ts` (đọc, tiêu đề in);
+  PDF `business-document.ts` (đơn bán/mua, phiếu giao) và `standard-document.ts` (phiếu thu/chi, đối chiếu công nợ, xem hóa đơn) in thông tin doanh
+  nghiệp, thiếu thì giữ "Hiền Xa ERP". Giao diện theo thiết bị: `lib/appearance.ts` (cookie `hx-appearance`, thuộc tính `<html>` render từ server,
+  script đầu trang giải "Theo thiết bị"), CSS cỡ chữ/phông/tối (tối chỉ phủ màn nội bộ có menu trái, trình duyệt thiếu `:has()` giữ sáng), font
+  `@fontsource/be-vietnam-pro` 5.3.0 (lockfile cập nhật bằng pnpm 11 như CI); nút "Giao diện" ở chân menu cho mọi nhân viên.
+Kiểm: native 110 (quyền, chi nhánh khác, `roles.manage`, quyền lạ, rỗng, trùng tên, replay/xung đột payload, sửa lệch, vai trò mẫu/quản trị, vượt quyền
+người sửa, vai trò đang dùng), 120 (người chỉ xem; khung trước giờ đi/chồng nhau bị từ chối; lộ trình không khung → từ chối, không phân giao gì;
+07:00/60 phút: phiếu 1 07–08, phiếu 2 08–09, phiếu 3 giữ 10–11, 3 phân giao, replay; chồng lịch ngày 2 từ chối nguyên khối), 130 (quyền, tên bắt buộc,
+MST sai, tạo/replay/xung đột, người chỉ xem đọc được, version lệch, audit, `anon`) cùng 010–100 PASS; vitest 156 file / 918 test; typecheck, lint 0 lỗi, build.
+QA project: **chưa áp** 3 migration — lệnh ghi qua công cụ Supabase cần Owner duyệt trong phiên (lần thử 17/10 trả "requires approval"); áp xong sẽ
+kiểm md5 hàm (`save_custom_role` 27efa32a…, `create_route_plan` a9a36e76…, `apply_route_plan` 1195121d…, `save_company_profile` 6d575a17…) và QA trình
+duyệt phần ghi (tạo/sửa/ngừng vai trò, lập + áp dụng lộ trình có phiếu chưa lịch, lưu thông tin doanh nghiệp + PDF). Production chưa áp.
+QA trình duyệt phần không cần migration (app cục bộ trỏ QA, owner, không ghi dữ liệu): Nhân viên & quyền 2 tab, popup Đổi vai trò/Mời/Xem vai trò
+mẫu/Tạo vai trò (7 nhóm, 68 quyền, không có quyền quản lý nhân viên); Thu nhập 3 nút popup, bảng 6 quy tắc; Lộ trình 3 bước, chọn 2 phiếu → "Giữ lịch
+phiếu"; Cài đặt: xem trước tiêu đề, Tối áp dụng ngay và giữ sau tải lại, cỡ Lớn = 20px, Be Vietnam Pro, Theo thiết bị → sáng; 390px: 5 trang rộng 390.
+Sửa khi QA: (1) Lộ trình hết thời gian trên QA (20.079 phiếu giao mở; một truy vấn `in(PLANNED, ASSIGNED)` sắp theo lịch phải kiểm quyền từng dòng,
+12,4 s) → tách truy vấn theo trạng thái theo đúng index rồi gộp (61 ms), danh sách bước 1 cuộn trong khung; (2) tên vai trò tùy biến không dấu bị hiện
+"Vai trò được phân công" → `roleDisplayName` hiện đúng tên vai trò tùy biến; (3) Thu nhập 390px rộng 484 do ô chọn quy tắc dài → giới hạn chiều rộng;
+(4) thanh trên cùng còn sáng ở chế độ tối.
+
+## 2026-10-17 — FB2-D7b: logo doanh nghiệp + chuẩn bị phát hành
+
+Owner 17/10: duyệt áp migration QA; thêm tải logo trong Cài đặt; "Hoàn thành hết và deploy production luôn"; tên miền tạm dùng mặc định Vercel,
+sau bàn giao chuyển `app.hienxavlxd.com` (ghi D13 đầu Spec.md).
+- Migration `20261017150000_company_logo`: cột `logo_mime`/`logo_base64`/`logo_sha256` trên `company_profile` + `save_company_logo` (roles.manage,
+  PNG/JPEG ≤ 300 KB, chữ ký tệp khớp loại, cần đã có tên DN, đối chiếu logo đã đọc, idempotent, audit). Native `140_company_logo.sql` PASS.
+- `lib/company/profile.ts`: `loadCompanyLogo`, `loadCompanyDocumentHeading` (hồ sơ + logo một lần đọc cho PDF), `logoMatchesType`;
+  `pdf/business-document.ts` + `standard-document.ts` in logo (`embedLogo`, `fitInside`; logo lỗi → bỏ logo); action `saveCompanyLogoAction`;
+  `components/settings/company-logo-form.tsx` (FilePicker, kiểm loại/cỡ trên trình duyệt, Lưu/Xóa, kết quả chưa rõ giữ đúng thao tác).
+- Phát hành 17/10: QA project áp `20261017130000`, `…140000`, `…150000` (md5 khớp file). QA trình duyệt ghi (owner): lưu thông tin DN + logo PNG → PDF
+  phiếu thu và đơn bán (tải trong trang) in tên DN, địa chỉ, MST, STK và logo, 1 trang; lập lộ trình 2 phiếu chưa lịch, 45 phút/điểm → giờ dự kiến
+  07:00–07:45, 07:45–08:30 lưu trong lộ trình; áp dụng bị chặn chồng lịch do 9 phiếu cũ của xe/tài xế QA đã phân mà không có lịch (quy tắc có sẵn coi
+  phiếu không lịch chiếm mọi giờ; Production không có dữ liệu kiểu này). Thông báo lỗi phân giao khi áp dụng lộ trình dùng chung `deliveryCommandMessage`.
+- Production (`nbwynrwkdbtfsitafsxa`, Owner "Hoàn thành hết và deploy production luôn"): đọc trước — bản cuối `20261015130000`, chưa có hàm/bảng mới,
+  không có mã nhóm giá cũ, các hàm nền khớp md5 QA (riêng `current_employee_id` khác khoảng trắng). Áp 10 migration theo thứ tự (mỗi file một transaction
+  + `schema_migrations` đúng version repo): `20261016150000`–`180000`, `20261017090000`–`110000`, `130000`–`150000`; 16 hàm mới/đổi khớp md5 QA; 0 bảng
+  thiếu RLS, `anon` 0 quyền bảng, 0 definer thiếu `search_path`, definer `anon` gọi được chỉ `rls_auto_enable` (có từ trước).
+- **Chưa áp `20261017120000_custom_roles`** ở QA và Production: lệnh ghi chứa hàm sửa vai trò/quyền bị tầng an toàn của công cụ hủy (các migration khác
+  chạy được). Owner chạy file SQL này trong Supabase SQL Editor; đến lúc đó "Tạo/Sửa vai trò" báo "Máy chủ chưa bật chức năng vai trò tùy biến"
+  (`PGRST202`), không ghi gì.

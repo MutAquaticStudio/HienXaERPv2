@@ -1,9 +1,9 @@
 import Link from 'next/link';
-import { randomUUID } from 'node:crypto';
 import { requireInternalAccess } from '@/lib/access/context';
 import { createServerSupabase } from '@/lib/supabase/server';
 import { catalogs } from '@/modules/catalog/fields';
-import { CatalogEditor, type Options } from '@/modules/catalog/editor';
+import { CatalogTable } from './catalog-dialog';
+import { loadCatalogOptions, visibleCatalogFields } from './editor-data';
 import { catalogHref, manageableCatalogs, type CatalogQuery } from './ownership';
 export default async function ModuleCatalogPage({searchParams,kinds}:{searchParams:Promise<CatalogQuery>;kinds:readonly string[]}) {
  const access=await requireInternalAccess(); const params=await searchParams;
@@ -11,7 +11,7 @@ export default async function ModuleCatalogPage({searchParams,kinds}:{searchPara
  const kind=available.some(([k])=>k===params.kind)?params.kind!:available[0]?.[0];
  if(!kind) return <p>Không có quyền quản lý danh mục.</p>;
  const config=catalogs[kind]; const supabase=await createServerSupabase();
- const visibleFields=config.fields.filter(f=>!f.permission||access.permissions.has(f.permission));
+ const visibleFields=visibleCatalogFields(kind,access.permissions);
  const columns=['id',...visibleFields.filter(f=>kind!=='customers'||!['credit_limit_vnd','internal_note'].includes(f.key)).map(f=>f.key)].join(',');
  let query=supabase.from(config.table as 'materials').select(kind==='sites'?`${columns},customers!inner(branch_id)`:columns).limit(200);
  if(['customers','suppliers','warehouses','vehicles','machines'].includes(kind)) query=query.eq('branch_id',access.branchId);
@@ -22,18 +22,11 @@ export default async function ModuleCatalogPage({searchParams,kinds}:{searchPara
  const {data,error}=await query.order('id'); if(error) throw new Error('Không tải được danh mục.');
  let rows=data as unknown as Record<string,unknown>[];
  if(kind==='customers'&&rows.length){const privateResult=await supabase.rpc('customer_private_fields',{target_customer_ids:rows.map(row=>String(row.id))}).select("customer_id,credit_limit_vnd::text,internal_note");if(privateResult.error)throw new Error('Không tải được thông tin riêng tư khách hàng.');const privateRows=Array.isArray(privateResult.data)?privateResult.data:privateResult.data?[privateResult.data]:[];const privateById=new Map<string,{credit_limit_vnd:string|number|null;internal_note:string|null}>(privateRows.map((field:{customer_id:string;credit_limit_vnd:string|number|null;internal_note:string|null})=>[field.customer_id,{credit_limit_vnd:field.credit_limit_vnd,internal_note:field.internal_note}] as const));rows=rows.map(row=>{const privateFields=privateById.get(String(row.id));return privateFields?{...row,...privateFields}:row;});}
- const options:Options={};
- for(const optionKind of new Set(visibleFields.flatMap(f=>f.options?[f.options]:[]))){
-  if(optionKind==='salesOwners'){
-   const r=await supabase.rpc('customer_site_sales_owner_options',{target_branch_id:access.branchId});
-   if(r.error) throw new Error('Không tải được nhân viên phụ trách.');
-   options[optionKind]=((r.data??[]) as {id:string;name:string;assignable:boolean}[]).map(v=>({id:v.id,name:v.name,assignable:v.assignable}));
-   continue;
-  }
-  const c=catalogs[optionKind];const label=optionKind==='customers'?'display_name':'name';let oq=supabase.from(c.table as 'materials').select(`id,${label}`).eq('active',true).order(label).limit(1000);if(optionKind==='customers') oq=oq.eq('branch_id',access.branchId);const r=await oq; if(r.error) throw new Error('Không tải được lựa chọn danh mục.');options[optionKind]=(r.data as unknown as Record<string,string>[]).map(v=>({id:v.id,name:v[label]}));
-  const selected=new Set(visibleFields.filter(f=>f.options===optionKind).flatMap(f=>rows.map(row=>row[f.key])).filter((value):value is string=>typeof value==='string'&&value.length>0));
-  const present=new Set(options[optionKind].map(v=>v.id));const missing=[...selected].filter(id=>!present.has(id));
-  if(missing.length){let mq=supabase.from(c.table as 'materials').select(`id,${label},active`).in('id',missing).limit(200);if(optionKind==='customers') mq=mq.eq('branch_id',access.branchId);const mr=await mq;if(mr.error) throw new Error('Không tải được lựa chọn đã lưu.');options[optionKind].push(...(mr.data as unknown as Record<string,string|boolean>[]).map(v=>({id:String(v.id),name:`${v[label]}${v.active?'':' (ngừng)'}`,assignable:Boolean(v.active)})));}
- }
- return <><header className="page-heading"><p className="eyebrow">Quản lý · {access.branchName}</p><h1>{config.title}</h1><p>Ngừng sử dụng thay vì xóa; lịch sử chứng từ không thay đổi.</p></header><nav className="form-actions">{available.map(([k,c])=><Link className="button button-secondary" key={k} href={catalogHref(k)}>{c.title}</Link>)}</nav><form className="form-actions"><input type="hidden" name="kind" value={kind}/><label htmlFor="catalog-search">Tìm theo tên</label><input id="catalog-search" name="q" defaultValue={params.q}/><button className="button" type="submit">Tìm</button></form><details className="card card-pad"><summary>Thêm {config.title.toLowerCase()}</summary><CatalogEditor key={`new-${kind}`} kind={kind} options={options} permissions={[...access.permissions]} operationId={randomUUID()} scope={`${access.authUserId}:${access.branchId}:CATALOG:${kind}:NEW`} initial={kind==='sites'&&params.customerId?{customer_id:params.customerId}:undefined}/></details><p className="muted">Hiển thị tối đa 200 bản ghi. Dùng tìm kiếm để thu hẹp danh sách.</p>{rows.map(row=><details className="card card-pad" key={String(row.id)} open={params.id===row.id}><summary>{String(row.code??row.name??row.id)} · {String(row.name??row.display_name??'Quy đổi')} · {row.active?'Đang dùng':'Đã ngừng'}</summary><CatalogEditor kind={kind} record={row} options={options} permissions={[...access.permissions]} operationId={randomUUID()} scope={`${access.authUserId}:${access.branchId}:CATALOG:${kind}:${row.id}`}/></details>)}</>;
+ const options=await loadCatalogOptions(kind,access,supabase,rows);
+ return <div className="page-stack"><header className="page-heading"><div><p className="eyebrow">Quản lý · {access.branchName}</p><h1>{config.title}</h1><p className="lede">Bấm “Thêm” hoặc “Sửa” để mở biểu mẫu ngay trên trang. Ngừng sử dụng thay vì xóa; lịch sử chứng từ không thay đổi.</p></div></header>
+  {available.length>1&&<nav className="action-cluster" aria-label="Danh mục">{available.map(([k,c])=><Link className={`button ${k===kind?'button-primary':'button-secondary'}`} aria-current={k===kind?'page':undefined} key={k} href={catalogHref(k)}>{c.title}</Link>)}</nav>}
+  <form className="form-actions"><input type="hidden" name="kind" value={kind}/><label htmlFor="catalog-search">Tìm theo tên</label><input id="catalog-search" name="q" defaultValue={params.q}/><button className="button button-secondary" type="submit">Tìm</button>{(params.q||params.id)&&<Link className="code-link" href={catalogHref(kind)}>Xem tất cả</Link>}</form>
+  <CatalogTable key={`${kind}:${params.id??''}`} kind={kind} rows={rows} options={options} permissions={[...access.permissions]} scopePrefix={`${access.authUserId}:${access.branchId}:CATALOG`} openId={params.id} openTab={params.tab==='units'?'units':undefined}
+   openNew={kind==='sites'&&!!params.customerId&&!params.id} initial={kind==='sites'&&params.customerId?{customer_id:params.customerId}:undefined}/>
+  <p className="muted">Hiển thị tối đa 200 bản ghi. Dùng tìm kiếm để thu hẹp danh sách.</p></div>;
 }

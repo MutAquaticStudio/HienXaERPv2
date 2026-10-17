@@ -8,7 +8,9 @@ import { savePurchasePricingRuleAction } from "./purchase-actions";
 
 export type PriceRule = { id: string; scope_type: string; customer_id: string | null; material_id: string | null; material_group_id: string | null; customer_tier_code: string | null; price_uom_id: string; unit_price_vnd: string; version: number; source_type: string; effective_from: string; effective_to: string | null; active: boolean };
 export type PurchasePriceRule = { id:string; supplier_id:string; material_id:string; purchase_uom_id:string; unit_cost_vnd:string; version:number; source_type:string; effective_from:string; effective_to:string|null; active:boolean };
-export type PriceOptions = { suppliers?: {id:string;name:string}[]; customers: { id: string; name: string }[]; materials: { id: string; name: string }[]; groups: { id: string; name: string }[]; units: { id: string; name: string }[] };
+export type PriceOptions = { suppliers?: {id:string;name:string}[]; customers: { id: string; name: string }[]; materials: { id: string; name: string }[]; groups: { id: string; name: string }[]; units: { id: string; name: string }[];
+  /** Active customer price groups: id is the group code. */
+  priceGroups?: { id: string; name: string }[] };
 
 export function PricingRuleEditor({ rule, options, purchase = false, purchaseRule, command, scopeLabel }: { rule?: PriceRule; options: PriceOptions; purchase?:boolean; purchaseRule?:PurchasePriceRule; command?:{targetId:string;operationId:string}; scopeLabel?:string }) {
   const submitting = useRef(false);
@@ -116,7 +118,9 @@ export function PricingRuleEditor({ rule, options, purchase = false, purchaseRul
       {!targetRule && <>
         {purchase && <div className="field"><label htmlFor={`${id}-supplier`}>Nhà cung cấp *</label><select id={`${id}-supplier`} name="supplierId" required><option value="">Chọn...</option>{options.suppliers?.map(option=><option key={option.id} value={option.id}>{option.name}</option>)}</select></div>}
         {customerScope && <div className="field"><label htmlFor={`${id}-customer`}>Khách hàng *</label><select id={`${id}-customer`} name="customerId" required><option value="">Chọn...</option>{options.customers.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}</select></div>}
-        {scope === "CUSTOMER_TIER" && <div className="field"><label htmlFor={`${id}-tier`}>Nhóm giá khách *</label><input id={`${id}-tier`} name="tierCode" required maxLength={40} /></div>}
+        {scope === "CUSTOMER_TIER" && <div className="field"><label htmlFor={`${id}-tier`}>Nhóm giá khách *</label>{options.priceGroups
+          ? <select id={`${id}-tier`} name="tierCode" required><option value="">Chọn...</option>{options.priceGroups.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}</select>
+          : <input id={`${id}-tier`} name="tierCode" required maxLength={40} />}</div>}
         {scope === "CUSTOMER_GROUP" ? <div className="field"><label htmlFor={`${id}-group`}>Nhóm vật tư *</label><select id={`${id}-group`} name="groupId" required><option value="">Chọn...</option>{options.groups.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}</select></div> : <div className="field"><label htmlFor={`${id}-material`}>Vật tư *</label><select id={`${id}-material`} name="materialId" required><option value="">Chọn...</option>{options.materials.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}</select></div>}
         <div className="field"><label htmlFor={`${id}-uom`}>Đơn vị giá *</label><select id={`${id}-uom`} name="priceUomId" required><option value="">Chọn...</option>{options.units.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}</select></div>
       </>}

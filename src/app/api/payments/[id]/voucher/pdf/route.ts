@@ -1,6 +1,7 @@
 import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { createStandardPdf, pdfResponse } from "@/lib/pdf/standard-document";
+import { loadCompanyDocumentHeading } from "@/lib/company/profile";
 
 type Payment = { id: string; payment_number: string; direction: "RECEIPT" | "DISBURSEMENT"; counterparty_name: string; account_code: string; amount_vnd: string; allocated_amount_vnd: string; advance_amount_vnd: string; unallocated_amount_vnd: string; effective_at: string; posting_state: string; reconciliation_state: string; reversal_of_payment_id: string | null };
 type Allocation = { id: string; receivable_obligation_id: string | null; payable_obligation_id: string | null; amount_delta_vnd: string; allocated_at: string };
@@ -23,6 +24,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   const generatedAt = new Date().toISOString();
   const title = payment.direction === "RECEIPT" ? "PHIẾU THU" : "PHIẾU CHI";
   const bytes = await createStandardPdf({
+    company: await loadCompanyDocumentHeading(supabase),
     title,
     reference: payment.payment_number,
     subtitle: `${postingLabel(payment.posting_state)} / ${reconciliationLabel(payment.reconciliation_state)}`,

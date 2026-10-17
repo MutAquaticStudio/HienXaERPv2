@@ -151,7 +151,7 @@ try {
     const rows = await q.sql`select p.id,p.payment_number from public.payments p join public.payment_allocations a on a.payment_id=p.id where a.receivable_obligation_id=${ar.id} and a.amount_delta_vnd>0`; assert.equal(rows.length, 1); r.payment = rows[0].id;
     if (await reconciliation(r.payment) !== "MATCHED") {
       await open(finance, "/admin/cashbook"); const row = finance.getByRole("row").filter({ hasText: rows[0].payment_number }); await row.getByText("Xử lý", { exact: true }).click();
-      const form = row.locator("form").filter({ has: finance.getByRole("button", { name: "Ghi đối soát", exact: true }) }); await expect(form).toHaveCount(1);
+      const form = finance.getByRole("dialog").locator("form").filter({ has: finance.getByRole("button", { name: "Ghi đối soát", exact: true }) }); await expect(form).toHaveCount(1);
       await form.getByLabel("Số tiền đối soát (VND)", { exact: true }).fill("1000000"); await form.getByLabel("Mã dòng ngân hàng", { exact: true }).fill("UX-QA-" + f.delivery);
       await form.getByRole("button", { name: "Ghi đối soát", exact: true }).click();
     }

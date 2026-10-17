@@ -17,16 +17,18 @@ describe("grouped operational navigation", () => {
     expect(screen.getByRole("button", { name: "Bán hàng" })).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("button", { name: "Tài chính" })).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByRole("link", { name: "Đơn bán" })).toHaveAttribute("aria-current", "page");
-    expect(screen.queryByRole("link", { name: "Công nợ phải trả" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Công nợ" })).not.toBeInTheDocument();
   });
 
   it("keeps all existing destinations and exposes existing stock-count and purchase-document routes", () => {
     const { container } = render(shell());
     const hrefs = [...container.querySelectorAll("aside a")].map((link) => link.getAttribute("href"));
-    expect(new Set(hrefs).size).toBe(27);
+    expect(new Set(hrefs).size).toBe(24);
     expect(hrefs).not.toContain("/admin/quotations");
+    expect(hrefs).not.toContain("/admin/payment-notices");
     expect(hrefs).toContain("/admin/stock-counts");
-    expect(hrefs).toContain("/admin/invoices/purchases");
+    expect(hrefs).toContain("/admin/debts");
+    expect(hrefs).toContain("/admin/invoices");
     expect(hrefs).toContain("/admin/access");
     expect(hrefs).toContain("/admin/settings");
   });
@@ -61,9 +63,9 @@ describe("grouped operational navigation", () => {
     location.pathname = "/admin/payables";
     render(shell(["finance.ap.read"]));
     expect(screen.getByRole("button", { name: "Tài chính" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Công nợ phải trả" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Chứng từ mua" })).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Hồ sơ hóa đơn bán" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Công nợ" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "Hóa đơn" })).toHaveAttribute("href", "/admin/invoices");
+    expect(screen.queryByRole("link", { name: "Sổ quỹ" })).not.toBeInTheDocument();
   });
 
   it("allows collapse and reopens the current group on a subsequent route", () => {
@@ -76,12 +78,16 @@ describe("grouped operational navigation", () => {
     expect(screen.getByRole("link", { name: "Khách hàng" })).toHaveAttribute("aria-current", "page");
   });
 
-  it("marks only the most specific permitted invoice destination active", () => {
-    location.pathname = "/admin/invoices/purchases";
+  it("keeps one finance entry active across its tabs (FB2 Đợt 6)", () => {
+    location.pathname = "/admin/invoices/purchases/matching";
     const { container } = render(shell());
-    expect(screen.getByRole("link", { name: "Chứng từ mua" })).toHaveAttribute("aria-current", "page");
-    expect(screen.getByRole("link", { name: "Hồ sơ hóa đơn bán" })).not.toHaveAttribute("aria-current");
+    expect(screen.getByRole("link", { name: "Hóa đơn" })).toHaveAttribute("aria-current", "page");
     expect(container.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
+    cleanup();
+    location.pathname = "/admin/receivables/abc";
+    render(shell());
+    expect(screen.getByRole("link", { name: "Công nợ" })).toHaveAttribute("aria-current", "page");
+    expect(screen.queryByRole("link", { name: "Báo chuyển khoản" })).not.toBeInTheDocument();
   });
 
   it("does not match a route with a similar but different path segment", () => {
@@ -114,7 +120,7 @@ describe("grouped operational navigation", () => {
     render(shell());
     const sidebar = screen.getByRole("complementary");
     expect(within(sidebar).getByRole("button", { name: "Kho hàng" })).toBeInTheDocument();
-    expect(within(sidebar).getByRole("button", { name: "Nhân công & dịch vụ" })).toBeInTheDocument();
+    expect(within(sidebar).getByRole("button", { name: "Nhân công" })).toBeInTheDocument();
     expect(sidebar.textContent).not.toMatch(/\uFFFD|Ã[\u0080-\u00bf]|Â[\u0080-\u00bf]/u);
     expect(screen.getByText("Chủ QA")).toBeInTheDocument();
     expect(screen.queryByText("Chi nhánh QA")).not.toBeInTheDocument();

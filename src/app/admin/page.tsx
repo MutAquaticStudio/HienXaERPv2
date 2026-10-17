@@ -66,7 +66,7 @@ async function LowStockAlert({ access }: { access: DashboardAccess }) {
   if (!access.permissions.has("inventory.read")) return null;
   const supabase = await createServerSupabase();
   const { count } = await supabase.from("low_stock_alert_read").select("threshold_id", { count: "exact", head: true }).eq("branch_id", access.branchId);
-  return Number(count ?? 0) > 0 ? <Link className="quality-callout" href="/admin/inventory#low-stock-alerts">Có {count} cảnh báo tồn kho dưới ngưỡng. Mở danh sách và tạo đơn mua nháp khi cần.</Link> : null;
+  return Number(count ?? 0) > 0 ? <Link className="quality-callout" href="/admin/inventory?stock=low">Có {count} cảnh báo tồn kho dưới ngưỡng. Mở danh sách và tạo đơn mua nháp khi cần.</Link> : null;
 }
 
 async function DashboardFilters({ access, query, from, to }: { access: DashboardAccess; query: DashboardQuery; from: string; to: string }) {

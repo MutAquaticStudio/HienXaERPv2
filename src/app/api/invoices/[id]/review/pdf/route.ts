@@ -6,6 +6,7 @@ import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { requireInternalPermission } from "@/lib/access/context";
 import { AppError } from "@/lib/core/errors";
 import { createStandardPdf, pdfResponse } from "@/lib/pdf/standard-document";
+import { loadCompanyDocumentHeading } from "@/lib/company/profile";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
@@ -30,6 +31,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   if (linesError) throw linesError;
   const money = (value: string | number) => formatVnd(vnd(String(value)));
   const bytes = await createStandardPdf({
+    company: await loadCompanyDocumentHeading(supabase),
     title: "PHIẾU RÀ SOÁT NGUỒN",
     reference: `Hồ sơ ${invoice.id}`,
     subtitle: "Chưa phát hành hóa đơn",

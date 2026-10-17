@@ -42,7 +42,8 @@ describe("one-confirmation credit override server action", () => {
     expect(mocks.eq).toHaveBeenCalledWith("branch_id", "branch-a"); expect(mocks.rpc).not.toHaveBeenCalled();
   });
   it("passes the exact snapshot, intent and reason to the protected RPC", async () => {
-    await expect(confirmSalesOrderCreditOverride(input())).rejects.toThrow("success=");
+    // The order page shows `notice`, so the success message must travel under that name.
+    await expect(confirmSalesOrderCreditOverride(input())).rejects.toThrow(`/admin/orders/${orderId}?notice=`);
     expect(mocks.rpc).toHaveBeenCalledWith("confirm_sales_order_with_credit_override", {
       target_order_id: orderId, override_reason: "HXQA approval", expected_snapshot_hash: "a".repeat(64),
       operation_id: "baadf00d-1234-4234-8234-123456789abc",
@@ -61,7 +62,7 @@ describe("one-confirmation credit override server action", () => {
     expect(decodeURIComponent(destination)).toContain("Chưa thể ghi sổ");
     expect(decodeURIComponent(destination)).toContain("phiên bản hệ thống");
     expect(destination).not.toContain("branch_not_operational");
-    expect(destination).not.toContain("success=");
+    expect(destination).not.toContain("notice=");
     expect(mocks.revalidate).not.toHaveBeenCalled();
     expect(mocks.rpc).toHaveBeenCalledWith("confirm_sales_order_with_credit_override", expect.objectContaining({
       target_order_id: orderId, expected_snapshot_hash: "a".repeat(64),

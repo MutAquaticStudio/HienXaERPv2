@@ -64,5 +64,5 @@ export async function savePricingRuleAction(_: PricingState | undefined, form: F
 
 function pricingError(error: unknown): PricingState {
   const code = error instanceof PortalRpcError ? error.code : "";
-  return { message: code === "PT409" || code === "23505" ? "Chính sách giá đã thay đổi hoặc trùng phạm vi. Tải lại trước khi lưu." : code === "42501" ? "Không có quyền quản lý giá ở chi nhánh này." : "Không thể lưu chính sách giá. Kiểm tra phạm vi, đơn vị và ngày hiệu lực." };
+  return { message: code === "PT409" || code === "23505" ? "Chính sách giá đã thay đổi hoặc trùng phạm vi. Tải lại trước khi lưu." : code === "42501" ? "Không có quyền quản lý giá ở chi nhánh này." : code === "23503" ? "Nhóm giá khách này chưa được khai báo ở chi nhánh. Tạo nhóm trong mục Nhóm giá khách trước." : "Không thể lưu chính sách giá. Kiểm tra phạm vi, đơn vị và ngày hiệu lực." };
 }

@@ -7,6 +7,9 @@ export async function isolatedBranchFixture(tx, qa, subjects = []) {
   await tx`insert into public.branches(id,code,name) values(${branch},${code},${"QA không đầu kỳ " + code})`;
   await tx`insert into public.warehouses(id,branch_id,code,name,address_text) values(${warehouse},${branch},${code},'Kho QA mới không tồn đầu kỳ','Cục bộ QA')`;
   await tx`insert into public.suppliers(id,branch_id,code,name) values(${supplier},${branch},${code},'NCC QA chi nhánh mới')`;
+  // Price groups are a per-branch catalog (20261016160000): copy the fixture customer's group into the new branch.
+  await tx`insert into public.customer_price_groups(branch_id,code,name)
+    select ${branch},tier_code,tier_code from public.customers where id=${qa.fixtures.customer} and tier_code is not null on conflict do nothing`;
   await tx`insert into public.customers(id,branch_id,code,display_name,sales_owner_employee_id,payment_terms_days,credit_limit_vnd,tier_code)
     select ${customer},${branch},${code},'Khách QA chi nhánh mới',sales_owner_employee_id,payment_terms_days,100000000,tier_code
     from public.customers where id=${qa.fixtures.customer}`;

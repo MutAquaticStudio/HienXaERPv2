@@ -5,7 +5,9 @@ import { userFacingError } from "@/lib/core/errors";
 import { revalidatePath } from "next/cache";
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { deliveryCommandMessage } from "@/modules/delivery/errors";
 import { recommendRoute } from "@/modules/routing/provider";
+import { effectiveWindow, overlappingIndexes, parseStopMinutes, stopWindows } from "@/modules/routing/stop-schedule";
 
 export type RouteActionState = {
   status: "idle" | "success" | "error";
@@ -32,16 +34,18 @@ export async function createRoutePlanAction(_previous: RouteActionState, formDat
   const driverEmployeeId = String(formData.get("driver_employee_id") ?? "");
   const departureAt = String(formData.get("departure_at_iso") ?? "");
   const operationId = String(formData.get("operation_id") ?? "");
+  const stopMinutes = parseStopMinutes(formData.get("stop_minutes"));
   if (!deliveryIds.length) return initialError("Chọn ít nhất một chuyến giao.");
   if (!vehicleId || !driverEmployeeId || !departureAt || Number.isNaN(Date.parse(departureAt)) || !/^[0-9a-f-]{36}$/i.test(operationId)) {
     return initialError("Chọn xe, tài xế và giờ khởi hành hợp lệ.");
   }
+  if (stopMinutes === null) return initialError("Nhập thời gian mỗi điểm dừng từ 10 đến 480 phút.");
 
   const supabase = await createServerSupabase();
   const [{ data: deliveries, error: deliveryError }, { data: vehicle, error: vehicleError }] = await Promise.all([
     supabase
       .from("deliveries")
-      .select("id,delivery_number,version,execution_state,site_id,delivery_address_snapshot")
+      .select("id,delivery_number,version,execution_state,site_id,delivery_address_snapshot,scheduled_at,scheduled_end_at")
       .eq("branch_id", access.branchId)
       .in("id", deliveryIds)
       .in("execution_state", ["PLANNED", "ASSIGNED"])
@@ -89,6 +93,12 @@ export async function createRoutePlanAction(_previous: RouteActionState, formDat
   const allLines = [...linesByDelivery.values()].flat();
   const sameUom = !!capacityUomId && allLines.length > 0 && allLines.every((line) => String(line.base_uom_id) === capacityUomId);
   const totalQuantity = sameUom ? allLines.reduce((sum, line) => sum + Number(line.planned_base_quantity), 0) : null;
+  // Expected window per stop in the final order; deliveries with a schedule keep theirs when the route is applied.
+  const windows = stopWindows(new Date(departureAt).toISOString(), stopMinutes, recommendation.orderedDeliveryIds.length);
+  const overlaps = overlappingIndexes(recommendation.orderedDeliveryIds.map((deliveryId, index) => {
+    const delivery = deliveryById.get(deliveryId)!;
+    return effectiveWindow(delivery.scheduled_at ?? null, delivery.scheduled_end_at ?? null, windows[index] ?? null);
+  }));
   const stops = recommendation.orderedDeliveryIds.map((deliveryId, index) => {
     const delivery = deliveryById.get(deliveryId)!;
     const site = siteById.get(String(delivery.site_id));
@@ -110,9 +120,13 @@ export async function createRoutePlanAction(_previous: RouteActionState, formDat
       address_snapshot: delivery.delivery_address_snapshot,
       time_window_snapshot: site?.receiving_window ?? null,
       capacity_warning: capacityWarning,
-      time_window_warning: site?.receiving_window
-        ? "Chưa đối chiếu giờ đến dự kiến với khung giờ nhận hàng; xác nhận thủ công."
-        : "Công trình chưa có khung giờ nhận hàng.",
+      time_window_warning: overlaps.has(index)
+        ? "Lịch chồng với điểm khác trên cùng xe; áp dụng sẽ bị từ chối. Chốt lại giờ trên phiếu giao hoặc đổi giờ đi."
+        : site?.receiving_window
+          ? "Chưa đối chiếu giờ đến dự kiến với khung giờ nhận hàng; xác nhận thủ công."
+          : "Công trình chưa có khung giờ nhận hàng.",
+      planned_start_at: windows[index]?.start ?? null,
+      planned_end_at: windows[index]?.end ?? null,
     };
   });
 
@@ -128,7 +142,11 @@ export async function createRoutePlanAction(_previous: RouteActionState, formDat
     target_stops: stops,
     operation_id: operationId,
   });
-  if (error) return initialError(error.message);
+  if (error) {
+    if (error.message.includes("route_stop_window_invalid")) return initialError("Giờ dự kiến các điểm dừng không hợp lệ. Kiểm tra giờ khởi hành và thời gian mỗi điểm.");
+    if (error.message.includes("stale")) return initialError("Một chuyến giao vừa thay đổi. Tải lại trang rồi chọn lại.");
+    return initialError(error.message);
+  }
   revalidatePath("/admin/routes");
   return {
     status: "success",
@@ -152,6 +170,9 @@ export async function applyRoutePlanAction(_previous: RouteActionState, formData
   if (error) {
     const stale = error.message.includes("stale") || error.message.includes("version_conflict");
     if (error.message.includes("schedule_collision")) return initialError("Khung giờ phân giao đang chồng lấn. Mở từng phiếu giao để chốt giờ bắt đầu và kết thúc, rồi tạo lại đề xuất lộ trình theo dữ liệu mới.");
+    if (error.message.includes("route_stop_schedule_required")) return initialError("Lộ trình này lập trước khi có giờ dự kiến từng điểm nên chưa xếp lịch được phiếu chưa có lịch. Tạo lại đề xuất lộ trình.");
+    // Assignment refusals from a stop (vehicle capacity basis, driver eligibility…) read like on the delivery page.
+    if (/vehicle_|delivery_employee|delivery_reassignment|delivery_external|schedule_window/.test(error.message)) return initialError(deliveryCommandMessage(error.message));
     return initialError(stale ? "Dữ liệu giao hàng đã thay đổi. Tạo lại lộ trình trước khi áp dụng." : error.message);
   }
   revalidatePath("/admin/routes");

@@ -11,6 +11,8 @@ import { ExistingPaymentAllocationForm, type ExistingPayment } from "@/modules/f
 import { CommandRecoveryNotice } from "@/components/reliable-command-form";
 import { PaymentForm, type PaymentTarget } from "@/modules/finance/payment-form";
 import { AutoFilterForm } from "@/components/ui/auto-filter-form";
+import { DebtTabs } from "@/components/finance/finance-tabs";
+import { FormDialog } from "@/components/ui/form-dialog";
 
 type Payable = { id: string; supplier_id: string; supplier_name: string; source_label: string; original_amount_vnd: string; outstanding_amount_vnd: string; due_date: string; recorded_at: string; state: string };
 type Account = { id: string; code: string; name: string };
@@ -51,12 +53,13 @@ export default async function PayablesPage({ searchParams }: { searchParams: Pro
   const paymentSources = sourceFetched.slice(0, CORE_LIST_PAGE_SIZE);
   const accounts = (accountResult.data ?? []) as Account[];
   const selectedName = selected[0]?.supplier_name ?? partyResult.data?.name;
-  return <div className="page-stack"><header className="page-heading"><div><p className="eyebrow">Tài chính · Công nợ phải trả</p><h1>Phải trả nhà cung cấp</h1><p className="lede">Theo dõi công nợ nhà cung cấp từ hàng đã nhận và chi phí đã duyệt.</p></div><div className="action-cluster"><Link className="button button-secondary" href="/admin/expenses">Chi phí</Link><Link className="button button-secondary" href="/admin/cashbook">Sổ tiền</Link></div></header>
+  return <div className="page-stack"><header className="page-heading"><div><p className="eyebrow">Tài chính · Công nợ phải trả</p><h1>Phải trả nhà cung cấp</h1><p className="lede">Theo dõi công nợ nhà cung cấp từ hàng đã nhận và chi phí đã duyệt.</p></div><div className="action-cluster"><Link className="button button-secondary" href="/admin/expenses">Chi phí</Link><Link className="button button-secondary" href="/admin/cashbook">Sổ tiền</Link></div></header><DebtTabs active="/admin/payables" permissions={access.permissions} />
     <ActionNotice notice={query.notice} error={query.error} reference={query.payment} />
     <AutoFilterForm>{supplierId && <input type="hidden" name="supplier" value={supplierId} />}<label>Tìm kiếm<input name="q" defaultValue={list.q} placeholder="Nhà cung cấp, nguồn" /></label><label>Trạng thái<select name="state" defaultValue={list.state}><option value="">Tất cả còn dư</option><option value="OVERDUE">Quá hạn</option></select></label>{(list.q || list.state || supplierId) && <Link className="code-link" href="/admin/payables">Xóa lọc</Link>}</AutoFilterForm>
     {supplierId && <p className="form-message">Đang xem công nợ của {selectedName ?? "nhà cung cấp đã chọn"}. Chọn các khoản cần thanh toán trước khi ghi chi.</p>}
-    {supplierId && selectedName && canPost && accounts.length > 0 && <PaymentForm actorScope={access.authUserId + ":" + access.branchId} direction="DISBURSEMENT" partyId={supplierId} partyName={selectedName} accounts={accounts} obligations={selected.map((item): PaymentTarget => ({ id: item.id, sourceLabel: item.source_label, dueDate: item.due_date, outstandingAmountVnd: item.outstanding_amount_vnd }))} initialHasNext={selectedFetched.length > CORE_LIST_PAGE_SIZE} defaultEffectiveAt={localNow()} redirectTo={`/admin/payables?supplier=${supplierId}`} operationId={randomUUID()} />}
-    {supplierId && selectedName && canPost && !accounts.length && <p className="form-message">Cần tạo tài khoản tiền tại Sổ tiền trước khi ghi nhận chi.</p>}
+    {supplierId && selectedName && canPost && accounts.length > 0 && <FormDialog label="Ghi chi" title="Ghi chi" size="lg" buttonClassName="button button-primary"
+      defaultOpen={!query.notice && !query.error && !query.payment && !query.paymentPage && !query.page}><PaymentForm actorScope={access.authUserId + ":" + access.branchId} direction="DISBURSEMENT" partyId={supplierId} partyName={selectedName} accounts={accounts} obligations={selected.map((item): PaymentTarget => ({ id: item.id, sourceLabel: item.source_label, dueDate: item.due_date, outstandingAmountVnd: item.outstanding_amount_vnd }))} initialHasNext={selectedFetched.length > CORE_LIST_PAGE_SIZE} defaultEffectiveAt={localNow()} redirectTo={`/admin/payables?supplier=${supplierId}`} operationId={randomUUID()} /></FormDialog>}
+    {supplierId && selectedName && canPost && !accounts.length && <p className="form-message">Cần tạo tài khoản tiền tại Sổ quỹ trước khi ghi nhận chi.</p>}
     {supplierId && selectedName && canPost && <ExistingPaymentAllocationForm actorScope={access.authUserId + ":" + access.branchId} direction="DISBURSEMENT" partyId={supplierId}
       payments={paymentSources} obligations={selected.map((item): PaymentTarget => ({ id: item.id, sourceLabel: item.source_label, dueDate: item.due_date, outstandingAmountVnd: String(item.outstanding_amount_vnd) }))}
       hasMore={selectedFetched.length > CORE_LIST_PAGE_SIZE} redirectTo={`/admin/payables?supplier=${supplierId}`} operationId={randomUUID()} />}

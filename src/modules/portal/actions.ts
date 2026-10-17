@@ -5,7 +5,7 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { QUOTATIONS_ENABLED } from "@/lib/features";
+import { PAYMENT_NOTICES_ENABLED, QUOTATIONS_ENABLED } from "@/lib/features";
 
 import { authenticatedPortalClient, portalRpc, PortalRpcError } from "@/modules/portal/server";
 import type {
@@ -65,6 +65,7 @@ export async function getCustomerPortalOrder(id: string) {
 }
 
 export async function getAdminPaymentNotices() {
+  if (!PAYMENT_NOTICES_ENABLED) return [] as PaymentNotice[];
   const supabase = await portalClientOrRedirect("/login");
   return portalRpc<PaymentNotice[]>(supabase, "admin_payment_notice_snapshot");
 }
@@ -85,6 +86,7 @@ export async function requestQuotationChangeAction(formData: FormData) {
 }
 
 export async function reviewPaymentNoticeAction(formData: FormData) {
+  if (!PAYMENT_NOTICES_ENABLED) redirect("/admin");
   const noticeId = String(formData.get("notice_id") ?? "");
   const state = String(formData.get("state") ?? "");
   const note = String(formData.get("review_note") ?? "");

@@ -73,3 +73,15 @@ it("is read-only without pricing.manage and hides cost without cost permission",
   expect(screen.queryByRole("columnheader", { name: "Giá vốn" })).not.toBeInTheDocument();
   expect(screen.getByText("95.000 ₫")).toBeInTheDocument();
 });
+
+it("edits a customer group's book next to the general price and saves the group code", async () => {
+  render(<PriceBookEditor {...props} tierCode="SI" rows={[{ ...rows[0], currentVnd: null, target: null, generalVnd: "95000", otherUnits: ["tấn 1.900.000 ₫"] }]} />);
+  const row = screen.getByText("Xi măng", { selector: "strong" }).closest("tr")!;
+  expect(row.querySelector('td[data-label="Giá chung"]')).toHaveTextContent("95.000");
+  expect(row.querySelector('td[data-label="Giá hiện tại"]')).toHaveTextContent("Theo giá chung");
+  expect(row).toHaveTextContent("tấn 1.900.000 ₫");
+  fireEvent.change(screen.getByLabelText("Giá mới Xi măng"), { target: { value: "92.000" } });
+  fireEvent.change(screen.getByLabelText("Lý do thay đổi *"), { target: { value: "Giá sỉ tháng 10" } });
+  fireEvent.click(saveButton());
+  await waitFor(() => expect(m.save).toHaveBeenCalledWith(expect.objectContaining({ items: [{ materialId: "m1", uomId: "bao", priceVnd: "92000", tierCode: "SI" }] })));
+});

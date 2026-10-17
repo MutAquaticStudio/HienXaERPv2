@@ -6,6 +6,8 @@ import { requireInternalPermission } from "@/lib/access/context";
 import { parseCoreListQuery, ilikePattern } from "@/lib/core-list";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { CatalogCreateButton } from "@/modules/catalog/catalog-dialog";
+import { catalogCreateProps } from "@/modules/catalog/editor-data";
 
 type CustomerRow = { id: string; code: string; display_name: string; phone: string | null; tier_code: string | null; customer_type: string; active: boolean };
 type Query = { q?: string; state?: string; page?: string; tier?: string; type?: string };
@@ -28,11 +30,12 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
   if (type) request = request.eq("customer_type", type);
   const [{ data, error, count }, tierResult] = await Promise.all([
     request.order("display_name").order("id").range(list.from, list.to),
-    supabase.from("customers").select("tier_code").eq("branch_id", access.branchId).not("tier_code", "is", null).order("tier_code").limit(500),
+    supabase.from("customer_price_groups").select("code,name").eq("branch_id", access.branchId).order("name").limit(200),
   ]);
   if (error) throw new Error("Không thể tải danh sách khách hàng.");
   const rows = (data ?? []) as unknown as CustomerRow[];
-  const tiers = [...new Set((tierResult.data ?? []).map((row) => String(row.tier_code)))];
+  const tiers = (tierResult.data ?? []) as { code: string; name: string }[];
+  const tierName = (code: string | null) => code === null ? "Giá chung" : tiers.find((item) => item.code === code)?.name ?? code;
   const ids = rows.map((row) => row.id);
 
   // Finance columns only for actors who may read receivables, and only for the customers on this page.
@@ -48,17 +51,18 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
   const debts = new Map<string, bigint>();
   for (const row of debtRows) debts.set(row.customer_id, (debts.get(row.customer_id) ?? 0n) + BigInt(row.outstanding_amount_vnd));
   const filtered = Boolean(list.q || list.state || tier || type);
+  const create = canManage ? await catalogCreateProps("customers", access, supabase) : null;
 
   return <div className="page-stack">
     <header className="page-heading"><div><p className="eyebrow">Bán hàng</p><h1>Khách hàng</h1><p className="lede">Hồ sơ khách hàng tại {access.branchName}. Bấm vào một dòng để xem chi tiết.</p></div>
-      {canManage && <div className="action-cluster"><Link className="button button-primary" href="/admin/customers/manage?kind=customers">+ Khách hàng</Link><Link className="button button-secondary" href="/admin/customers/manage?kind=sites">Công trình</Link></div>}
+      {create && <div className="action-cluster"><CatalogCreateButton {...create} label="+ Khách hàng" /><Link className="button button-secondary" href="/admin/customers/manage?kind=sites">Công trình</Link></div>}
     </header>
     <div className="list-layout">
       <AutoFilterForm className="card card-pad list-filters" aria-label="Bộ lọc khách hàng">
         <label className="list-filters-search">Tìm kiếm<input type="search" name="q" defaultValue={list.q} placeholder="Mã, tên, điện thoại" /></label>
         <label>Trạng thái<select name="state" defaultValue={list.state}><option value="">Tất cả</option><option value="ACTIVE">Đang hoạt động</option><option value="INACTIVE">Ngừng giao dịch</option></select></label>
         <label>Loại khách<select name="type" defaultValue={type}><option value="">Tất cả</option><option value="BUSINESS">Doanh nghiệp</option><option value="INDIVIDUAL">Cá nhân</option></select></label>
-        <label>Nhóm giá<select name="tier" defaultValue={tier}><option value="">Tất cả</option><option value="DEFAULT">Mặc định</option>{tiers.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
+        <label>Nhóm giá<select name="tier" defaultValue={tier}><option value="">Tất cả</option><option value="DEFAULT">Giá chung</option>{tiers.map((item) => <option key={item.code} value={item.code}>{item.name}</option>)}</select></label>
         {filtered && <Link className="code-link" href="/admin/customers">Xóa lọc</Link>}
       </AutoFilterForm>
       <section className="card list-main">
@@ -73,7 +77,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
               <td data-label="Mã"><Link className="mono code-link" href={href} tabIndex={-1}>{customer.code}</Link></td>
               <td className="row-title" data-label="Tên khách hàng"><Link className="code-link row-link" href={href}>{customer.display_name}</Link><small className="table-subline">{customer.customer_type === "INDIVIDUAL" ? "Cá nhân" : "Doanh nghiệp"}</small></td>
               <td data-label="Điện thoại">{customer.phone ?? "Chưa có"}</td>
-              <td data-label="Nhóm giá">{customer.tier_code ?? "Mặc định"}</td>
+              <td data-label="Nhóm giá">{tierName(customer.tier_code)}</td>
               {canReadFinance && <>
                 <td className="numeric mono" data-label="Nợ hiện tại">{!debtComplete ? "—" : debt > 0n ? <strong>{formatVnd(vnd(debt.toString()))}</strong> : "0 ₫"}</td>
                 <td className="numeric mono" data-label="Hạn mức">{limit == null ? "Chưa duyệt" : formatVnd(vnd(limit))}</td>

@@ -5,6 +5,7 @@ import { requirePermission } from "@/lib/access/policy";
 import { AppError } from "@/lib/core/errors";
 import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { loadCompanyDocumentHeading } from "@/lib/company/profile";
 import { createBusinessDocument } from "./business-document";
 import { pdfResponse } from "./standard-document";
 import { deliveryDocumentData, purchaseDocumentData, salesDocumentData, type CommercialLine, type DeliveryDocument, type DeliveryDocumentLine, type PurchaseDocument, type SalesDocument } from "./document-data";
@@ -69,7 +70,7 @@ export async function exportBusinessDocument(kind: DocumentKind, id: string): Pr
     if (JSON.stringify(latest.data) !== JSON.stringify(header.data) || JSON.stringify(latestExtra?.data) !== JSON.stringify(extra?.data)) {
       return new Response("Chứng từ vừa thay đổi. Hãy tải lại và xuất PDF lần nữa.", { status: 409, headers: { "Cache-Control": "private, no-store" } });
     }
-    const bytes = await createBusinessDocument(input);
+    const bytes = await createBusinessDocument({ ...input, company: await loadCompanyDocumentHeading(supabase) });
     return pdfResponse(bytes, `${input.reference}.pdf`);
   } catch (error) {
     if (error instanceof AppError) return Response.json(error.toResponseBody(), { status: error.status, headers: { "Cache-Control": "private, no-store" } });

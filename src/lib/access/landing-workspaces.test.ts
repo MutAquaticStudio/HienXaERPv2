@@ -4,7 +4,6 @@ import { internalLandingPath } from "./landing";
 describe("independently authorized workspace landing", () => {
   it.each([
     ["finance.expense.read", "/admin/expenses"],
-    ["finance.payment_notice.review", "/admin/payment-notices"],
     ["pricing.read", "/admin/products/pricing"],
     ["customers.manage", "/admin/customers/manage"],
     ["suppliers.manage", "/admin/suppliers/manage"],

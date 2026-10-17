@@ -8,11 +8,12 @@ import {
   type ServiceJobSiteOption,
 } from "@/modules/workforce/form-lookup-actions";
 
-export function ServiceJobLocationFields({ initialCustomers }: { initialCustomers: ServiceJobCustomerOption[] }) {
-  const [customers, setCustomers] = useState(initialCustomers);
-  const [sites, setSites] = useState<ServiceJobSiteOption[]>([]);
-  const [customerId, setCustomerId] = useState("");
-  const [siteId, setSiteId] = useState("");
+/** `initialCustomer`/`initialSite` pre-select the location when the job is started from an order or a customer (D9). */
+export function ServiceJobLocationFields({ initialCustomers, initialCustomer, initialSite }: { initialCustomers: ServiceJobCustomerOption[]; initialCustomer?: ServiceJobCustomerOption; initialSite?: ServiceJobSiteOption }) {
+  const [customers, setCustomers] = useState(() => initialCustomer && !initialCustomers.some((item) => item.id === initialCustomer.id) ? [initialCustomer, ...initialCustomers] : initialCustomers);
+  const [sites, setSites] = useState<ServiceJobSiteOption[]>(initialSite ? [initialSite] : []);
+  const [customerId, setCustomerId] = useState(initialCustomer?.id ?? "");
+  const [siteId, setSiteId] = useState(initialSite?.id ?? "");
   const [customerSearch, setCustomerSearch] = useState("");
   const [siteSearch, setSiteSearch] = useState("");
   const [busy, setBusy] = useState(false);

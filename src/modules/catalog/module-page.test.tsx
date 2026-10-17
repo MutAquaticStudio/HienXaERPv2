@@ -8,7 +8,8 @@ const boundary = vi.hoisted(() => ({ access: vi.fn(), client: vi.fn(), redirect:
 vi.mock("@/lib/access/context", () => ({ requireInternalAccess: boundary.access }));
 vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: boundary.client }));
 vi.mock("next/navigation", () => ({ redirect: boundary.redirect }));
-vi.mock("./editor", () => ({ CatalogEditor: ({ kind }: { kind: string }) => <p>Editor {kind}</p> }));
+vi.mock("server-only", () => ({}));
+vi.mock("./catalog-dialog", () => ({ CatalogTable: ({ kind, openNew, initial }: { kind: string; openNew?: boolean; initial?: Record<string, string> }) => <p>Editor {kind}{openNew ? ` mở thêm mới ${initial?.customer_id}` : ""}</p> }));
 
 function query() {
   const response = { data: [], error: null };
@@ -59,7 +60,7 @@ describe("module catalog authorization and query scope", () => {
     render(await ModuleCatalogPage({ searchParams: Promise.resolve({ kind: "sites", customerId: "customer-a" }), kinds: catalogModules.customers }));
     expect(request.eq).toHaveBeenCalledWith("customers.branch_id", "branch-a");
     expect(rpc).toHaveBeenCalledWith("customer_site_sales_owner_options", { target_branch_id: "branch-a" });
-    expect(screen.getByText("Editor sites")).toBeInTheDocument();
+    expect(screen.getByText("Editor sites mở thêm mới customer-a")).toBeInTheDocument();
   });
 
   it("redirects the legacy catalog with record/search context and no database query", async () => {

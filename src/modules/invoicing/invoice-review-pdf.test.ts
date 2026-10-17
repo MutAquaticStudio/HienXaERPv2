@@ -87,7 +87,7 @@ describe("invoice review PDF", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("application/pdf");
     expect(response.headers.get("content-disposition")).toContain(`invoice-review-${invoiceId}.pdf`);
-    expect(state.queriedTables).toEqual(["invoice_intent_read", "invoice_draft_line_read"]);
+    expect(state.queriedTables).toEqual(["invoice_intent_read", "invoice_draft_line_read", "company_profile"]);
     const document = await PDFDocument.load(await response.arrayBuffer());
     expect(document.getPageCount()).toBe(1);
   });

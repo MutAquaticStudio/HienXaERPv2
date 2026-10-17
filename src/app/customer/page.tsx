@@ -3,7 +3,7 @@ import { salesStateLabel } from "@/modules/portal/presentation";
 import { randomUUID } from "node:crypto";
 
 import Link from "next/link";
-import { QUOTATIONS_ENABLED } from "@/lib/features";
+import { PAYMENT_NOTICES_ENABLED, QUOTATIONS_ENABLED } from "@/lib/features";
 
 import styles from "@/components/portal/portal.module.css";
 import { getCustomerPortalSnapshot, requestQuotationChangeAction } from "@/modules/portal/actions";
@@ -52,7 +52,7 @@ export default async function CustomerHomePage() {
             <span className={styles.badge}>CÔNG NỢ</span>
             <p className={styles.amount}>{money(snapshot.debt.outstanding_amount_vnd)}</p>
             <p>Quá hạn {money(snapshot.debt.overdue_amount_vnd)}</p>
-            <Link className={styles.link} href="/customer/debts">Xem và gửi thông báo thanh toán</Link>
+            <Link className={styles.link} href="/customer/debts">{PAYMENT_NOTICES_ENABLED ? "Xem và gửi thông báo thanh toán" : "Xem công nợ"}</Link>
           </section>
         ) : (
           <section className={styles.card}>

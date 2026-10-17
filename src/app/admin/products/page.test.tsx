@@ -4,6 +4,7 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 const m = vi.hoisted(() => ({ access: vi.fn(), calls: [] as { table: string; method: string; args: unknown[] }[], tables: {} as Record<string, unknown[]> }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn() }), usePathname: () => "/admin/products" }));
 vi.mock("@/lib/access/context", () => ({ requireInternalPermission: m.access }));
+vi.mock("server-only", () => ({}));
 vi.mock("@/modules/pricing/request-clock", () => ({ readPricingClock: async () => Date.parse("2026-10-16T05:00:00Z") }));
 vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({
   from(table: string) {

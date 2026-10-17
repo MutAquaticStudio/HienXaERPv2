@@ -4,6 +4,10 @@ export const effectivePriceLabels: Record<EffectivePriceState, string> = {
   ACTIVE: "Đang hiệu lực", FUTURE: "Chưa có hiệu lực", EXPIRED: "Hết hiệu lực", INACTIVE: "Đã ngừng",
 };
 
+export const effectivePriceTones: Record<EffectivePriceState, "success" | "info" | "warning" | "danger"> = {
+  ACTIVE: "success", FUTURE: "info", EXPIRED: "warning", INACTIVE: "danger",
+};
+
 // now is captured once on the server; TIMESTAMPTZ values represent absolute instants.
 export function effectivePriceState(rule: EffectivePriceRule, now: number): EffectivePriceState {
   if (!rule.active) return "INACTIVE";

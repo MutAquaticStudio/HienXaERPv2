@@ -1,6 +1,10 @@
 > Quy tắc hiện hành 12/10/2026: bỏ opening pending và kích hoạt thủ công khỏi vận hành. Thông tin đối chiếu lịch sử chỉ mô tả chất lượng dữ liệu, không khóa giao dịch mới. Các bằng chứng trạng thái/gate cũ bên dưới là lịch sử, không phải điều kiện đang áp dụng.
 
 > Quyết định Owner 15/10/2026 (đợt góp ý khách `FB-KIOTVIET-20261015`): **D1** tắt hẳn Báo giá ở nội bộ và cổng khách — mọi chỗ nhắc tới báo giá trong tài liệu này tạm không áp dụng (SPEC-140); **D2** KPI Tổng quan dùng lợi nhuận ròng thay lợi nhuận gộp (SPEC-DASH-001); **D3** biểu đồ Tổng quan là đường Thu / Chi / Lợi nhuận theo đúng bộ lọc (SPEC-DASH-009); **D4** thiết lập giá chung hàng loạt, lưu một lần nguyên tử (SPEC-PRI-005).
+>
+> Quyết định Owner 16/10/2026 (đợt tinh chỉnh 2 `FB2-20261016`, giữ nguyên nghiệp vụ): **D5** tạo/sửa danh mục và tạo nhanh mở trong popup (UX-160); **D6** nút chính khi tạo đơn bán là "Xác nhận đơn" qua popup kiểm tra, "Lưu nháp" là lối phụ; **D7** giữ mô hình quy đổi đơn vị (SPEC-UOM), giao diện "Đơn vị tính" kiểu KiotViet; **D8** tắt hẳn Báo chuyển khoản như cách tắt Báo giá, không xóa dữ liệu; **D9** Dịch vụ giữ là chứng từ riêng, tạo nhanh từ đơn/khách, không gộp vào dòng đơn bán; **D10** Cài đặt thêm Thông tin doanh nghiệp in trên chứng từ và Giao diện theo máy (sáng/tối, cỡ chữ, font); **D11** biến thể vật tư (mỗi biến thể là một vật tư đủ mã/tồn/giá) và gợi ý giá lẻ chia theo quy đổi (giá lưu vẫn là số VND tuyệt đối từng đơn vị); nhóm giá khách tự đặt theo `CUSTOMER_TIER`; **D12** vai trò tùy biến chỉ người có `roles.manage` (Owner) tạo/sửa, không gán được `roles.manage` vào vai trò tùy biến. Kế hoạch theo đợt: `tasks.md` mục FB2-20261016.
+>
+> Quyết định Owner 17/10/2026: **D13** tên miền — tạm dùng tên miền mặc định Vercel của dự án; sau bàn giao và thanh toán gói chuyển sang `app.hienxavlxd.com`. Link mời nhân viên/quên mật khẩu lấy theo tên miền đang mở; Supabase Auth (Site URL, Redirect URLs) phải khai báo đúng tên miền đang dùng. Logo doanh nghiệp tải lên trong Cài đặt (SPEC-CONFIG-003).
 
 # Spec.md — HIỀN XA ERP V2
 
@@ -654,6 +658,16 @@ Trang chi tiết khách phải tổng hợp bằng read model:
 
 Không tạo một shadow ledger riêng.
 
+**FB2 Đợt 4 (17/10/2026, kiểu KiotViet):** đầu trang khách có tên, mã, điện thoại, địa chỉ, nhóm giá và các nút Tạo đơn, Ghi thu,
+Tạo dịch vụ, Sửa (popup), + Công trình (popup) theo quyền; 5 chỉ số: Nợ hiện tại, Nợ quá hạn, Hạn mức còn lại — đọc bằng RPC chỉ đọc
+`customer_credit_summary(target_customer_id)` (`security definer`, chỉ người có `finance.ar.read` ở chi nhánh của khách, không cấp `anon`;
+trả đúng số của `customer_credit_exposure` + tổng phải thu `OVERDUE` từ `receivable_read`, không lưu thêm gì) — và Tổng bán (đơn
+`CONFIRMED`/`CLOSED`), Đơn đang giao dở (`CONFIRMED` chưa `FULFILLED`/`CLOSED_REMAINDER`) từ `sales_order_read`. Nội dung chia tab thật
+`?tab=`: Thông tin & công trình │ Đơn bán │ Giao hàng │ Công nợ & thanh toán │ Giá riêng │ Tài liệu; tab chỉ hiện khi có quyền và chỉ
+đọc dữ liệu của tab đang mở. Trang chi tiết NCC cùng cách: chỉ số Còn phải trả, Quá hạn (từ `payable_read`), Tổng mua (đơn đã xác nhận,
+khi có quyền xem giá mua), Đơn mua đang mở, Điều khoản; tab Thông tin & liên hệ │ Đơn mua │ Nhập kho & giao thẳng │ Công nợ & thanh toán │
+Bảng giá mua. Không tạo sổ phụ.
+
 ---
 
 # SPEC-110 — Catalog, Material, UOM
@@ -670,6 +684,18 @@ Tối thiểu:
 - cho phép bán/mua;
 - quy cách nếu có;
 - metadata vận hành cần thiết.
+
+## SPEC-CAT-002 — Hàng cùng loại / biến thể vật tư (D11, 16/10/2026)
+
+- Một **hàng cùng loại** (vd "Xi măng Bút Sơn", "Thép Hòa Phát") có tên và 1–3 **thuộc tính** (vd Mác; Phi; Màu). Mỗi **loại (biến thể)** là
+  **một vật tư đầy đủ**: mã riêng (sửa được), tồn kho, đơn vị bán, giá và lịch sử riêng; kho, giá, bán, mua, giao hàng không đổi cách tính.
+- Mỗi loại ghi giá trị cho đúng các thuộc tính của hàng (1–40 ký tự); hai loại của cùng một hàng không được trùng giá trị thuộc tính.
+- Tạo/sửa trong **một lệnh nguyên tử** (`save_material_variant_group`, quyền `catalog.manage`; đặt giá kèm theo cần `pricing.manage`): tạo/đổi tên/
+  ngừng hàng, tạo loại mới từ mẫu chung (nhóm vật tư, đơn vị cơ sở, đơn vị bán, cho phép bán/mua) qua lệnh danh mục và lệnh đơn vị tính hiện có,
+  thêm vật tư có sẵn (đang dùng, chưa thuộc hàng khác) vào hàng, đổi giá trị thuộc tính, bỏ một vật tư ra khỏi hàng (vật tư giữ nguyên).
+  Sửa hàng phải khớp phiên bản đã đọc (đổi tên thuộc tính thì mọi loại phải được ghi lại theo tên mới trong cùng lệnh).
+- Giá kèm khi tạo loại là giá chung theo từng đơn vị (SPEC-PRI-005); công cụ chia giá theo quy đổi (SPEC-UOM-004) mặc định **không làm tròn** và
+  hiện giá đã chia trước khi lưu.
 
 ## SPEC-UOM-001 — Đơn vị
 
@@ -718,6 +744,17 @@ Mỗi conversion phải biết:
 ## SPEC-UOM-003
 
 `VEHICLE_LOAD` là quy tắc lập kế hoạch/tải xe, không mặc định là chuyển đổi vật lý chính xác.
+
+## SPEC-UOM-004 — Đơn vị tính của vật tư (D7, 16/10/2026)
+
+- Mỗi vật tư có **một đơn vị cơ sở** (không đổi sau khi tạo); tồn kho chỉ là một con số theo đơn vị cơ sở.
+- **Đơn vị bán** là quy đổi theo vật tư "1 <đơn vị> = tử/mẫu <đơn vị cơ sở>", loại Chính xác / Đóng gói / Ước lượng / Đo thực tế, được phép
+  tính tiền; Ước lượng và Đo thực tế bắt buộc ghi nguồn (3–500 ký tự). Tỉ lệ tối đa 6 chữ số thập phân, không làm tròn ngầm.
+- Thêm/ngừng đơn vị bán và đặt giá chung từng đơn vị lưu **một lần nguyên tử** (`save_material_units`): quy đổi đi qua lệnh danh mục hiện có,
+  giá đi qua lưu giá hàng loạt (SPEC-PRI-005). Chỉ đặt giá cho đơn vị cơ sở hoặc đơn vị bán đang dùng. Đổi tỉ lệ = ngừng bản cũ + thêm bản mới;
+  dòng chứng từ đã lập giữ snapshot quy đổi (SPEC-UOM-002). Quyền: quy đổi cần `catalog.manage`, giá cần `pricing.manage`.
+- "Chia giá theo quy đổi" (D11) chỉ là công cụ gợi ý trên giao diện từ giá của một đơn vị, làm tròn 1.000 / 100 / không; giá lưu luôn là số VND
+  tuyệt đối của từng đơn vị.
 
 ---
 
@@ -771,6 +808,15 @@ Override giá cần:
 - Mỗi dòng tạo phiên bản mới qua đúng lệnh lưu giá đơn lẻ (version, khóa lạc quan, audit từng dòng) và lô có thêm một audit + receipt. Gửi lại cùng mã thao tác trả lại kết quả cũ, không ghi lần hai; cùng mã thao tác nhưng nội dung khác bị từ chối.
 - Cách mặc định vẫn là nhập giá bán cuối (SPEC-CONFIG-002). Tăng/giảm theo % hoặc theo số tiền tính trên **giá bán hiện tại** (không phải trên giá vốn) và chỉ là công cụ tính giá mới trên giao diện; giá được lưu luôn là số VND nguyên dương tuyệt đối. Làm tròn mặc định đến 1.000 đ, có lựa chọn 100 đ hoặc không làm tròn; người dùng thấy giá mới và chênh lệch từng dòng trước khi lưu. Dòng chưa có giá hiện tại không được điều chỉnh theo %/số tiền, chỉ nhập giá trực tiếp.
 - Giá vốn chỉ hiển thị cho người có quyền xem giá vốn. Chứng từ đã chốt giữ snapshot (SPEC-PRI-003).
+- Bổ sung D11 (16/10/2026): bảng giá hàng loạt chọn được **bảng giá của một nhóm giá khách** (Sỉ, Đại lý…) và lưu giá nhóm (`CUSTOMER_TIER`)
+  theo đúng quy tắc trên; giá chung hiện kèm để so sánh. Giá của các đơn vị bán khác hiện tham khảo, sửa ở "Đơn vị tính & giá" của vật tư.
+
+## SPEC-PRI-006 — Nhóm giá khách (D11, 16/10/2026)
+
+- Nhóm giá khách là danh mục theo chi nhánh (mã, tên, đang dùng); quản lý cần `pricing.manage`. Mã là định danh, viết hoa A–Z 0–9 _ -, không đổi.
+- `customers.tier_code` và giá nhóm (`pricing_rules.customer_tier_code`) chỉ nhận mã là nhóm của cùng chi nhánh (khóa ngoại trong database).
+- Khách không thuộc nhóm nào dùng giá chung (giá lẻ). Ngừng nhóm: không gán cho khách mới, không đặt giá nhóm mới; khách đang ở nhóm giữ nguyên.
+- Thứ tự ưu tiên giá không đổi (SPEC-PRI-001).
 
 ---
 
@@ -884,6 +930,10 @@ Confirm phải:
 - idempotent.
 
 Không tự tạo AR chỉ vì CONFIRMED.
+
+Bổ sung D6 (16/10/2026): khi tạo đơn, nút chính là "Xác nhận đơn" — mở bảng kiểm tra (khách, công trình, các dòng, tổng tiền, nợ hiện tại và
+quá hạn khi có quyền phải thu) rồi mới lưu nháp + xác nhận bằng hai mã thao tác riêng như trước. Bị chặn hạn mức thì đơn ở nháp, báo lý do và
+giữ lối duyệt vượt hạn mức. "Lưu nháp" là lối phụ.
 
 ## SPEC-SO-003 — Source relation
 
@@ -1005,6 +1055,16 @@ open count
 
 Không sửa balance trực tiếp.
 
+**FB2 Đợt 5 (17/10/2026, kiểu KiotViet):** phiếu kiểm nhập **nhiều dòng một lần** bằng
+`record_stock_count_lines_batch(target_stock_count_id, count_lines jsonb, expected_count_version, operation_id)` — tối đa 500 dòng
+`{material_id, counted_base_quantity, adjustment_unit_cost_vnd?, reason?}`, không trùng vật tư; gọi lại `record_stock_count_line` cho từng
+dòng trong **một transaction** (giữ nguyên quyền `inventory.count`, kiểm cutoff/biến động sau mốc chốt, số lượng chính xác, lý do khi lệch,
+fingerprint căn cứ và lịch sử quan sát; mã thao tác con suy ra từ mã của lô), một dòng lỗi thì cả lô không ghi; receipt + audit
+`stock_count.lines_batch_recorded`. "Hoàn thành & cân bằng kho" = lưu các dòng mới/đã sửa rồi `approve_stock_count` hiện có (quyền
+`inventory.adjust`); chỉ vật tư đã đếm được điều chỉnh. **Hủy phiếu** `cancel_stock_count(target_stock_count_id, expected_count_version,
+cancel_reason, operation_id)`: chỉ phiếu `OPEN`, cần lý do ≥ 3 ký tự, chuyển `CANCELLED`, **không** sinh phát sinh kho; dòng đã đếm giữ làm
+lịch sử; audit `stock_count.cancelled` kèm lý do. Phiếu đã cân bằng không hủy được.
+
 ## SPEC-INVTRY-006 — Costing
 
 Ban đầu dùng Moving Weighted Average nếu phù hợp dữ liệu.
@@ -1054,6 +1114,16 @@ Có thể gồm:
 - document.
 
 Proof mặc định private trừ khi policy cho phép customer xem.
+
+## SPEC-DEL-006 — Lập phiếu giao một bước từ đơn đã xác nhận (FB2 Đợt 3, 16/10/2026)
+
+- `create_delivery_for_order` (một giao dịch, idempotent): với mỗi dòng chọn, lượng nhập **theo đơn vị đã bán** được đổi sang đơn vị cơ sở
+  bằng tỉ lệ đã chụp trên dòng đơn (phải đúng tối đa 6 số lẻ, không làm tròn); dùng phân nguồn kho đã có của đúng kho đó (tăng thêm nếu còn
+  thiếu) hoặc tạo phân nguồn mới qua `upsert_supply_allocation`; rồi `create_delivery_from_allocations` (giữ tồn khả dụng) và, nếu chọn,
+  `assign_delivery_scheduled` (người giao + xe + khung giờ). Mọi quy tắc cũ (quyền, sức chứa phân nguồn, giữ tồn, trùng lịch, tải xe) giữ nguyên;
+  lỗi ở bất kỳ bước nào thì không có gì được ghi. Một kho mỗi phiếu; dòng NCC giao thẳng vẫn theo luồng hiện có.
+- `order_delivery_plan` chỉ đọc (cần `delivery.create`): lượng phải giao, các phân nguồn và phần đã dùng của từng phân nguồn, để điền sẵn
+  "Còn phải giao" theo kho được chọn.
 
 ## SPEC-DEL-005 — Xác minh giao hàng và ghi sổ đúng một lần
 
@@ -1109,6 +1179,11 @@ Một chứng từ nhận và hóa đơn NCC có thể cùng chỉ về một ng
 
 POSTED ghi tiền đúng một lần; đối soát ngân hàng không ghi tiền lại. REVERSED thêm giao dịch đảo và đảo phân bổ tương ứng, không xóa lịch sử. Cùng pháp nhân/currency mới được phân bổ; nếu khác chi nhánh cần quyền cả hai và chính sách kế toán đã duyệt.
 
+**Sổ quỹ theo kỳ (FB2 Đợt 6, 17/10/2026):** `cashbook_period_summary(target_branch_id, from_at, to_at, target_account_id?)` — RPC chỉ đọc,
+quyền `finance.ar.read` như `cashbook_summary`, cùng nguồn `payment_read` và quy tắc dấu (mọi phiếu đã ghi sổ và phiếu đảo; thu cộng, chi trừ):
+quỹ đầu kỳ = tổng trước `from_at`, tổng thu / tổng chi = phiếu trong `[from_at, to_at)`, tồn quỹ cuối kỳ = tổng trước `to_at`; số trả về dạng chuỗi.
+Không lưu thêm sổ nào.
+
 ## SPEC-FIN-005 — Allocation
 
 PaymentAllocation many-to-many.
@@ -1141,6 +1216,11 @@ PaymentNotice:
 - status review.
 
 Không tác động AR trước khi Payment được POSTED.
+
+**D8 (Owner 16/10/2026, áp dụng FB2 Đợt 6 17/10/2026): Báo chuyển khoản tắt hẳn trên mọi bề mặt**, như báo giá (D1): cờ
+`PAYMENT_NOTICES_ENABLED = false` (`src/lib/features.ts`); `/admin/payment-notices` trả 404 thật (rewrite trước định tuyến), menu và trang đích
+mặc định bỏ mục này, cổng khách `/customer/debts` không còn danh sách/form gửi thông báo, API gửi thông báo trả 404, lệnh rà soát/nối/sửa nối
+bị từ chối trước mọi gọi DB. Dữ liệu, RPC và quyền giữ nguyên; bật lại cờ là khôi phục. Tiền khách chuyển được ghi thu tại Công nợ.
 
 ---
 
@@ -1609,6 +1689,13 @@ AuthUser
 Một nhân viên có thể có access nhiều branch.
 
 Role có thể khác theo branch nếu business yêu cầu.
+
+**Vai trò tùy biến (D12, FB2 Đợt 7, 17/10/2026):** ngoài vai trò mẫu (`system_role`, chỉ xem), người có `roles.manage` (chủ doanh nghiệp;
+không vai trò mẫu nào có quyền này) tạo/sửa vai trò tùy biến bằng RPC `save_custom_role(branch, role?, tên, quyền[], quyền_đã_đọc[], đang_dùng, op)`:
+không bao giờ chứa `roles.manage`, không chứa quyền mà chính người sửa không có tại chi nhánh đang chọn, không sửa vai trò mẫu hay vai trò đang có
+`roles.manage`; sửa đối chiếu danh sách quyền đã đọc (đổi ở nơi khác → từ chối, không ghi đè); đổi quyền có hiệu lực ngay với mọi người đang giữ vai
+trò; vai trò còn người dùng không ngừng dùng được; tên không trùng vai trò đang dùng; idempotent theo `operation_id`, ghi audit
+`role.custom_created`/`role.custom_updated`. Migration `20261017120000_custom_roles`, test native `110_custom_roles.sql`.
 
 ## SPEC-ACC-002 — Customer model
 
@@ -2194,6 +2281,18 @@ Không có giá hợp lệ: cho nhập giá thủ công với đúng quyền, ng
 
 Mẫu có sẵn: báo giá A4, phiếu giao, phiếu thu/chi, bảng đối chiếu công nợ. Báo giá PDF cố định theo revision; đổi mẫu không đổi file đã gửi. Tệp xuất không bị gọi là hóa đơn thuế khi chỉ là báo giá/phiếu giao.
 
+**Thông tin doanh nghiệp trên chứng từ (D10, FB2 Đợt 7, 17/10/2026):** bảng `company_profile` một dòng (tên doanh nghiệp bắt buộc; mã số thuế 10
+hoặc 13 số dạng `0101234567-001`, địa chỉ, điện thoại, email, ngân hàng, số tài khoản, chủ tài khoản — tùy chọn), RLS bật, mọi người đã đăng nhập
+được đọc (in trên chứng từ gửi khách), `anon` không có quyền; chỉ ghi qua `save_company_profile(branch, profile, version_đã_đọc, op)` với
+`roles.manage`, đối chiếu version, idempotent, audit `company_profile.saved`. PDF đơn bán, đơn mua, phiếu giao, phiếu thu/chi, bảng đối chiếu công
+nợ, bản xem hóa đơn in tên + địa chỉ + MST/điện thoại/email + tài khoản ngân hàng thay chữ cố định "Hiền Xa ERP"; chưa khai báo thì giữ chữ cũ;
+lỗi đọc hồ sơ không chặn xuất chứng từ. Migration `20261017140000_company_profile`, test native `130_company_profile.sql`.
+**Logo (Owner 17/10/2026):** một ảnh PNG hoặc JPEG ≤ 300 KB lưu trong chính dòng `company_profile` (`logo_mime`, `logo_base64`,
+`logo_sha256`; không dùng Storage, không dùng khóa bí mật), ghi qua `save_company_logo(branch, mime, base64, sha_đã_đọc, op)` với
+`roles.manage`: kiểm chữ ký tệp khớp loại, cần đã có tên doanh nghiệp, thay/xóa đối chiếu logo đã đọc (không đổi `version` hồ sơ), idempotent,
+audit `company_profile.logo_saved`/`logo_removed`. PDF in logo cạnh tên doanh nghiệp; logo không đọc được thì bỏ logo, vẫn in chứng từ.
+Migration `20261017150000_company_logo`, test native `140_company_logo.sql`. **Giao diện theo thiết bị** (sáng/tối/theo thiết bị, cỡ chữ, phông) lưu ở cookie `hx-appearance`, không ghi DB.
+
 Điều chỉnh công nợ, stock adjustment, reversal tiền và ngoại lệ lượng tính tiền cần lý do + tài liệu/bằng chứng. Bằng chứng là object Storage private với owner/nguồn/audience/checksum, không chỉ URL công khai. Upload lỗi phải thử lại riêng, không mất form. Giao nội bộ có thể lưu nháp thiếu ảnh; muốn duyệt thiếu chứng cứ cần quyền ngoại lệ, lý do và audit, không được lặng lẽ bỏ qua.
 
 ## SPEC-CONFIG-004 — Cảnh báo nhập thêm
@@ -2334,6 +2433,13 @@ Legacy schema và V2 schema có thể cùng tồn tại tạm trong một databa
 Tracking chỉ trong lần giao active được giao đúng worker/vehicle, user cho phép và browser foreground. Phiên có `assignment_version`, sequence hoặc timestamp + accepted-ordering; không tin clock client hoàn toàn. Điểm cũ/offline không ghi đè vị trí mới; nhận telemetry sau thu hồi phải deny. Ngưỡng gửi/freshness/retention do cấu hình vận hành, không GPS 24/7; không giữ lịch sử vô hạn, case tranh chấp có hold được kiểm soát.
 
 Route có giờ khởi hành thực theo múi giờ, thời gian chạy/chờ/bốc dỡ, capacity theo từng chặng pickup/drop và road restrictions provider thực hỗ trợ. Không hardcode giờ UTC hoặc coi dữ liệu thiếu thành 0 phút/tải trọng vô hạn. Provider unavailable: gợi ý thứ tự thủ công với nhãn rõ. Apply kiểm lại assignment_version/readiness dưới lock; không tự claim công việc trong bể.
+
+**Giờ dự kiến từng điểm dừng (FB2 Đợt 7, 17/10/2026):** khi lập lộ trình, điều phối nhập giờ khởi hành và "thời gian mỗi điểm" (phút, gồm chạy xe
+và bốc dỡ; 10–480, gợi ý sẵn 60, sửa được); điểm thứ n có khung `[giờ đi + (n−1)×phút, giờ đi + n×phút)` lưu ở `route_plan_stops.planned_start_at/
+planned_end_at` (DB kiểm: bắt đầu không trước giờ đi, theo đúng thứ tự, không chồng nhau, mỗi khung ≤ 24 giờ). Áp dụng: phiếu **chưa có lịch** nhận
+khung của điểm dừng (`assign_delivery_scheduled`), phiếu **đã có lịch** giữ nguyên lịch (`assign_delivery`) — không âm thầm dời lịch đã hẹn khách
+(SPEC-JOURNEY-003). Chồng lịch trên cùng xe/tài xế vẫn bị từ chối nguyên khối như trước; lộ trình cũ không có khung cho phiếu chưa lịch → báo
+`route_stop_schedule_required`, tạo lại đề xuất. Migration `20261017130000_route_plan_stop_schedule`, test native `120_route_plan_schedule.sql`.
 
 ## SPEC-DATA-005 — Thiết bị yếu và an toàn người dùng
 

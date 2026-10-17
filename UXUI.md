@@ -1,6 +1,8 @@
 > Quy tắc hiện hành 12/10/2026: bỏ opening pending và kích hoạt thủ công khỏi vận hành. Thông tin đối chiếu lịch sử chỉ mô tả chất lượng dữ liệu, không khóa giao dịch mới. Các bằng chứng trạng thái/gate cũ bên dưới là lịch sử, không phải điều kiện đang áp dụng.
 
 > Quyết định Owner 15/10/2026 (`FB-KIOTVIET-20261015`, xem đầu Spec.md): Báo giá tắt (D1) — mọi màn/nút/hành trình báo giá trong tài liệu này tạm không hiển thị; KPI Tổng quan dùng lợi nhuận ròng (D2); biểu đồ đường Thu/Chi/Lợi nhuận theo bộ lọc (D3); thiết lập giá hàng loạt (D4). Màn tạo đơn bán/đơn mua, danh sách khách hàng, vật tư và bộ lọc tham chiếu bố cục KiotViet theo góp ý khách (UX-110.6, UX-ORD-002, UX-320, UX-340, UX-350, UX-FLOW-001).
+>
+> Quyết định Owner 16/10/2026 (`FB2-20261016`, chi tiết D5–D12 ở đầu Spec.md): tạo/sửa danh mục và tạo nhanh mở trong popup (D5, sửa UX-160); tạo đơn bán xác nhận qua popup kiểm tra (D6); "Đơn vị tính" kiểu KiotViet (D7); tắt Báo chuyển khoản (D8); Cài đặt có Thông tin doanh nghiệp và Giao diện (D10).
 
 # UXUI.md — HIỀN XA ERP V2
 
@@ -161,7 +163,7 @@ GIAO HÀNG
   Lộ trình
   Vị trí xe
 
-DỊCH VỤ
+DỊCH VỤ          (D9, 16/10/2026: "Dịch vụ" nằm trong nhóm Bán hàng; nhóm "Nhân công & dịch vụ" đổi tên "Nhân công")
 
 TÀI CHÍNH
   Phải thu
@@ -540,6 +542,11 @@ Không dùng modal cho:
 - create complex entity;
 - reconciliation nhiều bước.
 
+Sửa đổi D5 (Owner 16/10/2026): tạo/sửa bản ghi danh mục (khách, công trình, NCC, vật tư, nhóm, đơn vị, xe, máy, chi nhánh, kho…) và
+tạo nhanh từ chứng từ **được** mở trong popup để không rời màn đang làm. Popup dùng component chung (`components/ui/dialog.tsx`):
+nằm ngoài form của trang, giữ tiêu điểm bên trong, Escape/"Đóng" để đóng (Escape đã dùng để đóng danh sách gợi ý thì không đóng popup),
+trên điện thoại chiếm toàn màn. Chứng từ dài (sửa đơn bán/mua, đối soát nhiều bước) vẫn ở trang riêng như trên.
+
 ---
 
 # UX-170 — Toast
@@ -907,6 +914,10 @@ Detail nên có:
 - recent payments;
 - related materials nếu hữu ích.
 
+**NCC 360 (FB2 Đợt 4, 17/10/2026)**: bố cục như Khách hàng 360 — nút Tạo đơn mua (chính), Ghi chi, Sửa (popup); 5 thẻ Còn phải trả │
+Quá hạn │ Tổng mua (đơn đã xác nhận) │ Đơn mua đang mở │ Điều khoản; tab Thông tin & liên hệ │ Đơn mua │ Nhập kho & giao thẳng (hai bảng
+xếp chồng) │ Công nợ & thanh toán │ Bảng giá mua.
+
 Payable click → exact detail.
 
 ---
@@ -930,6 +941,14 @@ Detail:
 
 Customer 360 là read composition, không shadow ledger.
 
+**Khách hàng 360 (FB2 Đợt 4, 17/10/2026, SPEC-CUS-004)**: đầu trang = tên + "Khách hàng · mã", dòng điện thoại · địa chỉ · nhóm giá,
+nút Tạo đơn (chính), Ghi thu, Tạo dịch vụ, Sửa (popup danh mục), + Công trình (popup đã chọn sẵn khách), nhãn trạng thái. Hàng 5 thẻ chỉ số
+(Nợ hiện tại │ Nợ quá hạn (đỏ khi > 0) │ Tổng bán (đơn đã xác nhận) │ Đơn đang giao dở │ Hạn mức còn lại + "Hạn mức …"); không có quyền
+thì hiện "—". Thanh tab (link thật `?tab=`, cuộn ngang trên điện thoại, số đếm cạnh tên): Thông tin & công trình (bảng công trình ở cột rộng
+với Tạo đơn / Tạo dịch vụ / Sửa từng công trình; hồ sơ + ghi chú nội bộ ở cột hẹp) │ Đơn bán │ Giao hàng │ Công nợ & thanh toán (phải thu,
+thanh toán, tải bảng đối chiếu, Ghi thu) │ Giá riêng │ Tài liệu. Desktop 5 thẻ một hàng, ≤1100px 3 cột, điện thoại 2 cột; trang không
+rộng quá màn hình 390px.
+
 ---
 
 # UX-350 — `/admin/products`
@@ -944,7 +963,28 @@ List:
 
 Kiểu KiotViet (15/10/2026): ô tìm kiếm + lọc cột trái (Nhóm vật tư, Trạng thái, Cho phép bán/mua), 25 dòng/trang. Thêm cột Giá bán (giá chung hiện hành theo ĐVT gốc, khi có quyền xem giá), Giá vốn bình quân (khi có quyền giá vốn), Tồn kho tổng các kho của chi nhánh (khi có quyền kho) — chỉ truy vấn cho các dòng trên trang. Bấm dòng mở rộng ngay tại chỗ: tồn theo kho, quy đổi ĐVT và link "Xem chi tiết vật tư". Đầu trang: "+ Vật tư", "Thiết lập giá", "Danh mục khác".
 
-`/admin/products/pricing` — Thiết lập giá (D4, SPEC-PRI-005): bảng Mã │ Tên │ ĐVT │ Giá vốn (theo quyền) │ Giá hiện tại │ Giá mới (sửa trực tiếp) │ Chênh lệch; chọn nhiều dòng → tăng/giảm theo % hoặc số tiền, chọn làm tròn (1.000 đ mặc định / 100 đ / không), xem chênh lệch từng dòng; một ngày áp dụng + một lý do; nút "Lưu bảng giá (N thay đổi)" lưu tất cả một lần. Thanh lưu dính đáy màn trên desktop. Không có quyền quản lý giá: chỉ xem. Giá theo khách và lịch sử ở "Giá theo khách & lịch sử".
+Popup vật tư (D5/D7) có 2 tab: **Thông tin** và **Đơn vị tính & giá** (bảng: đơn vị, "1 đơn vị =", loại quy đổi, giá bán chung, giá vốn ≈ theo
+quyền; "+ Thêm đơn vị bán", "Ngừng"; "Chia giá theo quy đổi"; một lý do, một nút lưu). Tạo vật tư mới xong tự chuyển sang tab Đơn vị tính.
+Trên điện thoại mỗi đơn vị là một thẻ. Trang Chính sách giá có mục **Nhóm giá khách** (bảng + popup thêm/sửa); ô "Nhóm giá" của khách là danh sách chọn.
+
+**Tạo đơn bán & giao hàng (FB2 Đợt 3, 16/10/2026)**: ô số lượng có nút − / + (bảng dòng dùng chung, cả đơn mua); dưới mỗi dòng luôn hiện
+"Có thể bán: 97 bao (4.850 kg) · <kho>" (đỏ "Thiếu so với số lượng đặt" khi vượt), chọn kho ở "Xem tồn tại", gợi ý F3 kèm "Có thể bán …".
+Nút chính "Xác nhận đơn" mở popup "Xác nhận đơn bán" (khách, công trình + địa chỉ, số dòng, tổng tiền, nợ hiện tại/quá hạn, bảng dòng, nhắc
+kiểm tra; "Xác nhận đơn" / "Quay lại sửa"); "Lưu nháp" là link phụ. Trang đơn đã xác nhận: nút chính "Lập phiếu giao" mở popup (Kho xuất,
+Giao lúc, bảng Vật tư │ Còn phải giao (đơn vị bán + cơ sở) │ Tồn kho xuất │ Giao lần này (điền sẵn), tùy chọn "Phân xe và người giao ngay"
+→ Người giao, Xe, Dự kiến xong) → mở phiếu giao vừa tạo; cách cũ gom vào "Lập phiếu theo nguồn đã phân". Nút "Tạo dịch vụ" ở trang đơn,
+trang khách và từng công trình mở form Dịch vụ đã chọn sẵn khách/công trình. Trang phiếu giao có thanh tiến trình 6 bước (Lập phiếu → Phân xe →
+Bàn giao lên xe → Tới nơi → Báo kết quả → Xác minh) + "Bước tiếp theo"; lượng kế hoạch kèm "≈ N <đơn vị bán>".
+
+**Hàng cùng loại (D11, SPEC-CAT-002)**: nút "+ Hàng cùng loại" trên danh sách vật tư mở popup: Tên hàng chung, Mã gốc (gợi ý mã), Nhóm vật tư,
+Đơn vị cơ sở, Cho phép bán/mua; Thuộc tính (tên + giá trị cách nhau dấu phẩy, tối đa 3 thuộc tính); "Đơn vị bán cho loại mới" (như tab Đơn vị
+tính); bảng "Các loại" tự sinh mỗi tổ hợp giá trị một dòng với Mã/Tên gợi ý sửa được, Giá bán theo đơn vị chọn ("Nhập giá theo"), tùy chọn "Tự
+chia giá cho các đơn vị khác" (mặc định không làm tròn, hiện giá đã chia dưới ô giá); "Thêm vật tư có sẵn vào hàng này"; một lý do, một nút lưu.
+Danh sách vật tư: dưới tên mỗi loại hiện "Mác: PCB30 · Cùng loại …" (link lọc `?variant=`), bộ lọc "Hàng cùng loại", khi lọc có nút "Sửa hàng
+cùng loại" (thêm giá trị → chỉ đề xuất tổ hợp mới; "Bỏ khỏi hàng"). Chi tiết vật tư có mục "Hàng cùng loại" với các loại khác dạng thẻ. Ô tìm vật
+tư F3 trong đơn bán/mua gom các loại dưới tên hàng chung.
+
+`/admin/products/pricing` — Thiết lập giá (D4, SPEC-PRI-005; chọn "Bảng giá": Giá chung hoặc từng nhóm giá khách, D11): bảng Mã │ Tên │ ĐVT │ Giá vốn (theo quyền) │ Giá hiện tại │ Giá mới (sửa trực tiếp) │ Chênh lệch; chọn nhiều dòng → tăng/giảm theo % hoặc số tiền, chọn làm tròn (1.000 đ mặc định / 100 đ / không), xem chênh lệch từng dòng; một ngày áp dụng + một lý do; nút "Lưu bảng giá (N thay đổi)" lưu tất cả một lần. Thanh lưu dính đáy màn trên desktop. Không có quyền quản lý giá: chỉ xem. Giá theo khách và lịch sử ở "Giá theo khách & lịch sử".
 
 Detail:
 - UOM conversions;
@@ -970,6 +1010,13 @@ Click row:
 
 Không cho inline edit balance.
 
+**Tồn kho kiểu KiotViet (FB2 Đợt 5, 17/10/2026)**: nút Chuyển kho, Kiểm kho, Quản lý kho; 4 thẻ (Vật tư còn hàng │ Hết hàng │ Dưới ngưỡng —
+bấm để lọc │ Giá trị tồn khi có quyền giá vốn); lọc trái tự áp dụng: Tìm kiếm, Kho, Nhóm vật tư, Tồn kho (Còn hàng/Hết hàng/Dưới ngưỡng),
+Hiển thị theo (Đơn vị cơ sở / Đơn vị lớn nhất của vật tư, kèm số theo đơn vị cơ sở chữ nhỏ). Bảng mỗi vật tư một dòng: Vật tư (tên, mã · nhóm)
+│ Tồn kho │ Đang giữ │ Có thể bán │ Giá trị tồn (theo quyền) │ Ngưỡng (giá trị hoặc "Dưới ngưỡng", nút "Ngưỡng" mở popup chọn kho + ngưỡng +
+bật/tắt, "Đặt mua" khi dưới ngưỡng). Bấm dòng mở ngay dưới dòng: **Tồn theo kho** và **Thẻ kho** (50 phát sinh gần nhất: Thời điểm │ Loại │
+Vị trí (khi xem tất cả kho) │ Nhập / xuất │ Tồn sau │ Chứng từ). Không sửa số tồn trực tiếp.
+
 ---
 
 # UX-370 — `/admin/stock-counts`
@@ -986,6 +1033,14 @@ Tạo đợt kiểm
 ```
 
 Variance nổi bật.
+
+**Kiểm kho kiểu KiotViet (FB2 Đợt 5)**: danh sách phiếu (lọc Tìm mã, Kho, Trạng thái; cột Mã phiếu │ Kho │ Chốt sổ lúc │ Đã đếm │ Lệch tăng │
+Lệch giảm │ Trạng thái Đang kiểm/Đã cân bằng kho/Đã hủy); "+ Tạo phiếu kiểm" mở popup chọn kho (mốc chốt sổ = lúc mở popup). Trang phiếu là
+**bảng điền sẵn mọi vật tư đang có tồn ở kho**: Vật tư (tên, mã) │ Tồn sổ sách │ Thực tế (nhập kiểu Việt, Enter xuống dòng) │ Lệch (xanh tăng,
+đỏ giảm, "Khớp") │ Giá trị lệch (theo quyền giá vốn) │ Lý do (chỉ khi lệch); dòng tăng tồn khi sổ đang 0 hiện thêm ô "Giá vốn / đơn vị". Thanh công
+cụ: tìm trong phiếu, lọc Tất cả/Chưa đếm/Lệch/Khớp, "Thêm vật tư khác" (vật tư chưa có tồn). Thanh dưới dính đáy: "Đã đếm x/y · Lệch tăng · Lệch
+giảm (giá trị) · Khớp", "Lý do chung cho dòng lệch", nút Hủy phiếu (popup lý do), Lưu tạm (N dòng), Hoàn thành & cân bằng kho (popup tóm tắt →
+"Cân bằng kho"). Dòng thiếu lý do/giá vốn tô đỏ kèm lời nhắc, không gửi. Phiếu đã cân bằng hoặc đã hủy chỉ xem.
 
 ---
 
@@ -1039,6 +1094,12 @@ Tracking:
 - last update time;
 - stale badge;
 - không suy diễn failed từ stale.
+
+**FB2 Đợt 7 (17/10/2026):** trang có nút "Tạo lộ trình" (neo tới khung tạo); khung tạo 3 bước đánh số: (1) Chọn phiếu giao — lọc "Ngày giao" (hiện
+phiếu có lịch trong ngày + phiếu chưa lịch), bảng chọn; (2) Xe, tài xế và giờ đi + "Thời gian mỗi điểm (phút)"; (3) Thứ tự và giờ dự kiến — mỗi
+điểm hiện "Giờ dự kiến: 07:00–08:00 · 01/03" hoặc "Giữ lịch phiếu: …", cảnh báo vàng khi lịch chồng nhau trên cùng xe, nút ↑/↓. "Lộ trình gần
+đây" là bảng (Khởi hành, Xe · tài xế, Điểm dừng, Thứ tự, Trạng thái), bấm dòng mở lộ trình ở đầu trang: bảng điểm dừng (#, Phiếu giao, Giờ dự
+kiến, Lịch khi áp dụng, Lưu ý) + "Áp dụng và phân giao". Không tự mở lộ trình mới nhất khi chưa chọn.
 
 ---
 
@@ -1114,6 +1175,19 @@ Reconciliation:
 
 Không ẩn difference quan trọng.
 
+**Sổ quỹ (FB2 Đợt 6, 17/10/2026)**: menu "Sổ quỹ"; nút Lập phiếu thu (chọn khách trong popup → mở popup Ghi thu ở Công nợ với các khoản
+của khách), Lập phiếu chi (chọn NCC), Tạo tài khoản tiền (popup). Hàng 4 thẻ của kỳ: Quỹ đầu kỳ │ Tổng thu (xanh) │ Tổng chi (đỏ) │ Tồn quỹ cuối
+kỳ; hàng phụ: Dòng tiền ròng (toàn bộ), Chưa đối soát, Tài khoản, Vị thế ứng trước. Lọc trái tự áp dụng: Từ ngày, Đến ngày (mặc định đầu tháng →
+hôm nay), Tài khoản, Loại (Thu/Chi). Bảng: Phiếu (mã + ngày) │ Đối tác │ Tài khoản │ Loại │ Số tiền (+/−) │ Đối soát (lệch) │ Thao tác: "In phiếu
+thu/chi", "Xử lý" mở popup gồm Đối soát ngân hàng và Đảo giao dịch (lý do).
+
+**Công nợ và Hóa đơn (FB2 Đợt 6)**: menu Tài chính còn Công nợ, Sổ quỹ, Chi phí, Hóa đơn. "Công nợ" có tab Phải thu khách hàng │ Phải trả nhà
+cung cấp (theo quyền); "Hóa đơn" có tab Hóa đơn bán ra │ Chứng từ mua vào │ Đối chiếu chứng từ NCC. Địa chỉ trang cũ giữ nguyên. Chọn một khách
+(`?customer=`) / NCC (`?supplier=`) tự mở popup "Ghi thu" / "Ghi chi" (biểu mẫu thu chi sẵn có); đóng popup để xem công nợ, khoản có, phân
+bổ tiền đã có của khách đó; nút Ghi thu/Ghi chi mở lại. **Chi phí**: tab Tất cả │ Chờ duyệt │ Đã duyệt (số đếm, tối đa "99+"); "Ghi chi phí" mở
+popup chọn Chi phí chung hoặc Chi phí chuyến (gắn phiếu giao và xe); "Nhóm chi phí" mở popup danh sách + tạo nhóm; "Duyệt" từng dòng mở popup
+xác nhận (nhóm, NCC, số tiền, nhắc không sửa lại được) — tự mở khi tới bằng `?focus=`. Báo chuyển khoản đã tắt (D8).
+
 ---
 
 # UX-450 — `/admin/workforce`
@@ -1144,6 +1218,10 @@ Filter:
 - status.
 
 Commission có label riêng dễ hiểu nhưng dùng cùng source model.
+
+**FB2 Đợt 7 (17/10/2026):** "Ghi căn cứ tính thủ công", "Tạo phiên bản quy tắc", "Phê duyệt ghi nhận tự động theo sự kiện" là nút mở popup (D5,
+form và ràng buộc RPC giữ nguyên); bảng "Quy tắc thu nhập" (mã, tên, phiên bản, người áp dụng, loại, mức: `2,5%` cho tỉ lệ, `350.000 ₫ / đơn vị`
+cho mức cố định, hiệu lực). Duyệt/chi trả giữ trên từng dòng.
 
 ---
 
@@ -1206,6 +1284,19 @@ Dangerous settings:
 - warning;
 - permission;
 - audit.
+
+**FB2 Đợt 7 (17/10/2026, D10):** tiêu đề "Cài đặt"; hai khung đầu: **Thông tin doanh nghiệp** (tên *, MST, điện thoại, địa chỉ, email, ngân hàng,
+số tài khoản, chủ tài khoản; khung "Xem trước tiêu đề chứng từ" cập nhật khi gõ; nút "Lưu thông tin doanh nghiệp"; kết quả chưa rõ giữ đúng thao
+tác "Lưu lại đúng thao tác"; dưới cùng là **Logo**: khung xem logo, chọn tệp PNG/JPG ≤ 300 KB, "Lưu logo", "Xóa logo" — chỉ bật khi đã lưu tên
+doanh nghiệp, khung xem trước tiêu đề hiện logo) và **Giao diện** (Chế độ màu Sáng/Tối/Theo thiết bị, Cỡ chữ Nhỏ/Vừa/Lớn, Phông chữ Noto Sans/Be Vietnam Pro; áp dụng
+ngay, chỉ trên thiết bị này). Mọi nhân viên đổi Giao diện được từ nút "Giao diện" ở chân menu trái (popup). Chế độ tối phủ các màn nội bộ có menu
+trái; cổng khách/thợ và đăng nhập giữ màu riêng. Các mục Phạm vi dữ liệu, Chi nhánh, Tài khoản & quyền giữ nguyên bên dưới.
+
+**`/admin/access` (FB2 Đợt 7, D5/D12):** tab Nhân viên │ Vai trò (`?tab=roles`). Đầu trang "Mời nhân viên" (popup) và "Tạo vai trò". Bảng nhân viên:
+vai trò tại chi nhánh đang chọn, quyền bổ sung, trạng thái, thao tác Đổi/Cấp vai trò, Quyền riêng, Thu hồi, Kích hoạt lại — đều mở popup. Tab Vai
+trò: bảng (Vai trò, Loại Vai trò mẫu/Tùy biến/Quản trị, Số quyền, Đang dùng, Sửa/Xem); popup vai trò có tên + quyền tích theo nhóm Bán hàng, Mua
+hàng, Kho hàng, Giao hàng, Tài chính, Nhân công, Khác (ô nhóm chọn cả nhóm; quyền mình không có bị khóa), cảnh báo "đang dùng cho N nhân viên",
+"Ngừng dùng vai trò này" chỉ khi không ai dùng; vai trò mẫu chỉ xem.
 
 ---
 

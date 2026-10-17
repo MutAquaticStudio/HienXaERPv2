@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef, useEffect, useId, useImperativeHandle, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { Fragment, forwardRef, useEffect, useId, useImperativeHandle, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { matchesSearch } from "./search-text";
 import type { EditorMaterial } from "./types";
 
@@ -14,15 +14,24 @@ export const MaterialSearchBox = forwardRef<MaterialSearchHandle, {
   onPick: (material: EditorMaterial) => void;
   disabled?: boolean;
   label?: string;
-}>(function MaterialSearchBox({ materials, onPick, disabled, label = "Tìm vật tư" }, ref) {
+  /** Extra text per result, e.g. the stock that can be sold from the chosen warehouse. */
+  hint?: (material: EditorMaterial) => string | null;
+}>(function MaterialSearchBox({ materials, onPick, disabled, label = "Tìm vật tư", hint }, ref) {
   const id = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const [highlight, setHighlight] = useState(0);
   const [open, setOpen] = useState(false);
-  const results = useMemo(() => query.trim()
-    ? materials.filter((material) => matchesSearch(query, material.code, material.name)).slice(0, MATERIAL_RESULT_LIMIT)
-    : [], [materials, query]);
+  const results = useMemo(() => {
+    if (!query.trim()) return [];
+    const found = materials.filter((material) => matchesSearch(query, material.code, material.name, material.variant?.name, material.variant?.label));
+    // Variants of one product stay together, under the product name, where the first of them was found.
+    const first = new Map<string, number>();
+    found.forEach((material, index) => { const key = material.variant?.groupId ?? material.id; if (!first.has(key)) first.set(key, index); });
+    const place = (material: EditorMaterial) => first.get(material.variant?.groupId ?? material.id)!;
+    return found.map((material, index) => ({ material, index })).sort((left, right) => place(left.material) - place(right.material) || left.index - right.index)
+      .map((item) => item.material).slice(0, MATERIAL_RESULT_LIMIT);
+  }, [materials, query]);
 
   useImperativeHandle(ref, () => ({ focus: () => inputRef.current?.focus() }), []);
   useEffect(() => {
@@ -52,6 +61,7 @@ export const MaterialSearchBox = forwardRef<MaterialSearchHandle, {
       const material = results[highlight];
       if (material) pick(material);
     } else if (event.key === "Escape") {
+      if (open && query.trim()) event.preventDefault();
       setQuery("");
       setOpen(false);
     }
@@ -68,10 +78,13 @@ export const MaterialSearchBox = forwardRef<MaterialSearchHandle, {
       onChange={(event) => { setQuery(event.target.value); setHighlight(0); setOpen(true); }}
       onFocus={() => setOpen(true)} onBlur={() => setOpen(false)} onKeyDown={keyDown} />
     {showList && <ul id={listId} role="listbox" aria-label="Kết quả tìm vật tư" className="doc-editor-listbox">
-      {results.map((material, index) => <li key={material.id} id={`${listId}-${index}`} role="option" aria-selected={index === highlight}
-        onMouseDown={(event) => { event.preventDefault(); pick(material); }} onMouseEnter={() => setHighlight(index)}>
-        <span>{material.name}</span><small>{[material.code, material.uoms.map((uom) => uom.symbol).join(" · ")].filter(Boolean).join(" · ")}</small>
-      </li>)}
+      {results.map((material, index) => <Fragment key={material.id}>
+        {material.variant && material.variant.groupId !== results[index - 1]?.variant?.groupId && <li className="doc-editor-listbox-group" role="presentation">{material.variant.name}</li>}
+        <li id={`${listId}-${index}`} role="option" aria-selected={index === highlight} className={material.variant ? "doc-editor-listbox-variant" : undefined}
+          onMouseDown={(event) => { event.preventDefault(); pick(material); }} onMouseEnter={() => setHighlight(index)}>
+          <span>{material.name}</span><small>{[material.variant?.label, material.code, material.uoms.map((uom) => uom.symbol).join(" · "), hint?.(material)].filter(Boolean).join(" · ")}</small>
+        </li>
+      </Fragment>)}
       {!results.length && <li className="doc-editor-listbox-note" role="presentation">Không tìm thấy vật tư phù hợp.</li>}
     </ul>}
   </div>;

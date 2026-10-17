@@ -55,5 +55,5 @@ export async function confirmSalesOrderCreditOverride(formData: FormData): Promi
   if (!message) {
     for (const url of [path, "/admin/orders", "/admin/customers", "/customer/orders"]) revalidatePath(url);
   }
-  redirect(`${path}?${message ? `error=${encodeURIComponent(message)}` : `success=${encodeURIComponent("Đã xác nhận đơn với ngoại lệ tín dụng riêng cho lần này.")}`}`);
+  redirect(`${path}?${message ? `error=${encodeURIComponent(message)}` : `notice=${encodeURIComponent("Đã xác nhận đơn với ngoại lệ tín dụng riêng cho lần này.")}`}`);
 }

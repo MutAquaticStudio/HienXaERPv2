@@ -9,13 +9,19 @@ import { savePriceBookAction, type PriceBookResult } from "@/modules/pricing/pri
 export type PriceBookRow = {
   materialId: string; code: string; name: string; group: string; uomId: string; uom: string;
   currentVnd: string | null; costVnd: string | null;
+  /** In a group price book: the general (retail) price, for comparison. */
+  generalVnd?: string | null;
+  /** Prices of the other selling units in this book, e.g. "bao 300.000 ₫". */
+  otherUnits?: string[];
   target: { ruleId: string; version: number } | null;
 };
 
 const money = (value: bigint) => formatVnd(vnd(value.toString()));
 
 /** KiotViet-style "Thiết lập giá": edit many general prices inline, preview the change, save them together. */
-export function PriceBookEditor({ rows, operationId, today, canManage, showCost }: { rows: PriceBookRow[]; operationId: string; today: string; canManage: boolean; showCost: boolean }) {
+export function PriceBookEditor({ rows, operationId, today, canManage, showCost, tierCode }: { rows: PriceBookRow[]; operationId: string; today: string; canManage: boolean; showCost: boolean;
+  /** Customer price group being edited; absent for the general price book. */
+  tierCode?: string }) {
   const router = useRouter();
   const [next, setNext] = useState<Record<string, string>>({});
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -53,7 +59,7 @@ export function PriceBookEditor({ rows, operationId, today, canManage, showCost 
 
   function save() {
     if (!changes.length || reason.trim().length < 3 || pending) return;
-    const items = changes.map(({ row, price }) => ({ materialId: row.materialId, uomId: row.uomId, priceVnd: price.toString(),
+    const items = changes.map(({ row, price }) => ({ materialId: row.materialId, uomId: row.uomId, priceVnd: price.toString(), ...(tierCode ? { tierCode } : {}),
       ...(row.target ? { supersedesId: row.target.ruleId, expectedVersion: row.target.version } : {}) }));
     startTransition(async () => {
       try {
@@ -80,7 +86,7 @@ export function PriceBookEditor({ rows, operationId, today, canManage, showCost 
       <div className="table-wrap"><table className={`price-book-table${canManage ? " price-book-selectable" : ""}`}>
         <thead><tr>
           {canManage && <th><input type="checkbox" aria-label="Chọn tất cả" checked={allSelected} onChange={() => setSelected(allSelected ? new Set() : new Set(rows.map((row) => row.materialId)))} /></th>}
-          <th>Mã</th><th>Tên vật tư</th><th>ĐVT</th>{showCost && <th className="numeric">Giá vốn</th>}<th className="numeric">Giá hiện tại</th>{canManage && <><th className="numeric">Giá mới</th><th className="numeric">Chênh lệch</th></>}
+          <th>Mã</th><th>Tên vật tư</th><th>ĐVT</th>{showCost && <th className="numeric">Giá vốn</th>}{tierCode && <th className="numeric">Giá chung</th>}<th className="numeric">Giá hiện tại</th>{canManage && <><th className="numeric">Giá mới</th><th className="numeric">Chênh lệch</th></>}
         </tr></thead>
         <tbody>{rows.map((row) => {
           const digits = next[row.materialId] ?? "";
@@ -93,7 +99,9 @@ export function PriceBookEditor({ rows, operationId, today, canManage, showCost 
             <td className="price-book-name" data-label="Tên vật tư"><strong>{row.name}</strong><small className="table-subline">{row.group}</small></td>
             <td data-label="ĐVT">{row.uom}</td>
             {showCost && <td className="numeric mono" data-label="Giá vốn">{row.costVnd ? formatVnd(vnd(row.costVnd)) : "—"}</td>}
-            <td className="numeric mono" data-label="Giá hiện tại">{row.currentVnd ? formatVnd(vnd(row.currentVnd)) : <span className="muted">Chưa có</span>}</td>
+            {tierCode && <td className="numeric mono" data-label="Giá chung">{row.generalVnd ? formatVnd(vnd(row.generalVnd)) : "—"}</td>}
+            <td className="numeric mono" data-label="Giá hiện tại">{row.currentVnd ? formatVnd(vnd(row.currentVnd)) : <span className="muted">{tierCode ? "Theo giá chung" : "Chưa có"}</span>}
+              {row.otherUnits?.length ? <small className="table-subline">{row.otherUnits.join(" · ")}</small> : null}</td>
             {canManage && <>
               <td className="numeric" data-label="Giá mới"><input aria-label={`Giá mới ${row.name}`} inputMode="numeric" value={digits ? new Intl.NumberFormat("vi-VN").format(BigInt(digits)) : ""} placeholder={row.currentVnd ? new Intl.NumberFormat("vi-VN").format(BigInt(row.currentVnd)) : "Nhập giá"}
                 onChange={(event) => { const value = vndDigits(event.target.value); setResult(null); setNext((current) => { const copy = { ...current }; if (value && value.length <= 19) copy[row.materialId] = value; else delete copy[row.materialId]; return copy; }); }} /></td>

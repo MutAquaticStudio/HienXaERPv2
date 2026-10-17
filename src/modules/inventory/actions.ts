@@ -1,7 +1,4 @@
 "use server";
-import { operationalPostingError, quantityInputError } from "@/lib/core/errors";
-
-
 import { isExactEntryQuantity } from "@/lib/core/quantity";
 import { revalidatePath } from "next/cache";
 import { isAuthoritativeRejection, type CommandOutcome } from "@/lib/core/command-outcome";
@@ -10,6 +7,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { inventoryCommandMessage as message } from "./errors";
 
 const positive = z.string().trim().refine((value) => {
   return isExactEntryQuantity(value);
@@ -34,21 +32,6 @@ function operationLines(formData: FormData, quantityKey: "received_quantity" | "
     lines.push({ purchase_order_line_id: parsedId.data, [quantityKey]: parsedQuantity.data });
   }
   return lines.length ? lines : null;
-}
-
-function message(value?: string) {
-  const postingError = operationalPostingError(value);
-  if (postingError) return postingError;
-  const quantityError = quantityInputError(value);
-  if (quantityError) return quantityError;
-  if (value?.includes("stock_count_cutoff_stale") || value?.includes("stock_count_basis_changed_recount_required")) return "Kho đã có biến động làm căn cứ đếm không còn hợp lệ. Giữ hồ sơ chênh lệch, đối chiếu biến động và kiểm kê lại tại mốc mới trước khi duyệt.";
-  if (value?.includes("stock_count_adjustment_below_reserved_or_on_hand")) return "Chưa thể duyệt: lượng sau điều chỉnh thấp hơn lượng đang giữ chỗ hoặc làm tồn kho âm. Hãy đối chiếu hàng và các phiếu giữ chỗ.";
-  if (value?.includes("stock_count_inventory_value_inconsistent")) return "Chưa thể duyệt: lượng và giá trị tồn sau điều chỉnh không khớp. Hãy kiểm tra căn cứ giá vốn.";
-  if (value?.includes("operation_payload_conflict")) return "Mã thao tác đã được dùng với dữ liệu khác. Hãy tải lại.";
-  if (value?.includes("exceeds")) return "Số lượng vượt phần còn lại của chứng từ nguồn.";
-  if (value?.includes("version")) return "Dữ liệu đã được người khác cập nhật. Hãy tải lại.";
-  if (value?.includes("cost")) return "Thiếu căn cứ giá vốn hợp lệ.";
-  return "Không thể ghi nhận nghiệp vụ kho. Không có thay đổi nào được chốt.";
 }
 
 export async function receivePurchaseOrderWithOutcomeAction(formData: FormData): Promise<CommandOutcome> {
@@ -124,38 +107,4 @@ export async function openStockCountAction(formData: FormData) {
   const { data, error } = await supabase.rpc("open_stock_count", { target_branch_id: access.branchId, target_warehouse_id: parsed.data.warehouseId, cutoff_at: parsed.data.cutoffAt, operation_id: parsed.data.operationId });
   if (error || !data) redirect(`/admin/stock-counts?error=${encodeURIComponent(message(error?.message))}`);
   redirect(`/admin/stock-counts/${data}?notice=opened`);
-}
-
-export async function recordStockCountLineAction(formData: FormData) {
-  const parsed = z.object({ stockCountId: z.uuid(), materialId: z.uuid(), quantity: z.string().trim().refine((value) => { return isExactEntryQuantity(value, true); }), unitCost: z.string().trim().optional(), reason: z.string().trim().max(500).optional(), version: z.coerce.number().int().positive(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
-  if (!parsed.success) redirect("/admin/stock-counts?error=invalid-line");
-  await requireInternalPermission("inventory.count");
-  const supabase = await createServerSupabase();
-  const { error } = await supabase.rpc("record_stock_count_line", {
-    target_stock_count_id: parsed.data.stockCountId,
-    target_material_id: parsed.data.materialId,
-    counted_base_quantity: parsed.data.quantity,
-    adjustment_unit_cost_vnd: parsed.data.unitCost || null,
-    reason: parsed.data.reason || "",
-    target_evidence_id: null,
-    expected_count_version: parsed.data.version,
-    operation_id: parsed.data.operationId,
-  });
-  const destination = `/admin/stock-counts/${parsed.data.stockCountId}`;
-  if (error) redirect(`${destination}?error=${encodeURIComponent(message(error.message))}`);
-  revalidatePath(destination);
-  redirect(`${destination}?notice=line-recorded`);
-}
-
-export async function approveStockCountAction(formData: FormData) {
-  const parsed = z.object({ stockCountId: z.uuid(), version: z.coerce.number().int().positive(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
-  if (!parsed.success) redirect("/admin/stock-counts?error=invalid-approval");
-  await requireInternalPermission("inventory.adjust");
-  const supabase = await createServerSupabase();
-  const { error } = await supabase.rpc("approve_stock_count", { target_stock_count_id: parsed.data.stockCountId, expected_count_version: parsed.data.version, operation_id: parsed.data.operationId });
-  const destination = `/admin/stock-counts/${parsed.data.stockCountId}`;
-  if (error) redirect(`${destination}?error=${encodeURIComponent(message(error.message))}`);
-  revalidatePath("/admin/inventory");
-  revalidatePath(destination);
-  redirect(`${destination}?notice=approved`);
 }

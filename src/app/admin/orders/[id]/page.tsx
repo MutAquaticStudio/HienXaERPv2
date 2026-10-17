@@ -3,6 +3,8 @@ import { CancelDocumentForm } from "@/components/documents/cancel-document-form"
 import { WarehouseAllocationFields } from "@/components/inventory/material-stock-hint";
 import { loadWarehouseAvailability } from "@/modules/inventory/availability-server";
 import { SalesOrderCreditOverride } from "@/components/sales/credit-override";
+import { OrderDeliveryButton, type OrderDeliveryLine } from "@/components/delivery/order-delivery-dialog";
+import { listAssignmentEmployees } from "@/modules/delivery/assignment-options";
 import { randomUUID } from "node:crypto";
 import Decimal from "decimal.js";
 import Link from "next/link";
@@ -23,7 +25,7 @@ import { salesDeliveryStateLabel, salesStateLabel, salesStateTone } from "@/modu
 import styles from "./order-detail.module.css";
 import { formatQuantity } from "@/lib/core/quantity";
 
-type Order = { id: string; order_number: string; commercial_state: string; fulfillment_state: string; payment_state: string; customer_name_snapshot: string; site_name_snapshot: string; delivery_address_snapshot: string; total_vnd: string; requested_delivery_at: string | null; quotation_revision_id: string | null; created_at: string };
+type Order = { id: string; customer_id: string; site_id: string; order_number: string; commercial_state: string; fulfillment_state: string; payment_state: string; customer_name_snapshot: string; site_name_snapshot: string; delivery_address_snapshot: string; total_vnd: string; requested_delivery_at: string | null; quotation_revision_id: string | null; created_at: string };
 type Line = { id: string; material_id: string; base_uom_id: string; line_number: number; material_name_snapshot: string; quantity: string; unit_price_vnd: string; line_total_vnd: string; price_source_type: string; units_of_measure: { symbol: string } | { symbol: string }[] | null };
 type Supply = { sales_order_line_id: string; allocated_base_quantity: string; remaining_base_quantity: string };
 type Allocation = { id: string; sales_order_line_id: string; supply_mode: string; allocated_base_quantity: string; warehouse_id: string | null };
@@ -35,7 +37,7 @@ export default async function OrderDetailPage({ params, searchParams }: { params
   const { id } = await params;
   const supabase = await createServerSupabase();
   const [orderResult, lineResult, supplyResult, deliveryResult, warehouseResult] = await Promise.all([
-    supabase.from("sales_order_read").select("id, order_number, commercial_state, fulfillment_state, payment_state, customer_name_snapshot, site_name_snapshot, delivery_address_snapshot, total_vnd::text, requested_delivery_at, quotation_revision_id, created_at").eq("id", id).eq("branch_id", access.branchId).maybeSingle(),
+    supabase.from("sales_order_read").select("id, customer_id, site_id, order_number, commercial_state, fulfillment_state, payment_state, customer_name_snapshot, site_name_snapshot, delivery_address_snapshot, total_vnd::text, requested_delivery_at, quotation_revision_id, created_at").eq("id", id).eq("branch_id", access.branchId).maybeSingle(),
     supabase.from("sales_order_lines").select("id, material_id, base_uom_id, line_number, material_name_snapshot, quantity, unit_price_vnd::text, line_total_vnd::text, price_source_type, units_of_measure:ordered_uom_id(symbol)").eq("sales_order_id", id).order("line_number"),
     supabase.from("sales_line_supply_read").select("sales_order_line_id, allocated_base_quantity, remaining_base_quantity").eq("sales_order_id", id),
     access.permissions.has("delivery.read") ? supabase.from("delivery_read").select("id, delivery_number, execution_state").eq("sales_order_id", id) : Promise.resolve({ data: [] }),
@@ -51,6 +53,9 @@ export default async function OrderDetailPage({ params, searchParams }: { params
   const warehouses = warehouseResult.data ?? [];
   const availability = access.permissions.has("inventory.read") ? await loadWarehouseAvailability(access.branchId, lines.map(line => line.material_id)) : undefined;
   const query = await searchParams;
+  const deliveryPlan = order.commercial_state === "CONFIRMED" && access.permissions.has("delivery.create") && access.permissions.has("purchasing.create") && warehouses.length
+    ? await loadDeliveryPlan(supabase, order.id, lines, access.branchId, access.permissions.has("delivery.assign")) : null;
+  const localNow = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date()).replace(" ", "T");
   return <div className="page-stack">
     <header className="page-heading"><div><p className="eyebrow">Đơn bán</p><h1>{order.order_number}</h1><p className="lede">Theo dõi đơn bán, phân nguồn hàng và giao hàng tại một nơi.</p></div><div className="inline-actions"><ButtonLink href={`/api/orders/${order.id}/pdf`} variant="secondary">Tải PDF đơn bán</ButtonLink><ButtonLink href="/admin/orders" variant="secondary">Về danh sách</ButtonLink></div></header>
     <SalesOrderCreditOverride orderId={id} />
@@ -62,7 +67,10 @@ export default async function OrderDetailPage({ params, searchParams }: { params
       {order.quotation_revision_id && <p className="muted">Nguồn: phiên bản báo giá <span className="mono">{order.quotation_revision_id}</span></p>}
       {order.commercial_state === "DRAFT" && access.permissions.has("orders.create") && <Link className="button button-primary action-full" href={`/admin/orders/${order.id}/edit`}>Sửa bản nháp</Link>}
       {order.commercial_state === "DRAFT" && access.permissions.has("orders.confirm") && <form action={confirmSalesOrderAction}><input type="hidden" name="entityId" value={order.id} /><input type="hidden" name="operationId" value={randomUUID()} /><button className="button button-primary action-full" type="submit">Xác nhận & giữ hạn mức</button></form>}
-            {order.commercial_state === "CONFIRMED" && access.permissions.has("delivery.create") && [
+      {deliveryPlan && deliveryPlan.open && <OrderDeliveryButton orderId={order.id} lines={deliveryPlan.lines} warehouses={warehouses} availability={availability}
+        defaultScheduledAt={localNow} resources={deliveryPlan.resources} />}
+      {order.commercial_state === "CONFIRMED" && access.permissions.has("service.manage") && <Link className="button button-secondary action-full" href={`/admin/service-jobs?customerId=${order.customer_id}&siteId=${order.site_id}`}>Tạo dịch vụ</Link>}
+      {order.commercial_state === "CONFIRMED" && access.permissions.has("delivery.create") && allocations.length > 0 && <details className="quick-create"><summary>Lập phiếu theo nguồn đã phân</summary>{[
         { key: "STOCK", title: "Giao từ kho", rows: allocations.filter((allocation) => allocation.supply_mode !== "SUPPLIER_DIRECT") },
         { key: "DIRECT", title: "NCC giao thẳng", rows: allocations.filter((allocation) => allocation.supply_mode === "SUPPLIER_DIRECT") },
       ].filter((group) => group.rows.length > 0).map((group) => <form className="inline-command" action={createDeliveryAction} key={group.key}>
@@ -73,10 +81,38 @@ export default async function OrderDetailPage({ params, searchParams }: { params
         {group.rows.map((allocation) => { const orderLine = lines.find((line) => line.id === allocation.sales_order_line_id); return <div className="field" key={allocation.id}><input type="hidden" name="allocationId" value={allocation.id} /><label htmlFor={"delivery-" + allocation.id}>{orderLine?.material_name_snapshot ?? "Dòng đơn bán"} · {sourceModeLabel(allocation.supply_mode)} · đã phân {formatQuantity(allocation.allocated_base_quantity)} đơn vị cơ sở</label><input id={"delivery-" + allocation.id} name="quantity" inputMode="decimal" /></div>; })}
         <div className="field"><label htmlFor={"schedule-" + group.key}>Lịch giao</label><input id={"schedule-" + group.key} name="scheduledAt" type="datetime-local" /></div>
         <button className="button button-primary action-full" type="submit">Tạo phiếu giao</button>
-      </form>)}
+      </form>)}</details>}
       {["DRAFT", "CONFIRMED"].includes(order.commercial_state) && deliveries.length === 0 && access.permissions.has("orders.cancel") && <CancelDocumentForm entityId={order.id} operationId={randomUUID()} state={order.commercial_state} label="Hủy đơn" action={cancelSalesOrderAction} />}
       {order.commercial_state === "CONFIRMED" && allocations.length === 0 && <p className="muted">Chưa có nguồn hàng. Chọn nguồn hoặc đặt NCC từ dòng hàng.</p>}
       {["CANCELLED", "CLOSED"].includes(order.commercial_state) && <p className="muted">Phần thương mại đã đóng; theo dõi giao hàng, thanh toán và ngoại lệ theo nguồn ở trên.</p>}
     </aside></div>
   </div>;
+}
+
+type PlanRow = { sales_order_line_id: string; line_number: number; material_id: string; base_uom_id: string; conversion_numerator: string | number; conversion_denominator: string | number;
+  required_base_quantity: string | number; allocations: { id: string; supply_mode: string; warehouse_id: string | null; allocated_base_quantity: string | number; consumed_base_quantity: string | number }[] };
+
+/** Left to deliver per line (order_delivery_plan) for the one-step "Lập phiếu giao" popup, plus drivers and vehicles when allowed. */
+async function loadDeliveryPlan(supabase: Awaited<ReturnType<typeof createServerSupabase>>, orderId: string, lines: Line[], branchId: string, canAssign: boolean) {
+  const [planResult, unitResult, vehicleResult, employees] = await Promise.all([
+    supabase.rpc("order_delivery_plan", { target_sales_order_id: orderId }),
+    supabase.from("units_of_measure").select("id, symbol").in("id", [...new Set(lines.map((line) => line.base_uom_id))]),
+    canAssign ? supabase.from("vehicles").select("id, code, plate_number").eq("branch_id", branchId).eq("active", true).order("code").limit(200) : Promise.resolve({ data: [], error: null }),
+    canAssign ? listAssignmentEmployees(supabase, branchId).catch(() => null) : Promise.resolve(null),
+  ]);
+  if (planResult.error || unitResult.error) return null;
+  const symbols = new Map((unitResult.data ?? []).map((row) => [row.id, row.symbol]));
+  const rows = ((planResult.data as { lines?: PlanRow[] } | null)?.lines ?? []);
+  const planLines: OrderDeliveryLine[] = rows.flatMap((row) => {
+    const line = lines.find((item) => item.id === row.sales_order_line_id);
+    if (!line) return [];
+    return [{ salesOrderLineId: row.sales_order_line_id, lineNumber: row.line_number, name: line.material_name_snapshot, materialId: row.material_id,
+      symbol: relation(line.units_of_measure)?.symbol ?? "Đơn vị", baseSymbol: symbols.get(row.base_uom_id) ?? "đơn vị cơ sở",
+      ratio: { numerator: String(row.conversion_numerator), denominator: String(row.conversion_denominator) }, requiredBase: String(row.required_base_quantity),
+      allocations: row.allocations.map((item) => ({ id: item.id, mode: item.supply_mode, warehouseId: item.warehouse_id, allocatedBase: String(item.allocated_base_quantity), consumedBase: String(item.consumed_base_quantity) })) }];
+  });
+  const open = planLines.some((line) => new Decimal(line.requiredBase).gt(line.allocations.reduce((sum, item) => sum.plus(item.consumedBase), new Decimal(0))));
+  const resources = canAssign && employees ? { employees: employees.data.map((row) => ({ id: row.id, name: row.display_name })),
+    vehicles: ((vehicleResult.data ?? []) as { id: string; code: string; plate_number: string }[]).map((row) => ({ id: row.id, label: `${row.code} · ${row.plate_number}` })) } : null;
+  return { lines: planLines, open, resources };
 }
