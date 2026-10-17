@@ -290,6 +290,29 @@ it("discounts a line by % in the price popup and the whole order by VND, KiotVie
   expect(data.getAll("manualPriceVnd")).toEqual([""]);
 });
 
+it("prices a stored draft when only its discounts change, so the change can be saved", async () => {
+  const existing = { id: "draft", version: 2, customerId: "customer-a", siteId: "site-a", effectiveAt: null, terms: "",
+    lines: [{ sourceLineId: "old-line", materialId: "material", uomId: "uom-a", quantity: "1", manualPriceVnd: "", manualReason: "", discountMode: "PERCENT" as const, discountValue: "5" }],
+    orderDiscount: { mode: "AMOUNT" as const, value: "10000" } };
+  const saveChanges = () => screen.getByRole("button", { name: "Lưu thay đổi bản nháp" });
+  const { unmount } = render(<CommercialDocumentForm {...props} existing={existing} />);
+  await act(async () => { await new Promise(resolve => setTimeout(resolve, 350)); });
+  expect(mocks.preview).not.toHaveBeenCalled();
+  fireEvent.change(screen.getByLabelText("Giảm giá đơn"), { target: { value: "20000" } });
+  await waitFor(() => expect(saveChanges()).toBeEnabled());
+  expect(mocks.preview).toHaveBeenCalledWith(expect.objectContaining({ documentId: "draft", expectedVersion: 2 }));
+  const totals = screen.getByRole("group", { name: "Tổng tiền và lưu đơn" });
+  expect(within(totals).getByText("Khách cần trả").nextElementSibling).toHaveTextContent("94.000");
+  unmount();
+
+  // Opening a line's price popup shows its price straight away.
+  mocks.preview.mockClear();
+  render(<CommercialDocumentForm {...props} existing={existing} />);
+  fireEvent.click(screen.getByRole("button", { name: "Đơn giá và giảm giá dòng 1" }));
+  await waitFor(() => expect(within(screen.getByRole("dialog")).getByText("114.000 ₫")).toBeInTheDocument());
+  expect(mocks.preview).toHaveBeenCalledTimes(1);
+});
+
 it("refuses a discount as large as the price, in the popup and for the whole order", async () => {
   render(<CommercialDocumentForm {...ready} />);
   await waitForPrice();

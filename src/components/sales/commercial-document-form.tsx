@@ -202,6 +202,8 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
   }, [kind, previewLines, lines, orderDiscount]);
   const discountedOk = discounted?.ok ? discounted : null;
   const priceLine = priceLineKey === null ? null : lines.find((line) => line.key === priceLineKey) ?? null;
+  // A stored draft is priced on its first change. Discounts need the price, so touching them counts as a change.
+  const needPrice = () => { if (!preview && !previewPending) invalidate(); };
   function pickMaterial(material: EditorMaterial) {
     const result = addMaterialLine(lines, material, nextLineKey.current);
     if (!result) { setLookupMessage("Đơn bán tối đa 50 dòng."); return; }
@@ -260,7 +262,7 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
           const own = draftDiscount({ mode: line.discountMode ?? "", value: line.discountValue ?? "" });
           const result = discountedOk?.lines[index];
           const cut = result && result.discountUnitVnd !== "0";
-          return <button type="button" className="line-price-button" aria-label={`Đơn giá và giảm giá dòng ${index + 1}`} onClick={() => setPriceLineKey(line.key)}>
+          return <button type="button" className="line-price-button" aria-label={`Đơn giá và giảm giá dòng ${index + 1}`} onClick={() => { needPrice(); setPriceLineKey(line.key); }}>
             <span>{price ? formatVnd(vnd(price.unitPriceVnd)) : line.manualPriceVnd ? formatVnd(vnd(line.manualPriceVnd)) : "Giá hệ thống"}</span>
             {cut && <s className="table-subline">{formatVnd(vnd(result.listUnitVnd))}</s>}
             <small className="table-subline">{own ? discountLabel(own) : cut ? "Giảm theo đơn" : line.manualPriceVnd ? "Giá thủ công" : price?.sourceLabel ?? "Bấm để giảm giá"}</small>
@@ -295,7 +297,7 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
           <div><dt>Giảm giá</dt><dd>−{formatVnd(vnd(discountedOk.discountTotalVnd))}</dd></div>
           <div className="doc-editor-total"><dt>Khách cần trả</dt><dd>{formatVnd(vnd(discountedOk.netTotalVnd))}</dd></div></>}
       </dl>
-      {discounts && <DiscountField id="order-discount" label="Giảm giá đơn" draft={orderDiscount} onChange={setOrderDiscount}
+      {discounts && <DiscountField id="order-discount" label="Giảm giá đơn" draft={orderDiscount} onChange={(next) => { needPrice(); setOrderDiscount(next); }}
         hint={discountedOk && discountedOk.orderRequestedVnd !== discountedOk.orderAppliedVnd
           ? `Giảm được ${formatVnd(vnd(discountedOk.orderAppliedVnd))} (lệch ${formatVnd(vnd((BigInt(discountedOk.orderRequestedVnd) - BigInt(discountedOk.orderAppliedVnd)).toString()))} vì giá mỗi đơn vị phải là số đồng nguyên).`
           : undefined} />}
@@ -332,7 +334,7 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
           ...(change.manualPriceVnd !== undefined ? { manualPriceVnd: change.manualPriceVnd, manualReason: change.manualPriceVnd ? line.manualReason : "" } : {}) } : line;
         // A new manual price is priced again by the server; a discount alone is worked out here.
         if (change.manualPriceVnd !== undefined && change.manualPriceVnd !== priceLine.manualPriceVnd) changeLines((current) => current.map(update));
-        else setLines((current) => current.map(update));
+        else { needPrice(); setLines((current) => current.map(update)); }
       }} />}{quickMode && <QuickCreatePanel key={quickMode} mode={quickMode} customerId={customerId} onClose={() => setQuickMode(null)}
     onCustomerCreated={(created) => { const option = { id: created.id, label: created.name }; siteLoadRevision.current += 1; setCustomerChoices((current) => [...current, option]); setSitesByCustomer((current) => ({ ...current, [created.id]: [] })); setCustomer(option); setSite(null); invalidate(); setQuickMode("site"); }}
     onSiteCreated={(created) => { siteLoadRevision.current += 1; setSitesByCustomer((current) => ({ ...current, [customerId]: [...(current[customerId] ?? []), created] })); setSite(siteOption(created)); invalidate(); setQuickMode(null); }} />}</>;

@@ -2998,3 +2998,10 @@ phải có dấu phân cách khi gõ; chọn vật tư phải tự xổ danh sá
   giảm, giữ hạn mức theo số sau giảm).
 - Kiểm: typecheck sạch, lint 0 lỗi, vitest 162 file / 956 test (một lần chạy toàn bộ có `settings/page.test.tsx` quá thời gian, chạy riêng 2 lần
   xanh), native 010–155 PASS.
+- R1 (17/10): Owner chạy 2 migration trên QA và Production bằng SQL Editor; đọc kiểm: `schema_migrations` có 2 bản ghi kèm sha256, hàm khớp file
+  (so sau khi gộp khoảng trắng, vì trình soạn thụt lề khi dán; chuỗi ký tự trong hàm khớp tuyệt đối), cột/ràng buộc/quyền QA = Production, không cấp
+  `anon`. QA trình duyệt (app cục bộ trỏ QA): xóa xe mới tạo → mất; xóa kho có tồn → chặn + "Ngừng dùng" (lượt đầu kịch bản bấm Xóa ở dòng kho đầu
+  tiên và xóa thật kho thử chưa dùng `HXQA Audit Warehouse` — đúng luật, dữ liệu QA); gõ giá 55000 từng số giữ focus, hiện 55.000; Ghi thu 60.000;
+  ô vật tư xổ 20 vật tư theo nhóm; giảm 5% dòng + 10.000 đơn → 2.100.000 / −115.000 / 1.985.000, trang đơn + PDF đúng; 390px không tràn.
+  **Lỗi tìm thấy và sửa**: sửa nháp đã lưu chỉ đổi giảm giá thì không tính giá (bản nháp chỉ tính lại khi đổi dòng) → nút lưu mờ, popup giá "—".
+  Đổi giảm giá hoặc mở popup giá giờ cũng yêu cầu tính giá; test component mới; QA: đổi giảm đơn 20.000 → lưu, DB 197.500 × 10 = 1.975.000.
