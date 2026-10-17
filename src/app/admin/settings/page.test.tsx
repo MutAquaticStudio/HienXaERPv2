@@ -1,11 +1,15 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
-const m = vi.hoisted(() => ({ profile: null as unknown, logo: null as unknown, cookie: undefined as string | undefined, save: vi.fn(), saveLogo: vi.fn(), refresh: vi.fn() }));
+const m = vi.hoisted(() => ({ profile: null as unknown, logo: null as unknown, cookie: undefined as string | undefined, save: vi.fn(), saveLogo: vi.fn(), refresh: vi.fn(), operation: null as unknown, saveOperation: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: m.refresh }) }));
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => m.cookie === undefined ? undefined : { value: m.cookie } }) }));
 vi.mock("@/lib/access/context", () => ({ requireInternalPermission: async () => ({ branchId: "b", branchName: "Chi nhánh Đông Anh", permissions: new Set(["roles.manage"]) }) }));
-vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({}) }));
+vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({ from: () => {
+  const chain = { select: () => chain, eq: () => chain, maybeSingle: async () => ({ data: m.operation, error: null }) };
+  return chain;
+} }) }));
+vi.mock("@/modules/settings/operation-actions", () => ({ saveOperationSettingsAction: m.saveOperation }));
 vi.mock("@/lib/company/profile", async (original) => ({ ...(await original<typeof import("@/lib/company/profile")>()), loadCompanyProfile: async () => m.profile, loadCompanyLogo: async () => m.logo }));
 vi.mock("@/modules/settings/company-actions", () => ({ saveCompanyProfileAction: m.save, saveCompanyLogoAction: m.saveLogo }));
 
@@ -13,7 +17,7 @@ import Page from "./page";
 import { JPEG_LOGO_BASE64, logoBytes, PNG_LOGO_BASE64 } from "@/test/logo-fixtures";
 
 beforeEach(() => {
-  m.profile = null; m.logo = null; m.cookie = undefined; m.save.mockReset(); m.saveLogo.mockReset(); m.refresh.mockReset();
+  m.profile = null; m.logo = null; m.cookie = undefined; m.save.mockReset(); m.saveLogo.mockReset(); m.refresh.mockReset(); m.operation = null; m.saveOperation.mockReset();
   document.documentElement.removeAttribute("data-color");
 });
 afterEach(() => { cleanup(); document.cookie = "hx-appearance=; path=/; max-age=0"; });
@@ -84,4 +88,18 @@ it("prints the saved logo in the preview and removes it against its fingerprint"
   fireEvent.click(screen.getByRole("button", { name: "Xóa logo" }));
   await waitFor(() => expect(m.saveLogo).toHaveBeenCalledWith(expect.objectContaining({ expectedSha256: "e".repeat(64), mime: null, base64: null })));
   expect(await screen.findByText("Chưa có logo")).toBeInTheDocument();
+});
+
+it("sets the branch's time per delivery stop against its version", async () => {
+  m.operation = { stop_minutes: 60, version: 2 };
+  m.saveOperation.mockResolvedValue({ status: "SUCCESS", version: 3, message: "Đã lưu. Phiếu giao mới tính mỗi điểm giao 45 phút." });
+  render(await Page());
+  const box = screen.getByLabelText("Thời gian mỗi điểm giao (phút)");
+  expect(box).toHaveValue("60");
+  fireEvent.change(box, { target: { value: "3" } });
+  expect(screen.getByRole("button", { name: "Lưu cài đặt giao hàng" })).toBeDisabled();
+  fireEvent.change(box, { target: { value: "45" } });
+  fireEvent.click(screen.getByRole("button", { name: "Lưu cài đặt giao hàng" }));
+  await waitFor(() => expect(m.saveOperation).toHaveBeenCalledWith(expect.objectContaining({ expectedVersion: 2, stopMinutes: 45 })));
+  expect(await screen.findByText("Đã lưu. Phiếu giao mới tính mỗi điểm giao 45 phút.")).toBeInTheDocument();
 });

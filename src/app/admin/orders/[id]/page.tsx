@@ -15,7 +15,7 @@ import { ButtonLink } from "@/components/ui/button-link";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { requireInternalPermission } from "@/lib/access/context";
 import { priceSourceLabel } from "@/modules/pricing/presentation";
-import { formatBusinessDateTime } from "@/lib/core/business-time";
+import { businessInputValue, formatBusinessDateTime } from "@/lib/core/business-time";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { allocateWarehouseSourceAction, createDeliveryAction } from "@/modules/delivery/actions";
@@ -59,7 +59,10 @@ export default async function OrderDetailPage({ params, searchParams }: { params
   // A1: a delivery from stock takes its warehouse source itself, so delivery.create is enough (no purchasing.create).
   const deliveryPlan = order.commercial_state === "CONFIRMED" && access.permissions.has("delivery.create") && warehouses.length
     ? await loadDeliveryPlan(supabase, order.id, lines, access.branchId, access.permissions.has("delivery.assign")) : null;
-  const localNow = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date()).replace(" ", "T");
+  const now = new Date();
+  const localNow = businessInputValue(now);
+  // A4: "Lập phiếu giao" starts on the customer's requested time while it is still ahead.
+  const requestedAt = order.requested_delivery_at && new Date(order.requested_delivery_at) > now ? businessInputValue(order.requested_delivery_at) : null;
   return <div className="page-stack">
     <header className="page-heading"><div><p className="eyebrow">Đơn bán</p><h1>{order.order_number}</h1><p className="lede">Theo dõi đơn bán, phân nguồn hàng và giao hàng tại một nơi.</p></div><div className="inline-actions"><ButtonLink href={`/api/orders/${order.id}/pdf`} variant="secondary">Tải PDF đơn bán</ButtonLink><ButtonLink href="/admin/orders" variant="secondary">Về danh sách</ButtonLink></div></header>
     <SalesOrderCreditOverride orderId={id} />
@@ -72,7 +75,8 @@ export default async function OrderDetailPage({ params, searchParams }: { params
       {order.commercial_state === "DRAFT" && access.permissions.has("orders.create") && <Link className="button button-primary action-full" href={`/admin/orders/${order.id}/edit`}>Sửa bản nháp</Link>}
       {order.commercial_state === "DRAFT" && access.permissions.has("orders.confirm") && <form action={confirmSalesOrderAction}><input type="hidden" name="entityId" value={order.id} /><input type="hidden" name="operationId" value={randomUUID()} /><button className="button button-primary action-full" type="submit">Xác nhận & giữ hạn mức</button></form>}
       {deliveryPlan && deliveryPlan.open && <OrderDeliveryButton orderId={order.id} lines={deliveryPlan.lines} warehouses={warehouses} availability={availability}
-        defaultScheduledAt={localNow} resources={deliveryPlan.resources} />}
+        defaultScheduledAt={localNow} resources={deliveryPlan.resources} stopMinutes={deliveryPlan.stopMinutes} canOrderDirect={access.permissions.has("purchasing.create")}
+        requestedAt={requestedAt} />}
       {order.commercial_state === "CONFIRMED" && access.permissions.has("service.manage") && <Link className="button button-secondary action-full" href={`/admin/service-jobs?customerId=${order.customer_id}&siteId=${order.site_id}`}>Tạo dịch vụ</Link>}
       {order.commercial_state === "CONFIRMED" && access.permissions.has("delivery.create") && allocations.length > 0 && <details className="quick-create"><summary>Lập phiếu theo nguồn đã phân</summary>{[
         { key: "STOCK", title: "Giao từ kho", rows: allocations.filter((allocation) => allocation.supply_mode !== "SUPPLIER_DIRECT") },
@@ -98,11 +102,12 @@ type PlanRow = { sales_order_line_id: string; line_number: number; material_id: 
 
 /** Left to deliver per line (order_delivery_plan) for the one-step "Lập phiếu giao" popup, plus drivers and vehicles when allowed. */
 async function loadDeliveryPlan(supabase: Awaited<ReturnType<typeof createServerSupabase>>, orderId: string, lines: Line[], branchId: string, canAssign: boolean) {
-  const [planResult, unitResult, vehicleResult, employees] = await Promise.all([
+  const [planResult, unitResult, vehicleResult, employees, settingsResult] = await Promise.all([
     supabase.rpc("order_delivery_plan", { target_sales_order_id: orderId }),
     supabase.from("units_of_measure").select("id, symbol").in("id", [...new Set(lines.map((line) => line.base_uom_id))]),
     canAssign ? supabase.from("vehicles").select("id, code, plate_number").eq("branch_id", branchId).eq("active", true).order("code").limit(200) : Promise.resolve({ data: [], error: null }),
     canAssign ? listAssignmentEmployees(supabase, branchId).catch(() => null) : Promise.resolve(null),
+    supabase.from("branch_operation_settings").select("stop_minutes").eq("branch_id", branchId).maybeSingle(),
   ]);
   if (planResult.error || unitResult.error) return null;
   const symbols = new Map((unitResult.data ?? []).map((row) => [row.id, row.symbol]));
@@ -118,5 +123,5 @@ async function loadDeliveryPlan(supabase: Awaited<ReturnType<typeof createServer
   const open = planLines.some((line) => new Decimal(line.requiredBase).gt(line.allocations.reduce((sum, item) => sum.plus(item.consumedBase), new Decimal(0))));
   const resources = canAssign && employees ? { employees: employees.data.map((row) => ({ id: row.id, name: row.display_name })),
     vehicles: ((vehicleResult.data ?? []) as { id: string; code: string; plate_number: string }[]).map((row) => ({ id: row.id, label: `${row.code} · ${row.plate_number}` })) } : null;
-  return { lines: planLines, open, resources };
+  return { lines: planLines, open, resources, stopMinutes: (settingsResult.data as { stop_minutes: number } | null)?.stop_minutes ?? 60 };
 }

@@ -126,7 +126,7 @@ export async function assignDeliveryAction(formData: FormData) {
     operation_id: parsed.data.operationId,
   });
   const destination = `/admin/deliveries/${parsed.data.deliveryId}`;
-  if (error) redirect(`${destination}?error=${encodeURIComponent(message(error.message))}`);
+  if (error) redirect(`${destination}?error=${encodeURIComponent(message(error.message, error.hint))}`);
   revalidatePath(destination);
   redirect(`${destination}?notice=assigned`);
 }

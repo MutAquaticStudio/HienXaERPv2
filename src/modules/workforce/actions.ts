@@ -20,7 +20,7 @@ function workCommandMessage(message?: string) {
   if (message === "service_not_cancelable" || message === "service_cancel_has_execution") return "Không thể hủy lịch dịch vụ vì đã phát sinh công việc hoặc kết quả xác minh.";
   if (message?.includes("version") || message?.includes("stale")) return "Dữ liệu công việc đã thay đổi. Vui lòng tải lại trước khi tiếp tục.";
   if (message === "forbidden") return "Bạn không có quyền thực hiện thao tác này.";
-  if (message === "resource_conflict") return "Nhân viên hoặc xe đã có lịch trùng. Chọn lịch khác rồi thử lại.";
+  if (message === "resource_conflict" || message?.includes("schedule_collision")) return "Nhân viên hoặc xe đã có lịch trùng. Chọn lịch khác rồi thử lại.";
   if (message === "invalid-service-job") return "Kiểm tra lại loại dịch vụ, thời gian (kết thúc sau bắt đầu) và sản lượng kế hoạch.";
   if (message === "invalid_service_type") return "Loại dịch vụ đã ngừng dùng hoặc không thuộc chi nhánh này. Chọn loại khác.";
   if (message === "service_resource_mismatch") return "Loại dịch vụ này không dùng xe hoặc máy đã chọn. Bỏ chọn rồi thử lại.";
