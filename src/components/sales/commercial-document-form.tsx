@@ -1,20 +1,23 @@
 "use client";
-import { MaterialStockHint } from "@/components/inventory/material-stock-hint";
 import { Dialog } from "@/components/ui/dialog";
 import { DocumentLineTable } from "@/components/documents/editor/document-line-table";
 import { DocumentTotalValue } from "@/components/documents/editor/document-total";
 import { EntityCombobox, type EntityComboboxHandle } from "@/components/documents/editor/entity-combobox";
+import { LineStock, lineStock } from "@/components/documents/editor/line-stock";
 import { addMaterialLine } from "@/components/documents/editor/lines";
 import { MaterialSearchBox, type MaterialSearchHandle } from "@/components/documents/editor/material-search-box";
 import type { EditorLine, EditorMaterial, EntityOption } from "@/components/documents/editor/types";
 import { useAutoPricePreview } from "@/components/documents/editor/use-auto-price-preview";
 
-import { startTransition, useActionState, useCallback, useRef, useState, type FormEvent } from "react";
+import { startTransition, useActionState, useCallback, useEffect, useId, useRef, useState, type FormEvent } from "react";
+import { formatVnd, vnd } from "@/lib/core/money";
+import { formatQuantity } from "@/lib/core/quantity";
 import { isPositiveSalesQuantity } from "@/modules/sales/quantity-input";
 import { priceSourceLabel } from "@/modules/pricing/presentation";
 import { userFacingError } from "@/lib/core/errors";
 import { createCustomerQuickAction, createSiteQuickAction } from "@/modules/customers/actions";
 import { createQuotationAction, createSalesOrderAction, previewCommercialDocumentAction, updateQuotationDraftAction, updateSalesOrderDraftAction, type PricePreviewResult, type SalesActionState } from "@/modules/sales/actions";
+import { loadCustomerDebtAction, type CustomerDebt } from "@/modules/sales/customer-debt-actions";
 import { searchSalesCustomersAction, searchSalesSitesAction } from "@/modules/sales/form-lookup-actions";
 import type { SalesFormOptions } from "@/modules/sales/form-options";
 
@@ -70,6 +73,45 @@ function QuickCreatePanel({ mode, customerId, onCustomerCreated, onSiteCreated, 
   </Dialog>;
 }
 
+type ReviewLine = { key: number; name: string; quantity: string; symbol: string; totalVnd: string | null };
+
+/**
+ * "Xác nhận đơn" review (D6): what will be confirmed, the customer's current and overdue debt (with receivable rights),
+ * then the confirm button submits the order form with intent "confirm".
+ */
+function OrderReview({ formId, customer, site, siteAddress, lines, totalVnd, onClose }: {
+  formId: string; customer: EntityOption | null; site: EntityOption | null; siteAddress?: string; lines: ReviewLine[]; totalVnd: string | null; onClose: () => void;
+}) {
+  const [debt, setDebt] = useState<CustomerDebt | null | undefined>(undefined);
+  useEffect(() => {
+    let live = true;
+    if (customer) loadCustomerDebtAction(customer.id).then((loaded) => { if (live) setDebt(loaded); }, () => { if (live) setDebt(null); });
+    return () => { live = false; };
+  }, [customer]);
+  const money = (value: string | null) => value === null ? "—" : formatVnd(vnd(value));
+  return <Dialog eyebrow="Kiểm tra trước khi xác nhận" title="Xác nhận đơn bán" onClose={onClose} initialFocusId="order-review-confirm">
+    <dl className="detail-grid order-review-summary">
+      <div className="detail-item"><dt>Khách hàng</dt><dd>{customer?.label}</dd></div>
+      <div className="detail-item"><dt>Công trình / điểm giao</dt><dd>{site?.label}{siteAddress && <small className="table-subline">{siteAddress}</small>}</dd></div>
+      <div className="detail-item"><dt>Số dòng</dt><dd>{lines.length}</dd></div>
+      <div className="detail-item"><dt>Tổng tiền hàng</dt><dd><strong>{money(totalVnd)}</strong></dd></div>
+      {debt && <><div className="detail-item"><dt>Nợ hiện tại</dt><dd>{money(debt.outstandingVnd)}</dd></div>
+        <div className="detail-item"><dt>Nợ quá hạn</dt><dd className={debt.overdueVnd !== "0" ? "text-danger" : undefined}>{money(debt.overdueVnd)}</dd></div></>}
+    </dl>
+    {debt === undefined && customer && <p className="muted">Đang tải công nợ của khách...</p>}
+    <div className="table-wrap"><table className="order-review-lines">
+      <thead><tr><th scope="col">Vật tư</th><th scope="col" className="numeric">Số lượng</th><th scope="col" className="numeric">Thành tiền</th></tr></thead>
+      <tbody>{lines.map((line) => <tr key={line.key}><td>{line.name}</td><td className="numeric">{formatQuantity(line.quantity)} {line.symbol}</td><td className="numeric">{money(line.totalVnd)}</td></tr>)}</tbody>
+    </table></div>
+    {debt && debt.overdueVnd !== "0" && <p className="form-message" role="status">Khách đang có nợ quá hạn; đơn có thể bị chặn theo hạn mức. Khi bị chặn, đơn được giữ ở nháp và có lối duyệt vượt hạn mức.</p>}
+    <p className="muted">Kiểm tra kỹ khách, công trình, số lượng và giá. Sau khi xác nhận, sửa đơn phải qua điều chỉnh.</p>
+    <div className="form-actions">
+      <button id="order-review-confirm" className="button button-primary" type="submit" form={formId} name="intent" value="confirm">Xác nhận đơn</button>
+      <button className="button button-secondary" type="button" onClick={onClose}>Quay lại sửa</button>
+    </div>
+  </Dialog>;
+}
+
 export function CommercialDocumentForm({ kind, options, operationId, confirmOperationId, canConfirm = false, canManagePrice, canManageCustomers, existing, initialCustomerId, initialSiteId, initialMaterialId }: {
   kind: "order" | "quote"; options: SalesFormOptions; operationId: string; confirmOperationId?: string; canConfirm?: boolean;
   canManagePrice: boolean; canManageCustomers: boolean; existing?: ExistingCommercialDraft;
@@ -111,6 +153,12 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
   const [focusKey, setFocusKey] = useState<number | null>(null);
   const searchRef = useRef<MaterialSearchHandle>(null);
   const siteRef = useRef<EntityComboboxHandle>(null);
+  const formId = useId();
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const availability = options.availability;
+  // Stock is shown for one warehouse at a time, the first of the branch unless another is chosen.
+  const [stockWarehouseId, setStockWarehouseId] = useState(availability?.warehouses[0]?.id ?? "");
+  const materialOf = (id: string) => options.materials.find((item) => item.id === id);
 
   const customerId = customer?.id ?? "";
   const siteId = site?.id ?? "";
@@ -161,26 +209,30 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
     const data = new FormData(event.currentTarget);
     const submitter = (event.nativeEvent as SubmitEvent).submitter;
     if (submitter instanceof HTMLButtonElement && submitter.name === "intent") data.set("intent", submitter.value);
+    setReviewOpen(false);
     startTransition(() => formAction(data));
   }
 
   const ready = !empty && !!preview?.success && !pending && !state?.outcomeUnknown;
   const confirmable = kind === "order" && !existing && canConfirm && !!confirmOperationId;
-  return <><form className="doc-editor commercial-document-form" action={formAction} onReset={(event) => event.preventDefault()} onSubmit={submit}>
+  return <><form id={formId} className="doc-editor commercial-document-form" action={formAction} onReset={(event) => event.preventDefault()} onSubmit={submit}>
     <input type="hidden" name="operationId" value={operationId} />
     {confirmable && <input type="hidden" name="confirmOperationId" value={confirmOperationId} />}
     {existing && <><input type="hidden" name="documentId" value={existing.id} /><input type="hidden" name="expectedVersion" value={existing.version} /></>}
     <input type="hidden" name="pricePreview" value={preview?.success ? JSON.stringify(preview.lines) : ""} />
 
     <section className="card doc-editor-main" aria-label="Dòng hàng">
-      <MaterialSearchBox ref={searchRef} materials={options.materials} onPick={pickMaterial} disabled={!options.materials.length} />
+      <MaterialSearchBox ref={searchRef} materials={options.materials} onPick={pickMaterial} disabled={!options.materials.length}
+        hint={availability ? (material) => { const stock = lineStock(availability, stockWarehouseId, material, material.uoms[0]?.id ?? "", ""); return stock ? `Có thể bán ${formatQuantity(stock.available)} ${stock.baseSymbol}` : stock === null ? "Chưa có tồn" : null; } : undefined} />
+      {availability && availability.warehouses.length > 0 && <label className="doc-editor-stock-warehouse">Xem tồn tại<select value={stockWarehouseId} onChange={(event) => setStockWarehouseId(event.target.value)}>
+        {availability.warehouses.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>}
       <DocumentLineTable lines={lines} materials={options.materials} canManagePrice={canManagePrice} isValidQuantity={isPositiveSalesQuantity} focusKey={focusKey}
         labels={{ uom: "ĐVT bán", price: "Đơn giá" }}
         priced={(index) => preview?.success && preview.lines?.[index] ? { unitPriceVnd: preview.lines[index].unitPriceVnd, lineTotalVnd: preview.lines[index].lineTotalVnd, sourceLabel: priceSourceLabel(preview.lines[index].priceSourceType) } : null}
         onChange={(key, change) => changeLines((current) => current.map((line) => line.key === key ? { ...line, ...change } : line))}
         onRemove={(key) => { changeLines((current) => current.filter((line) => line.key !== key)); searchRef.current?.focus(); }}
         onDone={() => searchRef.current?.focus()}
-        detail={options.availability ? (line) => <details className="doc-editor-stock"><summary>Tồn kho</summary><MaterialStockHint availability={options.availability} materialId={line.materialId} orderedUomId={line.uomId} quantity={line.quantity} /></details> : undefined} />
+        detail={availability ? (line) => <LineStock availability={availability} warehouseId={stockWarehouseId} material={materialOf(line.materialId)} uomId={line.uomId} quantity={line.quantity} /> : undefined} />
     </section>
 
     <div className="doc-editor-rail"><aside className="card card-pad doc-editor-side" aria-label="Thông tin đơn">
@@ -205,18 +257,21 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
       </dl>
       {priceMissing && <p className="doc-editor-total-hint">{priceMissing}</p>}</div>
       <div className="doc-editor-actions">
-        {confirmable && <button className="button button-primary" type="submit" name="intent" value="confirm" disabled={!ready}>{pending ? "Đang lưu..." : "Tạo đơn"}</button>}
-        <button className={`button ${confirmable ? "button-secondary" : "button-primary"}`} type="submit" name="intent" value="draft" disabled={!ready}>{pending && !confirmable ? "Đang lưu..." : existing ? "Lưu thay đổi bản nháp" : "Lưu nháp"}</button>
+        {confirmable && <button className="button button-primary" type="button" disabled={!ready} onClick={() => setReviewOpen(true)}>{pending ? "Đang lưu..." : "Xác nhận đơn"}</button>}
+        <button className={confirmable ? "link-button doc-editor-draft" : "button button-primary"} type="submit" name="intent" value="draft" disabled={!ready}>{pending && !confirmable ? "Đang lưu..." : existing ? "Lưu thay đổi bản nháp" : "Lưu nháp"}</button>
         {state?.outcomeUnknown && <button className="button button-secondary" type="button" disabled={pending} onClick={() => { const original = lastSubmission.current; if (original && !submissionPending.current) { submissionPending.current = true; startTransition(() => formAction(original)); } }}>Thử lại đúng thao tác</button>}
       </div>
-      {confirmable && <p className="muted doc-editor-hint">“Tạo đơn” lưu và xác nhận ngay; “Lưu nháp” để sửa tiếp sau.</p>}
+      {confirmable && <p className="muted doc-editor-hint">“Xác nhận đơn” mở bảng kiểm tra rồi lưu và xác nhận; “Lưu nháp” để sửa tiếp sau.</p>}
     </div>
 
     <div className="card card-pad doc-editor-extra" role="group" aria-label={kind === "order" ? "Ngày giao và ghi chú" : "Hiệu lực và ghi chú"}>
       <div className="field"><label htmlFor="effectiveAt">{kind === "order" ? "Ngày giao dự kiến" : "Hiệu lực đến"}</label><input id="effectiveAt" name="effectiveAt" type="datetime-local" value={effectiveAt} onChange={(event) => setEffectiveAt(event.target.value)} required={kind === "quote"} /></div>
       <div className="field"><label htmlFor="terms">Điều khoản / ghi chú</label><textarea id="terms" name="terms" rows={2} maxLength={1000} aria-describedby="terms-hint" value={terms} onChange={(event) => setTerms(event.target.value)} placeholder="Điều kiện giao, thanh toán hoặc lưu ý" /><small id="terms-hint" className="muted">{terms.length}/1.000</small></div>
     </div></div>
-  </form>{quickMode && <QuickCreatePanel key={quickMode} mode={quickMode} customerId={customerId} onClose={() => setQuickMode(null)}
+  </form>{reviewOpen && confirmable && preview?.success && <OrderReview formId={formId} customer={customer} site={site} siteAddress={sites.find((item) => item.id === siteId)?.address}
+    lines={lines.map((line, index) => ({ key: line.key, name: materialOf(line.materialId)?.name ?? "Vật tư", quantity: line.quantity,
+      symbol: materialOf(line.materialId)?.uoms.find((uom) => uom.id === line.uomId)?.symbol ?? "", totalVnd: preview.lines?.[index]?.lineTotalVnd ?? null }))}
+    totalVnd={preview.totalVnd ?? null} onClose={() => setReviewOpen(false)} />}{quickMode && <QuickCreatePanel key={quickMode} mode={quickMode} customerId={customerId} onClose={() => setQuickMode(null)}
     onCustomerCreated={(created) => { const option = { id: created.id, label: created.name }; siteLoadRevision.current += 1; setCustomerChoices((current) => [...current, option]); setSitesByCustomer((current) => ({ ...current, [created.id]: [] })); setCustomer(option); setSite(null); invalidate(); setQuickMode("site"); }}
     onSiteCreated={(created) => { siteLoadRevision.current += 1; setSitesByCustomer((current) => ({ ...current, [customerId]: [...(current[customerId] ?? []), created] })); setSite(siteOption(created)); invalidate(); setQuickMode(null); }} />}</>;
 }

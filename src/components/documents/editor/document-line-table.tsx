@@ -1,7 +1,8 @@
 "use client";
 
 import { Fragment, useEffect, useRef, type KeyboardEvent, type ReactNode } from "react";
-import { X } from "lucide-react";
+import Decimal from "decimal.js";
+import { Minus, Plus, X } from "lucide-react";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { decimalForEditing, normalizeDecimalInput, normalizeVndInput } from "@/lib/core/vn-number";
 import { NumberEntry } from "./number-entry";
@@ -28,6 +29,14 @@ type Props<L extends EditorLine> = {
   lockedMaterial?: (line: L) => boolean;
   emptyText?: string;
 };
+
+/** Quantity one step up or down (− / + buttons); null when the result would not be a positive quantity. */
+export function stepQuantity(value: string, step: 1 | -1): string | null {
+  const current = normalizeDecimalInput(value);
+  if (!current) return step > 0 ? "1" : null;
+  const next = new Decimal(current).plus(step);
+  return next.gt(0) ? next.toFixed() : null;
+}
 
 const DEFAULT_FIELDS = { uom: "orderedUomId", price: "manualPriceVnd", reason: "manualReason" };
 const DEFAULT_LABELS = { uom: "ĐVT", price: "Đơn giá" };
@@ -84,10 +93,16 @@ export function DocumentLineTable<L extends EditorLine>({ lines, materials, canM
           </td>
           <td className="numeric" data-label="Số lượng">
             <input type="hidden" name="quantity" value={line.quantity} />
-            <NumberEntry ref={(element) => { if (element) quantityRefs.current.set(line.key, element); else quantityRefs.current.delete(line.key); }}
-              aria-label={`Số lượng dòng ${row}`} inputMode="decimal" value={line.quantity} required normalize={normalizeDecimalInput} display={decimalForEditing}
-              aria-invalid={!quantityValid} aria-describedby={quantityValid ? undefined : `qty-error-${line.key}`}
-              onValue={(quantity) => onChange(line.key, { quantity } as Partial<L>)} onKeyDown={enterMovesOn} />
+            <span className="qty-stepper">
+              <button type="button" className="qty-step" tabIndex={-1} aria-label={`Giảm số lượng dòng ${row}`} disabled={!stepQuantity(line.quantity, -1)}
+                onClick={() => { const next = stepQuantity(line.quantity, -1); if (next) onChange(line.key, { quantity: next } as Partial<L>); }}><Minus size={14} aria-hidden="true" /></button>
+              <NumberEntry ref={(element) => { if (element) quantityRefs.current.set(line.key, element); else quantityRefs.current.delete(line.key); }}
+                aria-label={`Số lượng dòng ${row}`} inputMode="decimal" value={line.quantity} required normalize={normalizeDecimalInput} display={decimalForEditing}
+                aria-invalid={!quantityValid} aria-describedby={quantityValid ? undefined : `qty-error-${line.key}`}
+                onValue={(quantity) => onChange(line.key, { quantity } as Partial<L>)} onKeyDown={enterMovesOn} />
+              <button type="button" className="qty-step" tabIndex={-1} aria-label={`Tăng số lượng dòng ${row}`}
+                onClick={() => onChange(line.key, { quantity: stepQuantity(line.quantity, 1) ?? "1" } as Partial<L>)}><Plus size={14} aria-hidden="true" /></button>
+            </span>
           </td>
           <td className="numeric" data-label={labels.price}>
             <input type="hidden" name={fields.price} value={line.manualPriceVnd} />

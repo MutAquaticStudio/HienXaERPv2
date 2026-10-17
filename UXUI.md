@@ -163,7 +163,7 @@ GIAO HÀNG
   Lộ trình
   Vị trí xe
 
-DỊCH VỤ
+DỊCH VỤ          (D9, 16/10/2026: "Dịch vụ" nằm trong nhóm Bán hàng; nhóm "Nhân công & dịch vụ" đổi tên "Nhân công")
 
 TÀI CHÍNH
   Phải thu
@@ -954,6 +954,15 @@ Kiểu KiotViet (15/10/2026): ô tìm kiếm + lọc cột trái (Nhóm vật t�
 Popup vật tư (D5/D7) có 2 tab: **Thông tin** và **Đơn vị tính & giá** (bảng: đơn vị, "1 đơn vị =", loại quy đổi, giá bán chung, giá vốn ≈ theo
 quyền; "+ Thêm đơn vị bán", "Ngừng"; "Chia giá theo quy đổi"; một lý do, một nút lưu). Tạo vật tư mới xong tự chuyển sang tab Đơn vị tính.
 Trên điện thoại mỗi đơn vị là một thẻ. Trang Chính sách giá có mục **Nhóm giá khách** (bảng + popup thêm/sửa); ô "Nhóm giá" của khách là danh sách chọn.
+
+**Tạo đơn bán & giao hàng (FB2 Đợt 3, 16/10/2026)**: ô số lượng có nút − / + (bảng dòng dùng chung, cả đơn mua); dưới mỗi dòng luôn hiện
+"Có thể bán: 97 bao (4.850 kg) · <kho>" (đỏ "Thiếu so với số lượng đặt" khi vượt), chọn kho ở "Xem tồn tại", gợi ý F3 kèm "Có thể bán …".
+Nút chính "Xác nhận đơn" mở popup "Xác nhận đơn bán" (khách, công trình + địa chỉ, số dòng, tổng tiền, nợ hiện tại/quá hạn, bảng dòng, nhắc
+kiểm tra; "Xác nhận đơn" / "Quay lại sửa"); "Lưu nháp" là link phụ. Trang đơn đã xác nhận: nút chính "Lập phiếu giao" mở popup (Kho xuất,
+Giao lúc, bảng Vật tư │ Còn phải giao (đơn vị bán + cơ sở) │ Tồn kho xuất │ Giao lần này (điền sẵn), tùy chọn "Phân xe và người giao ngay"
+→ Người giao, Xe, Dự kiến xong) → mở phiếu giao vừa tạo; cách cũ gom vào "Lập phiếu theo nguồn đã phân". Nút "Tạo dịch vụ" ở trang đơn,
+trang khách và từng công trình mở form Dịch vụ đã chọn sẵn khách/công trình. Trang phiếu giao có thanh tiến trình 6 bước (Lập phiếu → Phân xe →
+Bàn giao lên xe → Tới nơi → Báo kết quả → Xác minh) + "Bước tiếp theo"; lượng kế hoạch kèm "≈ N <đơn vị bán>".
 
 **Hàng cùng loại (D11, SPEC-CAT-002)**: nút "+ Hàng cùng loại" trên danh sách vật tư mở popup: Tên hàng chung, Mã gốc (gợi ý mã), Nhóm vật tư,
 Đơn vị cơ sở, Cho phép bán/mua; Thuộc tính (tên + giá trị cách nhau dấu phẩy, tối đa 3 thuộc tính); "Đơn vị bán cho loại mới" (như tab Đơn vị

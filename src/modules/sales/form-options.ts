@@ -12,12 +12,12 @@ type CustomerRecord = {
 };
 type SiteRecord = { id: string; name: string; address_text: string };
 type MaterialRecord = { id: string; code: string; name: string; base_uom_id: string } & Parameters<typeof editorVariant>[0];
-type ConversionRecord = { material_id: string; from_uom_id: string };
+type ConversionRecord = { material_id: string; from_uom_id: string; to_uom_id: string; numerator: string; denominator: string };
 
 export type SalesFormOptions = {
   availability?: WarehouseAvailability;
   customers: { id: string; name: string; sites: { id: string; name: string; address: string }[] }[];
-  materials: { id: string; code: string; name: string; uoms: { id: string; symbol: string }[]; variant?: EditorVariant }[];
+  materials: { id: string; code: string; name: string; uoms: { id: string; symbol: string; ratio?: { numerator: string; denominator: string } }[]; variant?: EditorVariant }[];
 };
 
 export async function loadSalesFormOptions(branchId: string, selectedCustomerId?: string, selectedSiteId?: string, canReadInventory = false): Promise<SalesFormOptions> {
@@ -28,12 +28,12 @@ export async function loadSalesFormOptions(branchId: string, selectedCustomerId?
     supabase.from("customers").select("id, display_name").eq("branch_id", branchId).eq("active", true).order("display_name").order("id").limit(25),
     validCustomerId ? supabase.from("customers").select("id, display_name").eq("branch_id", branchId).eq("id", validCustomerId).maybeSingle() : Promise.resolve({ data: null, error: null }),
     supabase.from("materials").select(`id, code, name, base_uom_id, ${VARIANT_MATERIAL_COLUMNS}`).eq("active", true).eq("sale_enabled", true).order("name"),
-    supabase.from("material_uom_conversions").select("material_id, from_uom_id").eq("active", true).eq("settlement_allowed", true),
+    supabase.from("material_uom_conversions").select("material_id, from_uom_id, to_uom_id, numerator::text, denominator::text").eq("active", true).eq("settlement_allowed", true),
     supabase.from("units_of_measure").select("id, symbol").eq("active", true),
   ]);
   if (customerResult.error || selectedCustomerResult.error || materialResult.error || conversionResult.error || uomResult.error) throw new Error("Không thể tải dữ liệu tạo chứng từ bán hàng.");
   const uomSymbols = new Map((uomResult.data ?? []).map((uom) => [uom.id, uom.symbol]));
-  const conversions = conversionResult.data as ConversionRecord[];
+  const conversions = conversionResult.data as unknown as ConversionRecord[];
   const customerRows = (customerResult.data ?? []) as CustomerRecord[];
   const selectedCustomer = selectedCustomerResult.data as CustomerRecord | null;
   const allCustomers = selectedCustomer && !customerRows.some((item) => item.id === selectedCustomer.id) ? [selectedCustomer, ...customerRows] : customerRows;
@@ -49,8 +49,12 @@ export async function loadSalesFormOptions(branchId: string, selectedCustomerId?
   const sites = siteRows.map((site) => ({ id: site.id, name: site.name, address: site.address_text }));
   const customers = allCustomers.map((customer) => ({ id: customer.id, name: customer.display_name, sites: customer.id === siteCustomerId ? sites : [] }));
   const materials = (materialResult.data as unknown as MaterialRecord[]).map((material) => {
-    const uomIds = new Set([material.base_uom_id, ...conversions.filter((row) => row.material_id === material.id).map((row) => row.from_uom_id)]);
-    return { id: material.id, code: material.code, name: material.name, uoms: [...uomIds].map((id) => ({ id, symbol: uomSymbols.get(id) ?? "Đơn vị" })), variant: editorVariant(material) };
+    const own = conversions.filter((row) => row.material_id === material.id);
+    const uomIds = new Set([material.base_uom_id, ...own.map((row) => row.from_uom_id)]);
+    // The ratio to the base unit lets the editor show stock in the line's unit (97 bao = 4.850 kg).
+    const ratio = (id: string) => id === material.base_uom_id ? { numerator: "1", denominator: "1" }
+      : own.filter((row) => row.from_uom_id === id && row.to_uom_id === material.base_uom_id).map((row) => ({ numerator: row.numerator, denominator: row.denominator }))[0];
+    return { id: material.id, code: material.code, name: material.name, uoms: [...uomIds].map((id) => ({ id, symbol: uomSymbols.get(id) ?? "Đơn vị", ratio: ratio(id) })), variant: editorVariant(material) };
   });
   return { customers, materials, ...(canReadInventory ? { availability: await loadWarehouseAvailability(branchId, materials.map(row => row.id)) } : {}) };
 }

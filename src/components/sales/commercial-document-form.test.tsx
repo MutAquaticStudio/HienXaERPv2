@@ -1,8 +1,9 @@
-import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { CommercialDocumentForm } from "./commercial-document-form";
 
-const mocks = vi.hoisted(() => ({ save: vi.fn(), preview: vi.fn(), sites: vi.fn(), customers: vi.fn() }));
+const mocks = vi.hoisted(() => ({ save: vi.fn(), preview: vi.fn(), sites: vi.fn(), customers: vi.fn(), debt: vi.fn() }));
+vi.mock("@/modules/sales/customer-debt-actions", () => ({ loadCustomerDebtAction: mocks.debt }));
 vi.mock("@/modules/sales/actions", () => ({
   createQuotationAction: mocks.save, createSalesOrderAction: mocks.save,
   updateQuotationDraftAction: mocks.save, updateSalesOrderDraftAction: mocks.save,
@@ -30,6 +31,7 @@ beforeEach(() => {
   mocks.preview.mockResolvedValue({ success: true, message: "Đã xem giá", totalVnd: "120000", lines: [{ unitPriceVnd: "120000", priceSourceType: "LIST", lineTotalVnd: "120000" }] });
   mocks.sites.mockResolvedValue(props.options.customers[1].sites);
   mocks.customers.mockResolvedValue([]);
+  mocks.debt.mockResolvedValue({ outstandingVnd: "5000000", overdueVnd: "1000000", openCount: 2 });
 });
 afterEach(cleanup);
 
@@ -145,11 +147,18 @@ it("posts one value per field for every line, in line order", async () => {
   expect(data.getAll("sourceLineId")).toEqual(["", ""]);
 });
 
-it("'Tạo đơn' saves and confirms with its own operation ID; it is absent without confirm permission", async () => {
+it("'Xác nhận đơn' reviews the order, then saves and confirms with its own operation ID; it is absent without confirm permission", async () => {
   const { unmount } = render(<CommercialDocumentForm {...ready} canConfirm confirmOperationId={confirmId} />);
-  const create = screen.getByRole("button", { name: "Tạo đơn" });
+  const create = screen.getByRole("button", { name: "Xác nhận đơn" });
   await waitFor(() => expect(create).toBeEnabled());
   fireEvent.click(create);
+  const review = screen.getByRole("dialog", { name: "Xác nhận đơn bán" });
+  expect(within(review).getByText("Công trình A")).toBeInTheDocument();
+  expect(within(review).getAllByText("120.000 ₫").length).toBeGreaterThan(0);
+  expect(await within(review).findByText("1.000.000 ₫")).toBeInTheDocument();
+  expect(within(review).getByText(/nợ quá hạn/)).toBeInTheDocument();
+  expect(mocks.save).not.toHaveBeenCalled();
+  fireEvent.click(within(review).getByRole("button", { name: "Xác nhận đơn" }));
   await waitFor(() => expect(mocks.save).toHaveBeenCalledTimes(1));
   const data = mocks.save.mock.calls[0][1] as FormData;
   expect(data.get("intent")).toBe("confirm");
@@ -157,7 +166,7 @@ it("'Tạo đơn' saves and confirms with its own operation ID; it is absent wit
   expect(data.get("operationId")).toBe(props.operationId);
   unmount();
   render(<CommercialDocumentForm {...ready} confirmOperationId={confirmId} />);
-  expect(screen.queryByRole("button", { name: "Tạo đơn" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Xác nhận đơn" })).not.toBeInTheDocument();
 });
 
 it.each(["", "0", "-1", "NaN", "Infinity", "0.0000001"])("blocks invalid quantity %s with a line error", (value) => {
@@ -216,4 +225,32 @@ it("tells the cashier what is missing instead of a blank total, then prices Viet
   fireEvent.change(quantity(), { target: { value: "1,5" } });
   await waitFor(() => expect(mocks.preview).toHaveBeenLastCalledWith(expect.objectContaining({ customerId: "customer-b", siteId: "site-b", lines: [expect.objectContaining({ quantity: "1.5" })] })));
   expect(await screen.findByText("120.000 ₫", { selector: ".doc-editor-total dd" })).toBeInTheDocument();
+});
+
+it("steps the quantity with − / + and keeps it positive", async () => {
+  render(<CommercialDocumentForm {...ready} />);
+  expect(screen.getByRole("button", { name: "Giảm số lượng dòng 1" })).toBeDisabled();
+  fireEvent.click(screen.getByRole("button", { name: "Tăng số lượng dòng 1" }));
+  expect(quantity()).toHaveValue("2");
+  fireEvent.change(quantity(), { target: { value: "1,5" } });
+  fireEvent.click(screen.getByRole("button", { name: "Tăng số lượng dòng 1" }));
+  expect(quantity()).toHaveValue("2,5");
+  fireEvent.click(screen.getByRole("button", { name: "Giảm số lượng dòng 1" }));
+  fireEvent.click(screen.getByRole("button", { name: "Giảm số lượng dòng 1" }));
+  expect(quantity()).toHaveValue("0,5");
+  expect(screen.getByRole("button", { name: "Giảm số lượng dòng 1" })).toBeDisabled();
+});
+
+it("shows what can be sold from the chosen warehouse in the line's unit", () => {
+  const availability = { incomplete: false, warehouses: [{ id: "w1", name: "Kho chính" }, { id: "w2", name: "Kho phụ" }], positions: [
+    { warehouse_id: "w1", material_id: "material", base_uom_id: "uom-kg", baseSymbol: "kg", on_hand_base_quantity: "5000", reserved_base_quantity: "150", available_base_quantity: "4850" },
+  ] };
+  const materials = [{ id: "material", code: "XM01", name: "Xi măng", uoms: [{ id: "uom-kg", symbol: "kg", ratio: { numerator: "1", denominator: "1" } }, { id: "uom-a", symbol: "bao", ratio: { numerator: "50", denominator: "1" } }] }];
+  render(<CommercialDocumentForm {...ready} options={{ ...props.options, materials, availability }} />);
+  fireEvent.change(screen.getByLabelText("ĐVT bán dòng 1"), { target: { value: "uom-a" } });
+  expect(screen.getByText("Có thể bán: 97 bao (4.850 kg) · Kho chính")).toBeInTheDocument();
+  fireEvent.change(quantity(), { target: { value: "98" } });
+  expect(screen.getByText(/Thiếu so với số lượng đặt/)).toBeInTheDocument();
+  fireEvent.change(screen.getByRole("combobox", { name: "Xem tồn tại" }), { target: { value: "w2" } });
+  expect(screen.getByText("Chưa có tồn tại kho đang xem.")).toBeInTheDocument();
 });

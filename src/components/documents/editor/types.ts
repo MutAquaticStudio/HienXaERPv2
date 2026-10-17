@@ -1,4 +1,5 @@
-export type EditorUom = { id: string; symbol: string };
+/** A unit a line can use; `ratio` is "1 unit = numerator/denominator base units" when known (base unit 1/1). */
+export type EditorUom = { id: string; symbol: string; ratio?: { numerator: string; denominator: string } };
 export type EditorMaterial = { id: string; code?: string; name: string; uoms: EditorUom[]; variant?: { groupId: string; name: string; label: string } };
 
 /** One document line as the editor holds it; field names match the server FormData contract. */

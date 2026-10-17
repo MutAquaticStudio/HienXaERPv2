@@ -14,7 +14,9 @@ export const MaterialSearchBox = forwardRef<MaterialSearchHandle, {
   onPick: (material: EditorMaterial) => void;
   disabled?: boolean;
   label?: string;
-}>(function MaterialSearchBox({ materials, onPick, disabled, label = "Tìm vật tư" }, ref) {
+  /** Extra text per result, e.g. the stock that can be sold from the chosen warehouse. */
+  hint?: (material: EditorMaterial) => string | null;
+}>(function MaterialSearchBox({ materials, onPick, disabled, label = "Tìm vật tư", hint }, ref) {
   const id = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
@@ -80,7 +82,7 @@ export const MaterialSearchBox = forwardRef<MaterialSearchHandle, {
         {material.variant && material.variant.groupId !== results[index - 1]?.variant?.groupId && <li className="doc-editor-listbox-group" role="presentation">{material.variant.name}</li>}
         <li id={`${listId}-${index}`} role="option" aria-selected={index === highlight} className={material.variant ? "doc-editor-listbox-variant" : undefined}
           onMouseDown={(event) => { event.preventDefault(); pick(material); }} onMouseEnter={() => setHighlight(index)}>
-          <span>{material.name}</span><small>{[material.variant?.label, material.code, material.uoms.map((uom) => uom.symbol).join(" · ")].filter(Boolean).join(" · ")}</small>
+          <span>{material.name}</span><small>{[material.variant?.label, material.code, material.uoms.map((uom) => uom.symbol).join(" · "), hint?.(material)].filter(Boolean).join(" · ")}</small>
         </li>
       </Fragment>)}
       {!results.length && <li className="doc-editor-listbox-note" role="presentation">Không tìm thấy vật tư phù hợp.</li>}

@@ -919,6 +919,10 @@ Confirm phải:
 
 Không tự tạo AR chỉ vì CONFIRMED.
 
+Bổ sung D6 (16/10/2026): khi tạo đơn, nút chính là "Xác nhận đơn" — mở bảng kiểm tra (khách, công trình, các dòng, tổng tiền, nợ hiện tại và
+quá hạn khi có quyền phải thu) rồi mới lưu nháp + xác nhận bằng hai mã thao tác riêng như trước. Bị chặn hạn mức thì đơn ở nháp, báo lý do và
+giữ lối duyệt vượt hạn mức. "Lưu nháp" là lối phụ.
+
 ## SPEC-SO-003 — Source relation
 
 SO có thể:
@@ -1088,6 +1092,16 @@ Có thể gồm:
 - document.
 
 Proof mặc định private trừ khi policy cho phép customer xem.
+
+## SPEC-DEL-006 — Lập phiếu giao một bước từ đơn đã xác nhận (FB2 Đợt 3, 16/10/2026)
+
+- `create_delivery_for_order` (một giao dịch, idempotent): với mỗi dòng chọn, lượng nhập **theo đơn vị đã bán** được đổi sang đơn vị cơ sở
+  bằng tỉ lệ đã chụp trên dòng đơn (phải đúng tối đa 6 số lẻ, không làm tròn); dùng phân nguồn kho đã có của đúng kho đó (tăng thêm nếu còn
+  thiếu) hoặc tạo phân nguồn mới qua `upsert_supply_allocation`; rồi `create_delivery_from_allocations` (giữ tồn khả dụng) và, nếu chọn,
+  `assign_delivery_scheduled` (người giao + xe + khung giờ). Mọi quy tắc cũ (quyền, sức chứa phân nguồn, giữ tồn, trùng lịch, tải xe) giữ nguyên;
+  lỗi ở bất kỳ bước nào thì không có gì được ghi. Một kho mỗi phiếu; dòng NCC giao thẳng vẫn theo luồng hiện có.
+- `order_delivery_plan` chỉ đọc (cần `delivery.create`): lượng phải giao, các phân nguồn và phần đã dùng của từng phân nguồn, để điền sẵn
+  "Còn phải giao" theo kho được chọn.
 
 ## SPEC-DEL-005 — Xác minh giao hàng và ghi sổ đúng một lần
 

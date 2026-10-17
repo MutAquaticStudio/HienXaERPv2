@@ -2834,3 +2834,21 @@ bao = 50 kg, giá 90.000/95.000 một bao → 2 vật tư, mã gợi ý `QV…-P
 sửa thêm PCB50 (đơn vị bao chép từ loại có sẵn) → 3 loại; F3 trong đơn bán hiện tiêu đề hàng và 3 loại; điện thoại 390 không tràn ngang.
 Phát hiện khi QA và đã sửa: chia giá mặc định làm tròn 1.000 đ làm giá kg lệch (1.800 → 2.000) mà không hiện ra → đổi mặc định không làm tròn và
 hiện giá đã chia; khi sửa, mã gợi ý theo phần đầu mã các loại sẵn có. Production chưa áp (chờ Owner).
+
+## 2026-10-17 — FB2-D3: Tạo đơn bán và giao hàng gọn (Đợt 3)
+
+Nhánh `nox/elegant-volta-kr29iz` (PR #52, gộp theo chỉ thị Owner 16/10).
+- **Tạo đơn**: nút − / + số lượng (`stepQuantity`, Decimal, không xuống ≤ 0); dòng tồn kho luôn hiện (`editor/line-stock.tsx`) theo đơn vị của
+  dòng nhờ tỉ lệ quy đổi nạp trong `sales/form-options.ts`, kho xem tồn chọn được, F3 kèm "Có thể bán". "Xác nhận đơn" (D6) mở popup
+  `OrderReview` (nợ hiện tại/quá hạn qua `sales/customer-debt-actions.ts`, chỉ với `finance.ar.read`); gửi form với intent `confirm` như cũ.
+- **Lập phiếu giao một bước** (migration `20261016180000_delivery_for_order`): `order_delivery_plan` (đọc) + `create_delivery_for_order` (gọi lại
+  `upsert_supply_allocation`, `create_delivery_from_allocations`, `assign_delivery_scheduled` với mã thao tác con suy ra; khóa theo thứ tự phân
+  nguồn → dòng đơn → đơn; receipt + audit `delivery.create_for_order`). Popup `order-delivery-dialog.tsx` + action `order-delivery-actions.ts`;
+  thông báo lỗi giao hàng gom về `delivery/errors.ts`. Trang phiếu giao: `DeliveryProgress` + lượng theo đơn vị bán.
+- **Dịch vụ (D9)**: menu sang Bán hàng, nhóm "Nhân công"; "Tạo dịch vụ" từ đơn/khách/công trình mở form chọn sẵn.
+Kiểm: native `070_delivery_for_order.sql` (người chỉ xem bị từ chối, đơn nháp/dòng đơn khác bị từ chối, thiếu tồn → không còn phân nguồn, phân
+xe lỗi → không còn phiếu, 2 bao = 100 kg đúng phân nguồn/kế hoạch/giữ tồn, replay/xung đột, lần 2 tăng đúng phân nguồn của kho, vượt lượng bán bị
+từ chối) cùng 010–060 PASS; vitest 133 file; QA project: áp migration (sha256 `d5d4d58a…`, md5 2 hàm khớp file). QA trình duyệt (owner, chi nhánh A):
+F3 → + → "Có thể bán: 170 unit · Kho nghiệm thu QA" → popup xác nhận (420.000 ₫) → đơn đã xác nhận → popup lập phiếu điền sẵn 2 → phiếu giao có thanh
+tiến trình → "Tạo dịch vụ" chọn sẵn khách/công trình. Sửa khi QA: trang tạo đơn tràn ngang ở 390px do tên kho dài trong ô chọn (cột lưới nở theo
+chữ) → khung dòng hàng dùng `minmax(0, 1fr)`; đo lại 390/390. Production chưa áp.

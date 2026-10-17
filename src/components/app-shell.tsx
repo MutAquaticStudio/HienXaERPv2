@@ -17,7 +17,7 @@ const adminGroups = [
   { id: "inventory", label: "Kho hàng", icon: Warehouse },
   { id: "delivery", label: "Giao hàng", icon: Truck },
   { id: "finance", label: "Tài chính", icon: WalletCards },
-  { id: "workforce", label: "Nhân công & dịch vụ", icon: UsersRound },
+  { id: "workforce", label: "Nhân công", icon: UsersRound },
   { id: "administration", label: "Quản trị", icon: Settings2 },
 ] as const;
 
@@ -27,6 +27,7 @@ const navigation: Record<Surface, readonly NavigationItem[]> = {
     { href: "/admin/orders", label: "Đơn bán", icon: ShoppingCart, permission: "orders.read", group: "sales" },
     ...(QUOTATIONS_ENABLED ? [{ href: "/admin/quotations", label: "Báo giá", icon: FileText, permission: "quotation.read", group: "sales" }] : []),
     { href: "/admin/customers", label: "Khách hàng", icon: UsersRound, permission: "customers.read", managementPermission: "customers.manage", managementHref: "/admin/customers/manage", group: "sales" },
+    { href: "/admin/service-jobs", label: "Dịch vụ", icon: Truck, permission: "service.read", group: "sales" },
     { href: "/admin/purchase-orders", label: "Đơn mua", icon: PackageSearch, permission: "purchasing.read", group: "purchasing" },
     { href: "/admin/suppliers", label: "Nhà cung cấp", icon: Factory, permission: "suppliers.read", managementPermission: "suppliers.manage", managementHref: "/admin/suppliers/manage", group: "purchasing" },
     { href: "/admin/products", label: "Vật tư", icon: Boxes, permission: "catalog.read", managementPermission: "catalog.manage", managementHref: "/admin/products/manage", group: "inventory" },
@@ -45,7 +46,6 @@ const navigation: Record<Surface, readonly NavigationItem[]> = {
     { href: "/admin/invoices/purchases", label: "Chứng từ mua", icon: FileText, permission: "finance.ap.read", group: "finance" },
     { href: "/admin/workforce", label: "Nhân sự & công việc", icon: UsersRound, permission: "workforce.read", group: "workforce" },
     { href: "/admin/compensation", label: "Thu nhập", icon: WalletCards, permission: "compensation.read", group: "workforce" },
-    { href: "/admin/service-jobs", label: "Dịch vụ", icon: Truck, permission: "service.read", group: "workforce" },
     { href: "/admin/access", label: "Nhân viên & quyền", icon: ShieldCheck, permission: "roles.manage", group: "administration" },
     { href: "/admin/reports", label: "Báo cáo", icon: BarChart3, permissionsAny: ["finance.ar.read", "finance.ap.read", "finance.expense.read"] },
     { href: "/admin/audit", label: "Nhật ký", icon: ScrollText, permission: "roles.manage", group: "administration" },

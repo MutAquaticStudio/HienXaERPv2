@@ -114,7 +114,7 @@ describe("grouped operational navigation", () => {
     render(shell());
     const sidebar = screen.getByRole("complementary");
     expect(within(sidebar).getByRole("button", { name: "Kho hàng" })).toBeInTheDocument();
-    expect(within(sidebar).getByRole("button", { name: "Nhân công & dịch vụ" })).toBeInTheDocument();
+    expect(within(sidebar).getByRole("button", { name: "Nhân công" })).toBeInTheDocument();
     expect(sidebar.textContent).not.toMatch(/\uFFFD|Ã[\u0080-\u00bf]|Â[\u0080-\u00bf]/u);
     expect(screen.getByText("Chủ QA")).toBeInTheDocument();
     expect(screen.queryByText("Chi nhánh QA")).not.toBeInTheDocument();
