@@ -1277,3 +1277,15 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .appearance-options .segmented-radio { margin: 0; }
 /* Inline row forms (e.g. "Tính thu nhập" per manual basis): a long rule name must not widen a phone screen. */
 .inline-actions select { max-width: 100%; }
+
+/* FB3 P5: KiotViet-style discounts on a sales order. */
+.line-price-button { display: grid; justify-items: end; gap: 2px; width: 100%; min-height: 40px; padding: 6px 8px; border: 1px dashed var(--border); border-radius: 8px;
+  background: transparent; color: var(--text); font: inherit; text-align: right; cursor: pointer; }
+.line-price-button:hover, .line-price-button:focus-visible { border-style: solid; border-color: var(--primary, #1d4ed8); }
+.line-price-button s { color: var(--muted); }
+.discount-field .field-label-row { align-items: center; }
+.discount-mode { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.discount-mode button { min-width: 44px; min-height: 32px; padding: 0 10px; border: 0; background: transparent; color: var(--muted); font: inherit; font-weight: 600; cursor: pointer; }
+.discount-mode button[aria-pressed="true"] { background: var(--primary, #1d4ed8); color: #fff; }
+.doc-editor-footer .discount-field { margin-top: 10px; }
+.line-price-result { margin: 0; }

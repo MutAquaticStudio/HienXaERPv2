@@ -1,6 +1,7 @@
 "use server";
 
 import Decimal from "decimal.js";
+import { applySalesDiscounts, readDiscountInputs } from "./discounts";
 import { finalSellingPriceReason } from "./final-price";
 import { isPositiveSalesQuantity } from "./quantity-input";
 import { revalidatePath } from "next/cache";
@@ -47,6 +48,8 @@ function commandError(message: string, confirmingOrder = false) {
   if (message.includes("pricing_priority_ambiguous")) return "Có nhiều bảng giá cùng mức ưu tiên và phiên bản. Cần đối chiếu bảng giá hoặc dùng giá thủ công được phê duyệt.";
   if (message.includes("sales_order_not_confirmable")) return "Đơn bán không còn ở trạng thái có thể xác nhận. Hãy tải lại để kiểm tra.";
   if (message.includes("order_lines_required")) return "Vui lòng thêm ít nhất một dòng vật tư cho đơn bán.";
+  if (message.includes("discount_requires_permission")) return "Bạn không có quyền giảm giá. Bỏ giảm giá hoặc nhờ người quản lý giá.";
+  if (message.includes("invalid_discount")) return "Giảm giá không hợp lệ: phải nhỏ hơn đơn giá, phần trăm dưới 100%. Kiểm tra lại từng dòng.";
   if (confirmingOrder && message.includes("forbidden")) return "Bạn không có quyền xác nhận đơn bán tại chi nhánh này.";
   if (message.includes("sales_order_unresolved_execution")) return "Còn giao hàng, việc hoặc hàng đang vận chuyển chưa xử lý. Hãy hoàn tất trước khi đóng phần còn lại.";
   if (message.includes("sales_order_has_no_remaining")) return "Đơn không còn số lượng chưa giao để đóng.";
@@ -103,10 +106,14 @@ async function loadEditableCommercialLines(kind: "order" | "quote", documentId: 
     parentColumn = "revision_id";
   }
   const { data: originals, error } = await supabase.from(table)
-    .select("id, material_id, ordered_uom_id, unit_price_vnd::text, conversion_numerator::text, conversion_denominator::text, rounding_mode, price_source_type, override_reason, pricing_rule_id, pricing_rule_version")
+    .select(`id, material_id, ordered_uom_id, unit_price_vnd::text, conversion_numerator::text, conversion_denominator::text, rounding_mode, price_source_type, override_reason, pricing_rule_id, pricing_rule_version${kind === "order" ? ", list_unit_price_vnd::text" : ""}`)
     .eq(parentColumn, documentId);
   if (error) throw new AppError({ code: "DEPENDENCY_UNAVAILABLE", message: "Không thể đọc dòng bản nháp.", status: 503 });
-  return new Map((originals ?? []).map((line) => [line.id, line as OriginalCommercialLine]));
+  // A discounted order line is compared and re-priced on its price before discount; the discount is applied again.
+  return new Map((originals ?? []).map((row) => {
+    const line = row as unknown as OriginalCommercialLine & { list_unit_price_vnd?: string | null };
+    return [line.id, { ...line, unit_price_vnd: line.list_unit_price_vnd ?? line.unit_price_vnd }];
+  }));
 }
 
 async function createCommercialLines(input: z.infer<typeof documentSchema>, branchId: string, canManagePrice: boolean,
@@ -301,6 +308,7 @@ async function saveDocument(kind: "order" | "quote", mode: "create" | "edit", fo
   }
   let lines;
   let effectiveAt;
+  let orderDiscount: { mode: string; value: string } | null = null;
   try {
     const originals = edit?.success
       ? await loadEditableCommercialLines(kind, edit.data.documentId, edit.data.expectedVersion, parsed.data, access.branchId)
@@ -310,16 +318,32 @@ async function saveDocument(kind: "order" | "quote", mode: "create" | "edit", fo
     if (!actual.every((line, index) => Object.keys(line).every((key) => line[key as keyof PricePreviewLine] === expected[index][key as keyof PricePreviewLine]))) {
       return { message: "Giá hoặc dòng hàng đã thay đổi. Vui lòng xem trước lại trước khi lưu." };
     }
+    if (kind === "order") {
+      // Discounts lower the unit price after the price list check; a payload without them stays exactly as before.
+      const inputs = readDiscountInputs(formData, lines.length);
+      if (!inputs.ok) return { message: inputs.message };
+      if (inputs.order || inputs.lines.some(Boolean)) {
+        if (!access.permissions.has("pricing.manage")) return { message: "Bạn không có quyền giảm giá. Bỏ giảm giá hoặc nhờ người quản lý giá." };
+        const discounted = applySalesDiscounts(lines.map((line, index) => ({ quantity: line.quantity, listUnitVnd: line.unit_price_vnd, discount: inputs.lines[index] })), inputs.order);
+        if (!discounted.ok) return { message: discounted.message };
+        lines = lines.map((line, index) => {
+          const own = inputs.lines[index];
+          const unitDiscountVnd = discounted.lines[index].discountUnitVnd;
+          return { ...line, ...(unitDiscountVnd !== "0" ? { discount_unit_vnd: unitDiscountVnd } : {}), ...(own ? { discount_mode: own.mode, discount_value: own.value } : {}) };
+        });
+        orderDiscount = inputs.order;
+      }
+    }
     effectiveAt = toIso(parsed.data.effectiveAt);
   } catch (error) {
     return { message: error instanceof AppError ? error.message : "Không thể chuẩn bị các dòng hàng." };
   }
   const result = edit?.success
     ? kind === "order"
-      ? await supabase.rpc("update_sales_order_draft", { target_order_id: edit.data.documentId, expected_version: edit.data.expectedVersion, requested_delivery_at: effectiveAt, commercial_terms: parsed.data.terms || null, order_lines: lines, operation_id: parsed.data.operationId })
+      ? await supabase.rpc("update_sales_order_draft", { target_order_id: edit.data.documentId, expected_version: edit.data.expectedVersion, requested_delivery_at: effectiveAt, commercial_terms: parsed.data.terms || null, order_lines: lines, operation_id: parsed.data.operationId, ...(orderDiscount ? { order_discount: orderDiscount } : {}) })
       : await supabase.rpc("update_quote_draft", { target_revision_id: edit.data.documentId, expected_version: edit.data.expectedVersion, expires_at: effectiveAt, commercial_terms: parsed.data.terms || null, quote_lines: lines, operation_id: parsed.data.operationId })
     : kind === "order"
-      ? await supabase.rpc("create_sales_order_draft", { target_branch_id: access.branchId, target_customer_id: parsed.data.customerId, target_site_id: parsed.data.siteId, requested_delivery_at: effectiveAt, commercial_terms: parsed.data.terms || null, order_lines: lines, operation_id: parsed.data.operationId })
+      ? await supabase.rpc("create_sales_order_draft", { target_branch_id: access.branchId, target_customer_id: parsed.data.customerId, target_site_id: parsed.data.siteId, requested_delivery_at: effectiveAt, commercial_terms: parsed.data.terms || null, order_lines: lines, operation_id: parsed.data.operationId, ...(orderDiscount ? { order_discount: orderDiscount } : {}) })
       : await supabase.rpc("create_quote_draft", { target_branch_id: access.branchId, target_customer_id: parsed.data.customerId, target_site_id: parsed.data.siteId, expires_at: effectiveAt, commercial_terms: parsed.data.terms || null, quote_lines: lines, operation_id: parsed.data.operationId });
   if (result.error || !result.data) return { message: commandError(result.error?.message ?? "unknown") };
   revalidatePath(kind === "order" ? "/admin/orders" : "/admin/quotations");

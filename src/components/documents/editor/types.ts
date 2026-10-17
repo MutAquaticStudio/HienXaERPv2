@@ -11,6 +11,9 @@ export type EditorLine = {
   quantity: string;
   manualPriceVnd: string;
   manualReason: string;
+  /** Sales line discount as typed: "AMOUNT" (VND per unit) or "PERCENT", with its value. */
+  discountMode?: "" | "AMOUNT" | "PERCENT";
+  discountValue?: string;
 };
 
 export type PricedLine = { unitPriceVnd: string; lineTotalVnd: string; sourceLabel: string };

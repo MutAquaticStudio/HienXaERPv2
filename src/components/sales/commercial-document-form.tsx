@@ -9,7 +9,9 @@ import { MaterialSearchBox, type MaterialSearchHandle } from "@/components/docum
 import type { EditorLine, EditorMaterial, EntityOption } from "@/components/documents/editor/types";
 import { useAutoPricePreview } from "@/components/documents/editor/use-auto-price-preview";
 
-import { startTransition, useActionState, useCallback, useEffect, useId, useRef, useState, type FormEvent } from "react";
+import { startTransition, useActionState, useCallback, useEffect, useId, useMemo, useRef, useState, type FormEvent } from "react";
+import { DiscountField, LinePriceDialog, draftDiscount, type DiscountDraft } from "@/components/sales/discount-controls";
+import { applySalesDiscounts, discountLabel } from "@/modules/sales/discounts";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { formatQuantity } from "@/lib/core/quantity";
 import { isPositiveSalesQuantity } from "@/modules/sales/quantity-input";
@@ -24,7 +26,9 @@ import type { SalesFormOptions } from "@/modules/sales/form-options";
 export type ExistingCommercialDraft = {
   id: string; version: number; customerId: string; siteId: string;
   effectiveAt: string | null; terms: string | null;
-  lines: { sourceLineId: string; materialId: string; uomId: string; quantity: string; manualPriceVnd: string; manualReason: string }[];
+  lines: { sourceLineId: string; materialId: string; uomId: string; quantity: string; manualPriceVnd: string; manualReason: string;
+    discountMode?: "" | "AMOUNT" | "PERCENT"; discountValue?: string }[];
+  orderDiscount?: DiscountDraft | null;
 };
 
 type Site = SalesFormOptions["customers"][number]["sites"][number];
@@ -79,8 +83,9 @@ type ReviewLine = { key: number; name: string; quantity: string; symbol: string;
  * "Xác nhận đơn" review (D6): what will be confirmed, the customer's current and overdue debt (with receivable rights),
  * then the confirm button submits the order form with intent "confirm".
  */
-function OrderReview({ formId, customer, site, siteAddress, lines, totalVnd, onClose }: {
-  formId: string; customer: EntityOption | null; site: EntityOption | null; siteAddress?: string; lines: ReviewLine[]; totalVnd: string | null; onClose: () => void;
+function OrderReview({ formId, customer, site, siteAddress, lines, totalVnd, grossVnd, discountVnd, onClose }: {
+  formId: string; customer: EntityOption | null; site: EntityOption | null; siteAddress?: string; lines: ReviewLine[]; totalVnd: string | null;
+  grossVnd?: string | null; discountVnd?: string | null; onClose: () => void;
 }) {
   const [debt, setDebt] = useState<CustomerDebt | null | undefined>(undefined);
   useEffect(() => {
@@ -94,7 +99,9 @@ function OrderReview({ formId, customer, site, siteAddress, lines, totalVnd, onC
       <div className="detail-item"><dt>Khách hàng</dt><dd>{customer?.label}</dd></div>
       <div className="detail-item"><dt>Công trình / điểm giao</dt><dd>{site?.label}{siteAddress && <small className="table-subline">{siteAddress}</small>}</dd></div>
       <div className="detail-item"><dt>Số dòng</dt><dd>{lines.length}</dd></div>
-      <div className="detail-item"><dt>Tổng tiền hàng</dt><dd><strong>{money(totalVnd)}</strong></dd></div>
+      {discountVnd && discountVnd !== "0" && <><div className="detail-item"><dt>Tổng tiền hàng</dt><dd>{money(grossVnd ?? null)}</dd></div>
+        <div className="detail-item"><dt>Giảm giá</dt><dd>−{money(discountVnd)}</dd></div></>}
+      <div className="detail-item"><dt>{discountVnd && discountVnd !== "0" ? "Khách cần trả" : "Tổng tiền hàng"}</dt><dd><strong>{money(totalVnd)}</strong></dd></div>
       {debt && <><div className="detail-item"><dt>Nợ hiện tại</dt><dd>{money(debt.outstandingVnd)}</dd></div>
         <div className="detail-item"><dt>Nợ quá hạn</dt><dd className={debt.overdueVnd !== "0" ? "text-danger" : undefined}>{money(debt.overdueVnd)}</dd></div></>}
     </dl>
@@ -156,6 +163,10 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
   const siteRef = useRef<EntityComboboxHandle>(null);
   const formId = useId();
   const [reviewOpen, setReviewOpen] = useState(false);
+  // Discounts (orders, with pricing rights): typed per line in the price popup and for the whole order in the totals.
+  const discounts = kind === "order" && canManagePrice;
+  const [orderDiscount, setOrderDiscount] = useState<DiscountDraft>(existing?.orderDiscount ?? { mode: "", value: "" });
+  const [priceLineKey, setPriceLineKey] = useState<number | null>(null);
   const availability = options.availability;
   // Stock is shown for one warehouse at a time, the first of the branch unless another is chosen.
   const [stockWarehouseId, setStockWarehouseId] = useState(availability?.warehouses[0]?.id ?? "");
@@ -167,11 +178,12 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
     : !lines.length ? "Thêm vật tư để tính giá"
     : lines.some((line) => !line.materialId || !line.uomId || !isPositiveSalesQuantity(line.quantity)) ? "Sửa dòng hàng chưa hợp lệ để tính giá" : null;
   const empty = !!priceMissing;
+  // Only what the price depends on: a discount typed in the price popup does not ask the server again.
+  const pricingLines = JSON.stringify(lines.map((line) => ({ materialId: line.materialId, orderedUomId: line.uomId, quantity: line.quantity,
+    manualPriceVnd: line.manualPriceVnd, manualReason: line.manualReason, sourceLineId: line.sourceLineId })));
   const load = useCallback(() => previewCommercialDocumentAction({ kind, customerId, siteId,
-    documentId: existing?.id, expectedVersion: existing?.version,
-    lines: lines.map((line) => ({ materialId: line.materialId, orderedUomId: line.uomId, quantity: line.quantity,
-      manualPriceVnd: line.manualPriceVnd, manualReason: line.manualReason, sourceLineId: line.sourceLineId })) }),
-  [kind, customerId, siteId, existing?.id, existing?.version, lines]);
+    documentId: existing?.id, expectedVersion: existing?.version, lines: JSON.parse(pricingLines) }),
+  [kind, customerId, siteId, existing?.id, existing?.version, pricingLines]);
   const { preview, pending: previewPending, invalidate } = useAutoPricePreview({
     load, enabled: !empty && !pending && !state?.outcomeUnknown, scope: state, failure: PREVIEW_FAILURE, holdUntilChange: !!existing,
   });
@@ -180,6 +192,16 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
     invalidate();
     setLines(next);
   }
+  const previewLines = preview?.success && preview.lines?.length === lines.length ? preview.lines : null;
+  const discounted = useMemo(() => {
+    if (kind !== "order" || !previewLines) return null;
+    try {
+      return applySalesDiscounts(previewLines.map((line, index) => ({ quantity: lines[index].quantity, listUnitVnd: line.unitPriceVnd,
+        discount: draftDiscount({ mode: lines[index].discountMode ?? "", value: lines[index].discountValue ?? "" }) })), draftDiscount(orderDiscount));
+    } catch { return null; }
+  }, [kind, previewLines, lines, orderDiscount]);
+  const discountedOk = discounted?.ok ? discounted : null;
+  const priceLine = priceLineKey === null ? null : lines.find((line) => line.key === priceLineKey) ?? null;
   function pickMaterial(material: EditorMaterial) {
     const result = addMaterialLine(lines, material, nextLineKey.current);
     if (!result) { setLookupMessage("Đơn bán tối đa 50 dòng."); return; }
@@ -215,7 +237,7 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
     startTransition(() => formAction(data));
   }
 
-  const ready = !empty && !!preview?.success && !pending && !state?.outcomeUnknown;
+  const ready = !empty && !!preview?.success && !pending && !state?.outcomeUnknown && !(discounted && !discounted.ok);
   const confirmable = kind === "order" && !existing && canConfirm && !!confirmOperationId;
   return <><form id={formId} className="doc-editor commercial-document-form" action={formAction} onReset={(event) => event.preventDefault()} onSubmit={submit}>
     <input type="hidden" name="operationId" value={operationId} />
@@ -230,7 +252,20 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
         {availability.warehouses.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>}
       <DocumentLineTable lines={lines} materials={options.materials} canManagePrice={canManagePrice} isValidQuantity={isPositiveSalesQuantity} focusKey={focusKey} focusSeq={focusSeq}
         labels={{ uom: "ĐVT bán", price: "Đơn giá" }}
-        priced={(index) => preview?.success && preview.lines?.[index] ? { unitPriceVnd: preview.lines[index].unitPriceVnd, lineTotalVnd: preview.lines[index].lineTotalVnd, sourceLabel: priceSourceLabel(preview.lines[index].priceSourceType) } : null}
+        priced={(index) => preview?.success && preview.lines?.[index] ? { unitPriceVnd: discountedOk?.lines[index]?.unitPriceVnd ?? preview.lines[index].unitPriceVnd,
+          lineTotalVnd: discountedOk?.lines[index]?.lineTotalVnd ?? preview.lines[index].lineTotalVnd, sourceLabel: priceSourceLabel(preview.lines[index].priceSourceType) } : null}
+        hiddenFields={kind === "order" ? (line) => <><input type="hidden" name="discountMode" value={line.discountValue?.trim() ? line.discountMode ?? "" : ""} />
+          <input type="hidden" name="discountValue" value={line.discountValue?.trim() && line.discountMode ? line.discountValue : ""} /></> : undefined}
+        renderPrice={discounts ? (line, index, price) => {
+          const own = draftDiscount({ mode: line.discountMode ?? "", value: line.discountValue ?? "" });
+          const result = discountedOk?.lines[index];
+          const cut = result && result.discountUnitVnd !== "0";
+          return <button type="button" className="line-price-button" aria-label={`Đơn giá và giảm giá dòng ${index + 1}`} onClick={() => setPriceLineKey(line.key)}>
+            <span>{price ? formatVnd(vnd(price.unitPriceVnd)) : line.manualPriceVnd ? formatVnd(vnd(line.manualPriceVnd)) : "Giá hệ thống"}</span>
+            {cut && <s className="table-subline">{formatVnd(vnd(result.listUnitVnd))}</s>}
+            <small className="table-subline">{own ? discountLabel(own) : cut ? "Giảm theo đơn" : line.manualPriceVnd ? "Giá thủ công" : price?.sourceLabel ?? "Bấm để giảm giá"}</small>
+          </button>;
+        } : undefined}
         onChange={(key, change) => changeLines((current) => current.map((line) => line.key === key ? { ...line, ...change } : line))}
         onRemove={(key) => { changeLines((current) => current.filter((line) => line.key !== key)); searchRef.current?.focus(); }}
         onDone={() => searchRef.current?.focus()}
@@ -255,8 +290,18 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
       {state?.message && <p className={`form-message${state.success ? " success" : ""}`} role="status">{userFacingError(state.message)}</p>}
       <div className="doc-editor-totals"><dl className="doc-editor-summary">
         <div><dt>Số dòng</dt><dd>{lines.length}</dd></div>
-        <div className="doc-editor-total"><dt>Tổng tiền hàng</dt><dd><DocumentTotalValue totalVnd={preview?.success ? preview.totalVnd : null} pending={previewPending && !priceMissing} /></dd></div>
+        <div className={discountedOk && discountedOk.discountTotalVnd !== "0" ? undefined : "doc-editor-total"}><dt>Tổng tiền hàng</dt><dd><DocumentTotalValue totalVnd={preview?.success ? preview.totalVnd : null} pending={previewPending && !priceMissing} /></dd></div>
+        {discountedOk && discountedOk.discountTotalVnd !== "0" && <>
+          <div><dt>Giảm giá</dt><dd>−{formatVnd(vnd(discountedOk.discountTotalVnd))}</dd></div>
+          <div className="doc-editor-total"><dt>Khách cần trả</dt><dd>{formatVnd(vnd(discountedOk.netTotalVnd))}</dd></div></>}
       </dl>
+      {discounts && <DiscountField id="order-discount" label="Giảm giá đơn" draft={orderDiscount} onChange={setOrderDiscount}
+        hint={discountedOk && discountedOk.orderRequestedVnd !== discountedOk.orderAppliedVnd
+          ? `Giảm được ${formatVnd(vnd(discountedOk.orderAppliedVnd))} (lệch ${formatVnd(vnd((BigInt(discountedOk.orderRequestedVnd) - BigInt(discountedOk.orderAppliedVnd)).toString()))} vì giá mỗi đơn vị phải là số đồng nguyên).`
+          : undefined} />}
+      {kind === "order" && <><input type="hidden" name="orderDiscountMode" value={orderDiscount.value.trim() ? orderDiscount.mode : ""} />
+        <input type="hidden" name="orderDiscountValue" value={orderDiscount.mode ? orderDiscount.value : ""} /></>}
+      {discounted && !discounted.ok && <p className="form-message" role="alert">{discounted.message}</p>}
       {priceMissing && <p className="doc-editor-total-hint">{priceMissing}</p>}</div>
       <div className="doc-editor-actions">
         {confirmable && <button className="button button-primary" type="button" disabled={!ready} onClick={() => setReviewOpen(true)}>{pending ? "Đang lưu..." : "Xác nhận đơn"}</button>}
@@ -272,8 +317,23 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
     </div></div>
   </form>{reviewOpen && confirmable && preview?.success && <OrderReview formId={formId} customer={customer} site={site} siteAddress={sites.find((item) => item.id === siteId)?.address}
     lines={lines.map((line, index) => ({ key: line.key, name: materialOf(line.materialId)?.name ?? "Vật tư", quantity: line.quantity,
-      symbol: materialOf(line.materialId)?.uoms.find((uom) => uom.id === line.uomId)?.symbol ?? "", totalVnd: preview.lines?.[index]?.lineTotalVnd ?? null }))}
-    totalVnd={preview.totalVnd ?? null} onClose={() => setReviewOpen(false)} />}{quickMode && <QuickCreatePanel key={quickMode} mode={quickMode} customerId={customerId} onClose={() => setQuickMode(null)}
+      symbol: materialOf(line.materialId)?.uoms.find((uom) => uom.id === line.uomId)?.symbol ?? "", totalVnd: discountedOk?.lines[index]?.lineTotalVnd ?? preview.lines?.[index]?.lineTotalVnd ?? null }))}
+    totalVnd={discountedOk?.netTotalVnd ?? preview.totalVnd ?? null} grossVnd={preview.totalVnd ?? null} discountVnd={discountedOk?.discountTotalVnd ?? null} onClose={() => setReviewOpen(false)} />}
+    {priceLine && <LinePriceDialog row={lines.indexOf(priceLine) + 1} name={materialOf(priceLine.materialId)?.name ?? "Vật tư"}
+      unit={materialOf(priceLine.materialId)?.uoms.find((uom) => uom.id === priceLine.uomId)?.symbol ?? ""}
+      listUnitVnd={previewLines?.[lines.indexOf(priceLine)]?.unitPriceVnd ?? null}
+      systemUnitVnd={!priceLine.manualPriceVnd ? previewLines?.[lines.indexOf(priceLine)]?.unitPriceVnd ?? null : null}
+      manualPriceVnd={priceLine.manualPriceVnd} discount={{ mode: priceLine.discountMode ?? "", value: priceLine.discountValue ?? "" }} canManagePrice={canManagePrice}
+      onClose={() => setPriceLineKey(null)}
+      onChange={(change) => {
+        const key = priceLine.key;
+        const discount = change.discount ?? { mode: "", value: "" };
+        const update = (line: EditorLine) => line.key === key ? { ...line, discountMode: discount.mode, discountValue: discount.value,
+          ...(change.manualPriceVnd !== undefined ? { manualPriceVnd: change.manualPriceVnd, manualReason: change.manualPriceVnd ? line.manualReason : "" } : {}) } : line;
+        // A new manual price is priced again by the server; a discount alone is worked out here.
+        if (change.manualPriceVnd !== undefined && change.manualPriceVnd !== priceLine.manualPriceVnd) changeLines((current) => current.map(update));
+        else setLines((current) => current.map(update));
+      }} />}{quickMode && <QuickCreatePanel key={quickMode} mode={quickMode} customerId={customerId} onClose={() => setQuickMode(null)}
     onCustomerCreated={(created) => { const option = { id: created.id, label: created.name }; siteLoadRevision.current += 1; setCustomerChoices((current) => [...current, option]); setSitesByCustomer((current) => ({ ...current, [created.id]: [] })); setCustomer(option); setSite(null); invalidate(); setQuickMode("site"); }}
     onSiteCreated={(created) => { siteLoadRevision.current += 1; setSitesByCustomer((current) => ({ ...current, [customerId]: [...(current[customerId] ?? []), created] })); setSite(siteOption(created)); invalidate(); setQuickMode(null); }} />}</>;
 }

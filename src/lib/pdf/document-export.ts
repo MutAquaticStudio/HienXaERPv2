@@ -12,7 +12,7 @@ import { deliveryDocumentData, purchaseDocumentData, salesDocumentData, type Com
 
 export type DocumentKind = "sales" | "purchase" | "delivery";
 const config = {
-  sales: { permission: "orders.read", table: "sales_order_read", lines: "sales_order_lines", parent: "sales_order_id", order: "line_number", select: "line_number, material_name_snapshot, quantity::text, ordered_uom_id, unit_price_vnd::text, line_total_vnd::text" },
+  sales: { permission: "orders.read", table: "sales_order_read", lines: "sales_order_lines", parent: "sales_order_id", order: "line_number", select: "line_number, material_name_snapshot, quantity::text, ordered_uom_id, unit_price_vnd::text, line_total_vnd::text, list_unit_price_vnd::text, discount_mode, discount_value::text" },
   purchase: { permission: "purchasing.read", table: "purchase_order_read", lines: "purchase_order_line_read", parent: "purchase_order_id", order: "line_number", select: "line_number, material_name_snapshot, quantity, ordered_uom_id, unit_cost_vnd, line_total_cost_vnd" },
   delivery: { permission: "delivery.read", table: "delivery_read", lines: "delivery_line_read", parent: "delivery_id", order: "id", select: "id, material_name_snapshot, source_mode, base_uom_symbol, planned_base_quantity, loaded_base_quantity, actual_base_quantity, accepted_base_quantity, billable_base_quantity" },
 } as const;
