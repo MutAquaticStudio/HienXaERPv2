@@ -175,7 +175,7 @@ it("completes the warehouse address in context and preserves supplier, lines, pr
   expect(hidden("supplierId")).toBe("supplier");
   expect(screen.getByLabelText("Kho nhận")).toHaveValue("warehouse");
   expect(quantity()).toHaveValue("2.5");
-  expect(screen.getByLabelText("Giá mua thủ công dòng 1")).toHaveValue("3000");
+  expect(screen.getByLabelText("Giá mua thủ công dòng 1")).toHaveValue("3.000");
   expect(screen.getByLabelText("Ngày dự kiến")).toHaveValue("2026-10-10T10:00");
   expect(screen.getByLabelText("Điều khoản mua")).toHaveValue("Giữ ghi chú");
   expect(screen.getByRole("button", { name: "Lưu nháp" })).toBeEnabled();
@@ -217,7 +217,7 @@ function expectBusinessDraft() {
   expect(hidden("supplierId")).toBe("business-supplier");
   expect(screen.getByLabelText("Kho nhận")).toHaveValue("business-warehouse");
   expect([quantity(1), quantity(2)].map((input) => (input as HTMLInputElement).value)).toEqual(["10", "2"]);
-  expect([1, 2].map((row) => (screen.getByLabelText(`Giá mua thủ công dòng ${row}`) as HTMLInputElement).value)).toEqual(["60000", "200000"]);
+  expect([1, 2].map((row) => (screen.getByLabelText(`Giá mua thủ công dòng ${row}`) as HTMLInputElement).value)).toEqual(["60.000", "200.000"]);
   expect(screen.getByLabelText("Ngày dự kiến")).toHaveValue("2026-10-20T09:30");
   expect(screen.getByLabelText("Điều khoản mua")).toHaveValue("Ghi chú nghiệm thu giữ nguyên");
   expect([1, 2].map((row) => (screen.getByLabelText(`ĐVT mua dòng ${row}`) as HTMLSelectElement).value)).toEqual(["bag", "m3"]);

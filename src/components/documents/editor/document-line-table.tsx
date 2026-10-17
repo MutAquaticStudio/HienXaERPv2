@@ -4,9 +4,10 @@ import { Fragment, useEffect, useRef, type KeyboardEvent, type ReactNode } from 
 import Decimal from "decimal.js";
 import { Minus, Plus, X } from "lucide-react";
 import { formatVnd, vnd } from "@/lib/core/money";
-import { decimalForEditing, normalizeDecimalInput, normalizeVndInput } from "@/lib/core/vn-number";
+import { decimalForEditing, normalizeDecimalInput } from "@/lib/core/vn-number";
 import { NumberEntry } from "./number-entry";
 import type { EditorLine, EditorMaterial, PricedLine } from "./types";
+import { MoneyInput } from "@/components/ui/money-input";
 
 type Props<L extends EditorLine> = {
   lines: L[];
@@ -19,6 +20,8 @@ type Props<L extends EditorLine> = {
   /** Called when Enter is pressed in a line, so typing can go straight back to the material search. */
   onDone?: () => void;
   focusKey?: number | null;
+  /** Bumped by the parent each time a material is picked, so picking the same material again re-focuses its line. */
+  focusSeq?: number;
   fields?: { uom: string; price: string; reason: string };
   labels?: { uom: string; price: string };
   /** Extra hidden inputs that must stay aligned with each line (e.g. salesLineId). */
@@ -27,6 +30,8 @@ type Props<L extends EditorLine> = {
   detail?: (line: L, index: number) => ReactNode;
   /** Material fixed by its source (e.g. a sales order line). */
   lockedMaterial?: (line: L) => boolean;
+  /** Replaces the editable price in the price cell (the sales order opens a price & discount popup instead). */
+  renderPrice?: (line: L, index: number, price: PricedLine | null) => ReactNode;
   emptyText?: string;
 };
 
@@ -45,15 +50,17 @@ const DEFAULT_LABELS = { uom: "ĐVT", price: "Đơn giá" };
  * Inline-editable document lines (KiotViet style). Every line posts exactly one value per field name,
  * in line order, so the server can read them with FormData.getAll().
  */
-export function DocumentLineTable<L extends EditorLine>({ lines, materials, canManagePrice, isValidQuantity, priced, onChange, onRemove, onDone, focusKey,
-  fields = DEFAULT_FIELDS, labels = DEFAULT_LABELS, hiddenFields, detail, lockedMaterial, emptyText = "Chưa có dòng hàng. Tìm vật tư ở ô phía trên để thêm (F3)." }: Props<L>) {
+export function DocumentLineTable<L extends EditorLine>({ lines, materials, canManagePrice, isValidQuantity, priced, onChange, onRemove, onDone, focusKey, focusSeq = 0,
+  fields = DEFAULT_FIELDS, labels = DEFAULT_LABELS, hiddenFields, detail, lockedMaterial, renderPrice, emptyText = "Chưa có dòng hàng. Tìm vật tư ở ô phía trên để thêm (F3)." }: Props<L>) {
   const quantityRefs = useRef(new Map<number, HTMLInputElement>());
+  // Focus the picked line's quantity once per pick. Depending on `lines` here would pull the cursor back to the quantity on
+  // every keystroke elsewhere in the table (typing a price jumped to the quantity after the first digit).
   useEffect(() => {
     if (focusKey == null) return;
     const input = quantityRefs.current.get(focusKey);
     input?.focus();
     input?.select();
-  }, [focusKey, lines]);
+  }, [focusKey, focusSeq]);
 
   function enterMovesOn(event: KeyboardEvent<HTMLInputElement>) {
     if (event.key !== "Enter") return;
@@ -106,11 +113,11 @@ export function DocumentLineTable<L extends EditorLine>({ lines, materials, canM
           </td>
           <td className="numeric" data-label={labels.price}>
             <input type="hidden" name={fields.price} value={line.manualPriceVnd} />
-            {canManagePrice
-              ? <NumberEntry aria-label={`${labels.price} thủ công dòng ${row}`} inputMode="numeric" value={line.manualPriceVnd} normalize={normalizeVndInput}
+            {renderPrice ? renderPrice(line, index, price) : canManagePrice
+              ? <MoneyInput aria-label={`${labels.price} thủ công dòng ${row}`} value={line.manualPriceVnd}
                 placeholder={price ? formatVnd(vnd(price.unitPriceVnd)) : "Giá hệ thống"} onValue={(manualPriceVnd) => onChange(line.key, { manualPriceVnd } as Partial<L>)} onKeyDown={enterMovesOn} />
               : price ? formatVnd(vnd(price.unitPriceVnd)) : "—"}
-            {price && <small className="table-subline">{price.sourceLabel}</small>}
+            {price && !renderPrice && <small className="table-subline">{price.sourceLabel}</small>}
           </td>
           <td className="numeric" data-label="Thành tiền"><strong>{price ? formatVnd(vnd(price.lineTotalVnd)) : "—"}</strong></td>
           <td className="doc-editor-remove"><button type="button" className="icon-button" aria-label={`Xóa dòng ${row}`} onClick={() => onRemove(line.key)}><X size={16} aria-hidden="true" /></button></td>

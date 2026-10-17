@@ -77,3 +77,26 @@ it("'Lưu nháp' only saves the draft", async () => {
   expect(await redirectOf(await form("draft"))).toBe(`/admin/orders/${order}?notice=created`);
   expect(rpcNames()).toEqual(["create_sales_order_draft"]);
 });
+
+it("sends line and order discounts to the database as per-unit discounts on the price list price", async () => {
+  fixture(["orders.create", "pricing.manage"]);
+  const data = await form("draft");
+  data.set("discountMode", "PERCENT"); data.set("discountValue", "2,5");
+  data.set("orderDiscountMode", "AMOUNT"); data.set("orderDiscountValue", "10.000");
+  expect(await redirectOf(data)).toBe(`/admin/orders/${order}?notice=created`);
+  const payload = m.rpc.mock.calls[0][1];
+  // 150.000 − 2,5 % = 146.250 a unit; the 10.000 order discount adds 5.000 a unit on 2 units.
+  expect(payload.order_lines).toEqual([expect.objectContaining({ unit_price_vnd: "150000", discount_unit_vnd: "8750", discount_mode: "PERCENT", discount_value: "2.5" })]);
+  expect(payload.order_discount).toEqual({ mode: "AMOUNT", value: "10000" });
+});
+
+it("keeps a payload without discounts exactly as before and refuses discounts without pricing rights", async () => {
+  fixture(["orders.create"]);
+  await redirectOf(await form("draft"));
+  expect(m.rpc.mock.calls[0][1]).not.toHaveProperty("order_discount");
+  expect(Object.keys(m.rpc.mock.calls[0][1].order_lines[0])).not.toContain("discount_unit_vnd");
+  const data = await form("draft");
+  data.set("discountMode", "AMOUNT"); data.set("discountValue", "1000");
+  await expect(createSalesOrderAction(undefined, data)).resolves.toEqual({ message: "Bạn không có quyền giảm giá. Bỏ giảm giá hoặc nhờ người quản lý giá." });
+  expect(m.rpc).toHaveBeenCalledTimes(1);
+});

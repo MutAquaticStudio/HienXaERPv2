@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { submitPaymentWithOutcomeAction } from "@/modules/finance/actions";
 import { ReliableCommandForm } from "@/components/reliable-command-form";
 import { formatVnd, vnd } from "@/lib/core/money";
+import { MoneyInput } from "@/components/ui/money-input";
 
 export type PaymentTarget = {
   id: string;
@@ -93,17 +94,17 @@ export function PaymentForm(props: Props) {
       <input type="hidden" name="allocationsJson" value={JSON.stringify(allocationPayload)} />
       <input type="hidden" name="redirectTo" value={props.redirectTo} />
       <div className="inline-create">
-        <label>Số tiền {props.direction === "RECEIPT" ? "nhận" : "chi"}<input name="amount" value={amount} onChange={(event) => setAmount(event.target.value)} inputMode="numeric" required /></label>
+        <label>Số tiền {props.direction === "RECEIPT" ? "nhận" : "chi"}<MoneyInput name="amount" value={amount} onValue={setAmount} required /></label>
         <label>Tài khoản<select name="accountId" required><option value="">Chọn tài khoản</option>{props.accounts.map((account) => <option key={account.id} value={account.id}>{account.code} · {account.name}</option>)}</select></label>
         <label>Phương thức<select name="method"><option value="BANK_TRANSFER">Chuyển khoản</option><option value="CASH">Tiền mặt</option><option value="CARD">Thẻ</option><option value="OTHER">Khác</option></select></label>
         <label>Ngày nhận/chi<input type="datetime-local" name="effectiveAt" defaultValue={props.defaultEffectiveAt} required /></label>
         <label>Tham chiếu<input name="reference" maxLength={160} /></label>
-        <label>Ghi nhận ứng trước<input name="advanceAmount" value={advance} onChange={(event) => setAdvance(event.target.value)} inputMode="numeric" /></label>
+        <label>Ghi nhận ứng trước<MoneyInput name="advanceAmount" value={advance} onValue={setAdvance} /></label>
       </div>
       <div className="allocation-editor">
         <div className="allocation-head"><strong>Phân bổ thủ công</strong><span>Đã chọn {allocationPayload.length} khoản · không tự chọn thứ tự khoản</span></div>
         <div className="filter-bar"><label>Tìm khoản theo nguồn<input value={search} onChange={(event) => setSearch(event.target.value)} maxLength={80} placeholder="Mã hoặc tên nguồn" /></label><button className="button button-secondary" type="button" disabled={busy} onClick={() => void loadObligations(1, search)}>Tìm khoản</button></div>
-        {visible.map((item) => <label className="allocation-row" key={item.id}><span><strong>{item.sourceLabel}</strong><small>Đến hạn {formatBusinessDate(item.dueDate)} · còn {formatVnd(vnd(item.outstandingAmountVnd))}</small></span><input aria-label={`Phân bổ cho ${item.sourceLabel}`} value={allocations[item.id] ?? ""} onChange={(event) => setAllocations((current) => ({ ...current, [item.id]: event.target.value }))} inputMode="numeric" placeholder="0" /></label>)}
+        {visible.map((item) => <label className="allocation-row" key={item.id}><span><strong>{item.sourceLabel}</strong><small>Đến hạn {formatBusinessDate(item.dueDate)} · còn {formatVnd(vnd(item.outstandingAmountVnd))}</small></span><MoneyInput aria-label={`Phân bổ cho ${item.sourceLabel}`} value={allocations[item.id] ?? ""} onValue={(value) => setAllocations((current) => ({ ...current, [item.id]: value }))} placeholder="0" /></label>)}
         {!visible.length && <p className="empty-inline">Không có khoản còn dư phù hợp.</p>}
         {loadError && <p className="form-message" role="alert">{loadError}</p>}
         <div className="action-cluster"><span className="muted">Trang {page}</span>{page > 1 && <button className="button button-secondary" type="button" disabled={busy} onClick={() => void loadObligations(page - 1, appliedSearch)}>Trước</button>}{hasNext && <button className="button button-secondary" type="button" disabled={busy} onClick={() => void loadObligations(page + 1, appliedSearch)}>Tiếp</button>}</div>

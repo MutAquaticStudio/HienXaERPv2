@@ -2,6 +2,7 @@
 
 import { ReliableCommandForm } from "@/components/reliable-command-form";
 import { createSupplierReturnAction, recordSupplierReturnAction, approveSupplierCreditAction, settleSupplierCreditAction } from "./supplier-return-actions";
+import { MoneyInput } from "@/components/ui/money-input";
 
 type Option = { id: string; label: string };
 export function SupplierReturnCreateForm({ operationId, scope, sources }: { operationId: string; scope: string; sources: Option[] }) {
@@ -26,7 +27,7 @@ export function SupplierReturnEventForm({ caseId, kind, version, operationId, sc
 export function SupplierCreditApprovalForm({ caseId, acceptanceId, version, amount, operationId, scope, canRecord }: { caseId: string; acceptanceId: string; version: number; amount: string; operationId: string; scope: string; canRecord: boolean }) {
  return <ReliableCommandForm action={approveSupplierCreditAction} command="approve_supplier_return_credit" operationId={operationId} scope={scope} className="command-panel">
   <input type="hidden" name="caseId" value={caseId} /><input type="hidden" name="acceptanceId" value={acceptanceId} /><input type="hidden" name="version" value={version} />
-  <div className="field"><label htmlFor={`sr-approval-amount-${acceptanceId}`}>Số tiền giảm phải trả được duyệt</label><input id={`sr-approval-amount-${acceptanceId}`} name="amount" inputMode="numeric" defaultValue={amount} required /></div>
+  <div className="field"><label htmlFor={`sr-approval-amount-${acceptanceId}`}>Số tiền giảm phải trả được duyệt</label><MoneyInput id={`sr-approval-amount-${acceptanceId}`} name="amount" defaultValue={amount} required /></div>
   <div className="field"><label htmlFor={`sr-approval-reason-${acceptanceId}`}>Lý do quyết định giảm phải trả</label><input id={`sr-approval-reason-${acceptanceId}`} name="reason" minLength={3} maxLength={500} required /></div>
   <button className="button button-primary" type="submit" disabled={!canRecord}>Duyệt giảm phải trả theo chấp nhận</button>
  </ReliableCommandForm>;
@@ -35,7 +36,7 @@ export function SupplierCreditSettlementForm({ caseId, creditId, kind, operation
  const refund = kind === "REFUND";
  return <ReliableCommandForm action={settleSupplierCreditAction} command={refund ? "refund_supplier_credit" : "offset_supplier_credit"} operationId={operationId} scope={scope} className="command-panel">
   <input type="hidden" name="caseId" value={caseId} /><input type="hidden" name="creditId" value={creditId} /><input type="hidden" name="kind" value={kind} />
-  <div className="field"><label htmlFor={`sr-settle-amount-${creditId}-${kind}`}>Số tiền {refund ? "đã nhận nhà cung cấp hoàn" : "bù trừ"}</label><input id={`sr-settle-amount-${creditId}-${kind}`} name="amount" inputMode="numeric" required /></div>
+  <div className="field"><label htmlFor={`sr-settle-amount-${creditId}-${kind}`}>Số tiền {refund ? "đã nhận nhà cung cấp hoàn" : "bù trừ"}</label><MoneyInput id={`sr-settle-amount-${creditId}-${kind}`} name="amount" required /></div>
   {refund ? <><input type="hidden" name="obligationId" value="" /><div className="field"><label htmlFor={`sr-account-${creditId}`}>Tài khoản đã nhận tiền hoàn</label><select id={`sr-account-${creditId}`} name="accountId" required><option value="">Chọn tài khoản</option>{accounts.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select></div>
    <div className="field"><label htmlFor={`sr-time-${creditId}`}>Thời điểm nhận tiền hoàn</label><input id={`sr-time-${creditId}`} name="receivedAt" type="datetime-local" defaultValue={now} required /></div>
    <div className="field"><label htmlFor={`sr-method-${creditId}`}>Phương thức nhận tiền hoàn</label><select id={`sr-method-${creditId}`} name="method"><option value="BANK_TRANSFER">Chuyển khoản</option><option value="CASH">Tiền mặt</option><option value="CARD">Thẻ</option><option value="OTHER">Khác</option></select></div>

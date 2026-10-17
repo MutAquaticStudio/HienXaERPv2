@@ -43,6 +43,17 @@ function pickCustomer(name: string) {
   fireEvent.focus(input);
   fireEvent.mouseDown(screen.getByRole("option", { name }));
 }
+function setLinePrice(row: number, change: { price?: string; percent?: string; amount?: string }) {
+  fireEvent.click(screen.getByRole("button", { name: `Đơn giá và giảm giá dòng ${row}` }));
+  const dialog = screen.getByRole("dialog");
+  if (change.price !== undefined) fireEvent.change(within(dialog).getByLabelText("Đơn giá"), { target: { value: change.price } });
+  if (change.percent !== undefined) {
+    fireEvent.click(within(dialog).getByRole("button", { name: "%" }));
+    fireEvent.change(within(dialog).getByLabelText("Giảm giá mỗi đơn vị"), { target: { value: change.percent } });
+  }
+  if (change.amount !== undefined) fireEvent.change(within(dialog).getByLabelText("Giảm giá mỗi đơn vị"), { target: { value: change.amount } });
+  fireEvent.click(within(dialog).getByRole("button", { name: "Xong" }));
+}
 function searchMaterial(text: string) {
   const input = screen.getByRole("combobox", { name: "Tìm vật tư" });
   fireEvent.change(input, { target: { value: text } });
@@ -82,7 +93,7 @@ it("does not passively reprice a stored draft when it first opens", async () => 
   render(<CommercialDocumentForm {...props} existing={{ id: "draft", version: 1, customerId: "customer-a", siteId: "site-a", effectiveAt: null, terms: "Original", lines: [{ sourceLineId: "old-line", materialId: "material", uomId: "uom-a", quantity: "2", manualPriceVnd: "90000", manualReason: "Old approved reason" }] }} />);
   await act(async () => { await new Promise(resolve => setTimeout(resolve, 350)); });
   expect(mocks.preview).not.toHaveBeenCalled();
-  expect(screen.getByLabelText("Đơn giá thủ công dòng 1")).toHaveValue("90000");
+  expect(screen.getByRole("button", { name: "Đơn giá và giảm giá dòng 1" })).toHaveTextContent("90.000");
   expect(screen.getByLabelText("Lý do giá thủ công dòng 1")).toHaveValue("Old approved reason");
   expect(screen.getByText("Khách A")).toBeInTheDocument();
 });
@@ -103,7 +114,7 @@ it("preserves customer, site, all line fields, date, notes and intent after a re
   const { container } = render(<CommercialDocumentForm {...ready} initialCustomerId="customer-b" initialSiteId="site-b" />);
   fireEvent.change(screen.getByLabelText("ĐVT bán dòng 1"), { target: { value: "uom-b" } });
   fireEvent.change(quantity(), { target: { value: "2.5" } });
-  fireEvent.change(screen.getByLabelText("Đơn giá thủ công dòng 1"), { target: { value: "120000" } });
+  setLinePrice(1, { price: "120000" });
   fireEvent.change(screen.getByLabelText("Lý do giá thủ công dòng 1"), { target: { value: "Giá đã duyệt" } });
   fireEvent.change(screen.getByLabelText("Ngày giao dự kiến"), { target: { value: "2026-10-28T09:00" } });
   fireEvent.change(screen.getByLabelText("Điều khoản / ghi chú"), { target: { value: "Giữ nguyên ghi chú" } });
@@ -131,7 +142,7 @@ it("preserves customer, site, all line fields, date, notes and intent after a re
 it("posts one value per field for every line, in line order", async () => {
   render(<CommercialDocumentForm {...ready} />);
   searchMaterial("DA12");
-  fireEvent.change(screen.getByLabelText("Đơn giá thủ công dòng 2"), { target: { value: "500000" } });
+  setLinePrice(2, { price: "500000" });
   fireEvent.change(screen.getByLabelText("Lý do giá thủ công dòng 2"), { target: { value: "Giá công trình" } });
   mocks.preview.mockResolvedValue({ success: true, message: "", totalVnd: "620000", lines: [
     { unitPriceVnd: "120000", priceSourceType: "LIST", lineTotalVnd: "120000" }, { unitPriceVnd: "500000", priceSourceType: "MANUAL_APPROVED", lineTotalVnd: "500000" }] });
@@ -253,4 +264,65 @@ it("shows what can be sold from the chosen warehouse in the line's unit", () => 
   expect(screen.getByText(/Thiếu so với số lượng đặt/)).toBeInTheDocument();
   fireEvent.change(screen.getByRole("combobox", { name: "Xem tồn tại" }), { target: { value: "w2" } });
   expect(screen.getByText("Chưa có tồn tại kho đang xem.")).toBeInTheDocument();
+});
+
+it("discounts a line by % in the price popup and the whole order by VND, KiotViet style", async () => {
+  mocks.preview.mockResolvedValue({ success: true, message: "", totalVnd: "240000", lines: [{ quantity: "2", unitPriceVnd: "120000", priceSourceType: "LIST", lineTotalVnd: "240000" }] });
+  render(<CommercialDocumentForm {...ready} />);
+  fireEvent.change(quantity(), { target: { value: "2" } });
+  await waitForPrice();
+  setLinePrice(1, { percent: "5" });
+  const priceButton = screen.getByRole("button", { name: "Đơn giá và giảm giá dòng 1" });
+  expect(priceButton).toHaveTextContent("114.000");
+  expect(priceButton).toHaveTextContent("−5%");
+  fireEvent.change(screen.getByLabelText("Giảm giá đơn"), { target: { value: "8000" } });
+  const totals = screen.getByRole("group", { name: "Tổng tiền và lưu đơn" });
+  expect(within(totals).getByText("Giảm giá").nextElementSibling).toHaveTextContent("20.000");
+  expect(within(totals).getByText("Khách cần trả").nextElementSibling).toHaveTextContent("220.000");
+  expect(mocks.preview).toHaveBeenCalledTimes(1);
+  fireEvent.click(draftButton());
+  await waitFor(() => expect(mocks.save).toHaveBeenCalledTimes(1));
+  const data = mocks.save.mock.calls[0][1] as FormData;
+  expect(data.getAll("discountMode")).toEqual(["PERCENT"]);
+  expect(data.getAll("discountValue")).toEqual(["5"]);
+  expect(data.get("orderDiscountMode")).toBe("AMOUNT");
+  expect(data.get("orderDiscountValue")).toBe("8000");
+  expect(data.getAll("manualPriceVnd")).toEqual([""]);
+});
+
+it("prices a stored draft when only its discounts change, so the change can be saved", async () => {
+  const existing = { id: "draft", version: 2, customerId: "customer-a", siteId: "site-a", effectiveAt: null, terms: "",
+    lines: [{ sourceLineId: "old-line", materialId: "material", uomId: "uom-a", quantity: "1", manualPriceVnd: "", manualReason: "", discountMode: "PERCENT" as const, discountValue: "5" }],
+    orderDiscount: { mode: "AMOUNT" as const, value: "10000" } };
+  const saveChanges = () => screen.getByRole("button", { name: "Lưu thay đổi bản nháp" });
+  const { unmount } = render(<CommercialDocumentForm {...props} existing={existing} />);
+  await act(async () => { await new Promise(resolve => setTimeout(resolve, 350)); });
+  expect(mocks.preview).not.toHaveBeenCalled();
+  fireEvent.change(screen.getByLabelText("Giảm giá đơn"), { target: { value: "20000" } });
+  await waitFor(() => expect(saveChanges()).toBeEnabled());
+  expect(mocks.preview).toHaveBeenCalledWith(expect.objectContaining({ documentId: "draft", expectedVersion: 2 }));
+  const totals = screen.getByRole("group", { name: "Tổng tiền và lưu đơn" });
+  expect(within(totals).getByText("Khách cần trả").nextElementSibling).toHaveTextContent("94.000");
+  unmount();
+
+  // Opening a line's price popup shows its price straight away.
+  mocks.preview.mockClear();
+  render(<CommercialDocumentForm {...props} existing={existing} />);
+  fireEvent.click(screen.getByRole("button", { name: "Đơn giá và giảm giá dòng 1" }));
+  await waitFor(() => expect(within(screen.getByRole("dialog")).getByText("114.000 ₫")).toBeInTheDocument());
+  expect(mocks.preview).toHaveBeenCalledTimes(1);
+});
+
+it("refuses a discount as large as the price, in the popup and for the whole order", async () => {
+  render(<CommercialDocumentForm {...ready} />);
+  await waitForPrice();
+  fireEvent.click(screen.getByRole("button", { name: "Đơn giá và giảm giá dòng 1" }));
+  const dialog = screen.getByRole("dialog");
+  fireEvent.change(within(dialog).getByLabelText("Giảm giá mỗi đơn vị"), { target: { value: "120000" } });
+  expect(within(dialog).getByRole("alert")).toHaveTextContent("Giảm giá phải nhỏ hơn đơn giá.");
+  expect(within(dialog).getByRole("button", { name: "Xong" })).toBeDisabled();
+  fireEvent.click(within(dialog).getByRole("button", { name: "Hủy" }));
+  fireEvent.change(screen.getByLabelText("Giảm giá đơn"), { target: { value: "120000" } });
+  expect(await screen.findByText("Giảm giá đơn phải nhỏ hơn tổng tiền hàng.")).toBeInTheDocument();
+  expect(draftButton()).toBeDisabled();
 });

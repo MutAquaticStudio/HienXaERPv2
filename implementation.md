@@ -2972,3 +2972,36 @@ sau bàn giao chuyển `app.hienxavlxd.com` (ghi D13 đầu Spec.md).
 - **Chưa áp `20261017120000_custom_roles`** ở QA và Production: lệnh ghi chứa hàm sửa vai trò/quyền bị tầng an toàn của công cụ hủy (các migration khác
   chạy được). Owner chạy file SQL này trong Supabase SQL Editor; đến lúc đó "Tạo/Sửa vai trò" báo "Máy chủ chưa bật chức năng vai trò tùy biến"
   (`PGRST202`), không ghi gì.
+
+
+## 2026-10-17 — FB3 ưu tiên 1 (D18): xóa danh mục, ô giá, ô tiền, chọn vật tư, giảm giá
+
+Owner 17/10 (đang dùng điện thoại, QA tay): danh mục cần nút Xóa thay vì tick "Đang sử dụng"; sửa giá trong đơn bán bị nhảy lên ô số lượng; ô tiền
+phải có dấu phân cách khi gõ; chọn vật tư phải tự xổ danh sách; giảm giá đơn theo % và VND kiểu KiotViet. Làm trước, phát hành riêng (R1).
+- P2: `document-line-table.tsx` focus ô số lượng trong effect phụ thuộc `lines` → mỗi lần gõ giá kéo con trỏ về ô số lượng. Effect chỉ chạy khi
+  chọn vật tư (`focusKey` + `focusSeq`); test tái hiện lỗi cũ (đỏ) và xanh sau sửa.
+- P3: `components/ui/money-input.tsx` (nhóm hàng nghìn bằng dấu chấm như mọi số tiền hiển thị; giữ vị trí con trỏ; gửi số nguyên thuần qua input ẩn;
+  khôi phục bản nháp qua sự kiện `hx-restore` từ `ReliableCommandForm`). Thay mọi ô tiền VND (thu/chi, phân bổ, chi phí, giá, hạn mức, điều chỉnh
+  công nợ, trả hàng NCC, dịch vụ, thu nhập, đơn bán/mua, đơn vị tính, hàng cùng loại).
+- P4: `material-search-box.tsx` xổ toàn bộ vật tư đang bán khi focus/bấm ▾ (gom theo nhóm vật tư, tối đa 100, gõ để lọc); form options nạp tên nhóm;
+  `entity-combobox.tsx` thêm nút ▾.
+- P1: migration `20261017160000_catalog_delete` — `delete_catalog_record` (bảng cố định theo loại, quyền như tạo/sửa, xóa kèm thiết lập riêng, khóa
+  ngoại chặn khi đã dùng → `catalog_record_in_use`, audit giữ mã + tên, idempotent). Rà khóa ngoại trên QA: chỉ `supplier_contacts` cascade; không
+  có trigger chặn xóa. Popup danh mục: "Ngừng dùng / Dùng lại" (lệnh lưu có audit sẵn có, chỉ đổi `active`) và "Xóa" (xác nhận lại; trang chi tiết bị
+  xóa quay về danh sách). Native `150_catalog_delete.sql` PASS.
+- P5: migration `20261017170000_sales_discounts` — `sales_order_lines.list_unit_price_vnd/discount_unit_vnd/discount_mode/discount_value`,
+  `sales_orders.order_discount_mode/value`; `private.discounted_sales_line`, `private.checked_order_discount`; `create/update_sales_order_draft`
+  (drop + tạo lại với `order_discount jsonb default null`, payload không giảm băm như cũ; dòng cũ so khớp theo giá trước giảm). Giá bán sau giảm là
+  `unit_price_vnd` nên công nợ lũy kế, phiếu giao, trả hàng, hạn mức không đổi công thức. `modules/sales/discounts.ts` chia giảm cả đơn đúng tới đồng
+  (tỉ lệ → tổ hợp đơn vị nguyên → bước lớn nhất vừa phần còn lại; báo phần lệch). Form đơn bán: popup giá dòng, khung tổng, popup xác nhận; trang
+  đơn, sửa nháp, PDF hiện giá gốc/giảm. Native `155_sales_discounts.sql` PASS (giảm %/VND, chia giảm đơn, thiếu quyền, giảm quá giá, sửa nháp bỏ/thêm
+  giảm, giữ hạn mức theo số sau giảm).
+- Kiểm: typecheck sạch, lint 0 lỗi, vitest 162 file / 956 test (một lần chạy toàn bộ có `settings/page.test.tsx` quá thời gian, chạy riêng 2 lần
+  xanh), native 010–155 PASS.
+- R1 (17/10): Owner chạy 2 migration trên QA và Production bằng SQL Editor; đọc kiểm: `schema_migrations` có 2 bản ghi kèm sha256, hàm khớp file
+  (so sau khi gộp khoảng trắng, vì trình soạn thụt lề khi dán; chuỗi ký tự trong hàm khớp tuyệt đối), cột/ràng buộc/quyền QA = Production, không cấp
+  `anon`. QA trình duyệt (app cục bộ trỏ QA): xóa xe mới tạo → mất; xóa kho có tồn → chặn + "Ngừng dùng" (lượt đầu kịch bản bấm Xóa ở dòng kho đầu
+  tiên và xóa thật kho thử chưa dùng `HXQA Audit Warehouse` — đúng luật, dữ liệu QA); gõ giá 55000 từng số giữ focus, hiện 55.000; Ghi thu 60.000;
+  ô vật tư xổ 20 vật tư theo nhóm; giảm 5% dòng + 10.000 đơn → 2.100.000 / −115.000 / 1.985.000, trang đơn + PDF đúng; 390px không tràn.
+  **Lỗi tìm thấy và sửa**: sửa nháp đã lưu chỉ đổi giảm giá thì không tính giá (bản nháp chỉ tính lại khi đổi dòng) → nút lưu mờ, popup giá "—".
+  Đổi giảm giá hoặc mở popup giá giờ cũng yêu cầu tính giá; test component mới; QA: đổi giảm đơn 20.000 → lưu, DB 197.500 × 10 = 1.975.000.

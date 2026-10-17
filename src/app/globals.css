@@ -254,6 +254,12 @@ tbody tr:hover { background: #f8fbff; }
 .catalog-saved { margin: 0 22px 12px; }
 .card-pad-x { margin: 0; padding: 0 22px 12px; }
 .catalog-dialog-form { display: grid; gap: 14px; }
+.catalog-record-actions { display: grid; gap: 10px; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
+.catalog-record-actions-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.catalog-record-actions-row > .muted { margin-right: auto; }
+.catalog-delete-confirm { padding: 12px 14px; border: 1px solid #f1b5b0; border-radius: 10px; background: var(--danger-soft); }
+.catalog-delete-confirm p { margin: 0 0 10px; }
+.catalog-delete-confirm .form-actions { margin: 0; }
 .dialog-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); }
 .dialog-tabs [role="tab"] { min-height: 40px; padding: 8px 14px; border: 0; border-bottom: 3px solid transparent; background: none; color: var(--muted); font: inherit; font-weight: 700; cursor: pointer; }
 .dialog-tabs [role="tab"][aria-selected="true"] { border-bottom-color: var(--primary); color: var(--text); }
@@ -927,6 +933,10 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .doc-editor-lines td.doc-editor-name { min-width: 10rem; overflow-wrap: anywhere; }
 .doc-editor-search input, .doc-editor-lines input, .doc-editor-lines select { min-width: 0; padding: 8px 10px; border: 1px solid #bdc7d5; border-radius: 9px; color: var(--text); background: #fff; }
 .doc-editor-search input { padding: 10px 14px; }
+.doc-editor-search input[role="combobox"], .doc-editor-combo input[role="combobox"] { padding-right: 40px; }
+.doc-editor-search-toggle { position: absolute; top: 0; right: 0; bottom: 0; display: grid; place-items: center; width: 40px; min-height: 40px; max-height: 48px; border: 0; background: transparent; color: var(--muted); cursor: pointer; }
+.doc-editor-search-toggle:disabled { cursor: not-allowed; opacity: 0.5; }
+.doc-editor-listbox-section { position: sticky; top: 0; z-index: 1; padding: 0.4rem 0.65rem; background: var(--surface); border-bottom: 1px solid var(--border); color: var(--muted); font-size: var(--font-size-caption); font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
 .doc-editor-lines input, .doc-editor-lines select { min-height: 38px; }
 .doc-editor-lines th.numeric, .doc-editor-lines td.numeric { text-align: right; }
 .doc-editor-lines td { vertical-align: top; }
@@ -1267,3 +1277,15 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .appearance-options .segmented-radio { margin: 0; }
 /* Inline row forms (e.g. "Tính thu nhập" per manual basis): a long rule name must not widen a phone screen. */
 .inline-actions select { max-width: 100%; }
+
+/* FB3 P5: KiotViet-style discounts on a sales order. */
+.line-price-button { display: grid; justify-items: end; gap: 2px; width: 100%; min-height: 40px; padding: 6px 8px; border: 1px dashed var(--border); border-radius: 8px;
+  background: transparent; color: var(--text); font: inherit; text-align: right; cursor: pointer; }
+.line-price-button:hover, .line-price-button:focus-visible { border-style: solid; border-color: var(--primary, #1d4ed8); }
+.line-price-button s { color: var(--muted); }
+.discount-field .field-label-row { align-items: center; }
+.discount-mode { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.discount-mode button { min-width: 44px; min-height: 32px; padding: 0 10px; border: 0; background: transparent; color: var(--muted); font: inherit; font-weight: 600; cursor: pointer; }
+.discount-mode button[aria-pressed="true"] { background: var(--primary, #1d4ed8); color: #fff; }
+.doc-editor-footer .discount-field { margin-top: 10px; }
+.line-price-result { margin: 0; }

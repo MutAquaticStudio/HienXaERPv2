@@ -1,22 +1,23 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { CatalogEditor } from "./editor";
-import { getCommandDraftAction, lookupCommandOutcomeAction } from "@/lib/core/command-outcome-actions";
 
 vi.mock("./actions", () => ({ saveCatalogWithOutcomeAction: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock("@/lib/core/command-outcome-actions", () => ({ getCommandDraftAction: vi.fn(), lookupCommandOutcomeAction: vi.fn(), saveCommandDraftAction: vi.fn() }));
 afterEach(() => { cleanup(); localStorage.clear(); vi.clearAllMocks(); });
 
-it("restores an unchecked saved draft without showing the current row as active", async () => {
-  const intent = "a5dc6376-d7d1-4b08-97ad-188f849cabf8", scope = "TEST:warehouses:restore";
-  localStorage.setItem(`hx-intent-v1:${scope}:save_catalog_record`, intent);
-  vi.mocked(lookupCommandOutcomeAction).mockResolvedValue({ status: "UNKNOWN", message: "Chưa ghi" });
-  vi.mocked(getCommandDraftAction).mockResolvedValue([["kind", "warehouses"], ["name", "Kho ngừng trong bản nháp"], ["reason", "Ngừng sử dụng kho"]]);
-  render(<CatalogEditor kind="warehouses" options={{}} record={{ id: intent, active: true, name: "Kho hiện đang dùng" }} operationId={intent} scope={scope} />);
-  await waitFor(() => expect(screen.getByLabelText("Tên *")).toHaveValue("Kho ngừng trong bản nháp"));
-  expect(screen.getByLabelText("Đang sử dụng")).not.toBeChecked();
-  expect(screen.getByLabelText("Đang sử dụng")).toBeDisabled();
+it("keeps a record's status out of the form: the Ngừng dùng / Dùng lại buttons change it", async () => {
+  const first = render(<CatalogEditor kind="warehouses" options={{}} record={{ id: "a5dc6376-d7d1-4b08-97ad-188f849cabf8", active: true, name: "Kho đang dùng" }}
+    operationId="a5dc6376-d7d1-4b08-97ad-188f849cabf8" scope="TEST:warehouses:active" />);
+  await waitFor(() => expect(screen.getByLabelText("Tên *")).toBeEnabled());
+  expect(screen.queryByLabelText("Đang sử dụng")).toBeNull();
+  expect(new FormData(first.container.querySelector("form")!).get("active")).toBe("on");
+  cleanup();
+  const { container } = render(<CatalogEditor kind="warehouses" options={{}} record={{ id: "b5dc6376-d7d1-4b08-97ad-188f849cabf8", active: false, name: "Kho đã ngừng" }}
+    operationId="b5dc6376-d7d1-4b08-97ad-188f849cabf8" scope="TEST:warehouses:stopped" />);
+  await waitFor(() => expect(screen.getByLabelText("Tên *")).toHaveValue("Kho đã ngừng"));
+  expect(new FormData(container.querySelector("form")!).get("active")).toBeNull();
 });
 
 it("shows Vietnamese customer types while retaining the submitted enum", async () => {

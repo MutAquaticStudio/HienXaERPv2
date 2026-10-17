@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 
 vi.mock("./editor", () => ({
@@ -7,12 +7,15 @@ vi.mock("./editor", () => ({
 }));
 
 const refresh = vi.hoisted(() => vi.fn());
-vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
+const push = vi.hoisted(() => vi.fn());
+const actions = vi.hoisted(() => ({ setCatalogActiveAction: vi.fn(), deleteCatalogRecordAction: vi.fn() }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh, push }) }));
+vi.mock("./actions", () => actions);
 vi.mock("@/components/catalog/material-units-editor", () => ({ MaterialUnitsEditor: ({ materialId }: { materialId: string }) => <p>Đơn vị của {materialId}</p> }));
 
 import { CatalogCreateButton, CatalogEditButton, CatalogTable } from "./catalog-dialog";
 
-afterEach(cleanup);
+afterEach(() => { cleanup(); vi.clearAllMocks(); });
 const options = { groups: [{ id: "g1", name: "Xi măng" }], units: [{ id: "kg", name: "Kilôgam" }] };
 const rows = [
   { id: "m1", code: "BS30", name: "Xi măng Bút Sơn PCB30", group_id: "g1", base_uom_id: "kg", sale_enabled: true, purchase_enabled: false, active: true },
@@ -75,4 +78,43 @@ it("edits a record from its own page and refreshes it after saving", () => {
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   expect(screen.getByRole("status")).toHaveTextContent("Đã lưu danh mục.");
   expect(refresh).toHaveBeenCalled();
+});
+
+it("stops a record in one click and keeps the operation when the result is unclear", async () => {
+  actions.setCatalogActiveAction.mockResolvedValueOnce({ status: "UNKNOWN", message: "Chưa xác định được kết quả." })
+    .mockResolvedValueOnce({ status: "SUCCESS", resultId: "m1", message: "Đã ngừng sử dụng." });
+  render(<CatalogTable kind="materials" rows={rows} options={options} permissions={["catalog.manage"]} scopePrefix="u:b:CATALOG" />);
+  fireEvent.click(screen.getByRole("button", { name: "Sửa BS30" }));
+  const dialog = screen.getByRole("dialog");
+  fireEvent.click(within(dialog).getByRole("button", { name: "Ngừng dùng" }));
+  expect(await within(dialog).findByRole("alert")).toHaveTextContent("Chưa xác định");
+  fireEvent.click(within(dialog).getByRole("button", { name: "Ngừng dùng" }));
+  await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  expect(screen.getByRole("status")).toHaveTextContent("Đã ngừng sử dụng.");
+  const [first, second] = actions.setCatalogActiveAction.mock.calls.map(([input]) => input);
+  expect(first).toMatchObject({ kind: "materials", id: "m1", active: false });
+  expect(second.operationId).toBe(first.operationId);
+});
+
+it("deletes only after a second confirmation and explains when the record is in use", async () => {
+  actions.deleteCatalogRecordAction.mockResolvedValueOnce({ status: "FAILED", inUse: true, message: "Đã có chứng từ hoặc dữ liệu liên quan nên không xóa được." });
+  render(<CatalogTable kind="materials" rows={rows} options={options} permissions={["catalog.manage"]} scopePrefix="u:b:CATALOG" />);
+  fireEvent.click(screen.getByRole("button", { name: "Sửa BS40" }));
+  const dialog = screen.getByRole("dialog");
+  expect(within(dialog).getByRole("button", { name: "Dùng lại" })).toBeInTheDocument();
+  fireEvent.click(within(dialog).getByRole("button", { name: "Xóa" }));
+  expect(actions.deleteCatalogRecordAction).not.toHaveBeenCalled();
+  expect(within(dialog).getByRole("group", { name: /Xác nhận xóa/ })).toHaveTextContent("Xi măng Bút Sơn PCB40");
+  fireEvent.click(within(dialog).getByRole("button", { name: "Xóa hẳn" }));
+  expect(await within(dialog).findByRole("alert")).toHaveTextContent("không xóa được");
+  expect(within(dialog).queryByRole("group", { name: /Xác nhận xóa/ })).toBeNull();
+});
+
+it("leaves a deleted record's own page for its list", async () => {
+  actions.deleteCatalogRecordAction.mockResolvedValueOnce({ status: "SUCCESS", resultId: "m1", message: "Đã xóa vật tư." });
+  render(<CatalogEditButton kind="materials" label="Sửa" record={rows[0]} options={options} permissions={["catalog.manage"]} scope="u:b:CATALOG:materials:m1" />);
+  fireEvent.click(screen.getByRole("button", { name: "Sửa" }));
+  fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Xóa" }));
+  fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Xóa hẳn" }));
+  await waitFor(() => expect(push).toHaveBeenCalledWith("/admin/products"));
 });

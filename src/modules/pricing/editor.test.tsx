@@ -48,7 +48,7 @@ it("binds purchase scope and preserves exact money and retry identity", async ()
 
 it("locks replacement scope and sends optimistic version without Sales action", async () => {
   render(<PricingRuleEditor purchase purchaseRule={{ id: "old", supplier_id: "supplier", material_id: "material", purchase_uom_id: "uom", unit_cost_vnd: "9007199254740993", version: 2, source_type: "CONTRACT", effective_from: "2026-10-10T00:00:00+07:00", effective_to: null, active: true }} command={{ targetId: "new", operationId: "replacement" }} options={{ customers: [], groups: [], materials: [], units: [] }} />);
-  expect(screen.getByLabelText("Đơn giá (VND) *")).toHaveValue("9007199254740993");
+  expect(screen.getByLabelText("Đơn giá (VND) *")).toHaveValue("9.007.199.254.740.993");
   expect(screen.queryByLabelText("Nhà cung cấp *")).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Ngừng sử dụng" })).toHaveAttribute("type", "button");
   const button = screen.getByRole("button", { name: "Tạo phiên bản mới" });

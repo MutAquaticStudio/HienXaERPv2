@@ -3,8 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { formatVnd, vnd } from "@/lib/core/money";
-import { adjustPrice, isValidAdjustment, priceChange, ROUNDING_STEPS, vndDigits, type AdjustMode, type RoundingStep } from "@/modules/pricing/bulk-adjust";
+import { adjustPrice, isValidAdjustment, priceChange, ROUNDING_STEPS, type AdjustMode, type RoundingStep } from "@/modules/pricing/bulk-adjust";
 import { savePriceBookAction, type PriceBookResult } from "@/modules/pricing/price-book-actions";
+import { MoneyInput } from "@/components/ui/money-input";
 
 export type PriceBookRow = {
   materialId: string; code: string; name: string; group: string; uomId: string; uom: string;
@@ -103,8 +104,8 @@ export function PriceBookEditor({ rows, operationId, today, canManage, showCost,
             <td className="numeric mono" data-label="Giá hiện tại">{row.currentVnd ? formatVnd(vnd(row.currentVnd)) : <span className="muted">{tierCode ? "Theo giá chung" : "Chưa có"}</span>}
               {row.otherUnits?.length ? <small className="table-subline">{row.otherUnits.join(" · ")}</small> : null}</td>
             {canManage && <>
-              <td className="numeric" data-label="Giá mới"><input aria-label={`Giá mới ${row.name}`} inputMode="numeric" value={digits ? new Intl.NumberFormat("vi-VN").format(BigInt(digits)) : ""} placeholder={row.currentVnd ? new Intl.NumberFormat("vi-VN").format(BigInt(row.currentVnd)) : "Nhập giá"}
-                onChange={(event) => { const value = vndDigits(event.target.value); setResult(null); setNext((current) => { const copy = { ...current }; if (value && value.length <= 19) copy[row.materialId] = value; else delete copy[row.materialId]; return copy; }); }} /></td>
+              <td className="numeric" data-label="Giá mới"><MoneyInput aria-label={`Giá mới ${row.name}`} value={digits} placeholder={row.currentVnd ? new Intl.NumberFormat("vi-VN").format(BigInt(row.currentVnd)) : "Nhập giá"}
+                onValue={(value) => { setResult(null); setNext((current) => { const copy = { ...current }; if (value && value !== "0") copy[row.materialId] = value; else delete copy[row.materialId]; return copy; }); }} /></td>
               <td className="numeric mono price-book-diff" data-label="Chênh lệch">{changed && change ? <span className={change.amount < 0n ? "price-down" : "price-up"}>{change.amount > 0n ? "+" : ""}{money(change.amount)}{change.percent !== null && <small className="table-subline">{change.amount > 0n ? "+" : ""}{change.percent}%</small>}</span> : null}</td>
             </>}
           </tr>;

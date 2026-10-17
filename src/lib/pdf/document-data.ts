@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import type { BusinessDocumentInput } from "./business-document";
 import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { formatQuantity } from "@/lib/core/quantity";
@@ -9,8 +10,23 @@ import { deliveryStateLabel, sourceModeLabel } from "@/modules/delivery/presenta
 export type CommercialLine = {
   line_number: number; material_name_snapshot: string; quantity: string; ordered_uom_id: string;
   unit_price_vnd?: string; line_total_vnd?: string;
+  /** Sales line discount: price before it and what was typed (FB3). */
+  list_unit_price_vnd?: string | null; discount_mode?: string | null; discount_value?: string | null;
   unit_cost_vnd?: string | null; line_total_cost_vnd?: string | null;
 };
+
+/** "Giá gốc 100.000 ₫ · giảm 5%" under a discounted sales line. */
+function discountNote(line: CommercialLine) {
+  if (!line.list_unit_price_vnd) return "";
+  const typed = line.discount_mode === "PERCENT" && line.discount_value ? ` · giảm ${new Decimal(line.discount_value).toString().replace(".", ",")}%` : "";
+  return ` (giá gốc ${money(line.list_unit_price_vnd)}${typed})`;
+}
+
+/** Amount before discounts, rounded per line like the order line itself. */
+export function salesGrossTotal(lines: Pick<CommercialLine, "quantity" | "unit_price_vnd" | "list_unit_price_vnd">[]) {
+  return lines.reduce((sum, line) => sum + BigInt(new Decimal(line.quantity).mul(line.list_unit_price_vnd ?? line.unit_price_vnd ?? "0")
+    .toDecimalPlaces(0, Decimal.ROUND_HALF_UP).toFixed(0)), 0n);
+}
 export type SalesDocument = {
   id: string; order_number: string; commercial_state: string; customer_name_snapshot: string;
   site_name_snapshot: string; delivery_address_snapshot: string; created_at: string;
@@ -52,6 +68,14 @@ const columns = (prices: boolean): BusinessDocumentInput["columns"] => [
   ] : []),
 ];
 
+function salesTotals(lines: CommercialLine[], total: string | null | undefined) {
+  const gross = salesGrossTotal(lines);
+  const net = BigInt(total ?? "0");
+  if (!lines.some((line) => line.list_unit_price_vnd) || gross <= net) return [{ label: "Tổng giá trị đơn bán", value: money(total) }];
+  return [{ label: "Tổng tiền hàng", value: money(gross.toString()) }, { label: "Giảm giá", value: `−${money((gross - net).toString())}` },
+    { label: "Khách cần trả", value: money(total) }];
+}
+
 export function salesDocumentData(order: SalesDocument, lines: CommercialLine[], symbols: Map<string, string>, meta: Meta): BusinessDocumentInput {
   return {
     ...meta, title: "ĐƠN BÁN HÀNG", reference: order.order_number, sourceId: order.id,
@@ -61,8 +85,8 @@ export function salesDocumentData(order: SalesDocument, lines: CommercialLine[],
       { label: "Địa chỉ giao", value: order.delivery_address_snapshot }, { label: "Người nhận / điện thoại", value: receiver(order.receiver_name_snapshot, order.receiver_phone_snapshot) },
       { label: "Ngày lập", value: date(order.created_at) }, { label: "Giao dự kiến", value: date(order.requested_delivery_at) },
     ], columns: columns(true),
-    rows: lines.map(l => ({ number: String(l.line_number), material: l.material_name_snapshot, uom: symbols.get(l.ordered_uom_id) ?? "Chưa ghi nhận", quantity: formatQuantity(l.quantity), price: money(l.unit_price_vnd), amount: money(l.line_total_vnd) })),
-    totals: [{ label: "Tổng giá trị đơn bán", value: money(order.total_vnd) }],
+    rows: lines.map(l => ({ number: String(l.line_number), material: `${l.material_name_snapshot}${discountNote(l)}`, uom: symbols.get(l.ordered_uom_id) ?? "Chưa ghi nhận", quantity: formatQuantity(l.quantity), price: money(l.unit_price_vnd), amount: money(l.line_total_vnd) })),
+    totals: salesTotals(lines, order.total_vnd),
     notes: [
       { title: "Điều khoản / ghi chú", text: order.commercial_terms || "Chưa ghi điều khoản riêng." },
       { title: "Lưu ý", text: "Giá trị theo đơn đã lưu. Phiếu này không xác nhận khách đã nhận hàng hoặc đã thanh toán." },

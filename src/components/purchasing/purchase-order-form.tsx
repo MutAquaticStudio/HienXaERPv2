@@ -7,7 +7,6 @@ import { DocumentTotalValue } from "@/components/documents/editor/document-total
 import { EntityCombobox } from "@/components/documents/editor/entity-combobox";
 import { addMaterialLine, MAX_DOCUMENT_LINES } from "@/components/documents/editor/lines";
 import { MaterialSearchBox, type MaterialSearchHandle } from "@/components/documents/editor/material-search-box";
-import { NumberEntry } from "@/components/documents/editor/number-entry";
 import type { EditorLine, EditorMaterial, EntityOption } from "@/components/documents/editor/types";
 import { useAutoPricePreview } from "@/components/documents/editor/use-auto-price-preview";
 import { Dialog } from "@/components/ui/dialog";
@@ -15,11 +14,11 @@ import { formatQuantity } from "@/lib/core/quantity";
 import { priceSourceLabel } from "@/modules/pricing/presentation";
 import { userFacingError } from "@/lib/core/errors";
 import { formatVnd, vnd } from "@/lib/core/money";
-import { normalizeVndInput } from "@/lib/core/vn-number";
 import { isPositiveSalesQuantity } from "@/modules/sales/quantity-input";
 import { createPurchaseOrderAction, createSupplierQuickAction, previewWarehousePurchaseAction, searchPurchaseSuppliersAction, updatePurchaseOrderDraftAction, updatePurchaseWarehouseAddressAction, updatePurchaseDraftDestinationAction, type CostPreviewResult } from "@/modules/purchasing/actions";
 import { normalizeWarehouseAddress, warehouseAddressRequired } from "@/modules/purchasing/warehouse-address";
 import type { PurchaseFormOptions, SalesLineContext, SalesOrderPurchaseLine } from "@/modules/purchasing/form-options";
+import { MoneyInput } from "@/components/ui/money-input";
 
 export type ExistingPurchaseDraft = {
   id: string; version: number; supplierId: string; warehouseId: string | null;
@@ -115,6 +114,7 @@ export function PurchaseOrderForm({ options, operationId, confirmOperationId, ca
     : startMaterial ? [{ ...blank, key: 0, materialId: startMaterial.id, uomId: startMaterial.uoms[0]?.id ?? "", quantity: "1" }] : []);
   const nextLineKey = useRef(Math.max(1, lines.length));
   const [focusKey, setFocusKey] = useState<number | null>(null);
+  const [focusSeq, setFocusSeq] = useState(0);
   const searchRef = useRef<MaterialSearchHandle>(null);
 
   const warehouseMode = mode === "WAREHOUSE";
@@ -150,6 +150,7 @@ export function PurchaseOrderForm({ options, operationId, confirmOperationId, ca
     if (result.focusKey === nextLineKey.current) nextLineKey.current += 1;
     changeLines(() => result.lines.map((line) => ({ ...blank, ...line })) as PurchaseLine[]);
     setFocusKey(result.focusKey);
+    setFocusSeq((seq) => seq + 1);
   }
   const unusedSourceLines = availableSourceLines.filter((item) => Number(item.remainingOrderedQuantity) > 0 && !lines.some((line) => line.salesLineId === item.id));
   function addSourceLine(option: EntityOption | null) {
@@ -219,7 +220,7 @@ export function PurchaseOrderForm({ options, operationId, confirmOperationId, ca
           options={unusedSourceLines.map((item) => ({ id: item.id, label: item.materialName, detail: `Còn ${formatQuantity(item.remainingOrderedQuantity)} ${item.uomSymbol}` }))}
           onSelect={addSourceLine} />
         : <MaterialSearchBox ref={searchRef} materials={options.materials} onPick={pickMaterial} disabled={!options.materials.length} />}
-      <DocumentLineTable<PurchaseLine> lines={lines} materials={options.materials} canManagePrice={canManagePrice} isValidQuantity={isPositiveSalesQuantity} focusKey={focusKey}
+      <DocumentLineTable<PurchaseLine> lines={lines} materials={options.materials} canManagePrice={canManagePrice} isValidQuantity={isPositiveSalesQuantity} focusKey={focusKey} focusSeq={focusSeq}
         fields={COST_FIELDS} labels={{ uom: "ĐVT mua", price: "Giá mua" }} lockedMaterial={() => sourceMode}
         emptyText={sourceMode ? "Chưa có dòng mua. Chọn dòng đơn bán ở ô phía trên." : undefined}
         priced={(index) => canReadPrice && preview?.success && preview.lines?.[index] ? { unitPriceVnd: preview.lines[index].unitCostVnd, lineTotalVnd: preview.lines[index].lineTotalVnd, sourceLabel: priceSourceLabel(preview.lines[index].priceSourceType) } : null}
@@ -228,7 +229,7 @@ export function PurchaseOrderForm({ options, operationId, confirmOperationId, ca
         onDone={() => searchRef.current?.focus()}
         hiddenFields={(line) => <input type="hidden" name="salesLineId" value={line.salesLineId} />}
         detail={createsSales ? (line, index) => <>
-          {canManageSalesPrice && <span className="doc-editor-reason"><label>Giá bán thủ công dòng {index + 1}<NumberEntry inputMode="numeric" value={line.manualSalesPriceVnd} normalize={normalizeVndInput} onValue={(manualSalesPriceVnd) => changeLines((current) => current.map((item) => item.key === line.key ? { ...item, manualSalesPriceVnd } : item))} /></label>
+          {canManageSalesPrice && <span className="doc-editor-reason"><label>Giá bán thủ công dòng {index + 1}<MoneyInput value={line.manualSalesPriceVnd} onValue={(manualSalesPriceVnd) => changeLines((current) => current.map((item) => item.key === line.key ? { ...item, manualSalesPriceVnd } : item))} /></label>
             <input type="hidden" name="manualSalesPriceVnd" value={line.manualSalesPriceVnd} />
             {line.manualSalesPriceVnd && <label>Lý do giá bán dòng {index + 1}<input name="manualSalesReason" maxLength={500} value={line.manualSalesReason} onChange={(event) => changeLines((current) => current.map((item) => item.key === line.key ? { ...item, manualSalesReason: event.target.value } : item))} /></label>}
             {!line.manualSalesPriceVnd && <input type="hidden" name="manualSalesReason" value="" />}</span>}

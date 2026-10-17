@@ -6,11 +6,12 @@ import { useRouter } from "next/navigation";
 import { NumberEntry } from "@/components/documents/editor/number-entry";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { formatQuantity } from "@/lib/core/quantity";
-import { decimalForEditing, normalizeDecimalInput, normalizeVndInput, vndForEditing } from "@/lib/core/vn-number";
+import { decimalForEditing, normalizeDecimalInput } from "@/lib/core/vn-number";
 import { catalogChoiceLabel } from "@/modules/catalog/presentation";
 import { loadMaterialUnitsAction, saveMaterialUnitsAction, type MaterialUnitsData, type MaterialUnitsResult } from "@/modules/catalog/material-units-actions";
 import { ROUNDING_STEPS, type RoundingStep } from "@/modules/pricing/bulk-adjust";
 import { splitPriceByUnits, unitCostVnd, type UnitRatio } from "@/modules/pricing/unit-split";
+import { MoneyInput } from "@/components/ui/money-input";
 
 type NewUnit = { key: number; uomId: string; ratio: string; type: "EXACT" | "PACKAGING" | "ESTIMATED" | "MEASURED"; sourceNote: string };
 const NEW_TYPES = ["PACKAGING", "EXACT", "ESTIMATED", "MEASURED"] as const;
@@ -115,7 +116,7 @@ export function MaterialUnitsEditor({ materialId }: { materialId: string }) {
             <td data-label="Loại quy đổi">{unit.conversionId ? catalogChoiceLabel(unit.type) : "—"}</td>
             {loaded.can.readPrices && <td className="numeric" data-label="Giá bán chung">
               {editPrice && !isStopped
-                ? <NumberEntry aria-label={`Giá bán 1 ${unit.symbol}`} inputMode="numeric" value={priceTyped(unit.uomId)} normalize={normalizeVndInput} display={vndForEditing}
+                ? <MoneyInput aria-label={`Giá bán 1 ${unit.symbol}`} value={priceTyped(unit.uomId)}
                   placeholder={current ? money(current) : "Chưa có giá"} onValue={(value) => setPrices((all) => ({ ...all, [unit.uomId]: value }))} disabled={pending} />
                 : current ? money(current) : <span className="muted">Chưa có giá</span>}
               {editPrice && current && priceTyped(unit.uomId) && <small className="table-subline">Hiện tại {money(current)}</small>}
@@ -144,7 +145,7 @@ export function MaterialUnitsEditor({ materialId }: { materialId: string }) {
               {needsNote && <input aria-label={`Nguồn quy đổi đơn vị mới ${index + 1}`} value={unit.sourceNote} maxLength={500} placeholder="vd xe bé ≈ 3 m³ theo thỏa thuận"
                 onChange={(event) => update({ sourceNote: event.target.value })} disabled={pending} />}</td>
             {loaded.can.readPrices && <td className="numeric" data-label="Giá bán chung">{editPrice && unit.uomId
-              ? <NumberEntry aria-label={`Giá bán 1 ${symbolOf(unit.uomId)}`} inputMode="numeric" value={priceTyped(unit.uomId)} normalize={normalizeVndInput} display={vndForEditing} placeholder="Giá bán"
+              ? <MoneyInput aria-label={`Giá bán 1 ${symbolOf(unit.uomId)}`} value={priceTyped(unit.uomId)} placeholder="Giá bán"
                 onValue={(value) => setPrices((all) => ({ ...all, [unit.uomId]: value }))} disabled={pending} /> : <span className="muted">—</span>}</td>}
             {loaded.costPerBaseVnd && <td className="numeric mono" data-label="Giá vốn ≈">{unit.uomId && normalizeDecimalInput(unit.ratio) ? money(unitCostVnd(loaded.costPerBaseVnd, { uomId: unit.uomId, numerator: normalizeDecimalInput(unit.ratio)!, denominator: "1" })) : "—"}</td>}
             <td className="table-actions"><button type="button" className="button button-secondary button-compact" disabled={pending} aria-label={`Bỏ đơn vị mới ${index + 1}`}

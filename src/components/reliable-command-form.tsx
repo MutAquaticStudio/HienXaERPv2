@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { getCommandDraftAction, lookupCommandOutcomeAction, saveCommandDraftAction } from "@/lib/core/command-outcome-actions";
 import type { CommandOutcome } from "@/lib/core/command-outcome";
+import { RESTORED_EVENT } from "@/components/ui/money-input";
 import type { CreditCommand } from "@/modules/finance/credit-command";
 
 import type { DocumentCommand } from "@/modules/invoicing/document-commands";
@@ -78,6 +79,8 @@ export function ReliableCommandForm(props: Props) {
                 if (input instanceof HTMLSelectElement && input.multiple) {
                   for (const option of input.options) option.selected = values.includes(option.value);
                 } else input.value = values[index] ?? values[0];
+                // Inputs that keep their own display (e.g. the grouped amount box) resync from the restored value.
+                input.dispatchEvent(new Event(RESTORED_EVENT));
               });
             }
           }
