@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { requireInternalAccess } from '@/lib/access/context';
 import { createServerSupabase } from '@/lib/supabase/server';
-import { catalogs } from '@/modules/catalog/fields';
+import { branchScopedCatalogs, catalogs } from '@/modules/catalog/fields';
 import { CatalogTable } from './catalog-dialog';
 import { loadCatalogOptions, visibleCatalogFields } from './editor-data';
 import { catalogHref, manageableCatalogs, type CatalogQuery } from './ownership';
@@ -14,7 +14,7 @@ export default async function ModuleCatalogPage({searchParams,kinds}:{searchPara
  const visibleFields=visibleCatalogFields(kind,access.permissions);
  const columns=['id',...visibleFields.filter(f=>kind!=='customers'||!['credit_limit_vnd','internal_note'].includes(f.key)).map(f=>f.key)].join(',');
  let query=supabase.from(config.table as 'materials').select(kind==='sites'?`${columns},customers!inner(branch_id)`:columns).limit(200);
- if(['customers','suppliers','warehouses','vehicles','machines'].includes(kind)) query=query.eq('branch_id',access.branchId);
+ if(branchScopedCatalogs.includes(kind)) query=query.eq('branch_id',access.branchId);
  if(kind==='sites') query=query.eq('customers.branch_id',access.branchId);
  if(kind==='branches') query=query.eq('id',params.id??access.branchId);
  if(params.id) query=query.eq('id',params.id);

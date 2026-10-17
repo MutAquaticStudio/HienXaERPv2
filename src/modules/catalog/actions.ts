@@ -33,6 +33,13 @@ export async function saveCatalogAction(_:CatalogState|undefined, form:FormData)
    const max=kind==='groups'?24:32;
    if(!new RegExp(`^[A-Z0-9_-]{2,${max}}$`).test(String(values.code))) return {message:`Mã ${config.title.toLowerCase()} phải viết hoa, gồm 2–${max} ký tự A–Z, 0–9, _ hoặc -.`};
   }
+  if(kind==='service_types'){
+   if(!/^[A-Z0-9_-]{2,24}$/.test(String(values.code))) return {message:'Mã loại dịch vụ phải viết hoa, gồm 2–24 ký tự A–Z, 0–9, _ hoặc -.'};
+   if(String(values.name).length<2||String(values.name).length>120) return {message:'Tên loại dịch vụ cần từ 2 đến 120 ký tự.'};
+   if(String(values.unit_label).length>30) return {message:'Đơn vị tính tối đa 30 ký tự.'};
+   if(values.default_price_vnd!=null&&!/^\d{1,15}$/.test(String(values.default_price_vnd))) return {message:'Đơn giá phải là số VND nguyên không âm.'};
+   if(!['NONE','VEHICLE','MACHINE'].includes(String(values.resource_kind))) return {message:'Chọn loại dịch vụ cần xe, cần máy hay không cần.'};
+  }
   if(kind==='materials'&&!values.sale_enabled&&!values.purchase_enabled) return {message:'Vật tư phải cho phép bán hoặc mua.'};
   if(kind==='units'){
    if(!/^[a-z0-9_]{1,20}$/.test(String(values.code))) return {message:'Mã đơn vị phải viết thường, tối đa 20 ký tự a–z, 0–9 hoặc _.'};
@@ -69,7 +76,7 @@ export async function saveCatalogAction(_:CatalogState|undefined, form:FormData)
    ? {target_id:recordId,source_branch_id:access.branchId,values_json:values,expected_json:expected,change_reason:String(form.get('reason')??''),operation_id:intent.data}
    : {kind,target_id:recordId,target_branch_id:access.branchId,values_json:values,expected_json:expected,change_reason:String(form.get('reason')??''),operation_id:intent.data};
   await portalRpc(await createServerSupabase(),rpcName,payload);
-  for(const path of ['/admin/catalog','/admin/products','/admin/customers','/admin/suppliers','/admin/inventory','/admin/dispatch',catalogHref(kind).split('?')[0]]) revalidatePath(path);
+  for(const path of ['/admin/catalog','/admin/products','/admin/customers','/admin/suppliers','/admin/inventory','/admin/dispatch','/admin/service-jobs',catalogHref(kind).split('?')[0]]) revalidatePath(path);
   return {success:true,message:'Đã lưu và ghi lịch sử thay đổi.',recordId,kind};
  }catch(error){
   const code=error instanceof PortalRpcError?error.code:'';
@@ -89,7 +96,7 @@ export async function saveCatalogWithOutcomeAction(form:FormData):Promise<Comman
  }
 }
 
-const CATALOG_PATHS=['/admin/catalog','/admin/products','/admin/customers','/admin/suppliers','/admin/inventory','/admin/dispatch','/admin/pricing'];
+const CATALOG_PATHS=['/admin/catalog','/admin/products','/admin/customers','/admin/suppliers','/admin/inventory','/admin/dispatch','/admin/pricing','/admin/service-jobs'];
 const statusInput=z.object({kind:z.string(),id:z.uuid(),active:z.boolean(),customerId:z.uuid().nullish(),operationId:z.uuid()});
 
 /** "Ngừng dùng" / "Dùng lại": flips only `active`, through the same audited save command as the edit form. */

@@ -1,4 +1,5 @@
-export type Field = { key: string; label: string; type?: 'text'|'email'|'number'|'money'|'checkbox'; required?: boolean; options?: string; choices?: string[]; value?: string|boolean; permission?: string };
+/** `suggestions`: common values offered while typing a text field (any other value is still accepted). */
+export type Field = { key: string; label: string; type?: 'text'|'email'|'number'|'money'|'checkbox'; required?: boolean; options?: string; choices?: string[]; value?: string|boolean; permission?: string; suggestions?: string[] };
 const code: Field = {key:'code',label:'Mã',required:true};
 const name: Field = {key:'name',label:'Tên',required:true};
 const active: Field = {key:'active',label:'Đang sử dụng',type:'checkbox',value:true};
@@ -15,5 +16,8 @@ export const catalogs: Record<string,{title:string;table:string;permission:strin
  warehouses:{title:'Kho',table:'warehouses',permission:'roles.manage',fields:[code,name,{key:'address_text',label:'Địa chỉ kho'},active],list:['code','name','address_text']},
  vehicles:{title:'Xe',table:'vehicles',permission:'roles.manage',fields:[code,{key:'plate_number',label:'Biển số',required:true},{key:'capacity_quantity',label:'Sức chứa tối đa đã xác minh'},{key:'capacity_uom_id',label:'Đơn vị sức chứa',options:'units'},{key:'capacity_source_note',label:'Căn cứ xác minh sức chứa (hồ sơ xe hoặc đo thực tế)'},active],list:['code','plate_number','capacity_quantity','capacity_uom_id']},
  machines:{title:'Máy',table:'machines',permission:'roles.manage',fields:[code,name,{key:'machine_type',label:'Loại máy',required:true},active],list:['code','name','machine_type']},
+ service_types:{title:'Loại dịch vụ',table:'service_types',permission:'service.manage',fields:[code,name,{key:'unit_label',label:'Đơn vị tính',required:true,value:'chuyến',suggestions:['chuyến','giờ','ngày','ca','công','m³','km','tấn']},{key:'default_price_vnd',label:'Đơn giá mặc định (VND, trống = nhập khi xác minh)',type:'money'},{key:'resource_kind',label:'Cần xe hoặc máy',choices:['NONE','VEHICLE','MACHINE'],value:'NONE',required:true},active],list:['code','name','unit_label','default_price_vnd','resource_kind']},
  branches:{title:'Chi nhánh',table:'branches',permission:'roles.manage',fields:[code,name,active],list:['code','name']},
 };
+/** Catalogs whose records belong to one branch (the others are shared by the whole company). */
+export const branchScopedCatalogs: readonly string[] = ['customers','suppliers','warehouses','vehicles','machines','service_types'];

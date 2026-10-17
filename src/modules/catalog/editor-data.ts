@@ -1,6 +1,6 @@
 import "server-only";
 import type { createServerSupabase } from "@/lib/supabase/server";
-import { catalogs } from "./fields";
+import { branchScopedCatalogs, catalogs } from "./fields";
 import type { Options } from "./editor";
 
 type Supabase = Awaited<ReturnType<typeof createServerSupabase>>;
@@ -76,7 +76,7 @@ export async function catalogRecordProps(kind: string, id: string, access: Acces
   const fields = visibleCatalogFields(kind, access.permissions).map((field) => field.key)
     .filter((key) => kind !== "customers" || !["credit_limit_vnd", "internal_note"].includes(key));
   let request = supabase.from(config.table as "materials").select(["id", ...fields].join(",")).eq("id", id);
-  if (["customers", "suppliers", "warehouses", "vehicles", "machines"].includes(kind)) request = request.eq("branch_id", access.branchId);
+  if (branchScopedCatalogs.includes(kind)) request = request.eq("branch_id", access.branchId);
   const { data, error } = await request.maybeSingle();
   if (error) throw new Error("Không tải được bản ghi danh mục.");
   if (!data) return null;

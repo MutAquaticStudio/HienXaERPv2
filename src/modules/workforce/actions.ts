@@ -21,6 +21,9 @@ function workCommandMessage(message?: string) {
   if (message?.includes("version") || message?.includes("stale")) return "Dữ liệu công việc đã thay đổi. Vui lòng tải lại trước khi tiếp tục.";
   if (message === "forbidden") return "Bạn không có quyền thực hiện thao tác này.";
   if (message === "resource_conflict") return "Nhân viên hoặc xe đã có lịch trùng. Chọn lịch khác rồi thử lại.";
+  if (message === "invalid-service-job") return "Kiểm tra lại loại dịch vụ, thời gian (kết thúc sau bắt đầu) và sản lượng kế hoạch.";
+  if (message === "invalid_service_type") return "Loại dịch vụ đã ngừng dùng hoặc không thuộc chi nhánh này. Chọn loại khác.";
+  if (message === "service_resource_mismatch") return "Loại dịch vụ này không dùng xe hoặc máy đã chọn. Bỏ chọn rồi thử lại.";
   return userFacingError(message);
 }
 const fail = (path: string, message?: string): never => redirect(path + "?error=" + encodeURIComponent(workCommandMessage(message)));
@@ -28,25 +31,25 @@ const fail = (path: string, message?: string): never => redirect(path + "?error=
 export async function createServiceJobAction(formData: FormData) {
   const parsed = z.object({
     customerId: z.uuid(), siteId: z.uuid(), salesEmployeeId: optionalUuid,
-    serviceType: z.string().trim().min(2).max(120), description: z.string().trim().min(3).max(500),
+    serviceTypeId: z.uuid(), description: z.string().trim().min(3).max(500),
     scheduledStart: localDateTime, scheduledEnd: localDateTime, plannedQuantity: decimal,
-    unitLabel: z.string().trim().min(1).max(30), vehicleId: optionalUuid, machineId: optionalUuid,
+    vehicleId: optionalUuid, machineId: optionalUuid,
     operationId: z.uuid(),
   }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fail("/admin/service-jobs", "invalid-service-job");
   const access = await requireInternalPermission("service.manage");
   const supabase = await createServerSupabase();
-  const { data, error } = await supabase.rpc("create_service_job", {
+  // D23: the chosen service type decides the name, unit and unit price kept on the job.
+  const { data, error } = await supabase.rpc("schedule_service_job", {
     target_branch_id: access.branchId,
     target_customer_id: parsed.data.customerId,
     target_site_id: parsed.data.siteId,
-    service_type: parsed.data.serviceType,
+    target_service_type_id: parsed.data.serviceTypeId,
     description: parsed.data.description,
     scheduled_start: toInstant(parsed.data.scheduledStart),
     scheduled_end: toInstant(parsed.data.scheduledEnd),
     planned_quantity: parsed.data.plannedQuantity,
-    unit_label: parsed.data.unitLabel,
-       target_sales_employee_id: parsed.data.salesEmployeeId || null,
+    target_sales_employee_id: parsed.data.salesEmployeeId || null,
     target_vehicle_id: parsed.data.vehicleId || null,
     target_machine_id: parsed.data.machineId || null,
     operation_id: parsed.data.operationId,

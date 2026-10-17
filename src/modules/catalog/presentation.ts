@@ -8,6 +8,9 @@ const choiceLabels: Record<string, string> = {
   VEHICLE_LOAD: "Theo tải xe",
   HALF_UP: "Làm tròn gần nhất, từ 5 làm tròn lên",
   DOWN: "Làm tròn xuống",
+  NONE: "Không cần",
+  VEHICLE: "Cần xe",
+  MACHINE: "Cần máy",
 };
 
 export function catalogChoiceLabel(value: string): string {

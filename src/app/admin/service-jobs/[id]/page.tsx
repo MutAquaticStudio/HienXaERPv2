@@ -14,7 +14,7 @@ import {
   cancelScheduledServiceJobAction, publishWorkItemAction, startWorkItemAction,
   submitWorkResultAction, verifyServiceJobAction,
 } from "@/modules/workforce/actions";
-import { MoneyInput } from "@/components/ui/money-input";
+import { ServiceBillingFields } from "@/components/workforce/service-billing-fields";
 
 type Job = {
   id: string; job_number: string; customer_name: string; site_name: string; service_type: string;
@@ -33,13 +33,16 @@ export default async function ServiceJobDetail({ params, searchParams }: { param
   const { id } = await params;
   const query = await searchParams;
   const supabase = await createServerSupabase();
-  const [{ data }, { data: employees }, { data: rules }] = await Promise.all([
+  const [{ data }, { data: employees }, { data: rules }, { data: pricing }] = await Promise.all([
     supabase.from("service_job_read").select("id,branch_id,job_number,customer_id,customer_name,site_id,site_name,sales_employee_id,service_type,description,scheduled_start,scheduled_end,planned_quantity::text,unit_label,vehicle_id,plate_number,machine_id,machine_name,execution_state,version,work_item_id,work_number,work_state,work_version,employee_id,operator_name,actual_quantity::text,billable_quantity::text,compensable_quantity::text,billable_amount_vnd::text,service_verification_id,receivable_obligation_id").eq("id", id).eq("branch_id", access.branchId).maybeSingle(),
     supabase.from("workforce_read").select("id, code, display_name").eq("branch_id", access.branchId).eq("active", true).order("display_name"),
     supabase.from("compensation_rules").select("id, code, name, version, earning_type").eq("branch_id", access.branchId).order("created_at", { ascending: false }),
+    // D23: unit price copied from the service type when the job was scheduled (older jobs have none).
+    supabase.from("service_jobs").select("unit_price_vnd::text").eq("id", id).eq("branch_id", access.branchId).maybeSingle(),
   ]);
   if (!data) notFound();
   const job = data as Job;
+  const unitPrice = (pricing as { unit_price_vnd: string | null } | null)?.unit_price_vnd ?? null;
   const canManage = access.permissions.has("work.manage");
   const canClaim = access.permissions.has("work.claim");
   const canVerify = access.permissions.has("service.verify");
@@ -60,6 +63,7 @@ export default async function ServiceJobDetail({ params, searchParams }: { param
           <div className="detail-item"><dt>Phiếu việc</dt><dd>{job.work_number ?? "Chưa phát hành"}</dd></div>
           <div className="detail-item"><dt>Người thực hiện</dt><dd>{job.operator_name ?? "Chưa nhận"}</dd></div>
           <div className="detail-item"><dt>Trạng thái việc</dt><dd>{job.work_state ? workStateLabel(job.work_state) : "Chưa có"}</dd></div>
+          {unitPrice != null && <div className="detail-item"><dt>Đơn giá</dt><dd>{formatVnd(vnd(unitPrice))}/{job.unit_label}</dd></div>}
           <div className="detail-item field-full"><dt>Mô tả</dt><dd>{job.description}</dd></div>
           {job.billable_amount_vnd != null && <div className="detail-item"><dt>Khoản tính khách</dt><dd>{formatVnd(vnd(String(job.billable_amount_vnd)))}</dd></div>}
           {job.receivable_obligation_id && <div className="detail-item"><dt>Khoản phải thu</dt><dd><Link className="code-link" href={"/admin/receivables/" + job.receivable_obligation_id}>Mở khoản phải thu</Link></dd></div>}
@@ -92,9 +96,8 @@ export default async function ServiceJobDetail({ params, searchParams }: { param
         </>}
         {job.work_item_id && job.work_state === "DONE" && canVerify && <form className="command-panel" action={verifyServiceJobAction}>
           <input type="hidden" name="serviceJobId" value={job.id} /><input type="hidden" name="jobVersion" value={job.version} /><input type="hidden" name="workVersion" value={job.work_version ?? 1} /><input type="hidden" name="operationId" value={randomUUID()} />
-          <div className="field"><label>Sản lượng tính khách</label><input name="billableQuantity" defaultValue={job.actual_quantity ?? ""} inputMode="decimal" required /></div>
+          <ServiceBillingFields defaultQuantity={job.actual_quantity ?? ""} unitLabel={job.unit_label} unitPriceVnd={unitPrice} />
           <div className="field"><label>Sản lượng tính công</label><input name="compensableQuantity" defaultValue={job.actual_quantity ?? ""} inputMode="decimal" required /></div>
-          <div className="field"><label>Giá trị tính khách (VND)</label><MoneyInput name="billableAmount" required /></div>
           <div className="field"><label>Hạn thu</label><input type="date" name="dueDate" defaultValue={today()} required /></div>
           <div className="field field-full"><label>Căn cứ/chênh lệch</label><textarea name="note" defaultValue="Đã đối chiếu sản lượng thực tế, tính khách và tính công" minLength={3} required /></div>
           <button className="button button-primary" type="submit">Xác minh và tạo khoản phải thu</button>
