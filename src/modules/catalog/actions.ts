@@ -88,3 +88,60 @@ export async function saveCatalogWithOutcomeAction(form:FormData):Promise<Comman
   throw error;
  }
 }
+
+const CATALOG_PATHS=['/admin/catalog','/admin/products','/admin/customers','/admin/suppliers','/admin/inventory','/admin/dispatch','/admin/pricing'];
+const statusInput=z.object({kind:z.string(),id:z.uuid(),active:z.boolean(),customerId:z.uuid().nullish(),operationId:z.uuid()});
+
+/** "Ngừng dùng" / "Dùng lại": flips only `active`, through the same audited save command as the edit form. */
+export async function setCatalogActiveAction(input:z.input<typeof statusInput>):Promise<CommandOutcome> {
+ const parsed=statusInput.safeParse(input); const config=parsed.success?catalogs[parsed.data.kind]:undefined;
+ if(!parsed.success||!config) return {status:'FAILED',message:'Yêu cầu không hợp lệ. Tải lại trang rồi thử lại.'};
+ const {kind,id,active,customerId,operationId}=parsed.data;
+ if(kind==='sites'&&!customerId) return {status:'FAILED',message:'Thiếu khách hàng của công trình. Tải lại trang rồi thử lại.'};
+ try {
+  const access=await requireInternalPermission(config.permission);
+  const values:Record<string,unknown>=kind==='sites'?{customer_id:customerId,active}:{active};
+  const expected:Record<string,unknown>=kind==='sites'?{customer_id:customerId,active:!active}:{active:!active};
+  const reason=active?'Dùng lại':'Ngừng sử dụng';
+  const payload=kind==='branches'
+   ?{target_id:id,source_branch_id:access.branchId,values_json:values,expected_json:expected,change_reason:reason,operation_id:operationId}
+   :{kind,target_id:id,target_branch_id:access.branchId,values_json:values,expected_json:expected,change_reason:reason,operation_id:operationId};
+  await portalRpc(await createServerSupabase(),masterCommand(kind),payload);
+  for(const path of [...CATALOG_PATHS,catalogHref(kind).split('?')[0]]) revalidatePath(path);
+  return {status:'SUCCESS',resultId:id,message:active?'Đã dùng lại.':'Đã ngừng sử dụng. Bản ghi không còn hiện khi tạo chứng từ mới.'};
+ } catch(error) {
+  if(error instanceof AppError&&[401,403].includes(error.status)) return {status:'FAILED',message:error.message};
+  const code=error instanceof PortalRpcError?error.code:'';
+  const raw=error instanceof PortalRpcError?error.rawMessage:error instanceof Error?error.message:'';
+  if(raw.includes('vehicle_capacity_locked')) return {status:'FAILED',message:'Xe đang có phân giao hoặc hàng chưa xử lý. Xử lý xong trước khi ngừng dùng xe.'};
+  if(code==='PT409'||code==='40001') return {status:'FAILED',message:'Bản ghi vừa được thay đổi ở nơi khác. Tải lại trang rồi thử lại.'};
+  if(code==='42501') return {status:'FAILED',message:'Không có quyền với bản ghi/chi nhánh này.'};
+  return isAuthoritativeRejection(code)?{status:'FAILED',message:'Không đổi được trạng thái. Tải lại trang rồi thử lại.'}
+   :{status:'UNKNOWN',message:'Chưa xác định được kết quả. Bấm lại cùng nút để kiểm tra; thao tác không bị ghi hai lần.'};
+ }
+}
+
+const deleteInput=z.object({kind:z.string(),id:z.uuid(),operationId:z.uuid()});
+export type CatalogDeleteOutcome=CommandOutcome&{inUse?:boolean};
+
+/** "Xóa": only while nothing uses the record (the database refuses otherwise and nothing is removed). */
+export async function deleteCatalogRecordAction(input:z.input<typeof deleteInput>):Promise<CatalogDeleteOutcome> {
+ const parsed=deleteInput.safeParse(input); const config=parsed.success?catalogs[parsed.data.kind]:undefined;
+ if(!parsed.success||!config||parsed.data.kind==='branches') return {status:'FAILED',message:'Yêu cầu không hợp lệ. Tải lại trang rồi thử lại.'};
+ const {kind,id,operationId}=parsed.data;
+ try {
+  const access=await requireInternalPermission(config.permission);
+  await portalRpc(await createServerSupabase(),'delete_catalog_record',{kind,target_id:id,target_branch_id:access.branchId,change_reason:'Xóa khỏi danh mục',operation_id:operationId});
+  for(const path of [...CATALOG_PATHS,catalogHref(kind).split('?')[0]]) revalidatePath(path);
+  return {status:'SUCCESS',resultId:id,message:`Đã xóa ${config.title.toLowerCase()}.`};
+ } catch(error) {
+  if(error instanceof AppError&&[401,403].includes(error.status)) return {status:'FAILED',message:error.message};
+  const code=error instanceof PortalRpcError?error.code:'';
+  const raw=error instanceof PortalRpcError?error.rawMessage:error instanceof Error?error.message:'';
+  if(raw.includes('catalog_record_in_use')) return {status:'FAILED',inUse:true,message:'Đã có chứng từ hoặc dữ liệu liên quan nên không xóa được. Bạn có thể ngừng dùng để ẩn khỏi các lựa chọn mới.'};
+  if(code==='PT409') return {status:'FAILED',message:'Bản ghi không còn tồn tại hoặc vừa thay đổi. Tải lại trang.'};
+  if(code==='42501') return {status:'FAILED',message:'Không có quyền xóa bản ghi này.'};
+  return isAuthoritativeRejection(code)?{status:'FAILED',message:'Không xóa được. Tải lại trang rồi thử lại.'}
+   :{status:'UNKNOWN',message:'Chưa xác định được kết quả. Bấm lại cùng nút để kiểm tra; thao tác không bị ghi hai lần.'};
+ }
+}

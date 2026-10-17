@@ -254,6 +254,12 @@ tbody tr:hover { background: #f8fbff; }
 .catalog-saved { margin: 0 22px 12px; }
 .card-pad-x { margin: 0; padding: 0 22px 12px; }
 .catalog-dialog-form { display: grid; gap: 14px; }
+.catalog-record-actions { display: grid; gap: 10px; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
+.catalog-record-actions-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.catalog-record-actions-row > .muted { margin-right: auto; }
+.catalog-delete-confirm { padding: 12px 14px; border: 1px solid #f1b5b0; border-radius: 10px; background: var(--danger-soft); }
+.catalog-delete-confirm p { margin: 0 0 10px; }
+.catalog-delete-confirm .form-actions { margin: 0; }
 .dialog-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); }
 .dialog-tabs [role="tab"] { min-height: 40px; padding: 8px 14px; border: 0; border-bottom: 3px solid transparent; background: none; color: var(--muted); font: inherit; font-weight: 700; cursor: pointer; }
 .dialog-tabs [role="tab"][aria-selected="true"] { border-bottom-color: var(--primary); color: var(--text); }
