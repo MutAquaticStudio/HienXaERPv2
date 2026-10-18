@@ -537,8 +537,14 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 }
 
 @media (max-width: 760px) {
+  /* FB5: on a phone the four columns stack, so nothing scrolls sideways. */
   .dispatch-board {
-    grid-template-columns: repeat(4, 82vw);
+    grid-template-columns: minmax(0, 1fr);
+    overflow-x: visible;
+  }
+
+  .dispatch-column {
+    min-height: 0;
   }
 
   .quantity-strip {
@@ -1070,6 +1076,17 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
   .row-link-table td.numeric { text-align: left; }
   .row-link-table td[data-label]::before { content: attr(data-label); display: block; font-size: var(--font-size-caption); color: var(--muted); }
   .row-link-table td.row-title { grid-column: 1 / -1; order: -1; padding-right: 2.5rem; }
+}
+/* FB5: a plain table read as one card per row on a phone (cells carry data-label). */
+@media (max-width: 760px) {
+  .card-table thead { display: none; }
+  .card-table, .card-table tbody, .card-table tr, .card-table td { display: block; }
+  .card-table tbody tr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.4rem 0.75rem; padding: 0.85rem 1rem; border-top: 1px solid var(--border); }
+  .card-table td { min-width: 0; padding: 0; border: 0; white-space: normal; overflow-wrap: anywhere; }
+  .card-table td[data-label]::before { content: attr(data-label); display: block; font-size: var(--font-size-caption); color: var(--muted); }
+  .card-table td:first-child, .card-table td.table-actions { grid-column: 1 / -1; }
+  .card-table td.table-actions { text-align: left; }
+  .table-wrap > .card-table { min-width: 0; }
 }
 .row-link-table .row-toggle { width: 40px; }
 .row-link-table .row-toggle .icon-button { position: relative; z-index: 1; }

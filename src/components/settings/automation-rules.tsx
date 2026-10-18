@@ -57,7 +57,7 @@ export function AutomationRules({ overview }: { overview: AutomationOverview }) 
       <div className="section-head"><h2>Quy tắc ({overview.rules.length})</h2>
         <button type="button" className="button button-primary" onClick={() => { setMessage(null); setEditing({ ...emptyDraft }); }}>+ Thêm quy tắc</button></div>
       {message && <p className={`form-message${message.ok ? "" : " warning"}`} role="status">{message.text}</p>}
-      {overview.rules.length ? <div className="table-wrap"><table>
+      {overview.rules.length ? <div className="table-wrap"><table className="card-table">
         <thead><tr><th scope="col">Quy tắc</th><th scope="col">Khi</th><th scope="col">Nếu</th><th scope="col">Thì gửi</th><th scope="col"><span className="sr-only">Thao tác</span></th></tr></thead>
         <tbody>{overview.rules.map((rule) => <tr key={rule.id} className={rule.active ? undefined : "row-muted"}>
           <td data-label="Quy tắc"><strong>{rule.name}</strong>{!rule.active && <small className="table-subline">Đang tắt</small>}</td>
