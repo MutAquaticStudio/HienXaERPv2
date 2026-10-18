@@ -8,7 +8,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 export type PriceGroupResult = { success: boolean; message: string; outcomeUnknown?: boolean };
 
 const inputSchema = z.object({
-  operationId: z.uuid(),
+  operationId: z.guid(),
   code: z.string().trim().toUpperCase().regex(/^[A-Z0-9_-]{2,40}$/),
   name: z.string().trim().min(1).max(80),
   active: z.boolean(),

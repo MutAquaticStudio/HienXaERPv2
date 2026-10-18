@@ -17,9 +17,9 @@ export async function savePricingRuleAction(_: PricingState | undefined, form: F
   const expectedVersion = Number(form.get("expectedVersion"));
   // Retry-safe: the client keeps the same operation (and new rule) ID for a repeated submit.
   const operationId = String(form.get("operationId") ?? "");
-  if (!z.uuid().safeParse(operationId).success) return { message: "Mã thao tác không hợp lệ. Hãy tải lại màn hình." };
+  if (!z.guid().safeParse(operationId).success) return { message: "Mã thao tác không hợp lệ. Hãy tải lại màn hình." };
   if (mode === "deactivate") {
-    if (!z.uuid().safeParse(supersedesId).success || !Number.isInteger(expectedVersion) || expectedVersion < 1) return { message: "Bản giá không hợp lệ." };
+    if (!z.guid().safeParse(supersedesId).success || !Number.isInteger(expectedVersion) || expectedVersion < 1) return { message: "Bản giá không hợp lệ." };
     try {
       await portalRpc(await createServerSupabase(), "deactivate_pricing_rule", { target_id: supersedesId, target_branch_id: access.branchId, expected_version: expectedVersion, change_reason: reason, operation_id: operationId });
       revalidatePath("/admin/settings/pricing");
@@ -29,8 +29,8 @@ export async function savePricingRuleAction(_: PricingState | undefined, form: F
   }
   if (mode !== "create" && mode !== "replace") return { message: "Thao tác không hợp lệ." };
   const targetId = String(form.get("targetId") ?? "");
-  if (!z.uuid().safeParse(targetId).success) return { message: "Mã thao tác không hợp lệ. Hãy tải lại màn hình." };
-  if (mode === "replace" && (!z.uuid().safeParse(supersedesId).success || !Number.isInteger(expectedVersion) || expectedVersion < 1)) return { message: "Phiên bản cần thay không hợp lệ." };
+  if (!z.guid().safeParse(targetId).success) return { message: "Mã thao tác không hợp lệ. Hãy tải lại màn hình." };
+  if (mode === "replace" && (!z.guid().safeParse(supersedesId).success || !Number.isInteger(expectedVersion) || expectedVersion < 1)) return { message: "Phiên bản cần thay không hợp lệ." };
   const amount = String(form.get("unitPriceVnd") ?? "").trim();
   if (!/^[1-9]\d*$/.test(amount) || amount.length > 19 || BigInt(amount) > 9223372036854775807n) return { message: "Giá phải là số VND nguyên dương hợp lệ." };
   const sourceType = String(form.get("sourceType") ?? "");
@@ -46,11 +46,11 @@ export async function savePricingRuleAction(_: PricingState | undefined, form: F
     const group = String(form.get("groupId") ?? "");
     const tier = String(form.get("tierCode") ?? "").trim();
     const uom = String(form.get("priceUomId") ?? "");
-    if (!z.uuid().safeParse(uom).success) return { message: "Cần chọn đơn vị giá." };
+    if (!z.guid().safeParse(uom).success) return { message: "Cần chọn đơn vị giá." };
     if (!(["CUSTOMER_MATERIAL", "CUSTOMER_GROUP", "CUSTOMER_TIER", "DEFAULT"] as string[]).includes(scope)) return { message: "Phạm vi giá không hợp lệ." };
-    if (scope.startsWith("CUSTOMER_") && scope !== "CUSTOMER_TIER" && !z.uuid().safeParse(customer).success) return { message: "Cần chọn khách hàng." };
-    if (scope === "CUSTOMER_GROUP" && !z.uuid().safeParse(group).success) return { message: "Cần chọn nhóm vật tư." };
-    if (scope !== "CUSTOMER_GROUP" && !z.uuid().safeParse(material).success) return { message: "Cần chọn vật tư." };
+    if (scope.startsWith("CUSTOMER_") && scope !== "CUSTOMER_TIER" && !z.guid().safeParse(customer).success) return { message: "Cần chọn khách hàng." };
+    if (scope === "CUSTOMER_GROUP" && !z.guid().safeParse(group).success) return { message: "Cần chọn nhóm vật tư." };
+    if (scope !== "CUSTOMER_GROUP" && !z.guid().safeParse(material).success) return { message: "Cần chọn vật tư." };
     if (scope === "CUSTOMER_TIER" && (tier.length < 1 || tier.length > 40)) return { message: "Cần nhập nhóm giá khách hàng." };
     Object.assign(values, { scope_type: scope, customer_id: scope === "CUSTOMER_MATERIAL" || scope === "CUSTOMER_GROUP" ? customer : null, material_id: scope === "CUSTOMER_GROUP" ? null : material, material_group_id: scope === "CUSTOMER_GROUP" ? group : null, customer_tier_code: scope === "CUSTOMER_TIER" ? tier : null, price_uom_id: uom });
   }

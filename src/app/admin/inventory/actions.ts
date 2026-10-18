@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Back to the inventory view the popup was opened from (only that page, only plain filter parameters). */
 function inventoryTarget(back: FormDataEntryValue | null, outcome: string) {

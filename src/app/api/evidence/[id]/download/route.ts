@@ -33,7 +33,7 @@ function failure(status: number) {
 export async function GET(_request: Request, route: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await route.params;
-    if (!z.uuid().safeParse(id).success) return failure(404);
+    if (!z.guid().safeParse(id).success) return failure(404);
     const auth = await authenticatedPortalClient();
     if (!auth) return failure(401);
 

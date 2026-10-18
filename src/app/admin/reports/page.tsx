@@ -12,7 +12,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { availableReportKinds, loadFixedReport, type ReportKind } from "@/modules/reports/server";
 
 type Query = { report?: string; from?: string; to?: string; asOf?: string; customer?: string; customerSearch?: string; activity?: string; cutoff?: string; page?: string };
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const labels: Record<ReportKind, string> = { receivables: "Phải thu", payables: "Phải trả", expenses: "Chi phí vận hành" };
 

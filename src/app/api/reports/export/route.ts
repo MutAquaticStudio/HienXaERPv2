@@ -4,7 +4,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { availableReportKinds, loadFixedReport, loadObligationRows, type ReportFilters, type ReportKind, type ReportRow } from "@/modules/reports/server";
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const noStore = { "Cache-Control": "private, no-store" };
 type ExportJob = { id: string; branch_id: string; side: "AR" | "AP"; state: string; processed_rows: number; attempt: number; safe_error: string | null; as_of_date?: string; knowledge_cutoff?: string; customer_id?: string | null; rows_json?: ReportRow[] };
 

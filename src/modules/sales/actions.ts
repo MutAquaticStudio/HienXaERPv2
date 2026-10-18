@@ -22,23 +22,23 @@ export type SalesActionState = { message: string; success?: boolean; outcomeUnkn
 const positiveDecimal = z.string().trim().refine((value) => {
   try { return isPositiveSalesQuantity(value); } catch { return false; }
 }, "Số lượng không hợp lệ.");
-const lineSchema = z.object({ materialId: z.uuid(), orderedUomId: z.uuid(), quantity: positiveDecimal,
+const lineSchema = z.object({ materialId: z.guid(), orderedUomId: z.guid(), quantity: positiveDecimal,
   manualPriceVnd: z.string().trim().optional(), manualReason: z.string().trim().optional(),
-  sourceLineId: z.union([z.uuid(), z.literal("")]).optional() });
+  sourceLineId: z.union([z.guid(), z.literal("")]).optional() });
 const documentSchema = z.object({
-  customerId: z.uuid(), siteId: z.uuid(),
+  customerId: z.guid(), siteId: z.guid(),
   lines: z.array(lineSchema).min(1).max(50),
 });
-const createSchema = documentSchema.extend({ effectiveAt: z.string().trim().optional(), terms: z.string().trim().max(1000).optional(), operationId: z.uuid() });
-const editSchema = z.object({ documentId: z.uuid(), expectedVersion: z.coerce.number<number>().int().positive() });
+const createSchema = documentSchema.extend({ effectiveAt: z.string().trim().optional(), terms: z.string().trim().max(1000).optional(), operationId: z.guid() });
+const editSchema = z.object({ documentId: z.guid(), expectedVersion: z.coerce.number<number>().int().positive() });
 const previewSchema = documentSchema.extend({ kind: z.enum(["order", "quote"]),
-  documentId: z.uuid().optional(), expectedVersion: z.number().int().positive().optional() });
-const previewLineSchema = z.object({ materialId: z.uuid(), orderedUomId: z.uuid(), quantity: z.string(),
+  documentId: z.guid().optional(), expectedVersion: z.number().int().positive().optional() });
+const previewLineSchema = z.object({ materialId: z.guid(), orderedUomId: z.guid(), quantity: z.string(),
   unitPriceVnd: z.string(), priceSourceType: z.string(), lineTotalVnd: z.string(),
-  pricingRuleId: z.uuid().nullable(), pricingRuleVersion: z.number().int().nullable(), overrideReason: z.string().nullable() });
+  pricingRuleId: z.guid().nullable(), pricingRuleVersion: z.number().int().nullable(), overrideReason: z.string().nullable() });
 export type PricePreviewLine = z.infer<typeof previewLineSchema>;
 export type PricePreviewResult = { success: boolean; message: string; lines?: PricePreviewLine[]; totalVnd?: string };
-const commandSchema = z.object({ entityId: z.uuid(), operationId: z.uuid() });
+const commandSchema = z.object({ entityId: z.guid(), operationId: z.guid() });
 
 function commandError(message: string, confirmingOrder = false) {
   const postingError = operationalPostingError(message, confirmingOrder ? "sales-order-confirmation" : "posting");
@@ -278,7 +278,7 @@ async function saveDocument(kind: "order" | "quote", mode: "create" | "edit", fo
   let confirmOperationId: string | null = null;
   if (kind === "order" && mode === "create" && formData.get("intent") === "confirm") {
     if (!access.permissions.has("orders.confirm")) return { message: "Bạn không có quyền xác nhận đơn bán. Hãy chọn Lưu nháp." };
-    const confirmId = z.uuid().safeParse(formData.get("confirmOperationId"));
+    const confirmId = z.guid().safeParse(formData.get("confirmOperationId"));
     if (!confirmId.success || confirmId.data === parsed.data.operationId) return { message: "Thông tin xác nhận đơn chưa hợp lệ. Hãy tải lại màn hình." };
     confirmOperationId = confirmId.data;
   }
@@ -419,21 +419,21 @@ export async function closeSalesOrderRemainingAction(formData: FormData) {
 
 export async function sendQuotationAction(formData: FormData) {
   if (!QUOTATIONS_ENABLED) redirect(`/admin/orders?error=${encodeURIComponent(QUOTATIONS_DISABLED_MESSAGE)}`);
-  const parsed = commandSchema.extend({ quoteId: z.uuid() }).safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId"), quoteId: formData.get("quoteId") });
+  const parsed = commandSchema.extend({ quoteId: z.guid() }).safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId"), quoteId: formData.get("quoteId") });
   if (!parsed.success) redirect("/admin/quotations?error=invalid-command");
   return internalCommand("quotation.send", "send_quote_revision", { target_revision_id: parsed.data.entityId, operation_id: parsed.data.operationId }, `/admin/quotations/${parsed.data.quoteId}`, "sent");
 }
 
 export async function acceptQuotationAction(formData: FormData) {
   if (!QUOTATIONS_ENABLED) redirect(`/admin/orders?error=${encodeURIComponent(QUOTATIONS_DISABLED_MESSAGE)}`);
-  const parsed = commandSchema.extend({ quoteId: z.uuid(), channel: z.enum(["PHONE", "ZALO", "EMAIL", "OTHER"]), confirmedBy: z.string().trim().min(2).max(160) }).safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId"), quoteId: formData.get("quoteId"), channel: formData.get("channel"), confirmedBy: formData.get("confirmedBy") });
+  const parsed = commandSchema.extend({ quoteId: z.guid(), channel: z.enum(["PHONE", "ZALO", "EMAIL", "OTHER"]), confirmedBy: z.string().trim().min(2).max(160) }).safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId"), quoteId: formData.get("quoteId"), channel: formData.get("channel"), confirmedBy: formData.get("confirmedBy") });
   if (!parsed.success) redirect("/admin/quotations?error=invalid-command");
   return internalCommand("quotation.accept", "accept_quote_revision", { target_revision_id: parsed.data.entityId, acceptance_channel: parsed.data.channel, confirmed_by_name: parsed.data.confirmedBy, evidence_object_path: null, operation_id: parsed.data.operationId }, `/admin/quotations/${parsed.data.quoteId}`, "accepted");
 }
 
 export async function acceptCustomerQuotationAction(formData: FormData) {
   if (!QUOTATIONS_ENABLED) redirect(`/customer?error=${encodeURIComponent(QUOTATIONS_DISABLED_MESSAGE)}`);
-  const parsed = commandSchema.extend({ quoteId: z.uuid() }).safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId"), quoteId: formData.get("quoteId") });
+  const parsed = commandSchema.extend({ quoteId: z.guid() }).safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId"), quoteId: formData.get("quoteId") });
   if (!parsed.success) redirect("/customer/quotations?error=invalid-command");
   const membership = await requireCustomerAccess(["OWNER", "FINANCE_CONTACT"]);
   const supabase = await createServerSupabase();
@@ -447,14 +447,14 @@ export async function acceptCustomerQuotationAction(formData: FormData) {
 
 export async function createQuotationRevisionAction(formData: FormData) {
   if (!QUOTATIONS_ENABLED) redirect(`/admin/orders?error=${encodeURIComponent(QUOTATIONS_DISABLED_MESSAGE)}`);
-  const parsed = commandSchema.extend({ quoteId: z.uuid() }).safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId"), quoteId: formData.get("quoteId") });
+  const parsed = commandSchema.extend({ quoteId: z.guid() }).safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId"), quoteId: formData.get("quoteId") });
   if (!parsed.success) redirect("/admin/quotations?error=invalid-command");
   return internalCommand("quotation.create", "create_quote_revision", { source_revision_id: parsed.data.entityId, operation_id: parsed.data.operationId }, `/admin/quotations/${parsed.data.quoteId}`, "revised");
 }
 
 export async function createOrderFromQuotationAction(formData: FormData) {
   if (!QUOTATIONS_ENABLED) redirect(`/admin/orders?error=${encodeURIComponent(QUOTATIONS_DISABLED_MESSAGE)}`);
-  const parsed = commandSchema.extend({ quoteId: z.uuid(), deliveryAt: z.string().trim().optional() }).safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId"), quoteId: formData.get("quoteId"), deliveryAt: formData.get("deliveryAt") });
+  const parsed = commandSchema.extend({ quoteId: z.guid(), deliveryAt: z.string().trim().optional() }).safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId"), quoteId: formData.get("quoteId"), deliveryAt: formData.get("deliveryAt") });
   if (!parsed.success) redirect("/admin/quotations?error=invalid-command");
   let deliveryAt;
   try { deliveryAt = toIso(parsed.data.deliveryAt); } catch { redirect(`/admin/quotations/${parsed.data.quoteId}?error=Ngày+giao+không+hợp+lệ`); }

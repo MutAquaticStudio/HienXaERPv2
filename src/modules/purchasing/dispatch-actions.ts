@@ -6,7 +6,7 @@ import { requireInternalAccess } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 export type SentResult = { status: "SUCCESS" | "FAILED" | "UNKNOWN"; message: string; sentAt?: string };
-const schema = z.object({ purchaseOrderId: z.uuid(), channel: z.enum(["ZALO", "EMAIL", "OTHER"]), operationId: z.uuid() });
+const schema = z.object({ purchaseOrderId: z.guid(), channel: z.enum(["ZALO", "EMAIL", "OTHER"]), operationId: z.guid() });
 
 /** D17: records that the purchase order went to the supplier (the person sent it from their own Zalo/email). */
 export async function recordPurchaseOrderSentAction(input: unknown): Promise<SentResult> {

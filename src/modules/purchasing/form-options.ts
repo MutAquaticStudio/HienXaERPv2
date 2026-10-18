@@ -41,7 +41,7 @@ export async function loadPurchaseSuppliers(branchId: string, query = "", select
   }
   const [matches, selected] = await Promise.all([
     request,
-    selectedSupplierId && z.uuid().safeParse(selectedSupplierId).success
+    selectedSupplierId && z.guid().safeParse(selectedSupplierId).success
       ? supabase.from("suppliers").select("id, name").eq("branch_id", branchId).eq("active", true).eq("id", selectedSupplierId).maybeSingle()
       : Promise.resolve({ data: null, error: null }),
   ]);

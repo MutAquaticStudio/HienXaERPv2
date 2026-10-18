@@ -13,7 +13,7 @@ import { z } from "zod";
 const MAX_AGE_MS = 15 * 60 * 1000;
 
 const message = z.object({
-  job_id: z.uuid(),
+  job_id: z.guid(),
   channel: z.enum(["EMAIL", "PUSH"]),
   sent_at: z.string(),
   title: z.string().min(1).max(200),

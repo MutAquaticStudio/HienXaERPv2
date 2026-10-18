@@ -18,7 +18,7 @@ export async function saveCatalogAction(_:CatalogState|undefined, form:FormData)
  if(!config) return {message:'Danh mục không hợp lệ.'};
  const access=await requireInternalPermission(config.permission);
  try {
-  const intent = z.uuid().safeParse(form.get('operationId'));
+  const intent = z.guid().safeParse(form.get('operationId'));
   if (!intent.success) return {message:'Mã thao tác chưa hợp lệ. Tải lại biểu mẫu trước khi lưu.',status:'FAILED'};
   const recovery = await checkSavedCommandFieldsAction(form, masterCommand(kind));
   if (recovery) return {message:recovery.message,status:recovery.status};
@@ -97,7 +97,7 @@ export async function saveCatalogWithOutcomeAction(form:FormData):Promise<Comman
 }
 
 const CATALOG_PATHS=['/admin/catalog','/admin/products','/admin/customers','/admin/suppliers','/admin/inventory','/admin/dispatch','/admin/pricing','/admin/service-jobs'];
-const statusInput=z.object({kind:z.string(),id:z.uuid(),active:z.boolean(),customerId:z.uuid().nullish(),operationId:z.uuid()});
+const statusInput=z.object({kind:z.string(),id:z.guid(),active:z.boolean(),customerId:z.guid().nullish(),operationId:z.guid()});
 
 /** "Ngừng dùng" / "Dùng lại": flips only `active`, through the same audited save command as the edit form. */
 export async function setCatalogActiveAction(input:z.input<typeof statusInput>):Promise<CommandOutcome> {
@@ -128,7 +128,7 @@ export async function setCatalogActiveAction(input:z.input<typeof statusInput>):
  }
 }
 
-const deleteInput=z.object({kind:z.string(),id:z.uuid(),operationId:z.uuid()});
+const deleteInput=z.object({kind:z.string(),id:z.guid(),operationId:z.guid()});
 export type CatalogDeleteOutcome=CommandOutcome&{inUse?:boolean};
 
 /** "Xóa": only while nothing uses the record (the database refuses otherwise and nothing is removed). */

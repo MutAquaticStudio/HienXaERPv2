@@ -11,16 +11,16 @@ import { authenticatedPortalClient } from "@/modules/portal/server";
 import type { PortalCatalog } from "@/modules/portal/types";
 
 const orderInput = z.object({
-  customerId: z.uuid(),
-  siteId: z.uuid().nullable(),
+  customerId: z.guid(),
+  siteId: z.guid().nullable(),
   newSite: z.object({
     name: z.string().trim().min(2).max(160), address: z.string().trim().min(5).max(300),
     receiverName: z.string().trim().max(120), receiverPhone: z.string().trim().max(60),
   }).nullable(),
   requestedAt: z.string().trim().max(40),
   note: z.string().trim().max(1000),
-  lines: z.array(z.object({ materialId: z.uuid(), uomId: z.uuid(), quantity: z.string().trim().refine((value) => isExactEntryQuantity(value)) })).min(1).max(50),
-  operationId: z.uuid(),
+  lines: z.array(z.object({ materialId: z.guid(), uomId: z.guid(), quantity: z.string().trim().refine((value) => isExactEntryQuantity(value)) })).min(1).max(50),
+  operationId: z.guid(),
 }).refine((value) => (value.siteId === null) !== (value.newSite === null));
 export type PortalOrderInput = z.input<typeof orderInput>;
 
@@ -77,7 +77,7 @@ export async function submitPortalOrderAction(input: PortalOrderInput): Promise<
 
 /** "Hủy đơn" while the order still waits for approval. */
 export async function cancelPortalOrderAction(form: FormData) {
-  const parsed = z.object({ orderId: z.uuid(), reason: z.string().trim().min(3).max(300), operationId: z.uuid() })
+  const parsed = z.object({ orderId: z.guid(), reason: z.string().trim().min(3).max(300), operationId: z.guid() })
     .safeParse({ orderId: form.get("orderId"), reason: form.get("reason"), operationId: form.get("operationId") });
   if (!parsed.success) redirect(`/customer/orders/${String(form.get("orderId") ?? "")}?notice=cancel-reason`);
   const context = await authenticatedPortalClient();

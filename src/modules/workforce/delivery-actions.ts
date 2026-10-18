@@ -9,8 +9,8 @@ import { requireInternalPermission } from "@/lib/access/context";
 import { requirePermission } from "@/lib/access/policy";
 import { createServerSupabase } from "@/lib/supabase/server";
 
-const publication = z.object({ deliveryId: z.uuid(), operationId: z.uuid() });
-const verification = publication.extend({ workItemId: z.uuid(), version: z.coerce.number().int().positive() });
+const publication = z.object({ deliveryId: z.guid(), operationId: z.guid() });
+const verification = publication.extend({ workItemId: z.guid(), version: z.coerce.number().int().positive() });
 
 function failed(deliveryId: string, message: string): never {
   redirect(`/admin/deliveries/${deliveryId}?error=${encodeURIComponent(message)}`);

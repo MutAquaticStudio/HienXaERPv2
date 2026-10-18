@@ -10,12 +10,12 @@ export type OperationSettingsResult = { status: "SUCCESS" | "FAILED" | "UNKNOWN"
 
 const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
 const schema = z.object({
-  operationId: z.uuid(),
+  operationId: z.guid(),
   /** Version shown in the form, or null before the branch has its own settings. */
   expectedVersion: z.number().int().positive().nullable(),
   stopMinutes: z.number().int().min(5).max(720),
   // D19/D22: optional; a key left out keeps its saved value.
-  defaultWarehouseId: z.uuid().nullable().optional(),
+  defaultWarehouseId: z.guid().nullable().optional(),
   autoSource: z.boolean().optional(),
   tripCostVnd: z.string().regex(/^\d{1,12}$/).nullable().optional(),
   dispatchMode: z.enum(["OFF", "SUGGEST", "AUTO"]).optional(),

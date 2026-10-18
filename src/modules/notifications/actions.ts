@@ -8,7 +8,7 @@ export type NotificationItem = { id: string; kind: string; title: string; body: 
 export type NotificationFeed = { unread: number; items: NotificationItem[] };
 
 const feedInput = z.object({ limit: z.number().int().min(1).max(100).default(10), before: z.iso.datetime({ offset: true }).nullable().default(null) });
-const markInput = z.object({ ids: z.array(z.uuid()).max(200).nullable() });
+const markInput = z.object({ ids: z.array(z.guid()).max(200).nullable() });
 
 /** The bell and /admin/notifications: newest notifications of the active branch the employee may see. Null when unavailable. */
 export async function getNotificationFeedAction(input: unknown = {}): Promise<NotificationFeed | null> {

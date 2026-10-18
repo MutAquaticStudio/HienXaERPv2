@@ -9,7 +9,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { autoSourceConfirmedOrder, derivedOperationId } from "./auto-sourcing";
 
 const inputSchema = z.object({
-  orderId: z.uuid(), operationId: z.uuid(),
+  orderId: z.guid(), operationId: z.guid(),
   reason: z.string().trim().min(3).max(500),
   snapshotHash: z.string().regex(/^[a-f0-9]{64}$/),
 });
@@ -17,7 +17,7 @@ const inputSchema = z.object({
 export async function confirmSalesOrderCreditOverride(formData: FormData): Promise<void> {
   const context = await requireInternalPermission("orders.confirm");
   const input = inputSchema.safeParse(Object.fromEntries(formData));
-  const returnId = z.uuid().safeParse(formData.get("orderId"));
+  const returnId = z.guid().safeParse(formData.get("orderId"));
   const path = returnId.success ? `/admin/orders/${returnId.data}` : "/admin/orders";
   let message: string | undefined;
   let sourced: "SOURCED" | "SKIPPED" | "FAILED" = "SKIPPED";

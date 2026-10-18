@@ -19,7 +19,7 @@ function failure(message?: string, code?: string): CommandOutcome {
 }
 function refresh(id?: string) { revalidatePath("/admin/inventory"); revalidatePath("/admin/inventory/transfers"); if (id) revalidatePath(`/admin/inventory/transfers/${id}`); }
 export async function createWarehouseTransferAction(form: FormData): Promise<CommandOutcome> {
- const parsed = z.object({ fromWarehouseId: z.uuid(), toWarehouseId: z.uuid(), materialId: z.uuid(), quantity, reason, operationId: z.uuid() }).safeParse(Object.fromEntries(form));
+ const parsed = z.object({ fromWarehouseId: z.guid(), toWarehouseId: z.guid(), materialId: z.guid(), quantity, reason, operationId: z.guid() }).safeParse(Object.fromEntries(form));
  if (!parsed.success) return { status: "FAILED", message: "Chọn hai kho khác nhau, vật tư và lượng có tối đa 6 chữ số thập phân." };
  const access = await requireInternalPermission("inventory.reserve"); const changed = await checkSavedCommandFieldsAction(form, "create_warehouse_transfer"); if (changed) return changed;
  const db = await createServerSupabase(); const { data, error } = await db.rpc("create_warehouse_transfer", { target_branch_id: access.branchId,
@@ -29,9 +29,9 @@ export async function createWarehouseTransferAction(form: FormData): Promise<Com
  refresh(); return { status: "SUCCESS", resultId: String(data), message: "Đã mở phiếu chuyển kho. Xuất và nhận thực tế ghi riêng theo từng đợt." };
 }
 export async function recordWarehouseTransferAction(form: FormData): Promise<CommandOutcome> {
- const parsed = z.object({ transferId: z.uuid(), kind: z.enum(["DISPATCH", "RECEIVE", "REPORT_SHORTAGE", "APPROVE_LOSS", "CLOSE_DISPATCH"]),
-  dispatchId: z.union([z.uuid(), z.literal("")]), issueId: z.union([z.uuid(), z.literal("")]), quantity, reason,
-  version: z.coerce.number().int().positive(), operationId: z.uuid() }).safeParse(Object.fromEntries(form));
+ const parsed = z.object({ transferId: z.guid(), kind: z.enum(["DISPATCH", "RECEIVE", "REPORT_SHORTAGE", "APPROVE_LOSS", "CLOSE_DISPATCH"]),
+  dispatchId: z.union([z.guid(), z.literal("")]), issueId: z.union([z.guid(), z.literal("")]), quantity, reason,
+  version: z.coerce.number().int().positive(), operationId: z.guid() }).safeParse(Object.fromEntries(form));
  if (!parsed.success) return { status: "FAILED", message: "Lượng, lý do và nguồn chuyển kho chưa hợp lệ." };
  const permission = parsed.data.kind === "APPROVE_LOSS" ? "inventory.adjust" : ["DISPATCH", "CLOSE_DISPATCH"].includes(parsed.data.kind) ? "inventory.reserve" : "inventory.receive";
  const access = await requireInternalPermission(permission); const changed = await checkSavedCommandFieldsAction(form, "record_warehouse_transfer_event"); if (changed) return changed;

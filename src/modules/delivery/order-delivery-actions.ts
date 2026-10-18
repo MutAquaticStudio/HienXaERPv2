@@ -19,15 +19,15 @@ const quantity = z.string().trim().refine((value) => {
 });
 const localDateTime = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
 const inputSchema = z.object({
-  operationId: z.uuid(),
-  orderId: z.uuid(),
-  warehouseId: z.uuid(),
+  operationId: z.guid(),
+  orderId: z.guid(),
+  warehouseId: z.guid(),
   /** NOW: deliver as soon as possible (a busy driver gets it right after their current jobs); AT: at `scheduledAt`. */
   scheduleMode: z.enum(["NOW", "AT"]),
   /** For NOW, the moment "Giao ngay" was first pressed, so a retry sends the same command. */
   scheduledAt: localDateTime,
-  lines: z.array(z.object({ salesOrderLineId: z.uuid(), quantity })).min(1).max(50),
-  assignment: z.object({ employeeId: z.uuid(), vehicleId: z.uuid() }).nullable(),
+  lines: z.array(z.object({ salesOrderLineId: z.guid(), quantity })).min(1).max(50),
+  assignment: z.object({ employeeId: z.guid(), vehicleId: z.guid() }).nullable(),
 });
 
 /**

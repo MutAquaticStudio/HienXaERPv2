@@ -4,7 +4,7 @@ import { z } from "zod";
 import { authenticatedPortalClient, PortalRpcError, portalRpc } from "@/modules/portal/server";
 import { workCommandHttpStatus } from "@/modules/portal/work-command-status";
 
-const schema = z.object({ workItemId: z.uuid(), version: z.number().int().positive(), operationId: z.uuid(), reason: z.string().trim().min(3).max(300) });
+const schema = z.object({ workItemId: z.guid(), version: z.number().int().positive(), operationId: z.guid(), reason: z.string().trim().min(3).max(300) });
 
 export function declineMessage(raw: string) {
   if (raw.includes("decline_reason_required")) return "Ghi lý do từ chối (ít nhất 3 ký tự).";

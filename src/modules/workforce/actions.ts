@@ -10,7 +10,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { earningCommandError } from "./earning-command-error";
 import { validCompensationRate } from "./compensation-rate";
 
-const optionalUuid = z.union([z.uuid(), z.literal("")]);
+const optionalUuid = z.union([z.guid(), z.literal("")]);
 const decimal = z.string().trim().regex(/^-?\d+(?:\.\d{1,6})?$/);
 const positiveMoney = z.string().trim().regex(/^\d+$/).refine((value) => BigInt(value) > 0n);
 const localDateTime = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
@@ -30,11 +30,11 @@ const fail = (path: string, message?: string): never => redirect(path + "?error=
 
 export async function createServiceJobAction(formData: FormData) {
   const parsed = z.object({
-    customerId: z.uuid(), siteId: z.uuid(), salesEmployeeId: optionalUuid,
-    serviceTypeId: z.uuid(), description: z.string().trim().min(3).max(500),
+    customerId: z.guid(), siteId: z.guid(), salesEmployeeId: optionalUuid,
+    serviceTypeId: z.guid(), description: z.string().trim().min(3).max(500),
     scheduledStart: localDateTime, scheduledEnd: localDateTime, plannedQuantity: decimal,
     vehicleId: optionalUuid, machineId: optionalUuid,
-    operationId: z.uuid(),
+    operationId: z.guid(),
   }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fail("/admin/service-jobs", "invalid-service-job");
   const access = await requireInternalPermission("service.manage");
@@ -61,8 +61,8 @@ export async function createServiceJobAction(formData: FormData) {
 
 export async function cancelScheduledServiceJobAction(formData: FormData) {
   const parsed = z.object({
-    serviceJobId: z.uuid(), version: z.coerce.number().int().positive(),
-    reason: z.string().trim().min(3).max(500), operationId: z.uuid(),
+    serviceJobId: z.guid(), version: z.coerce.number().int().positive(),
+    reason: z.string().trim().min(3).max(500), operationId: z.guid(),
   }).safeParse(Object.fromEntries(formData));
   const target = parsed.success ? "/admin/service-jobs/" + parsed.data.serviceJobId : "/admin/service-jobs";
   if (!parsed.success) return fail(target, "invalid-service-cancel");
@@ -82,8 +82,8 @@ export async function cancelScheduledServiceJobAction(formData: FormData) {
 
 export async function publishWorkItemAction(formData: FormData) {
   const parsed = z.object({
-    serviceJobId: z.uuid(), assignmentMode: z.enum(["DIRECT", "POOL_CLAIM"]),
-    employeeId: optionalUuid, operationId: z.uuid(),
+    serviceJobId: z.guid(), assignmentMode: z.enum(["DIRECT", "POOL_CLAIM"]),
+    employeeId: optionalUuid, operationId: z.guid(),
   }).safeParse(Object.fromEntries(formData));
   const target = parsed.success ? "/admin/service-jobs/" + parsed.data.serviceJobId : "/admin/service-jobs";
   if (!parsed.success) return fail(target, "invalid-work-item");
@@ -102,8 +102,8 @@ export async function publishWorkItemAction(formData: FormData) {
 
 async function workStateAction(formData: FormData, command: "assign" | "claim" | "start") {
   const parsed = z.object({
-    workItemId: z.uuid(), serviceJobId: z.uuid(), version: z.coerce.number().int().positive(),
-    employeeId: optionalUuid.optional(), operationId: z.uuid(),
+    workItemId: z.guid(), serviceJobId: z.guid(), version: z.coerce.number().int().positive(),
+    employeeId: optionalUuid.optional(), operationId: z.guid(),
   }).safeParse(Object.fromEntries(formData));
   const target = parsed.success ? "/admin/service-jobs/" + parsed.data.serviceJobId : "/admin/service-jobs";
   if (!parsed.success) return fail(target, "invalid-work-command");
@@ -127,7 +127,7 @@ export async function startWorkItemAction(formData: FormData) { return workState
 
 export async function heartbeatWorkItemAction(formData: FormData) {
   const parsed = z.object({
-    workItemId: z.uuid(), serviceJobId: z.uuid(), note: z.string().trim().min(3).max(300), operationId: z.uuid(),
+    workItemId: z.guid(), serviceJobId: z.guid(), note: z.string().trim().min(3).max(300), operationId: z.guid(),
   }).safeParse(Object.fromEntries(formData));
   const target = parsed.success ? "/admin/service-jobs/" + parsed.data.serviceJobId : "/admin/service-jobs";
   if (!parsed.success) return fail(target, "invalid-heartbeat");
@@ -143,9 +143,9 @@ export async function heartbeatWorkItemAction(formData: FormData) {
 
 export async function submitWorkResultAction(formData: FormData) {
   const parsed = z.object({
-    workItemId: z.uuid(), serviceJobId: z.uuid(), actualQuantity: decimal,
+    workItemId: z.guid(), serviceJobId: z.guid(), actualQuantity: decimal,
     note: z.string().trim().min(3).max(1000), receiverName: z.string().trim().max(160),
-    evidenceId: optionalUuid, version: z.coerce.number().int().positive(), operationId: z.uuid(),
+    evidenceId: optionalUuid, version: z.coerce.number().int().positive(), operationId: z.guid(),
   }).safeParse(Object.fromEntries(formData));
   const target = parsed.success ? "/admin/service-jobs/" + parsed.data.serviceJobId : "/admin/service-jobs";
   if (!parsed.success) return fail(target, "invalid-work-result");
@@ -165,10 +165,10 @@ export async function submitWorkResultAction(formData: FormData) {
 
 export async function verifyServiceJobAction(formData: FormData) {
   const parsed = z.object({
-    serviceJobId: z.uuid(), billableQuantity: decimal, compensableQuantity: decimal,
+    serviceJobId: z.guid(), billableQuantity: decimal, compensableQuantity: decimal,
     billableAmount: z.string().trim().regex(/^\d+$/), dueDate: z.iso.date(),
     note: z.string().trim().min(3).max(1000), jobVersion: z.coerce.number().int().positive(),
-    workVersion: z.coerce.number().int().positive(), operationId: z.uuid(),
+    workVersion: z.coerce.number().int().positive(), operationId: z.guid(),
   }).safeParse(Object.fromEntries(formData));
   const target = parsed.success ? "/admin/service-jobs/" + parsed.data.serviceJobId : "/admin/service-jobs";
   if (!parsed.success) return fail(target, "invalid-service-verification");
@@ -195,7 +195,7 @@ export async function createCompensationRuleAction(formData: FormData) {
     earningType: z.enum(["FIXED_MONTHLY","PER_JOB","PER_TRIP","PER_HOUR","PER_SHIFT","PER_DAY","PER_TON","PER_M3","PER_BAG","PER_UNIT","BONUS","ADJUSTMENT","SALES_COMMISSION"]),
     calculationKind: z.enum(["FIXED_PER_BASIS","PERCENT_BPS"]), rate: z.string().trim(),
     classification: z.enum(["DIRECT_LABOR","OPEX","SALES_COMMISSION"]),
-    effectiveFrom: z.iso.date(), effectiveTo: z.union([z.iso.date(), z.literal("")]), operationId: z.uuid(),
+    effectiveFrom: z.iso.date(), effectiveTo: z.union([z.iso.date(), z.literal("")]), operationId: z.guid(),
   }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fail("/admin/compensation", "invalid-rule");
   if (!validCompensationRate(parsed.data.calculationKind, parsed.data.rate)) return fail("/admin/compensation", "invalid-compensation-rate");
@@ -217,10 +217,10 @@ export async function createCompensationRuleAction(formData: FormData) {
 
 export async function recordCompensationBasisAction(formData: FormData) {
   const parsed = z.object({
-    employeeId: z.uuid(), basisType: z.enum(["FIXED_MONTHLY","PER_SHIFT","PER_DAY","BONUS","ADJUSTMENT"]),
+    employeeId: z.guid(), basisType: z.enum(["FIXED_MONTHLY","PER_SHIFT","PER_DAY","BONUS","ADJUSTMENT"]),
     basisQuantity: decimal, periodStart: z.iso.date(), periodEnd: z.iso.date(),
     description: z.string().trim().min(3).max(500), adjustsEarningId: optionalUuid,
-    evidenceId: optionalUuid, operationId: z.uuid(),
+    evidenceId: optionalUuid, operationId: z.guid(),
   }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fail("/admin/compensation", "invalid-basis");
   const access = await requireInternalPermission("compensation.manage");
@@ -239,8 +239,8 @@ export async function recordCompensationBasisAction(formData: FormData) {
 
 export async function calculateEarningAction(formData: FormData) {
   const parsed = z.object({
-    ruleId: z.uuid(), sourceKind: z.enum(["SERVICE_VERIFICATION","WORK_ITEM_VERIFICATION","SALES_ORDER","MANUAL_BASIS"]),
-    sourceId: z.uuid(), returnTo: z.string().startsWith("/admin/"), operationId: z.uuid(),
+    ruleId: z.guid(), sourceKind: z.enum(["SERVICE_VERIFICATION","WORK_ITEM_VERIFICATION","SALES_ORDER","MANUAL_BASIS"]),
+    sourceId: z.guid(), returnTo: z.string().startsWith("/admin/"), operationId: z.guid(),
   }).safeParse(Object.fromEntries(formData));
   const target = parsed.success ? parsed.data.returnTo : "/admin/compensation";
   if (!parsed.success) return fail(target, "invalid-earning-source");
@@ -258,8 +258,8 @@ export async function calculateEarningAction(formData: FormData) {
 
 export async function approveEarningAction(formData: FormData) {
   const parsed = z.object({
-    earningId: z.uuid(), approvedAmount: z.string().trim().regex(/^-?\d+$/),
-    dueDate: z.iso.date(), version: z.coerce.number().int().positive(), operationId: z.uuid(),
+    earningId: z.guid(), approvedAmount: z.string().trim().regex(/^-?\d+$/),
+    dueDate: z.iso.date(), version: z.coerce.number().int().positive(), operationId: z.guid(),
   }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fail("/admin/compensation", "invalid-earning-approval");
   await requireInternalPermission("compensation.approve");
@@ -277,9 +277,9 @@ export async function approveEarningAction(formData: FormData) {
 
 export async function payEarningAction(formData: FormData) {
   const parsed = z.object({
-    employeeId: z.uuid(), obligationId: z.uuid(), accountId: z.uuid(), amount: positiveMoney,
+    employeeId: z.guid(), obligationId: z.guid(), accountId: z.guid(), amount: positiveMoney,
     effectiveAt: localDateTime, method: z.enum(["CASH","BANK_TRANSFER","CARD","OTHER"]),
-    reference: z.string().trim().max(160), operationId: z.uuid(),
+    reference: z.string().trim().max(160), operationId: z.guid(),
   }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fail("/admin/compensation", "invalid-earning-payment");
   const access = await requireInternalPermission("finance.payment.post");

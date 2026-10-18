@@ -10,7 +10,7 @@ export type RevokePortalAccessState = { success?: boolean; message?: string } | 
 
 /** "Thu hồi" a customer login: it can no longer open the customer portal; the history stays. */
 export async function revokeCustomerPortalAccessAction(_: RevokePortalAccessState, form: FormData): Promise<RevokePortalAccessState> {
-  const parsed = z.object({ customerId: z.uuid(), membershipId: z.uuid(), reason: z.string().trim().min(3).max(300) })
+  const parsed = z.object({ customerId: z.guid(), membershipId: z.guid(), reason: z.string().trim().min(3).max(300) })
     .safeParse({ customerId: form.get('customerId'), membershipId: form.get('membershipId'), reason: form.get('reason') });
   if (!parsed.success) return { message: 'Ghi lý do thu hồi (từ 3 ký tự).' };
   await requireInternalPermission('customers.manage');

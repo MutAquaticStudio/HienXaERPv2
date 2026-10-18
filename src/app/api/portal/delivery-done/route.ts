@@ -6,13 +6,13 @@ import { workCommandHttpStatus } from "@/modules/portal/work-command-status";
 
 const baseQuantity = z.string().trim().regex(/^\d+(?:\.\d{1,6})?$/);
 const schema = z.object({
-  workItemId: z.uuid(),
-  operationId: z.uuid(),
+  workItemId: z.guid(),
+  operationId: z.guid(),
   /** null: "Đã giao" — every line as loaded onto the truck. */
-  lines: z.array(z.object({ deliveryLineId: z.uuid(), actualBaseQuantity: baseQuantity })).min(1).max(50).nullable(),
+  lines: z.array(z.object({ deliveryLineId: z.guid(), actualBaseQuantity: baseQuantity })).min(1).max(50).nullable(),
   receiverName: z.string().trim().max(120).default(""),
   note: z.string().trim().max(1000).default(""),
-  evidenceIds: z.array(z.uuid()).max(5),
+  evidenceIds: z.array(z.guid()).max(5),
   expectedVersion: z.number().int().positive(),
   expectedDeliveryVersion: z.number().int().positive(),
   expectedAssignmentVersion: z.number().int().positive(),

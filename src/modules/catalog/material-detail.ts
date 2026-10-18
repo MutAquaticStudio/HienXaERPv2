@@ -23,7 +23,7 @@ export function materialReadCapabilities(permissions: ReadonlySet<string>) {
 
 export async function loadMaterialDetail(materialId: string) {
   const access = await requireInternalPermission("catalog.read");
-  if (!z.uuid().safeParse(materialId).success) return null;
+  if (!z.guid().safeParse(materialId).success) return null;
   const supabase = await createServerSupabase();
   const materialResult = await supabase.from("materials").select("id,code,name,specification,group_id,base_uom_id,active,sale_enabled,purchase_enabled,variant_group_id,variant_attributes").eq("id", materialId).maybeSingle();
   if (materialResult.error) throw new Error("Không thể tải vật tư.");

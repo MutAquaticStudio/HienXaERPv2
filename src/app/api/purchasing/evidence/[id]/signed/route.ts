@@ -11,7 +11,7 @@ function failure(status: number) {
 
 export async function GET(_request: Request, route: { params: Promise<{ id: string }> }) {
   const { id } = await route.params;
-  if (!z.uuid().safeParse(id).success) return failure(404);
+  if (!z.guid().safeParse(id).success) return failure(404);
   let access: Awaited<ReturnType<typeof resolveInternalAccess>>;
   try {
     access = await resolveInternalAccess();

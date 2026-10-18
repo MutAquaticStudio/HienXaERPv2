@@ -10,9 +10,9 @@ import { AUTOMATION_CHANNELS, AUTOMATION_EVENTS } from "@/modules/settings/autom
 export type AutomationActionResult = { ok: boolean; message: string };
 
 const ruleInput = z.object({
-  ruleId: z.uuid().nullable(),
+  ruleId: z.guid().nullable(),
   expectedVersion: z.number().int().positive().nullable(),
-  operationId: z.uuid(),
+  operationId: z.guid(),
   name: z.string().trim().min(3).max(120),
   event: z.enum(AUTOMATION_EVENTS.map((event) => event.value) as [string, ...string[]]),
   minAmountVnd: z.string().trim().regex(/^(|[1-9]\d{0,15})$/),
@@ -45,7 +45,7 @@ export async function saveAutomationRuleAction(input: AutomationRuleInput): Prom
 }
 
 export async function deleteAutomationRuleAction(ruleId: unknown): Promise<AutomationActionResult> {
-  const id = z.uuid().safeParse(ruleId);
+  const id = z.guid().safeParse(ruleId);
   if (!id.success) return { ok: false, message: "Không xác định được quy tắc." };
   await requireInternalPermission("roles.manage");
   const { error } = await (await createServerSupabase()).rpc("delete_automation_rule", { target_rule_id: id.data, operation_id: crypto.randomUUID() });
@@ -55,7 +55,7 @@ export async function deleteAutomationRuleAction(ruleId: unknown): Promise<Autom
 }
 
 export async function testAutomationRuleAction(ruleId: unknown): Promise<AutomationActionResult> {
-  const id = z.uuid().safeParse(ruleId);
+  const id = z.guid().safeParse(ruleId);
   if (!id.success) return { ok: false, message: "Không xác định được quy tắc." };
   await requireInternalPermission("roles.manage");
   const { data, error } = await (await createServerSupabase()).rpc("test_automation_rule", { target_rule_id: id.data, operation_id: crypto.randomUUID() });

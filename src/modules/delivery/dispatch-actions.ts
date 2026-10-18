@@ -11,7 +11,7 @@ const boardPath = (value?: string) => `/admin/dispatch${value ? `?day=${value}` 
 
 /** D22 "Tự chia việc": every planned warehouse delivery of the day (and older ones still waiting) goes to a free truck + driver. */
 export async function autoDispatchDayAction(formData: FormData) {
-  const parsed = z.object({ day, operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ day, operationId: z.guid() }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect(`/admin/dispatch?error=${encodeURIComponent("Ngày chưa hợp lệ. Tải lại trang rồi thử lại.")}`);
   const access = await requireInternalPermission("delivery.assign");
   const supabase = await createServerSupabase();
@@ -26,7 +26,7 @@ export async function autoDispatchDayAction(formData: FormData) {
 
 /** SUGGEST mode: apply the proposal shown on the board (the assignment checks run again). */
 export async function applyDispatchProposalAction(formData: FormData) {
-  const parsed = z.object({ deliveryId: z.uuid(), day: day.optional(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ deliveryId: z.guid(), day: day.optional(), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect("/admin/dispatch?error=invalid-command");
   await requireInternalPermission("delivery.assign");
   const supabase = await createServerSupabase();

@@ -66,7 +66,7 @@ export async function recoveryAction(_: AuthFormState, formData: FormData): Prom
 }
 
 const selectBranchSchema = z.object({
-  branchId: z.uuid(),
+  branchId: z.guid(),
   surface: z.enum(["admin", "work"]),
 });
 
@@ -85,11 +85,11 @@ export async function selectBranchAction(formData: FormData) {
 }
 
 const assignRoleSchema = z.object({
-  employeeId: z.uuid(),
-  branchId: z.uuid(),
-  roleId: z.uuid(),
+  employeeId: z.guid(),
+  branchId: z.guid(),
+  roleId: z.guid(),
   reason: z.string().trim().min(3).max(500),
-  operationId: z.uuid(),
+  operationId: z.guid(),
 });
 
 export async function assignRoleAction(_: AuthFormState, formData: FormData): Promise<AuthFormState> {
@@ -119,8 +119,8 @@ const inviteSchema = z.object({
   }),
   code: z.string().trim().regex(/^[A-Z0-9_-]{2,24}$/),
   name: z.string().trim().min(2).max(120),
-  branchId: z.uuid(),
-  roleId: z.uuid(),
+  branchId: z.guid(),
+  roleId: z.guid(),
   reason: z.string().trim().min(3).max(500),
   delivery: z.enum(["link", "email"]).default("link"),
 });
@@ -212,7 +212,7 @@ export async function inviteEmployeeAction(_: ActivationFormState, formData: For
 
 /** New activation link for an employee who has not set a password yet, or who lost it. Replaces any earlier link. */
 export async function createActivationLinkAction(_: ActivationFormState, formData: FormData): Promise<ActivationFormState> {
-  const employeeId = z.uuid().safeParse(formData.get("employeeId"));
+  const employeeId = z.guid().safeParse(formData.get("employeeId"));
   if (!employeeId.success) return { message: "Không xác định được nhân viên." };
   const actor = await requireInternalPermission("roles.manage");
   if (employeeId.data === actor.employeeId) return { message: "Không tạo link kích hoạt cho chính mình. Dùng \"Quên mật khẩu\" ở trang đăng nhập." };
@@ -240,7 +240,7 @@ export async function createActivationLinkAction(_: ActivationFormState, formDat
 }
 
 export async function revokeAccessAction(_: AuthFormState, form: FormData): Promise<AuthFormState> {
- const parsed=z.object({accessId:z.uuid(),reason:z.string().trim().min(3).max(500),confirmed:z.literal('on')}).safeParse(Object.fromEntries(form));
+ const parsed=z.object({accessId:z.guid(),reason:z.string().trim().min(3).max(500),confirmed:z.literal('on')}).safeParse(Object.fromEntries(form));
  if(!parsed.success) return {message:'Nhập lý do và xác nhận thu hồi quyền.'};
  await requireInternalPermission('roles.manage');
  try {await portalRpc(await createServerSupabase(),'revoke_employee_access',{target_access_id:parsed.data.accessId,change_reason:parsed.data.reason,operation_id:randomUUID()});}
@@ -250,7 +250,7 @@ export async function revokeAccessAction(_: AuthFormState, form: FormData): Prom
 }
 
 export async function reactivateAccessAction(_: AuthFormState, form: FormData): Promise<AuthFormState> {
-  const parsed = z.object({ accessId: z.uuid(), reason: z.string().trim().min(3).max(500), confirmed: z.literal("on") }).safeParse(Object.fromEntries(form));
+  const parsed = z.object({ accessId: z.guid(), reason: z.string().trim().min(3).max(500), confirmed: z.literal("on") }).safeParse(Object.fromEntries(form));
   if (!parsed.success) return { message: "Nhập lý do và xác nhận kích hoạt lại quyền." };
   await requireInternalPermission("roles.manage");
   try {
@@ -268,8 +268,8 @@ export async function reactivateAccessAction(_: AuthFormState, form: FormData): 
 
 export async function setExplicitPermissionsAction(_: AuthFormState, form: FormData): Promise<AuthFormState> {
   const parsed = z.object({
-    employeeId: z.uuid(),
-    branchId: z.uuid(),
+    employeeId: z.guid(),
+    branchId: z.guid(),
     permissionCodes: z.array(z.string().regex(/^[a-z][a-z0-9_.]{2,79}$/)).max(100),
     reason: z.string().trim().min(3).max(500),
   }).safeParse({
@@ -300,7 +300,7 @@ export async function setExplicitPermissionsAction(_: AuthFormState, form: FormD
 
 export type PortalAccountState = { message?: string; success?: boolean; shareText?: string } | undefined;
 const portalAccountSchema = z.object({
-  customerId: z.uuid(),
+  customerId: z.guid(),
   login: z.string().trim().min(3).max(200),
   password: z.string().min(8).max(72),
   role: z.enum(["OWNER", "FINANCE_CONTACT", "RECEIVER"]),
@@ -343,7 +343,7 @@ export async function createCustomerPortalAccountAction(_: PortalAccountState, f
 
 /** "Đặt lại mật khẩu" for a customer login of this customer: a new temporary password, changed at the next sign-in. */
 export async function resetCustomerPortalPasswordAction(_: PortalAccountState, formData: FormData): Promise<PortalAccountState> {
-  const parsed = z.object({ customerId: z.uuid(), membershipId: z.uuid(), password: z.string().min(8).max(72) }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ customerId: z.guid(), membershipId: z.guid(), password: z.string().min(8).max(72) }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { message: "Mật khẩu tạm từ 8 ký tự." };
   await requireInternalPermission("customers.manage");
   const supabase = await createServerSupabase();
