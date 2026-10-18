@@ -3063,3 +3063,35 @@ Nhánh dựng lại từ `main` (`200c423`). Mỗi migration viết lại hàm b
   PASS, `node --test` script QA 15 PASS.
 - QA project: 12 hàm nền trên QA khớp md5 với repo trước R2 (chưa có đối tượng R2). Lệnh ghi qua công cụ bị chặn → gửi Owner file gộp 5 migration
   (mỗi file một transaction + bản ghi `schema_migrations` kèm sha256) để chạy trong SQL Editor của QA; md5 tham chiếu 19 hàm R2 tính từ DB cục bộ.
+
+## 2026-10-18 — Đợt gộp R3 + B + C1 + F5 (Owner: "Có thể hoàn thiện hết rồi QA cùng 1 đợt được chứ?")
+
+Lần chạy SQL R2 trên QA của Owner báo lỗi vì bản xem tệp trong ứng dụng Claude chỉ chép 20.000 ký tự đầu (thân hàm `$$` bị cắt). Owner đồng ý làm
+xong toàn bộ rồi QA một lần; tệp áp QA sẽ chia < 20.000 ký tự. Mọi migration mới viết lại hàm từ thân hàm mới nhất, so `pg_get_functiondef`.
+- R3-N `20261018140000_notifications` (SPEC-SEC-006): `notifications`, `notification_reads`, `private.notify`, `notification_feed`,
+  `mark_notifications_read`, trigger kết quả giao/việc mới, Realtime. Chuông trên thanh trên cùng nội bộ, `/admin/notifications`. Native 185.
+- R3-F1 `20261018150000_operation_settings_more`, `20261018160000_order_auto_sourcing` (SPEC-SRC-004): cài đặt kho mặc định, tự phân nguồn, chi phí
+  một chuyến; `solve_order_sourcing` / `order_sourcing_plan` / `auto_source_sales_order`; xác nhận đơn (kể cả duyệt vượt hạn mức) tự phân nguồn;
+  phiếu NCC giao thẳng tự lập khi duyệt đơn mua; `submit_supplier_delivery_done`. Khung "Nguồn hàng" trên trang đơn. Native 190.
+- R3-F3 + C2 `20261018170000_auto_dispatch` (SPEC-DEL-008): tài xế mặc định của xe, `auto_dispatch_delivery` / `auto_dispatch_day` /
+  `apply_dispatch_proposal` / `dispatch_day`, đề xuất (chế độ Gợi ý), loại trừ người đã từ chối; `decline_portal_work_item`. Trang Điều phối theo
+  tài xế, nút "Từ chối việc" ở cổng thợ. Native 195.
+- R3-Z `20261018180000_purchase_order_dispatches` (SPEC-PUR-003): "Gửi NCC qua Zalo" (Web Share + PDF / chép + zalo.me / email), ghi đã gửi. Native 200.
+- B-1 + C1 `20261018190000_customer_portal_accounts` (SPEC-CUSTPORTAL-004): `customers.source`, `company_profile.portal_branch_id`,
+  `grant/revoke_customer_portal_access`, `customer_portal_accounts`, `register_portal_customer`. Ứng dụng: khung "Tài khoản cổng khách" ở Khách
+  hàng 360 (tạo bằng email/SĐT + mật khẩu tạm qua module auth đã có khóa bí mật, đặt lại, thu hồi), `/customer/register`, đổi mật khẩu bắt buộc
+  (proxy), ô "Email hoặc số điện thoại" ở 3 trang đăng nhập và mời nhân viên (`<sđt>@sdt.hienxavlxd.com`). Native 205.
+- B-2 `20261018200000_portal_orders` (SPEC-CUSTPORTAL-005): `sales_orders.order_channel/portal_note/submitted_by`, `customer_portal_catalog`,
+  `submit_portal_order`, `cancel_portal_order`, `customer_portal_order` thêm dòng hàng/lý do hủy. Cổng khách: Đặt hàng, chi tiết + Hủy; nội bộ:
+  băng chờ duyệt, "Duyệt đơn", lọc, nhắc ở Tổng quan. Native 210.
+- F5 `20261018210000_automation`, `20261018211000_automation_rules_api` (SPEC-SEC-006): bật `pg_net`/`pg_cron` nếu có, `automation_rules`,
+  `outbound_jobs`, `push_subscriptions`, trigger quy tắc trên `notifications`, gửi qua `pg_net` (Telegram, webhook ký HMAC; email/đẩy qua
+  `/api/automation/deliver` ký HMAC, không đọc/ghi DB), `process_outbound_jobs` mỗi phút, `morning_digest` 07:00, 5 quy tắc mẫu (đẩy). Ứng dụng:
+  Cài đặt → Quy tắc tự động, PWA (manifest, `/sw.js`), "Bật thông báo trên máy này"; thêm `web-push`, `nodemailer` (lockfile cập nhật bằng pnpm 11).
+  Native 215 (pg_net/Vault giả lập).
+- Kiểm cục bộ: lint 0 lỗi, typecheck sạch, vitest 189 file / 1062 test, native toàn bộ 218 migration + 27 tệp test PASS.
+- Chưa làm (theo Owner): Zalo ZNS (trả phí), trợ lý AI; tự chia việc ngày mai lúc 17:00 bằng pg_cron không làm vì cần quyền `delivery.assign` của
+  một người cụ thể (D22 không mượn quyền) — Điều phối bấm "Tự chia việc".
+- Owner cần cấu hình khi muốn dùng: Supabase Auth "Allow new users to sign up" (tự đăng ký) + SMTP riêng (xác nhận email); tài xế mặc định cho xe +
+  kho mặc định; Vault `hx_app_url`, `hx_automation_secret` (+ `HX_AUTOMATION_SECRET` trên Vercel), `hx_telegram_bot_token`, `hx_webhook_secret`;
+  Vercel `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `SMTP_*`.
