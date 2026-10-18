@@ -955,6 +955,7 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .delivery-progress p { margin: 0; }
 .order-delivery-assign { margin: 0; padding: 12px 14px; border: 1px dashed var(--border); border-radius: 10px; }
 .order-delivery-assign legend { padding: 0 6px; }
+.order-delivery-capacity { margin: 8px 0 0; padding-left: 1.1rem; color: var(--muted); font-size: var(--font-size-caption); display: grid; gap: 2px; }
 .order-review-summary { margin-bottom: 12px; }
 .order-review-lines td, .order-review-lines th { padding: 8px; }
 .text-danger { color: var(--danger); font-weight: 700; }

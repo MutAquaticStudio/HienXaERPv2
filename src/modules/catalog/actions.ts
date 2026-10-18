@@ -64,9 +64,8 @@ export async function saveCatalogAction(_:CatalogState|undefined, form:FormData)
   if(kind==='branches'&&!/^[A-Z0-9_-]{2,24}$/.test(String(values.code))) return {message:'Mã chi nhánh phải viết hoa, gồm 2–24 ký tự A–Z, 0–9, _ hoặc -.'};
   if(kind==='machines'&&String(values.machine_type).length>60) return {message:'Loại máy tối đa 60 ký tự.'};
   if(kind==='vehicles'){
-   if(Boolean(values.capacity_quantity)!==Boolean(values.capacity_uom_id)) return {message:'Sức chứa phải có cả số lượng và đơn vị, hoặc để trống cả hai.'};
-   if(values.capacity_quantity&&!isExactEntryQuantity(String(values.capacity_quantity))) return {message:'Sức chứa phải là số dương hợp lệ, tối đa 6 chữ số thập phân.'};
-   if(values.capacity_quantity&&String(values.capacity_source_note??'').trim().length<3) return {message:'Nhập căn cứ đã xác minh sức chứa của xe.'};
+   if(Boolean(values.capacity_quantity)!==Boolean(values.capacity_uom_id)) return {message:'Sức chở phải có cả số lượng và đơn vị, hoặc để trống cả hai.'};
+   if(values.capacity_quantity&&!isExactEntryQuantity(String(values.capacity_quantity))) return {message:'Sức chở phải là số dương hợp lệ, tối đa 6 chữ số thập phân.'};
   }
   const original=editing?JSON.parse(String(form.get('original'))):null;
   const expected=original?Object.fromEntries(fields.map(f=>[f.key,original[f.key]??null])):null;

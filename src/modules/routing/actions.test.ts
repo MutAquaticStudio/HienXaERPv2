@@ -18,7 +18,8 @@ beforeEach(() => m.rpc.mockReset());
 
 it("explains why a route could not be applied in Vietnamese", async () => {
   const cases: [string, string][] = [
-    ["vehicle_capacity_basis_missing", "Chưa đủ dữ liệu kiểm tra tải xe"],
+    ["vehicle_capacity_basis_missing", "Xe chưa có sức chở"],
+    ["vehicle_capacity_conversion_missing", "vd 1 tấn = 20 bao"],
     ["delivery_employee_cannot_report_work", "Người giao phải có tài khoản đang hoạt động"],
     ["work_resource_schedule_collision", "Khung giờ phân giao đang chồng lấn"],
     ["route_stop_schedule_required", "Tạo lại đề xuất lộ trình"],

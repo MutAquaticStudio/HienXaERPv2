@@ -121,12 +121,14 @@ type PlanRow = { sales_order_line_id: string; line_number: number; material_id: 
 
 /** Left to deliver per line (order_delivery_plan) for the one-step "Lập phiếu giao" popup, plus drivers and vehicles when allowed. */
 async function loadDeliveryPlan(supabase: Awaited<ReturnType<typeof createServerSupabase>>, orderId: string, lines: Line[], branchId: string, canAssign: boolean) {
-  const [planResult, unitResult, vehicleResult, employees, settingsResult] = await Promise.all([
+  const [planResult, unitResult, vehicleResult, employees, settingsResult, capacityResult] = await Promise.all([
     supabase.rpc("order_delivery_plan", { target_sales_order_id: orderId }),
-    supabase.from("units_of_measure").select("id, symbol").in("id", [...new Set(lines.map((line) => line.base_uom_id))]),
-    canAssign ? supabase.from("vehicles").select("id, code, plate_number").eq("branch_id", branchId).eq("active", true).order("code").limit(200) : Promise.resolve({ data: [], error: null }),
+    supabase.from("units_of_measure").select("id, symbol").limit(1000),
+    canAssign ? supabase.from("vehicles").select("id, code, plate_number, capacity_quantity::text, capacity_uom_id").eq("branch_id", branchId).eq("active", true).order("code").limit(200) : Promise.resolve({ data: [], error: null }),
     canAssign ? listAssignmentEmployees(supabase, branchId).catch(() => null) : Promise.resolve(null),
     supabase.from("branch_operation_settings").select("stop_minutes").eq("branch_id", branchId).maybeSingle(),
+    // FB5: how much of each line each truck carries in the line's unit ("4 tấn ≈ 80 bao"); without it the popup only names the trucks.
+    canAssign ? supabase.rpc("vehicle_capacity_by_order", { target_sales_order_id: orderId }) : Promise.resolve({ data: [], error: null }),
   ]);
   if (planResult.error || unitResult.error) return null;
   const symbols = new Map((unitResult.data ?? []).map((row) => [row.id, row.symbol]));
@@ -140,7 +142,17 @@ async function loadDeliveryPlan(supabase: Awaited<ReturnType<typeof createServer
       allocations: row.allocations.map((item) => ({ id: item.id, mode: item.supply_mode, warehouseId: item.warehouse_id, allocatedBase: String(item.allocated_base_quantity), consumedBase: String(item.consumed_base_quantity) })) }];
   });
   const open = planLines.some((line) => new Decimal(line.requiredBase).gt(line.allocations.reduce((sum, item) => sum.plus(item.consumedBase), new Decimal(0))));
+  const carried = capacityResult.error ? [] : (capacityResult.data ?? []) as { vehicle_id: string; sales_order_line_id: string; capacity_in_line_unit: string | number | null }[];
   const resources = canAssign && employees ? { employees: employees.data.map((row) => ({ id: row.id, name: row.display_name })),
-    vehicles: ((vehicleResult.data ?? []) as { id: string; code: string; plate_number: string }[]).map((row) => ({ id: row.id, label: `${row.code} · ${row.plate_number}` })) } : null;
+    vehicles: ((vehicleResult.data ?? []) as { id: string; code: string; plate_number: string; capacity_quantity: string | null; capacity_uom_id: string | null }[]).map((row) => ({
+      id: row.id, label: `${row.code} · ${row.plate_number}`,
+      capacity: row.capacity_quantity && row.capacity_uom_id && !capacityResult.error ? {
+        quantity: row.capacity_quantity, unit: symbols.get(row.capacity_uom_id) ?? "",
+        perLine: Object.fromEntries(planLines.map((line) => {
+          const found = carried.find((item) => item.vehicle_id === row.id && item.sales_order_line_id === line.salesOrderLineId);
+          return [line.salesOrderLineId, found?.capacity_in_line_unit === null || found?.capacity_in_line_unit === undefined ? null : String(found.capacity_in_line_unit)];
+        })),
+      } : null,
+    })) } : null;
   return { lines: planLines, open, resources, stopMinutes: (settingsResult.data as { stop_minutes: number } | null)?.stop_minutes ?? 60 };
 }
