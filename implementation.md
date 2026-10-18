@@ -3142,3 +3142,10 @@ xong toàn bộ rồi QA một lần; tệp áp QA sẽ chia < 20.000 ký tự. 
 - Migration `20261018230000_portal_catalog_variants.sql`: `customer_portal_catalog` trả `variant_group_id`, `variant_name`, `variant_label` (thứ tự
   thuộc tính theo nhóm), tìm theo tên sản phẩm chung, xếp hàng cùng loại cạnh nhau; nhóm ngừng dùng không hiện. Native 230.
 - `MaterialSearchBox` nhận `placeholder`; CSS cổng khách bỏ kiểu thẻ hàng cũ, thêm `.orderEditor` (màu xanh cổng khách) và `.lineMeta`.
+
+## 2026-10-18 — Phát hành FB6 lên Production; tệp 6 hàm đã dán
+
+- Owner đã chạy tệp 6 hàm có lệnh xoá trên Production: md5 chuẩn hoá và ACL của cả 6 hàm khớp QA; `pg_cron hx-outbound-jobs` chạy thành công mỗi phút.
+- PR #57 merge, `main` = `68d04a4`. Migration `20261018230000_portal_catalog_variants.sql` áp lên Production qua MCP (một transaction + `schema_migrations`
+  sha256 `609351a9…`); `customer_portal_catalog` khớp md5 + ACL với QA. Giả lập phiên khách demo KH01: danh mục có nhóm "Xi Măng Bút Sơn"
+  (PCB30/PCB40) và "Xi măng Hoàng Long" (HL30/HL40) kèm nhãn thuộc tính. Deploy `dpl_8HJ7Bk1gsnNJcpKsdZFJXeNEdRE8`; quay lui: `dpl_6aDAWYt8JkQDD6Fnhxaar9Kw8obB`.

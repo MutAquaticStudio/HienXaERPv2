@@ -25,7 +25,7 @@ QA_SCHEMA_MUTATION: PO_PATCH_ALREADY_APPLIED_NEW_PATCHES_NOT_AUTHORIZED
 QA_APPROVED_PATCH_SHA256: 9e74a7976728bb33b4401d642b79329e5d5ece9ac016e8509c06bbf238bf2f7d
 QA_SCHEMA_APPLY: APPLIED
 PRODUCTION_MUTATION: FORBIDDEN_WITHOUT_OWNER
-ACTIVE_FEEDBACK_BATCH: FB6_20261018  # Claude Code, branch nox/elegant-volta-kr29iz; FB5 đã lên Production (main 555ce1e); FB6 = cổng khách Đặt hàng như Tạo đơn bán, see FB5 section
+ACTIVE_FEEDBACK_BATCH: FB6_20261018  # Claude Code, branch nox/elegant-volta-kr29iz; FB5 + FB6 đã lên Production (main 68d04a4); chờ Owner QA, see FB5 section
 ```
 
 Historical R0–R9 tasks are not repeated here. Their source/evidence lives in implementation.md.
@@ -773,4 +773,4 @@ Quyết định D25 ở đầu Spec.md; giao diện UX-FB5-001. Migration `20261
 | FB5-N | "Bước tiếp theo" sau xác nhận đơn bán (phiếu giao, xe/tài xế, đơn mua chờ duyệt, Thu tiền, In, Đơn mới) và đơn mua (Gửi NCC, Nhận hàng, "Nhận đủ"); duyệt ngoại lệ tín dụng chuyển về bằng mã notice | DONE_LOCAL |
 | FB5-E2E | 390 px: bảng Quy tắc tự động dạng thẻ, bảng Điều phối xếp dọc; E2E trên QA | DONE |
 | FB5-REL | QA project (áp migration 220000), PR, CI, merge, Production, deploy, kịch bản QA thủ công | DONE — PR #56 merge `555ce1e`, migration 220000 trên Production (md5 khớp QA), deploy `dpl_6aDAWYt8JkQDD6Fnhxaar9Kw8obB` |
-| FB6 | Cổng khách "Đặt hàng" cùng bộ soạn đơn với "Tạo đơn bán" nội bộ, chọn/đổi hàng cùng loại trên từng dòng (D26; migration `20261018230000_portal_catalog_variants.sql`, native 230) | IN_PROGRESS |
+| FB6 | Cổng khách "Đặt hàng" cùng bộ soạn đơn với "Tạo đơn bán" nội bộ, chọn/đổi hàng cùng loại trên từng dòng (D26; migration `20261018230000_portal_catalog_variants.sql`, native 230) | DONE — PR #57 merge `68d04a4`; migration 230000 trên Production (md5 khớp QA); deploy `dpl_8HJ7Bk1gsnNJcpKsdZFJXeNEdRE8` |
