@@ -1338,3 +1338,4 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .dispatch-timeline > li { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; align-items: center; padding: 6px 0; border-top: 1px solid var(--border); }
 .dispatch-timeline > li > span:nth-of-type(2), .dispatch-timeline > li > .status { grid-column: 2; }
 @media (max-width: 760px) { .dispatch-drivers { grid-template-columns: 1fr; } }
+.send-supplier-text { margin: 6px 0 0; padding: 8px; overflow-x: auto; border-radius: 8px; background: var(--surface-soft); font: inherit; font-size: var(--font-size-caption); white-space: pre-wrap; }
