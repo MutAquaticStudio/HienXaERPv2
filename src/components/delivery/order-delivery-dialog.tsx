@@ -29,8 +29,10 @@ type Props = {
   /** Purchasing may order a short line straight from a supplier ("Đặt NCC giao thẳng"). */
   canOrderDirect?: boolean;
   /** Present only with the right to assign deliveries. */
-  resources?: { employees: { id: string; name: string }[]; vehicles: { id: string; label: string }[] } | null;
+  resources?: { employees: { id: string; name: string }[]; vehicles: DeliveryVehicle[] } | null;
 };
+/** A truck and how much it carries: its capacity ("4 tấn") and, per order line, the same in the line's unit (null: no conversion). */
+export type DeliveryVehicle = { id: string; label: string; capacity?: { quantity: string; unit: string; perLine: Record<string, string | null> } | null };
 
 const zero = new Decimal(0);
 const perBase = (line: OrderDeliveryLine) => new Decimal(line.ratio.numerator).div(line.ratio.denominator);
@@ -84,7 +86,14 @@ function OrderDeliveryForm({ orderId, lines, warehouses, availability, defaultSc
   const invalid = lines.some((line) => quantityOf(line) && !normalizeDecimalInput(quantityOf(line)));
   const shortRows = rows.filter((row) => row.short && !row.over);
   const blocked = rows.some((row) => row.short || row.over);
-  const ready = !!warehouseId && (mode === "NOW" || !!scheduledAt) && chosen.length > 0 && !invalid && !blocked && (!assign || (employeeId && vehicleId));
+  // FB5: the chosen goods against the chosen truck, each line counted in its own unit (80 bao of a 4 tấn ≈ 80 bao truck is full).
+  const vehicle = assign ? resources?.vehicles.find((row) => row.id === vehicleId) : undefined;
+  const loadRows = vehicle?.capacity ? rows.filter((row) => row.value && new Decimal(row.value).gt(0)) : [];
+  const unconvertible = loadRows.filter((row) => !vehicle?.capacity?.perLine[row.line.salesOrderLineId]);
+  const fill = loadRows.reduce((sum, row) => { const carries = vehicle?.capacity?.perLine[row.line.salesOrderLineId];
+    return carries && new Decimal(carries).gt(0) ? sum.plus(new Decimal(row.value!).div(carries)) : sum; }, zero);
+  const overCapacity = fill.gt(1);
+  const ready = !!warehouseId && (mode === "NOW" || !!scheduledAt) && chosen.length > 0 && !invalid && !blocked && (!assign || (employeeId && vehicleId)) && !overCapacity;
 
   function submit() {
     if (pending || !ready) return;
@@ -142,8 +151,13 @@ function OrderDeliveryForm({ orderId, lines, warehouses, availability, defaultSc
         <div className="field"><label htmlFor="order-delivery-employee">Người giao *</label><select id="order-delivery-employee" value={employeeId} onChange={(event) => setEmployeeId(event.target.value)} disabled={pending}>
           <option value="">Chọn người giao...</option>{resources.employees.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></div>
         <div className="field"><label htmlFor="order-delivery-vehicle">Xe *</label><select id="order-delivery-vehicle" value={vehicleId} onChange={(event) => setVehicleId(event.target.value)} disabled={pending}>
-          <option value="">Chọn xe...</option>{resources.vehicles.map((row) => <option key={row.id} value={row.id}>{row.label}</option>)}</select></div>
+          <option value="">Chọn xe...</option>{resources.vehicles.map((row) => <option key={row.id} value={row.id}>{row.label}{row.capacity ? ` · chở ${formatQuantity(row.capacity.quantity)} ${row.capacity.unit}` : ""}</option>)}</select></div>
       </div>
+      {vehicle?.capacity && <ul className="order-delivery-capacity">{lines.map((line) => { const carries = vehicle.capacity!.perLine[line.salesOrderLineId];
+        return <li key={line.salesOrderLineId}>{carries ? `Xe chở tối đa ${formatQuantity(vehicle.capacity!.quantity)} ${vehicle.capacity!.unit} ≈ ${formatQuantity(carries)} ${line.symbol} ${line.name}`
+          : `Chưa quy đổi được ${line.name} (${line.symbol}) sang ${vehicle.capacity!.unit} — thêm quy đổi trong Đơn vị tính của vật tư (vd 1 tấn = 20 bao).`}</li>; })}</ul>}
+      {overCapacity && <p className="form-message" role="alert">Hàng chọn vượt sức chở của xe (khoảng {fill.mul(100).toDecimalPlaces(0, Decimal.ROUND_UP).toFixed()}%). Chọn xe khác, giảm số lượng hoặc tách thành hai phiếu.</p>}
+      {unconvertible.length > 0 && !overCapacity && <p className="muted">Hệ thống sẽ kiểm tải khi lập phiếu; dòng chưa quy đổi được cần thêm quy đổi trước.</p>}
       <p className="muted">Việc tự hiện ở cổng thợ của người giao. Mỗi điểm giao tính {stopMinutes} phút{mode === "NOW" ? "; người hoặc xe đang bận thì tự xếp ngay sau việc trước" : ""}.</p></>}
     </fieldset>}
     {result && !result.success && <div className="form-message" role="alert"><p>{result.message}</p>

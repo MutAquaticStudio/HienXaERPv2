@@ -60,5 +60,5 @@ export async function confirmSalesOrderCreditOverride(formData: FormData): Promi
   if (!message) {
     for (const url of [path, "/admin/orders", "/admin/customers", "/customer/orders"]) revalidatePath(url);
   }
-  redirect(`${path}?${message ? `error=${encodeURIComponent(message)}` : `notice=${encodeURIComponent(`Đã xác nhận đơn với ngoại lệ tín dụng riêng cho lần này.${sourced === "SOURCED" ? " Đã tự phân nguồn hàng." : sourced === "FAILED" ? " Chưa tự phân nguồn được — bấm “Tự phân nguồn” để thử lại." : ""}`)}`}`);
+  redirect(`${path}?${message ? `error=${encodeURIComponent(message)}` : `notice=confirmed-override${sourced === "SOURCED" ? "-sourced" : sourced === "FAILED" ? "-unsourced" : ""}`}`);
 }

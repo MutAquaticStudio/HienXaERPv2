@@ -14,6 +14,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { QUOTATIONS_DISABLED_MESSAGE, QUOTATIONS_ENABLED } from "@/lib/features";
 import { resolvePrice, type PriceRule } from "@/modules/pricing/resolve-price";
 import { autoSourceConfirmedOrder, confirmedNotice, derivedOperationId } from "./auto-sourcing";
+import { PREPAYMENT_METHODS, prepaymentReference } from "./prepayment";
 
 const CommercialDecimal = Decimal.clone({ precision: 50 });
 
@@ -248,6 +249,37 @@ export async function previewCommercialDocumentAction(input: unknown): Promise<P
   }
 }
 
+const prepaymentSchema = z.object({
+  amount: z.string().regex(/^[1-9]\d{0,18}$/).refine((value) => BigInt(value) <= 9223372036854775807n),
+  method: z.enum(PREPAYMENT_METHODS), accountId: z.guid(), at: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/),
+});
+
+/**
+ * FB5 (Owner 18/10): "Khách trả trước" on a new order becomes a receipt in the cash book, held as the customer's advance
+ * (post_payment, no allocation: receivables only exist once goods are delivered) and named after the order. Its operation id
+ * comes from the order's, so retrying the same submission never records it twice. A failure keeps the order and says so.
+ */
+async function recordPrepayment(supabase: Awaited<ReturnType<typeof createServerSupabase>>, permissions: { has(code: string): boolean }, branchId: string,
+  formData: FormData, orderId: string, customerId: string, operationId: string): Promise<string | null> {
+  const amount = String(formData.get("prepaymentVnd") ?? "").trim();
+  if (!amount || amount === "0") return null;
+  const parsed = prepaymentSchema.safeParse({ amount, method: formData.get("prepaymentMethod"), accountId: formData.get("prepaymentAccountId"), at: formData.get("prepaymentAt") });
+  if (!parsed.success) return "Tiền khách trả trước chưa hợp lệ nên chưa được ghi. Ghi ở Sổ quỹ → Ghi thu.";
+  if (!permissions.has("finance.payment.post")) return "Bạn không có quyền ghi thu tiền nên tiền khách trả trước chưa được ghi.";
+  const order = await supabase.from("sales_orders").select("order_number").eq("id", orderId).maybeSingle();
+  const orderNumber = (order.data as { order_number?: string } | null)?.order_number;
+  if (order.error || !orderNumber) return "Chưa ghi được tiền khách trả trước. Ghi ở Sổ quỹ → Ghi thu.";
+  const { data, error } = await supabase.rpc("post_payment", {
+    target_branch_id: branchId, direction: "RECEIPT", target_customer_id: customerId, target_supplier_id: null,
+    target_account_id: parsed.data.accountId, amount_vnd: parsed.data.amount, effective_at: new Date(`${parsed.data.at}:00+07:00`).toISOString(),
+    method: parsed.data.method, external_reference: prepaymentReference(orderNumber), allocation_lines: [], advance_amount_vnd: parsed.data.amount,
+    operation_id: derivedOperationId(operationId, "prepayment"),
+  });
+  if (error || !data) return `Đã lưu đơn nhưng chưa ghi được tiền khách trả trước (${commandError(error?.message ?? "unknown")}). Kiểm tra Sổ quỹ trước khi ghi lại để không ghi trùng.`;
+  revalidatePath("/admin/cashbook");
+  return null;
+}
+
 async function saveDocument(kind: "order" | "quote", mode: "create" | "edit", formData: FormData): Promise<SalesActionState> {
   const materialIds = formData.getAll("materialId");
   const orderedUomIds = formData.getAll("orderedUomId");
@@ -348,17 +380,20 @@ async function saveDocument(kind: "order" | "quote", mode: "create" | "edit", fo
       : await supabase.rpc("create_quote_draft", { target_branch_id: access.branchId, target_customer_id: parsed.data.customerId, target_site_id: parsed.data.siteId, expires_at: effectiveAt, commercial_terms: parsed.data.terms || null, quote_lines: lines, operation_id: parsed.data.operationId });
   if (result.error || !result.data) return { message: commandError(result.error?.message ?? "unknown") };
   revalidatePath(kind === "order" ? "/admin/orders" : "/admin/quotations");
+  const prepaymentProblem = kind === "order" && mode === "create"
+    ? await recordPrepayment(supabase, access.permissions, access.branchId, formData, result.data, parsed.data.customerId, parsed.data.operationId) : null;
+  const prepaymentQuery = prepaymentProblem ? `&error=${encodeURIComponent(prepaymentProblem)}` : "";
   if (confirmOperationId) {
     const confirmed = await supabase.rpc("confirm_sales_order", { target_order_id: result.data, operation_id: confirmOperationId });
     revalidatePath(`/admin/orders/${result.data}`);
-    if (confirmed.error) redirect(`/admin/orders/${result.data}?error=${encodeURIComponent(`Đã lưu bản nháp nhưng chưa xác nhận được: ${commandError(confirmed.error.message, true)}`)}`);
+    if (confirmed.error) redirect(`/admin/orders/${result.data}?error=${encodeURIComponent(`Đã lưu bản nháp nhưng chưa xác nhận được: ${commandError(confirmed.error.message, true)}${prepaymentProblem ? ` ${prepaymentProblem}` : ""}`)}`);
     // D19: confirmed orders are sourced by the system; a failure leaves the order confirmed with "Tự phân nguồn" to retry.
     const sourced = await autoSourceConfirmedOrder(supabase, access.branchId, result.data, derivedOperationId(confirmOperationId, "auto-source"), { onlyIfEnabled: true });
-    redirect(`/admin/orders/${result.data}?notice=${confirmedNotice(sourced)}`);
+    redirect(`/admin/orders/${result.data}?notice=${confirmedNotice(sourced)}${prepaymentQuery}`);
   }
   const destinationId = edit?.success && kind === "quote" ? quoteId : result.data;
   revalidatePath(`${kind === "order" ? "/admin/orders" : "/admin/quotations"}/${destinationId}`);
-  redirect(`${kind === "order" ? "/admin/orders" : "/admin/quotations"}/${destinationId}?notice=${mode === "edit" ? "updated" : "created"}`);
+  redirect(`${kind === "order" ? "/admin/orders" : "/admin/quotations"}/${destinationId}?notice=${mode === "edit" ? "updated" : "created"}${prepaymentQuery}`);
 }
 
 export async function createSalesOrderAction(_: SalesActionState, formData: FormData) { return saveDocument("order", "create", formData); }

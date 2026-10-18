@@ -11,7 +11,9 @@ export type PriceRule = { id: string; scope_type: string; customer_id: string | 
 export type PurchasePriceRule = { id:string; supplier_id:string; material_id:string; purchase_uom_id:string; unit_cost_vnd:string; version:number; source_type:string; effective_from:string; effective_to:string|null; active:boolean };
 export type PriceOptions = { suppliers?: {id:string;name:string}[]; customers: { id: string; name: string }[]; materials: { id: string; name: string }[]; groups: { id: string; name: string }[]; units: { id: string; name: string }[];
   /** Active customer price groups: id is the group code. */
-  priceGroups?: { id: string; name: string }[] };
+  priceGroups?: { id: string; name: string }[];
+  /** Units each material is bought or sold in (base unit + its conversions); the unit list follows the chosen material. */
+  materialUnits?: Record<string, string[]> };
 
 export function PricingRuleEditor({ rule, options, purchase = false, purchaseRule, command, scopeLabel }: { rule?: PriceRule; options: PriceOptions; purchase?:boolean; purchaseRule?:PurchasePriceRule; command?:{targetId:string;operationId:string}; scopeLabel?:string }) {
   const submitting = useRef(false);
@@ -80,6 +82,9 @@ export function PricingRuleEditor({ rule, options, purchase = false, purchaseRul
   }, [confirming, state?.success]);
   const targetRule = purchase ? purchaseRule : rule;
   const [scope, setScope] = useState("DEFAULT");
+  const [materialId, setMaterialId] = useState("");
+  const materialUnits = materialId ? options.materialUnits?.[materialId] : undefined;
+  const unitChoices = materialUnits ? options.units.filter((unit) => materialUnits.includes(unit.id)) : options.units;
   const id = useId();
   const customerScope = !purchase && (scope === "CUSTOMER_MATERIAL" || scope === "CUSTOMER_GROUP");
   const identity = scopeLabel ?? (purchase && purchaseRule
@@ -112,7 +117,7 @@ export function PricingRuleEditor({ rule, options, purchase = false, purchaseRul
     else if (event.shiftKey && event.target === first) { event.preventDefault(); last.focus(); }
     else if (!event.shiftKey && event.target === last) { event.preventDefault(); first.focus(); }
   }
-  return <div ref={root} tabIndex={-1}><form onSubmit={event => submit(event)} action={action} className="card card-pad" onReset={() => setScope("DEFAULT")}>
+  return <div ref={root} tabIndex={-1}><form onSubmit={event => submit(event)} action={action} className="card card-pad" onReset={() => { setScope("DEFAULT"); setMaterialId(""); }}>
     {command && <><input type="hidden" name="operationId" value={command.operationId}/><input type="hidden" name="targetId" value={command.targetId}/></>}{targetRule && <><input type="hidden" name="supersedesId" value={targetRule.id} /><input type="hidden" name="expectedVersion" value={targetRule.version} /></>}
     {!targetRule && !purchase && <div className="field"><label htmlFor={`${id}-scope`}>Phạm vi *</label><select id={`${id}-scope`} name="scopeType" value={scope} onChange={(event) => setScope(event.target.value)}><option value="DEFAULT">Giá mặc định theo vật tư</option><option value="CUSTOMER_MATERIAL">Khách hàng + vật tư</option><option value="CUSTOMER_GROUP">Khách hàng + nhóm vật tư</option><option value="CUSTOMER_TIER">Nhóm giá khách + vật tư</option></select></div>}
     <div className="form-grid">
@@ -122,13 +127,14 @@ export function PricingRuleEditor({ rule, options, purchase = false, purchaseRul
         {scope === "CUSTOMER_TIER" && <div className="field"><label htmlFor={`${id}-tier`}>Nhóm giá khách *</label>{options.priceGroups
           ? <select id={`${id}-tier`} name="tierCode" required><option value="">Chọn...</option>{options.priceGroups.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}</select>
           : <input id={`${id}-tier`} name="tierCode" required maxLength={40} />}</div>}
-        {scope === "CUSTOMER_GROUP" ? <div className="field"><label htmlFor={`${id}-group`}>Nhóm vật tư *</label><select id={`${id}-group`} name="groupId" required><option value="">Chọn...</option>{options.groups.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}</select></div> : <div className="field"><label htmlFor={`${id}-material`}>Vật tư *</label><select id={`${id}-material`} name="materialId" required><option value="">Chọn...</option>{options.materials.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}</select></div>}
-        <div className="field"><label htmlFor={`${id}-uom`}>Đơn vị giá *</label><select id={`${id}-uom`} name="priceUomId" required><option value="">Chọn...</option>{options.units.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}</select></div>
+        {scope === "CUSTOMER_GROUP" ? <div className="field"><label htmlFor={`${id}-group`}>Nhóm vật tư *</label><select id={`${id}-group`} name="groupId" required><option value="">Chọn...</option>{options.groups.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}</select></div> : <div className="field"><label htmlFor={`${id}-material`}>Vật tư *</label><select id={`${id}-material`} name="materialId" required value={materialId} onChange={(event) => setMaterialId(event.target.value)}><option value="">Chọn...</option>{options.materials.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}</select></div>}
+        <div className="field"><label htmlFor={`${id}-uom`}>Đơn vị giá *</label><select id={`${id}-uom`} name="priceUomId" required><option value="">Chọn...</option>{unitChoices.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}</select></div>
       </>}
       <div className="field"><label htmlFor={`${id}-price`}>Đơn giá (VND) *</label><MoneyInput id={`${id}-price`} name="unitPriceVnd" defaultValue={purchase ? purchaseRule?.unit_cost_vnd : rule?.unit_price_vnd} required /></div>
       <div className="field"><label htmlFor={`${id}-source`}>Nguồn giá *</label><select id={`${id}-source`} name="sourceType" defaultValue={targetRule?.source_type ?? "LIST"}><option value="LIST">Bảng giá</option><option value="CONTRACT">Hợp đồng</option></select></div>
       <div className="field"><label htmlFor={`${id}-from`}>Hiệu lực từ ngày *</label><input id={`${id}-from`} name="effectiveFrom" type="date" required /></div>
       <div className="field"><label htmlFor={`${id}-to`}>Đến trước ngày</label><input id={`${id}-to`} name="effectiveTo" type="date" /></div>
+      {purchase && !targetRule && <label className="check-inline field-full"><input type="checkbox" name="splitUnits" value="1" defaultChecked /> Tự tính giá cho các đơn vị khác của vật tư theo quy đổi (vd nhập giá 1 bao → có luôn giá 1 tấn); đơn vị NCC đã có giá thì giữ nguyên</label>}
       <div className="field field-full"><label htmlFor={`${id}-reason`}>Lý do thay đổi *</label><input id={`${id}-reason`} name="reason" value={reason} onChange={event => setReason(event.target.value)} required minLength={3} maxLength={500} /></div>
     </div>
     {targetRule && <p className="muted">Không sửa giá cũ: tạo phiên bản mới hoặc ngừng sử dụng. Thông tin trên chứng từ đã chốt được giữ nguyên.</p>}

@@ -25,7 +25,7 @@ QA_SCHEMA_MUTATION: PO_PATCH_ALREADY_APPLIED_NEW_PATCHES_NOT_AUTHORIZED
 QA_APPROVED_PATCH_SHA256: 9e74a7976728bb33b4401d642b79329e5d5ece9ac016e8509c06bbf238bf2f7d
 QA_SCHEMA_APPLY: APPLIED
 PRODUCTION_MUTATION: FORBIDDEN_WITHOUT_OWNER
-ACTIVE_FEEDBACK_BATCH: FB3_FB4_20261017  # Claude Code, branch nox/elegant-volta-kr29iz; R2+R3+B+C1+F5 QA gộp một đợt (18/10); see FB3/FB4 sections
+ACTIVE_FEEDBACK_BATCH: FB5_20261018  # Claude Code, branch nox/elegant-volta-kr29iz; FB3/FB4 đã lên Production (main e0988e8); FB5 = góp ý Owner 18/10, see FB5 section
 ```
 
 Historical R0–R9 tasks are not repeated here. Their source/evidence lives in implementation.md.
@@ -757,5 +757,19 @@ gửi NCC qua Zalo; sau đó Phần B (cổng khách) và F5 (tự động hóa 
 | FB4-F3 | Tự điều phối "Tự động, sửa được" (D22, SPEC-DEL-008; migration `20261018170000`): tài xế mặc định của xe, trang Điều phối, "Tự chia việc" | DONE_LOCAL; native 195 PASS |
 | FB4-F4 | Danh mục loại dịch vụ (D23; SPEC-SRV-003; migration `20261018090000`): popup danh mục, lập lịch chọn loại, gợi ý giá trị tính khách | DONE_LOCAL; native 160 PASS |
 | FB4-F5 | Tự động hóa không tốn phí (SPEC-SEC-006; migrations `20261018210000`, `20261018211000`): `outbound_jobs`, `pg_cron`/`pg_net`, quy tắc tự động, thông báo đẩy, Telegram, email, webhook ký HMAC, tóm tắt 07:00 | DONE_LOCAL; native 215 PASS |
-| FB4-R3 | Phát hành gộp R2 + R3 + B + C1 + F5 (Owner 18/10: "hoàn thiện hết rồi QA cùng 1 đợt"): QA project (Owner chạy SQL chia file < 20.000 ký tự), E2E 1440 + 390px, PR, CI, merge; Production chỉ sau khi hỏi Owner | IN_PROGRESS |
-| FB4-R2 | Phát hành R2: QA project (Owner chạy SQL), E2E, PR, merge, Production (hỏi Owner trước), deploy | IN_PROGRESS |
+| FB4-R3 | Phát hành gộp R2 + R3 + B + C1 + F5 (Owner 18/10: "hoàn thiện hết rồi QA cùng 1 đợt"): QA project (Owner chạy SQL chia file < 20.000 ký tự), E2E 1440 + 390px, PR, CI, merge; Production chỉ sau khi hỏi Owner | DONE — PR #55 merge, `main` = `e0988e8`; 15 migration trên Production; deploy `dpl_5vLXwG511ap2nwWZFYp2QA2AxtfU`; chờ Owner dán tệp 6 hàm có lệnh xoá ở SQL Editor Production |
+| FB4-R2 | Phát hành R2: QA project (Owner chạy SQL), E2E, PR, merge, Production (hỏi Owner trước), deploy | DONE — gộp vào FB4-R3 |
+
+## FB5-20261018 — Góp ý Owner sau bản Production 18/10/2026
+
+Quyết định D25 ở đầu Spec.md; giao diện UX-FB5-001. Migration `20261018220000_fb5_owner_feedback.sql` + native `225_fb5_owner_feedback.sql`.
+
+| Task | Nội dung | Trạng thái |
+|---|---|---|
+| FB5-P0 | Đơn bán/mua dùng giá mặc định không lưu nháp/xác nhận được: Zod `z.uuid()` từ chối mã `md5(...)::uuid` → `z.guid()` | DONE (Production `e0988e8`) |
+| FB5-U | Quy đổi đơn vị nhập hai chiều + câu "1 Tấn = 20 Bao" (SPEC-UOM-004); giá mua tự tính theo quy đổi, `save_purchase_price_rules` (SPEC-PRI-008) | DONE_LOCAL; native 225 PASS |
+| FB5-V | Xe bỏ căn cứ sức chở; `private.capacity_factor` hai chiều ≤ 3 bước; `vehicle_capacity_by_order`, `vehicle_load_for_deliveries`; hộp lập phiếu báo/khóa khi vượt sức chở (SPEC-DEL-009) | DONE_LOCAL; native 225 PASS |
+| FB5-T | Đơn bán mới có "Khách trả trước" (số tiền, phương thức, quỹ) → phiếu thu ứng trước trong Sổ quỹ; trang đơn hiện đã trả trước / còn phải trả (SPEC-FIN-007) | DONE_LOCAL |
+| FB5-N | "Bước tiếp theo" sau xác nhận đơn bán (phiếu giao, xe/tài xế, đơn mua chờ duyệt, Thu tiền, In, Đơn mới) và đơn mua (Gửi NCC, Nhận hàng, "Nhận đủ"); duyệt ngoại lệ tín dụng chuyển về bằng mã notice | DONE_LOCAL |
+| FB5-E2E | 390 px: bảng Quy tắc tự động dạng thẻ, bảng Điều phối xếp dọc; E2E trên QA | IN_PROGRESS |
+| FB5-REL | QA project (áp migration 220000), PR, CI, merge, Production, deploy, kịch bản QA thủ công | TODO |

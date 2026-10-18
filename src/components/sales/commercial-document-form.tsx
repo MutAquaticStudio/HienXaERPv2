@@ -22,6 +22,8 @@ import { createQuotationAction, createSalesOrderAction, previewCommercialDocumen
 import { loadCustomerDebtAction, type CustomerDebt } from "@/modules/sales/customer-debt-actions";
 import { searchSalesCustomersAction, searchSalesSitesAction } from "@/modules/sales/form-lookup-actions";
 import type { SalesFormOptions } from "@/modules/sales/form-options";
+import { defaultPrepaymentAccount, PREPAYMENT_METHODS, prepaymentMethodLabels, type PrepaymentMethod, type PrepaymentOptions } from "@/modules/sales/prepayment";
+import { MoneyInput } from "@/components/ui/money-input";
 
 export type ExistingCommercialDraft = {
   id: string; version: number; customerId: string; siteId: string;
@@ -83,9 +85,9 @@ type ReviewLine = { key: number; name: string; quantity: string; symbol: string;
  * "Xác nhận đơn" review (D6): what will be confirmed, the customer's current and overdue debt (with receivable rights),
  * then the confirm button submits the order form with intent "confirm".
  */
-function OrderReview({ formId, customer, site, siteAddress, lines, totalVnd, grossVnd, discountVnd, onClose }: {
+function OrderReview({ formId, customer, site, siteAddress, lines, totalVnd, grossVnd, discountVnd, prepaid, onClose }: {
   formId: string; customer: EntityOption | null; site: EntityOption | null; siteAddress?: string; lines: ReviewLine[]; totalVnd: string | null;
-  grossVnd?: string | null; discountVnd?: string | null; onClose: () => void;
+  grossVnd?: string | null; discountVnd?: string | null; prepaid?: { amountVnd: string; method: string; account: string } | null; onClose: () => void;
 }) {
   const [debt, setDebt] = useState<CustomerDebt | null | undefined>(undefined);
   useEffect(() => {
@@ -102,6 +104,8 @@ function OrderReview({ formId, customer, site, siteAddress, lines, totalVnd, gro
       {discountVnd && discountVnd !== "0" && <><div className="detail-item"><dt>Tổng tiền hàng</dt><dd>{money(grossVnd ?? null)}</dd></div>
         <div className="detail-item"><dt>Giảm giá</dt><dd>−{money(discountVnd)}</dd></div></>}
       <div className="detail-item"><dt>{discountVnd && discountVnd !== "0" ? "Khách cần trả" : "Tổng tiền hàng"}</dt><dd><strong>{money(totalVnd)}</strong></dd></div>
+      {prepaid && <><div className="detail-item"><dt>Khách trả trước</dt><dd>{money(prepaid.amountVnd)} · {prepaid.method} · {prepaid.account}</dd></div>
+        {totalVnd && <div className="detail-item"><dt>Còn phải trả</dt><dd>{money((BigInt(totalVnd) > BigInt(prepaid.amountVnd) ? BigInt(totalVnd) - BigInt(prepaid.amountVnd) : 0n).toString())}</dd></div>}</>}
       {debt && <><div className="detail-item"><dt>Nợ hiện tại</dt><dd>{money(debt.outstandingVnd)}</dd></div>
         <div className="detail-item"><dt>Nợ quá hạn</dt><dd className={debt.overdueVnd !== "0" ? "text-danger" : undefined}>{money(debt.overdueVnd)}</dd></div></>}
     </dl>
@@ -119,10 +123,12 @@ function OrderReview({ formId, customer, site, siteAddress, lines, totalVnd, gro
   </Dialog>;
 }
 
-export function CommercialDocumentForm({ kind, options, operationId, confirmOperationId, canConfirm = false, canManagePrice, canManageCustomers, existing, initialCustomerId, initialSiteId, initialMaterialId }: {
+export function CommercialDocumentForm({ kind, options, operationId, confirmOperationId, canConfirm = false, canManagePrice, canManageCustomers, existing, initialCustomerId, initialSiteId, initialMaterialId, prepayment }: {
   kind: "order" | "quote"; options: SalesFormOptions; operationId: string; confirmOperationId?: string; canConfirm?: boolean;
   canManagePrice: boolean; canManageCustomers: boolean; existing?: ExistingCommercialDraft;
   initialCustomerId?: string; initialSiteId?: string; initialMaterialId?: string;
+  /** New orders, with the right to record receipts: "Khách trả trước" goes into the cash book when the order is saved. */
+  prepayment?: PrepaymentOptions | null;
 }) {
   const action = existing ? (kind === "order" ? updateSalesOrderDraftAction : updateQuotationDraftAction) : (kind === "order" ? createSalesOrderAction : createQuotationAction);
   const lastSubmission = useRef<FormData | null>(null);
@@ -163,6 +169,12 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
   const siteRef = useRef<EntityComboboxHandle>(null);
   const formId = useId();
   const [reviewOpen, setReviewOpen] = useState(false);
+  const prepaying = kind === "order" && !existing && !!prepayment;
+  const [prepaidVnd, setPrepaidVnd] = useState("");
+  const [prepaidMethod, setPrepaidMethod] = useState<PrepaymentMethod>("CASH");
+  const [prepaidAccountId, setPrepaidAccountId] = useState(() => prepayment ? defaultPrepaymentAccount(prepayment.accounts, "CASH")?.id ?? "" : "");
+  const prepaidAmount = /^[1-9]\d*$/.test(prepaidVnd) ? prepaidVnd : "";
+  const prepaidAccount = prepayment?.accounts.find((account) => account.id === prepaidAccountId);
   // Discounts (orders, with pricing rights): typed per line in the price popup and for the whole order in the totals.
   const discounts = kind === "order" && canManagePrice;
   const [orderDiscount, setOrderDiscount] = useState<DiscountDraft>(existing?.orderDiscount ?? { mode: "", value: "" });
@@ -241,6 +253,8 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
 
   const ready = !empty && !!preview?.success && !pending && !state?.outcomeUnknown && !(discounted && !discounted.ok);
   const confirmable = kind === "order" && !existing && canConfirm && !!confirmOperationId;
+  const orderNetVnd = discountedOk?.netTotalVnd ?? (preview?.success ? preview.totalVnd ?? null : null);
+  const remainingVnd = prepaidAmount && orderNetVnd ? (BigInt(orderNetVnd) > BigInt(prepaidAmount) ? BigInt(orderNetVnd) - BigInt(prepaidAmount) : 0n).toString() : null;
   return <><form id={formId} className="doc-editor commercial-document-form" action={formAction} onReset={(event) => event.preventDefault()} onSubmit={submit}>
     <input type="hidden" name="operationId" value={operationId} />
     {confirmable && <input type="hidden" name="confirmOperationId" value={confirmOperationId} />}
@@ -304,7 +318,19 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
       {kind === "order" && <><input type="hidden" name="orderDiscountMode" value={orderDiscount.value.trim() ? orderDiscount.mode : ""} />
         <input type="hidden" name="orderDiscountValue" value={orderDiscount.mode ? orderDiscount.value : ""} /></>}
       {discounted && !discounted.ok && <p className="form-message" role="alert">{discounted.message}</p>}
-      {priceMissing && <p className="doc-editor-total-hint">{priceMissing}</p>}</div>
+      {priceMissing && <p className="doc-editor-total-hint">{priceMissing}</p>}
+      {prepaying && <fieldset className="order-prepayment"><legend>Khách trả trước</legend>
+        {prepayment!.accounts.length ? <>
+          <div className="field"><label htmlFor="prepayment-amount">Số tiền</label><MoneyInput id="prepayment-amount" name="prepaymentVnd" value={prepaidVnd} onValue={setPrepaidVnd} placeholder="0" disabled={pending} /></div>
+          <div className="field"><label htmlFor="prepayment-method">Phương thức</label><select id="prepayment-method" name="prepaymentMethod" value={prepaidMethod} disabled={pending}
+            onChange={(event) => { const method = event.target.value as PrepaymentMethod; setPrepaidMethod(method); setPrepaidAccountId(defaultPrepaymentAccount(prepayment!.accounts, method)?.id ?? ""); }}>
+            {PREPAYMENT_METHODS.map((method) => <option key={method} value={method}>{prepaymentMethodLabels[method]}</option>)}</select></div>
+          <div className="field"><label htmlFor="prepayment-account">Vào quỹ</label><select id="prepayment-account" name="prepaymentAccountId" value={prepaidAccountId} disabled={pending} onChange={(event) => setPrepaidAccountId(event.target.value)}>
+            {prepayment!.accounts.map((account) => <option key={account.id} value={account.id}>{account.name}</option>)}</select></div>
+          <input type="hidden" name="prepaymentAt" value={prepayment!.at} />
+          {remainingVnd !== null && <p className="muted">Còn phải trả {formatVnd(vnd(remainingVnd))}. Ghi vào Sổ quỹ là khoản khách ứng trước; trừ vào công nợ khi giao hàng.</p>}
+        </> : <p className="muted">Chưa có tài khoản tiền. Tạo ở Sổ quỹ để ghi tiền khách trả trước.</p>}
+      </fieldset>}</div>
       <div className="doc-editor-actions">
         {confirmable && <button className="button button-primary" type="button" disabled={!ready} onClick={() => setReviewOpen(true)}>{pending ? "Đang lưu..." : "Xác nhận đơn"}</button>}
         <button className={confirmable ? "link-button doc-editor-draft" : "button button-primary"} type="submit" name="intent" value="draft" disabled={!ready}>{pending && !confirmable ? "Đang lưu..." : existing ? "Lưu thay đổi bản nháp" : "Lưu nháp"}</button>
@@ -320,7 +346,8 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
   </form>{reviewOpen && confirmable && preview?.success && <OrderReview formId={formId} customer={customer} site={site} siteAddress={sites.find((item) => item.id === siteId)?.address}
     lines={lines.map((line, index) => ({ key: line.key, name: materialOf(line.materialId)?.name ?? "Vật tư", quantity: line.quantity,
       symbol: materialOf(line.materialId)?.uoms.find((uom) => uom.id === line.uomId)?.symbol ?? "", totalVnd: discountedOk?.lines[index]?.lineTotalVnd ?? preview.lines?.[index]?.lineTotalVnd ?? null }))}
-    totalVnd={discountedOk?.netTotalVnd ?? preview.totalVnd ?? null} grossVnd={preview.totalVnd ?? null} discountVnd={discountedOk?.discountTotalVnd ?? null} onClose={() => setReviewOpen(false)} />}
+    totalVnd={discountedOk?.netTotalVnd ?? preview.totalVnd ?? null} grossVnd={preview.totalVnd ?? null} discountVnd={discountedOk?.discountTotalVnd ?? null}
+    prepaid={prepaying && prepaidAmount && prepaidAccount ? { amountVnd: prepaidAmount, method: prepaymentMethodLabels[prepaidMethod], account: prepaidAccount.name } : null} onClose={() => setReviewOpen(false)} />}
     {priceLine && <LinePriceDialog row={lines.indexOf(priceLine) + 1} name={materialOf(priceLine.materialId)?.name ?? "Vật tư"}
       unit={materialOf(priceLine.materialId)?.uoms.find((uom) => uom.id === priceLine.uomId)?.symbol ?? ""}
       listUnitVnd={previewLines?.[lines.indexOf(priceLine)]?.unitPriceVnd ?? null}

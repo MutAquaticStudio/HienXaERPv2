@@ -3095,3 +3095,35 @@ xong toàn bộ rồi QA một lần; tệp áp QA sẽ chia < 20.000 ký tự. 
 - Owner cần cấu hình khi muốn dùng: Supabase Auth "Allow new users to sign up" (tự đăng ký) + SMTP riêng (xác nhận email); tài xế mặc định cho xe +
   kho mặc định; Vault `hx_app_url`, `hx_automation_secret` (+ `HX_AUTOMATION_SECRET` trên Vercel), `hx_telegram_bot_token`, `hx_webhook_secret`;
   Vercel `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `SMTP_*`.
+
+## 2026-10-18 — Phát hành FB3/FB4 lên Production và tài khoản khách demo
+
+- PR #55 merge, `main` = `e0988e8`. Thêm `20261018215000_customers_source_grant.sql` (cấp đọc cột `customers.source`, thiếu thì Khách hàng 360 lỗi
+  404) + native 220. 15 migration `20261018090000…215000` áp lên Production qua MCP theo thứ tự (mỗi tệp một transaction + `schema_migrations`);
+  69/75 hàm khớp md5 chuẩn hoá với QA; 6 hàm có lệnh xoá (`delete_catalog_record`, `apply_dispatch_proposal`, `process_outbound_jobs`,
+  `delete_automation_rule`, `auto_dispatch_delivery`, `delete_push_subscription`) gom vào một tệp để Owner dán ở SQL Editor Production — **chưa dán**
+  (kiểm lần cuối 18/10 15:00 UTC). Trong lúc chờ: `pg_cron` `hx-outbound-jobs` báo lỗi mỗi phút; lập phiếu giao không chọn xe và tự phân nguồn gọi
+  `private.auto_dispatch_delivery` chưa có.
+- Vercel deploy `dpl_5vLXwG511ap2nwWZFYp2QA2AxtfU` từ `main@e0988e8`; `/api/health` đúng sha; quay lui: `dpl_FqmKRM88akwXb7kXJbChaLLR431q`.
+- Tài khoản khách demo `kh01@hienxavlxd.com` (Owner gõ ".con", dùng ".com"; mật khẩu Owner đặt, không ghi vào repo, không bắt đổi lần đầu): khách
+  "Khách demo KH01" mã `KH01`, công trình DEMO, quyền cổng khách OWNER; kiểm bằng SQL giả lập phiên: cổng khách thấy 6 mặt hàng. Dọn khi Owner
+  yêu cầu (C5). Kịch bản QA thủ công gửi Owner dạng tệp.
+
+## 2026-10-18 — FB5: góp ý Owner sau bản Production (D25)
+
+- P0 đơn bán giá mặc định (đã lên Production ở `e0988e8`): Zod 4 `z.uuid()` từ chối mã `md5(...)::uuid` của giá/vật tư → `z.guid()`.
+- Quy đổi hai chiều (SPEC-UOM-004): `ratioFromDirection`, `conversionSentences` (`src/modules/pricing/unit-split.ts`); form đơn vị vật tư và "Hàng
+  cùng loại" có ô chọn chiều + câu xem trước; thẻ "Đơn vị & quy đổi" hiện "1 Tấn = 20 Bao". Dữ liệu Production đúng (cơ sở Bao, 1 Tấn = 20 Bao,
+  1 Tạ = 2 Bao) — chỉ cách hiển thị gây hiểu nhầm.
+- Giá mua tự tính (SPEC-PRI-008): `save_purchase_price_rules` (một transaction, mỗi giá qua `save_purchase_price_rule`, mã con `md5(op:n)`),
+  `purchase-actions.ts` tính giá các đơn vị khác bằng `splitPriceByUnits`, bỏ qua đơn vị đã có giá trùng kỳ.
+- Sức chở (SPEC-DEL-009): `private.capacity_factor` (đồ thị quy đổi hai chiều ≤ 3 bước, ưu tiên quy đổi riêng); viết lại
+  `canonical_save_catalog_record` (bỏ `vehicle_capacity_evidence_required`), `assert_delivery_resources`, `assert_vehicle_actual_load`;
+  `vehicle_capacity_by_order`, `vehicle_load_for_deliveries`. Nguyên nhân lỗi cũ: kiểm tải tìm quy đổi cơ sở → đơn vị xe, ngược chiều dữ liệu lưu.
+- Khách trả trước (SPEC-FIN-007): `src/modules/sales/prepayment.ts`, khung trên form đơn bán, `recordPrepayment` gọi `post_payment` (RECEIPT,
+  ứng trước toàn bộ, tham chiếu "Trả trước đơn SO-…", mã `derivedOperationId(op, "prepayment")`); trang đơn đọc `payment_read` theo tham chiếu.
+- Bước tiếp theo: `src/components/sales/order-next-steps.tsx`, `src/components/purchasing/purchase-next-steps.tsx`,
+  `fill-remaining-button.tsx` ("Nhận đủ"); duyệt ngoại lệ tín dụng chuyển về bằng mã `confirmed-override[-sourced|-unsourced]`.
+- 390 px: `.card-table` (bảng Quy tắc tự động), bảng phân giao Điều phối xếp dọc.
+- Migration `20261018220000_fb5_owner_feedback.sql` (không có lệnh xoá) + native 225 (hệ số 0,05 / 20 / 50 qua quy đổi kg chung / 1 / null; xe lưu
+  không ghi chú; xe 4 tấn chở 80 bao, 81 bao bị chặn; tải thực tế; batch giá mua all-or-nothing + replay).

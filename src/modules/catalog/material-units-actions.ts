@@ -6,6 +6,7 @@ import { requireInternalAccess } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { effectivePriceState } from "@/modules/pricing/effective-state";
 import { readPricingClock } from "@/modules/pricing/request-clock";
+import { ratioFromDirection } from "@/modules/pricing/unit-split";
 import { latestDefaultRule, stockSummary, type ListPosition, type ListPriceRule } from "./material-list";
 
 export type MaterialUnit = { conversionId: string | null; uomId: string; symbol: string; numerator: string; denominator: string; type: string; sourceNote: string | null };
@@ -82,8 +83,11 @@ const inputSchema = z.object({
   effectiveDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   addUnits: z.array(z.object({
     uomId: z.guid(), ratio: z.string().regex(/^\d{1,13}(\.\d{1,6})?$/).refine((value) => Number(value) > 0),
+    // "1 bao = 50 kg" (UNIT_TO_BASE) or "1 tấn = 20 bao" (BASE_TO_UNIT, Owner 18/10); stored as 1 unit = numerator/denominator base.
+    direction: z.enum(["UNIT_TO_BASE", "BASE_TO_UNIT"]).default("UNIT_TO_BASE"),
     type: z.enum(SELLING_TYPES), sourceNote: z.string().trim().max(500),
-  }).refine((unit) => !["ESTIMATED", "MEASURED"].includes(unit.type) || unit.sourceNote.length >= 3)).max(20),
+  }).refine((unit) => !["ESTIMATED", "MEASURED"].includes(unit.type) || unit.sourceNote.length >= 3)
+    .refine((unit) => ratioFromDirection(unit.ratio, unit.direction) !== null)).max(20),
   stopConversionIds: z.array(z.guid()).max(20),
   prices: z.array(z.object({
     uomId: z.guid(), priceVnd: z.string().regex(/^[1-9]\d{0,18}$/), supersedesId: z.guid().optional(), expectedVersion: z.number().int().positive().optional(),
@@ -110,7 +114,7 @@ export async function saveMaterialUnitsAction(input: unknown): Promise<MaterialU
   if (!parsed.success) {
     const field = parsed.error.issues[0]?.path[0];
     return { success: false, message: field === "reason" ? "Cần lý do thay đổi từ 3 đến 500 ký tự."
-      : field === "addUnits" ? "Kiểm tra đơn vị mới: chọn đơn vị, tỉ lệ lớn hơn 0 (tối đa 6 chữ số thập phân); đơn vị ước lượng/đo thực tế cần ghi nguồn."
+      : field === "addUnits" ? "Kiểm tra đơn vị mới: chọn đơn vị, số lớn hơn 0 (tối đa 6 chữ số thập phân), 1 đơn vị mới phải ra số chính xác của đơn vị cơ sở (vd 1 tấn = 20 bao được, 1 tấn = 3 bao không chia hết); đơn vị ước lượng/đo thực tế cần ghi nguồn."
       : field === "prices" ? "Giá phải là số nguyên dương (đồng)." : "Chưa có thay đổi nào để lưu." };
   }
   const data = parsed.data;
@@ -121,7 +125,7 @@ export async function saveMaterialUnitsAction(input: unknown): Promise<MaterialU
     const { error } = await supabase.rpc("save_material_units", {
       target_branch_id: access.branchId,
       target_material_id: data.materialId,
-      add_units: data.addUnits.map((unit) => ({ uom_id: unit.uomId, numerator: unit.ratio, denominator: "1", conversion_type: unit.type, source_note: unit.sourceNote || null })),
+      add_units: data.addUnits.map((unit) => ({ uom_id: unit.uomId, ...ratioFromDirection(unit.ratio, unit.direction)!, conversion_type: unit.type, source_note: unit.sourceNote || null })),
       stop_conversion_ids: data.stopConversionIds,
       prices: data.prices.map((item) => ({ price_uom_id: item.uomId, unit_price_vnd: item.priceVnd,
         ...(item.supersedesId ? { supersedes_id: item.supersedesId, expected_version: item.expectedVersion } : {}) })),

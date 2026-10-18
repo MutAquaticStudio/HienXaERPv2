@@ -271,6 +271,8 @@ tbody tr:hover { background: #f8fbff; }
 .material-units .unit-ratio { display: flex; align-items: center; gap: 6px; }
 .material-units .unit-ratio input { flex: 1; min-width: 4.5rem; }
 .material-units .unit-ratio span { white-space: nowrap; color: var(--muted); }
+.material-units .unit-ratio select { width: auto; flex: 0 0 auto; }
+.material-units td .table-subline + .field-error, .material-units .unit-ratio + .table-subline { margin-top: 4px; }
 .material-units td > input + small, .material-units td > select + input { margin-top: 6px; }
 .material-units .row-stopped td { color: var(--muted); text-decoration: line-through; }
 .material-units .row-stopped td.table-actions { text-decoration: none; }
@@ -535,8 +537,14 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 }
 
 @media (max-width: 760px) {
+  /* FB5: on a phone the four columns stack, so nothing scrolls sideways. */
   .dispatch-board {
-    grid-template-columns: repeat(4, 82vw);
+    grid-template-columns: minmax(0, 1fr);
+    overflow-x: visible;
+  }
+
+  .dispatch-column {
+    min-height: 0;
   }
 
   .quantity-strip {
@@ -953,6 +961,7 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .delivery-progress p { margin: 0; }
 .order-delivery-assign { margin: 0; padding: 12px 14px; border: 1px dashed var(--border); border-radius: 10px; }
 .order-delivery-assign legend { padding: 0 6px; }
+.order-delivery-capacity { margin: 8px 0 0; padding-left: 1.1rem; color: var(--muted); font-size: var(--font-size-caption); display: grid; gap: 2px; }
 .order-review-summary { margin-bottom: 12px; }
 .order-review-lines td, .order-review-lines th { padding: 8px; }
 .text-danger { color: var(--danger); font-weight: 700; }
@@ -983,6 +992,14 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .doc-editor-summary dd { margin: 0; font-variant-numeric: tabular-nums; }
 .doc-editor-total dd { font-size: var(--font-size-section); font-weight: 700; color: var(--text); text-align: right; }
 .doc-editor-totals { display: grid; gap: 0.3rem; }
+.order-prepayment { display: flex; flex-wrap: wrap; align-items: end; gap: 0.5rem 0.75rem; margin: 0.5rem 0 0; padding: 0.6rem 0.75rem; border: 1px dashed var(--border); border-radius: 10px; }
+.order-prepayment legend { padding: 0 6px; font-weight: 700; }
+.order-prepayment .field { flex: 1 1 9rem; min-width: 0; }
+.order-prepayment > p { flex-basis: 100%; margin: 0; }
+.order-next-steps { display: grid; gap: 0.6rem; border-left: 4px solid var(--success); }
+.order-next-steps h2 { margin: 0; }
+.order-next-steps ul { display: grid; gap: 0.35rem; margin: 0; padding-left: 1.1rem; }
+.order-next-steps li { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; justify-content: space-between; }
 .doc-editor-total-hint { margin: 0; font-size: var(--font-size-caption); font-weight: 600; color: var(--warning); }
 .doc-editor-actions { display: grid; gap: 0.5rem; }
 .doc-editor-actions .button { width: 100%; justify-content: center; min-height: 48px; }
@@ -1059,6 +1076,17 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
   .row-link-table td.numeric { text-align: left; }
   .row-link-table td[data-label]::before { content: attr(data-label); display: block; font-size: var(--font-size-caption); color: var(--muted); }
   .row-link-table td.row-title { grid-column: 1 / -1; order: -1; padding-right: 2.5rem; }
+}
+/* FB5: a plain table read as one card per row on a phone (cells carry data-label). */
+@media (max-width: 760px) {
+  .card-table thead { display: none; }
+  .card-table, .card-table tbody, .card-table tr, .card-table td { display: block; }
+  .card-table tbody tr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.4rem 0.75rem; padding: 0.85rem 1rem; border-top: 1px solid var(--border); }
+  .card-table td { min-width: 0; padding: 0; border: 0; white-space: normal; overflow-wrap: anywhere; }
+  .card-table td[data-label]::before { content: attr(data-label); display: block; font-size: var(--font-size-caption); color: var(--muted); }
+  .card-table td:first-child, .card-table td.table-actions { grid-column: 1 / -1; }
+  .card-table td.table-actions { text-align: left; }
+  .table-wrap > .card-table { min-width: 0; }
 }
 .row-link-table .row-toggle { width: 40px; }
 .row-link-table .row-toggle .icon-button { position: relative; z-index: 1; }

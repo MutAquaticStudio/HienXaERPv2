@@ -32,7 +32,8 @@ export function deliveryCommandMessage(value?: string, hint?: string | null) {
   if (value?.includes("vehicle_actual_cargo_capacity_exceeded")) return "Tổng hàng thực lấy và hàng còn trên xe vượt sức chứa đã xác minh. Xử lý hàng của phiếu trước hoặc chọn xe phù hợp trước khi bàn giao.";
   if (value?.includes("vehicle_cargo_source_requires_reconciliation")) return "Dữ liệu hàng còn trên xe chưa khớp nguồn. Đối chiếu bàn giao, xác minh và xử lý hàng còn trước khi lấy thêm.";
   if (value?.includes("vehicle_capacity_exceeded")) return "Lượng kế hoạch vượt sức chứa đã khai báo của xe. Chọn xe phù hợp hoặc tách phiếu giao.";
-  if (value?.includes("vehicle_capacity")) return "Chưa đủ dữ liệu kiểm tra tải xe. Kiểm tra sức chứa, đơn vị và căn cứ quy đổi trong danh mục.";
+  if (value?.includes("vehicle_capacity_conversion_missing")) return "Chưa quy đổi được hàng sang đơn vị sức chở của xe. Thêm quy đổi trong Đơn vị tính của vật tư (vd 1 tấn = 20 bao) rồi thử lại.";
+  if (value?.includes("vehicle_capacity")) return "Xe chưa có sức chở. Nhập sức chở tối đa và đơn vị trong danh mục Xe.";
   if (value?.includes("delivery_loaded_quantity_exceeds_plan")) return "Lượng thực lấy vượt kế hoạch. Kiểm tra lại từng dòng trước khi bàn giao.";
   if (value?.includes("delivery_loading")) return "Nhập lượng thực lấy cho đủ từng dòng; ít nhất một dòng phải có hàng.";
   if (value?.includes("order_not_ready_for_delivery")) return "Đơn bán chưa được xác nhận hoặc đã đóng; chưa lập phiếu giao được.";

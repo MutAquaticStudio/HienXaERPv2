@@ -5,6 +5,8 @@ import { editorVariant, VARIANT_MATERIAL_COLUMNS, type EditorVariant } from "@/m
 
 import { loadWarehouseAvailability } from "@/modules/inventory/availability-server";
 import type { WarehouseAvailability } from "@/modules/inventory/availability";
+import { businessInputValue } from "@/lib/core/business-time";
+import type { PrepaymentOptions } from "./prepayment";
 
 type CustomerRecord = {
   id: string;
@@ -57,4 +59,13 @@ export async function loadSalesFormOptions(branchId: string, selectedCustomerId?
     return { id: material.id, code: material.code, name: material.name, uoms: [...uomIds].map((id) => ({ id, symbol: uomSymbols.get(id) ?? "Đơn vị", ratio: ratio(id) })), variant: editorVariant(material), group: material.material_groups?.name };
   });
   return { customers, materials, ...(canReadInventory ? { availability: await loadWarehouseAvailability(branchId, materials.map(row => row.id)) } : {}) };
+}
+
+/** Accounts a prepayment can be received into (with finance.payment.post), and the receipt time fixed when the form opens. */
+export async function loadPrepaymentOptions(branchId: string): Promise<PrepaymentOptions | null> {
+  const supabase = await createServerSupabase();
+  const { data, error } = await supabase.from("finance_accounts").select("id, name, account_kind").eq("branch_id", branchId).eq("active", true).order("code").limit(50);
+  if (error) return null;
+  return { accounts: ((data ?? []) as { id: string; name: string; account_kind: "CASH" | "BANK" }[]).map((row) => ({ id: row.id, name: row.name, kind: row.account_kind })),
+    at: businessInputValue(new Date()) };
 }

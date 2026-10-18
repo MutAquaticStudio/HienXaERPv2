@@ -6,7 +6,6 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { NumberEntry } from "@/components/documents/editor/number-entry";
 import { Dialog } from "@/components/ui/dialog";
 import { formatVnd, vnd } from "@/lib/core/money";
-import { formatQuantity } from "@/lib/core/quantity";
 import { decimalForEditing, normalizeDecimalInput } from "@/lib/core/vn-number";
 import { catalogChoiceLabel } from "@/modules/catalog/presentation";
 import { loadVariantGroupAction, saveVariantGroupAction, type VariantGroupData, type VariantGroupResult, type VariantUnit } from "@/modules/catalog/variant-actions";
@@ -15,14 +14,16 @@ import {
   variantKey, variantName, type VariantAttributes,
 } from "@/modules/catalog/variants";
 import { ROUNDING_STEPS, type RoundingStep } from "@/modules/pricing/bulk-adjust";
-import { splitPriceByUnits, type UnitRatio } from "@/modules/pricing/unit-split";
+import { conversionSentences, ratioFromDirection, splitPriceByUnits, type RatioDirection, type UnitRatio } from "@/modules/pricing/unit-split";
 import { MoneyInput } from "@/components/ui/money-input";
 
-type UnitRow = { key: number; uomId: string; ratio: string; fixed?: { numerator: string; denominator: string }; type: VariantUnit["type"]; sourceNote: string };
+type UnitRow = { key: number; uomId: string; ratio: string; direction: RatioDirection; fixed?: { numerator: string; denominator: string }; type: VariantUnit["type"]; sourceNote: string };
 type MemberEdit = { values: string[]; detach: boolean };
 type NewOverride = { code?: string; name?: string; price?: string; excluded?: boolean };
 const UNIT_TYPES = ["PACKAGING", "EXACT", "ESTIMATED", "MEASURED"] as const;
 
+/** 1 unit = numerator/denominator base units: as loaded, or from what was typed ("1 tấn = 20 bao" or "1 bao = 50 kg"). */
+const rowRatio = (unit: UnitRow) => { if (unit.fixed) return unit.fixed; const typed = normalizeDecimalInput(unit.ratio); return typed ? ratioFromDirection(typed, unit.direction) : null; };
 const toObject = (names: string[], values: string[]): VariantAttributes => Object.fromEntries(names.map((name, index) => [name.trim(), (values[index] ?? "").trim()]));
 
 /**
@@ -57,7 +58,7 @@ function VariantGroupForm({ data, onSaved }: { data: VariantGroupData; onSaved: 
   const [sale, setSale] = useState(data.template?.saleEnabled ?? true);
   const [purchase, setPurchase] = useState(data.template?.purchaseEnabled ?? true);
   const [units, setUnits] = useState<UnitRow[]>(() => (data.template?.units ?? []).map((unit, index) => ({
-    key: index + 1, uomId: unit.uomId, type: unit.type, sourceNote: unit.sourceNote,
+    key: index + 1, uomId: unit.uomId, type: unit.type, sourceNote: unit.sourceNote, direction: "UNIT_TO_BASE" as const,
     ...(new Decimal(unit.denominator).eq(1) ? { ratio: new Decimal(unit.numerator).toFixed() } : { ratio: "", fixed: { numerator: unit.numerator, denominator: unit.denominator } }),
   })));
   const [nextUnitKey, setNextUnitKey] = useState(100);
@@ -95,8 +96,7 @@ function VariantGroupForm({ data, onSaved }: { data: VariantGroupData; onSaved: 
 
   const sellingUnits: UnitRatio[] = [
     ...(baseUomId ? [{ uomId: baseUomId, numerator: "1", denominator: "1" }] : []),
-    ...units.flatMap((unit) => unit.fixed ? [{ uomId: unit.uomId, ...unit.fixed }]
-      : unit.uomId && normalizeDecimalInput(unit.ratio) ? [{ uomId: unit.uomId, numerator: normalizeDecimalInput(unit.ratio)!, denominator: "1" }] : []),
+    ...units.flatMap((unit) => { const ratio = rowRatio(unit); return unit.uomId && ratio ? [{ uomId: unit.uomId, ...ratio }] : []; }),
   ];
   const priceFrom = sellingUnits.find((unit) => unit.uomId === priceUomId) ?? sellingUnits[0];
   const created = newRows.filter((row) => !overrides[row.key]?.excluded).map((row) => {
@@ -125,7 +125,7 @@ function VariantGroupForm({ data, onSaved }: { data: VariantGroupData; onSaved: 
     new Set(names.map((attribute) => attribute.trim().toLocaleLowerCase("vi"))).size !== names.length && "Hai thuộc tính trùng tên.",
     (created.length > 0 || !editing) && (!materialGroupId || !baseUomId) && "Chọn nhóm vật tư và đơn vị cơ sở.",
     (created.length > 0 || !editing) && !sale && !purchase && "Loại mới cần được bán hoặc được mua.",
-    units.some((unit) => !unit.uomId || (!unit.fixed && !normalizeDecimalInput(unit.ratio)) || (["ESTIMATED", "MEASURED"].includes(unit.type) && unit.sourceNote.trim().length < 3)) && "Kiểm tra đơn vị bán: chọn đơn vị, số lớn hơn 0; đơn vị ước lượng/đo thực tế cần ghi nguồn.",
+    units.some((unit) => !unit.uomId || !rowRatio(unit) || (["ESTIMATED", "MEASURED"].includes(unit.type) && unit.sourceNote.trim().length < 3)) && "Kiểm tra đơn vị bán: chọn đơn vị, số lớn hơn 0 và chia hết (1 tấn = 20 bao được, 1 tấn = 3 bao không chia hết); đơn vị ước lượng/đo thực tế cần ghi nguồn.",
     [...Object.values(members).filter((edit) => !edit.detach).map((edit) => edit.values), ...attached.map((item) => item.values)].some((values) => values.some((value) => !validVariantValue(value)))
       && "Mỗi loại cần đủ giá trị thuộc tính (tối đa 40 ký tự).",
     created.some((row) => !MATERIAL_CODE_PATTERN.test(row.code)) && "Mã loại: 2–32 ký tự gồm chữ không dấu, số, _ hoặc -.",
@@ -148,7 +148,7 @@ function VariantGroupForm({ data, onSaved }: { data: VariantGroupData; onSaved: 
           group: { name: name.trim(), attributeNames: names.map((attribute) => attribute.trim()), active },
           expected: data.group ? { name: data.group.name, attribute_names: data.group.attributeNames, active: data.group.active } : null,
           template: materialGroupId && baseUomId ? { groupId: materialGroupId, baseUomId, specification: specification.trim(), saleEnabled: sale, purchaseEnabled: purchase,
-            units: units.map((unit) => ({ uomId: unit.uomId, ...(unit.fixed ?? { numerator: normalizeDecimalInput(unit.ratio) ?? unit.ratio, denominator: "1" }), type: unit.type, sourceNote: unit.sourceNote.trim() })) } : null,
+            units: units.map((unit) => ({ uomId: unit.uomId, ...rowRatio(unit)!, type: unit.type, sourceNote: unit.sourceNote.trim() })) } : null,
           variants: [...memberChanges, ...attached.map((item) => ({ materialId: item.id, attributes: toObject(names, item.values) })),
             ...created.map((row) => ({ attributes: row.attributes, code: row.code, name: row.name.trim(), prices: row.prices }))],
         });
@@ -202,16 +202,27 @@ function VariantGroupForm({ data, onSaved }: { data: VariantGroupData; onSaved: 
       <h3 id="variant-units-title">Đơn vị bán cho loại mới</h3>
       <p className="muted">Tồn kho mỗi loại tính theo {base}. Các đơn vị dưới đây được tạo cho mọi loại mới; từng loại sửa riêng được sau trong “Đơn vị tính & giá”.</p>
       {units.length > 0 && <div className="table-wrap"><table>
-        <thead><tr><th scope="col">Đơn vị</th><th scope="col">1 đơn vị =</th><th scope="col">Loại quy đổi</th><th scope="col"><span className="sr-only">Thao tác</span></th></tr></thead>
+        <thead><tr><th scope="col">Đơn vị</th><th scope="col">Quy đổi</th><th scope="col">Loại quy đổi</th><th scope="col"><span className="sr-only">Thao tác</span></th></tr></thead>
         <tbody>{units.map((unit, index) => {
           const update = (change: Partial<UnitRow>) => setUnits((all) => all.map((row) => row.key === unit.key ? { ...row, ...change } : row));
+          const ratio = rowRatio(unit);
+          const unitSymbol = unit.uomId ? symbol(unit.uomId) : "đơn vị bán";
+          const sentence = ratio ? conversionSentences(unitSymbol, base, ratio.numerator, ratio.denominator) : null;
+          // The typed sentence read the other way round: "1 tấn = 20 bao" → "1 bao = 0,05 tấn".
+          const otherWay = sentence && [sentence.main, sentence.other].find((text) => text.startsWith(`1 ${unit.direction === "BASE_TO_UNIT" ? unitSymbol : base} =`));
           return <tr key={unit.key}>
             <td data-label="Đơn vị"><select aria-label={`Đơn vị bán ${index + 1}`} value={unit.uomId} onChange={(event) => update({ uomId: event.target.value })} disabled={pending || !!unit.fixed}>
               <option value="">Chọn đơn vị...</option>
               {data.options.uoms.filter((option) => option.id === unit.uomId || !usedUnits.has(option.id)).map((option) => <option key={option.id} value={option.id}>{option.symbol} · {option.name}</option>)}</select></td>
-            <td data-label="1 đơn vị =">{unit.fixed ? <>{formatQuantity(unit.fixed.numerator)} / {formatQuantity(unit.fixed.denominator)} {base}</>
-              : <span className="unit-ratio"><NumberEntry aria-label={`Số ${base} trong 1 đơn vị bán ${index + 1}`} inputMode="decimal" value={unit.ratio} normalize={normalizeDecimalInput} display={decimalForEditing}
-                placeholder="vd 50" onValue={(ratio) => update({ ratio })} disabled={pending} /><span>{base}</span></span>}</td>
+            <td data-label="Quy đổi">{unit.fixed && sentence ? <><strong>{sentence.main}</strong><small className="table-subline">{sentence.other}</small></>
+              : <><span className="unit-ratio">
+                <select aria-label={`Cách nhập quy đổi đơn vị bán ${index + 1}`} value={unit.direction} onChange={(event) => update({ direction: event.target.value as RatioDirection })} disabled={pending}>
+                  <option value="BASE_TO_UNIT">1 {base} =</option><option value="UNIT_TO_BASE">1 {unitSymbol} =</option></select>
+                <NumberEntry aria-label={`Số quy đổi đơn vị bán ${index + 1}`} inputMode="decimal" value={unit.ratio} normalize={normalizeDecimalInput} display={decimalForEditing}
+                  placeholder={unit.direction === "BASE_TO_UNIT" ? "vd 20" : "vd 50"} aria-invalid={!!unit.ratio && !ratio} onValue={(value) => update({ ratio: value })} disabled={pending} />
+                <span>{unit.direction === "BASE_TO_UNIT" ? unitSymbol : base}</span></span>
+                {otherWay && <small className="table-subline">Tức là {otherWay}</small>}
+                {!!unit.ratio && !ratio && <small className="field-error" role="alert">1 {unitSymbol} phải ra số {base} chính xác (vd 1 tấn = 20 bao được, 1 tấn = 3 bao không chia hết).</small>}</>}</td>
             <td data-label="Loại quy đổi"><select aria-label={`Loại quy đổi đơn vị bán ${index + 1}`} value={unit.type} onChange={(event) => update({ type: event.target.value as UnitRow["type"] })} disabled={pending}>
               {UNIT_TYPES.map((type) => <option key={type} value={type}>{catalogChoiceLabel(type)}</option>)}</select>
               {(unit.type === "ESTIMATED" || unit.type === "MEASURED") && <input aria-label={`Nguồn quy đổi đơn vị bán ${index + 1}`} value={unit.sourceNote} maxLength={500}
@@ -222,7 +233,7 @@ function VariantGroupForm({ data, onSaved }: { data: VariantGroupData; onSaved: 
         })}</tbody>
       </table></div>}
       <button type="button" className="button button-secondary" disabled={pending || units.length >= 20 || !baseUomId}
-        onClick={() => { setUnits((all) => [...all, { key: nextUnitKey, uomId: "", ratio: "", type: "PACKAGING", sourceNote: "" }]); setNextUnitKey((key) => key + 1); }}>+ Thêm đơn vị bán</button>
+        onClick={() => { setUnits((all) => [...all, { key: nextUnitKey, uomId: "", ratio: "", direction: "BASE_TO_UNIT", type: "PACKAGING", sourceNote: "" }]); setNextUnitKey((key) => key + 1); }}>+ Thêm đơn vị bán</button>
     </section>
 
     <section aria-labelledby="variant-rows-title">

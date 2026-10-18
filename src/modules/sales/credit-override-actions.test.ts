@@ -43,7 +43,7 @@ describe("one-confirmation credit override server action", () => {
   });
   it("passes the exact snapshot, intent and reason to the protected RPC", async () => {
     // The order page shows `notice`, so the success message must travel under that name.
-    await expect(confirmSalesOrderCreditOverride(input())).rejects.toThrow(`/admin/orders/${orderId}?notice=`);
+    await expect(confirmSalesOrderCreditOverride(input())).rejects.toThrow(new RegExp(`/admin/orders/${orderId}\\?notice=confirmed-override(-sourced|-unsourced)?$`));
     expect(mocks.rpc).toHaveBeenCalledWith("confirm_sales_order_with_credit_override", {
       target_order_id: orderId, override_reason: "HXQA approval", expected_snapshot_hash: "a".repeat(64),
       operation_id: "baadf00d-1234-4234-8234-123456789abc",

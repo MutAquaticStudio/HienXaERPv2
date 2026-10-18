@@ -38,6 +38,7 @@
 
   /* Keep column headers available to assistive technology. */
   .layout thead {
+    display: block;
     position: absolute;
     width: 1px;
     height: 1px;
@@ -75,6 +76,14 @@
 
   .layout td:last-child {
     display: block;
+  }
+
+  /* A long warehouse name in "Chọn nguồn kho" must not widen the page. */
+  .layout td select,
+  .layout td input {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
   }
 
   .layout td:last-child::before {

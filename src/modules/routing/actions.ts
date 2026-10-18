@@ -63,21 +63,15 @@ export async function createRoutePlanAction(_previous: RouteActionState, formDat
   if ((deliveries ?? []).length !== deliveryIds.length) return initialError("Một chuyến giao đã đổi trạng thái hoặc không còn khả dụng.");
 
   const siteIds = [...new Set((deliveries ?? []).map((row) => String(row.site_id)))];
-  const [{ data: sites, error: siteError }, { data: lines, error: lineError }, { data: assignments, error: assignmentError }] = await Promise.all([
+  const [{ data: sites, error: siteError }, { data: assignments, error: assignmentError }] = await Promise.all([
     supabase.from("customer_sites").select("id,latitude,longitude,receiving_window").in("id", siteIds).limit(50),
-    supabase.from("delivery_lines").select("delivery_id,planned_base_quantity,base_uom_id").in("delivery_id", deliveryIds).limit(500),
     supabase.from("delivery_assignments").select("delivery_id,assignment_version").in("delivery_id", deliveryIds).is("superseded_at", null).limit(50),
   ]);
-  if (siteError || lineError || assignmentError) return initialError(siteError?.message ?? lineError?.message ?? assignmentError?.message ?? "Không tải được dữ liệu lộ trình.");
+  if (siteError || assignmentError) return initialError(siteError?.message ?? assignmentError?.message ?? "Không tải được dữ liệu lộ trình.");
 
   const deliveryById = new Map((deliveries ?? []).map((row) => [String(row.id), row]));
   const siteById = new Map((sites ?? []).map((row) => [String(row.id), row]));
   const assignmentVersionByDelivery = new Map((assignments ?? []).map((row) => [String(row.delivery_id), Number(row.assignment_version)]));
-  const linesByDelivery = new Map<string, Array<{ planned_base_quantity: number | string; base_uom_id: string }>>();
-  for (const line of lines ?? []) {
-    const key = String(line.delivery_id);
-    linesByDelivery.set(key, [...(linesByDelivery.get(key) ?? []), line]);
-  }
   const inputStops = deliveryIds.map((deliveryId) => {
     const delivery = deliveryById.get(deliveryId)!;
     const site = siteById.get(String(delivery.site_id));
@@ -90,9 +84,9 @@ export async function createRoutePlanAction(_previous: RouteActionState, formDat
   const recommendation = await recommendRoute(inputStops);
   const capacity = vehicle.capacity_quantity === null ? null : Number(vehicle.capacity_quantity);
   const capacityUomId = vehicle.capacity_uom_id ? String(vehicle.capacity_uom_id) : null;
-  const allLines = [...linesByDelivery.values()].flat();
-  const sameUom = !!capacityUomId && allLines.length > 0 && allLines.every((line) => String(line.base_uom_id) === capacityUomId);
-  const totalQuantity = sameUom ? allLines.reduce((sum, line) => sum + Number(line.planned_base_quantity), 0) : null;
+  // FB5: the goods are counted in the truck's unit through the unit conversions (80 bao = 4 tấn), as the assignment check does.
+  const load = capacityUomId ? await supabase.rpc("vehicle_load_for_deliveries", { target_vehicle_id: vehicleId, target_delivery_ids: deliveryIds }) : null;
+  const totalQuantity = load && !load.error && load.data !== null ? Number(load.data) : null;
   // Expected window per stop in the final order; deliveries with a schedule keep theirs when the route is applied.
   const windows = stopWindows(new Date(departureAt).toISOString(), stopMinutes, recommendation.orderedDeliveryIds.length);
   const overlaps = overlappingIndexes(recommendation.orderedDeliveryIds.map((deliveryId, index) => {
@@ -106,7 +100,7 @@ export async function createRoutePlanAction(_previous: RouteActionState, formDat
     if (capacity === null || !capacityUomId) {
       capacityWarning = "Xe chưa có tải trọng và đơn vị để đối chiếu.";
     } else if (totalQuantity === null) {
-      capacityWarning = "Đơn vị hàng không đồng nhất với tải trọng xe; cần kiểm tra thủ công.";
+      capacityWarning = "Chưa quy đổi được hàng sang đơn vị tải của xe (thêm quy đổi trong Đơn vị tính của vật tư, vd 1 tấn = 20 bao); cần kiểm tra thủ công.";
     } else if (totalQuantity > capacity) {
       capacityWarning = "Tổng hàng toàn tuyến vượt tải trọng xe; kiểm tra lượng nhận và giao từng chặng trước khi áp dụng.";
     }

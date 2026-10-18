@@ -18,6 +18,7 @@ function fixture(permissions: string[]) {
   m.permission.mockResolvedValue({ branchId: "branch", permissions: new Set(permissions) });
   m.client.mockResolvedValue({ rpc: m.rpc, from: (table: string) => {
     const result = { data: table === "customers" ? { id: customer, tier_code: null } : table === "customer_sites" ? { id: site }
+      : table === "sales_orders" ? { order_number: "SO-000123" }
       : table === "materials" ? [{ id: ids.material, group_id: "g", base_uom_id: uom }]
       : table === "pricing_rules" ? [{ id: ids.rule, branch_id: "branch", scope_type: "DEFAULT", material_id: ids.material, price_uom_id: uom, unit_price_vnd: "150000", version: 1, source_type: "LIST", effective_from: "2020-01-01T00:00:00Z", effective_to: null, active: true }] : [], error: null };
     const q = { select: vi.fn(), eq: vi.fn(), in: vi.fn(), lte: vi.fn(), or: vi.fn(), order: vi.fn(), maybeSingle: vi.fn().mockResolvedValue(result), then: (resolve: (v: typeof result) => unknown) => Promise.resolve(result).then(resolve) };
@@ -121,4 +122,44 @@ it("saves a line at the price list price when the database made the IDs from md5
   expect(JSON.parse(String(data.get("pricePreview")))[0]).toMatchObject({ pricingRuleId: ids.rule, priceSourceType: "LIST" });
   expect(await redirectOf(data)).toBe(`/admin/orders/${order}?notice=created`);
   expect(m.rpc.mock.calls[0][1].order_lines[0]).toMatchObject({ material_id: ids.material, pricing_rule_id: ids.rule, unit_price_vnd: "150000" });
+});
+
+const account = "99999999-9999-4999-8999-999999999999";
+async function prepaidForm(intent: "confirm" | "draft", amount = "2000000") {
+  const data = await form(intent);
+  for (const [key, value] of Object.entries({ prepaymentVnd: amount, prepaymentMethod: "BANK_TRANSFER", prepaymentAccountId: account, prepaymentAt: "2026-10-18T09:30" })) data.set(key, value);
+  return data;
+}
+
+it("records what the customer paid up front as an advance receipt in the cash book, tied to the order", async () => {
+  fixture(["orders.create", "orders.confirm", "finance.payment.post"]);
+  expect(await redirectOf(await prepaidForm("confirm"))).toBe(`/admin/orders/${order}?notice=confirmed-sourced`);
+  expect(rpcNames()).toEqual(["create_sales_order_draft", "post_payment", "confirm_sales_order", "auto_source_sales_order"]);
+  expect(m.rpc.mock.calls[1][1]).toEqual({
+    target_branch_id: "branch", direction: "RECEIPT", target_customer_id: customer, target_supplier_id: null, target_account_id: account,
+    amount_vnd: "2000000", effective_at: "2026-10-18T02:30:00.000Z", method: "BANK_TRANSFER", external_reference: "Trả trước đơn SO-000123",
+    allocation_lines: [], advance_amount_vnd: "2000000", operation_id: derivedOperationId(draftOperation, "prepayment"),
+  });
+});
+
+it("keeps the order and warns without recording twice when the prepayment is not recorded", async () => {
+  fixture(["orders.create", "orders.confirm", "finance.payment.post"]);
+  m.rpc.mockImplementation(async (name: string) => name === "post_payment" ? { data: null, error: { message: "invalid_finance_account" } } : { data: order, error: null });
+  const target = new URL(await redirectOf(await prepaidForm("draft")), "http://localhost");
+  expect(target.pathname).toBe(`/admin/orders/${order}`);
+  expect(target.searchParams.get("notice")).toBe("created");
+  expect(target.searchParams.get("error")).toMatch(/^Đã lưu đơn nhưng chưa ghi được tiền khách trả trước .*Kiểm tra Sổ quỹ trước khi ghi lại/);
+});
+
+it("does not record a prepayment for someone who cannot post receipts, and saves the order", async () => {
+  fixture(["orders.create"]);
+  const target = new URL(await redirectOf(await prepaidForm("draft")), "http://localhost");
+  expect(rpcNames()).toEqual(["create_sales_order_draft"]);
+  expect(target.searchParams.get("error")).toBe("Bạn không có quyền ghi thu tiền nên tiền khách trả trước chưa được ghi.");
+});
+
+it("records nothing when no prepayment is entered", async () => {
+  fixture(["orders.create", "finance.payment.post"]);
+  expect(await redirectOf(await prepaidForm("draft", ""))).toBe(`/admin/orders/${order}?notice=created`);
+  expect(rpcNames()).toEqual(["create_sales_order_draft"]);
 });

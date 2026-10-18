@@ -326,3 +326,28 @@ it("refuses a discount as large as the price, in the popup and for the whole ord
   expect(await screen.findByText("Giảm giá đơn phải nhỏ hơn tổng tiền hàng.")).toBeInTheDocument();
   expect(draftButton()).toBeDisabled();
 });
+
+it("takes what the customer paid up front, into the account matching the method, and shows what is left in the review", async () => {
+  const prepayment = { at: "2026-10-18T09:30", accounts: [{ id: "cash", name: "Quỹ tiền mặt", kind: "CASH" as const }, { id: "bank", name: "VCB", kind: "BANK" as const }] };
+  const { unmount } = render(<CommercialDocumentForm {...ready} canConfirm confirmOperationId={confirmId} prepayment={prepayment} />);
+  const group = screen.getByRole("group", { name: "Khách trả trước" });
+  expect(within(group).getByLabelText("Vào quỹ")).toHaveValue("cash");
+  fireEvent.change(within(group).getByLabelText("Phương thức"), { target: { value: "BANK_TRANSFER" } });
+  expect(within(group).getByLabelText("Vào quỹ")).toHaveValue("bank");
+  fireEvent.change(within(group).getByLabelText("Số tiền"), { target: { value: "20000" } });
+  expect(await within(group).findByText(/Còn phải trả 100.000 ₫/)).toBeInTheDocument();
+  const create = screen.getByRole("button", { name: "Xác nhận đơn" });
+  await waitFor(() => expect(create).toBeEnabled());
+  fireEvent.click(create);
+  const review = screen.getByRole("dialog", { name: "Xác nhận đơn bán" });
+  expect(within(review).getByText("20.000 ₫ · Chuyển khoản · VCB")).toBeInTheDocument();
+  expect(within(review).getByText("100.000 ₫")).toBeInTheDocument();
+  fireEvent.click(within(review).getByRole("button", { name: "Xác nhận đơn" }));
+  await waitFor(() => expect(mocks.save).toHaveBeenCalledTimes(1));
+  const data = mocks.save.mock.calls[0][1] as FormData;
+  expect([data.get("prepaymentVnd"), data.get("prepaymentMethod"), data.get("prepaymentAccountId"), data.get("prepaymentAt")]).toEqual(["20000", "BANK_TRANSFER", "bank", "2026-10-18T09:30"]);
+  unmount();
+  // Without the right to post receipts there is no box, and an existing draft never records one.
+  render(<CommercialDocumentForm {...ready} />);
+  expect(screen.queryByRole("group", { name: "Khách trả trước" })).not.toBeInTheDocument();
+});
