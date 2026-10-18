@@ -4,6 +4,7 @@ import styles from "@/components/portal/portal.module.css";
 import { StartJobButton } from "@/components/portal/start-job-button";
 import { WorkResultDraftForm } from "@/components/portal/work-result-draft-form";
 import { DeliveryDoneForm } from "@/components/portal/delivery-done-form";
+import { DeclineJobButton } from "@/components/portal/decline-job-button";
 import { ForegroundGpsControl } from "@/components/routing/foreground-gps-control";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { getWorkerPortalJob } from "@/modules/portal/actions";
@@ -60,6 +61,7 @@ export default async function WorkJobPage({ params }: { params: Promise<{ id: st
             <h2>Giao hàng</h2>
             <DeliveryDoneForm workItemId={job.id} version={job.version} delivery={job.delivery} receiverName={job.receiver_name}
               savedPhotoIds={(job.proofs ?? []).filter((proof) => proof.mime_type?.startsWith("image/")).map((proof) => proof.id)} />
+            {claimed && job.delivery.awaiting_handoff && <DeclineJobButton workItemId={job.id} version={job.version} />}
           </section>
         ) : canSubmitResult ? (
           <section className={styles.card}>

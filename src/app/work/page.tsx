@@ -27,6 +27,7 @@ export default async function WorkHomePage({ searchParams }: { searchParams: Pro
   return (
     <div className={styles.page}>
       {query.notice === "work-unavailable" && <p className={styles.status} role="status">Công việc đã chuyển người phụ trách hoặc bạn không còn quyền mở. Hãy dùng danh sách công việc hiện tại hoặc liên hệ điều phối.</p>}
+      {query.notice === "work-declined" && <p className={styles.status} role="status">Đã từ chối việc. Điều phối sẽ giao cho người khác.</p>}
       {query.notice === "delivery-reported" && <p className={styles.status} role="status">Đã báo giao hàng kèm ảnh. Điều phối sẽ xác minh.{todays.length ? " Việc kế tiếp ở bên dưới." : ""}</p>}
       <header className={styles.hero}>
         <p className={styles.heroEyebrow}>Ca làm việc của {snapshot.employee.display_name}</p>

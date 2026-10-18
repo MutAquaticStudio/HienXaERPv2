@@ -1326,3 +1326,15 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .sourcing-lines > li { display: grid; gap: 4px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; }
 .sourcing-line-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
 .sourcing-sources { display: grid; gap: 2px; margin: 0; padding-left: 18px; }
+
+/* D22 dispatch day board. */
+.dispatch-day { display: grid; gap: 12px; }
+.dispatch-waiting { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-soft); }
+.dispatch-list, .dispatch-timeline { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.dispatch-list > li { display: grid; gap: 4px; }
+.dispatch-drivers { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.dispatch-driver { display: grid; gap: 8px; align-content: start; padding: 12px; border: 1px solid var(--border); border-radius: 10px; }
+.dispatch-driver header { display: grid; gap: 2px; }
+.dispatch-timeline > li { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; align-items: center; padding: 6px 0; border-top: 1px solid var(--border); }
+.dispatch-timeline > li > span:nth-of-type(2), .dispatch-timeline > li > .status { grid-column: 2; }
+@media (max-width: 760px) { .dispatch-drivers { grid-template-columns: 1fr; } }

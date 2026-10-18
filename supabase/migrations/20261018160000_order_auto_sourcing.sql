@@ -289,6 +289,12 @@ $function$;
 revoke all on function public.order_sourcing_plan(uuid) from public, anon;
 grant execute on function public.order_sourcing_plan(uuid) to authenticated;
 
+-- What happens once an order has its sources (the auto-dispatch migration makes the warehouse deliveries here). Returns the
+-- deliveries made.
+create or replace function private.after_order_sourced(target_sales_order_id uuid, trace uuid) returns jsonb
+language sql security definer set search_path = '' as $$ select '[]'::jsonb $$;
+revoke all on function private.after_order_sourced(uuid, uuid) from public, anon, authenticated, service_role;
+
 -- Applies the plan to a confirmed order.
 create or replace function public.auto_source_sales_order(target_sales_order_id uuid, operation_id uuid) returns jsonb
 language plpgsql security definer set search_path = '' as $function$
@@ -309,6 +315,7 @@ declare
   short_lines jsonb := '[]'::jsonb;
   warehouse_lines integer := 0;
   outcome jsonb;
+  deliveries jsonb;
   expected timestamptz;
 begin
   select * into sale_order from public.sales_orders o where o.id = target_sales_order_id;
@@ -387,8 +394,9 @@ begin
       '/admin/orders/' || sale_order.id, 'purchasing.create', null, 'sales_order.short_source:' || auto_source_sales_order.operation_id);
   end if;
 
+  deliveries := private.after_order_sourced(target_sales_order_id, auto_source_sales_order.operation_id);
   outcome := jsonb_build_object('warehouse_lines', warehouse_lines, 'purchase_orders', purchases,
-    'waiting_purchase', jsonb_array_length(waiting) > 0, 'short_lines', short_lines);
+    'waiting_purchase', jsonb_array_length(waiting) > 0, 'short_lines', short_lines, 'deliveries', deliveries);
   insert into public.sales_order_sourcing_runs(branch_id, sales_order_id, operation_id, plan, outcome, created_by)
   values (sale_order.branch_id, sale_order.id, auto_source_sales_order.operation_id, plan, outcome, (select auth.uid()));
   insert into public.command_receipts values (auto_source_sales_order.operation_id, auth.uid(), 'auto_source_sales_order', hash, 'sales_order', sale_order.id, now());

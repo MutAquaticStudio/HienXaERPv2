@@ -38,6 +38,15 @@ export async function loadCatalogOptions(kind: string, access: Access, supabase:
       options[optionKind] = ((result.data ?? []) as { id: string; name: string; assignable: boolean }[]).map((value) => ({ id: value.id, name: value.name, assignable: value.assignable }));
       continue;
     }
+    if (optionKind === "drivers") {
+      // F3: a truck's default driver is a person working in this branch.
+      const result = await supabase.from("workforce_read").select("id, code, display_name").eq("branch_id", access.branchId).eq("active", true).order("display_name").limit(500);
+      if (result.error) throw new Error("Không tải được danh sách nhân viên.");
+      options[optionKind] = ((result.data ?? []) as { id: string; code: string; display_name: string }[]).map((value) => ({ id: value.id, name: `${value.display_name} (${value.code})` }));
+      const saved = rows.map((row) => row.default_driver_employee_id).filter((value): value is string => typeof value === "string" && value.length > 0);
+      for (const id of saved) if (!options[optionKind].some((value) => value.id === id)) options[optionKind].push({ id, name: "Nhân viên đã ngừng", assignable: false });
+      continue;
+    }
     const config = catalogs[optionKind];
     const label = optionKind === "customers" ? "display_name" : "name";
     let request = supabase.from(config.table as "materials").select(`id,${label}`).eq("active", true).order(label).limit(1000);

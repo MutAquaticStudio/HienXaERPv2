@@ -131,6 +131,12 @@ begin
   assert exists (select 1 from public.notifications where kind = 'sales_order.short_source' and entity_id = order1 and body like 'Cát 190 5 m³%'),
     'purchasing is told what is short';
   assert (select count(*) from public.sales_order_sourcing_runs where sales_order_id = order1) = 1, 'run kept with its reasons';
+  -- F3: the warehouse parts went on one delivery per warehouse; no truck has a default driver yet, so they wait for dispatch.
+  assert jsonb_array_length(outcome->'deliveries') = 2 and outcome->'deliveries'->0->'dispatch'->>'status' = 'WAITING', format('deliveries %s', outcome->'deliveries');
+  assert (select string_agg(w.code || ':' || trim_scale(l.planned_base_quantity), ',' order by w.code, l.planned_base_quantity)
+    from public.delivery_lines l join public.deliveries d on d.id = l.delivery_id join public.warehouses w on w.id = l.warehouse_id
+    where d.sales_order_id = order1) = 'NT_K1901:500,NT_K1901:500,NT_K1902:1000', 'stock reserved on the deliveries';
+  assert exists (select 1 from public.notifications where kind = 'delivery.waiting_dispatch'), 'dispatchers told';
 
   again := public.auto_source_sales_order(order1, op1);
   assert (again->>'replayed')::boolean and (select count(*) from public.purchase_orders where source_sales_order_id = order1) = 1, 'replay changes nothing';

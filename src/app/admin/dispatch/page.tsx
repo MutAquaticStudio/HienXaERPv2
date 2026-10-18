@@ -4,10 +4,12 @@ import { requireInternalPermission } from "@/lib/access/context";
 import { CORE_LIST_PAGE_SIZE, parseCoreListQuery } from "@/lib/core-list";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { deliveryStateLabel, deliveryStateTone } from "@/modules/delivery/presentation";
+import { DispatchDayBoard, type DispatchDay } from "@/components/delivery/dispatch-day-board";
+import { businessInputValue } from "@/lib/core/business-time";
 
 type Delivery = { id: string; delivery_number: string; customer_name_snapshot: string; site_name_snapshot: string; execution_state: string; result_kind: string | null; scheduled_at: string | null };
 type QueryValue = string | string[] | undefined;
-type Query = { q?: QueryValue; plannedPage?: QueryValue; assignedPage?: QueryValue; activePage?: QueryValue; exceptionPage?: QueryValue };
+type Query = { q?: QueryValue; plannedPage?: QueryValue; assignedPage?: QueryValue; activePage?: QueryValue; exceptionPage?: QueryValue; day?: QueryValue; dispatched?: QueryValue; error?: QueryValue };
 type PageKey = "plannedPage" | "assignedPage" | "activePage" | "exceptionPage";
 
 const pageKeys: PageKey[] = ["plannedPage", "assignedPage", "activePage", "exceptionPage"];
@@ -61,8 +63,15 @@ export default async function DispatchPage({ searchParams }: { searchParams: Pro
     };
   }));
 
+  // D22: the day board (today by default, Vietnam time).
+  const requestedDay = firstValue(query.day);
+  const day = /^\d{4}-\d{2}-\d{2}$/.test(requestedDay) ? requestedDay : businessInputValue(new Date()).slice(0, 10);
+  const { data: dayData } = await supabase.rpc("dispatch_day", { target_branch_id: access.branchId, target_day: day });
   return <div className="page-stack">
     <header className="page-heading"><div><p className="eyebrow">Điều phối</p><h1>Bảng phân giao</h1><p className="lede">Phân công và theo dõi tiến độ giao hàng.</p></div>{access.permissions.has("roles.manage") && <div className="action-cluster"><Link className="button button-secondary" href="/admin/dispatch/resources?kind=vehicles">Xe</Link><Link className="button button-secondary" href="/admin/dispatch/resources?kind=machines">Máy / thiết bị</Link></div>}</header>
+    {dayData ? <DispatchDayBoard day={day} board={dayData as DispatchDay} canAssign={access.permissions.has("delivery.assign")}
+      notice={firstValue(query.dispatched) || undefined} error={firstValue(query.error) || undefined} />
+      : <p className="form-message" role="alert">Chưa tải được lịch giao theo tài xế. Hãy tải lại trang.</p>}
     <form action="/admin/dispatch" method="get" className="filter-bar"><label>Tìm kiếm<input name="q" defaultValue={firstValue(query.q)} maxLength={80} placeholder="Mã phiếu, khách hàng, công trình" /></label><button className="button button-secondary" type="submit">Tìm</button>{firstValue(query.q) && <Link className="code-link" href="/admin/dispatch">Xóa tìm kiếm</Link>}</form>
     <section className="dispatch-board">{columns.map((column) => <div className="dispatch-column" key={column.title}>
       <div className="dispatch-column-head"><h2>{column.title}</h2><span>{column.rows.length}{column.hasNext ? "+" : ""}</span></div>

@@ -137,6 +137,7 @@ function OrderDeliveryForm({ orderId, lines, warehouses, availability, defaultSc
     <p className="muted">Để trống hoặc 0 ở dòng chưa giao lần này. Kho chỉ trừ khi bàn giao hàng lên xe; lập phiếu giữ tồn khả dụng cho phiếu.</p>
     {resources && <fieldset className="order-delivery-assign">
       <legend><label className="check-inline"><input type="checkbox" checked={assign} onChange={(event) => setAssign(event.target.checked)} disabled={pending} /> Phân xe và người giao</label></legend>
+      {!assign && <p className="muted">Không chọn: hệ thống tự chọn xe có tài xế mặc định rảnh sớm nhất (theo Cài đặt → Tự điều phối), việc tự sang cổng thợ.</p>}
       {assign && <><div className="form-grid">
         <div className="field"><label htmlFor="order-delivery-employee">Người giao *</label><select id="order-delivery-employee" value={employeeId} onChange={(event) => setEmployeeId(event.target.value)} disabled={pending}>
           <option value="">Chọn người giao...</option>{resources.employees.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></div>
