@@ -4,6 +4,8 @@ import { AppShell } from "./app-shell";
 
 const location = vi.hoisted(() => ({ pathname: "/admin/orders/new" }));
 vi.mock("next/navigation", () => ({ usePathname: () => location.pathname }));
+// The bell loads its feed through a server action; it has its own tests.
+vi.mock("@/components/notifications/notification-bell", () => ({ NotificationBell: ({ branchId }: { branchId: string }) => <button type="button" data-branch={branchId}>Thông báo</button> }));
 
 const ownerPermissions = ["dashboard.read", "quotation.read", "orders.read", "purchasing.read", "inventory.read", "delivery.read", "service.read", "workforce.read", "compensation.read", "finance.ar.read", "finance.payment_notice.review", "finance.ap.read", "finance.expense.read", "customers.read", "suppliers.read", "catalog.read", "roles.manage", "customers.manage", "suppliers.manage", "catalog.manage", "pricing.read"];
 const shell = (permissions: readonly string[] = ownerPermissions) => <AppShell surface="admin" permissions={permissions} actorName="Chủ QA" branchName="Chi nhánh QA"><p>Nội dung</p></AppShell>;
@@ -126,4 +128,12 @@ describe("grouped operational navigation", () => {
     expect(screen.queryByText("Chi nhánh QA")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Đăng xuất" }).closest("form")).toHaveAttribute("method", "post");
   });
+});
+
+it("shows the notification bell in the office top bar of the active branch only", () => {
+  const { unmount } = render(<AppShell surface="admin" permissions={ownerPermissions} actorName="Chủ QA" branchId="b1"><p>Nội dung</p></AppShell>);
+  expect(screen.getByRole("button", { name: "Thông báo" })).toHaveAttribute("data-branch", "b1");
+  unmount();
+  render(<AppShell surface="work" permissions={[]} actorName="Thợ" branchId="b1"><p>Nội dung</p></AppShell>);
+  expect(screen.queryByRole("button", { name: "Thông báo" })).not.toBeInTheDocument();
 });
