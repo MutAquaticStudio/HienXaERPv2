@@ -986,6 +986,10 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .doc-editor-summary dd { margin: 0; font-variant-numeric: tabular-nums; }
 .doc-editor-total dd { font-size: var(--font-size-section); font-weight: 700; color: var(--text); text-align: right; }
 .doc-editor-totals { display: grid; gap: 0.3rem; }
+.order-prepayment { display: flex; flex-wrap: wrap; align-items: end; gap: 0.5rem 0.75rem; margin: 0.5rem 0 0; padding: 0.6rem 0.75rem; border: 1px dashed var(--border); border-radius: 10px; }
+.order-prepayment legend { padding: 0 6px; font-weight: 700; }
+.order-prepayment .field { flex: 1 1 9rem; min-width: 0; }
+.order-prepayment > p { flex-basis: 100%; margin: 0; }
 .doc-editor-total-hint { margin: 0; font-size: var(--font-size-caption); font-weight: 600; color: var(--warning); }
 .doc-editor-actions { display: grid; gap: 0.5rem; }
 .doc-editor-actions .button { width: 100%; justify-content: center; min-height: 48px; }
