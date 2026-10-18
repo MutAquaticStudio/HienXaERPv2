@@ -6,6 +6,7 @@ import { operationalPostingError } from "@/lib/core/errors";
 import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { autoSourceConfirmedOrder, derivedOperationId } from "./auto-sourcing";
 
 const inputSchema = z.object({
   orderId: z.uuid(), operationId: z.uuid(),
@@ -19,6 +20,7 @@ export async function confirmSalesOrderCreditOverride(formData: FormData): Promi
   const returnId = z.uuid().safeParse(formData.get("orderId"));
   const path = returnId.success ? `/admin/orders/${returnId.data}` : "/admin/orders";
   let message: string | undefined;
+  let sourced: "SOURCED" | "SKIPPED" | "FAILED" = "SKIPPED";
   if (!context.permissions.has("finance.ar.adjust")) {
     message = "Bạn không có quyền duyệt ngoại lệ tín dụng.";
   } else if (!input.success) {
@@ -49,11 +51,14 @@ export async function confirmSalesOrderCreditOverride(formData: FormData): Promi
         } else {
           message = "Không thể xác nhận ngoại lệ. Đơn chưa được duyệt bởi thao tác này.";
         }
+      } else {
+        sourced = (await autoSourceConfirmedOrder(supabase, context.branchId, input.data.orderId,
+          derivedOperationId(input.data.operationId, "auto-source"), { onlyIfEnabled: true })).status;
       }
     }
   }
   if (!message) {
     for (const url of [path, "/admin/orders", "/admin/customers", "/customer/orders"]) revalidatePath(url);
   }
-  redirect(`${path}?${message ? `error=${encodeURIComponent(message)}` : `notice=${encodeURIComponent("Đã xác nhận đơn với ngoại lệ tín dụng riêng cho lần này.")}`}`);
+  redirect(`${path}?${message ? `error=${encodeURIComponent(message)}` : `notice=${encodeURIComponent(`Đã xác nhận đơn với ngoại lệ tín dụng riêng cho lần này.${sourced === "SOURCED" ? " Đã tự phân nguồn hàng." : sourced === "FAILED" ? " Chưa tự phân nguồn được — bấm “Tự phân nguồn” để thử lại." : ""}`)}`}`);
 }

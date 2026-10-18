@@ -6,6 +6,7 @@ vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: m.client }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("next/navigation", () => ({ redirect: m.redirect }));
 import { createSalesOrderAction, previewCommercialDocumentAction } from "./actions";
+import { derivedOperationId } from "./auto-sourcing";
 
 const customer = "11111111-1111-4111-8111-111111111111", site = "22222222-2222-4222-8222-222222222222", material = "33333333-3333-4333-8333-333333333333";
 const uom = "44444444-4444-4444-8444-444444444444", rule = "55555555-5555-4555-8555-555555555555", order = "66666666-6666-4666-8666-666666666666";
@@ -44,10 +45,19 @@ beforeEach(() => {
 
 it("creates the draft then confirms it, each with its own operation ID", async () => {
   fixture(["orders.create", "orders.confirm"]);
-  expect(await redirectOf(await form("confirm"))).toBe(`/admin/orders/${order}?notice=confirmed`);
-  expect(rpcNames()).toEqual(["create_sales_order_draft", "confirm_sales_order"]);
+  expect(await redirectOf(await form("confirm"))).toBe(`/admin/orders/${order}?notice=confirmed-sourced`);
+  // D19: the confirmed order is then sourced with an operation derived from the confirmation (retry = same sourcing).
+  expect(rpcNames()).toEqual(["create_sales_order_draft", "confirm_sales_order", "auto_source_sales_order"]);
   expect(m.rpc.mock.calls[0][1]).toMatchObject({ operation_id: draftOperation });
   expect(m.rpc.mock.calls[1][1]).toEqual({ target_order_id: order, operation_id: confirmOperation });
+  expect(m.rpc.mock.calls[2][1]).toEqual({ target_sales_order_id: order, operation_id: derivedOperationId(confirmOperation, "auto-source") });
+  expect(derivedOperationId(confirmOperation, "auto-source")).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+});
+
+it("stays confirmed when sourcing fails or is switched off for the branch", async () => {
+  fixture(["orders.create", "orders.confirm"]);
+  m.rpc.mockImplementation(async (name: string) => name === "auto_source_sales_order" ? { data: null, error: { code: "23514", message: "x" } } : { data: order, error: null });
+  expect(await redirectOf(await form("confirm"))).toBe(`/admin/orders/${order}?notice=confirmed-unsourced`);
 });
 
 it("keeps the saved draft and explains in Vietnamese when confirmation is rejected", async () => {

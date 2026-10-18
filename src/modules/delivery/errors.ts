@@ -17,6 +17,11 @@ export function deliveryCommandMessage(value?: string, hint?: string | null) {
   if (value?.includes("operation_payload_conflict")) return "Mã thao tác đã được dùng với dữ liệu khác. Hãy tải lại.";
   if (value?.includes("delivery_reassignment_after_work_started_forbidden")) return "Công việc đã bắt đầu. Không thể đổi phân giao; cần xử lý bàn giao có căn cứ.";
   if (value?.includes("delivery_external_assignment_with_work_forbidden")) return "Phiếu đã có công việc nội bộ. Không thể đổi sang xe ngoài bằng thao tác phân giao này.";
+  if (value?.includes("delivery_photo_required")) return "Tải ảnh hàng đã giao lên trước (nút “Tải bằng chứng lên”), rồi bấm lại “NCC đã giao”.";
+  if (value?.includes("delivery_failure_reason_required")) return "Ghi lý do không giao được (ít nhất 3 ký tự).";
+  if (value?.includes("delivery_not_supplier_direct")) return "Chỉ phiếu NCC giao thẳng mới dùng “NCC đã giao”.";
+  if (value?.includes("evidence_not_verified")) return "Ảnh chưa tải lên xong hoặc không thuộc chi nhánh này. Tải lại ảnh rồi thử lại.";
+  if (value?.includes("forbidden")) return "Bạn không có quyền thực hiện bước này của phiếu giao.";
   if (value?.includes("schedule_collision")) {
     const free = nextFreeAt(hint);
     return free ? `Người giao hoặc xe đã có việc trong khung giờ này. Giờ trống gần nhất: ${formatBusinessDateTime(free)}.`

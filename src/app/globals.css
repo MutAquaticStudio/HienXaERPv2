@@ -1319,3 +1319,10 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .notification-body, .notification-time { color: var(--muted); font-size: var(--font-size-caption); }
 .notification-all { justify-self: center; padding: 4px; }
 @media (max-width: 760px) { .notification-panel { position: fixed; top: 64px; right: 16px; left: 16px; width: auto; } }
+
+/* D19 "Nguồn hàng" on the order page. */
+.order-sourcing { display: grid; gap: 10px; }
+.sourcing-lines { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.sourcing-lines > li { display: grid; gap: 4px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; }
+.sourcing-line-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.sourcing-sources { display: grid; gap: 2px; margin: 0; padding-left: 18px; }

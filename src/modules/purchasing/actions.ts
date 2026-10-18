@@ -14,6 +14,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { resolvePrice, type PriceRule } from "@/modules/pricing/resolve-price";
 import { loadPurchaseSuppliers } from "./form-options";
 import { finishDirectPurchaseDraft } from "./finish-direct-draft";
+import { derivedOperationId } from "@/modules/sales/auto-sourcing";
 
 const PurchaseDecimal = Decimal.clone({ precision: 50 });
 
@@ -297,7 +298,8 @@ async function saveWarehouseDocument(mode: "create" | "edit", formData: FormData
     if (confirmOperationId) {
       const confirmed = await supabase.rpc("confirm_purchase_order", { target_purchase_order_id: rpcResult.data, operation_id: confirmOperationId });
       if (confirmed.error) redirect(`/admin/purchase-orders/${rpcResult.data}?error=${encodeURIComponent(`Đã lưu đơn mua nháp nhưng chưa xác nhận được: ${errorMessage(confirmed.error.message, true)}`)}`);
-      redirect(`/admin/purchase-orders/${rpcResult.data}?notice=confirmed`);
+      const delivered = await supplierDeliveryAfterConfirm(supabase, access.permissions, rpcResult.data, derivedOperationId(confirmOperationId, "supplier-delivery"));
+      redirect(`/admin/purchase-orders/${rpcResult.data}?notice=${delivered ? "supplier-delivery-created" : "confirmed"}`);
     }
     redirect(`/admin/purchase-orders/${rpcResult.data}?notice=${mode === "edit" ? "updated" : "created"}`);
   } catch (error) {
@@ -371,16 +373,53 @@ export async function createPurchaseOrderAction(_: PurchaseActionState, formData
   return saveWarehouseDocument("create", formData);
 }
 
+/**
+ * D19/D20: a confirmed supplier-direct purchase order gets its delivery (contact = the supplier) right away when the person
+ * may make and assign deliveries; otherwise the purchase order page keeps "Lập phiếu NCC giao thẳng".
+ */
+async function supplierDeliveryAfterConfirm(supabase: Awaited<ReturnType<typeof createServerSupabase>>, permissions: ReadonlySet<string>,
+  purchaseOrderId: string, operationId: string): Promise<boolean> {
+  if (!permissions.has("delivery.create") || !permissions.has("delivery.assign")) return false;
+  try {
+    const { data: purchase } = await supabase.from("purchase_orders").select("destination_type").eq("id", purchaseOrderId).maybeSingle();
+    if (purchase?.destination_type !== "CUSTOMER_SITE") return false;
+    const { error } = await supabase.rpc("create_supplier_direct_delivery", { target_purchase_order_id: purchaseOrderId, operation_id: operationId });
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
 export async function confirmPurchaseOrderAction(formData: FormData) {
   const parsed = z.object({ entityId: z.uuid(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect("/admin/purchase-orders?error=invalid-command");
-  await requireInternalPermission("purchasing.confirm");
+  const access = await requireInternalPermission("purchasing.confirm");
   const supabase = await createServerSupabase();
   const { error } = await supabase.rpc("confirm_purchase_order", { target_purchase_order_id: parsed.data.entityId, operation_id: parsed.data.operationId });
   const destination = `/admin/purchase-orders/${parsed.data.entityId}`;
   if (error) redirect(`${destination}?error=${encodeURIComponent(errorMessage(error.message, true))}`);
+  const delivered = await supplierDeliveryAfterConfirm(supabase, access.permissions, parsed.data.entityId, derivedOperationId(parsed.data.operationId, "supplier-delivery"));
   revalidatePath("/admin/purchase-orders");
-  redirect(`${destination}?notice=confirmed`);
+  redirect(`${destination}?notice=${delivered ? "supplier-delivery-created" : "confirmed"}`);
+}
+
+/** "Lập phiếu NCC giao thẳng" on a confirmed direct purchase order whose delivery was not made at confirmation. */
+export async function createSupplierDirectDeliveryAction(formData: FormData) {
+  const parsed = z.object({ entityId: z.uuid(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) redirect("/admin/purchase-orders?error=invalid-command");
+  await requireInternalPermission("delivery.create");
+  const supabase = await createServerSupabase();
+  const destination = `/admin/purchase-orders/${parsed.data.entityId}`;
+  const { data, error } = await supabase.rpc("create_supplier_direct_delivery", { target_purchase_order_id: parsed.data.entityId, operation_id: parsed.data.operationId });
+  if (error || !data) {
+    const message = error?.message.includes("nothing_to_deliver") ? "Đơn mua này đã có phiếu giao cho toàn bộ lượng."
+      : error?.message.includes("purchase_order_not_direct") ? "Chỉ đơn mua NCC giao thẳng đã duyệt mới lập phiếu giao từ đây."
+      : error?.code === "42501" ? "Cần quyền lập phiếu giao và phân giao để lập phiếu NCC giao thẳng."
+      : "Không thể lập phiếu NCC giao thẳng. Không có thay đổi nào được ghi.";
+    redirect(`${destination}?error=${encodeURIComponent(message)}`);
+  }
+  revalidatePath(destination);
+  redirect(`/admin/deliveries/${data}?notice=supplier-delivery-created`);
 }
 
 export async function cancelPurchaseOrderAction(formData: FormData) {

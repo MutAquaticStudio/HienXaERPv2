@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { AppearanceForm } from "@/components/settings/appearance-form";
 import { CompanyLogoForm } from "@/components/settings/company-logo-form";
 import { CompanyProfileForm } from "@/components/settings/company-profile-form";
-import { OperationSettingsForm } from "@/components/settings/operation-settings-form";
+import { OperationSettingsForm, type OperationSettings } from "@/components/settings/operation-settings-form";
 import { requireInternalPermission } from "@/lib/access/context";
 import { APPEARANCE_COOKIE, parseAppearance } from "@/lib/appearance";
 import { loadCompanyLogo, loadCompanyProfile } from "@/lib/company/profile";
@@ -13,8 +13,9 @@ import { createServerSupabase } from "@/lib/supabase/server";
 export default async function SettingsPage() {
   const access = await requireInternalPermission("roles.manage");
   const supabase = await createServerSupabase();
-  const [profile, logo, cookieStore, operation] = await Promise.all([loadCompanyProfile(supabase), loadCompanyLogo(supabase), cookies(),
-    supabase.from("branch_operation_settings").select("stop_minutes, version").eq("branch_id", access.branchId).maybeSingle()]);
+  const [profile, logo, cookieStore, operation, warehouses] = await Promise.all([loadCompanyProfile(supabase), loadCompanyLogo(supabase), cookies(),
+    supabase.from("branch_operation_settings").select("stop_minutes, version, default_warehouse_id, auto_source_enabled, trip_cost_vnd::text, dispatch_mode, work_day_start, work_day_end").eq("branch_id", access.branchId).maybeSingle(),
+    supabase.from("warehouses").select("id, name").eq("branch_id", access.branchId).eq("active", true).order("name").limit(100)]);
   return <div className="page-stack">
     <header className="page-heading"><div><p className="eyebrow">Hệ thống · {access.branchName}</p><h1>Cài đặt</h1><p className="lede">Thông tin doanh nghiệp in trên chứng từ, vận hành giao hàng, giao diện trên thiết bị này, chi nhánh, phạm vi dữ liệu và phân quyền.</p></div></header>
     <div className="settings-grid">
@@ -24,7 +25,7 @@ export default async function SettingsPage() {
         <CompanyLogoForm logo={logo} profileSaved={!!profile} /></section>
       <section className="card card-pad"><div className="section-head flush"><h2>Vận hành giao hàng</h2></div>
         <p className="card-scope-note">Áp dụng cho chi nhánh {access.branchName}.</p>
-        <OperationSettingsForm settings={(operation.data as { stop_minutes: number; version: number } | null) ?? null} /></section>
+        <OperationSettingsForm settings={(operation.data as OperationSettings | null) ?? null} warehouses={warehouses.data ?? []} /></section>
       <section className="card card-pad"><div className="section-head flush"><h2>Giao diện</h2></div>
         <AppearanceForm initial={parseAppearance(cookieStore.get(APPEARANCE_COOKIE)?.value)} /></section>
     </div>

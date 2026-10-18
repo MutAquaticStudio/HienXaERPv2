@@ -9,10 +9,11 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { AppError, operationalPostingError, quantityInputError } from "@/lib/core/errors";
 import { isExactBaseQuantity } from "@/lib/core/quantity";
-import { requireCustomerAccess, requireInternalPermission } from "@/lib/access/context";
+import { requireCustomerAccess, requireInternalAccess, requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { QUOTATIONS_DISABLED_MESSAGE, QUOTATIONS_ENABLED } from "@/lib/features";
 import { resolvePrice, type PriceRule } from "@/modules/pricing/resolve-price";
+import { autoSourceConfirmedOrder, confirmedNotice, derivedOperationId } from "./auto-sourcing";
 
 const CommercialDecimal = Decimal.clone({ precision: 50 });
 
@@ -351,7 +352,9 @@ async function saveDocument(kind: "order" | "quote", mode: "create" | "edit", fo
     const confirmed = await supabase.rpc("confirm_sales_order", { target_order_id: result.data, operation_id: confirmOperationId });
     revalidatePath(`/admin/orders/${result.data}`);
     if (confirmed.error) redirect(`/admin/orders/${result.data}?error=${encodeURIComponent(`Đã lưu bản nháp nhưng chưa xác nhận được: ${commandError(confirmed.error.message, true)}`)}`);
-    redirect(`/admin/orders/${result.data}?notice=confirmed`);
+    // D19: confirmed orders are sourced by the system; a failure leaves the order confirmed with "Tự phân nguồn" to retry.
+    const sourced = await autoSourceConfirmedOrder(supabase, access.branchId, result.data, derivedOperationId(confirmOperationId, "auto-source"), { onlyIfEnabled: true });
+    redirect(`/admin/orders/${result.data}?notice=${confirmedNotice(sourced)}`);
   }
   const destinationId = edit?.success && kind === "quote" ? quoteId : result.data;
   revalidatePath(`${kind === "order" ? "/admin/orders" : "/admin/quotations"}/${destinationId}`);
@@ -376,7 +379,30 @@ async function internalCommand(permission: string, rpc: string, args: Record<str
 export async function confirmSalesOrderAction(formData: FormData) {
   const parsed = commandSchema.safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId") });
   if (!parsed.success) redirect("/admin/orders?error=invalid-command");
-  return internalCommand("orders.confirm", "confirm_sales_order", { target_order_id: parsed.data.entityId, operation_id: parsed.data.operationId }, `/admin/orders/${parsed.data.entityId}`, "confirmed");
+  const access = await requireInternalPermission("orders.confirm");
+  const supabase = await createServerSupabase();
+  const destination = `/admin/orders/${parsed.data.entityId}`;
+  const { error } = await supabase.rpc("confirm_sales_order", { target_order_id: parsed.data.entityId, operation_id: parsed.data.operationId });
+  if (error) redirect(`${destination}?error=${encodeURIComponent(commandError(error.message, true))}`);
+  const sourced = await autoSourceConfirmedOrder(supabase, access.branchId, parsed.data.entityId, derivedOperationId(parsed.data.operationId, "auto-source"), { onlyIfEnabled: true });
+  revalidatePath(destination);
+  redirect(`${destination}?notice=${confirmedNotice(sourced)}`);
+}
+
+/** "Tự phân nguồn" on a confirmed order (older orders, or a retry after confirmation). */
+export async function autoSourceOrderAction(formData: FormData) {
+  const parsed = commandSchema.safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId") });
+  if (!parsed.success) redirect("/admin/orders?error=invalid-command");
+  const access = await requireInternalAccess();
+  const destination = `/admin/orders/${parsed.data.entityId}`;
+  if (!["orders.confirm", "purchasing.create", "delivery.create"].some((permission) => access.permissions.has(permission))) {
+    redirect(`${destination}?error=${encodeURIComponent("Bạn không có quyền phân nguồn đơn này.")}`);
+  }
+  const supabase = await createServerSupabase();
+  const sourced = await autoSourceConfirmedOrder(supabase, access.branchId, parsed.data.entityId, parsed.data.operationId, { onlyIfEnabled: false });
+  revalidatePath(destination);
+  if (sourced.status !== "SOURCED") redirect(`${destination}?error=${encodeURIComponent("Chưa tự phân nguồn được. Kiểm tra đơn đã xác nhận, tải lại trang rồi thử lại.")}`);
+  redirect(`${destination}?notice=sourced`);
 }
 
 export async function cancelSalesOrderAction(formData: FormData) {

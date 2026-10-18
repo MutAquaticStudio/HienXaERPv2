@@ -6,7 +6,8 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: m.refresh }) })
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => m.cookie === undefined ? undefined : { value: m.cookie } }) }));
 vi.mock("@/lib/access/context", () => ({ requireInternalPermission: async () => ({ branchId: "b", branchName: "Chi nhánh Đông Anh", permissions: new Set(["roles.manage"]) }) }));
 vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({ from: () => {
-  const chain = { select: () => chain, eq: () => chain, maybeSingle: async () => ({ data: m.operation, error: null }) };
+  const chain = { select: () => chain, eq: () => chain, order: () => chain, limit: () => chain, maybeSingle: async () => ({ data: m.operation, error: null }),
+    then: (resolve: (value: { data: { id: string; name: string }[]; error: null }) => unknown) => Promise.resolve({ data: [{ id: "w1", name: "Kho chính" }], error: null }).then(resolve) };
   return chain;
 } }) }));
 vi.mock("@/modules/settings/operation-actions", () => ({ saveOperationSettingsAction: m.saveOperation }));
@@ -102,4 +103,20 @@ it("sets the branch's time per delivery stop against its version", async () => {
   fireEvent.click(screen.getByRole("button", { name: "Lưu cài đặt giao hàng" }));
   await waitFor(() => expect(m.saveOperation).toHaveBeenCalledWith(expect.objectContaining({ expectedVersion: 2, stopMinutes: 45 })));
   expect(await screen.findByText("Đã lưu. Phiếu giao mới tính mỗi điểm giao 45 phút.")).toBeInTheDocument();
+});
+
+it("sets auto-sourcing and auto-dispatch of the branch (D19, D22)", async () => {
+  m.operation = { stop_minutes: 60, version: 4, default_warehouse_id: null, auto_source_enabled: true, trip_cost_vnd: null, dispatch_mode: "AUTO", work_day_start: "07:00:00", work_day_end: "18:00:00" };
+  m.saveOperation.mockResolvedValue({ status: "SUCCESS", version: 5, message: "Đã lưu. Phiếu giao mới tính mỗi điểm giao 60 phút." });
+  render(await Page());
+  fireEvent.change(screen.getByLabelText("Kho ưu tiên"), { target: { value: "w1" } });
+  fireEvent.change(screen.getByLabelText("Chi phí một chuyến (VND)"), { target: { value: "300000" } });
+  expect(screen.getByLabelText("Chi phí một chuyến (VND)")).toHaveValue("300.000");
+  fireEvent.change(screen.getByLabelText("Chế độ"), { target: { value: "SUGGEST" } });
+  fireEvent.change(screen.getByLabelText("Giờ kết thúc ngày làm"), { target: { value: "06:00" } });
+  expect(screen.getByRole("alert")).toHaveTextContent("Giờ kết thúc phải sau giờ bắt đầu.");
+  fireEvent.change(screen.getByLabelText("Giờ kết thúc ngày làm"), { target: { value: "17:30" } });
+  fireEvent.click(screen.getByRole("button", { name: "Lưu cài đặt giao hàng" }));
+  await waitFor(() => expect(m.saveOperation).toHaveBeenCalledWith(expect.objectContaining({ expectedVersion: 4, defaultWarehouseId: "w1", autoSource: true,
+    tripCostVnd: "300000", dispatchMode: "SUGGEST", workDayStart: "07:00", workDayEnd: "17:30" })));
 });

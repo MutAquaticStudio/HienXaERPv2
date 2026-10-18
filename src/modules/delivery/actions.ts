@@ -202,6 +202,31 @@ export async function submitDeliveryResultAction(formData: FormData) {
   redirect(`${destination}?notice=result-submitted`);
 }
 
+/**
+ * D20 "NCC đã giao": staff report a supplier-direct delivery in one step (taken on the way → arrived → result); a delivered
+ * quantity needs the photo uploaded on this page first, nothing delivered needs a reason.
+ */
+export async function submitSupplierDeliveryDoneAction(formData: FormData) {
+  const parsed = z.object({ deliveryId: z.uuid(), receiverName: z.string().trim().max(120).optional(), note: z.string().trim().max(500).optional(),
+    evidenceId: z.union([z.uuid(), z.literal("")]).optional(), version: z.coerce.number().int().positive(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  const lines = quantityLines(formData, "deliveryLineId", "actualQuantity", "delivery_line_id", "actual_base_quantity", false, nonNegative);
+  if (!parsed.success || !lines) {
+    const deliveryId = z.uuid().safeParse(formData.get("deliveryId"));
+    const path = deliveryId.success ? `/admin/deliveries/${deliveryId.data}` : "/admin/deliveries";
+    redirect(`${path}?error=${encodeURIComponent("Số lượng khách nhận phải là số không âm, tối đa 6 chữ số thập phân.")}`);
+  }
+  await requireInternalPermission("delivery.submit");
+  const supabase = await createServerSupabase();
+  const { error } = await supabase.rpc("submit_supplier_delivery_done", {
+    target_delivery_id: parsed.data.deliveryId, result_lines: lines, receiver_name: parsed.data.receiverName || "", note: parsed.data.note || "",
+    target_evidence_id: parsed.data.evidenceId || null, expected_version: parsed.data.version, operation_id: parsed.data.operationId,
+  });
+  const destination = `/admin/deliveries/${parsed.data.deliveryId}`;
+  if (error) redirect(`${destination}?error=${encodeURIComponent(message(error.message))}${parsed.data.evidenceId ? `&evidence=${parsed.data.evidenceId}` : ""}`);
+  revalidatePath(destination);
+  redirect(`${destination}?notice=supplier-done`);
+}
+
 export async function uploadDeliveryEvidenceAction(formData: FormData) {
   const candidate = formData.get("file");
   const parsed = z.object({ deliveryId: z.uuid() }).safeParse(Object.fromEntries(formData));
