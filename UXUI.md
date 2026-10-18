@@ -1488,11 +1488,18 @@ Không render:
 ## UX-CUST-009 — Đặt hàng (D15, 18/10/2026)
 
 - Menu và trang chủ có **"Đặt hàng"** cho Chủ tài khoản và Kế toán (Người nhận hàng không thấy). Trang chủ báo "N đơn đang chờ cửa hàng duyệt".
-- `/customer/orders/new` (thiết kế cho điện thoại): ô "Tìm hàng" dính trên cùng; hàng nhóm theo nhóm vật tư; mỗi thẻ: tên, "85.000 ₫ / bao (50 kg)",
-  nhãn **Còn hàng** hoặc **Đặt trước**, bộ − [số lượng] + (gõ được số lẻ "2,5"). Khung "Giao tới": chọn công trình đã có hoặc "Địa chỉ mới" (tên, địa
-  chỉ, người nhận, SĐT); "Muốn nhận lúc" (để trống = sớm nhất); "Ghi chú cho cửa hàng". Thanh dưới dính: "N mặt hàng · tạm tính" + **Xem lại đơn**.
-- **Xem lại đơn**: dòng hàng, tạm tính, giao tới, giờ muốn nhận, ghi chú, câu "Cửa hàng duyệt đơn rồi báo ngày giao; chưa giữ hàng cho tới khi
-  duyệt" → **Gửi đơn** / "Sửa đơn". Gửi xong mở chi tiết đơn với "Đã gửi đơn". Kết quả chưa rõ (mất mạng) → báo bấm gửi lại, không tạo đơn trùng.
+- `/customer/orders/new` (D26, 18/10/2026 — **cùng bố cục với "Tạo đơn bán" nội bộ**, màu của cổng khách):
+  - Ô **"Tìm hàng"**: bấm là xổ danh sách theo nhóm vật tư, hàng cùng loại đứng chung dưới tên sản phẩm (vd "Xi măng Bút Sơn" → PCB30, PCB40); mỗi
+    dòng có mã, đơn vị, "80.000 ₫ / bao · Còn hàng" hoặc "Đặt trước"; gõ để lọc (không cần dấu), chọn lại cùng hàng thì cộng thêm 1.
+  - Bảng dòng hàng (điện thoại: mỗi dòng một thẻ): tên + mã, **Đơn vị** (bao / tấn…), − [số lượng] + (gõ được "2,5"), **Đơn giá** (giá của khách,
+    "Giá của bạn"), Thành tiền, nút xóa; dưới dòng: ô **"Loại"** để đổi sang loại khác cùng sản phẩm, câu quy đổi "1 tấn = 20 bao", nhãn Còn hàng /
+    Đặt trước.
+  - Khung **Giao tới**: Khách hàng (chỉ đọc), "Công trình / điểm giao" (kèm địa chỉ, người nhận) hoặc "+ Địa chỉ giao mới" (tên, địa chỉ, người nhận,
+    SĐT). Khung "Muốn nhận lúc" (để trống = sớm nhất) và "Ghi chú cho cửa hàng".
+  - Tổng tiền dính dưới (trên thanh menu dưới của điện thoại): Số dòng, **Tạm tính**, nút **Xem lại đơn**; báo thiếu số lượng hợp lệ hoặc địa chỉ.
+- **Xem lại đơn** (popup như "Xác nhận đơn bán"): giao tới, giờ muốn nhận, ghi chú, số dòng, tạm tính, bảng hàng (loại, số lượng × đơn giá, thành
+  tiền), câu "Cửa hàng duyệt đơn rồi báo ngày giao; chưa giữ hàng cho tới khi duyệt" → **Gửi đơn** / "Sửa đơn". Gửi xong mở chi tiết đơn với "Đã gửi
+  đơn". Kết quả chưa rõ (mất mạng) → báo bấm gửi lại, không tạo đơn trùng.
 - Không có mặt hàng nào có giá cho khách: "Cửa hàng chưa mở bán mặt hàng nào cho tài khoản của bạn. Liên hệ cửa hàng để được báo giá."
 ---
 

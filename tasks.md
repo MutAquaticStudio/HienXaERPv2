@@ -25,7 +25,7 @@ QA_SCHEMA_MUTATION: PO_PATCH_ALREADY_APPLIED_NEW_PATCHES_NOT_AUTHORIZED
 QA_APPROVED_PATCH_SHA256: 9e74a7976728bb33b4401d642b79329e5d5ece9ac016e8509c06bbf238bf2f7d
 QA_SCHEMA_APPLY: APPLIED
 PRODUCTION_MUTATION: FORBIDDEN_WITHOUT_OWNER
-ACTIVE_FEEDBACK_BATCH: FB5_20261018  # Claude Code, branch nox/elegant-volta-kr29iz; FB3/FB4 đã lên Production (main e0988e8); FB5 = góp ý Owner 18/10, see FB5 section
+ACTIVE_FEEDBACK_BATCH: FB6_20261018  # Claude Code, branch nox/elegant-volta-kr29iz; FB5 đã lên Production (main 555ce1e); FB6 = cổng khách Đặt hàng như Tạo đơn bán, see FB5 section
 ```
 
 Historical R0–R9 tasks are not repeated here. Their source/evidence lives in implementation.md.
@@ -767,9 +767,10 @@ Quyết định D25 ở đầu Spec.md; giao diện UX-FB5-001. Migration `20261
 | Task | Nội dung | Trạng thái |
 |---|---|---|
 | FB5-P0 | Đơn bán/mua dùng giá mặc định không lưu nháp/xác nhận được: Zod `z.uuid()` từ chối mã `md5(...)::uuid` → `z.guid()` | DONE (Production `e0988e8`) |
-| FB5-U | Quy đổi đơn vị nhập hai chiều + câu "1 Tấn = 20 Bao" (SPEC-UOM-004); giá mua tự tính theo quy đổi, `save_purchase_price_rules` (SPEC-PRI-008) | DONE_LOCAL; native 225 PASS |
-| FB5-V | Xe bỏ căn cứ sức chở; `private.capacity_factor` hai chiều ≤ 3 bước; `vehicle_capacity_by_order`, `vehicle_load_for_deliveries`; hộp lập phiếu báo/khóa khi vượt sức chở (SPEC-DEL-009) | DONE_LOCAL; native 225 PASS |
-| FB5-T | Đơn bán mới có "Khách trả trước" (số tiền, phương thức, quỹ) → phiếu thu ứng trước trong Sổ quỹ; trang đơn hiện đã trả trước / còn phải trả (SPEC-FIN-007) | DONE_LOCAL |
+| FB5-U | Quy đổi đơn vị nhập hai chiều + câu "1 Tấn = 20 Bao" (SPEC-UOM-004); giá mua tự tính theo quy đổi, `save_purchase_price_rules` (SPEC-PRI-008) | DONE (Production `555ce1e`) |
+| FB5-V | Xe bỏ căn cứ sức chở; `private.capacity_factor` hai chiều ≤ 3 bước; `vehicle_capacity_by_order`, `vehicle_load_for_deliveries`; hộp lập phiếu báo/khóa khi vượt sức chở (SPEC-DEL-009) | DONE (Production `555ce1e`) |
+| FB5-T | Đơn bán mới có "Khách trả trước" (số tiền, phương thức, quỹ) → phiếu thu ứng trước trong Sổ quỹ; trang đơn hiện đã trả trước / còn phải trả (SPEC-FIN-007) | DONE (Production `555ce1e`) |
 | FB5-N | "Bước tiếp theo" sau xác nhận đơn bán (phiếu giao, xe/tài xế, đơn mua chờ duyệt, Thu tiền, In, Đơn mới) và đơn mua (Gửi NCC, Nhận hàng, "Nhận đủ"); duyệt ngoại lệ tín dụng chuyển về bằng mã notice | DONE_LOCAL |
-| FB5-E2E | 390 px: bảng Quy tắc tự động dạng thẻ, bảng Điều phối xếp dọc; E2E trên QA | IN_PROGRESS |
-| FB5-REL | QA project (áp migration 220000), PR, CI, merge, Production, deploy, kịch bản QA thủ công | TODO |
+| FB5-E2E | 390 px: bảng Quy tắc tự động dạng thẻ, bảng Điều phối xếp dọc; E2E trên QA | DONE |
+| FB5-REL | QA project (áp migration 220000), PR, CI, merge, Production, deploy, kịch bản QA thủ công | DONE — PR #56 merge `555ce1e`, migration 220000 trên Production (md5 khớp QA), deploy `dpl_6aDAWYt8JkQDD6Fnhxaar9Kw8obB` |
+| FB6 | Cổng khách "Đặt hàng" cùng bộ soạn đơn với "Tạo đơn bán" nội bộ, chọn/đổi hàng cùng loại trên từng dòng (D26; migration `20261018230000_portal_catalog_variants.sql`, native 230) | IN_PROGRESS |
