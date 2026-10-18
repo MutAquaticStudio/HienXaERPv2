@@ -45,3 +45,9 @@ it("splits one supplier price over the material's units by its conversions, in o
  expect(params.rules[1].target_id).not.toBe(ids.target);
 });
 });
+
+it("says an overlapping price already exists instead of asking to reload",async()=>{
+ mocks.rpc.mockRejectedValueOnce(Object.assign(Object.create(PortalRpcError.prototype),{code:"PT409",message:"active_rule_exists",rawMessage:"active_rule_exists"}));
+ const r=await savePurchasePricingRuleAction(undefined,form());
+ expect(r).toEqual({message:"NCC này đã có giá mua đang hiệu lực cho vật tư và đơn vị đó trong khoảng thời gian này. Sửa hoặc ngừng giá cũ, hoặc chọn ngày hiệu lực khác."});
+});

@@ -72,5 +72,8 @@ export async function savePurchasePricingRuleAction(_:PricingState|undefined,for
   }
   revalidate();
   return{success:true,message:mode==="deactivate"?"Đã ngừng giá mua; lịch sử chứng từ giữ nguyên.":"Đã lưu phiên bản giá mua; thông tin trên chứng từ cũ được giữ nguyên."};
- }catch(error){const code=error instanceof PortalRpcError?error.code:"";return{message:code==="PT409"||code==="23505"?"Phiên bản hoặc thao tác đã thay đổi. Tải lại trước khi lưu.":code==="42501"?"Không có quyền quản lý giá mua trong chi nhánh này.":"Chưa xác nhận được kết quả. Giữ nguyên mã thao tác và dữ liệu khi thử lại."};}
+ }catch(error){const code=error instanceof PortalRpcError?error.code:"";
+  // An overlapping price of the same supplier, material and unit is not a stale page: say what to do instead.
+  if(error instanceof PortalRpcError&&error.rawMessage?.includes("active_rule_exists"))return{message:"NCC này đã có giá mua đang hiệu lực cho vật tư và đơn vị đó trong khoảng thời gian này. Sửa hoặc ngừng giá cũ, hoặc chọn ngày hiệu lực khác."};
+  return{message:code==="PT409"||code==="23505"?"Phiên bản hoặc thao tác đã thay đổi. Tải lại trước khi lưu.":code==="42501"?"Không có quyền quản lý giá mua trong chi nhánh này.":"Chưa xác nhận được kết quả. Giữ nguyên mã thao tác và dữ liệu khi thử lại."};}
 }

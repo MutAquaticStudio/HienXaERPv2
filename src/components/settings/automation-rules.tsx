@@ -74,7 +74,7 @@ export function AutomationRules({ overview }: { overview: AutomationOverview }) 
 
     <section className="card list-main">
       <div className="section-head"><h2>Lịch sử gửi</h2><span className="scope-chip">30 lần gần nhất</span></div>
-      {overview.jobs.length ? <div className="table-wrap"><table>
+      {overview.jobs.length ? <div className="table-wrap"><table className="card-table">
         <thead><tr><th scope="col">Lúc</th><th scope="col">Nội dung</th><th scope="col">Kênh</th><th scope="col">Trạng thái</th></tr></thead>
         <tbody>{overview.jobs.map((job) => <tr key={job.id}>
           <td data-label="Lúc">{formatBusinessDateTime(job.created_at)}</td>
