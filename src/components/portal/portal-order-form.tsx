@@ -124,7 +124,7 @@ export function PortalOrderForm({ catalog, operationId: initialOperationId }: { 
 
   return <div className={`doc-editor ${styles.orderEditor}`}>
     <section className="card doc-editor-main" aria-label="Dòng hàng">
-      <MaterialSearchBox ref={searchRef} materials={materials} onPick={pick} label="Tìm hàng" placeholder="Tìm hàng theo tên hoặc mã — bấm để xem danh sách"
+      <MaterialSearchBox ref={searchRef} materials={materials} onPick={pick} label="Tìm hàng" placeholder="Tìm hàng theo tên hoặc mã"
         hint={(material) => { const unit = material.uoms[0]; const price = unit ? prices.get(priceKey(material.id, unit.id)) : null;
           return [price && unit ? `${money(price)} / ${unit.symbol}` : null, inStock.get(material.id) ? "Còn hàng" : "Đặt trước"].filter(Boolean).join(" · "); }} />
       <DocumentLineTable lines={lines} materials={materials} canManagePrice={false} isValidQuantity={isExactEntryQuantity} focusKey={focusKey} focusSeq={focusSeq}

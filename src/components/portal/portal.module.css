@@ -489,12 +489,11 @@
 
 /* D15 customer ordering; FB6: the same editor as the internal sales order, in the portal's colours. */
 .orderEditor { --primary: var(--portal-green); --primary-strong: var(--portal-green-dark); }
-.orderEditor :global(.doc-editor-footer) { z-index: 20; }
 .lineMeta { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.75rem; }
 .lineMeta select { min-width: 8rem; max-width: 100%; }
 /* Phones: the total and "Xem lại đơn" sit just above the bottom menu instead of under it. */
 @media (max-width: 799px) {
-  .orderEditor :global(.doc-editor-footer) { bottom: calc(72px + env(safe-area-inset-bottom)); }
+  .orderEditor :global(.doc-editor-footer) { bottom: calc(88px + env(safe-area-inset-bottom)); }
 }
 .orderLines { display: grid; gap: 0.4rem; margin: 0; padding: 0; list-style: none; }
 .orderLines li { display: flex; justify-content: space-between; gap: 0.8rem; padding: 0.45rem 0; border-bottom: 1px dashed #d6e0d9; }
