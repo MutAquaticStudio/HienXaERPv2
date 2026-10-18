@@ -1350,3 +1350,11 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .portal-account-list > li.row-muted { color: var(--muted); }
 .portal-share { display: grid; gap: 10px; }
 .auth-note { margin: 0; color: var(--muted); font-size: var(--font-size-caption); text-align: center; }
+
+/* F5 automation settings and push toggle. */
+.automation-setup { display: grid; gap: 10px; }
+.automation-checks { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.automation-checks li { padding: 8px 12px; border-radius: 9px; border: 1px solid var(--border); }
+.automation-checks li.ok { border-color: #b7e0c4; background: #ecf8f0; }
+.automation-checks li.warn { border-color: #f3d39b; background: var(--warning-soft); }
+.push-toggle { display: grid; gap: 8px; justify-items: start; }
