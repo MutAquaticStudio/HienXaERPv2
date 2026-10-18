@@ -22,7 +22,9 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   const supabase = await createServerSupabase();
   let request = supabase.from("sales_orders").select("id").eq("branch_id", access.branchId);
   if (list.q) request = request.or(`order_number.ilike.${ilikePattern(list.q)},customer_name_snapshot.ilike.${ilikePattern(list.q)},site_name_snapshot.ilike.${ilikePattern(list.q)}`);
-  request = applyDocumentListScope(request, "commercial_state", list.state);
+  // D15: "Khách đặt · Chờ duyệt" = portal orders still in draft.
+  request = list.state === "PORTAL_WAITING" ? request.eq("order_channel", "CUSTOMER_PORTAL").eq("commercial_state", "DRAFT")
+    : applyDocumentListScope(request, "commercial_state", list.state);
   const { data, error } = await request.order("created_at", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1);
   if (error) throw new Error("Không thể tải đơn bán.");
   const hasNext = (data?.length ?? 0) > CORE_LIST_PAGE_SIZE;
@@ -46,7 +48,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
     <ActionNotice notice={query.notice} error={query.error} />
     <AutoFilterForm aria-label="Bộ lọc đơn bán">
       <label>Tìm kiếm<input type="search" name="q" defaultValue={list.q} placeholder="Mã đơn, tên khách hoặc công trình" /></label>
-      <label>Trạng thái đơn<select name="state" defaultValue={list.state}><option value="">Đang làm việc</option><option value="ALL">Tất cả</option><option value="DRAFT">Nháp</option><option value="CONFIRMED">Đã xác nhận</option><option value="CANCELLED">Đã hủy</option></select></label>
+      <label>Trạng thái đơn<select name="state" defaultValue={list.state}><option value="">Đang làm việc</option><option value="ALL">Tất cả</option><option value="PORTAL_WAITING">Khách đặt · Chờ duyệt</option><option value="DRAFT">Nháp</option><option value="CONFIRMED">Đã xác nhận</option><option value="CANCELLED">Đã hủy</option></select></label>
       {isFiltered && <Link className="code-link" href="/admin/orders">Xóa lọc</Link>}
     </AutoFilterForm>
     <section className="card">

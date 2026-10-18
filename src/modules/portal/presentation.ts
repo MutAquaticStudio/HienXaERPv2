@@ -49,3 +49,16 @@ export function soldQuantityLabel(base: string, line: { unit: string; sold_unit?
   const sold = new Decimal(base).mul(denominator).div(numerator).toDecimalPlaces(3, Decimal.ROUND_DOWN).toFixed();
   return `${format(sold)} ${line.sold_unit} (${format(base)} ${line.unit})`;
 }
+
+/** D15: how the customer sees an order — "Chờ duyệt" while a portal order waits, then approved / delivering / delivered. */
+export function portalOrderStateLabel(order: { channel?: string; state?: string; fulfillment_state?: string }) {
+  if (order.state === "DRAFT") return order.channel === "CUSTOMER_PORTAL" ? "Chờ duyệt" : "Đang soạn";
+  if (order.state === "CANCELLED") return "Đã hủy";
+  if (order.state === "CONFIRMED" || order.state === "CLOSED") {
+    if (order.fulfillment_state === "FULFILLED") return "Đã giao";
+    if (order.fulfillment_state === "PARTIAL") return "Đang giao";
+    if (order.fulfillment_state === "CLOSED_REMAINDER") return "Đã giao (chốt phần còn lại)";
+    return order.channel === "CUSTOMER_PORTAL" ? "Đã duyệt" : "Đã xác nhận";
+  }
+  return salesStateLabel(order.state);
+}

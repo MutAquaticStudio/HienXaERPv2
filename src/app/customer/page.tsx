@@ -9,16 +9,28 @@ import styles from "@/components/portal/portal.module.css";
 import { getCustomerPortalSnapshot, requestQuotationChangeAction } from "@/modules/portal/actions";
 
 
-export default async function CustomerHomePage() {
+const notices: Record<string, string> = {
+  registered: "Đã tạo tài khoản. Cửa hàng đã nhận thông tin của bạn — bạn có thể đặt hàng ngay.",
+  "password-changed": "Đã đổi mật khẩu.",
+  "order-not-allowed": "Tài khoản của bạn chỉ theo dõi giao nhận, không đặt hàng được. Liên hệ cửa hàng nếu cần đặt hàng.",
+};
+
+export default async function CustomerHomePage({ searchParams }: { searchParams: Promise<{ notice?: string }> }) {
+  const notice = notices[(await searchParams).notice ?? ""];
   const snapshot = await getCustomerPortalSnapshot();
+  const canOrder = snapshot.membership_role !== "RECEIVER";
+  const waiting = snapshot.orders.filter((order) => order.channel === "CUSTOMER_PORTAL" && order.state === "DRAFT").length;
   const canRespondToQuote = snapshot.quotation?.can_respond === true;
   return (
     <div className={styles.page}>
+      {notice && <p className={styles.status} role="status">{notice}</p>}
       <header className={styles.hero}>
         <p className={styles.heroEyebrow}>{snapshot.customer.code}</p>
         <h1>{snapshot.customer.display_name}</h1>
         <p>{QUOTATIONS_ENABLED ? "Báo giá cần xử lý, đơn hàng, giao nhận" : "Đơn hàng, giao nhận"} và công nợ theo đúng vai trò truy cập.</p>
+        {canOrder && <div className={styles.actions}><Link className={styles.button} href="/customer/orders/new">Đặt hàng</Link></div>}
       </header>
+      {waiting > 0 && <p className={styles.status} role="status">{waiting} đơn đang chờ cửa hàng duyệt. <Link className={styles.link} href="/customer/orders">Xem đơn</Link></p>}
 
       {QUOTATIONS_ENABLED && snapshot.quotation ? (
         <section className={styles.card + " " + styles.cardAccent}>

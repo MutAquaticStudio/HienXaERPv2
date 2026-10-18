@@ -69,6 +69,14 @@ async function LowStockAlert({ access }: { access: DashboardAccess }) {
   return Number(count ?? 0) > 0 ? <Link className="quality-callout" href="/admin/inventory?stock=low">Có {count} cảnh báo tồn kho dưới ngưỡng. Mở danh sách và tạo đơn mua nháp khi cần.</Link> : null;
 }
 
+async function PortalOrdersAlert({ access }: { access: DashboardAccess }) {
+  if (!access.permissions.has("orders.confirm")) return null;
+  const supabase = await createServerSupabase();
+  const { count } = await supabase.from("sales_orders").select("id", { count: "exact", head: true }).eq("branch_id", access.branchId)
+    .eq("order_channel", "CUSTOMER_PORTAL").eq("commercial_state", "DRAFT");
+  return Number(count ?? 0) > 0 ? <Link className="quality-callout" href="/admin/orders?state=PORTAL_WAITING">Có {count} đơn khách tự đặt đang chờ duyệt. Mở danh sách để duyệt hoặc từ chối.</Link> : null;
+}
+
 async function DashboardFilters({ access, query, from, to }: { access: DashboardAccess; query: DashboardQuery; from: string; to: string }) {
   const supabase = await createServerSupabase();
   const customerSearch = query.customerSearch?.trim().slice(0, 120) ?? "";
@@ -145,6 +153,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
   const snapshot = (snapshotResult.data ?? fallback) as Snapshot;
 
   return <><header className="page-heading" data-uat-dashboard-request={typeof query.uatTimingNonce === "string" && /^[a-zA-Z0-9-]{1,80}$/.test(query.uatTimingNonce) ? query.uatTimingNonce : ""}><div><p className="eyebrow">Tổng quan kinh doanh</p><h1>Tổng quan</h1><p className="lede">Doanh thu theo kỳ và công nợ tại thời điểm đã chọn. Thu tiền không làm tăng doanh thu lần nữa.</p></div>{access.permissions.has("finance.ar.read") && <Link className="button button-secondary" href="/admin/cashbook">Mở sổ tiền</Link>}</header>
+    <Suspense fallback={null}><PortalOrdersAlert access={access} /></Suspense>
     <Suspense fallback={null}><LowStockAlert access={access} /></Suspense>
     <Suspense fallback={<section className="card card-pad"><p className="muted">Đang tải bộ lọc...</p></section>}><DashboardFilters access={access} query={query} from={from} to={to} /></Suspense>
     <p className="report-cutoff">Kỳ {formatBusinessDate(instant(from))} đến trước {formatBusinessDate(instant(to))} · số dư tính đến {formatBusinessDateTime(effectiveCutoff)}</p>

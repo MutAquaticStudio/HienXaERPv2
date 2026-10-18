@@ -12,6 +12,7 @@ import {
   LogOut,
   MessageSquare,
   MapPin,
+  ShoppingCart,
   UserRound,
 } from "lucide-react";
 
@@ -29,6 +30,7 @@ const workerLinks = [
 
 const customerLinks = [
   { href: "/customer", label: "Tổng quan", icon: House },
+  { href: "/customer/orders/new", label: "Đặt hàng", icon: ShoppingCart },
   ...(QUOTATIONS_ENABLED ? [{ href: "/customer/quotations", label: "Báo giá", icon: ClipboardList }] : []),
   { href: "/customer/orders", label: "Đơn hàng", icon: BriefcaseBusiness },
   { href: "/customer/debts", label: "Công nợ", icon: CircleDollarSign },
@@ -39,21 +41,26 @@ const customerLinks = [
 export function PortalShell({
   audience,
   canViewDebt,
+  canOrder,
   children,
 }: {
   audience: "worker" | "customer";
   canViewDebt?: boolean;
+  /** D15: owners and finance contacts order on the portal; receivers only follow deliveries. */
+  canOrder?: boolean;
   children: ReactNode;
 }) {
   const pathname = usePathname();
   // Sign-in, registration and the forced password change are full-screen auth pages without the portal menu.
   if (["/login", "/register", "/change-password"].some((page) => pathname.endsWith(page))) return children;
-  const links = audience === "worker" ? workerLinks : customerLinks.filter((link) => canViewDebt || link.href !== "/customer/debts");
+  const links = audience === "worker" ? workerLinks : customerLinks.filter((link) => (canViewDebt || link.href !== "/customer/debts") && (canOrder || link.href !== "/customer/orders/new"));
   const root = audience === "worker" ? "/work" : "/customer";
   const scope = audience === "worker" ? "Cổng nhân sự" : "Cổng khách hàng";
 
   const nav = (compact = false) => links.map(({ href, label, icon: Icon }) => {
-    const active = pathname === href || (href !== root && pathname.startsWith(href + "/"));
+    const within = (target: string) => pathname === target || (target !== root && pathname.startsWith(target + "/"));
+    // The deepest matching link wins ("Đặt hàng" on /customer/orders/new, not "Đơn hàng" as well).
+    const active = within(href) && !links.some((other) => other.href.length > href.length && within(other.href));
     return (
       <Link className={styles.navLink + " " + (active ? styles.navLinkActive : "")} href={href} key={href}>
         <Icon aria-hidden size={compact ? 20 : 19} strokeWidth={2.2} />
