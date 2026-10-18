@@ -212,3 +212,16 @@ it.each([false,true])("restores connected fallback after revalidation before nat
   expect(document.activeElement).not.toBe(document.body);
   expect(savePurchasePricingRuleAction).toHaveBeenCalledTimes(1);
 });
+
+it("offers only the chosen material's units and splits a new purchase price over them by default (Owner 18/10)", async () => {
+  const options = { customers: [], groups: [], suppliers: [{ id: "s1", name: "NCC A" }], materials: [{ id: "m1", name: "Xi măng" }, { id: "m2", name: "Thép" }],
+    units: [{ id: "bao", name: "Bao" }, { id: "tan", name: "Tấn" }, { id: "cay", name: "Cây" }], materialUnits: { m1: ["tan", "bao"], m2: ["cay"] } };
+  render(<PricingRuleEditor purchase options={options} command={{ targetId: "00000000-0000-4000-8000-000000000002", operationId: "00000000-0000-4000-8000-000000000003" }} />);
+  const unit = screen.getByLabelText("Đơn vị giá *");
+  expect(Array.from((unit as HTMLSelectElement).options).map((option) => option.text)).toEqual(["Chọn...", "Bao", "Tấn", "Cây"]);
+  fireEvent.change(screen.getByLabelText("Vật tư *"), { target: { value: "m1" } });
+  expect(Array.from((unit as HTMLSelectElement).options).map((option) => option.text)).toEqual(["Chọn...", "Bao", "Tấn"]);
+  const split = screen.getByRole("checkbox", { name: /Tự tính giá cho các đơn vị khác/ });
+  expect(split).toBeChecked();
+  expect(split).toHaveAttribute("name", "splitUnits");
+});

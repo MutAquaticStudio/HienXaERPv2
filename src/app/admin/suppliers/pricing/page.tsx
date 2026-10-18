@@ -11,6 +11,18 @@ import type { PriceOptions, PurchasePriceRule } from "@/modules/pricing/editor";
 import { PricingRuleList, type PriceRuleRow } from "@/modules/pricing/rule-list";
 import { formatVnd,vnd } from "@/lib/core/money";
 import { AutoFilterForm } from "@/components/ui/auto-filter-form";
+/** Base unit and settlement conversions of each material, so "Đơn vị giá" only offers units the material is counted in. */
+async function materialUnits(db:Awaited<ReturnType<typeof createServerSupabase>>,ids:string[]):Promise<Record<string,string[]>|undefined>{
+ const [materials,conversions]=await Promise.all([
+  db.from("materials").select("id,base_uom_id").in("id",ids).limit(1000),
+  db.from("material_uom_conversions").select("material_id,from_uom_id,to_uom_id").in("material_id",ids).eq("active",true).eq("settlement_allowed",true).limit(5000),
+ ]);
+ if(materials.error||conversions.error)return undefined;
+ const units:Record<string,string[]>={};
+ for(const m of (materials.data??[]) as {id:string;base_uom_id:string}[])units[m.id]=[m.base_uom_id];
+ for(const c of (conversions.data??[]) as {material_id:string;from_uom_id:string;to_uom_id:string}[])if(units[c.material_id]?.[0]===c.to_uom_id&&!units[c.material_id].includes(c.from_uom_id))units[c.material_id].push(c.from_uom_id);
+ return units;
+}
 export default async function PurchasePricingPage({searchParams}:{searchParams:Promise<{q?:string;supplier?:string;material?:string;state?:string}>}){
  const access=await requireInternalAccess(),query=await searchParams;
  const now=await readPricingClock(),instant=new Date(now).toISOString();
@@ -18,6 +30,7 @@ export default async function PurchasePricingPage({searchParams}:{searchParams:P
  if(!manage&&!read)throw new AppError({code:"FORBIDDEN",message:"Không có quyền bảng giá mua.",status:403});
  const db=await createServerSupabase(),empty:PriceOptions={customers:[],groups:[],materials:[],units:[],suppliers:[]};
  const options=manage?await portalRpc<PriceOptions>(db,"purchase_pricing_config_options",{target_branch_id:access.branchId}):empty;
+ if(manage&&options.materials.length)options.materialUnits=await materialUnits(db,options.materials.map(m=>m.id));
  let request=db.from("purchase_price_rules").select("id,supplier_id,material_id,purchase_uom_id,unit_cost_vnd::text,version,source_type,effective_from,effective_to,active").eq("branch_id",access.branchId).order("effective_from",{ascending:false}).order("id").limit(100);
  if(query.supplier)request=request.eq("supplier_id",query.supplier);
  if(query.material)request=request.eq("material_id",query.material);

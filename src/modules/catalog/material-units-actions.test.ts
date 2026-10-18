@@ -44,3 +44,13 @@ it("explains database refusals in Vietnamese and keeps an unknown outcome retrya
   m.rpc.mockRejectedValueOnce(new Error("socket hang up"));
   expect(await saveMaterialUnitsAction(input)).toMatchObject({ success: false, outcomeUnknown: true });
 });
+
+it("stores 1 tấn = 20 bao as 1 bao = 1/20 tấn and refuses a ratio that does not divide (Owner 18/10)", async () => {
+  const input = { operationId: ids.op, materialId: ids.material, reason: "Bán theo bao", effectiveDate: future, stopConversionIds: [], prices: [],
+    addUnits: [{ uomId: ids.bao, ratio: "20", direction: "BASE_TO_UNIT", type: "PACKAGING", sourceNote: "" }] };
+  expect((await saveMaterialUnitsAction(input)).success).toBe(true);
+  expect(m.rpc.mock.calls[0][1].add_units).toEqual([{ uom_id: ids.bao, numerator: "1", denominator: "20", conversion_type: "PACKAGING", source_note: null }]);
+  const uneven = await saveMaterialUnitsAction({ ...input, addUnits: [{ ...input.addUnits[0], ratio: "3" }] });
+  expect(uneven.message).toContain("không chia hết");
+  expect(m.rpc).toHaveBeenCalledOnce();
+});
