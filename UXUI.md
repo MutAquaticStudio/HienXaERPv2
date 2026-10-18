@@ -6,6 +6,8 @@
 >
 > Quyết định Owner 17/10/2026 (D18, `FB3`): popup sửa danh mục có "Ngừng dùng / Dùng lại" và "Xóa" (xác nhận lại; đã có chứng từ thì báo không xóa được); ô tiền hiện dấu chấm phân cách khi gõ (60000 → 60.000); ô "Tìm vật tư" bấm vào là xổ danh sách theo nhóm (nút ▾), ô chọn khách/công trình/NCC có nút ▾; đơn bán: bấm đơn giá mở popup "Đơn giá · Giảm giá [VND | %] · Giá bán", khung tổng có "Giảm giá đơn" và "Khách cần trả" (SPEC-PRI-007).
 
+> Quyết định Owner 17/10/2026 (D14–D17, D19, D22, C1, C2, F5 — triển khai 18/10/2026, xem đầu Spec.md): chuông thông báo trên thanh trên cùng nội bộ (UX-NOTIFY-001); trang đơn có khung "Nguồn hàng" do hệ thống tự phân, trang Điều phối theo tài xế (UX-DISPATCH-001); "Gửi NCC qua Zalo" trên đơn mua; cổng khách có đăng ký, đăng nhập bằng số điện thoại, đổi mật khẩu tạm và "Đặt hàng" (UX-CUST-008/009); Khách hàng 360 có khung "Tài khoản cổng khách"; Cài đặt → "Quy tắc tự động" và "Bật thông báo trên máy này" (UX-AUTO-001).
+
 # UXUI.md — HIỀN XA ERP V2
 
 > **Bộ tài liệu:** `HX-V2-DOCSET-4.4`  
@@ -1078,6 +1080,15 @@ Detail:
 - timeline;
 - source.
 
+**FB3 Phần A (18/10/2026, SPEC-DEL-007, SPEC-WORKPORTAL-004):** hộp "Lập phiếu giao" trên trang đơn mở cho người có quyền lập phiếu (vai trò
+Điều phối dùng được). Hộp có hai lựa chọn **Giao ngay** (mặc định) │ **Hẹn ngày giờ** (ô ngày giờ, mặc định ngày khách yêu cầu nếu chưa qua); khung
+phân xe mở sẵn, chỉ có một người/một xe thì chọn sẵn; dòng thiếu tồn hoặc vượt phần còn phải giao được đánh dấu ngay tại dòng, nút gửi mờ, có link
+"Đặt NCC giao thẳng" cho người có quyền mua hàng. Hộp ghi "Việc tự hiện ở cổng thợ của người giao. Mỗi điểm giao tính N phút"; người/xe đang bận
+thì Giao ngay tự xếp ngay sau việc trước; hẹn giờ trùng thì báo "Giờ trống gần nhất: …" kèm nút "Hẹn lúc …". Lập xong mở trang phiếu giao kèm
+thông báo. Phân xe xong là việc tự sang cổng thợ — khung cổng thợ trên phiếu ghi "Đã giao việc cho <tên> · <giờ>"
+hoặc chỉ rõ còn thiếu tên/SĐT/địa chỉ người nhận. Trang phiếu có khung **"Ảnh giao hàng"**: lưới ảnh thu nhỏ, bấm để phóng to; bước xác minh dùng
+cùng lưới thay các nút "Mở bằng chứng".
+
 ---
 
 # UX-400 — `/admin/routes` và tracking
@@ -1123,6 +1134,12 @@ Detail:
 - compensable;
 - proof;
 - AR link.
+
+**Loại dịch vụ (D23, 18/10/2026, SPEC-SRV-003):** trang Dịch vụ có link "Loại dịch vụ" (`/admin/service-jobs/types`, danh mục popup như UX-160:
+Mã, Tên, Đơn vị tính có gợi ý chuyến/giờ/ngày/ca/m³/km, Đơn giá mặc định, Cần xe / Cần máy / Không, Xóa / Ngừng dùng). Form lập lịch: ô "Loại dịch vụ"
+chọn từ danh sách, "+ Thêm loại" mở popup ngay tại chỗ; chọn xong hiện đơn vị và đơn giá, chỉ hiện ô Xe hoặc Máy theo loại. Chi tiết việc hiện đơn
+giá; lúc xác minh, dưới ô "Giá trị tính khách" có dòng "Đơn giá …/đơn vị · gợi ý …" (khối lượng tính khách × đơn giá) và nút "Dùng giá gợi ý" khi
+người xác minh đã gõ số khác (vẫn sửa được).
 
 ---
 
@@ -1300,6 +1317,9 @@ trò: bảng (Vai trò, Loại Vai trò mẫu/Tùy biến/Quản trị, Số quy
 hàng, Kho hàng, Giao hàng, Tài chính, Nhân công, Khác (ô nhóm chọn cả nhóm; quyền mình không có bị khóa), cảnh báo "đang dùng cho N nhân viên",
 "Ngừng dùng vai trò này" chỉ khi không ai dùng; vai trò mẫu chỉ xem.
 
+**Vận hành giao hàng (D21, 18/10/2026):** Cài đặt có khung "Vận hành giao hàng" với ô "Thời gian mỗi điểm giao (phút)" (5–720, mặc định 60), nút
+"Lưu cài đặt giao hàng" (kết quả chưa rõ: "Lưu lại đúng thao tác"). Ô lịch trên trang phiếu giao điền sẵn giờ kết thúc dự kiến theo số phút này.
+
 ---
 
 # UX-510 — `/admin/audit`
@@ -1375,6 +1395,15 @@ Không yêu cầu tài xế bấm nút định kỳ khi đang lái.
 
 Touch target >=48px; primary ~56px.
 
+## UX-WORK-007 — "Đã giao" kèm ảnh (FB3 A3, 18/10/2026, SPEC-WORKPORTAL-004)
+
+- Trang chủ: **Việc hôm nay** rồi **Sắp tới**, xếp theo giờ hẹn; thẻ việc có giờ, địa chỉ, lượng theo đơn vị bán ("60 bao (3.000 kg)").
+- Chi tiết việc giao hàng: nút chính **"Đã giao · chụp ảnh"** mở camera; ảnh hiện thành lưới (Đang tải / Đã tải / Lỗi tải, nút Xóa, "+ Chụp thêm", tối
+  đa 5); có ảnh thì nút thành **"Xác nhận đã giao (N ảnh)"**. Ô "Người nhận" điền sẵn từ phiếu. Link phụ **"Giao thiếu / Không giao được"** mở ô số
+  lượng từng dòng (theo đơn vị bán) và "Lý do / ghi chú"; giao thiếu vẫn cần ảnh, không giao được cần lý do.
+- Kho chưa bàn giao hàng lên xe: nút mờ "Chờ kho bàn giao hàng lên xe" và hướng dẫn tải lại.
+- Gửi xong quay về trang chủ với thông báo "Đã báo giao hàng"; mất kết nối thì ảnh đã tải vẫn giữ, bấm gửi lại chỉ kiểm tra, không ghi hai lần.
+
 ---
 
 # UX-700 — `/customer`
@@ -1414,6 +1443,10 @@ Không để user accept revision cũ nếu đã superseded.
 
 ## UX-CUST-004 — Order
 
+Đơn khách tự đặt (D15): nhãn trạng thái "Chờ duyệt / Đã duyệt / Đang giao / Đã giao / Đã hủy"; chi tiết có khung "Hàng đặt" (tên, số lượng
+theo đơn vị bán, giá và thành tiền chỉ cho Chủ tài khoản/Kế toán), "Giao tới", "Muốn nhận", ghi chú, lý do hủy; còn chờ duyệt thì có "Hủy đơn"
+(mở ô lý do).
+
 Hiển thị:
 - order summary;
 - delivery progress;
@@ -1439,6 +1472,26 @@ Không render:
 - payroll;
 - internal notes.
 
+
+## UX-CUST-008 — Đăng ký, đăng nhập bằng số điện thoại, đổi mật khẩu tạm (D14, C1, 18/10/2026)
+
+- Ba trang đăng nhập: ô **"Email hoặc số điện thoại"** (bàn phím chữ, không tự viết hoa). Trang đăng nhập khách có dòng "Chưa có tài khoản?
+  **Đăng ký tài khoản**"; sau khi xác nhận email, trang đăng nhập báo "Email đã được xác nhận. Đăng nhập để bắt đầu đặt hàng."
+- **Đăng ký** (`/customer/register`, toàn màn như đăng nhập): Họ tên hoặc tên cửa hàng, Số điện thoại, Địa chỉ giao hàng, Email, Mật khẩu,
+  Nhập lại mật khẩu → "Đăng ký". Cần xác nhận email thì hiện "Mở email xác nhận rồi đăng nhập"; không thì vào thẳng cổng khách với thông báo
+  "Đã tạo tài khoản". Ghi chú "Không có email? Gọi cửa hàng để được tạo tài khoản bằng số điện thoại."
+- **Đổi mật khẩu** (`/customer/change-password`, `/work/change-password`): lần đầu đăng nhập bằng mật khẩu tạm, mọi trang của cổng đều dẫn tới
+  đây cho tới khi đổi xong; hai ô Mật khẩu mới / Nhập lại → "Đổi mật khẩu và tiếp tục"; có "Đăng xuất".
+
+## UX-CUST-009 — Đặt hàng (D15, 18/10/2026)
+
+- Menu và trang chủ có **"Đặt hàng"** cho Chủ tài khoản và Kế toán (Người nhận hàng không thấy). Trang chủ báo "N đơn đang chờ cửa hàng duyệt".
+- `/customer/orders/new` (thiết kế cho điện thoại): ô "Tìm hàng" dính trên cùng; hàng nhóm theo nhóm vật tư; mỗi thẻ: tên, "85.000 ₫ / bao (50 kg)",
+  nhãn **Còn hàng** hoặc **Đặt trước**, bộ − [số lượng] + (gõ được số lẻ "2,5"). Khung "Giao tới": chọn công trình đã có hoặc "Địa chỉ mới" (tên, địa
+  chỉ, người nhận, SĐT); "Muốn nhận lúc" (để trống = sớm nhất); "Ghi chú cho cửa hàng". Thanh dưới dính: "N mặt hàng · tạm tính" + **Xem lại đơn**.
+- **Xem lại đơn**: dòng hàng, tạm tính, giao tới, giờ muốn nhận, ghi chú, câu "Cửa hàng duyệt đơn rồi báo ngày giao; chưa giữ hàng cho tới khi
+  duyệt" → **Gửi đơn** / "Sửa đơn". Gửi xong mở chi tiết đơn với "Đã gửi đơn". Kết quả chưa rõ (mất mạng) → báo bấm gửi lại, không tạo đơn trùng.
+- Không có mặt hàng nào có giá cho khách: "Cửa hàng chưa mở bán mặt hàng nào cho tài khoản của bạn. Liên hệ cửa hàng để được báo giá."
 ---
 
 # UX-800 — Responsive
@@ -1492,6 +1545,46 @@ AUTHORIZATION
 Sensitive field không được fetch nếu không có quyền.
 
 ---
+
+# UX-NOTIFY-001 — Chuông thông báo (FB3 R3, 18/10/2026, SPEC-SEC-006)
+
+Thanh trên cùng nội bộ có chuông với số chưa đọc; bấm mở danh sách 10 thông báo mới nhất (tiêu đề, nội dung ngắn, giờ; chưa đọc in đậm), bấm một
+dòng là đánh dấu đã đọc và mở trang liên quan; "Xem tất cả" tới `/admin/notifications` (phân trang "Cũ hơn", "Đánh dấu đã đọc hết"). Chỉ thấy thông
+báo đúng quyền và chi nhánh. Trang Thông báo có khung **"Thông báo trên điện thoại"** với nút "Bật/Tắt thông báo trên máy này" (UX-AUTO-001).
+
+# UX-DISPATCH-001 — Nguồn hàng, Điều phối, Gửi NCC (D17, D19, D22, C2, 18/10/2026)
+
+- Trang đơn bán: khung **"Nguồn hàng"** liệt kê từng dòng: "Kho chính 50 bao ✓" / "Kho chính 30 + NCC A giao thẳng 20 · đơn mua PO-… chờ duyệt
+  (tách vì rẻ hơn)" / "Thiếu nguồn 20 bao — chưa có giá mua"; nút "Tự phân nguồn" cho đơn chưa phân; đơn chưa xác nhận hiện bản xem trước.
+- Đơn mua đã xác nhận: khung **"Gửi NCC"**: "Gửi NCC qua Zalo" (điện thoại: bảng chia sẻ có PDF; máy tính: chép nội dung, tải PDF, mở Zalo NCC),
+  "Chép nội dung", "Gửi email", "Mở Zalo NCC", "Đã gửi"; dòng trạng thái "Đã gửi NCC 10:30 · Zalo" / "Chưa gửi NCC". Danh sách đơn mua có cột "Gửi NCC".
+  Phiếu NCC giao thẳng có nút **"NCC đã giao"** (lượng nhận, người nhận, ảnh).
+- **Điều phối** (`/admin/dispatch?day=`): chọn ngày; hàng "Chờ điều phối" (phiếu, khách, giờ cần, lý do chưa chia) với "Áp dụng" khi có gợi ý; nút
+  **"Tự chia việc"**; mỗi tài xế một cột: xe, số phiếu, dòng thời gian các phiếu theo giờ (giờ, mã phiếu, khách, trạng thái); 390 px thành danh sách.
+- Cổng thợ: việc đã nhận chưa bắt đầu có link **"Từ chối việc"** (bắt nhập lý do) → về trang chủ với "Đã từ chối việc, điều phối sẽ chia lại".
+
+# UX-CUS-ACCOUNT-001 — Tài khoản cổng khách trên Khách hàng 360 (D14, 18/10/2026)
+
+Thẻ "Thông tin & công trình" có khung **"Tài khoản cổng khách"**: mỗi tài khoản hiện tên đăng nhập (số điện thoại cho tài khoản SĐT), quyền, "Đăng
+nhập gần nhất …" / "Chưa đăng nhập lần nào", "Chưa đổi mật khẩu tạm", "Đã thu hồi". Người có quyền quản lý khách: **"+ Tạo tài khoản"** (popup: Email
+hoặc số điện thoại — điền sẵn SĐT khách, Mật khẩu tạm — tạo sẵn 10 ký tự dễ đọc, nút "Tạo mật khẩu khác", Quyền của tài khoản), xong hiện nội dung gửi
+khách (link đăng nhập, tên đăng nhập, mật khẩu tạm) với "Chép nội dung" và "Mở Zalo khách"; mỗi tài khoản có "Đặt lại mật khẩu" và "Thu hồi" (lý do).
+Khách tự đăng ký có nhãn **"Tự đăng ký"** cạnh mã khách; trùng số điện thoại với khách khác thì băng vàng "Có thể trùng khách: …" kèm link.
+Trang đơn bán của đơn khách tự đặt: băng vàng "Đơn khách tự đặt trên cổng khách — chờ duyệt" + ghi chú của khách; nút chính "Duyệt đơn (giữ hạn mức,
+tự phân nguồn)"; danh sách đơn có lọc "Khách đặt · Chờ duyệt"; Tổng quan nhắc "Có N đơn khách tự đặt đang chờ duyệt".
+
+# UX-AUTO-001 — Quy tắc tự động và thông báo trên điện thoại (F5, 18/10/2026, SPEC-SEC-006)
+
+- Cài đặt có thẻ **"Tự động hóa" → Quy tắc tự động** (`/admin/settings/automation`, quyền quản trị):
+  - Khung **"Kênh gửi"**: 4 dòng xanh/vàng — gửi nền (pg_net, pg_cron), thông báo điện thoại và email (kèm số máy đã bật), Telegram, Webhook.
+  - Bảng **Quy tắc**: Quy tắc │ Khi │ Nếu │ Thì gửi │ Sửa · Gửi thử · Xóa; quy tắc tắt hiện mờ "Đang tắt". "+ Thêm quy tắc" mở popup: Tên, **Khi**
+    (danh sách sự kiện tiếng Việt), **Nếu** (ô tiền "tổng tiền từ" với sự kiện có tiền; ô tích "Chỉ khi giao thiếu hoặc không giao được" với kết quả
+    giao), **Thì gửi qua** (điện thoại người phụ trách / Telegram / Email / Webhook), **Nơi nhận** (gợi ý cách lấy mã nhóm Telegram, định dạng webhook),
+    "Đang dùng".
+  - Bảng **Lịch sử gửi** (30 lần gần nhất): lúc, nội dung + tên quy tắc, kênh, trạng thái "Chờ gửi / Đang gửi / Đã gửi / Gửi lại sau · lần n / Ngừng
+    gửi" kèm lý do (ví dụ "Chưa cấu hình Telegram").
+- **"Bật thông báo trên máy này"** (trang Thông báo nội bộ, Hồ sơ cổng thợ): nút bật/tắt và một dòng trạng thái; iPhone chưa thêm vào màn hình chính
+  thì hướng dẫn "Chia sẻ → Thêm vào MH chính"; trình duyệt chặn thì hướng dẫn cho phép trong cài đặt.
 
 # UX-830 — Performance-aware UX
 

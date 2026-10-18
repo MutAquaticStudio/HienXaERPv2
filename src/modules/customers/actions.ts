@@ -15,7 +15,7 @@ const customerInput = z.object({
   phone: z.string().trim().max(60).optional(),
 });
 const siteInput = z.object({
-  customerId: z.uuid(),
+  customerId: z.guid(),
   code: z.string().trim().min(2).max(32),
   name: z.string().trim().min(2).max(160),
   address: z.string().trim().min(3).max(500),

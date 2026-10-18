@@ -1294,3 +1294,67 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .activation-link { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius-md, 10px); background: var(--surface-muted, var(--surface)); }
 .activation-link input { width: 100%; font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.85rem; }
 .activation-link .form-actions { flex-wrap: wrap; }
+
+/* A3b: delivery photos as thumbnails; a tap opens the photo large. */
+.photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.photo-grid li { display: grid; gap: 4px; }
+.photo-thumb { display: block; padding: 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--surface-soft); cursor: zoom-in; aspect-ratio: 1; }
+.photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo-file { display: grid; place-items: center; font-weight: 700; color: var(--text); text-decoration: none; cursor: pointer; }
+.photo-large { display: block; width: 100%; max-height: 70vh; object-fit: contain; border-radius: 10px; background: var(--surface-soft); }
+
+/* R3 notifications: the bell in the top bar and the list it opens. */
+.notification-bell { position: relative; margin-left: auto; }
+.notification-bell + .identity { margin-left: 0; }
+.notification-button { position: relative; display: grid; min-width: 44px; min-height: 44px; place-items: center; border: 1px solid var(--border); border-radius: 50%; color: var(--text); background: var(--surface); cursor: pointer; }
+.notification-count { position: absolute; top: -4px; right: -4px; min-width: 20px; padding: 1px 5px; border-radius: 10px; color: #fff; background: var(--danger); font-size: 12px; font-weight: 700; line-height: 18px; text-align: center; }
+.notification-panel { position: absolute; top: calc(100% + 8px); right: 0; z-index: 30; display: grid; width: min(380px, calc(100vw - 32px)); max-height: min(70vh, 560px); gap: 8px; overflow: auto; padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow); }
+.notification-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.notification-list { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.notification-item > a, .notification-item > div { display: grid; gap: 2px; padding: 8px 10px; border-radius: 8px; color: inherit; text-decoration: none; }
+.notification-item > a:hover, .notification-item > a:focus-visible { background: var(--surface-soft); }
+.notification-item.unread .notification-title { font-weight: 700; }
+.notification-title { display: flex; align-items: center; gap: 6px; }
+.notification-dot { width: 8px; height: 8px; flex-shrink: 0; border-radius: 50%; background: var(--primary); }
+.notification-body, .notification-time { color: var(--muted); font-size: var(--font-size-caption); }
+.notification-all { justify-self: center; padding: 4px; }
+@media (max-width: 760px) { .notification-panel { position: fixed; top: 64px; right: 16px; left: 16px; width: auto; } }
+
+/* D19 "Nguồn hàng" on the order page. */
+.order-sourcing { display: grid; gap: 10px; }
+.sourcing-lines { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.sourcing-lines > li { display: grid; gap: 4px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; }
+.sourcing-line-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.sourcing-sources { display: grid; gap: 2px; margin: 0; padding-left: 18px; }
+
+/* D22 dispatch day board. */
+.dispatch-day { display: grid; gap: 12px; }
+.dispatch-waiting { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-soft); }
+.dispatch-list, .dispatch-timeline { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.dispatch-list > li { display: grid; gap: 4px; }
+.dispatch-drivers { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.dispatch-driver { display: grid; gap: 8px; align-content: start; padding: 12px; border: 1px solid var(--border); border-radius: 10px; }
+.dispatch-driver header { display: grid; gap: 2px; }
+.dispatch-timeline > li { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; align-items: center; padding: 6px 0; border-top: 1px solid var(--border); }
+.dispatch-timeline > li > span:nth-of-type(2), .dispatch-timeline > li > .status { grid-column: 2; }
+@media (max-width: 760px) { .dispatch-drivers { grid-template-columns: 1fr; } }
+.send-supplier-text { margin: 6px 0 0; padding: 8px; overflow-x: auto; border-radius: 8px; background: var(--surface-soft); font: inherit; font-size: var(--font-size-caption); white-space: pre-wrap; }
+
+/* D14 customer portal accounts and the auth pages around them. */
+.form-stack { display: grid; gap: 14px; }
+.inline-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.inline-actions > input { flex: 1 1 180px; }
+.portal-accounts { display: grid; gap: 12px; align-content: start; }
+.portal-account-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.portal-account-list > li { display: grid; gap: 6px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; }
+.portal-account-list > li.row-muted { color: var(--muted); }
+.portal-share { display: grid; gap: 10px; }
+.auth-note { margin: 0; color: var(--muted); font-size: var(--font-size-caption); text-align: center; }
+
+/* F5 automation settings and push toggle. */
+.automation-setup { display: grid; gap: 10px; }
+.automation-checks { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.automation-checks li { padding: 8px 12px; border-radius: 9px; border: 1px solid var(--border); }
+.automation-checks li.ok { border-color: #b7e0c4; background: #ecf8f0; }
+.automation-checks li.warn { border-color: #f3d39b; background: var(--warning-soft); }
+.push-toggle { display: grid; gap: 8px; justify-items: start; }

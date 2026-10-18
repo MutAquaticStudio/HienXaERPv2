@@ -6,7 +6,11 @@
 >
 > Quyết định Owner 17/10/2026: **D13** tên miền — tạm dùng tên miền mặc định Vercel của dự án; sau bàn giao và thanh toán gói chuyển sang `app.hienxavlxd.com`. Link mời nhân viên/quên mật khẩu lấy theo tên miền đang mở; Supabase Auth (Site URL, Redirect URLs) phải khai báo đúng tên miền đang dùng. Logo doanh nghiệp tải lên trong Cài đặt (SPEC-CONFIG-003).
 >
-> Quyết định Owner 17/10/2026 (đợt `FB3-20261017`): **D14** tài khoản cổng khách — doanh nghiệp tạo tài khoản (email + mật khẩu, bắt đổi mật khẩu lần đầu) đồng bộ với hồ sơ khách, và khách mới tự đăng ký tạo hồ sơ khách "Tự đăng ký"; **D15** khách tự đặt hàng, thấy giá theo nhóm giá của mình, đơn chờ doanh nghiệp duyệt; **D16** khi duyệt đơn khách: dòng kho đủ → phiếu giao từ kho, dòng thiếu → đơn mua NCC giao thẳng công trình; **D17** báo NCC qua Zalo (nút gửi thủ công; Zalo tự động khi có Zalo OA); **D18** danh mục có nút Xóa (chỉ khi chưa phát sinh chứng từ, SPEC-CAT-003), ô tiền tự phân cách hàng nghìn khi gõ, ô chọn vật tư tự xổ danh sách, giảm giá đơn bán theo VND hoặc % từng dòng và cả đơn (SPEC-PRI-007). D14–D17 chưa triển khai (kế hoạch FB3 Phần A–C); D18 làm trước và phát hành riêng.
+> Quyết định Owner 17/10/2026 (đợt `FB3-20261017`): **D14** tài khoản cổng khách — doanh nghiệp tạo tài khoản (email + mật khẩu, bắt đổi mật khẩu lần đầu) đồng bộ với hồ sơ khách, và khách mới tự đăng ký tạo hồ sơ khách "Tự đăng ký"; **D15** khách tự đặt hàng, thấy giá theo nhóm giá của mình, đơn chờ doanh nghiệp duyệt; **D16** khi duyệt đơn khách: dòng kho đủ → phiếu giao từ kho, dòng thiếu → đơn mua NCC giao thẳng công trình; **D17** báo NCC qua Zalo (nút gửi thủ công; Zalo tự động khi có Zalo OA); **D18** danh mục có nút Xóa (chỉ khi chưa phát sinh chứng từ, SPEC-CAT-003), ô tiền tự phân cách hàng nghìn khi gõ, ô chọn vật tư tự xổ danh sách, giảm giá đơn bán theo VND hoặc % từng dòng và cả đơn (SPEC-PRI-007). D18 làm trước và phát hành riêng (R1); D14–D17 triển khai ở đợt R3 + B (18/10/2026): SPEC-CUSTPORTAL-004/005, SPEC-PUR-003.
+
+> Quyết định Owner 17/10/2026 tối (đợt `FB4-20261017`): **D19** tự phân nguồn khi xác nhận đơn — hệ thống tự giải cho cả đơn (ưu tiên kho; phần thiếu thành đơn mua NCC giao thẳng **nháp, chờ duyệt**; kho đủ một phần thì tự quyết tách hay mua cả dòng theo chi phí), người dùng chỉ xem kết quả và đổi khi cần; **D20** hai luồng phiếu giao giữ như hiện có và làm rõ trên giao diện: *giao từ kho* (xe nhà, tài xế/thợ, cổng thợ, ảnh "Đã giao") và *NCC giao thẳng* (phiếu riêng theo đơn mua, đầu mối là NCC); **D21** một thợ/tài xế nhận nhiều phiếu: mỗi điểm giao chiếm "thời gian mỗi điểm giao" (Cài đặt, mặc định 60 phút) thay mặc định 4 giờ, "Giao ngay" cho người đang bận được xếp nối tiếp, hẹn giờ trùng thì báo giờ trống gần nhất (SPEC-DEL-007); **D22** tự điều phối mức "Tự động, sửa được" (Cài đặt Tắt / Gợi ý / Tự động, mặc định Tự động); **D23** danh mục loại dịch vụ có đơn vị tính, đơn giá mặc định và loại cần xe/máy (SPEC-SRV-003). Cùng đợt (FB3 Phần A): điều phối lập phiếu giao từ kho không cần quyền mua hàng, phân xe là việc tự sang cổng thợ, cổng thợ "Đã giao" kèm ảnh (SPEC-DEL-007, SPEC-WORKPORTAL-004). D21, D23 và Phần A ở đợt R2; D19, D22 ở đợt R3 (SPEC-SRC-004, SPEC-DEL-008).
+
+> Quyết định Owner 17/10/2026 (FB3 Phần C và F5, "cũng cần làm cùng"): **C1** đăng nhập bằng số điện thoại (không cần SMS); **C2** thợ từ chối việc chưa bắt đầu; **F5** tự động hóa không tốn phí dịch vụ ngoài (không n8n/Make/Zapier): thông báo trong ứng dụng, quy tắc tự động, thông báo đẩy về điện thoại, Telegram, email, webhook (SPEC-SEC-006). Zalo ZNS (trả phí theo tin) và trợ lý AI chỉ làm khi Owner yêu cầu.
 
 > Quyết định Owner 17/10/2026 tối (P0): **D24** mời nhân viên không phụ thuộc email — mặc định hệ thống tạo **link kích hoạt dùng một lần** để quản lý sao chép gửi qua Zalo/tin nhắn (vẫn chọn được gửi thư mời; thư không gửi được thì tự tạo link); danh sách Nhân viên & quyền có nút "Link kích hoạt" tạo link mới cho người chưa đặt mật khẩu hoặc quên mật khẩu (link mới thay link cũ; không tạo cho chính mình, chỉ trong chi nhánh đang quản lý, không vượt quyền người tạo). Link mở thẳng trang đặt mật khẩu của ứng dụng và được xác minh trong trình duyệt, nên không phụ thuộc danh sách chuyển hướng của Supabase và không bị bản xem trước của ứng dụng chat dùng mất.
 
@@ -992,6 +996,15 @@ Validation thất bại không để PO/lines/allocation/success receipt dở da
 
 PO Confirmed không tự tạo AP.
 
+## SPEC-PUR-003 — Gửi đơn mua cho NCC (D17, 18/10/2026)
+
+- Đơn mua đã xác nhận có "Gửi NCC qua Zalo": trên điện thoại mở bảng chia sẻ với PDF đơn mua và nội dung soạn sẵn (số đơn, hàng, nơi giao,
+  ngày giao, người liên hệ) để chọn Zalo → chat NCC; trên máy tính chép nội dung, tải PDF và mở `zalo.me/<SĐT NCC>`; phụ: email (mailto).
+  Việc gửi do người dùng làm; ứng dụng chỉ ghi nhận.
+- `record_purchase_order_sent(po, channel ZALO|EMAIL|OTHER, op)`: chỉ đơn CONFIRMED, quyền `purchasing.create` hoặc `purchasing.confirm`,
+  idempotent theo mã thao tác, audit. Bảng `purchase_order_dispatches` (RLS, đọc theo `purchasing.read`). Danh sách đơn mua hiện
+  "Đã gửi NCC 10:30 · Zalo" / "Chưa gửi". Zalo ZNS tự động: chưa làm (cần Zalo OA đã xác minh và phí theo tin).
+
 ## SPEC-SRC-001 — Supply Mode
 
 Mỗi SalesOrderLine có thể có một/nhiều allocation:
@@ -1016,6 +1029,23 @@ Phải có:
 - source PO nếu có.
 
 Không tạo warehouse receipt/issue giả.
+
+## SPEC-SRC-004 — Tự phân nguồn khi xác nhận đơn (D19, 18/10/2026)
+
+- Xác nhận đơn (nội bộ, hoặc duyệt đơn khách) xong thì cùng thao tác gọi `auto_source_sales_order(order, op)` với mã thao tác suy ra từ mã xác nhận;
+  lỗi phân nguồn không hủy việc xác nhận (trang đơn báo "Chưa phân nguồn xong" + nút "Tự phân nguồn"). Cài đặt chi nhánh: bật/tắt tự phân nguồn,
+  kho mặc định, "chi phí một chuyến" (trống = luôn dùng tồn trước).
+- Lời giải là hàm thuần `private.solve_order_sourcing(order)` cho **cả đơn**: tồn có thể bán của từng kho (trừ phần đã giữ và phần đã phân cho đơn
+  khác đang mở); bước 1 chọn kho phục vụ được nhiều dòng nhất (hòa thì kho mặc định); bước 2 từng dòng: kho đủ → kho; kho hết → NCC; kho đủ một phần
+  → so "tách (kho + NCC phần còn lại)" với "cả dòng NCC" theo tiền mua NCC + chuyến phát sinh × chi phí một chuyến; NCC = giá mua hiệu lực thấp nhất
+  cho vật tư + đơn vị (bằng nhau → bản mới nhất); không có giá mua → dùng hết tồn, phần còn lại "Thiếu nguồn — chưa có NCC/giá mua" và báo mua hàng.
+  Mỗi dòng kèm lý do tiếng Việt. `order_sourcing_plan(order)` chỉ đọc (xem trước).
+- Thực hiện: phân bổ kho; phần NCC gom theo NCC thành đơn mua **nháp** giao thẳng công trình (chạy bằng quyền `purchasing.create` của chính
+  người xác nhận; thiếu quyền → dòng "Chờ chọn nguồn" + thông báo `sales_order.needs_purchase`); dòng kho gom theo kho thành phiếu giao rồi tự
+  điều phối (SPEC-DEL-008). Kết quả lưu `sales_order_sourcing_runs`; gọi lại cùng mã thao tác trả kết quả cũ.
+- Duyệt đơn mua nháp giao thẳng → tự lập **phiếu NCC giao thẳng** (đầu mối = NCC, giờ = ngày giao dự kiến của đơn mua). Phiếu này có nút
+  **"NCC đã giao"** (`submit_supplier_delivery_done`) cho nhân viên phụ trách: nhập lượng nhận (để trống = đủ), người nhận, ảnh; rồi xác minh như phiếu thường.
+- Trang đơn: khung "Nguồn hàng" chỉ hiện kết quả (kho, NCC + đơn mua, thiếu nguồn) và lý do; đổi tay vẫn dùng các lệnh hiện có.
 
 ---
 
@@ -1147,6 +1177,42 @@ Proof mặc định private trừ khi policy cho phép customer xem.
   lỗi ở bất kỳ bước nào thì không có gì được ghi. Một kho mỗi phiếu; dòng NCC giao thẳng vẫn theo luồng hiện có.
 - `order_delivery_plan` chỉ đọc (cần `delivery.create`): lượng phải giao, các phân nguồn và phần đã dùng của từng phân nguồn, để điền sẵn
   "Còn phải giao" theo kho được chọn.
+
+## SPEC-DEL-007 — Điều phối lập phiếu, nhiều điểm giao một người, phân xe tự giao việc (FB3 A1–A4, D21, 18/10/2026)
+
+- **Quyền (A1):** `create_delivery_for_order` chỉ cần `delivery.create`. Nguồn kho lấy khi lập phiếu đi qua `private.allocate_warehouse_source`
+  (cùng kiểm tra nhánh WAREHOUSE của `upsert_supply_allocation`: kho đang dùng cùng chi nhánh với đơn, lượng chính xác, sức chứa phân nguồn,
+  version của phân nguồn đã có), hàm nội bộ chỉ gọi từ trong lệnh lập phiếu. Nguồn NCC và lệnh "Chọn nguồn kho" vẫn cần `purchasing.create`.
+- **Thời gian mỗi điểm giao (D21):** bảng `branch_operation_settings` (một dòng mỗi chi nhánh: `stop_minutes` 5–720, `version`; chưa có dòng =
+  60 phút), RLS bật, thành viên chi nhánh đọc, `anon` không có quyền; chỉ ghi qua `save_branch_operation_settings(branch, {"stop_minutes"},
+  version_đã_đọc, op)` với `roles.manage`, idempotent, audit. Phiếu không lưu giờ kết thúc chiếm `scheduled_at + stop_minutes` (thay 4 giờ) trong
+  mọi kiểm tra trùng lịch người/xe của phiếu giao và việc cổng thợ; giờ kết thúc đã lưu giữ nguyên.
+- **Giao ngay / Hẹn giờ:** phân công trong `create_delivery_for_order` nhận `schedule_mode`: `NOW` → giờ bắt đầu là lúc sớm nhất từ khi bấm mà
+  người và xe cùng rảnh đủ một điểm giao (xếp nối tiếp sau việc đang có, cùng cửa sổ bận mà kiểm tra trùng lịch dùng); `AT` → đúng giờ đã chọn,
+  trùng thì từ chối và gửi kèm giờ trống gần nhất (hint `next_free_at=<UTC>`) để giao diện đề xuất "Hẹn lúc …". Lệnh trả giờ đã xếp. Trùng lịch
+  khi phân xe trên trang phiếu giao cũng báo giờ trống gần nhất.
+- **Phân xe là giao việc (A2):** `assign_delivery`, `assign_delivery_scheduled` và `update_delivery_receiver` gọi `private.sync_delivery_work_item`:
+  phiếu có người giao nội bộ mà chưa có việc → tạo việc DIRECT, CLAIMED cho người đó như `publish_work_item` (người phân xe có `delivery.assign`
+  là đủ, không cần `work.manage`); đổi người khi việc chưa bắt đầu → việc chuyển theo như trước; thiếu tên, SĐT hoặc địa chỉ người nhận → chưa tạo,
+  trang phiếu hiện điều còn thiếu, bổ sung người nhận xong thì việc tự tạo. Nút "Giao việc qua cổng thợ" chỉ còn cho phiếu cũ chưa có việc.
+- **Hộp lập phiếu (A4):** chọn *Giao ngay* hoặc *Hẹn ngày giờ* (mặc định ngày khách yêu cầu nếu chưa qua); mặc định phân xe luôn, chỉ có một
+  người/một xe thì chọn sẵn; chặn gửi khi dòng vượt tồn khả dụng của kho hoặc vượt phần còn phải giao, chỉ rõ dòng và link "Đặt NCC giao thẳng"
+  khi người dùng có quyền mua hàng; lỗi hiện ngay trong hộp, không rời trang đơn. Giờ bàn giao lên xe trên trang phiếu giao là lúc bấm.
+
+## SPEC-DEL-008 — Tự điều phối, bảng điều phối, thợ từ chối việc (D22, C2, 18/10/2026)
+
+- Danh mục Xe có **"Tài xế mặc định"** (`vehicles.default_driver_employee_id`, nhân viên đang làm có quyền nhận việc). Cài đặt vận hành chi nhánh
+  thêm chế độ điều phối Tắt / Gợi ý / Tự động (mặc định Tự động), giờ làm việc (mặc định 07:00–18:00).
+- `private.auto_dispatch_delivery`: chạy khi phiếu giao từ kho được lập mà chưa phân xe (lập tay hoặc do tự phân nguồn). Ứng viên = cặp xe đang dùng +
+  tài xế mặc định, phải qua mọi kiểm tra của `assign_delivery_scheduled` (quyền, sức chở, trùng lịch). Chọn giờ rảnh sớm nhất từ giờ khách cần, rồi
+  ít phiếu nhất trong ngày, rồi đang chở cùng công trình/khách, rồi mã xe; quá giờ làm việc thì sang ngày kế. Gán qua `assign_delivery_scheduled`
+  bằng quyền `delivery.assign` **của chính người thao tác** (không mượn quyền); không có quyền hoặc không có ai phù hợp → phiếu "Chờ điều phối" +
+  thông báo `delivery.waiting_dispatch`. Chế độ Gợi ý chỉ lưu đề xuất (`delivery_dispatch_proposals`), người điều phối bấm "Áp dụng".
+- Trang **Điều phối** (`/admin/dispatch?day=`): hàng "Chờ điều phối", cột theo tài xế với các phiếu trong ngày theo giờ, nút "Tự chia việc"
+  (`auto_dispatch_day`) và "Áp dụng" gợi ý; 390 px dạng danh sách.
+- **Thợ từ chối việc (C2):** `decline_portal_work_item(work, reason, version, op)` khi việc đã nhận nhưng chưa bắt đầu và phiếu chưa bàn giao lên xe:
+  đóng phân công, phiếu về PLANNED, ghi người từ chối vào `delivery_dispatch_exclusions` (lần tự điều phối sau bỏ qua người này cho phiếu đó),
+  thông báo `work.declined` cho người có `delivery.assign` kèm lý do. Lịch sử phân công giữ nguyên.
 
 ## SPEC-DEL-005 — Xác minh giao hàng và ghi sổ đúng một lần
 
@@ -1516,6 +1582,20 @@ Tách:
 - billable work;
 - compensable work.
 
+## SPEC-SRV-003 — Danh mục loại dịch vụ (D23, 18/10/2026)
+
+- Bảng `service_types` theo chi nhánh: mã (`^[A-Z0-9_-]{2,24}$`, duy nhất trong chi nhánh), tên, đơn vị tính (chuyến, giờ, ngày, ca, m³, km… —
+  gõ hoặc chọn gợi ý), đơn giá mặc định VND (được để trống), cần xe / cần máy / không (`resource_kind` `VEHICLE` / `MACHINE` / `NONE`), đang dùng.
+  RLS bật, đọc khi có `service.read` hoặc `service.manage`, `anon` không có quyền. Lưu và xóa qua `save_catalog_record` / `delete_catalog_record`
+  (kind `service_types`, quyền `service.manage`); loại đã có việc dùng thì không xóa được, chỉ ngừng dùng (SPEC-CAT-003).
+- `schedule_service_job(...)`: cùng kiểm tra như `create_service_job`; loại phải đang dùng và cùng chi nhánh (`invalid_service_type`). Việc chụp tên,
+  đơn vị và đơn giá của loại (`service_jobs.service_type_id`, `unit_price_vnd`); đổi loại sau đó không đổi việc đã lập. Loại không cần xe/máy thì
+  không gắn được xe hay máy; loại cần xe thì không gắn máy và ngược lại (`service_resource_mismatch`). Việc cũ giữ loại gõ tự do, không có đơn giá;
+  `create_service_job` giữ nguyên.
+- Giao diện: Dịch vụ → "Loại dịch vụ" (danh mục popup như UX-160); lập lịch chọn loại từ danh sách, "+ Thêm loại" mở popup; chỉ hiện ô Xe hoặc
+  Máy theo loại. Lúc xác minh, ứng dụng gợi ý "Giá trị tính khách" = khối lượng tính khách × đơn giá (làm tròn tới đồng, nửa đồng làm tròn lên);
+  người xác minh vẫn nhập/sửa số cuối. D9 giữ nguyên (dịch vụ là chứng từ riêng).
+
 ---
 
 # SPEC-250 — Worker Portal
@@ -1540,6 +1620,21 @@ Không hiển thị ERP table dày đặc.
 ## SPEC-WORKPORTAL-003
 
 Không yêu cầu tài xế thao tác nguy hiểm khi đang lái.
+
+## SPEC-WORKPORTAL-004 — Báo "Đã giao" kèm ảnh, việc theo giờ, ảnh trên phiếu giao (FB3 A3/A3b/A5, 18/10/2026)
+
+- `submit_portal_delivery_done(work_item, lines | null, receiver_name, note, evidence_ids, version việc/phiếu/phân công, op)`: chỉ người đang được
+  giao việc; việc CLAIMED hoặc IN_PROGRESS (chưa bắt đầu thì tính là bắt đầu), phiếu DISPATCHED hoặc ARRIVED (đang đi đường thì tính là tới nơi,
+  không bắt gõ lý do). `lines` null = giao đủ theo lượng kho đã bàn giao lên xe; có `lines` = lượng thợ nhập, không vượt lượng đã lên xe. 0–5 ảnh
+  tải qua cổng thợ cho đúng việc đó; có giao hàng (đủ hoặc thiếu) bắt ít nhất 1 ảnh, không giao được bắt lý do; người nhận để trống thì lấy từ phiếu.
+  Việc → DONE, phiếu chờ xác minh như `submit_portal_delivery_result`; idempotent theo mã thao tác, đối chiếu các version.
+- Hàng chưa bàn giao lên xe: nút mờ "Chờ kho bàn giao hàng lên xe". Ảnh được thu nhỏ trên điện thoại (cạnh dài tối đa 1600 px, JPEG) trước khi tải.
+  Thợ thấy lượng theo đơn vị đã bán kèm đơn vị cơ sở (ví dụ "60 bao (3.000 kg)") theo tỉ lệ đã chụp trên dòng đơn.
+- `worker_portal_snapshot`: việc của thợ xếp theo giờ hẹn (Hôm nay / Sắp tới, tối đa 30); bể việc nhận được giới hạn 50 việc trong 14 ngày tới.
+- Nội bộ (A3b): trang phiếu giao có khung "Ảnh giao hàng" dạng lưới ảnh thu nhỏ (ảnh thợ gửi và ảnh nội bộ), bấm để phóng to; ảnh lấy qua route
+  kiểm quyền `/api/evidence/[id]/download`, tệp PDF hiện nút mở tệp. Bước xác minh kết quả dùng cùng lưới ảnh.
+- Hiệu năng (A5): index cho kiểm tra phân nguồn, giữ tồn và trùng lịch (`20261018130000_delivery_indexes`); trang đơn và trang phiếu giao đọc các
+  phần dữ liệu độc lập song song.
 
 ---
 
@@ -1578,6 +1673,39 @@ Customer không xem:
 - employee payroll;
 - internal-only notes;
 - dữ liệu khách khác.
+
+## SPEC-CUSTPORTAL-004 — Tài khoản cổng khách, tự đăng ký, đăng nhập bằng số điện thoại (D14, C1, 18/10/2026)
+
+Bổ sung SPEC-SEC-001 theo quyết định Owner: khách mới được tự đăng ký; doanh nghiệp tạo tài khoản cho khách từ trang khách hàng.
+- **Doanh nghiệp tạo:** Khách hàng 360 → "Tài khoản cổng khách" (`customers.manage`): email **hoặc số điện thoại** + mật khẩu tạm + quyền (Chủ tài
+  khoản / Kế toán / Người nhận hàng). Tài khoản tạo đã xác nhận, cờ `app_metadata.hx_must_change_password`; gắn khách bằng
+  `grant_customer_portal_access` (từ chối tài khoản nhân viên, khách ngừng giao dịch, quyền đang hoạt động trùng); gắn lỗi thì xóa tài khoản vừa tạo.
+  Không gửi email: màn hình trả nội dung để gửi khách qua Zalo. Có "Đặt lại mật khẩu" (mật khẩu tạm mới, bắt đổi lại) và "Thu hồi"
+  (`revoke_customer_portal_access`, có lý do, giữ lịch sử). `customer_portal_accounts(customer)` liệt kê tài khoản (`customers.read`).
+- **Lần đăng nhập đầu bằng mật khẩu tạm** (khách hoặc thợ): proxy chuyển mọi trang `/customer/*` hoặc `/work/*` tới trang đổi mật khẩu của cổng đó
+  cho tới khi đổi xong (cờ được xóa, phiên làm mới).
+- **Tự đăng ký** (`/customer/register`, cần bật "Allow new users to sign up" ở Supabase Auth): tên, SĐT, địa chỉ giao, email, mật khẩu.
+  `register_portal_customer` (đăng nhập rồi, không phải nhân viên, chưa có quyền khách) tạo khách `source = SELF_REGISTERED` mã `KH-000123`, cá nhân,
+  giá chung, chưa có hạn mức; công trình "Địa chỉ giao chính"; quyền OWNER; thông báo `customer.self_registered` (kèm gợi ý nếu trùng SĐT với khách
+  cũ — không tự gộp). Chi nhánh nhận = `company_profile.portal_branch_id`, hoặc chi nhánh duy nhất đang hoạt động. Phải xác nhận email trước thì
+  hồ sơ được tạo ở lần đăng nhập đầu (một mã thao tác cố định cho mỗi tài khoản). Không có email → nhờ cửa hàng tạo tài khoản bằng SĐT.
+- **Đăng nhập bằng số điện thoại (C1):** ô "Email hoặc số điện thoại" ở 3 trang đăng nhập; số Việt Nam được chuẩn hóa thành tên đăng nhập nội bộ
+  `<số>@sdt.hienxavlxd.com` (không gửi thư tới đó), mọi chỗ hiển thị đều hiện số điện thoại. Mời nhân viên bằng SĐT chỉ dùng link kích hoạt.
+  Quên mật khẩu với tài khoản SĐT → báo nhờ quản lý đặt lại.
+
+## SPEC-CUSTPORTAL-005 — Khách tự đặt hàng, doanh nghiệp duyệt (D15, D16, 18/10/2026)
+
+Bổ sung SPEC-CUSTPORTAL-001: Chủ tài khoản và Kế toán được **đặt hàng**; Người nhận hàng chỉ theo dõi giao nhận.
+- `customer_portal_catalog(customer?, search, limit)`: vật tư đang bán theo từng đơn vị bán được phép thanh toán, **giá áp cho chính khách này**
+  (cùng thứ tự ưu tiên giá của đơn nội bộ); đơn vị không có giá thì không hiện; chỉ báo "Còn hàng / Đặt trước" — không lộ số tồn, giá vốn, giá khách khác.
+- `submit_portal_order(customer, site | new_site, requested_at, lines[{material, uom, quantity}], note, op)`: giá tính ở server, mỗi dòng qua
+  `private.assert_commercial_line`; địa chỉ mới thành công trình của khách; tạo đơn **DRAFT** `order_channel = CUSTOMER_PORTAL` ("Chờ duyệt", không thêm
+  trạng thái), `portal_note`, `submitted_by`; idempotent; thông báo `order.portal_submitted` cho `orders.confirm`. Chưa giữ hạn mức, tồn hay đặt NCC.
+- Khách hủy khi còn chờ duyệt: `cancel_portal_order(order, reason, op)`; thông báo `order.portal_cancelled`. Khách thấy dòng hàng (giá chỉ Chủ tài
+  khoản/Kế toán), địa chỉ, ghi chú, lý do hủy, trạng thái "Chờ duyệt / Đã duyệt / Đang giao / Đã giao / Đã hủy".
+- **Duyệt** = xác nhận đơn hiện có (giữ hạn mức, duyệt vượt hạn mức như đơn nội bộ) + tự phân nguồn (SPEC-SRC-004): đủ kho → phiếu giao từ kho tự điều
+  phối; thiếu → đơn mua NCC giao thẳng nháp. Sửa trước khi duyệt dùng sửa bản nháp; **Từ chối** = hủy đơn có lý do (khách thấy lý do).
+- Nội bộ: băng "Đơn khách tự đặt — chờ duyệt" trên trang đơn, nút "Duyệt đơn", lọc "Khách đặt · Chờ duyệt", nhắc ở Tổng quan.
 
 ---
 
@@ -2376,6 +2504,29 @@ Không dựng hàng đợi/outbox/runner ở nền tảng ban đầu chỉ để
 Chỉ khi có nhu cầu thật như gọi nhà cung cấp bên ngoài sau commit, xuất tệp dài, hoặc công việc phải tiếp tục sau HTTP response mới dùng **một cơ chế công việc nền dùng chung** trong cùng PostgreSQL: trạng thái, attempt, next_run_at, lease_until, last_error_safe, dedupe_key. Không thêm Kafka/Redis/queue riêng nếu chưa có bằng chứng cần.
 
 Khi đã cần job: intent được ghi bền vững trước hoặc cùng transaction nguồn; runner nhận bằng lease, retry có backoff và idempotent, hết lượt chuyển cần can thiệp. Không dùng biến bộ nhớ làm hàng đợi và không hứa code tiếp tục sau response nếu nền tảng không bảo đảm. Test/build/preview không được dùng kết nối Production. Runner Production chỉ bật sau phê duyệt riêng về môi trường, quyền và loại công việc.
+
+## SPEC-SEC-006 — Thông báo trong ứng dụng và tự động hóa không tốn phí (FB3 R3, F5, 18/10/2026)
+
+- **Thông báo:** bảng `notifications` (chi nhánh, loại, đối tượng, tiêu đề, nội dung, link nội bộ, `required_permission`, người nhận cụ thể nếu có,
+  `dedupe_key`) và `notification_reads` (đã đọc theo từng tài khoản). Chỉ ghi qua `private.notify(...)` **trong cùng transaction** của lệnh nguồn;
+  RLS: thấy khi có quyền tương ứng ở chi nhánh (và đúng người nhận nếu có). `notification_feed`, `mark_notifications_read`. Chuông trên thanh trên
+  cùng nội bộ, trang `/admin/notifications`; Realtime chỉ là tín hiệu làm mới.
+- **Quy tắc tự động** (`automation_rules`, `roles.manage`): Khi [loại thông báo trong danh sách trắng] · Nếu [tổng tiền đơn/đơn mua từ … | chỉ giao
+  thiếu / không giao được] · Thì [thông báo đẩy tới người có quyền xem | Telegram | email | webhook]. Quy tắc là dữ liệu, không chạy mã tùy ý.
+  Nơi nhận được kiểm: mã Telegram, email, webhook chỉ `https` công khai (chặn localhost, mạng nội bộ). Quy tắc mẫu: đơn khách mới, đơn mua nháp cần
+  duyệt, giao thiếu/không giao được, việc mới cho thợ, thợ từ chối việc (đều qua thông báo đẩy).
+- **Một cơ chế công việc nền (SPEC-SEC-004):** thông báo khớp quy tắc ghi `outbound_jobs` (state PENDING/SENDING/SENT/FAILED/DEAD, attempt,
+  next_run_at, lease_until, last_error_safe, dedupe_key) trong cùng transaction; `pg_net` gửi ngay sau commit; `pg_cron` mỗi phút đối chiếu kết quả
+  (2xx → SENT; thiết bị đã hủy đăng ký → DEAD và xóa thiết bị; lỗi → gửi lại sau 2^n phút, tối đa 6 giờ, quá 6 lần → DEAD) và 07:00 mỗi sáng tạo
+  thông báo tóm tắt: nợ quá hạn, tồn dưới ngưỡng, đơn mua chưa gửi NCC. Không có pg_net/pg_cron thì việc chờ ở PENDING, ứng dụng vẫn chạy.
+- **Bí mật** chỉ ở Supabase Vault (`hx_telegram_bot_token`, `hx_webhook_secret`, `hx_app_url`, `hx_automation_secret`) và biến môi trường ứng
+  dụng (`HX_AUTOMATION_SECRET`, `SMTP_*`, `VAPID_*`), không lưu trong bảng. Telegram và webhook gửi thẳng từ cơ sở dữ liệu; webhook gửi
+  `{ data, signature }` với chữ ký HMAC-SHA256 của `data`. Email (SMTP, ví dụ Gmail mật khẩu ứng dụng) và thông báo đẩy (Web Push VAPID) đi qua
+  route `/api/automation/deliver`: chỉ nhận yêu cầu ký HMAC còn hạn 15 phút, chỉ gửi, không đọc/ghi cơ sở dữ liệu, không dùng khóa bí mật Supabase.
+- **Thông báo đẩy:** PWA (manifest, service worker `/sw.js`, không cache), "Bật thông báo trên máy này" ở trang Thông báo (nội bộ) và Hồ sơ (cổng
+  thợ); iPhone cần "Thêm vào MH chính". `push_subscriptions` mỗi trình duyệt một dòng, người dùng chỉ đọc của mình; máy dùng chung chuyển sang tài
+  khoản đăng nhập sau. Gửi tới người có quyền xem thông báo đó (và đúng người nhận nếu có).
+- Runner Production (pg_cron) bật khi áp migration; không gửi gì ra ngoài cho tới khi Owner cấu hình Vault/biến môi trường và tạo quy tắc có kênh ngoài.
 
 ## SPEC-SEC-005 — Một Production không có nghĩa test trên Production
 

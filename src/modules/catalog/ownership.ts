@@ -6,6 +6,7 @@ export const catalogModules = {
   suppliers: ["suppliers"],
   warehouses: ["warehouses"],
   dispatch: ["vehicles", "machines"],
+  services: ["service_types"],
   branches: ["branches"],
 } as const;
 
@@ -15,6 +16,7 @@ const destinations: Record<string, string> = {
   customers: "/admin/customers/manage", sites: "/admin/customers/manage",
   suppliers: "/admin/suppliers/manage", warehouses: "/admin/inventory/warehouses",
   vehicles: "/admin/dispatch/resources", machines: "/admin/dispatch/resources",
+  service_types: "/admin/service-jobs/types",
   branches: "/admin/settings/branches",
 };
 

@@ -5,14 +5,14 @@ import { isExactEntryQuantity } from "@/lib/core/quantity";
 const quantity = z.string().trim().min(1)
   .refine((value) => isExactEntryQuantity(value, true), "Số lượng phải là số hữu hạn không âm, tối đa 6 chữ số thập phân");
 const common = z.object({
-  workItemId: z.uuid(), operationId: z.uuid(), expectedVersion: z.number().int().positive(),
+  workItemId: z.guid(), operationId: z.guid(), expectedVersion: z.number().int().positive(),
   receiverName: z.string().trim().max(120).default(""),
   note: z.string().trim().max(1000).default(""),
-  evidenceId: z.uuid().nullish(),
+  evidenceId: z.guid().nullish(),
 });
 const scalar = common.extend({ actualQuantity: quantity });
 const delivery = common.extend({
-  deliveryLines: z.array(z.object({ deliveryLineId: z.uuid(), actualQuantity: quantity })).min(1).max(50),
+  deliveryLines: z.array(z.object({ deliveryLineId: z.guid(), actualQuantity: quantity })).min(1).max(50),
   expectedDeliveryVersion: z.number().int().positive(),
   expectedAssignmentVersion: z.number().int().positive(),
   missingArrivalReason: z.string().trim().max(1000).default(""),

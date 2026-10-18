@@ -14,8 +14,9 @@ import { QUOTATIONS_ENABLED } from "@/lib/features";
 import { CatalogCreateButton, CatalogEditButton } from "@/modules/catalog/catalog-dialog";
 import { catalogCreateProps, catalogRecordProps } from "@/modules/catalog/editor-data";
 import { catalogHref } from "@/modules/catalog/ownership";
+import { PortalAccountsCard, type PortalAccount } from "@/components/customers/portal-accounts-card";
 
-type CustomerProfile = { id: string; code: string; display_name: string; customer_type: string; phone: string | null; email: string | null; address_text: string | null; tax_code: string | null; tier_code: string | null; payment_terms_days: number; active: boolean };
+type CustomerProfile = { id: string; code: string; display_name: string; customer_type: string; phone: string | null; email: string | null; address_text: string | null; tax_code: string | null; tier_code: string | null; payment_terms_days: number; active: boolean; source?: string };
 type SiteRow = { id: string; code: string; name: string; address_text: string; receiver_name: string | null; receiver_phone: string | null; receiving_window: string | null; access_note: string | null; active: boolean };
 type PriceRow = { id: string; scope_type: string; unit_price_vnd: string; version: number; source_type: string; material_id: string | null; material_group_id: string | null; price_uom_id: string; effective_from: string };
 type QuoteRow = { id: string; quotation_number: string; revision_number: number; created_at: string };
@@ -49,19 +50,23 @@ export default async function CustomerDetailPage({ params, searchParams }: PageP
   };
   const canPostPayment = can.finance && access.permissions.has("finance.payment.post");
   const supabase = await createServerSupabase();
-  const { data: profile, error } = await supabase.from("customers").select("id, code, display_name, customer_type, phone, email, address_text, tax_code, tier_code, payment_terms_days, active")
+  const { data: profile, error } = await supabase.from("customers").select("id, code, display_name, customer_type, phone, email, address_text, tax_code, tier_code, payment_terms_days, active, source")
     .eq("id", id).eq("branch_id", access.branchId).maybeSingle();
   if (error || !profile) notFound();
   const customer = profile as unknown as CustomerProfile;
 
   const none = Promise.resolve({ data: null, error: null });
-  const [groupResult, creditResult, orderStatResult, siteCountResult, privateResult] = await Promise.all([
+  const selfRegistered = customer.source === "SELF_REGISTERED";
+  const [groupResult, creditResult, orderStatResult, siteCountResult, privateResult, samePhoneResult] = await Promise.all([
     customer.tier_code ? supabase.from("customer_price_groups").select("name").eq("branch_id", access.branchId).eq("code", customer.tier_code).maybeSingle() : none,
     can.finance ? supabase.rpc("customer_credit_summary", { target_customer_id: id }) : none,
     can.orders ? supabase.from("sales_order_read").select("total_vnd::text, commercial_state, fulfillment_state").eq("branch_id", access.branchId).eq("customer_id", id).limit(5000) : Promise.resolve({ data: [], error: null }),
     supabase.from("customer_sites").select("id", { count: "exact", head: true }).eq("customer_id", id).eq("active", true),
     can.manage ? supabase.rpc("customer_private_fields", { target_customer_ids: [id] }).select("customer_id,internal_note") : none,
+    // D14: a self-registered customer is never merged automatically; the business sees who already has this phone number.
+    selfRegistered && customer.phone ? supabase.from("customers").select("id, code, display_name").eq("branch_id", access.branchId).eq("phone", customer.phone).neq("id", id).limit(5) : none,
   ]);
+  const samePhone = ((samePhoneResult.data ?? []) as { id: string; code: string; display_name: string }[]);
   const credit = creditResult.data as CreditSummary | null;
   const orderStats = (orderStatResult.data ?? []) as { total_vnd: string; commercial_state: string; fulfillment_state: string }[];
   const confirmed = orderStats.filter((row) => ["CONFIRMED", "CLOSED"].includes(row.commercial_state));
@@ -90,7 +95,7 @@ export default async function CustomerDetailPage({ params, searchParams }: PageP
     : await DocumentsTab({ customerId: id, branchId: access.branchId, supabase, can: { quotes: QUOTATIONS_ENABLED && access.permissions.has("quotation.read"), deliveries: can.deliveries, finance: can.finance } });
 
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Khách hàng · {customer.code}</p><h1>{customer.display_name}</h1>
+    <header className="page-heading"><div><p className="eyebrow">Khách hàng · {customer.code}{selfRegistered && <> · <span className="scope-chip">Tự đăng ký</span></>}</p><h1>{customer.display_name}</h1>
       <p className="lede">{customer.phone ?? "Chưa có điện thoại"} · {customer.address_text ?? "Chưa có địa chỉ chính"} · {customer.tier_code ? `Nhóm giá ${(groupResult.data as { name: string } | null)?.name ?? customer.tier_code}` : "Giá chung"}</p></div>
       <div className="form-actions">
         {can.createOrder && customer.active && <Link className="button button-primary" href={`/admin/orders/new?customer=${customer.id}`}>Tạo đơn</Link>}
@@ -102,6 +107,7 @@ export default async function CustomerDetailPage({ params, searchParams }: PageP
         <StatusBadge tone={customer.active ? "success" : "danger"}>{customer.active ? "Đang giao dịch" : "Ngừng giao dịch"}</StatusBadge>
       </div>
     </header>
+    {samePhone.length > 0 && <p className="form-message warning" role="note"><strong>Có thể trùng khách:</strong> cùng số điện thoại với {samePhone.map((row, index) => <span key={row.id}>{index ? ", " : " "}<Link className="code-link" href={`/admin/customers/${row.id}`}>{row.code} · {row.display_name}</Link></span>)}. Kiểm tra trước khi giao dịch; hệ thống không tự gộp.</p>}
     <section className="metric-grid metric-grid-5" aria-label="Chỉ số khách hàng">
       <article className="card metric-card"><span className="metric-label">Nợ hiện tại</span><strong className="metric-value">{credit ? money(credit.receivable_vnd) : "—"}</strong></article>
       <article className="card metric-card"><span className="metric-label">Nợ quá hạn</span><strong className={`metric-value${credit && BigInt(String(credit.overdue_vnd)) > 0n ? " text-danger" : ""}`}>{credit ? money(credit.overdue_vnd) : "—"}</strong></article>
@@ -118,8 +124,12 @@ export default async function CustomerDetailPage({ params, searchParams }: PageP
 type Supabase = Awaited<ReturnType<typeof createServerSupabase>>;
 
 async function InfoTab({ customer, note, can, supabase }: { customer: CustomerProfile; note: string | null | undefined; can: { createOrder: boolean; service: boolean; manage: boolean }; supabase: Supabase }) {
-  const { data } = await supabase.from("customer_sites").select("id, code, name, address_text, receiver_name, receiver_phone, receiving_window, access_note, active").eq("customer_id", customer.id).order("active", { ascending: false }).order("name").limit(100);
+  const [{ data }, accountsResult] = await Promise.all([
+    supabase.from("customer_sites").select("id, code, name, address_text, receiver_name, receiver_phone, receiving_window, access_note, active").eq("customer_id", customer.id).order("active", { ascending: false }).order("name").limit(100),
+    supabase.rpc("customer_portal_accounts", { target_customer_id: customer.id }),
+  ]);
   const sites = (data ?? []) as unknown as SiteRow[];
+  const accounts = accountsResult.error ? null : ((accountsResult.data ?? []) as PortalAccount[]);
   return <div className="two-column">
     <section className="card list-main"><div className="section-head"><h2>Công trình ({sites.length})</h2></div>
       {sites.length ? <div className="table-wrap"><table>
@@ -134,13 +144,14 @@ async function InfoTab({ customer, note, can, supabase }: { customer: CustomerPr
         </tr>)}</tbody>
       </table></div> : <p className="empty-inline">Chưa có công trình. Bấm “+ Công trình” để thêm.</p>}
     </section>
-    <section className="card card-pad"><h2>Hồ sơ</h2><dl className="detail-grid">
+    <div className="page-stack"><section className="card card-pad"><h2>Hồ sơ</h2><dl className="detail-grid">
       <div className="detail-item"><dt>Loại khách</dt><dd>{customer.customer_type === "BUSINESS" ? "Doanh nghiệp" : "Cá nhân"}</dd></div>
       <div className="detail-item"><dt>Điều khoản thanh toán</dt><dd>{customer.payment_terms_days} ngày</dd></div>
       <div className="detail-item"><dt>Thư điện tử</dt><dd>{customer.email ?? "Chưa có"}</dd></div>
       <div className="detail-item"><dt>Mã số thuế</dt><dd>{customer.tax_code ?? "Chưa có"}</dd></div>
       {note !== undefined && <div className="detail-item field-full"><dt>Ghi chú nội bộ</dt><dd>{note ?? "Chưa có"}</dd></div>}
     </dl></section>
+    {accounts && <PortalAccountsCard customerId={customer.id} customerPhone={customer.phone} accounts={accounts} canManage={can.manage} />}</div>
   </div>;
 }
 

@@ -6,7 +6,7 @@ import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 
-const input = z.object({ deliveryId: z.uuid(), version: z.coerce.number().int().positive(), operationId: z.uuid(),
+const input = z.object({ deliveryId: z.guid(), version: z.coerce.number().int().positive(), operationId: z.guid(),
   receiverName: z.string().trim().min(1).max(120), receiverPhone: z.string().trim().min(1).max(40),
   reason: z.string().trim().min(3).max(500) });
 

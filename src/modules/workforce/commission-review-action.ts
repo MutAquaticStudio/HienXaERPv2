@@ -8,14 +8,14 @@ import { checkSavedCommandFieldsAction } from "@/lib/core/command-outcome-action
 import { isAuthoritativeRejection, type CommandOutcome } from "@/lib/core/command-outcome";
 
 export async function resolveCommissionReviewAction(form: FormData): Promise<CommandOutcome> {
- const parsed = z.object({ caseId: z.uuid(), method: z.enum(["WAIVE", "RECOVER_UNPAID_COMMISSION"]),
-  target: z.string(), ruleId: z.string(), reason: z.string().trim().min(3).max(500), operationId: z.uuid() }).safeParse(Object.fromEntries(form));
+ const parsed = z.object({ caseId: z.guid(), method: z.enum(["WAIVE", "RECOVER_UNPAID_COMMISSION"]),
+  target: z.string(), ruleId: z.string(), reason: z.string().trim().min(3).max(500), operationId: z.guid() }).safeParse(Object.fromEntries(form));
  if (!parsed.success) return { status: "FAILED", message: "Chọn nguồn xử lý và ghi lý do quyết định." };
  const access = await requireInternalPermission("compensation.manage");
  const changed = await checkSavedCommandFieldsAction(form, "resolve_commission_reconciliation"); if (changed) return changed;
  const [earningId = "", versionText = ""] = parsed.data.target.split(":");
  const recover = parsed.data.method === "RECOVER_UNPAID_COMMISSION";
- if (recover && (!z.uuid().safeParse(earningId).success || !z.uuid().safeParse(parsed.data.ruleId).success || !/^[1-9]\d*$/.test(versionText)))
+ if (recover && (!z.guid().safeParse(earningId).success || !z.guid().safeParse(parsed.data.ruleId).success || !/^[1-9]\d*$/.test(versionText)))
   return { status: "FAILED", message: "Chọn hoa hồng còn chưa trả và quy tắc điều chỉnh theo VND." };
  const db = await createServerSupabase();
  const { data: source, error: sourceError } = await db.from("commission_reconciliation_cases").select("branch_id").eq("id", parsed.data.caseId).eq("branch_id", access.branchId).maybeSingle();

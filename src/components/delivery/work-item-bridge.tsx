@@ -1,5 +1,6 @@
 import { workStateLabel } from "@/modules/portal/presentation";
 import { randomUUID } from "node:crypto";
+import { formatBusinessDateTime } from "@/lib/core/business-time";
 
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
@@ -12,7 +13,7 @@ export async function DeliveryWorkItemBridge({ deliveryId }: { deliveryId: strin
   const [deliveryResult, workResult] = await Promise.all([
     supabase.from("delivery_read").select("execution_state, scheduled_at, employee_id, receiver_name_snapshot, receiver_phone_snapshot, delivery_address_snapshot")
       .eq("id", deliveryId).eq("branch_id", context.branchId).maybeSingle(),
-    supabase.from("work_item_read").select("id, work_number, execution_state, version")
+    supabase.from("work_item_read").select("id, work_number, execution_state, version, employee_name, scheduled_start")
       .eq("delivery_id", deliveryId).eq("branch_id", context.branchId).maybeSingle(),
   ]);
   if (deliveryResult.error || workResult.error) throw new Error("Không thể tải ngữ cảnh công việc giao hàng.");
@@ -23,20 +24,22 @@ export async function DeliveryWorkItemBridge({ deliveryId }: { deliveryId: strin
   const contactReady = delivery?.receiver_name_snapshot?.trim() && delivery.receiver_phone_snapshot?.trim()
     && delivery.delivery_address_snapshot?.trim();
   const canPublish = publishCandidate && contactReady;
-  if (!work && !publishCandidate) return null;
+  // A2: assigning a driver makes the work item; only a delivery still missing its receiver waits here.
+  const waitingForReceiver = !work && delivery?.execution_state === "ASSIGNED" && !!delivery.employee_id && !contactReady;
+  if (!work && !publishCandidate && !waitingForReceiver) return null;
 
   return <section className="card card-pad">
     <h2>Công việc trên cổng thợ</h2>
-    <p className="muted">Công việc điều phối không thay thế kết quả giao hàng từng dòng hoặc tự ghi công nợ/thu nhập.</p>
-    {publishCandidate && !contactReady && <p className="form-message" role="status">Chưa thể phát hành: bổ sung địa chỉ, tên và điện thoại người nhận trước bàn giao.</p>}
+    {waitingForReceiver && <p className="form-message" role="status">Việc chưa sang cổng thợ vì thiếu địa chỉ, tên hoặc điện thoại người nhận. Lưu người nhận ở khung bên cạnh, việc sẽ tự sang cổng thợ của người giao.</p>}
     {canPublish && <form action={publishDeliveryWorkItemAction}>
       <input type="hidden" name="deliveryId" value={deliveryId} />
       <input type="hidden" name="operationId" value={randomUUID()} />
-      <p>Đưa giao hàng này vào cổng của nhân viên đã phân công, trước khi bàn giao hàng.</p>
+      <p>Phiếu được phân xe trước khi có tự giao việc. Đưa việc vào cổng của người giao đã phân công.</p>
       <button className="button button-primary" type="submit">Giao việc qua cổng thợ</button>
     </form>}
     {work && <>
-      <p><strong>{work.work_number}</strong> · {workStateLabel(work.execution_state)}</p>
+      <p>Đã giao việc cho <strong>{work.employee_name ?? "người giao"}</strong>{work.scheduled_start ? ` · ${formatBusinessDateTime(work.scheduled_start)}` : ""}</p>
+      <p className="muted"><span className="mono">{work.work_number}</span> · {workStateLabel(work.execution_state)}. Kết quả giao từng dòng vẫn được xác minh ở phiếu giao.</p>
       {context.permissions.has("work.verify") && work.execution_state === "DONE" && delivery?.execution_state === "VERIFIED" && <form action={verifyDeliveryWorkItemAction}>
         <input type="hidden" name="deliveryId" value={deliveryId} />
         <input type="hidden" name="workItemId" value={work.id} />

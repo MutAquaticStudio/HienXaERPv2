@@ -7,6 +7,8 @@ vi.mock("@/lib/access/context", () => ({ requireInternalPermission: mocks.permis
 vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: mocks.client }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidate }));
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect, unstable_rethrow: (error: unknown) => { throw error; } }));
+// Auto-sourcing after confirmation (D19) has its own tests; here it is switched off so only the confirmation is checked.
+vi.mock("./auto-sourcing", async (original) => ({ ...(await original<typeof import("./auto-sourcing")>()), autoSourceConfirmedOrder: async () => ({ status: "SKIPPED" }) }));
 import { cancelSalesOrderAction, confirmSalesOrderAction } from "./actions";
 import { cancelPurchaseOrderAction, confirmPurchaseOrderAction } from "@/modules/purchasing/actions";
 
@@ -31,7 +33,7 @@ async function destination(action: (form: FormData) => Promise<unknown>, form = 
   return new URL(mocks.redirect.mock.lastCall![0], "http://localhost");
 }
 beforeEach(() => {
-  vi.resetAllMocks(); mocks.permission.mockResolvedValue({}); mocks.client.mockResolvedValue({ rpc: mocks.rpc });
+  vi.resetAllMocks(); mocks.permission.mockResolvedValue({ branchId: "b", permissions: new Set() }); mocks.client.mockResolvedValue({ rpc: mocks.rpc });
   mocks.rpc.mockResolvedValue({ data: documentId, error: null });
   mocks.redirect.mockImplementation(() => { throw new Error("NEXT_REDIRECT"); });
 });

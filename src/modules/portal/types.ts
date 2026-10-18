@@ -30,8 +30,12 @@ export type WorkerJob = {
     state: string;
     assignment_version: number | null;
     can_submit_result: boolean;
+    /** The job is on the worker's list but the warehouse has not handed the goods over yet. */
+    awaiting_handoff?: boolean;
     lines: { id: string; material_name: string; unit: string; planned_base_quantity: string;
-      loaded_base_quantity?: string | null; reportable_base_quantity: string }[];
+      loaded_base_quantity?: string | null; reportable_base_quantity: string;
+      /** Unit the order was sold in and its ratio to the base unit (1 bao = 50 kg). */
+      sold_unit?: string | null; sold_numerator?: string | null; sold_denominator?: string | null }[];
   };
 };
 
@@ -47,6 +51,8 @@ export type WorkerPortalSnapshot = {
   employee: { id: string; code: string; display_name: string };
   current: WorkerJob | null;
   next: WorkerJob | null;
+  /** Every open job of the worker by scheduled time. */
+  jobs?: WorkerJob[];
   pool: WorkerJob[];
   earnings: WorkerEarning[];
 };
@@ -95,6 +101,16 @@ export type CustomerOrder = {
   requested_delivery_date?: string;
   total_amount_vnd?: string;
   deliveries: CustomerDelivery[];
+  /** D15: CUSTOMER_PORTAL orders were placed by the customer; a DRAFT one is "Chờ duyệt". */
+  channel?: "INTERNAL" | "CUSTOMER_PORTAL";
+  site_name?: string;
+  delivery_address?: string;
+  receiver_name?: string;
+  receiver_phone?: string;
+  portal_note?: string;
+  can_cancel?: boolean;
+  cancel_reason?: string;
+  lines?: { id: string; material_name: string; quantity: string; uom_symbol: string; unit_price_vnd?: string; line_total_vnd?: string }[];
   can_view_finance?: boolean;
   debt?: null | {
     original_amount_vnd: string | number;
@@ -149,4 +165,16 @@ export type CustomerPortalSnapshot = {
     items: CustomerDebtItem[];
   };
   payment_notices: PaymentNotice[];
+};
+
+/** D15 ordering catalog: this customer's sale units and prices; stock only as "Còn hàng" / "Đặt trước". */
+export type PortalCatalogItem = {
+  material_id: string; code: string; name: string; specification: string | null; group_name: string;
+  uom_id: string; uom_name: string; uom_symbol: string; decimal_scale: number; base_symbol: string;
+  conversion_numerator: string; conversion_denominator: string; unit_price_vnd: string; in_stock: boolean;
+};
+export type PortalCatalog = {
+  customer: { id: string; code: string; display_name: string };
+  sites: { id: string; name: string; address_text: string; receiver_name: string | null; receiver_phone: string | null }[];
+  items: PortalCatalogItem[];
 };

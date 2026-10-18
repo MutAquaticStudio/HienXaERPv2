@@ -32,7 +32,7 @@ function businessToday() {
 /** A variant group with its members and the template for new variants; `null` id prepares a new group. */
 export async function loadVariantGroupAction(groupId: string | null): Promise<VariantGroupData | null> {
   const access = await requireInternalAccess();
-  if (!access.permissions.has("catalog.manage") || (groupId !== null && !z.uuid().safeParse(groupId).success)) return null;
+  if (!access.permissions.has("catalog.manage") || (groupId !== null && !z.guid().safeParse(groupId).success)) return null;
   const supabase = await createServerSupabase();
   const none = Promise.resolve({ data: [] as never[], error: null });
   const [groupResult, memberResult, materialGroupResult, uomResult, attachableResult] = await Promise.all([
@@ -73,23 +73,23 @@ export async function loadVariantGroupAction(groupId: string | null): Promise<Va
 const ratio = z.string().regex(/^\d{1,13}(\.\d{1,6})?$/).refine((value) => Number(value) > 0);
 const attributes = z.record(z.string().min(1).max(40), z.string().trim().min(1).max(40));
 const inputSchema = z.object({
-  operationId: z.uuid(),
-  groupId: z.uuid(),
+  operationId: z.guid(),
+  groupId: z.guid(),
   reason: z.string().trim().min(3).max(500),
   effectiveDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   group: z.object({ name: z.string().trim().min(2).max(160), attributeNames: z.array(z.string().trim().min(1).max(40)).min(1).max(MAX_VARIANT_ATTRIBUTES), active: z.boolean() }),
   expected: z.object({ name: z.string(), attribute_names: z.array(z.string()), active: z.boolean() }).nullable(),
   template: z.object({
-    groupId: z.uuid(), baseUomId: z.uuid(), specification: z.string().trim().max(500), saleEnabled: z.boolean(), purchaseEnabled: z.boolean(),
-    units: z.array(z.object({ uomId: z.uuid(), numerator: ratio, denominator: ratio, type: z.enum(SELLING_TYPES), sourceNote: z.string().trim().max(500) })
+    groupId: z.guid(), baseUomId: z.guid(), specification: z.string().trim().max(500), saleEnabled: z.boolean(), purchaseEnabled: z.boolean(),
+    units: z.array(z.object({ uomId: z.guid(), numerator: ratio, denominator: ratio, type: z.enum(SELLING_TYPES), sourceNote: z.string().trim().max(500) })
       .refine((unit) => !["ESTIMATED", "MEASURED"].includes(unit.type) || unit.sourceNote.length >= 3)).max(20),
   }).refine((template) => template.saleEnabled || template.purchaseEnabled).nullable(),
   variants: z.array(z.union([
-    z.object({ materialId: z.uuid(), detach: z.literal(true) }),
-    z.object({ materialId: z.uuid(), attributes }),
+    z.object({ materialId: z.guid(), detach: z.literal(true) }),
+    z.object({ materialId: z.guid(), attributes }),
     z.object({
       attributes, code: z.string().trim().toUpperCase().regex(MATERIAL_CODE_PATTERN), name: z.string().trim().min(2).max(160),
-      prices: z.array(z.object({ uomId: z.uuid(), priceVnd: z.string().regex(/^[1-9]\d{0,18}$/) })).max(21),
+      prices: z.array(z.object({ uomId: z.guid(), priceVnd: z.string().regex(/^[1-9]\d{0,18}$/) })).max(21),
     }),
   ])).max(MAX_VARIANTS),
 });

@@ -14,11 +14,11 @@ const bucket = "inventory-evidence";
 const maxBytes = 10 * 1024 * 1024;
 const maxJsonBytes = 16 * 1024;
 const prepareSchema = z.object({
-  purchaseOrderId: z.uuid(), createOperationId: z.uuid(),
+  purchaseOrderId: z.guid(), createOperationId: z.guid(),
   fileName: z.string().min(1).max(255), byteSize: z.number().int().min(1).max(maxBytes),
 });
 const finalizeSchema = z.object({
-  purchaseOrderId: z.uuid(), createOperationId: z.uuid(), evidenceId: z.uuid(), finalizeOperationId: z.uuid(),
+  purchaseOrderId: z.guid(), createOperationId: z.guid(), evidenceId: z.guid(), finalizeOperationId: z.guid(),
   byteSize: z.number().int().min(1).max(maxBytes), checksumSha256: z.string().regex(/^[0-9a-f]{64}$/),
 });
 

@@ -1,7 +1,14 @@
+import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { operationalPostingError, quantityInputError } from "@/lib/core/errors";
 
-/** Vietnamese message for a delivery command refusal; never shows the technical code. */
-export function deliveryCommandMessage(value?: string) {
+/** The nearest free start a schedule clash names in its hint ("next_free_at=2026-10-18T03:30:00Z"), as an ISO instant. */
+export function nextFreeAt(hint?: string | null): string | null {
+  const match = /^next_free_at=(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z)$/.exec(hint?.trim() ?? "");
+  return match ? match[1] : null;
+}
+
+/** Vietnamese message for a delivery command refusal; never shows the technical code. `hint` is the database error hint. */
+export function deliveryCommandMessage(value?: string, hint?: string | null) {
   const postingError = operationalPostingError(value);
   if (postingError) return postingError;
   const quantityError = quantityInputError(value);
@@ -10,7 +17,16 @@ export function deliveryCommandMessage(value?: string) {
   if (value?.includes("operation_payload_conflict")) return "Mã thao tác đã được dùng với dữ liệu khác. Hãy tải lại.";
   if (value?.includes("delivery_reassignment_after_work_started_forbidden")) return "Công việc đã bắt đầu. Không thể đổi phân giao; cần xử lý bàn giao có căn cứ.";
   if (value?.includes("delivery_external_assignment_with_work_forbidden")) return "Phiếu đã có công việc nội bộ. Không thể đổi sang xe ngoài bằng thao tác phân giao này.";
-  if (value?.includes("schedule_collision")) return "Người giao hoặc xe đã được phân trong khung giờ này. Chọn lịch hoặc tài nguyên khác.";
+  if (value?.includes("delivery_photo_required")) return "Tải ảnh hàng đã giao lên trước (nút “Tải bằng chứng lên”), rồi bấm lại “NCC đã giao”.";
+  if (value?.includes("delivery_failure_reason_required")) return "Ghi lý do không giao được (ít nhất 3 ký tự).";
+  if (value?.includes("delivery_not_supplier_direct")) return "Chỉ phiếu NCC giao thẳng mới dùng “NCC đã giao”.";
+  if (value?.includes("evidence_not_verified")) return "Ảnh chưa tải lên xong hoặc không thuộc chi nhánh này. Tải lại ảnh rồi thử lại.";
+  if (value?.includes("forbidden")) return "Bạn không có quyền thực hiện bước này của phiếu giao.";
+  if (value?.includes("schedule_collision")) {
+    const free = nextFreeAt(hint);
+    return free ? `Người giao hoặc xe đã có việc trong khung giờ này. Giờ trống gần nhất: ${formatBusinessDateTime(free)}.`
+      : "Người giao hoặc xe đã được phân trong khung giờ này. Chọn lịch hoặc tài nguyên khác.";
+  }
   if (value?.includes("schedule_window")) return "Nhập giờ bắt đầu và giờ kết thúc sau giờ bắt đầu.";
   if (value?.includes("delivery_employee_cannot_report_work")) return "Người giao phải có tài khoản đang hoạt động và quyền nhận, báo kết quả công việc trong chi nhánh.";
   if (value?.includes("vehicle_actual_cargo_capacity_exceeded")) return "Tổng hàng thực lấy và hàng còn trên xe vượt sức chứa đã xác minh. Xử lý hàng của phiếu trước hoặc chọn xe phù hợp trước khi bàn giao.";

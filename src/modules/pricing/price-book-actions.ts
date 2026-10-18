@@ -8,13 +8,13 @@ import { createServerSupabase } from "@/lib/supabase/server";
 export type PriceBookResult = { success: boolean; message: string; count?: number; outcomeUnknown?: boolean };
 
 const itemSchema = z.object({
-  materialId: z.uuid(), uomId: z.uuid(), priceVnd: z.string().regex(/^[1-9]\d{0,18}$/),
-  supersedesId: z.uuid().optional(), expectedVersion: z.number().int().positive().optional(),
+  materialId: z.guid(), uomId: z.guid(), priceVnd: z.string().regex(/^[1-9]\d{0,18}$/),
+  supersedesId: z.guid().optional(), expectedVersion: z.number().int().positive().optional(),
   /** Customer price group code; absent for the general price book. */
   tierCode: z.string().regex(/^[A-Za-z0-9_-]{1,40}$/).optional(),
 }).refine((item) => Boolean(item.supersedesId) === Boolean(item.expectedVersion) && BigInt(item.priceVnd) <= 9223372036854775807n);
 const inputSchema = z.object({
-  operationId: z.uuid(),
+  operationId: z.guid(),
   reason: z.string().trim().min(3).max(500),
   effectiveDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   items: z.array(itemSchema).min(1).max(500),

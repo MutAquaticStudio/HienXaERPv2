@@ -11,7 +11,7 @@ export type CompanySaveResult = { status: "SUCCESS" | "FAILED" | "UNKNOWN"; mess
 
 const text = (max: number) => z.string().trim().max(max);
 const schema = z.object({
-  operationId: z.uuid(),
+  operationId: z.guid(),
   /** The version shown in the form, or null before the first save; a concurrent edit is refused, not overwritten. */
   expectedVersion: z.number().int().positive().nullable(),
   profile: z.object({
@@ -61,7 +61,7 @@ export async function saveCompanyProfileAction(input: unknown): Promise<CompanyS
 export type CompanyLogoResult = { status: "SUCCESS" | "FAILED" | "UNKNOWN"; message: string; sha256?: string | null };
 
 const logoSchema = z.object({
-  operationId: z.uuid(),
+  operationId: z.guid(),
   /** The logo shown when the owner chose the file; replacing a logo changed elsewhere is refused. */
   expectedSha256: z.string().regex(/^[0-9a-f]{64}$/).nullable(),
   /** Both null removes the logo. */

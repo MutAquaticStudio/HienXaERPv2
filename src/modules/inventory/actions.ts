@@ -23,7 +23,7 @@ function operationLines(formData: FormData, quantityKey: "received_quantity" | "
     const id = ids[index];
     const rawQuantity = quantities[index];
     if (typeof id !== "string" || typeof rawQuantity !== "string") return null;
-    const parsedId = z.uuid().safeParse(id);
+    const parsedId = z.guid().safeParse(id);
     if (!parsedId.success || seen.has(parsedId.data)) return null;
     seen.add(parsedId.data);
     if (!rawQuantity.trim()) continue;
@@ -35,7 +35,7 @@ function operationLines(formData: FormData, quantityKey: "received_quantity" | "
 }
 
 export async function receivePurchaseOrderWithOutcomeAction(formData: FormData): Promise<CommandOutcome> {
-  const parsed = z.object({ purchaseOrderId: z.uuid(), receivedAt: z.iso.datetime(), operationId: z.uuid(), evidenceId: z.union([z.uuid(), z.literal("")]).optional() }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ purchaseOrderId: z.guid(), receivedAt: z.iso.datetime(), operationId: z.guid(), evidenceId: z.union([z.guid(), z.literal("")]).optional() }).safeParse(Object.fromEntries(formData));
   const lines = operationLines(formData, "received_quantity");
   if (!parsed.success || !lines) return { status: "FAILED", message: "Vui lòng kiểm tra dòng và số lượng nhận hàng." };
   await requireInternalPermission("inventory.receive");
@@ -61,14 +61,14 @@ export async function receivePurchaseOrderWithOutcomeAction(formData: FormData):
 
 export async function receivePurchaseOrderAction(formData: FormData) {
   const result = await receivePurchaseOrderWithOutcomeAction(formData);
-  const id = z.uuid().safeParse(formData.get("purchaseOrderId"));
+  const id = z.guid().safeParse(formData.get("purchaseOrderId"));
   const target = id.success ? `/admin/purchase-orders/${id.data}` : "/admin/purchase-orders";
   if (result.status !== "SUCCESS") redirect(`${target}?error=${encodeURIComponent(result.message)}`);
   redirect(`${target}?notice=received`);
 }
 
 export async function verifySupplierFulfillmentWithOutcomeAction(formData: FormData): Promise<CommandOutcome> {
-  const parsed = z.object({ purchaseOrderId: z.uuid(), supplierReference: z.string().trim().max(120).optional(), operationId: z.uuid(), evidenceId: z.union([z.uuid(), z.literal("")]).optional() }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ purchaseOrderId: z.guid(), supplierReference: z.string().trim().max(120).optional(), operationId: z.guid(), evidenceId: z.union([z.guid(), z.literal("")]).optional() }).safeParse(Object.fromEntries(formData));
   const lines = operationLines(formData, "supplier_quantity");
   if (!parsed.success || !lines) return { status: "FAILED", message: "Vui lòng kiểm tra dòng và số lượng nhà cung cấp giao." };
   await requireInternalPermission("inventory.receive");
@@ -93,14 +93,14 @@ export async function verifySupplierFulfillmentWithOutcomeAction(formData: FormD
 
 export async function verifySupplierFulfillmentAction(formData: FormData) {
   const result = await verifySupplierFulfillmentWithOutcomeAction(formData);
-  const id = z.uuid().safeParse(formData.get("purchaseOrderId"));
+  const id = z.guid().safeParse(formData.get("purchaseOrderId"));
   const target = id.success ? `/admin/purchase-orders/${id.data}` : "/admin/purchase-orders";
   if (result.status !== "SUCCESS") redirect(`${target}?error=${encodeURIComponent(result.message)}`);
   redirect(`${target}?notice=supplier-verified`);
 }
 
 export async function openStockCountAction(formData: FormData) {
-  const parsed = z.object({ warehouseId: z.uuid(), cutoffAt: z.iso.datetime(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ warehouseId: z.guid(), cutoffAt: z.iso.datetime(), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect("/admin/stock-counts?error=invalid-count");
   const access = await requireInternalPermission("inventory.count");
   const supabase = await createServerSupabase();

@@ -9,6 +9,7 @@ import { deleteCatalogRecordAction, setCatalogActiveAction } from "./actions";
 import { CatalogEditor, type Options } from "./editor";
 import { catalogs } from "./fields";
 import { catalogChoiceLabel } from "./presentation";
+import { formatVnd, vnd } from "@/lib/core/money";
 
 type Row = Record<string, unknown>;
 type Saved = { id: string; message: string; deleted?: boolean };
@@ -145,6 +146,7 @@ function cellValue(kind: string, key: string, row: Row, options: Options) {
   if (field?.type === "checkbox") return value ? "Có" : "Không";
   if (field?.options) return options[field.options]?.find((option) => option.id === value)?.name ?? <span className="muted">—</span>;
   if (field?.choices) return catalogChoiceLabel(String(value));
+  if (field?.type === "money" && /^\d+$/.test(String(value))) return <span className="mono">{formatVnd(vnd(String(value)))}</span>;
   return String(value);
 }
 

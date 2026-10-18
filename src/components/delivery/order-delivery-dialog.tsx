@@ -2,9 +2,10 @@
 
 import Decimal from "decimal.js";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import { NumberEntry } from "@/components/documents/editor/number-entry";
 import { Dialog } from "@/components/ui/dialog";
+import { businessInputValue } from "@/lib/core/business-time";
 import { formatQuantity } from "@/lib/core/quantity";
 import { decimalForEditing, normalizeDecimalInput } from "@/lib/core/vn-number";
 import type { WarehouseAvailability } from "@/modules/inventory/availability";
@@ -19,7 +20,14 @@ export type OrderDeliveryLine = {
 };
 type Props = {
   orderId: string; lines: OrderDeliveryLine[]; warehouses: { id: string; name: string }[]; availability?: WarehouseAvailability;
+  /** Business "now" when the page was drawn (datetime-local value). */
   defaultScheduledAt: string;
+  /** The customer's requested delivery time when it is still ahead: the popup then starts on "Hẹn ngày giờ" at that time. */
+  requestedAt?: string | null;
+  /** Branch "thời gian mỗi điểm giao" (minutes). */
+  stopMinutes?: number;
+  /** Purchasing may order a short line straight from a supplier ("Đặt NCC giao thẳng"). */
+  canOrderDirect?: boolean;
   /** Present only with the right to assign deliveries. */
   resources?: { employees: { id: string; name: string }[]; vehicles: { id: string; label: string }[] } | null;
 };
@@ -39,15 +47,9 @@ export function deliverableBase(line: OrderDeliveryLine, warehouseId: string): D
   return Decimal.max(0, remaining.minus(otherSources));
 }
 
-function addHours(local: string, hours: number) {
-  const [date, time] = local.split("T");
-  const [y, m, d] = date.split("-").map(Number);
-  const [hh, mm] = time.split(":").map(Number);
-  const value = new Date(Date.UTC(y, m - 1, d, hh + hours, mm));
-  return value.toISOString().slice(0, 16);
-}
+const localLabel = (value: string) => { const [date, time] = value.split("T"); const [y, m, d] = date.split("-"); return `${time} ${d}/${m}/${y}`; };
 
-function OrderDeliveryForm({ orderId, lines, warehouses, availability, defaultScheduledAt, resources, onClose }: Props & { onClose: () => void }) {
+function OrderDeliveryForm({ orderId, lines, warehouses, availability, defaultScheduledAt, requestedAt, stopMinutes = 60, canOrderDirect, resources, onClose }: Props & { onClose: () => void }) {
   const router = useRouter();
   const [operationId] = useState(() => crypto.randomUUID());
   const firstWithStock = warehouses.find((warehouse) => lines.some((line) => availability?.positions.some((row) => row.warehouse_id === warehouse.id && row.material_id === line.materialId && new Decimal(row.available_base_quantity).gt(0))));
@@ -57,29 +59,44 @@ function OrderDeliveryForm({ orderId, lines, warehouses, availability, defaultSc
     return [line.salesOrderLineId, amount.gt(0) ? amount.toFixed() : ""];
   })), [lines, warehouseId]);
   const [typed, setTyped] = useState<Record<string, string>>({});
-  const [scheduledAt, setScheduledAt] = useState(defaultScheduledAt);
-  const [assign, setAssign] = useState(false);
-  const [employeeId, setEmployeeId] = useState("");
-  const [vehicleId, setVehicleId] = useState("");
-  const [scheduledEnd, setScheduledEnd] = useState<string | null>(null);
+  const [mode, setMode] = useState<"NOW" | "AT">(requestedAt ? "AT" : "NOW");
+  const [scheduledAt, setScheduledAt] = useState(requestedAt ?? defaultScheduledAt);
+  // "Giao ngay" keeps the moment it was first pressed, so pressing again after an unclear result sends the same command.
+  const pressedAt = useRef<string | null>(null);
+  const single = (rows?: { id: string }[]) => rows?.length === 1 ? rows[0].id : "";
+  const [assign, setAssign] = useState(!!resources);
+  const [employeeId, setEmployeeId] = useState(single(resources?.employees));
+  const [vehicleId, setVehicleId] = useState(single(resources?.vehicles));
   const [result, setResult] = useState<OrderDeliveryResult | null>(null);
   const [pending, startTransition] = useTransition();
   const quantityOf = (line: OrderDeliveryLine) => typed[line.salesOrderLineId] ?? suggested[line.salesOrderLineId] ?? "";
-  const chosen = lines.flatMap((line) => {
+  const rows = lines.map((line) => {
+    const ratio = perBase(line);
+    const left = deliverableBase(line, warehouseId);
+    const stock = availability?.positions.find((row) => row.warehouse_id === warehouseId && row.material_id === line.materialId);
     const value = normalizeDecimalInput(quantityOf(line));
-    return value && new Decimal(value).gt(0) ? [{ salesOrderLineId: line.salesOrderLineId, quantity: value }] : [];
+    const needBase = value ? new Decimal(value).mul(ratio) : null;
+    const short = !!availability && !!needBase && needBase.gt(0) && needBase.gt(stock?.available_base_quantity ?? 0);
+    const over = !!needBase && needBase.gt(left);
+    return { line, ratio, left, stock, value, short, over };
   });
+  const chosen = rows.flatMap((row) => row.value && new Decimal(row.value).gt(0) ? [{ salesOrderLineId: row.line.salesOrderLineId, quantity: row.value }] : []);
   const invalid = lines.some((line) => quantityOf(line) && !normalizeDecimalInput(quantityOf(line)));
-  const ready = !!warehouseId && !!scheduledAt && chosen.length > 0 && !invalid && (!assign || (employeeId && vehicleId));
+  const shortRows = rows.filter((row) => row.short && !row.over);
+  const blocked = rows.some((row) => row.short || row.over);
+  const ready = !!warehouseId && (mode === "NOW" || !!scheduledAt) && chosen.length > 0 && !invalid && !blocked && (!assign || (employeeId && vehicleId));
 
   function submit() {
     if (pending || !ready) return;
+    if (mode === "NOW") pressedAt.current ??= businessInputValue(new Date());
+    const at = mode === "NOW" ? pressedAt.current! : scheduledAt;
     startTransition(async () => {
       try {
-        const saved = await createDeliveryForOrderAction({ operationId, orderId, warehouseId, scheduledAt, lines: chosen,
-          assignment: assign ? { employeeId, vehicleId, scheduledEnd: scheduledEnd ?? addHours(scheduledAt, 4) } : null });
+        const saved = await createDeliveryForOrderAction({ operationId, orderId, warehouseId, scheduleMode: mode, scheduledAt: at, lines: chosen,
+          assignment: assign ? { employeeId, vehicleId } : null });
         setResult(saved);
-        if (saved.success && saved.deliveryId) { onClose(); router.push(`/admin/deliveries/${saved.deliveryId}`); }
+        if (!saved.success && !saved.outcomeUnknown) pressedAt.current = null;
+        if (saved.success && saved.deliveryId) { onClose(); router.push(`/admin/deliveries/${saved.deliveryId}?notice=delivery-planned`); }
       } catch {
         setResult({ success: false, outcomeUnknown: true, message: "Chưa xác định được kết quả. Bấm lại đúng thao tác này để kiểm tra; hệ thống không tạo trùng phiếu." });
       }
@@ -91,46 +108,46 @@ function OrderDeliveryForm({ orderId, lines, warehouses, availability, defaultSc
       <div className="field"><label htmlFor="order-delivery-warehouse">Kho xuất *</label>
         <select id="order-delivery-warehouse" value={warehouseId} onChange={(event) => { setWarehouseId(event.target.value); setTyped({}); }} disabled={pending}>
           {warehouses.map((warehouse) => <option key={warehouse.id} value={warehouse.id}>{warehouse.name}</option>)}</select></div>
-      <div className="field"><label htmlFor="order-delivery-at">Giao lúc *</label>
-        <input id="order-delivery-at" type="datetime-local" value={scheduledAt} onChange={(event) => setScheduledAt(event.target.value)} disabled={pending} /></div>
+      <fieldset className="segmented-radio"><legend>Thời gian giao</legend>
+        <label><input type="radio" name="order-delivery-mode" value="NOW" checked={mode === "NOW"} onChange={() => { setMode("NOW"); setResult(null); }} disabled={pending} /> Giao ngay</label>
+        <label><input type="radio" name="order-delivery-mode" value="AT" checked={mode === "AT"} onChange={() => { setMode("AT"); setResult(null); }} disabled={pending} /> Hẹn ngày giờ</label>
+      </fieldset>
+      {mode === "AT" && <div className="field"><label htmlFor="order-delivery-at">Giao lúc *</label>
+        <input id="order-delivery-at" type="datetime-local" value={scheduledAt} onChange={(event) => setScheduledAt(event.target.value)} disabled={pending} /></div>}
     </div>
     <div className="table-wrap"><table>
       <thead><tr><th scope="col">Vật tư</th><th scope="col" className="numeric">Còn phải giao</th><th scope="col" className="numeric">Tồn kho xuất</th><th scope="col" className="numeric">Giao lần này</th></tr></thead>
-      <tbody>{lines.map((line) => {
-        const ratio = perBase(line);
-        const left = deliverableBase(line, warehouseId);
-        const stock = availability?.positions.find((row) => row.warehouse_id === warehouseId && row.material_id === line.materialId);
-        const value = normalizeDecimalInput(quantityOf(line));
-        const needBase = value ? new Decimal(value).mul(ratio) : null;
-        const short = !!stock && !!needBase && needBase.gt(stock.available_base_quantity);
-        const over = !!needBase && needBase.gt(left);
-        return <tr key={line.salesOrderLineId}>
-          <td data-label="Vật tư"><strong>{line.name}</strong><small className="table-subline">Dòng {line.lineNumber}</small></td>
-          <td className="numeric" data-label="Còn phải giao">{formatQuantity(left.div(ratio).toDecimalPlaces(6, Decimal.ROUND_DOWN).toFixed())} {line.symbol}
-            {line.symbol !== line.baseSymbol && <small className="table-subline">{formatQuantity(left.toFixed())} {line.baseSymbol}</small>}</td>
-          <td className="numeric" data-label="Tồn kho xuất">{stock ? <>{formatQuantity(stock.available_base_quantity)} {line.baseSymbol}</> : availability ? <span className="muted">Chưa có tồn</span> : <span className="muted">—</span>}</td>
-          <td className="numeric" data-label="Giao lần này">
-            <span className="unit-ratio"><NumberEntry aria-label={`Số lượng giao ${line.name}`} inputMode="decimal" value={quantityOf(line)} normalize={normalizeDecimalInput} display={decimalForEditing}
-              placeholder="0" onValue={(next) => setTyped((all) => ({ ...all, [line.salesOrderLineId]: next }))} disabled={pending || left.lte(0)} /><span>{line.symbol}</span></span>
-            {over && <small className="field-error" role="alert">Vượt phần còn phải giao.</small>}
-            {!over && short && <small className="field-error" role="alert">Tồn kho xuất không đủ.</small>}
-          </td>
-        </tr>;
-      })}</tbody>
+      <tbody>{rows.map(({ line, ratio, left, stock, over, short }) => <tr key={line.salesOrderLineId}>
+        <td data-label="Vật tư"><strong>{line.name}</strong><small className="table-subline">Dòng {line.lineNumber}</small></td>
+        <td className="numeric" data-label="Còn phải giao">{formatQuantity(left.div(ratio).toDecimalPlaces(6, Decimal.ROUND_DOWN).toFixed())} {line.symbol}
+          {line.symbol !== line.baseSymbol && <small className="table-subline">{formatQuantity(left.toFixed())} {line.baseSymbol}</small>}</td>
+        <td className="numeric" data-label="Tồn kho xuất">{stock ? <>{formatQuantity(stock.available_base_quantity)} {line.baseSymbol}</> : availability ? <span className="muted">Chưa có tồn</span> : <span className="muted">—</span>}</td>
+        <td className="numeric" data-label="Giao lần này">
+          <span className="unit-ratio"><NumberEntry aria-label={`Số lượng giao ${line.name}`} inputMode="decimal" value={quantityOf(line)} normalize={normalizeDecimalInput} display={decimalForEditing}
+            placeholder="0" onValue={(next) => setTyped((all) => ({ ...all, [line.salesOrderLineId]: next }))} disabled={pending || left.lte(0)} /><span>{line.symbol}</span></span>
+          {over && <small className="field-error" role="alert">Vượt phần còn phải giao.</small>}
+          {!over && short && <small className="field-error" role="alert">Tồn kho xuất không đủ.</small>}
+        </td>
+      </tr>)}</tbody>
     </table></div>
+    {shortRows.length > 0 && <div className="form-message" role="status">
+      <p>Kho này không đủ hàng cho: {shortRows.map((row) => row.line.name).join(", ")}. Giảm số lượng, chọn kho khác{canOrderDirect ? " hoặc đặt NCC giao thẳng phần còn thiếu" : ""}.</p>
+      {canOrderDirect && <p className="inline-actions">{shortRows.map((row) => <a key={row.line.salesOrderLineId} className="code-link" href={`/admin/purchase-orders/new?salesLineId=${row.line.salesOrderLineId}`}>Đặt NCC giao thẳng · {row.line.name}</a>)}</p>}
+    </div>}
     <p className="muted">Để trống hoặc 0 ở dòng chưa giao lần này. Kho chỉ trừ khi bàn giao hàng lên xe; lập phiếu giữ tồn khả dụng cho phiếu.</p>
     {resources && <fieldset className="order-delivery-assign">
-      <legend><label className="check-inline"><input type="checkbox" checked={assign} onChange={(event) => setAssign(event.target.checked)} disabled={pending} /> Phân xe và người giao ngay</label></legend>
-      {assign && <div className="form-grid">
+      <legend><label className="check-inline"><input type="checkbox" checked={assign} onChange={(event) => setAssign(event.target.checked)} disabled={pending} /> Phân xe và người giao</label></legend>
+      {!assign && <p className="muted">Không chọn: hệ thống tự chọn xe có tài xế mặc định rảnh sớm nhất (theo Cài đặt → Tự điều phối), việc tự sang cổng thợ.</p>}
+      {assign && <><div className="form-grid">
         <div className="field"><label htmlFor="order-delivery-employee">Người giao *</label><select id="order-delivery-employee" value={employeeId} onChange={(event) => setEmployeeId(event.target.value)} disabled={pending}>
           <option value="">Chọn người giao...</option>{resources.employees.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></div>
         <div className="field"><label htmlFor="order-delivery-vehicle">Xe *</label><select id="order-delivery-vehicle" value={vehicleId} onChange={(event) => setVehicleId(event.target.value)} disabled={pending}>
           <option value="">Chọn xe...</option>{resources.vehicles.map((row) => <option key={row.id} value={row.id}>{row.label}</option>)}</select></div>
-        <div className="field"><label htmlFor="order-delivery-end">Dự kiến xong *</label>
-          <input id="order-delivery-end" type="datetime-local" value={scheduledEnd ?? addHours(scheduledAt, 4)} onChange={(event) => setScheduledEnd(event.target.value)} disabled={pending} /></div>
-      </div>}
+      </div>
+      <p className="muted">Việc tự hiện ở cổng thợ của người giao. Mỗi điểm giao tính {stopMinutes} phút{mode === "NOW" ? "; người hoặc xe đang bận thì tự xếp ngay sau việc trước" : ""}.</p></>}
     </fieldset>}
-    {result && !result.success && <p className="form-message" role="alert">{result.message}</p>}
+    {result && !result.success && <div className="form-message" role="alert"><p>{result.message}</p>
+      {result.nextFreeAt && <button type="button" className="button button-secondary" onClick={() => { setMode("AT"); setScheduledAt(result.nextFreeAt!); setResult(null); }}>Hẹn lúc {localLabel(result.nextFreeAt)}</button>}</div>}
     <div className="form-actions">
       <button type="button" className="button button-primary" disabled={pending || !ready} onClick={submit}>
         {pending ? "Đang lập phiếu..." : result?.outcomeUnknown ? "Lập lại đúng thao tác" : `Lập phiếu giao (${chosen.length} dòng)`}</button>

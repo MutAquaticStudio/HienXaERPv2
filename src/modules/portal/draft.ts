@@ -15,7 +15,7 @@ export type SafeWorkDraft = {
   };
 };
 
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export function createSafeWorkDraft(expectedVersion: number, operationId: string): SafeWorkDraft {
   return { actualQuantity: "", receiverName: "", note: "", operationId, expectedVersion };

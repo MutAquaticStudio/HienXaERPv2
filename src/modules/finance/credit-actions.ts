@@ -11,7 +11,7 @@ import type { CreditCommand } from "./credit-command";
 
 const wholeMoney = z.string().trim().regex(/^\d{1,19}$/).refine(value => BigInt(value) <= 9223372036854775807n);
 const positiveMoney = wholeMoney.refine(value => BigInt(value) > 0n);
-const identity = { operationId: z.uuid(), creditId: z.uuid() };
+const identity = { operationId: z.guid(), creditId: z.guid() };
 function failure(value?: string) {
   if (value?.includes("legacy_return_credit_source_mismatch")) return "Giá trị phải khớp điều chỉnh đã ghi và nguồn hàng trả. Không ghi giảm lần nữa.";
   if (value?.includes("legacy_return_adjustment_sources_ambiguous")) return "Hồ sơ có nhiều điều chỉnh cũ. Cần đối chiếu từng nguồn trước khi xử lý khoản có.";
@@ -45,13 +45,13 @@ async function run(form: FormData, command: CreditCommand, permission: string, s
   return { status: "SUCCESS", resultId: String(data), message: command === "adjust_return_receivable" ? "Đã ghi quyết định theo hàng trả. Xem công nợ và khoản có bên dưới." : command === "refund_customer_credit" ? "Đã ghi phiếu hoàn tiền từ khoản có đã duyệt." : "Đã cấn trừ khoản có vào nghĩa vụ được chọn; không ghi thu tiền lần nữa." };
 }
 export async function approveReturnCreditAction(form: FormData): Promise<CommandOutcome> {
-  const parsed = z.object({ returnCaseId: z.uuid(), amount: wholeMoney, reason: z.string().trim().min(3).max(500), operationId: z.uuid() }).safeParse(Object.fromEntries(form));
+  const parsed = z.object({ returnCaseId: z.guid(), amount: wholeMoney, reason: z.string().trim().min(3).max(500), operationId: z.guid() }).safeParse(Object.fromEntries(form));
   if (!parsed.success) return { status: "FAILED", message: "Chọn hồ sơ hàng đã nhận lại, số tiền VND nguyên và lý do duyệt." };
   return run(form, "adjust_return_receivable", "finance.ar.adjust", parsed.data.returnCaseId, { target_return_case_id: parsed.data.returnCaseId,
     credit_amount_vnd: parsed.data.amount, adjustment_reason: parsed.data.reason, operation_id: parsed.data.operationId });
 }
 export async function refundCustomerCreditAction(form: FormData): Promise<CommandOutcome> {
-  const parsed = z.object({ ...identity, amount: positiveMoney, accountId: z.uuid(), refundedAt: z.string(),
+  const parsed = z.object({ ...identity, amount: positiveMoney, accountId: z.guid(), refundedAt: z.string(),
     method: z.enum(["CASH", "BANK_TRANSFER", "CARD", "OTHER"]), reference: z.string().trim().max(160) }).safeParse(Object.fromEntries(form));
   if (!parsed.success) return { status: "FAILED", message: "Nhập khoản có, tài khoản chi, thời điểm và số tiền hoàn hợp lệ." };
   const when = parseBusinessDateTime(parsed.data.refundedAt);
@@ -61,7 +61,7 @@ export async function refundCustomerCreditAction(form: FormData): Promise<Comman
     refund_method: parsed.data.method, refund_reference: parsed.data.reference, operation_id: parsed.data.operationId });
 }
 export async function offsetCustomerCreditAction(form: FormData): Promise<CommandOutcome> {
-  const parsed = z.object({ ...identity, amount: positiveMoney, obligationId: z.uuid() }).safeParse(Object.fromEntries(form));
+  const parsed = z.object({ ...identity, amount: positiveMoney, obligationId: z.guid() }).safeParse(Object.fromEntries(form));
   if (!parsed.success) return { status: "FAILED", message: "Chọn nghĩa vụ cùng khách và nhập số tiền cấn trừ hợp lệ." };
   return run(form, "offset_customer_credit", "finance.payment.post", parsed.data.creditId, { target_credit_id: parsed.data.creditId,
     target_obligation_id: parsed.data.obligationId, offset_amount_vnd: parsed.data.amount, operation_id: parsed.data.operationId });

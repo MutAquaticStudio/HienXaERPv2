@@ -13,7 +13,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { inventoryMovementLabel } from "@/modules/inventory/presentation";
 import { inUnit, largestUnit, stockCard, type CardMovement, type DisplayUnit } from "@/modules/inventory/stock-view";
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const STOCK = ["in", "out", "low"] as const;
 /** Materials read for one view; the list is filtered and paged on the server from these. */
 const MATERIAL_LIMIT = 3000;

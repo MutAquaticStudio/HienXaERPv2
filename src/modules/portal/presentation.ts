@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import { salesStateLabel as canonicalSalesStateLabel } from "@/modules/sales/presentation";
 import { deliveryStateLabel } from "@/modules/delivery/presentation";
 import { financeStateLabel } from "@/modules/finance/presentation";
@@ -12,7 +13,7 @@ export function workStateLabel(value?: string | null) {
   return label({ AVAILABLE: "Sẵn sàng nhận việc", CLAIMED: "Đã nhận việc", IN_PROGRESS: "Đang thực hiện", BLOCKED: "Đang vướng", DONE: "Chờ xác minh", VERIFIED: "Đã xác minh", CANCELLED: "Đã hủy" }, value, "work", "Trạng thái đang cập nhật");
 }
 export function workKindLabel(value?: string | null) {
-  return label({ DELIVERY: "Chuyến giao hàng", SERVICE: "Công việc dịch vụ" }, value, "work_kind", "Công việc");
+  return label({ DELIVERY: "Chuyến giao hàng", SERVICE_JOB: "Công việc dịch vụ", SERVICE: "Công việc dịch vụ" }, value, "work_kind", "Công việc");
 }
 export function earningStateLabel(value?: string | null) {
   return label({ DRAFT: "Chờ duyệt", APPROVED: "Đã duyệt", PAID: "Đã thanh toán", RECORDED: "Đã ghi nhận" }, value, "earning", "Khoản đang cập nhật");
@@ -38,4 +39,26 @@ export function customerDocumentStateLabel(kind: string, state?: string | null) 
   if (kind === "DELIVERY") return deliveryStateLabel(state);
   if (kind === "PAYMENT") return financeStateLabel(state);
   return "Trạng thái đang cập nhật";
+}
+
+/** Quantity in the unit the order was sold in, with the base unit beside it: "60 bao (3.000 kg)". */
+export function soldQuantityLabel(base: string, line: { unit: string; sold_unit?: string | null; sold_numerator?: string | null; sold_denominator?: string | null }, format: (value: string) => string) {
+  const numerator = Number(line.sold_numerator ?? 0);
+  const denominator = Number(line.sold_denominator ?? 0);
+  if (!line.sold_unit || line.sold_unit === line.unit || !(numerator > 0) || !(denominator > 0) || numerator === denominator) return `${format(base)} ${line.unit}`;
+  const sold = new Decimal(base).mul(denominator).div(numerator).toDecimalPlaces(3, Decimal.ROUND_DOWN).toFixed();
+  return `${format(sold)} ${line.sold_unit} (${format(base)} ${line.unit})`;
+}
+
+/** D15: how the customer sees an order — "Chờ duyệt" while a portal order waits, then approved / delivering / delivered. */
+export function portalOrderStateLabel(order: { channel?: string; state?: string; fulfillment_state?: string }) {
+  if (order.state === "DRAFT") return order.channel === "CUSTOMER_PORTAL" ? "Chờ duyệt" : "Đang soạn";
+  if (order.state === "CANCELLED") return "Đã hủy";
+  if (order.state === "CONFIRMED" || order.state === "CLOSED") {
+    if (order.fulfillment_state === "FULFILLED") return "Đã giao";
+    if (order.fulfillment_state === "PARTIAL") return "Đang giao";
+    if (order.fulfillment_state === "CLOSED_REMAINDER") return "Đã giao (chốt phần còn lại)";
+    return order.channel === "CUSTOMER_PORTAL" ? "Đã duyệt" : "Đã xác nhận";
+  }
+  return salesStateLabel(order.state);
 }

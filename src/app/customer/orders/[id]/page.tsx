@@ -7,21 +7,54 @@ import { getCustomerPortalOrder } from "@/modules/portal/actions";
 import { salesStateLabel } from "@/modules/sales/presentation";
 import { deliveryStateLabel } from "@/modules/delivery/presentation";
 import { QUOTATIONS_ENABLED } from "@/lib/features";
+import { randomUUID } from "node:crypto";
+import { formatQuantity } from "@/lib/core/quantity";
+import { portalOrderStateLabel } from "@/modules/portal/presentation";
+import { cancelPortalOrderAction } from "@/modules/portal/order-actions";
 
 
-export default async function CustomerOrderPage({ params }: { params: Promise<{ id: string }> }) {
+const notices: Record<string, string> = {
+  submitted: "Đã gửi đơn. Cửa hàng sẽ duyệt và báo ngày giao.",
+  cancelled: "Đã hủy đơn.",
+  "cancel-failed": "Không hủy được đơn — có thể cửa hàng vừa duyệt. Tải lại trang để xem trạng thái mới.",
+  "cancel-reason": "Ghi lý do hủy (từ 3 ký tự).",
+};
+
+export default async function CustomerOrderPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ notice?: string }> }) {
   const { id } = await params;
+  const notice = notices[(await searchParams).notice ?? ""];
   const order = await getCustomerPortalOrder(id);
+  const lines = order.lines ?? [];
   const payments = order.payments ?? [];
   const documents = (order.documents ?? []).filter((document) => QUOTATIONS_ENABLED || document.kind !== "QUOTATION");
   return (
     <div className={styles.page}>
+      {notice && <p className={styles.status} role="status">{notice}</p>}
       <header className={styles.hero}>
-        <p className={styles.heroEyebrow}>Đơn hàng</p>
+        <p className={styles.heroEyebrow}>{order.channel === "CUSTOMER_PORTAL" ? "Đơn bạn đặt" : "Đơn hàng"} · {portalOrderStateLabel(order)}</p>
         <h1>{order.number ?? "Chi tiết đơn hàng"}</h1>
         <p>Thương mại: {salesStateLabel(order.state ?? "NOT_STARTED")} · Thực hiện: {salesStateLabel(order.fulfillment_state ?? "NOT_STARTED")}</p>
+        {order.cancel_reason && <p>Lý do hủy: {order.cancel_reason}</p>}
         {order.can_view_finance ? <p>Thanh toán: {salesStateLabel(order.payment_state ?? "NOT_DUE")} · Giá trị: {money(order.total_amount_vnd ?? 0)}</p> : <p>Thông tin công nợ và thanh toán chỉ dành cho chủ tài khoản hoặc người phụ trách thanh toán.</p>}
       </header>
+      {lines.length > 0 && <section className={styles.card}>
+        <h2>Hàng đặt</h2>
+        <ul className={styles.orderLines}>{lines.map((line) => <li key={line.id}>
+          <span>{line.material_name}<br /><small className={styles.hint}>{formatQuantity(line.quantity)} {line.uom_symbol}{line.unit_price_vnd ? ` × ${money(line.unit_price_vnd)}` : ""}</small></span>
+          {line.line_total_vnd && <strong>{money(line.line_total_vnd)}</strong>}</li>)}</ul>
+        <div className={styles.kv}><span>Giao tới</span><strong>{order.site_name}{order.delivery_address ? ` — ${order.delivery_address}` : ""}</strong></div>
+        {order.requested_delivery_date && <div className={styles.kv}><span>Muốn nhận</span><strong>{formatBusinessDateTime(order.requested_delivery_date)}</strong></div>}
+        {order.portal_note && <div className={styles.kv}><span>Ghi chú</span><strong>{order.portal_note}</strong></div>}
+        {order.can_cancel && <details>
+          <summary className={styles.link}>Hủy đơn</summary>
+          <form action={cancelPortalOrderAction} className={styles.form}>
+            <input type="hidden" name="orderId" value={order.id} />
+            <input type="hidden" name="operationId" value={randomUUID()} />
+            <div className={styles.field}><label htmlFor="cancel-reason">Lý do hủy</label><textarea id="cancel-reason" name="reason" minLength={3} maxLength={300} required /></div>
+            <button className={styles.buttonDanger} type="submit">Hủy đơn này</button>
+          </form>
+        </details>}
+      </section>}
       <section className={styles.card}>
         <h2>Tiến trình giao nhận</h2>
         <div className={styles.timeline}>

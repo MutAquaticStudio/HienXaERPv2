@@ -22,7 +22,7 @@ export async function exportBusinessDocument(kind: DocumentKind, id: string): Pr
   try {
     const access = await resolveInternalAccess();
     const c = config[kind]; requirePermission(access, c.permission);
-    if (!z.uuid().safeParse(id).success) return new Response("Mã chứng từ không hợp lệ.", { status: 400 });
+    if (!z.guid().safeParse(id).success) return new Response("Mã chứng từ không hợp lệ.", { status: 400 });
     const supabase = await createServerSupabase();
     // RLS remains active. Scope to the selected branch as well as the document ID.
     const header = await supabase.from(c.table).select("*").eq("id", id).eq("branch_id", access.branchId).maybeSingle();

@@ -1,4 +1,5 @@
 import styles from "@/components/portal/portal.module.css";
+import { PushToggle } from "@/components/notifications/push-toggle";
 import { getWorkerPortalSnapshot } from "@/modules/portal/actions";
 
 export default async function WorkProfilePage() {
@@ -12,6 +13,10 @@ export default async function WorkProfilePage() {
         <div className={styles.kv}><span>Họ tên</span><strong>{employee.display_name}</strong></div>
         <div className={styles.kv}><span>Mã nhân sự</span><strong>{employee.code}</strong></div>
         <p className={styles.hint}>Nếu quyền chi nhánh hoặc phân công bị thu hồi, lần đọc tiếp theo sẽ bị chặn ngay.</p>
+      </section>
+      <section className={styles.card}>
+        <h2>Báo việc mới về điện thoại</h2>
+        <PushToggle />
       </section>
     </div>
   );

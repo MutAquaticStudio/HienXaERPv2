@@ -13,10 +13,10 @@ function failure(message?: string, code?: string): CommandOutcome {
 function refresh() { for (const page of ["/admin/expenses", "/admin/payables", "/admin"]) revalidatePath(page); }
 
 export async function createDeliveryExpenseAction(form: FormData): Promise<CommandOutcome> {
- const parsed = z.object({ assignment: z.string().regex(/^[0-9a-f-]{36}:[1-9]\d*$/i), categoryId: z.uuid(), supplierId: z.uuid(),
+ const parsed = z.object({ assignment: z.string().regex(/^[0-9a-f-]{36}:[1-9]\d*$/i), categoryId: z.guid(), supplierId: z.guid(),
   amount: z.string().regex(/^[1-9]\d*$/), effectiveAt: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/), dueDate: z.iso.date(),
   description: z.string().trim().min(3).max(500), costScope: z.enum(["DIRECT_DELIVERY", "OVERHEAD"]), supplierReference: z.string().trim().min(3).max(100),
-  evidenceId: z.union([z.uuid(), z.literal("")]), operationId: z.uuid() }).safeParse(Object.fromEntries(form));
+  evidenceId: z.union([z.guid(), z.literal("")]), operationId: z.guid() }).safeParse(Object.fromEntries(form));
  if (!parsed.success) return { status: "FAILED", message: "Chọn lần giao thực tế, chứng từ nhà cung cấp và thông tin chi phí hợp lệ." };
  const access = await requireInternalPermission("finance.expense.manage");
  const changed = await checkSavedCommandFieldsAction(form, "create_delivery_expense"); if (changed) return changed;
@@ -32,7 +32,7 @@ export async function createDeliveryExpenseAction(form: FormData): Promise<Comma
 }
 
 export async function approveExpenseWithOutcomeAction(form: FormData): Promise<CommandOutcome> {
- const parsed = z.object({ expenseId: z.uuid(), version: z.coerce.number().int().positive(), operationId: z.uuid() }).safeParse(Object.fromEntries(form));
+ const parsed = z.object({ expenseId: z.guid(), version: z.coerce.number().int().positive(), operationId: z.guid() }).safeParse(Object.fromEntries(form));
  if (!parsed.success) return { status: "FAILED", message: "Thông tin duyệt chi phí không hợp lệ." };
  const access = await requireInternalPermission("finance.expense.manage");
  const changed = await checkSavedCommandFieldsAction(form, "approve_expense"); if (changed) return changed;

@@ -9,7 +9,7 @@ describe("module-owned catalog routing", () => {
     ["customers", "/admin/customers/manage"], ["sites", "/admin/customers/manage"],
     ["suppliers", "/admin/suppliers/manage"], ["warehouses", "/admin/inventory/warehouses"],
     ["vehicles", "/admin/dispatch/resources"], ["machines", "/admin/dispatch/resources"],
-    ["branches", "/admin/settings/branches"],
+    ["service_types", "/admin/service-jobs/types"], ["branches", "/admin/settings/branches"],
   ])("routes %s to its owning module", (kind, path) => {
     expect(catalogHref(kind)).toBe(`${path}?kind=${kind}`);
   });
@@ -29,6 +29,8 @@ describe("module-owned catalog routing", () => {
     expect(manageableCatalogs(catalogModules.products, permissions).map(([kind]) => kind)).toEqual(["materials", "groups", "units", "conversions"]);
     expect(manageableCatalogs(catalogModules.customers, permissions)).toEqual([]);
     expect(manageableCatalogs(catalogModules.warehouses, new Set(["inventory.read"]))).toEqual([]);
+    expect(manageableCatalogs(catalogModules.services, new Set(["service.read"]))).toEqual([]);
+    expect(manageableCatalogs(catalogModules.services, new Set(["service.manage"])).map(([kind]) => kind)).toEqual(["service_types"]);
   });
   it("owns every existing catalog exactly once without new taxonomy", () => {
     const kinds = Object.values(catalogModules).flat();

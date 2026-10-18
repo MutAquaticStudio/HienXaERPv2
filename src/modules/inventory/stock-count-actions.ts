@@ -18,17 +18,17 @@ export type StockCountSheetResult = {
 
 const UNKNOWN = "Chưa xác định được kết quả. Bấm lại đúng thao tác này để kiểm tra; hệ thống không ghi trùng.";
 const sheetSchema = z.object({
-  operationId: z.uuid(),
-  stockCountId: z.uuid(),
+  operationId: z.guid(),
+  stockCountId: z.guid(),
   version: z.number().int().positive(),
   lines: z.array(z.object({
-    materialId: z.uuid(),
+    materialId: z.guid(),
     counted: z.string().refine((value) => isExactEntryQuantity(value, true)),
     reason: z.string().trim().max(500),
     unitCost: z.string().refine((value) => isExactEntryQuantity(value)).nullable(),
   })).max(500),
   /** Present for "Hoàn thành & cân bằng kho": approve right after the lines are saved. */
-  approveOperationId: z.uuid().nullable(),
+  approveOperationId: z.guid().nullable(),
 });
 
 /**
@@ -78,7 +78,7 @@ export async function saveStockCountSheetAction(input: unknown): Promise<StockCo
   }
 }
 
-const cancelSchema = z.object({ operationId: z.uuid(), stockCountId: z.uuid(), version: z.number().int().positive(), reason: z.string().trim().min(3).max(500) });
+const cancelSchema = z.object({ operationId: z.guid(), stockCountId: z.guid(), version: z.number().int().positive(), reason: z.string().trim().min(3).max(500) });
 
 /** "Hủy phiếu": an open count is closed without any stock movement; what was counted stays as history. */
 export async function cancelStockCountAction(input: unknown): Promise<StockCountSheetResult> {

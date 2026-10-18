@@ -23,7 +23,7 @@ export function ActivationLinkBox({ link }: { link: string }) {
       {canShare && <button type="button" className="button button-secondary"
         onClick={() => { void navigator.share({ title: "Kích hoạt tài khoản Hiền Xa ERP", text: "Mở link để đặt mật khẩu tài khoản Hiền Xa ERP:", url: link }).catch(() => {}); }}>Gửi qua Zalo / tin nhắn</button>}
     </div>
-    <small className="muted">Link chỉ dùng một lần và có thời hạn. Nhân viên mở link, đặt mật khẩu rồi đăng nhập bằng email. Hết hạn thì bấm &quot;Link kích hoạt&quot; ở dòng nhân viên để tạo link mới.</small>
+    <small className="muted">Link chỉ dùng một lần và có thời hạn. Nhân viên mở link, đặt mật khẩu rồi đăng nhập bằng email hoặc số điện thoại đã khai. Hết hạn thì bấm &quot;Link kích hoạt&quot; ở dòng nhân viên để tạo link mới.</small>
   </div>;
 }
 

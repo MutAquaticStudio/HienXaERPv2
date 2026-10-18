@@ -1,5 +1,5 @@
 import { formatBusinessDateTime } from "@/lib/core/business-time";
-import { salesStateLabel } from "@/modules/portal/presentation";
+import { portalOrderStateLabel } from "@/modules/portal/presentation";
 import Link from "next/link";
 
 import styles from "@/components/portal/portal.module.css";
@@ -13,13 +13,15 @@ export default async function CustomerOrdersPage({ searchParams }: { searchParam
       {query.notice === "order-unavailable" && <p className={styles.status} role="status">Đơn hàng không thuộc phạm vi truy cập của bạn. Hãy chọn đơn trong danh sách khách hàng hiện tại.</p>}
       <header className={styles.sectionHead}>
         <div><h1>Đơn hàng và giao nhận</h1><p>Theo dõi tiến trình giao nhận và thông tin đơn hàng của bạn.</p></div>
+        {snapshot.membership_role !== "RECEIVER" && <Link className={styles.button} href="/customer/orders/new">Đặt hàng</Link>}
       </header>
       <div className={styles.grid}>
         {snapshot.orders.length ? snapshot.orders.map((order) => (
           <article className={styles.card} key={order.id}>
-            <span className={styles.badge}>{salesStateLabel(order.state)}</span>
+            <span className={`${styles.badge} ${order.channel === "CUSTOMER_PORTAL" && order.state === "DRAFT" ? styles.badgeWarm : ""}`}>{portalOrderStateLabel(order)}</span>
             <h2>{order.number ?? "Đơn hàng"}</h2>
             <div className={styles.meta}>
+              {order.site_name && <span>{order.site_name}</span>}
               <span>{order.deliveries.length} lượt giao</span>
               <span>{order.requested_delivery_date ? formatBusinessDateTime(order.requested_delivery_date) : "Chưa chốt ngày giao"}</span>
             </div>

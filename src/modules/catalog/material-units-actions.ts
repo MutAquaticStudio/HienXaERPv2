@@ -30,7 +30,7 @@ function businessToday() {
 /** Selling units, their general prices and (with cost rights) the average cost of one base unit. */
 export async function loadMaterialUnitsAction(materialId: string): Promise<MaterialUnitsData | null> {
   const access = await requireInternalAccess();
-  if (!access.permissions.has("catalog.read") || !z.uuid().safeParse(materialId).success) return null;
+  if (!access.permissions.has("catalog.read") || !z.guid().safeParse(materialId).success) return null;
   const can = {
     units: access.permissions.has("catalog.manage"), prices: access.permissions.has("pricing.manage"), readPrices: access.permissions.has("pricing.read"),
     cost: access.permissions.has("inventory.read") && access.permissions.has("inventory.cost.read"),
@@ -76,17 +76,17 @@ export async function loadMaterialUnitsAction(materialId: string): Promise<Mater
 }
 
 const inputSchema = z.object({
-  operationId: z.uuid(),
-  materialId: z.uuid(),
+  operationId: z.guid(),
+  materialId: z.guid(),
   reason: z.string().trim().min(3).max(500),
   effectiveDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   addUnits: z.array(z.object({
-    uomId: z.uuid(), ratio: z.string().regex(/^\d{1,13}(\.\d{1,6})?$/).refine((value) => Number(value) > 0),
+    uomId: z.guid(), ratio: z.string().regex(/^\d{1,13}(\.\d{1,6})?$/).refine((value) => Number(value) > 0),
     type: z.enum(SELLING_TYPES), sourceNote: z.string().trim().max(500),
   }).refine((unit) => !["ESTIMATED", "MEASURED"].includes(unit.type) || unit.sourceNote.length >= 3)).max(20),
-  stopConversionIds: z.array(z.uuid()).max(20),
+  stopConversionIds: z.array(z.guid()).max(20),
   prices: z.array(z.object({
-    uomId: z.uuid(), priceVnd: z.string().regex(/^[1-9]\d{0,18}$/), supersedesId: z.uuid().optional(), expectedVersion: z.number().int().positive().optional(),
+    uomId: z.guid(), priceVnd: z.string().regex(/^[1-9]\d{0,18}$/), supersedesId: z.guid().optional(), expectedVersion: z.number().int().positive().optional(),
   }).refine((item) => Boolean(item.supersedesId) === Boolean(item.expectedVersion) && BigInt(item.priceVnd) <= 9223372036854775807n)).max(21),
 }).refine((input) => input.addUnits.length + input.stopConversionIds.length + input.prices.length > 0);
 

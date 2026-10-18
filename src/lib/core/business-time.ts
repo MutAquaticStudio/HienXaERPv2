@@ -34,3 +34,12 @@ export function formatBusinessDateTime(value: string) {
   }).format(date);
   return `${formatBusinessDate(value)} ${time}`;
 }
+
+/** An instant as a datetime-local value in business time ("2026-10-18T10:30"). */
+export function businessInputValue(value: string | Date) {
+  const date = typeof value === "string" ? new Date(value) : value;
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat("sv-SE", {
+    timeZone: BUSINESS_TIME_ZONE, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+  }).format(date).replace(" ", "T");
+}

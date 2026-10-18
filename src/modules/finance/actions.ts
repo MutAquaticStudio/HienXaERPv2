@@ -12,7 +12,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 
 const money = z.string().trim().regex(/^\d+$/).refine((value) => BigInt(value) > 0n);
 const signedMoney = z.string().trim().regex(/^-?\d+$/).refine((value) => BigInt(value) !== 0n);
-const optionalUuid = z.union([z.uuid(), z.literal("")]).optional();
+const optionalUuid = z.union([z.guid(), z.literal("")]).optional();
 const localDateTime = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
 const destinationSchema = z.string().startsWith("/admin/").max(300);
 
@@ -51,7 +51,7 @@ export async function createFinanceAccountAction(formData: FormData) {
     code: z.string().trim().toUpperCase().regex(/^[A-Z0-9_-]{2,24}$/),
     name: z.string().trim().min(2).max(120),
     kind: z.enum(["CASH", "BANK"]),
-    operationId: z.uuid(),
+    operationId: z.guid(),
   }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect("/admin/cashbook?error=invalid-account");
   const access = await requireInternalPermission("finance.account.manage");
@@ -71,21 +71,21 @@ export async function createFinanceAccountAction(formData: FormData) {
 export async function submitPaymentWithOutcomeAction(formData: FormData): Promise<CommandOutcome> {
   const parsed = z.object({
     direction: z.enum(["RECEIPT", "DISBURSEMENT"]),
-    partyId: z.uuid(),
-    accountId: z.uuid(),
+    partyId: z.guid(),
+    accountId: z.guid(),
     amount: money,
     effectiveAt: localDateTime,
     method: z.enum(["CASH", "BANK_TRANSFER", "CARD", "OTHER"]),
     reference: z.string().trim().max(160).optional(),
     advanceAmount: z.string().trim().regex(/^\d+$/).optional(),
     allocationsJson: z.string(),
-    operationId: z.uuid(),
+    operationId: z.guid(),
   }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { status: "FAILED", message: "Vui lòng nhập đầy đủ thông tin phiếu thu/chi hợp lệ." };
 
   let allocations: Array<{ obligation_id: string; amount_vnd: string }>;
   try {
-    allocations = z.array(z.object({ obligation_id: z.uuid(), amount_vnd: money })).parse(JSON.parse(parsed.data.allocationsJson));
+    allocations = z.array(z.object({ obligation_id: z.guid(), amount_vnd: money })).parse(JSON.parse(parsed.data.allocationsJson));
   } catch {
     return { status: "FAILED", message: "Vui lòng kiểm tra các khoản được phân bổ." };
   }
@@ -127,7 +127,7 @@ export async function postPaymentAction(formData: FormData) {
 }
 
 export async function reversePaymentAction(formData: FormData) {
-  const parsed = z.object({ paymentId: z.uuid(), reason: z.string().trim().min(3).max(500), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ paymentId: z.guid(), reason: z.string().trim().min(3).max(500), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect("/admin/cashbook?error=invalid-reversal");
   await requireInternalPermission("finance.payment.reverse");
   const supabase = await createServerSupabase();
@@ -146,11 +146,11 @@ export async function reversePaymentAction(formData: FormData) {
 
 export async function reconcilePaymentAction(formData: FormData) {
   const parsed = z.object({
-    paymentId: z.uuid(),
+    paymentId: z.guid(),
     amount: money,
     effectiveAt: localDateTime,
     reference: z.string().trim().min(2).max(160),
-    operationId: z.uuid(),
+    operationId: z.guid(),
   }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect("/admin/cashbook?error=invalid-reconciliation");
   await requireInternalPermission("finance.reconcile");
@@ -171,7 +171,7 @@ export async function createExpenseCategoryAction(formData: FormData) {
   const parsed = z.object({
     code: z.string().trim().toUpperCase().regex(/^[A-Z0-9_-]{2,24}$/),
     name: z.string().trim().min(2).max(120),
-    operationId: z.uuid(),
+    operationId: z.guid(),
   }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect("/admin/expenses?error=invalid-category");
   const access = await requireInternalPermission("finance.expense.manage");
@@ -189,8 +189,8 @@ export async function createExpenseCategoryAction(formData: FormData) {
 
 export async function createExpenseAction(formData: FormData) {
   const parsed = z.object({
-    categoryId: z.uuid(),
-    supplierId: z.uuid(),
+    categoryId: z.guid(),
+    supplierId: z.guid(),
     amount: money,
     effectiveAt: localDateTime,
     dueDate: z.iso.date(),
@@ -198,7 +198,7 @@ export async function createExpenseAction(formData: FormData) {
     activityKind: z.enum(["OPERATIONS", "SALES", "DELIVERY", "SERVICE", "ADMIN"]),
     salesOrderId: optionalUuid,
     evidenceId: optionalUuid,
-    operationId: z.uuid(),
+    operationId: z.guid(),
   }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect("/admin/expenses?error=invalid-expense");
   const access = await requireInternalPermission("finance.expense.manage");
@@ -222,7 +222,7 @@ export async function createExpenseAction(formData: FormData) {
 }
 
 export async function approveExpenseAction(formData: FormData) {
-  const parsed = z.object({ expenseId: z.uuid(), version: z.coerce.number().int().positive(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ expenseId: z.guid(), version: z.coerce.number().int().positive(), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect("/admin/expenses?error=invalid-approval");
   await requireInternalPermission("finance.expense.manage");
   const supabase = await createServerSupabase();
@@ -240,11 +240,11 @@ export async function approveExpenseAction(formData: FormData) {
 
 async function adjustmentAction(formData: FormData, side: "AR" | "AP") {
   const parsed = z.object({
-    obligationId: z.uuid(),
+    obligationId: z.guid(),
     amount: signedMoney,
     reason: z.string().trim().min(3).max(500),
     evidenceId: optionalUuid,
-    operationId: z.uuid(),
+    operationId: z.guid(),
   }).safeParse(Object.fromEntries(formData));
   const base = side === "AR" ? "/admin/receivables" : "/admin/payables";
   const target = parsed.success ? `${base}/${parsed.data.obligationId}` : base;
@@ -277,12 +277,12 @@ export async function recordPayableAdjustmentAction(formData: FormData) {
 }
 
 export async function allocateExistingPaymentAction(form: FormData): Promise<CommandOutcome> {
-  const parsed = z.object({ paymentId: z.uuid(), direction: z.enum(["RECEIPT", "DISBURSEMENT"]), partyId: z.uuid(),
-    allocationsJson: z.string(), operationId: z.uuid() }).safeParse(Object.fromEntries(form));
+  const parsed = z.object({ paymentId: z.guid(), direction: z.enum(["RECEIPT", "DISBURSEMENT"]), partyId: z.guid(),
+    allocationsJson: z.string(), operationId: z.guid() }).safeParse(Object.fromEntries(form));
   if (!parsed.success) return { status: "FAILED", message: "Chọn phiếu tiền và các khoản công nợ hợp lệ." };
   let raw: unknown;
   try { raw = JSON.parse(parsed.data.allocationsJson); } catch { return { status: "FAILED", message: "Các khoản phân bổ chưa hợp lệ." }; }
-  const lines = z.array(z.object({ obligation_id: z.uuid(), amount_vnd: money })).min(1).max(50).safeParse(raw);
+  const lines = z.array(z.object({ obligation_id: z.guid(), amount_vnd: money })).min(1).max(50).safeParse(raw);
   if (!lines.success) return { status: "FAILED", message: "Chọn từ 1 đến 50 khoản và nhập số tiền VND nguyên hợp lệ." };
   const access = await requireInternalPermission("finance.payment.post");
   const changed = await checkSavedCommandFieldsAction(form, "allocate_payment");

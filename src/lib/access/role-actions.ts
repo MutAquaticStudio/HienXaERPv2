@@ -9,8 +9,8 @@ import { createServerSupabase } from "@/lib/supabase/server";
 export type RoleSaveResult = { status: "SUCCESS" | "FAILED" | "UNKNOWN"; message: string; roleId?: string };
 
 const schema = z.object({
-  operationId: z.uuid(),
-  roleId: z.uuid().nullable(),
+  operationId: z.guid(),
+  roleId: z.guid().nullable(),
   name: z.string().trim().min(2).max(100),
   permissions: z.array(z.string().regex(/^[a-z_]+(?:\.[a-z_]+)+$/)).max(200),
   /** The role's permissions as the editor read them, so a concurrent change is not overwritten. */

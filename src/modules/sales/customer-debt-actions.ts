@@ -16,7 +16,7 @@ function businessToday() {
  */
 export async function loadCustomerDebtAction(customerId: string): Promise<CustomerDebt | null> {
   const access = await requireInternalAccess();
-  if (!access.permissions.has("finance.ar.read") || !z.uuid().safeParse(customerId).success) return null;
+  if (!access.permissions.has("finance.ar.read") || !z.guid().safeParse(customerId).success) return null;
   const supabase = await createServerSupabase();
   const { data, error } = await supabase.from("receivable_read").select("outstanding_amount_vnd::text, due_date")
     .eq("branch_id", access.branchId).eq("customer_id", customerId).gt("outstanding_amount_vnd", 0).limit(1000);

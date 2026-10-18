@@ -7,7 +7,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { checkSavedCommandFieldsAction } from "@/lib/core/command-outcome-actions";
 import { isAuthoritativeRejection, type CommandOutcome } from "@/lib/core/command-outcome";
 
-const uuidOrBlank = z.union([z.uuid(), z.literal("")]);
+const uuidOrBlank = z.union([z.guid(), z.literal("")]);
 const quantity = z.string().trim().regex(/^\d{1,14}(?:\.\d{1,6})?$/);
 const reason = z.string().trim().min(3).max(500);
 function failure(message?: string, code?: string): CommandOutcome {
@@ -23,7 +23,7 @@ async function assertCase(id: string, branchId: string) {
  const db = await createServerSupabase(); const { data, error } = await db.from("supplier_return_read").select("id").eq("id", id).eq("branch_id", branchId).maybeSingle(); return !error && Boolean(data);
 }
 export async function createSupplierReturnAction(form: FormData): Promise<CommandOutcome> {
- const parsed = z.object({ source: z.string(), quantity, reason, operationId: z.uuid() }).safeParse(Object.fromEntries(form));
+ const parsed = z.object({ source: z.string(), quantity, reason, operationId: z.guid() }).safeParse(Object.fromEntries(form));
  if (!parsed.success) return { status: "FAILED", message: "Chọn nguồn trả, lượng cơ sở tối đa 6 chữ số thập phân và lý do." };
  const ids = parsed.data.source.split("|"); if (ids.length !== 3 || !ids.every(id => uuidOrBlank.safeParse(id).success)) return { status: "FAILED", message: "Nguồn nhận hàng hoặc giao thẳng chưa hợp lệ." };
  const access = await requireInternalPermission("purchasing.create"), changed = await checkSavedCommandFieldsAction(form, "create_supplier_return"); if (changed) return changed;
@@ -32,7 +32,7 @@ export async function createSupplierReturnAction(form: FormData): Promise<Comman
  if (error || !data) return failure(error?.message, error?.code); refresh(); return { status: "SUCCESS", resultId: String(data), message: "Đã mở hồ sơ trả theo nguồn. Lượng thực trả, nhà cung cấp chấp nhận và tiền được xử lý riêng." };
 }
 export async function recordSupplierReturnAction(form: FormData): Promise<CommandOutcome> {
- const parsed = z.object({ caseId: z.uuid(), kind: z.enum(["PHYSICAL_RETURN", "SUPPLIER_ACCEPTANCE", "CLOSE_DISPATCH"]), quantity, supplierReference: z.string().trim().max(100), reason, version: z.coerce.number().int().positive(), operationId: z.uuid() }).safeParse(Object.fromEntries(form));
+ const parsed = z.object({ caseId: z.guid(), kind: z.enum(["PHYSICAL_RETURN", "SUPPLIER_ACCEPTANCE", "CLOSE_DISPATCH"]), quantity, supplierReference: z.string().trim().max(100), reason, version: z.coerce.number().int().positive(), operationId: z.guid() }).safeParse(Object.fromEntries(form));
  if (!parsed.success) return { status: "FAILED", message: "Lượng, phiên bản hoặc chứng từ chấp nhận chưa hợp lệ." };
  const permission = parsed.data.kind === "PHYSICAL_RETURN" ? "inventory.reserve" : parsed.data.kind === "CLOSE_DISPATCH" ? "purchasing.cancel" : "purchasing.confirm";
  const access = await requireInternalPermission(permission), changed = await checkSavedCommandFieldsAction(form, "record_supplier_return_event"); if (changed) return changed;
@@ -42,7 +42,7 @@ export async function recordSupplierReturnAction(form: FormData): Promise<Comman
  if (error || !data) return failure(error?.message, error?.code); refresh(parsed.data.caseId); return { status: "SUCCESS", resultId: String(data), message: "Đã ghi lượng theo nguồn. Bước này không giảm phải trả hoặc tạo tiền." };
 }
 export async function approveSupplierCreditAction(form: FormData): Promise<CommandOutcome> {
- const parsed = z.object({ caseId: z.uuid(), acceptanceId: z.uuid(), amount: z.string().regex(/^\d+$/), reason, version: z.coerce.number().int().positive(), operationId: z.uuid() }).safeParse(Object.fromEntries(form));
+ const parsed = z.object({ caseId: z.guid(), acceptanceId: z.guid(), amount: z.string().regex(/^\d+$/), reason, version: z.coerce.number().int().positive(), operationId: z.guid() }).safeParse(Object.fromEntries(form));
  if (!parsed.success) return { status: "FAILED", message: "Kiểm tra khoản giảm theo chấp nhận của nhà cung cấp." };
  const access = await requireInternalPermission("finance.ap.adjust"), changed = await checkSavedCommandFieldsAction(form, "approve_supplier_return_credit"); if (changed) return changed;
  if (!await assertCase(parsed.data.caseId, access.branchId)) return { status: "FAILED", message: "Hồ sơ không thuộc chi nhánh đang chọn." };
@@ -51,8 +51,8 @@ export async function approveSupplierCreditAction(form: FormData): Promise<Comma
  if (error || !data) return failure(error?.message, error?.code); refresh(parsed.data.caseId); return { status: "SUCCESS", resultId: String(data), message: "Đã ghi quyết định giảm phải trả. Phần đã thanh toán giữ nguồn chờ nhà cung cấp hoàn hoặc bù trừ." };
 }
 export async function settleSupplierCreditAction(form: FormData): Promise<CommandOutcome> {
- const parsed = z.object({ caseId: z.uuid(), creditId: z.uuid(), kind: z.enum(["REFUND", "OFFSET"]), amount: z.string().regex(/^[1-9]\d*$/), accountId: uuidOrBlank, obligationId: uuidOrBlank,
-  receivedAt: z.string(), method: z.enum(["CASH", "BANK_TRANSFER", "CARD", "OTHER"]), reference: z.string().trim().max(160), operationId: z.uuid() }).safeParse(Object.fromEntries(form));
+ const parsed = z.object({ caseId: z.guid(), creditId: z.guid(), kind: z.enum(["REFUND", "OFFSET"]), amount: z.string().regex(/^[1-9]\d*$/), accountId: uuidOrBlank, obligationId: uuidOrBlank,
+  receivedAt: z.string(), method: z.enum(["CASH", "BANK_TRANSFER", "CARD", "OTHER"]), reference: z.string().trim().max(160), operationId: z.guid() }).safeParse(Object.fromEntries(form));
  if (!parsed.success) return { status: "FAILED", message: "Kiểm tra tiền thực hoàn hoặc nguồn phải trả để bù trừ." };
  const command = parsed.data.kind === "REFUND" ? "refund_supplier_credit" : "offset_supplier_credit";
  const access = await requireInternalPermission("finance.payment.post"), changed = await checkSavedCommandFieldsAction(form, command); if (changed) return changed;

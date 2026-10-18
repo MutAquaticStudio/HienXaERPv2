@@ -1,6 +1,6 @@
 import "server-only";
 import type { createServerSupabase } from "@/lib/supabase/server";
-import { catalogs } from "./fields";
+import { branchScopedCatalogs, catalogs } from "./fields";
 import type { Options } from "./editor";
 
 type Supabase = Awaited<ReturnType<typeof createServerSupabase>>;
@@ -36,6 +36,15 @@ export async function loadCatalogOptions(kind: string, access: Access, supabase:
       const result = await supabase.rpc("customer_site_sales_owner_options", { target_branch_id: access.branchId });
       if (result.error) throw new Error("Không tải được nhân viên phụ trách.");
       options[optionKind] = ((result.data ?? []) as { id: string; name: string; assignable: boolean }[]).map((value) => ({ id: value.id, name: value.name, assignable: value.assignable }));
+      continue;
+    }
+    if (optionKind === "drivers") {
+      // F3: a truck's default driver is a person working in this branch.
+      const result = await supabase.from("workforce_read").select("id, code, display_name").eq("branch_id", access.branchId).eq("active", true).order("display_name").limit(500);
+      if (result.error) throw new Error("Không tải được danh sách nhân viên.");
+      options[optionKind] = ((result.data ?? []) as { id: string; code: string; display_name: string }[]).map((value) => ({ id: value.id, name: `${value.display_name} (${value.code})` }));
+      const saved = rows.map((row) => row.default_driver_employee_id).filter((value): value is string => typeof value === "string" && value.length > 0);
+      for (const id of saved) if (!options[optionKind].some((value) => value.id === id)) options[optionKind].push({ id, name: "Nhân viên đã ngừng", assignable: false });
       continue;
     }
     const config = catalogs[optionKind];
@@ -76,7 +85,7 @@ export async function catalogRecordProps(kind: string, id: string, access: Acces
   const fields = visibleCatalogFields(kind, access.permissions).map((field) => field.key)
     .filter((key) => kind !== "customers" || !["credit_limit_vnd", "internal_note"].includes(key));
   let request = supabase.from(config.table as "materials").select(["id", ...fields].join(",")).eq("id", id);
-  if (["customers", "suppliers", "warehouses", "vehicles", "machines"].includes(kind)) request = request.eq("branch_id", access.branchId);
+  if (branchScopedCatalogs.includes(kind)) request = request.eq("branch_id", access.branchId);
   const { data, error } = await request.maybeSingle();
   if (error) throw new Error("Không tải được bản ghi danh mục.");
   if (!data) return null;

@@ -24,7 +24,7 @@ function quantityLines(formData: FormData, idName: string, quantityName: string,
     const id = ids[index];
     const raw = quantities[index];
     if (typeof id !== "string" || typeof raw !== "string") return null;
-    const parsedId = z.uuid().safeParse(id);
+    const parsedId = z.guid().safeParse(id);
     if (!parsedId.success || seen.has(parsedId.data)) return null;
     seen.add(parsedId.data);
     if (allowBlank && !raw.trim()) continue;
@@ -48,7 +48,7 @@ function verificationLines(formData: FormData) {
   for (let index = 0; index < ids.length; index += 1) {
     const id = ids[index];
     const reason = reasons[index];
-    const parsedId = typeof id === "string" ? z.uuid().safeParse(id) : null;
+    const parsedId = typeof id === "string" ? z.guid().safeParse(id) : null;
     const parsedAccepted = typeof accepted[index] === "string" ? nonNegative.safeParse(accepted[index]) : null;
     const parsedBillable = typeof billable[index] === "string" ? nonNegative.safeParse(billable[index]) : null;
     if (!parsedId?.success || !parsedAccepted?.success || !parsedBillable?.success || seen.has(parsedId.data) || typeof reason !== "string" || reason.trim().length > 500) return null;
@@ -59,7 +59,7 @@ function verificationLines(formData: FormData) {
 }
 
 export async function allocateWarehouseSourceAction(formData: FormData) {
-  const parsed = z.object({ salesOrderId: z.uuid(), salesLineId: z.uuid(), warehouseId: z.uuid(), quantity: positive, operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ salesOrderId: z.guid(), salesLineId: z.guid(), warehouseId: z.guid(), quantity: positive, operationId: z.guid() }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect("/admin/orders?error=invalid-source");
   const destination = `/admin/orders/${parsed.data.salesOrderId}`;
   const access = await requireInternalPermission("purchasing.create");
@@ -90,7 +90,7 @@ export async function allocateWarehouseSourceAction(formData: FormData) {
 }
 
 export async function createDeliveryAction(formData: FormData) {
-  const parsed = z.object({ salesOrderId: z.uuid(), scheduledAt: z.string().optional(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ salesOrderId: z.guid(), scheduledAt: z.string().optional(), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
   const lines = quantityLines(formData, "allocationId", "quantity", "supply_allocation_id", "planned_base_quantity", true, positive);
   if (!parsed.success || !lines) redirect("/admin/orders?error=invalid-delivery");
   await requireInternalPermission("delivery.create");
@@ -105,7 +105,7 @@ export async function createDeliveryAction(formData: FormData) {
 }
 
 export async function assignDeliveryAction(formData: FormData) {
-  const parsed = z.object({ deliveryId: z.uuid(), employeeId: z.string().optional(), vehicleId: z.string().optional(), externalCarrierName: z.string().trim().optional(), externalCarrierPhone: z.string().trim().optional(), scheduledStart: z.string().trim().min(1), scheduledEnd: z.string().trim().min(1), version: z.coerce.number().int().positive(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ deliveryId: z.guid(), employeeId: z.string().optional(), vehicleId: z.string().optional(), externalCarrierName: z.string().trim().optional(), externalCarrierPhone: z.string().trim().optional(), scheduledStart: z.string().trim().min(1), scheduledEnd: z.string().trim().min(1), version: z.coerce.number().int().positive(), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect("/admin/deliveries?error=invalid-assignment");
   await requireInternalPermission("delivery.assign");
   const supabase = await createServerSupabase();
@@ -126,13 +126,13 @@ export async function assignDeliveryAction(formData: FormData) {
     operation_id: parsed.data.operationId,
   });
   const destination = `/admin/deliveries/${parsed.data.deliveryId}`;
-  if (error) redirect(`${destination}?error=${encodeURIComponent(message(error.message))}`);
+  if (error) redirect(`${destination}?error=${encodeURIComponent(message(error.message, error.hint))}`);
   revalidatePath(destination);
   redirect(`${destination}?notice=assigned`);
 }
 
 async function simpleDeliveryCommand(formData: FormData, permission: string, rpc: string, notice: string, extra: Record<string, unknown> = {}) {
-  const parsed = z.object({ deliveryId: z.uuid(), version: z.coerce.number().int().positive(), operationId: z.uuid(), occurredAt: z.string().optional() }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ deliveryId: z.guid(), version: z.coerce.number().int().positive(), operationId: z.guid(), occurredAt: z.string().optional() }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect("/admin/deliveries?error=invalid-command");
   await requireInternalPermission(permission);
   const supabase = await createServerSupabase();
@@ -152,7 +152,7 @@ async function simpleDeliveryCommand(formData: FormData, permission: string, rpc
 }
 
 export async function handoffDeliveryAction(formData: FormData) {
-  const parsed = z.object({ deliveryId: z.uuid(), version: z.coerce.number().int().positive(), operationId: z.uuid(), occurredAt: z.string().optional() }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ deliveryId: z.guid(), version: z.coerce.number().int().positive(), operationId: z.guid(), occurredAt: z.string().optional() }).safeParse(Object.fromEntries(formData));
   const lines = quantityLines(formData, "deliveryLineId", "loadedQuantity", "delivery_line_id", "loaded_base_quantity", false, nonNegative);
   if (!parsed.success || !lines) redirect(`/admin/deliveries?error=${encodeURIComponent("Nhập lượng thực lấy hợp lệ cho từng dòng.")}`);
   await requireInternalPermission("delivery.handoff");
@@ -176,10 +176,10 @@ export async function markDeliveryArrivedAction(formData: FormData) {
 }
 
 export async function submitDeliveryResultAction(formData: FormData) {
-  const parsed = z.object({ deliveryId: z.uuid(), resultKind: z.enum(["FULL", "PARTIAL", "FAILED"]), receiverName: z.string().trim().max(120).optional(), note: z.string().trim().max(500).optional(), missingArrivalReason: z.string().trim().max(500).optional(), evidenceId: z.union([z.uuid(), z.literal("")]).optional(), version: z.coerce.number().int().positive(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ deliveryId: z.guid(), resultKind: z.enum(["FULL", "PARTIAL", "FAILED"]), receiverName: z.string().trim().max(120).optional(), note: z.string().trim().max(500).optional(), missingArrivalReason: z.string().trim().max(500).optional(), evidenceId: z.union([z.guid(), z.literal("")]).optional(), version: z.coerce.number().int().positive(), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
   const lines = quantityLines(formData, "deliveryLineId", "actualQuantity", "delivery_line_id", "actual_base_quantity", false, nonNegative);
   if (!parsed.success || !lines) {
-    const deliveryId = z.uuid().safeParse(formData.get("deliveryId"));
+    const deliveryId = z.guid().safeParse(formData.get("deliveryId"));
     const path = deliveryId.success ? `/admin/deliveries/${deliveryId.data}` : "/admin/deliveries";
     redirect(`${path}?error=${encodeURIComponent("Kết quả chưa hợp lệ. Kiểm tra số lượng không âm của từng dòng và thông tin kết quả.")}`);
   }
@@ -202,9 +202,34 @@ export async function submitDeliveryResultAction(formData: FormData) {
   redirect(`${destination}?notice=result-submitted`);
 }
 
+/**
+ * D20 "NCC đã giao": staff report a supplier-direct delivery in one step (taken on the way → arrived → result); a delivered
+ * quantity needs the photo uploaded on this page first, nothing delivered needs a reason.
+ */
+export async function submitSupplierDeliveryDoneAction(formData: FormData) {
+  const parsed = z.object({ deliveryId: z.guid(), receiverName: z.string().trim().max(120).optional(), note: z.string().trim().max(500).optional(),
+    evidenceId: z.union([z.guid(), z.literal("")]).optional(), version: z.coerce.number().int().positive(), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
+  const lines = quantityLines(formData, "deliveryLineId", "actualQuantity", "delivery_line_id", "actual_base_quantity", false, nonNegative);
+  if (!parsed.success || !lines) {
+    const deliveryId = z.guid().safeParse(formData.get("deliveryId"));
+    const path = deliveryId.success ? `/admin/deliveries/${deliveryId.data}` : "/admin/deliveries";
+    redirect(`${path}?error=${encodeURIComponent("Số lượng khách nhận phải là số không âm, tối đa 6 chữ số thập phân.")}`);
+  }
+  await requireInternalPermission("delivery.submit");
+  const supabase = await createServerSupabase();
+  const { error } = await supabase.rpc("submit_supplier_delivery_done", {
+    target_delivery_id: parsed.data.deliveryId, result_lines: lines, receiver_name: parsed.data.receiverName || "", note: parsed.data.note || "",
+    target_evidence_id: parsed.data.evidenceId || null, expected_version: parsed.data.version, operation_id: parsed.data.operationId,
+  });
+  const destination = `/admin/deliveries/${parsed.data.deliveryId}`;
+  if (error) redirect(`${destination}?error=${encodeURIComponent(message(error.message))}${parsed.data.evidenceId ? `&evidence=${parsed.data.evidenceId}` : ""}`);
+  revalidatePath(destination);
+  redirect(`${destination}?notice=supplier-done`);
+}
+
 export async function uploadDeliveryEvidenceAction(formData: FormData) {
   const candidate = formData.get("file");
-  const parsed = z.object({ deliveryId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ deliveryId: z.guid() }).safeParse(Object.fromEntries(formData));
   const destination = parsed.success ? `/admin/deliveries/${parsed.data.deliveryId}` : "/admin/deliveries";
   if (!parsed.success || !(candidate instanceof File) || candidate.size <= 0) redirect(`${destination}?error=invalid-evidence`);
 
@@ -245,7 +270,7 @@ export async function uploadDeliveryEvidenceAction(formData: FormData) {
 }
 
 export async function verifyDeliveryAction(formData: FormData) {
-  const parsed = z.object({ deliveryId: z.uuid(), deliveryResultId: z.uuid(), version: z.coerce.number().int().positive(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ deliveryId: z.guid(), deliveryResultId: z.guid(), version: z.coerce.number().int().positive(), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
   const lines = verificationLines(formData);
   if (!parsed.success || !lines) redirect("/admin/deliveries?error=invalid-verification");
   await requireInternalPermission("delivery.verify");
@@ -266,7 +291,7 @@ export async function verifyDeliveryAction(formData: FormData) {
 export type OpenReturnCaseState = { success: boolean; error: string | null };
 
 export async function openReturnCaseAction(_previous: OpenReturnCaseState, formData: FormData): Promise<OpenReturnCaseState> {
-  const parsed = z.object({ deliveryId: z.uuid(), verificationLineId: z.uuid(), caseKind: z.enum(["CUSTOMER_RETURN", "TRANSIT_REMAINDER", "TRANSIT_LOSS"]), quantity: positive, reason: z.string().trim().min(3).max(500), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ deliveryId: z.guid(), verificationLineId: z.guid(), caseKind: z.enum(["CUSTOMER_RETURN", "TRANSIT_REMAINDER", "TRANSIT_LOSS"]), quantity: positive, reason: z.string().trim().min(3).max(500), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { success: false, error: "Kiểm tra dòng giao, loại vấn đề, số lượng dương và lý do ít nhất 3 ký tự." };
   try {
     await requireInternalPermission("delivery.exception");
@@ -282,7 +307,7 @@ export async function openReturnCaseAction(_previous: OpenReturnCaseState, formD
 }
 
 export async function resolveReturnCaseAction(formData: FormData) {
-  const parsed = z.object({ deliveryId: z.uuid(), returnCaseId: z.uuid(), resolution: z.enum(["RETURNED", "LOSS_APPROVED"]), warehouseId: z.string().optional(), reason: z.string().trim().min(3).max(500), version: z.coerce.number().int().positive(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ deliveryId: z.guid(), returnCaseId: z.guid(), resolution: z.enum(["RETURNED", "LOSS_APPROVED"]), warehouseId: z.string().optional(), reason: z.string().trim().min(3).max(500), version: z.coerce.number().int().positive(), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect("/admin/deliveries?error=invalid-resolution");
   await requireInternalPermission("delivery.exception");
   const supabase = await createServerSupabase();

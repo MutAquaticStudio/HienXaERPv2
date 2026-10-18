@@ -14,6 +14,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { resolvePrice, type PriceRule } from "@/modules/pricing/resolve-price";
 import { loadPurchaseSuppliers } from "./form-options";
 import { finishDirectPurchaseDraft } from "./finish-direct-draft";
+import { derivedOperationId } from "@/modules/sales/auto-sourcing";
 
 const PurchaseDecimal = Decimal.clone({ precision: 50 });
 
@@ -31,22 +32,22 @@ export async function searchPurchaseSuppliersAction(query: string) {
   }
 }
 const positive = z.string().trim().refine((value) => { return isExactEntryQuantity(value); });
-const documentLineSchema = z.object({ materialId: z.uuid(), orderedUomId: z.uuid(), quantity: positive,
+const documentLineSchema = z.object({ materialId: z.guid(), orderedUomId: z.guid(), quantity: positive,
   manualCostVnd: z.string().trim().optional(), manualCostReason: z.string().trim().max(500).optional(),
   manualSalesPriceVnd: z.string().trim().optional(), manualSalesReason: z.string().trim().max(500).optional(),
-  sourceLineId: z.uuid().optional(), salesLineId: z.uuid().optional() });
-const documentSchema = z.object({ mode: z.enum(["WAREHOUSE", "LINKED_DIRECT"]), supplierId: z.uuid(),
-  warehouseId: z.uuid().optional(), customerId: z.uuid().optional(), siteId: z.uuid().optional(),
-  salesOrderId: z.uuid().optional(), documentId: z.uuid().optional(), expectedVersion: z.number().int().positive().optional(),
-  expectedAt: z.string().optional(), terms: z.string().trim().max(1000).optional(), operationId: z.uuid(),
+  sourceLineId: z.guid().optional(), salesLineId: z.guid().optional() });
+const documentSchema = z.object({ mode: z.enum(["WAREHOUSE", "LINKED_DIRECT"]), supplierId: z.guid(),
+  warehouseId: z.guid().optional(), customerId: z.guid().optional(), siteId: z.guid().optional(),
+  salesOrderId: z.guid().optional(), documentId: z.guid().optional(), expectedVersion: z.number().int().positive().optional(),
+  expectedAt: z.string().optional(), terms: z.string().trim().max(1000).optional(), operationId: z.guid(),
   lines: z.array(documentLineSchema).min(1).max(50) });
-const costPreviewLineSchema = z.object({ materialId: z.uuid(), orderedUomId: z.uuid(), quantity: z.string(),
+const costPreviewLineSchema = z.object({ materialId: z.guid(), orderedUomId: z.guid(), quantity: z.string(),
   unitCostVnd: z.string(), priceSourceType: z.string(), lineTotalVnd: z.string(),
-  purchasePriceRuleId: z.uuid().nullable(), purchasePriceRuleVersion: z.number().int().nullable(), overrideReason: z.string().nullable() });
+  purchasePriceRuleId: z.guid().nullable(), purchasePriceRuleVersion: z.number().int().nullable(), overrideReason: z.string().nullable() });
 export type CostPreviewLine = z.infer<typeof costPreviewLineSchema>;
-const salesPreviewLineSchema = z.object({ materialId: z.uuid(), orderedUomId: z.uuid(), quantity: z.string(),
+const salesPreviewLineSchema = z.object({ materialId: z.guid(), orderedUomId: z.guid(), quantity: z.string(),
   unitPriceVnd: z.string(), priceSourceType: z.string(), lineTotalVnd: z.string(),
-  pricingRuleId: z.uuid().nullable(), pricingRuleVersion: z.number().nullable(), overrideReason: z.string().nullable() });
+  pricingRuleId: z.guid().nullable(), pricingRuleVersion: z.number().nullable(), overrideReason: z.string().nullable() });
 export type SalesPurchasePreview = { lines: z.infer<typeof salesPreviewLineSchema>[]; totalVnd: string };
 export type CostPreviewResult = { success: boolean; message: string; lines?: CostPreviewLine[]; totalVnd?: string; sales?: SalesPurchasePreview };
 
@@ -223,7 +224,7 @@ async function saveWarehouseDocument(mode: "create" | "edit", formData: FormData
   let confirmOperationId: string | null = null;
   if (mode === "create" && input.mode === "WAREHOUSE" && formData.get("intent") === "confirm") {
     if (!access.permissions.has("purchasing.confirm")) return { message: "Bạn không có quyền xác nhận đơn mua. Hãy chọn Lưu nháp." };
-    const confirmId = z.uuid().safeParse(formData.get("confirmOperationId"));
+    const confirmId = z.guid().safeParse(formData.get("confirmOperationId"));
     if (!confirmId.success || confirmId.data === input.operationId) return { message: "Thông tin xác nhận đơn mua chưa hợp lệ. Hãy tải lại màn hình." };
     confirmOperationId = confirmId.data;
   }
@@ -297,7 +298,8 @@ async function saveWarehouseDocument(mode: "create" | "edit", formData: FormData
     if (confirmOperationId) {
       const confirmed = await supabase.rpc("confirm_purchase_order", { target_purchase_order_id: rpcResult.data, operation_id: confirmOperationId });
       if (confirmed.error) redirect(`/admin/purchase-orders/${rpcResult.data}?error=${encodeURIComponent(`Đã lưu đơn mua nháp nhưng chưa xác nhận được: ${errorMessage(confirmed.error.message, true)}`)}`);
-      redirect(`/admin/purchase-orders/${rpcResult.data}?notice=confirmed`);
+      const delivered = await supplierDeliveryAfterConfirm(supabase, access.permissions, rpcResult.data, derivedOperationId(confirmOperationId, "supplier-delivery"));
+      redirect(`/admin/purchase-orders/${rpcResult.data}?notice=${delivered ? "supplier-delivery-created" : "confirmed"}`);
     }
     redirect(`/admin/purchase-orders/${rpcResult.data}?notice=${mode === "edit" ? "updated" : "created"}`);
   } catch (error) {
@@ -371,20 +373,57 @@ export async function createPurchaseOrderAction(_: PurchaseActionState, formData
   return saveWarehouseDocument("create", formData);
 }
 
+/**
+ * D19/D20: a confirmed supplier-direct purchase order gets its delivery (contact = the supplier) right away when the person
+ * may make and assign deliveries; otherwise the purchase order page keeps "Lập phiếu NCC giao thẳng".
+ */
+async function supplierDeliveryAfterConfirm(supabase: Awaited<ReturnType<typeof createServerSupabase>>, permissions: ReadonlySet<string>,
+  purchaseOrderId: string, operationId: string): Promise<boolean> {
+  if (!permissions.has("delivery.create") || !permissions.has("delivery.assign")) return false;
+  try {
+    const { data: purchase } = await supabase.from("purchase_orders").select("destination_type").eq("id", purchaseOrderId).maybeSingle();
+    if (purchase?.destination_type !== "CUSTOMER_SITE") return false;
+    const { error } = await supabase.rpc("create_supplier_direct_delivery", { target_purchase_order_id: purchaseOrderId, operation_id: operationId });
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
 export async function confirmPurchaseOrderAction(formData: FormData) {
-  const parsed = z.object({ entityId: z.uuid(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ entityId: z.guid(), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect("/admin/purchase-orders?error=invalid-command");
-  await requireInternalPermission("purchasing.confirm");
+  const access = await requireInternalPermission("purchasing.confirm");
   const supabase = await createServerSupabase();
   const { error } = await supabase.rpc("confirm_purchase_order", { target_purchase_order_id: parsed.data.entityId, operation_id: parsed.data.operationId });
   const destination = `/admin/purchase-orders/${parsed.data.entityId}`;
   if (error) redirect(`${destination}?error=${encodeURIComponent(errorMessage(error.message, true))}`);
+  const delivered = await supplierDeliveryAfterConfirm(supabase, access.permissions, parsed.data.entityId, derivedOperationId(parsed.data.operationId, "supplier-delivery"));
   revalidatePath("/admin/purchase-orders");
-  redirect(`${destination}?notice=confirmed`);
+  redirect(`${destination}?notice=${delivered ? "supplier-delivery-created" : "confirmed"}`);
+}
+
+/** "Lập phiếu NCC giao thẳng" on a confirmed direct purchase order whose delivery was not made at confirmation. */
+export async function createSupplierDirectDeliveryAction(formData: FormData) {
+  const parsed = z.object({ entityId: z.guid(), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) redirect("/admin/purchase-orders?error=invalid-command");
+  await requireInternalPermission("delivery.create");
+  const supabase = await createServerSupabase();
+  const destination = `/admin/purchase-orders/${parsed.data.entityId}`;
+  const { data, error } = await supabase.rpc("create_supplier_direct_delivery", { target_purchase_order_id: parsed.data.entityId, operation_id: parsed.data.operationId });
+  if (error || !data) {
+    const message = error?.message.includes("nothing_to_deliver") ? "Đơn mua này đã có phiếu giao cho toàn bộ lượng."
+      : error?.message.includes("purchase_order_not_direct") ? "Chỉ đơn mua NCC giao thẳng đã duyệt mới lập phiếu giao từ đây."
+      : error?.code === "42501" ? "Cần quyền lập phiếu giao và phân giao để lập phiếu NCC giao thẳng."
+      : "Không thể lập phiếu NCC giao thẳng. Không có thay đổi nào được ghi.";
+    redirect(`${destination}?error=${encodeURIComponent(message)}`);
+  }
+  revalidatePath(destination);
+  redirect(`/admin/deliveries/${data}?notice=supplier-delivery-created`);
 }
 
 export async function cancelPurchaseOrderAction(formData: FormData) {
-  const parsed = z.object({ entityId: z.uuid(), operationId: z.uuid(), reason: z.string().trim().min(3).max(500) }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ entityId: z.guid(), operationId: z.guid(), reason: z.string().trim().min(3).max(500) }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect("/admin/purchase-orders?error=invalid-command");
   await requireInternalPermission("purchasing.cancel");
   const supabase = await createServerSupabase();
@@ -396,7 +435,7 @@ export async function cancelPurchaseOrderAction(formData: FormData) {
 }
 
 export async function createSupplierQuickAction(_: PurchaseActionState, formData: FormData): Promise<PurchaseActionState> {
-  const parsed = z.object({ code: z.string().trim().regex(/^[A-Za-z0-9_-]{2,32}$/), name: z.string().trim().min(2).max(160), phone: z.string().trim().max(40).optional(), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ code: z.string().trim().regex(/^[A-Za-z0-9_-]{2,32}$/), name: z.string().trim().min(2).max(160), phone: z.string().trim().max(40).optional(), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { message: "Thông tin nhà cung cấp chưa hợp lệ." };
   const access = await requireInternalPermission("purchasing.create");
   const supabase = await createServerSupabase();
@@ -410,7 +449,7 @@ export async function createSupplierQuickAction(_: PurchaseActionState, formData
 export async function updatePurchaseWarehouseAddressAction(input: {
   warehouseId: string; address: string; expectedAddress: string | null; reason: string; operationId: string;
 }): Promise<{ success: boolean; message: string; address?: string }> {
-  const parsed = z.object({ warehouseId: z.uuid(), address: z.string().max(2000), expectedAddress: z.string().nullable(), reason: z.string().trim().min(3).max(500), operationId: z.uuid() }).safeParse(input);
+  const parsed = z.object({ warehouseId: z.guid(), address: z.string().max(2000), expectedAddress: z.string().nullable(), reason: z.string().trim().min(3).max(500), operationId: z.guid() }).safeParse(input);
   if (!parsed.success) return { success: false, message: "Nhập địa chỉ và lý do cập nhật hợp lệ." };
   const address = normalizeWarehouseAddress(parsed.data.address);
   if (!address) return { success: false, message: warehouseAddressRequired };
@@ -431,7 +470,7 @@ export async function updatePurchaseWarehouseAddressAction(input: {
 export async function updatePurchaseDraftDestinationAction(input: {
   documentId: string; expectedVersion: number; warehouseId: string; reason: string; operationId: string;
 }): Promise<{ success: boolean; message: string; version?: number; warehouseId?: string; address?: string }> {
-  const parsed = z.object({ documentId: z.uuid(), expectedVersion: z.number().int().positive(), warehouseId: z.uuid(), reason: z.string().trim().min(3).max(500), operationId: z.uuid() }).safeParse(input);
+  const parsed = z.object({ documentId: z.guid(), expectedVersion: z.number().int().positive(), warehouseId: z.guid(), reason: z.string().trim().min(3).max(500), operationId: z.guid() }).safeParse(input);
   if (!parsed.success) return { success: false, message: "Thông tin kho nhận hoặc lý do chưa hợp lệ." };
   try {
     const access = await requireInternalPermission("purchasing.create");

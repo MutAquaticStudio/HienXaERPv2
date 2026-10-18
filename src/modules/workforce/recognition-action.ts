@@ -6,8 +6,8 @@ import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { earningCommandError } from "./earning-command-error";
 export async function configureRecognitionAction(formData: FormData) {
-  const data = z.object({ ruleId: z.uuid(), recognitionKind: z.enum(["WORK_ITEM_VERIFICATION", "AR_PAYMENT_ALLOCATION"]),
-    effectiveAt: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/), operationId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  const data = z.object({ ruleId: z.guid(), recognitionKind: z.enum(["WORK_ITEM_VERIFICATION", "AR_PAYMENT_ALLOCATION"]),
+    effectiveAt: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
   if (!data.success) redirect("/admin/compensation?error=invalid-recognition-policy");
   await requireInternalPermission("compensation.manage");
   await requireInternalPermission("compensation.approve");

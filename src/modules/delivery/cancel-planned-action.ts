@@ -16,13 +16,13 @@ function errorMessage(message?: string) {
 
 export async function cancelPlannedDeliveryAction(formData: FormData) {
   const parsed = z.object({
-    deliveryId: z.uuid(),
+    deliveryId: z.guid(),
     version: z.coerce.number().int().positive(),
     reason: z.string().trim().min(3).max(500),
-    operationId: z.uuid(),
+    operationId: z.guid(),
   }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
-    const id = z.uuid().safeParse(formData.get("deliveryId"));
+    const id = z.guid().safeParse(formData.get("deliveryId"));
     redirect(id.success ? `/admin/deliveries/${id.data}/cancel?error=invalid` : "/admin/deliveries");
   }
   await requireInternalPermission("delivery.exception");
