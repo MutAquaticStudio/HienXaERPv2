@@ -20,9 +20,10 @@ export const MaterialSearchBox = forwardRef<MaterialSearchHandle, {
   onPick: (material: EditorMaterial) => void;
   disabled?: boolean;
   label?: string;
+  placeholder?: string;
   /** Extra text per result, e.g. the stock that can be sold from the chosen warehouse. */
   hint?: (material: EditorMaterial) => string | null;
-}>(function MaterialSearchBox({ materials, onPick, disabled, label = "Tìm vật tư", hint }, ref) {
+}>(function MaterialSearchBox({ materials, onPick, disabled, label = "Tìm vật tư", placeholder = "Tìm vật tư theo mã hoặc tên (F3)", hint }, ref) {
   const id = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
@@ -87,7 +88,7 @@ export const MaterialSearchBox = forwardRef<MaterialSearchHandle, {
   return <div className="doc-editor-search">
     <label htmlFor={id} className="sr-only">{label}</label>
     <input id={id} ref={inputRef} type="search" role="combobox" autoComplete="off" disabled={disabled}
-      placeholder="Tìm vật tư theo mã hoặc tên (F3)" value={query}
+      placeholder={placeholder} value={query}
       aria-expanded={showList} aria-controls={listId} aria-autocomplete="list"
       aria-activedescendant={showList && results[highlight] ? `${listId}-${highlight}` : undefined}
       onChange={(event) => { setQuery(event.target.value); setHighlight(0); setOpen(true); }}

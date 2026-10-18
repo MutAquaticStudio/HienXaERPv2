@@ -16,6 +16,8 @@
 
 > Quyết định Owner 18/10/2026 (góp ý sau bản Production, đợt `FB5-20261018`, giữ nguyên nghiệp vụ ghi sổ): **D25** (a) quy đổi đơn vị nhập được hai chiều ("1 Tấn = 20 Bao" hoặc "1 Bao = 0,05 Tấn") và luôn hiện bằng câu "1 A = x B", không hiện "A → B 20 / 1" (SPEC-UOM-004); (b) giá mua nhập theo một đơn vị tự tính giá cho các đơn vị khác của vật tư theo quy đổi, lưu nguyên tử (SPEC-PRI-008); (c) xe không bắt ghi căn cứ sức chở; sức chở tự quy đổi sang đơn vị của hàng qua quy đổi đã duyệt, hai chiều, tối đa 3 bước (SPEC-DEL-009); (d) đơn bán mới có ô "Khách trả trước" (số tiền, phương thức, quỹ) ghi thành phiếu thu ứng trước của khách trong Sổ quỹ (SPEC-FIN-007); (e) xác nhận xong đơn bán/đơn mua hiện "bước tiếp theo" để giảm thao tác, không bỏ bước nghiệp vụ nào (SPEC-DEL-009, SPEC-PUR-003).
 
+> Quyết định Owner 18/10/2026 tối (đợt `FB6`): **D26** màn "Đặt hàng" của cổng khách đồng nhất với "Tạo đơn bán" nội bộ và chọn được hàng cùng loại (variant) trên từng dòng (SPEC-CUSTPORTAL-005).
+
 # Spec.md — HIỀN XA ERP V2
 
 > **Bộ tài liệu:** `HX-V2-DOCSET-4.4`  
@@ -1741,6 +1743,11 @@ Bổ sung SPEC-CUSTPORTAL-001: Chủ tài khoản và Kế toán được **đ�
 - **Duyệt** = xác nhận đơn hiện có (giữ hạn mức, duyệt vượt hạn mức như đơn nội bộ) + tự phân nguồn (SPEC-SRC-004): đủ kho → phiếu giao từ kho tự điều
   phối; thiếu → đơn mua NCC giao thẳng nháp. Sửa trước khi duyệt dùng sửa bản nháp; **Từ chối** = hủy đơn có lý do (khách thấy lý do).
 - Nội bộ: băng "Đơn khách tự đặt — chờ duyệt" trên trang đơn, nút "Duyệt đơn", lọc "Khách đặt · Chờ duyệt", nhắc ở Tổng quan.
+- D26 (Owner 18/10/2026): màn "Đặt hàng" dùng **cùng bộ soạn đơn với "Tạo đơn bán" nội bộ** (ô tìm hàng bấm là xổ danh sách theo nhóm, hàng cùng
+  loại đứng chung dưới tên sản phẩm; bảng dòng hàng có đơn vị, − / + số lượng, đơn giá của khách, thành tiền, xóa dòng; khung giao tới; tổng tiền dính
+  dưới; popup xem lại). Mỗi dòng của hàng cùng loại có ô **"Loại"** đổi sang loại khác (vd PCB30 → PCB40) giữ đơn vị nếu loại kia bán theo đơn vị đó.
+  `customer_portal_catalog` trả thêm `variant_group_id`, `variant_name`, `variant_label` (khách không đọc trực tiếp bảng hàng cùng loại; nhóm ngừng dùng
+  thì không hiện như nhóm) và tìm được theo tên sản phẩm chung. Giá, quyền, kiểm tra và luồng duyệt không đổi; giá luôn tính lại ở server.
 
 ---
 

@@ -172,6 +172,8 @@ export type PortalCatalogItem = {
   material_id: string; code: string; name: string; specification: string | null; group_name: string;
   uom_id: string; uom_name: string; uom_symbol: string; decimal_scale: number; base_symbol: string;
   conversion_numerator: string; conversion_denominator: string; unit_price_vnd: string; in_stock: boolean;
+  /** FB6: variants of one product ("hàng cùng loại"), e.g. "Xi măng Bút Sơn" · "Mác: PCB40"; absent outside a group. */
+  variant_group_id?: string | null; variant_name?: string | null; variant_label?: string | null;
 };
 export type PortalCatalog = {
   customer: { id: string; code: string; display_name: string };

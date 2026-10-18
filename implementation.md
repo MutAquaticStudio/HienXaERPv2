@@ -3127,3 +3127,18 @@ xong toàn bộ rồi QA một lần; tệp áp QA sẽ chia < 20.000 ký tự. 
 - 390 px: `.card-table` (bảng Quy tắc tự động), bảng phân giao Điều phối xếp dọc.
 - Migration `20261018220000_fb5_owner_feedback.sql` (không có lệnh xoá) + native 225 (hệ số 0,05 / 20 / 50 qua quy đổi kg chung / 1 / null; xe lưu
   không ghi chú; xe 4 tấn chở 80 bao, 81 bao bị chặn; tải thực tế; batch giá mua all-or-nothing + replay).
+
+## 2026-10-18 — Phát hành FB5 lên Production
+
+- PR #56 merge, `main` = `555ce1e`. Migration `20261018220000_fb5_owner_feedback.sql` áp lên Production qua MCP (một transaction + `schema_migrations`
+  kèm sha256 `2a6799d9…`); 7 hàm khớp md5 chuẩn hoá và quyền với QA. Deploy `dpl_6aDAWYt8JkQDD6Fnhxaar9Kw8obB`: `/api/health` đúng sha, `/login` 200,
+  không lỗi runtime 15 phút đầu; quay lui: `dpl_5vLXwG511ap2nwWZFYp2QA2AxtfU`. Tệp 6 hàm có lệnh xoá vẫn chờ Owner dán (đã gửi lại nội dung).
+
+## 2026-10-18 — FB6: cổng khách "Đặt hàng" như "Tạo đơn bán" (D26)
+
+- `src/components/portal/portal-order-form.tsx` dùng bộ soạn đơn chung (`MaterialSearchBox`, `DocumentLineTable`, `addMaterialLine`, khung
+  `doc-editor-*`, popup `Dialog`): danh sách hàng xổ theo nhóm, hàng cùng loại đứng chung; dòng có đơn vị, − / +, giá của khách, thành tiền; ô "Loại"
+  đổi hàng cùng loại (`switchVariant`); tổng dính dưới (trên menu dưới của điện thoại); popup "Xem lại đơn". Lệnh gửi `submitPortalOrderAction` không đổi.
+- Migration `20261018230000_portal_catalog_variants.sql`: `customer_portal_catalog` trả `variant_group_id`, `variant_name`, `variant_label` (thứ tự
+  thuộc tính theo nhóm), tìm theo tên sản phẩm chung, xếp hàng cùng loại cạnh nhau; nhóm ngừng dùng không hiện. Native 230.
+- `MaterialSearchBox` nhận `placeholder`; CSS cổng khách bỏ kiểu thẻ hàng cũ, thêm `.orderEditor` (màu xanh cổng khách) và `.lineMeta`.
