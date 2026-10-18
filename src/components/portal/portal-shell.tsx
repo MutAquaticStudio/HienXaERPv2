@@ -46,7 +46,8 @@ export function PortalShell({
   children: ReactNode;
 }) {
   const pathname = usePathname();
-  if (pathname.endsWith("/login")) return children;
+  // Sign-in, registration and the forced password change are full-screen auth pages without the portal menu.
+  if (["/login", "/register", "/change-password"].some((page) => pathname.endsWith(page))) return children;
   const links = audience === "worker" ? workerLinks : customerLinks.filter((link) => canViewDebt || link.href !== "/customer/debts");
   const root = audience === "worker" ? "/work" : "/customer";
   const scope = audience === "worker" ? "Cổng nhân sự" : "Cổng khách hàng";

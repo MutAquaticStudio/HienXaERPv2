@@ -4,6 +4,9 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 const m = vi.hoisted(() => ({ access: vi.fn(), calls: [] as { table: string; method: string; args: unknown[] }[], tables: {} as Record<string, unknown[]>, rpc: vi.fn() }));
 vi.mock("next/navigation", () => ({ notFound: () => { throw new Error("NOT_FOUND"); }, useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock("@/lib/access/context", () => ({ requireInternalPermission: m.access }));
+vi.mock("@/lib/auth/actions", () => ({ createCustomerPortalAccountAction: vi.fn(), resetCustomerPortalPasswordAction: vi.fn() }));
+vi.mock("@/modules/customers/portal-account-actions", () => ({ revokeCustomerPortalAccessAction: vi.fn() }));
+vi.mock("@/modules/purchasing/dispatch-actions", () => ({ recordPurchaseOrderSentAction: vi.fn() }));
 vi.mock("@/modules/catalog/editor-data", () => ({
   catalogRecordProps: async () => ({ kind: "customers", record: { id: "c1" }, options: {}, permissions: [], scope: "s" }),
   catalogCreateProps: async () => ({ kind: "sites", options: {}, permissions: [], scope: "s" }),
@@ -16,7 +19,7 @@ vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({
   from(table: string) {
     const rows = m.tables[table] ?? [];
     const query: Record<string, unknown> = {};
-    for (const method of ["select", "eq", "or", "in", "gt", "order", "range", "limit", "is"]) query[method] = (...args: unknown[]) => { m.calls.push({ table, method, args }); return query; };
+    for (const method of ["select", "eq", "neq", "or", "in", "gt", "order", "range", "limit", "is"]) query[method] = (...args: unknown[]) => { m.calls.push({ table, method, args }); return query; };
     query.maybeSingle = () => Promise.resolve({ data: rows[0] ?? null, error: null });
     query.then = (resolve: (value: unknown) => unknown) => Promise.resolve({ data: rows, error: null, count: rows.length }).then(resolve);
     return query;
@@ -47,6 +50,7 @@ beforeEach(() => {
   };
   m.rpc.mockImplementation((name: string) => name === "customer_credit_summary"
     ? { data: { credit_limit_vnd: 50000000, receivable_vnd: 4000000, overdue_vnd: 4000000, committed_vnd: 12000000, available_vnd: 34000000 }, error: null }
+    : name === "customer_portal_accounts" ? { data: [{ membership_id: "pm1", email: "0912345678@sdt.hienxavlxd.com", membership_role: "OWNER", active: true, granted_at: "2026-10-18T01:00:00Z", last_sign_in_at: null, must_change_password: true }], error: null }
     : { data: [{ customer_id: "c1", internal_note: "Gọi trước khi giao" }], error: null });
 });
 afterEach(cleanup);
@@ -91,4 +95,16 @@ it("hides amounts and tabs the actor may not see", async () => {
   expect(screen.getByRole("link", { name: /Thông tin & công trình/ })).toHaveAttribute("aria-current", "page");
   expect(within(screen.getByRole("region", { name: "Chỉ số khách hàng" })).getAllByText("—")).toHaveLength(5);
   expect(screen.queryByRole("button", { name: "Sửa" })).not.toBeInTheDocument();
+});
+
+it("lists the customer's portal logins on the profile tab, marks self-registered customers and points to same-phone customers", async () => {
+  m.access.mockResolvedValue({ branchId: "b", permissions: new Set(["customers.read", "customers.manage"]) });
+  m.tables.customers = [{ ...customer, source: "SELF_REGISTERED" }];
+  await page();
+  expect(screen.getByRole("heading", { name: "Tài khoản cổng khách" })).toBeInTheDocument();
+  expect(screen.getByText("0912345678")).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "+ Tạo tài khoản" })).toBeInTheDocument();
+  expect(screen.getByText("Tự đăng ký")).toBeInTheDocument();
+  expect(screen.getByRole("note")).toHaveTextContent("Có thể trùng khách");
+  expect(m.calls.some((call) => call.table === "customers" && call.method === "neq")).toBe(true);
 });

@@ -1339,3 +1339,14 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .dispatch-timeline > li > span:nth-of-type(2), .dispatch-timeline > li > .status { grid-column: 2; }
 @media (max-width: 760px) { .dispatch-drivers { grid-template-columns: 1fr; } }
 .send-supplier-text { margin: 6px 0 0; padding: 8px; overflow-x: auto; border-radius: 8px; background: var(--surface-soft); font: inherit; font-size: var(--font-size-caption); white-space: pre-wrap; }
+
+/* D14 customer portal accounts and the auth pages around them. */
+.form-stack { display: grid; gap: 14px; }
+.inline-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.inline-actions > input { flex: 1 1 180px; }
+.portal-accounts { display: grid; gap: 12px; align-content: start; }
+.portal-account-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.portal-account-list > li { display: grid; gap: 6px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; }
+.portal-account-list > li.row-muted { color: var(--muted); }
+.portal-share { display: grid; gap: 10px; }
+.auth-note { margin: 0; color: var(--muted); font-size: var(--font-size-caption); text-align: center; }

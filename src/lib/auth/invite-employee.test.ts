@@ -129,3 +129,12 @@ describe("createActivationLinkAction", () => {
   expect(result?.activationLink).toBeUndefined();
  });
 });
+
+it("invites field staff by phone number with an activation link only (nothing is mailed to the phone login)", async () => {
+ const f = form(branch, "email"); f.set("email", "0987 654 321");
+ const result = await inviteEmployeeAction(undefined, f);
+ expect(result?.success).toBe(true); expect(result?.activationLink).toBeTruthy();
+ expect(m.invite).not.toHaveBeenCalled();
+ expect(m.generate).toHaveBeenCalledWith(expect.objectContaining({ type: "invite", email: "0987654321@sdt.hienxavlxd.com" }));
+ f.set("email", "123"); expect((await inviteEmployeeAction(undefined, f))?.message).toContain("số điện thoại chưa đúng");
+});
