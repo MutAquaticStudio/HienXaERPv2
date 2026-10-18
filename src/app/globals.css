@@ -990,6 +990,10 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .order-prepayment legend { padding: 0 6px; font-weight: 700; }
 .order-prepayment .field { flex: 1 1 9rem; min-width: 0; }
 .order-prepayment > p { flex-basis: 100%; margin: 0; }
+.order-next-steps { display: grid; gap: 0.6rem; border-left: 4px solid var(--success); }
+.order-next-steps h2 { margin: 0; }
+.order-next-steps ul { display: grid; gap: 0.35rem; margin: 0; padding-left: 1.1rem; }
+.order-next-steps li { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; justify-content: space-between; }
 .doc-editor-total-hint { margin: 0; font-size: var(--font-size-caption); font-weight: 600; color: var(--warning); }
 .doc-editor-actions { display: grid; gap: 0.5rem; }
 .doc-editor-actions .button { width: 100%; justify-content: center; min-height: 48px; }

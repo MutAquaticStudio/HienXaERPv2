@@ -5,6 +5,7 @@ import { loadWarehouseAvailability } from "@/modules/inventory/availability-serv
 import { SalesOrderCreditOverride } from "@/components/sales/credit-override";
 import { OrderSourcingPanel, sourcingRun } from "@/components/sales/order-sourcing-panel";
 import { OrderDeliveryButton, type OrderDeliveryLine } from "@/components/delivery/order-delivery-dialog";
+import { OrderNextSteps } from "@/components/sales/order-next-steps";
 import { listAssignmentEmployees } from "@/modules/delivery/assignment-options";
 import { randomUUID } from "node:crypto";
 import Decimal from "decimal.js";
@@ -33,7 +34,7 @@ type Line = { id: string; material_id: string; base_uom_id: string; line_number:
 type Supply = { sales_order_line_id: string; allocated_base_quantity: string; remaining_base_quantity: string };
 type Allocation = { id: string; sales_order_line_id: string; supply_mode: string; allocated_base_quantity: string; warehouse_id: string | null;
   purchase_order_lines: { purchase_orders: { id: string; purchase_order_number: string; state: string } | { id: string; purchase_order_number: string; state: string }[] | null } | null };
-type Delivery = { id: string; delivery_number: string; execution_state: string };
+type Delivery = { id: string; delivery_number: string; execution_state: string; employee_id: string | null; vehicle_id: string | null; scheduled_at: string | null };
 function relation<T>(value: T | T[] | null) { return Array.isArray(value) ? value[0] ?? null : value; }
 
 export default async function OrderDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ notice?: string; error?: string }> }) {
@@ -45,7 +46,7 @@ export default async function OrderDetailPage({ params, searchParams }: { params
     supabase.from("sales_order_read").select("id, customer_id, site_id, order_number, commercial_state, fulfillment_state, payment_state, customer_name_snapshot, site_name_snapshot, delivery_address_snapshot, total_vnd::text, requested_delivery_at, quotation_revision_id, created_at").eq("id", id).eq("branch_id", access.branchId).maybeSingle(),
     supabase.from("sales_order_lines").select("id, material_id, base_uom_id, line_number, material_name_snapshot, quantity, unit_price_vnd::text, line_total_vnd::text, list_unit_price_vnd::text, discount_mode, discount_value::text, price_source_type, units_of_measure:ordered_uom_id(symbol), base_units:base_uom_id(symbol)").eq("sales_order_id", id).order("line_number"),
     supabase.from("sales_line_supply_read").select("sales_order_line_id, allocated_base_quantity, remaining_base_quantity").eq("sales_order_id", id),
-    access.permissions.has("delivery.read") ? supabase.from("delivery_read").select("id, delivery_number, execution_state").eq("sales_order_id", id) : Promise.resolve({ data: [] }),
+    access.permissions.has("delivery.read") ? supabase.from("delivery_read").select("id, delivery_number, execution_state, employee_id, vehicle_id, scheduled_at").eq("sales_order_id", id) : Promise.resolve({ data: [] }),
     access.permissions.has("purchasing.create") || access.permissions.has("delivery.create") ? supabase.from("warehouses").select("id, name").eq("branch_id", access.branchId).eq("active", true).order("name").limit(100) : Promise.resolve({ data: [], error: null }),
     supabase.from("supply_allocations").select("id, sales_order_line_id, supply_mode, allocated_base_quantity, warehouse_id, sales_order_lines!inner(sales_order_id), purchase_order_lines(purchase_orders(id, purchase_order_number, state))").eq("sales_order_lines.sales_order_id", id).order("id"),
     supabase.from("sales_order_sourcing_runs").select("created_at, plan").eq("sales_order_id", id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
@@ -63,7 +64,7 @@ export default async function OrderDetailPage({ params, searchParams }: { params
   const deliveries = (deliveryResult.data ?? []) as Delivery[];
   const warehouses = warehouseResult.data ?? [];
   // A1: a delivery from stock takes its warehouse source itself, so delivery.create is enough (no purchasing.create).
-  const [availability, deliveryPlan, query, prepaidResult] = await Promise.all([
+  const [availability, deliveryPlan, query, prepaidResult, names] = await Promise.all([
     access.permissions.has("inventory.read") ? loadWarehouseAvailability(access.branchId, lines.map(line => line.material_id)) : Promise.resolve(undefined),
     order.commercial_state === "CONFIRMED" && access.permissions.has("delivery.create") && warehouses.length
       ? loadDeliveryPlan(supabase, order.id, lines, access.branchId, access.permissions.has("delivery.assign")) : Promise.resolve(null),
@@ -72,6 +73,8 @@ export default async function OrderDetailPage({ params, searchParams }: { params
     access.permissions.has("finance.ar.read") ? supabase.from("payment_read").select("id, payment_number, method, amount_vnd::text, posting_state, reversal_of_payment_id")
       .eq("branch_id", access.branchId).eq("customer_id", order.customer_id).eq("direction", "RECEIPT").eq("external_reference", prepaymentReference(order.order_number)).limit(20)
       : Promise.resolve({ data: [] }),
+    // FB5: who and what took the deliveries, for "bước tiếp theo" right after confirming.
+    searchParams.then((params) => params.notice?.startsWith("confirmed") ? resourceNames(supabase, access.branchId, deliveries) : null),
   ]);
   const prepaid = prepaymentSummary((prepaidResult.data ?? []) as PrepaymentReceipt[], order.total_vnd ?? "0");
   const now = new Date();
@@ -83,6 +86,15 @@ export default async function OrderDetailPage({ params, searchParams }: { params
     {fromPortal && <p className="form-message warning" role="note"><strong>Đơn khách tự đặt trên cổng khách{order.commercial_state === "DRAFT" ? " — chờ duyệt" : ""}.</strong>{order.commercial_state === "DRAFT" ? " Kiểm tra hàng, giá và ngày giao (sửa bản nháp nếu cần), rồi bấm “Duyệt đơn” để giữ hạn mức và tự phân nguồn; hoặc hủy kèm lý do — khách thấy lý do." : ""}{channel?.portal_note ? ` Ghi chú của khách: “${channel.portal_note}”.` : ""}</p>}
     <SalesOrderCreditOverride orderId={id} />
       <ActionNotice notice={query.notice} error={query.error} />
+    {names && order.commercial_state === "CONFIRMED" && <OrderNextSteps orderId={order.id} orderNumber={order.order_number} customerId={order.customer_id} siteId={order.site_id}
+      deliveries={deliveries.map((delivery) => ({ id: delivery.id, number: delivery.delivery_number, state: delivery.execution_state, scheduledAt: delivery.scheduled_at,
+        vehicle: delivery.vehicle_id ? names.vehicles.get(delivery.vehicle_id) ?? null : null, driver: delivery.employee_id ? names.employees.get(delivery.employee_id) ?? null : null,
+        assigned: !!delivery.employee_id && delivery.execution_state !== "PLANNED" }))}
+      purchases={[...new Map(allocations.flatMap((allocation) => { const purchase = relation(allocation.purchase_order_lines?.purchase_orders ?? null);
+        return purchase ? [[purchase.id, { id: purchase.id, number: purchase.purchase_order_number, state: purchase.state }] as const] : []; })).values()]}
+      remainingVnd={access.permissions.has("finance.ar.read") ? prepaid.remainingVnd.toString() : null}
+      can={{ collect: access.permissions.has("finance.payment.post") && access.permissions.has("finance.ar.read"), createOrder: access.permissions.has("orders.create"),
+        createDelivery: access.permissions.has("delivery.create"), purchases: access.permissions.has("purchasing.confirm") }} />}
     <CloseRemainingForm orderId={order.id} commercialState={order.commercial_state} fulfillmentState={order.fulfillment_state} canClose={access.permissions.has("orders.cancel")} />
     <OperationalCompletion orderId={id} />
     {order.commercial_state !== "CANCELLED" && <OrderSourcingPanel orderId={order.id} confirmed={order.commercial_state === "CONFIRMED"}
@@ -161,4 +173,17 @@ async function loadDeliveryPlan(supabase: Awaited<ReturnType<typeof createServer
       } : null,
     })) } : null;
   return { lines: planLines, open, resources, stopMinutes: (settingsResult.data as { stop_minutes: number } | null)?.stop_minutes ?? 60 };
+}
+
+/** Plates and driver names for the order's assigned deliveries; a name that cannot be read is simply left out. */
+async function resourceNames(supabase: Awaited<ReturnType<typeof createServerSupabase>>, branchId: string, deliveries: Delivery[]) {
+  const vehicleIds = [...new Set(deliveries.flatMap((delivery) => delivery.vehicle_id ? [delivery.vehicle_id] : []))];
+  const [vehicleResult, employeeResult] = await Promise.all([
+    vehicleIds.length ? supabase.from("vehicles").select("id, plate_number").eq("branch_id", branchId).in("id", vehicleIds) : Promise.resolve({ data: [] }),
+    deliveries.some((delivery) => delivery.employee_id) ? listAssignmentEmployees(supabase, branchId).catch(() => ({ data: [] })) : Promise.resolve({ data: [] }),
+  ]);
+  return {
+    vehicles: new Map(((vehicleResult.data ?? []) as { id: string; plate_number: string }[]).map((vehicle) => [vehicle.id, vehicle.plate_number])),
+    employees: new Map((employeeResult.data ?? []).map((employee) => [employee.id, employee.display_name])),
+  };
 }
