@@ -14,6 +14,8 @@
 
 > Quyết định Owner 17/10/2026 tối (P0): **D24** mời nhân viên không phụ thuộc email — mặc định hệ thống tạo **link kích hoạt dùng một lần** để quản lý sao chép gửi qua Zalo/tin nhắn (vẫn chọn được gửi thư mời; thư không gửi được thì tự tạo link); danh sách Nhân viên & quyền có nút "Link kích hoạt" tạo link mới cho người chưa đặt mật khẩu hoặc quên mật khẩu (link mới thay link cũ; không tạo cho chính mình, chỉ trong chi nhánh đang quản lý, không vượt quyền người tạo). Link mở thẳng trang đặt mật khẩu của ứng dụng và được xác minh trong trình duyệt, nên không phụ thuộc danh sách chuyển hướng của Supabase và không bị bản xem trước của ứng dụng chat dùng mất.
 
+> Quyết định Owner 18/10/2026 (góp ý sau bản Production, đợt `FB5-20261018`, giữ nguyên nghiệp vụ ghi sổ): **D25** (a) quy đổi đơn vị nhập được hai chiều ("1 Tấn = 20 Bao" hoặc "1 Bao = 0,05 Tấn") và luôn hiện bằng câu "1 A = x B", không hiện "A → B 20 / 1" (SPEC-UOM-004); (b) giá mua nhập theo một đơn vị tự tính giá cho các đơn vị khác của vật tư theo quy đổi, lưu nguyên tử (SPEC-PRI-008); (c) xe không bắt ghi căn cứ sức chở; sức chở tự quy đổi sang đơn vị của hàng qua quy đổi đã duyệt, hai chiều, tối đa 3 bước (SPEC-DEL-009); (d) đơn bán mới có ô "Khách trả trước" (số tiền, phương thức, quỹ) ghi thành phiếu thu ứng trước của khách trong Sổ quỹ (SPEC-FIN-007); (e) xác nhận xong đơn bán/đơn mua hiện "bước tiếp theo" để giảm thao tác, không bỏ bước nghiệp vụ nào (SPEC-DEL-009, SPEC-PUR-003).
+
 # Spec.md — HIỀN XA ERP V2
 
 > **Bộ tài liệu:** `HX-V2-DOCSET-4.4`  
@@ -770,6 +772,10 @@ Mỗi conversion phải biết:
   dòng chứng từ đã lập giữ snapshot quy đổi (SPEC-UOM-002). Quyền: quy đổi cần `catalog.manage`, giá cần `pricing.manage`.
 - "Chia giá theo quy đổi" (D11) chỉ là công cụ gợi ý trên giao diện từ giá của một đơn vị, làm tròn 1.000 / 100 / không; giá lưu luôn là số VND
   tuyệt đối của từng đơn vị.
+- D25 (18/10/2026): form đơn vị cho chọn chiều nhập mỗi dòng — "1 <đơn vị cơ sở> = x <đơn vị>" (mặc định) hoặc "1 <đơn vị> = x <đơn vị cơ sở>";
+  ứng dụng đổi sang tử/mẫu của "1 <đơn vị> = tử/mẫu <đơn vị cơ sở>" (dữ liệu không đổi). Nhập "1 tấn = 3 bao" mà 1/3 không chính xác tới 6 chữ số
+  thì báo lỗi và đề nghị nhập chiều kia. Thẻ "Đơn vị & quy đổi" và bảng đơn vị hiện câu số lớn trước ("1 Tấn = 20 Bao", dòng phụ "1 Bao = 0,05 Tấn";
+  "≈" khi không chia hết).
 
 ---
 
@@ -975,6 +981,14 @@ Nếu từ Quote:
 
 # SPEC-160 — Purchasing & Sourcing
 
+## SPEC-PRI-008 — Giá mua tự tính theo quy đổi (D25, 18/10/2026)
+
+- Tạo giá mua cho một đơn vị (vd 1 tấn 1.600.000 ₫) có ô "Tự tính giá cho các đơn vị khác theo quy đổi" (mặc định bật): server tính giá các đơn vị
+  thanh toán còn hiệu lực của vật tư theo quy đổi về đơn vị cơ sở (làm tròn tới đồng), bỏ qua đơn vị đã có giá hiệu lực của cùng NCC trùng thời gian,
+  rồi lưu tất cả qua `save_purchase_price_rules(branch, rules, reason, op)` — một transaction, mỗi giá đi qua `save_purchase_price_rule` hiện có
+  (cùng quyền, kiểm tra và audit; mã thao tác con suy ra), một giá lỗi thì không lưu giá nào; replay trả lại cùng kết quả.
+- Ô "Đơn vị giá" chỉ liệt kê đơn vị của vật tư đã chọn. Đơn mua vẫn khớp giá theo đúng đơn vị đặt (SPEC-PUR-001).
+
 ## SPEC-PUR-001 — Purchase Order
 
 PO có:
@@ -1001,6 +1015,8 @@ PO Confirmed không tự tạo AP.
 - Đơn mua đã xác nhận có "Gửi NCC qua Zalo": trên điện thoại mở bảng chia sẻ với PDF đơn mua và nội dung soạn sẵn (số đơn, hàng, nơi giao,
   ngày giao, người liên hệ) để chọn Zalo → chat NCC; trên máy tính chép nội dung, tải PDF và mở `zalo.me/<SĐT NCC>`; phụ: email (mailto).
   Việc gửi do người dùng làm; ứng dụng chỉ ghi nhận.
+- D25: ngay sau khi xác nhận, trang đơn mua hiện "bước tiếp theo": Gửi NCC, Nhận hàng (kho) hoặc NCC giao thẳng (phiếu riêng), Tạo đơn mua mới cùng NCC.
+  Form nhận hàng có nút "Nhận đủ" điền sẵn số còn lại của mọi dòng; vẫn phải bấm "Xác nhận nhận hàng" (không tự ghi).
 - `record_purchase_order_sent(po, channel ZALO|EMAIL|OTHER, op)`: chỉ đơn CONFIRMED, quyền `purchasing.create` hoặc `purchasing.confirm`,
   idempotent theo mã thao tác, audit. Bảng `purchase_order_dispatches` (RLS, đọc theo `purchasing.read`). Danh sách đơn mua hiện
   "Đã gửi NCC 10:30 · Zalo" / "Chưa gửi". Zalo ZNS tự động: chưa làm (cần Zalo OA đã xác minh và phí theo tin).
@@ -1214,6 +1230,18 @@ Proof mặc định private trừ khi policy cho phép customer xem.
   đóng phân công, phiếu về PLANNED, ghi người từ chối vào `delivery_dispatch_exclusions` (lần tự điều phối sau bỏ qua người này cho phiếu đó),
   thông báo `work.declined` cho người có `delivery.assign` kèm lý do. Lịch sử phân công giữ nguyên.
 
+## SPEC-DEL-009 — Sức chở theo quy đổi, bước tiếp theo sau xác nhận đơn (D25, 18/10/2026)
+
+- Xe chỉ cần "Sức chở tối đa" + đơn vị (vd 5 tấn); ghi chú căn cứ là tùy chọn. Kiểm tải (`assert_delivery_resources`, `assert_vehicle_actual_load`)
+  quy đổi lượng hàng (đơn vị cơ sở) sang đơn vị sức chở qua `private.capacity_factor`: đọc quy đổi đã duyệt **hai chiều**, tối đa 3 bước, ưu tiên
+  quy đổi riêng của vật tư; loại Đo thực tế vẫn cần nguồn; Ước lượng không dùng. Không quy đổi được thì vẫn từ chối (`vehicle_capacity_conversion_missing`,
+  kèm tên vật tư) — không đoán (SPEC-UOM-002).
+- Hộp "Lập phiếu giao" ghi cạnh xe "chở tối đa 5 tấn ≈ 100 bao Xi măng" (`vehicle_capacity_by_order`) và chặn gửi khi các dòng chọn vượt sức chở;
+  Lộ trình cảnh báo tải cả chuyến bằng `vehicle_load_for_deliveries`. Chặn thật vẫn ở bàn giao lên xe.
+- Ngay sau khi xác nhận đơn bán, trang đơn hiện khung "bước tiếp theo": phiếu giao đã tự lập (xe, tài xế, giờ, đã giao việc qua cổng thợ) hoặc
+  "chờ phân xe", đơn mua NCC giao thẳng chờ duyệt, số khách còn phải trả, nút Thu tiền / In đơn / Tạo đơn mới cùng khách. Chỉ là lối tắt tới màn
+  hình có sẵn; quyền và kiểm tra không đổi.
+
 ## SPEC-DEL-005 — Xác minh giao hàng và ghi sổ đúng một lần
 
 `verifyDelivery` khóa phiếu, kiểm tra phiên bản, lượng bàn giao, lượng chấp nhận/tính tiền và bằng chứng; rồi cùng một giao dịch:
@@ -1293,6 +1321,13 @@ Reversal:
 ## SPEC-FIN-007 — Advance
 
 Customer advance và Supplier advance là thực thể/position riêng, không biểu diễn đơn giản bằng AR/AP âm.
+
+D25 (18/10/2026) — khách trả trước khi lập đơn bán: form đơn bán mới có ô "Khách trả trước" (số tiền, phương thức Tiền mặt / Chuyển khoản / Thẻ /
+Khác, quỹ nhận — mặc định quỹ tiền mặt cho tiền mặt, tài khoản ngân hàng cho cách khác) cho người có `finance.payment.post`. Sau khi lưu đơn,
+ứng dụng ghi `post_payment` RECEIPT với toàn bộ số tiền là **ứng trước của khách** (không phân bổ, vì công nợ chỉ sinh khi xác minh giao),
+tham chiếu "Trả trước đơn SO-…", thời điểm cố định lúc mở form, mã thao tác suy ra từ mã lưu đơn (gửi lại không ghi hai lần). Ghi thu lỗi không
+hủy đơn, chỉ báo để kiểm Sổ quỹ. Trang đơn hiện "Khách đã trả trước X (REC-…) · Còn phải trả Y". Khi đã giao và có công nợ, trừ khoản trả trước bằng
+phân bổ phiếu thu đã ghi ở Công nợ phải thu của khách (có sẵn); luật công nợ và hạn mức không đổi.
 
 ## SPEC-FIN-008 — Payment Notice
 

@@ -8,6 +8,8 @@
 
 > Quyết định Owner 17/10/2026 (D14–D17, D19, D22, C1, C2, F5 — triển khai 18/10/2026, xem đầu Spec.md): chuông thông báo trên thanh trên cùng nội bộ (UX-NOTIFY-001); trang đơn có khung "Nguồn hàng" do hệ thống tự phân, trang Điều phối theo tài xế (UX-DISPATCH-001); "Gửi NCC qua Zalo" trên đơn mua; cổng khách có đăng ký, đăng nhập bằng số điện thoại, đổi mật khẩu tạm và "Đặt hàng" (UX-CUST-008/009); Khách hàng 360 có khung "Tài khoản cổng khách"; Cài đặt → "Quy tắc tự động" và "Bật thông báo trên máy này" (UX-AUTO-001).
 
+> Quyết định Owner 18/10/2026 (D25, `FB5`): quy đổi đơn vị nhập hai chiều và hiện bằng câu "1 Tấn = 20 Bao"; giá mua tự tính cho các đơn vị khác; xe không cần căn cứ sức chở, sức chở tự quy đổi; đơn bán có "Khách trả trước"; xác nhận xong đơn bán/đơn mua hiện "bước tiếp theo" (UX-FB5-001).
+
 # UXUI.md — HIỀN XA ERP V2
 
 > **Bộ tài liệu:** `HX-V2-DOCSET-4.4`  
@@ -1562,6 +1564,26 @@ báo đúng quyền và chi nhánh. Trang Thông báo có khung **"Thông báo t
 - **Điều phối** (`/admin/dispatch?day=`): chọn ngày; hàng "Chờ điều phối" (phiếu, khách, giờ cần, lý do chưa chia) với "Áp dụng" khi có gợi ý; nút
   **"Tự chia việc"**; mỗi tài xế một cột: xe, số phiếu, dòng thời gian các phiếu theo giờ (giờ, mã phiếu, khách, trạng thái); 390 px thành danh sách.
 - Cổng thợ: việc đã nhận chưa bắt đầu có link **"Từ chối việc"** (bắt nhập lý do) → về trang chủ với "Đã từ chối việc, điều phối sẽ chia lại".
+
+# UX-FB5-001 — Quy đổi hai chiều, giá mua tự tính, sức chở, khách trả trước, bước tiếp theo (D25, 18/10/2026)
+
+- **Đơn vị & quy đổi** (vật tư, "Hàng cùng loại"): mỗi dòng đơn vị có ô chọn chiều "1 {cơ sở} =" (mặc định) / "1 {đơn vị} =" rồi ô số; dưới ô hiện
+  "Tức là 1 Tấn = 20 Bao · 1 Bao = 0,05 Tấn"; nhập chiều không chia hết (1 tấn = 3 bao) thì báo lỗi ngay ở dòng và gợi ý nhập chiều kia. Thẻ "Đơn vị &
+  quy đổi" và bảng đơn vị hiện câu đậm "1 Tấn = 20 Bao", dòng phụ chiều ngược.
+- **Tạo giá mua**: chọn vật tư thì "Đơn vị giá" chỉ còn đơn vị của vật tư đó; ô tích "Tự tính giá cho các đơn vị khác theo quy đổi" bật sẵn; lưu xong
+  báo "Đã lưu giá mua và tự tính giá theo quy đổi: 1 tấn 1.600.000 ₫ …".
+- **Xe**: popup Xe chỉ có "Sức chở tối đa" + "Đơn vị sức chở (vd tấn; hàng tính theo bao tự quy đổi)", không còn ô căn cứ. Hộp "Lập phiếu giao":
+  tên xe kèm "· chở 5 tấn"; dưới ô xe "Xe chở tối đa 5 tấn ≈ 100 bao Xi măng"; vượt sức chở thì băng đỏ "vượt sức chở của xe (khoảng 120%)" và nút
+  lập phiếu bị khóa; chưa quy đổi được thì ghi rõ vật tư thiếu quy đổi.
+- **Đơn bán mới — "Khách trả trước"** (khung viền nét đứt dưới tổng tiền, chỉ người có quyền ghi thu): Số tiền (MoneyInput) · Phương thức · Vào quỹ ·
+  "Còn phải trả …"; bảng "Xác nhận đơn bán" thêm dòng "Khách trả trước 2.000.000 ₫ · Chuyển khoản · VCB" và "Còn phải trả". Trang đơn: "Khách đã
+  trả trước" (số tiền, REC-…, phương thức, link Sổ quỹ) và "Còn phải trả". Ghi thu lỗi: đơn vẫn lưu, băng đỏ "Đã lưu đơn nhưng chưa ghi được tiền
+  khách trả trước … Kiểm tra Sổ quỹ trước khi ghi lại".
+- **Bước tiếp theo** (khung viền xanh đầu trang ngay sau khi xác nhận): đơn bán — "Đã xác nhận SO-… — bước tiếp theo": từng phiếu giao "GH-… · xe … ·
+  tài xế … · giờ — đã giao việc qua cổng thợ" hoặc "chờ phân xe, tài xế" + link "Phân xe"; đơn mua NCC giao thẳng chờ duyệt + "Duyệt đơn mua"; "Khách
+  còn phải trả …"; nút **Thu tiền**, **In đơn**, **Tạo đơn mới cho khách này**. Đơn mua — "Gửi NCC" (nhảy tới khung Gửi NCC), "Nhận hàng" (nhảy
+  tới form nhận), **Tạo đơn mua mới cùng NCC**; form nhận hàng có **"Nhận đủ (điền số còn lại)"** (NCC giao thẳng: "NCC giao đủ").
+- 390 px: bảng Quy tắc tự động thành thẻ từng quy tắc; bảng phân giao Điều phối xếp các cột theo chiều dọc.
 
 # UX-CUS-ACCOUNT-001 — Tài khoản cổng khách trên Khách hàng 360 (D14, 18/10/2026)
 
