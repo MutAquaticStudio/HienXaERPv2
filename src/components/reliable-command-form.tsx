@@ -56,8 +56,7 @@ export function ReliableCommandForm(props: Props) {
         const outcome = await lookupCommandOutcomeAction(id!, props.command);
         if (!live) return;
         if (outcome.status === "SUCCESS") {
-          setState(outcome);
-          localStorage.removeItem(key);
+          settle(outcome);
         } else {
           const entries = await getCommandDraftAction(id!, props.command);
           if (!live) return;
@@ -84,14 +83,38 @@ export function ReliableCommandForm(props: Props) {
               });
             }
           }
-          setState(outcome);
+          settle(outcome);
         }
       } catch { if (live) setState({ status: "UNKNOWN", message: "Chưa tra cứu được kết quả. Giữ nguyên thao tác để kiểm tra lại." }); }
       finally { if (live) setLoading(false); }
     }
     void recover();
     return () => { live = false; };
+    // settle only uses refs and setters; the recovery runs once per form.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, props.command]);
+
+  // FB7 (Owner 22/10): no "Bắt đầu thao tác mới". A refused submit keeps what was typed, marks the field the message is about
+  // and is ready to be sent again as a new operation; a saved one starts the next entry by itself.
+  function settle(outcome: CommandOutcome) {
+    setState(outcome);
+    if (outcome.status === "UNKNOWN") return;
+    try { localStorage.removeItem(key); } catch { /* nothing kept */ }
+    setOperation(crypto.randomUUID());
+    if (outcome.status === "SUCCESS") {
+      setCached(null);
+      form.current?.reset();
+      props.onNew?.();
+    }
+  }
+
+  useEffect(() => {
+    if (state?.status !== "FAILED" || !state.field) return;
+    const input = form.current?.querySelector<HTMLElement>(`[name="${CSS.escape(state.field)}"]:not([type="hidden"])`);
+    if (!input) return;
+    input.setAttribute("aria-invalid", "true");
+    input.focus();
+  }, [state]);
 
   async function execute(entries: Array<[string, string]>, id: string) {
     setBusy(true);
@@ -103,17 +126,17 @@ export function ReliableCommandForm(props: Props) {
         return;
       }
       const saved = await saveCommandDraftAction(id, props.command, entries);
-      if (saved.status !== "SUCCESS") { setState(saved); return; }
+      if (saved.status !== "SUCCESS") { if (saved.status === "FAILED") settle(saved); else setState(saved); return; }
       const result = await props.action(formFor(entries));
-      setState(result);
-      if (result.status !== "UNKNOWN") localStorage.removeItem(key);
+      settle(result);
       if (result.status === "SUCCESS") { router.refresh(); props.onSuccess?.(result); }
     } catch {
       setState({ status: "UNKNOWN", message: "Phản hồi bị gián đoạn; chưa xác định được kết quả. Tra cứu hoặc thử lại cùng thao tác, không ghi lần mới." });
     } finally { setBusy(false); }
   }
   async function submit(data: FormData) {
-    if (loading || busy || state?.status === "UNKNOWN" || state?.status === "SUCCESS") return;
+    if (loading || busy || state?.status === "UNKNOWN") return;
+    form.current?.querySelectorAll("[aria-invalid]").forEach((input) => input.removeAttribute("aria-invalid"));
     data.set("operationId", operation);
     const entries: Array<[string, string]> = [];
     for (const [name, value] of data) if (typeof value === "string" && !name.startsWith("$")) entries.push([name, value]);
@@ -123,29 +146,22 @@ export function ReliableCommandForm(props: Props) {
     setBusy(true);
     try {
       const outcome = await lookupCommandOutcomeAction(operation, props.command);
-      setState(outcome);
-      if (outcome.status === "SUCCESS") { localStorage.removeItem(key); router.refresh(); props.onSuccess?.(outcome); }
+      if (outcome.status === "UNKNOWN") setState(outcome); else settle(outcome);
+      if (outcome.status === "SUCCESS") { router.refresh(); props.onSuccess?.(outcome); }
     } catch { setState({ status: "UNKNOWN", message: "Chưa tra cứu được kết quả. Hãy giữ mã thao tác và thử lại." }); }
     finally { setBusy(false); }
   }
-  function next() {
-    localStorage.removeItem(key);
-    setCached(null);
-    setOperation(crypto.randomUUID());
-    setState(null);
-    props.onNew?.();
-  }
-  return <form ref={form} action={submit} className={props.className}>
+  // A plain submit handler (not a form action) so a refused submit keeps what was typed: React resets a form after its action.
+  return <form ref={form} className={props.className} onSubmit={(event) => { event.preventDefault(); void submit(new FormData(event.currentTarget)); }}>
     <input type="hidden" name="operationId" value={operation} />
-    <fieldset className="reliable-command-fields" disabled={loading || busy || state !== null}>
+    <fieldset className="reliable-command-fields" disabled={loading || busy || state?.status === "UNKNOWN"}>
       {props.children}
     </fieldset>
-    {state && <p className={`form-message ${state.status === "SUCCESS" ? "success" : ""}`} role="status">{state.message}{state.status === "SUCCESS" && <> Mã chứng từ: <span className="mono">{state.resultId}</span>.{props.resultHref&&<a className="code-link" href={props.resultHref(state.resultId)}> Mở bản ghi</a>}</>}</p>}
+    {state && <p className={`form-message ${state.status === "SUCCESS" ? "success" : state.status === "FAILED" ? "error" : ""}`} role={state.status === "FAILED" ? "alert" : "status"}>{state.message}{state.status === "SUCCESS" && <> Mã chứng từ: <span className="mono">{state.resultId}</span>.{props.resultHref&&<a className="code-link" href={props.resultHref(state.resultId)}> Mở bản ghi</a>}</>}</p>}
     {state?.status === "UNKNOWN" && <div className="action-cluster">
       <button className="button button-secondary" type="button" disabled={busy} onClick={() => void lookup()}>Tra cứu kết quả</button>
       {cached && <button className="button button-secondary" type="button" disabled={busy} onClick={() => void execute(cached, operation)}>Thử lại cùng thao tác</button>}
     </div>}
-    {(state?.status === "SUCCESS" || state?.status === "FAILED") && <button className="button button-secondary" type="button" onClick={next}>Bắt đầu thao tác mới</button>}
   </form>;
 }
 

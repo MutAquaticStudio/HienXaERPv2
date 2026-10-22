@@ -1,6 +1,7 @@
 export type CommandOutcome =
   | { status: "SUCCESS"; message: string; resultId: string }
-  | { status: "FAILED" | "UNKNOWN"; message: string };
+  /** `field`: name of the input the message is about, so the form can mark it and put the cursor there. */
+  | { status: "FAILED" | "UNKNOWN"; message: string; field?: string };
 
 /** SQL rejection is transactional. Transport, proxy and ambiguous errors are unknown. */
 export function isAuthoritativeRejection(code: string | undefined): boolean {
