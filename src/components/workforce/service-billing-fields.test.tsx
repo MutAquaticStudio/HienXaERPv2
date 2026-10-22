@@ -25,15 +25,27 @@ describe("ServiceBillingFields", () => {
     const { container } = render(<form><ServiceBillingFields defaultQuantity="2" unitLabel="chuyến" unitPriceVnd="450000" /></form>);
     expect(hidden(container).value).toBe("900000");
     expect(screen.getByLabelText("Giá trị tính khách (VND)")).toHaveValue("900.000");
-    fireEvent.change(screen.getByLabelText("Sản lượng tính khách (chuyến)"), { target: { value: "3" } });
+    fireEvent.change(screen.getByLabelText("Số lượng tính khách"), { target: { value: "3" } });
     expect(hidden(container).value).toBe("1350000");
     expect(screen.getByText(/Đơn giá 450\.000/)).toBeInTheDocument();
+  });
+
+  it("counts trips with the + / − buttons (FB8)", () => {
+    const { container } = render(<form><ServiceBillingFields defaultQuantity="2" unitLabel="chuyến" unitPriceVnd="450000" /></form>);
+    fireEvent.click(screen.getByRole("button", { name: "Thêm 1 · Số lượng tính khách" }));
+    expect(container.querySelector<HTMLInputElement>('input[type="hidden"][name="billableQuantity"]')!.value).toBe("3");
+    expect(hidden(container).value).toBe("1350000");
+    fireEvent.click(screen.getByRole("button", { name: "Bớt 1 · Số lượng tính khách" }));
+    fireEvent.click(screen.getByRole("button", { name: "Bớt 1 · Số lượng tính khách" }));
+    fireEvent.click(screen.getByRole("button", { name: "Bớt 1 · Số lượng tính khách" }));
+    expect(screen.getByRole("button", { name: "Bớt 1 · Số lượng tính khách" })).toBeDisabled();
+    expect(hidden(container).value).toBe("0");
   });
 
   it("keeps an amount the verifier typed and offers the suggestion back", () => {
     const { container } = render(<form><ServiceBillingFields defaultQuantity="2" unitLabel="chuyến" unitPriceVnd="450000" /></form>);
     fireEvent.change(screen.getByLabelText("Giá trị tính khách (VND)"), { target: { value: "850000" } });
-    fireEvent.change(screen.getByLabelText("Sản lượng tính khách (chuyến)"), { target: { value: "3" } });
+    fireEvent.change(screen.getByLabelText("Số lượng tính khách"), { target: { value: "3" } });
     expect(hidden(container).value).toBe("850000");
     fireEvent.click(screen.getByRole("button", { name: "Dùng giá gợi ý" }));
     expect(hidden(container).value).toBe("1350000");

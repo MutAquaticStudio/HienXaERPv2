@@ -3,6 +3,7 @@ import { formatQuantity, isExactEntryQuantity } from "@/lib/core/quantity";
 import { userFacingError } from "@/lib/core/errors";
 import { reasonOrDefault } from "@/lib/core/reason";
 import { FilePicker } from "@/components/ui/file-picker";
+import { QuantityStepper } from "@/components/ui/quantity-stepper";
 
 import type { ChangeEvent, FormEvent } from "react";
 import { useEffect, useState } from "react";
@@ -25,12 +26,17 @@ export function WorkResultDraftForm({
   initialEvidenceId,
   delivery,
   initialReceiverName,
+  unit,
+  plannedQuantity,
 }: {
   workItemId: string;
   version: number;
   initialEvidenceId?: string;
   delivery?: WorkerJob["delivery"];
   initialReceiverName?: string;
+  /** Service jobs (FB8): what is counted ("chuyến", "giờ") and the office's estimate, if any. */
+  unit?: string;
+  plannedQuantity?: string | null;
 }) {
   const key = "hx:work-draft:" + workItemId;
   const [draft, setDraft] = useState<SafeWorkDraft | null>(null);
@@ -108,7 +114,8 @@ export function WorkResultDraftForm({
           workItemId,
           actualQuantity: draft.actualQuantity,
           receiverName: draft.receiverName,
-          note: draft.note,
+          // FB8: the note is optional; one or two letters are not kept.
+          note: draft.note.trim().length >= 3 ? draft.note : "",
           evidenceId: evidenceId || null,
           expectedVersion: draft.expectedVersion,
           operationId: draft.operationId,
@@ -161,8 +168,13 @@ export function WorkResultDraftForm({
               ? { ...item, actualQuantity: event.target.value } : item),
           } } : current)} />
       </div>) : <div className={styles.field}>
-        <label htmlFor="actual-quantity">Số lượng thực tế</label>
-        <input id="actual-quantity" inputMode="decimal" onChange={update("actualQuantity")} required value={draft.actualQuantity} />
+        <label htmlFor="actual-quantity">Số {unit ?? "lượng"} thực tế</label>
+        <QuantityStepper id="actual-quantity" label="Số lượng thực tế" unit={unit} min={0} required disabled={submitting || uploading}
+          value={draft.actualQuantity} describedBy="actual-quantity-hint"
+          onValue={(next) => setDraft((current) => current ? { ...current, actualQuantity: next } : current)} />
+        <span id="actual-quantity-hint" className={styles.hint}>
+          Bấm + mỗi {unit ?? "lần"} đã làm (hoặc gõ số).{plannedQuantity ? ` Dự kiến: ${formatQuantity(plannedQuantity)} ${unit ?? ""}.` : ""}
+        </span>
       </div>}
       {delivery?.state === "DISPATCHED" && draft.delivery && <div className={styles.field}>
         <label htmlFor="missing-arrival">Ghi chú bước tới nơi (không bắt buộc)</label>
@@ -175,8 +187,8 @@ export function WorkResultDraftForm({
         <input id="receiver-name" maxLength={120} onChange={update("receiverName")} value={draft.receiverName} />
       </div>
       <div className={styles.field}>
-        <label htmlFor="result-note">Ghi chú hiện trường</label>
-        <textarea id="result-note" maxLength={1000} minLength={3} onChange={update("note")} value={draft.note} />
+        <label htmlFor="result-note">Ghi chú (không bắt buộc)</label>
+        <textarea id="result-note" maxLength={1000} onChange={update("note")} value={draft.note} />
         <span className={styles.hint}>Chỉ số lượng, người nhận và ghi chú được lưu cục bộ. Không lưu ảnh, thông tin đăng nhập hoặc số tiền.</span>
       </div>
       <div className={styles.field}>
@@ -191,7 +203,7 @@ export function WorkResultDraftForm({
       {(error || sourceChanged || !deliveryReady) && <button className={styles.buttonSecondary} type="button" onClick={() => router.refresh()}>Tải dữ liệu mới</button>}
       {draft.sourceRejected && sourceChanged && <button className={styles.buttonSecondary} type="button" disabled={!deliveryReady} onClick={useCurrentSource}>Dùng phiên bản mới đã tải</button>}
       <button className={styles.button} disabled={submitting || uploading || !deliveryReady} type="submit">
-        {submitting ? "Đang gửi kết quả" : "Gửi kết quả công việc"}
+        {submitting ? "Đang gửi kết quả" : delivery ? "Gửi kết quả công việc" : "Hoàn tất công việc"}
       </button>
     </form>
   );

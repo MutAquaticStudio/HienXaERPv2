@@ -4,6 +4,7 @@ import Decimal from "decimal.js";
 import { useState } from "react";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { MoneyInput } from "@/components/ui/money-input";
+import { QuantityStepper } from "@/components/ui/quantity-stepper";
 
 /** Billable quantity × unit price in whole đồng (half up), or null while the quantity is not a valid number. */
 export function suggestedBillableAmount(quantity: string, unitPriceVnd: string | null): string | null {
@@ -22,9 +23,9 @@ export function ServiceBillingFields({ defaultQuantity, unitLabel, unitPriceVnd 
   const [own, setOwn] = useState(false);
   const suggested = suggestedBillableAmount(quantity, unitPriceVnd);
   return <>
-    <div className="field"><label htmlFor="billable-quantity">Sản lượng tính khách ({unitLabel})</label>
-      <input id="billable-quantity" name="billableQuantity" value={quantity} inputMode="decimal" required
-        onChange={(event) => { setQuantity(event.target.value); if (!own) setAmount(suggestedBillableAmount(event.target.value, unitPriceVnd) ?? ""); }} /></div>
+    <div className="field"><label htmlFor="billable-quantity">Số lượng tính khách</label>
+      <QuantityStepper id="billable-quantity" name="billableQuantity" label="Số lượng tính khách" unit={unitLabel} min={0} value={quantity} required
+        onValue={(next) => { setQuantity(next); if (!own) setAmount(suggestedBillableAmount(next, unitPriceVnd) ?? ""); }} /></div>
     <div className="field"><label htmlFor="billable-amount">Giá trị tính khách (VND)</label>
       <MoneyInput id="billable-amount" name="billableAmount" value={amount} onValue={(digits) => { setAmount(digits); setOwn(true); }} required />
       {unitPriceVnd && <small className="muted">

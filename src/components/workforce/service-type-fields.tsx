@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { CatalogDialog } from "@/modules/catalog/catalog-dialog";
+import { QuantityStepper } from "@/components/ui/quantity-stepper";
 
 export type ServiceTypeOption = { id: string; code: string; name: string; unit_label: string; default_price_vnd: string | null; resource_kind: "NONE" | "VEHICLE" | "MACHINE" };
 
@@ -36,9 +37,12 @@ export function ServiceTypeFields({ types, vehicleField, machineField, scope }: 
         : !types.length && <small className="muted">Bấm “+ Thêm loại” để tạo, ví dụ “Xe chở hàng” theo chuyến hoặc “Máy xúc” theo giờ.</small>}
       {notice && <small className="form-message success" role="status">{notice}</small>}
     </div>
+    {/* FB8: trips or hours are often only known on site; empty = counted when the worker finishes. */}
     <div className="field">
-      <label htmlFor="service-quantity">Sản lượng kế hoạch{selected ? ` (${selected.unit_label})` : ""}</label>
-      <input id="service-quantity" name="plannedQuantity" inputMode="decimal" required />
+      <label htmlFor="service-quantity">Số lượng dự kiến (không bắt buộc)</label>
+      <QuantityStepper id="service-quantity" name="plannedQuantity" label="Số lượng dự kiến" unit={selected?.unit_label} allowEmpty placeholder="Theo thực tế"
+        describedBy="service-quantity-hint" />
+      <small id="service-quantity-hint" className="muted">Chưa biết thì để trống: thợ bấm số {selected?.unit_label ?? "lượng"} thực tế khi hoàn tất.</small>
     </div>
     {/* Only the resource the type needs is shown, so nothing else can be attached. */}
     {resource === "VEHICLE" && vehicleField}

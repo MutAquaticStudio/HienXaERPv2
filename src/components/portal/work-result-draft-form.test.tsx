@@ -102,3 +102,20 @@ it("uses a new intent only after an authoritative stale rejection, refresh and e
     expect(current.delivery.lines[0].actualQuantity).toBe("1");
   });
 });
+
+it("counts a service job with + / − and finishes it without a note (FB8)", async () => {
+  fetcher.mockResolvedValueOnce({ ok: true, json: async () => ({ resultId: "saved" }) });
+  render(<WorkResultDraftForm workItemId={workItemId} version={2} unit="chuyến" plannedQuantity="3" />);
+  const quantity = await screen.findByLabelText("Số lượng thực tế");
+  expect(screen.getByText(/Dự kiến: 3 chuyến/)).toBeInTheDocument();
+  for (let tap = 0; tap < 5; tap += 1) fireEvent.click(screen.getByRole("button", { name: "Thêm 1 · Số lượng thực tế" }));
+  fireEvent.click(screen.getByRole("button", { name: "Bớt 1 · Số lượng thực tế" }));
+  expect(quantity).toHaveValue("4");
+  expect(screen.getByLabelText("Ghi chú (không bắt buộc)")).not.toBeRequired();
+  fireEvent.change(screen.getByLabelText("Ghi chú (không bắt buộc)"), { target: { value: "ok" } });
+  fireEvent.submit(screen.getByRole("button", { name: "Hoàn tất công việc" }).closest("form")!);
+  await waitFor(() => expect(navigation.push).toHaveBeenCalledWith("/work"));
+  const sent = JSON.parse(fetcher.mock.calls[0][1].body);
+  expect(sent).toMatchObject({ actualQuantity: "4", note: "", expectedVersion: 2 });
+  expect(localStorage.getItem("hx:work-draft:" + workItemId)).toBeNull();
+});

@@ -28,7 +28,15 @@ describe("ServiceTypeFields", () => {
     expect(screen.queryByLabelText("Xe")).not.toBeInTheDocument();
 
     fireEvent.change(select, { target: { value: "trip" } });
-    expect(screen.getByLabelText("Sản lượng kế hoạch (chuyến)")).toBeInTheDocument();
+    // FB8: the planned quantity may stay empty ("Theo thực tế") and is counted with + / −.
+    expect(screen.getByLabelText("Số lượng dự kiến")).toHaveValue("");
+    expect(screen.getByText(/thợ bấm số chuyến thực tế khi hoàn tất/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Thêm 1 · Số lượng dự kiến" }));
+    fireEvent.click(screen.getByRole("button", { name: "Thêm 1 · Số lượng dự kiến" }));
+    expect(screen.getByLabelText("Số lượng dự kiến")).toHaveValue("2");
+    fireEvent.click(screen.getByRole("button", { name: "Bớt 1 · Số lượng dự kiến" }));
+    fireEvent.click(screen.getByRole("button", { name: "Bớt 1 · Số lượng dự kiến" }));
+    expect(screen.getByLabelText("Số lượng dự kiến")).toHaveValue("");
     expect(screen.getByLabelText("Xe")).toBeInTheDocument();
     expect(screen.queryByLabelText("Máy")).not.toBeInTheDocument();
 
