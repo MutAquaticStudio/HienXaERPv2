@@ -46,7 +46,7 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
   const range = period(query);
   const accountId = UUID.test(query.account ?? "") ? query.account! : "";
   const direction = query.direction === "RECEIPT" || query.direction === "DISBURSEMENT" ? query.direction : "";
-  const can = { post: access.permissions.has("finance.payment.post"), payables: access.permissions.has("finance.ap.read"), reconcile: access.permissions.has("finance.reconcile"), reverse: access.permissions.has("finance.payment.reverse") };
+  const can = { post: access.permissions.has("finance.payment.post"), payables: access.permissions.has("finance.ap.read"), reconcile: access.permissions.has("finance.reconcile"), reverse: access.permissions.has("finance.payment.reverse"), expense: access.permissions.has("finance.expense.manage") };
   const supabase = await createServerSupabase();
   let paymentRequest = supabase.from("payment_read").select("id, payment_number, direction, counterparty_name, account_code, amount_vnd::text, allocated_amount_vnd::text, advance_amount_vnd::text, unallocated_amount_vnd::text, effective_at, posting_state, reconciliation_state, reconciliation_difference_vnd::text, reversal_of_payment_id")
     .eq("branch_id", access.branchId).gte("effective_at", range.fromAt).lt("effective_at", range.toAt);
@@ -80,6 +80,7 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
       <div className="action-cluster">
         {can.post && <PartyPaymentLauncher label="Lập phiếu thu" title="Lập phiếu thu · chọn khách hàng" partyLabel="khách hàng" parties={customers} hrefPrefix="/admin/receivables?customer=" className="button button-primary" />}
         {can.post && can.payables && <PartyPaymentLauncher label="Lập phiếu chi" title="Lập phiếu chi · chọn nhà cung cấp" partyLabel="nhà cung cấp" parties={suppliers} hrefPrefix="/admin/payables?supplier=" />}
+        {can.post && can.expense && <Link className="button button-secondary" href="/admin/expenses?new=1">Chi phí khác</Link>}
         {access.permissions.has("finance.account.manage") && <FormDialog label="Tạo tài khoản tiền" title="Tạo tài khoản tiền">
           <form className="form-grid" action={createFinanceAccountAction}><input type="hidden" name="operationId" value={randomUUID()} />
             <label className="field">Mã<input name="code" required /></label><label className="field">Tên<input name="name" required /></label>

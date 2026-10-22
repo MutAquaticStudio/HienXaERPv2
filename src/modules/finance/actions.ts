@@ -187,40 +187,6 @@ export async function createExpenseCategoryAction(formData: FormData) {
   redirect("/admin/expenses?notice=category-created");
 }
 
-export async function createExpenseAction(formData: FormData) {
-  const parsed = z.object({
-    categoryId: z.guid(),
-    supplierId: z.guid(),
-    amount: money,
-    effectiveAt: localDateTime,
-    dueDate: z.iso.date(),
-    description: z.string().trim().min(3).max(500),
-    activityKind: z.enum(["OPERATIONS", "SALES", "DELIVERY", "SERVICE", "ADMIN"]),
-    salesOrderId: optionalUuid,
-    evidenceId: optionalUuid,
-    operationId: z.guid(),
-  }).safeParse(Object.fromEntries(formData));
-  if (!parsed.success) redirect("/admin/expenses?error=invalid-expense");
-  const access = await requireInternalPermission("finance.expense.manage");
-  const supabase = await createServerSupabase();
-  const { error } = await supabase.rpc("create_expense", {
-    target_branch_id: access.branchId,
-    target_category_id: parsed.data.categoryId,
-    target_supplier_id: parsed.data.supplierId,
-    amount_vnd: parsed.data.amount,
-    effective_at: toInstant(parsed.data.effectiveAt),
-    due_date: parsed.data.dueDate,
-    description: parsed.data.description,
-    activity_kind: parsed.data.activityKind,
-    target_sales_order_id: parsed.data.salesOrderId || null,
-    target_evidence_id: parsed.data.evidenceId || null,
-    operation_id: parsed.data.operationId,
-  });
-  if (error) redirect(`/admin/expenses?error=${encodeURIComponent(message(error.message))}`);
-  revalidatePath("/admin/expenses");
-  redirect("/admin/expenses?notice=expense-created");
-}
-
 export async function approveExpenseAction(formData: FormData) {
   const parsed = z.object({ expenseId: z.guid(), version: z.coerce.number().int().positive(), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect("/admin/expenses?error=invalid-approval");
