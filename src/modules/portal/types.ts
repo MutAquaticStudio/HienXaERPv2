@@ -24,6 +24,9 @@ export type WorkerJob = {
   access_note?: string;
   receiving_window?: string;
   proofs?: PortalProof[];
+  /** FB7: whether the signed-in worker is the one the job is assigned to, and who that is. */
+  is_assignee?: boolean;
+  assignee_name?: string | null;
   delivery?: {
     id: string;
     version: number;
@@ -32,6 +35,11 @@ export type WorkerJob = {
     can_submit_result: boolean;
     /** The job is on the worker's list but the warehouse has not handed the goods over yet. */
     awaiting_handoff?: boolean;
+    /** FB7: the assigned worker confirms "Đã lấy hàng lên xe" (with photos) now. */
+    can_load?: boolean;
+    result_kind?: string | null;
+    /** When the delivery was verified (the worker's "Đã giao" verifies it). */
+    delivered_at?: string | null;
     lines: { id: string; material_name: string; unit: string; planned_base_quantity: string;
       loaded_base_quantity?: string | null; reportable_base_quantity: string;
       /** Unit the order was sold in and its ratio to the base unit (1 bao = 50 kg). */

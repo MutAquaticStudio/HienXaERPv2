@@ -114,6 +114,7 @@ begin
   assert failed = '42501', format('someone else''s photo must be refused, got %s', failed);
 
   -- "Đã giao" with two photos: delivered as loaded, arrival and start implied, receiver from the delivery.
+  -- This order has no credit commitment, so the automatic verification (FB7) leaves it for the office.
   done_id := public.submit_portal_delivery_done(work, null, null, null, array[photo2, photo1], (job->>'version')::integer, (job->'delivery'->>'version')::integer,
     (job->'delivery'->>'assignment_version')::integer, '7f189000-0000-4000-8000-000000000003');
   perform pg_temp.act_as_admin();
@@ -134,7 +135,7 @@ begin
   exception when others then failed := sqlstate; end;
   assert failed = '23505', format('payload conflict, got %s', failed);
 
-  -- Not delivered: no photo needed, but a reason is.
+  -- Not delivered: no photo needed, and since FB7 no note either (one is still kept when given).
   result := public.create_delivery_for_order(orders, w1, jsonb_build_array(jsonb_build_object('sales_order_line_id', line, 'quantity', '1')), start_at,
     jsonb_build_object('employee_id', driver, 'vehicle_id', truck, 'schedule_mode', 'NOW'), '7f189000-0000-4000-8000-000000000004');
   second_delivery := (result->>'delivery_id')::uuid;
@@ -142,16 +143,12 @@ begin
   perform public.handoff_delivery_actual(second_delivery, (select version from public.deliveries where id = second_delivery), now(), '7f189000-0000-4000-8000-000000000005',
     jsonb_build_array(jsonb_build_object('delivery_line_id', (select id from public.delivery_lines where delivery_id = second_delivery), 'loaded_base_quantity', '50')));
   job := public.worker_portal_job(second_work);
-  failed_message := null;
-  begin perform public.submit_portal_delivery_done(second_work, jsonb_build_array(jsonb_build_object('delivery_line_id', job->'delivery'->'lines'->0->>'id', 'actual_base_quantity', '0')),
-      null, null, '{}', (job->>'version')::integer, (job->'delivery'->>'version')::integer, (job->'delivery'->>'assignment_version')::integer, '7f189000-0000-4000-8000-0000000000a4');
-  exception when others then failed_message := sqlerrm; end;
-  assert failed_message = 'delivery_receiver_or_failure_reason_required', format('reason required, got %s', failed_message);
   perform public.submit_portal_delivery_done(second_work, jsonb_build_array(jsonb_build_object('delivery_line_id', job->'delivery'->'lines'->0->>'id', 'actual_base_quantity', '0')),
     null, 'Khách đi vắng, không nhận', '{}', (job->>'version')::integer, (job->'delivery'->>'version')::integer, (job->'delivery'->>'assignment_version')::integer,
     '7f189000-0000-4000-8000-000000000006');
   perform pg_temp.act_as_admin();
   assert (select result_kind from public.deliveries where id = second_delivery) = 'FAILED', 'not delivered';
+  assert (select note from public.delivery_results where delivery_id = second_delivery) = 'Khách đi vắng, không nhận', 'note kept';
 
   -- Someone else cannot report the job.
   perform pg_temp.act_as('10000000-0000-4000-8000-000000000003');
