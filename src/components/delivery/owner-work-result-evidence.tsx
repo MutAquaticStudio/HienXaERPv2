@@ -18,7 +18,7 @@ export async function OwnerWorkResultEvidence({ deliveryId }: { deliveryId: stri
     {evidence.error ? <p role="alert">Chưa tải được bằng chứng. Không coi là đã kiểm tra.</p>
       : photos.length ? <PhotoGrid photos={photos} label="Ảnh thợ gửi" />
       : <p className="muted">Kết quả này chưa kèm ảnh / tài liệu.</p>}
-    <label htmlFor="verificationAdjustmentReason">Lý do điều chỉnh số lượng thợ (nếu thay đổi)</label>
-    <input id="verificationAdjustmentReason" name="verificationAdjustmentReason" maxLength={500} placeholder="Giữ nguyên kết quả thợ; ghi rõ lý do cho số lượng chủ doanh nghiệp xác minh." />
+    <label htmlFor="verificationAdjustmentReason">Ghi chú điều chỉnh số lượng thợ (không bắt buộc)</label>
+    <input id="verificationAdjustmentReason" name="verificationAdjustmentReason" maxLength={500} placeholder="Ví dụ: Đếm lại tại công trình" />
   </section>;
 }

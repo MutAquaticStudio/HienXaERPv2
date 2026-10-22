@@ -17,7 +17,7 @@ const notices: Record<string, string> = {
   submitted: "Đã gửi đơn. Cửa hàng sẽ duyệt và báo ngày giao.",
   cancelled: "Đã hủy đơn.",
   "cancel-failed": "Không hủy được đơn — có thể cửa hàng vừa duyệt. Tải lại trang để xem trạng thái mới.",
-  "cancel-reason": "Ghi lý do hủy (từ 3 ký tự).",
+  "cancel-reason": "Không hủy được đơn. Tải lại trang rồi thử lại (ghi chú tối đa 300 ký tự).",
 };
 
 export default async function CustomerOrderPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ notice?: string }> }) {
@@ -50,7 +50,7 @@ export default async function CustomerOrderPage({ params, searchParams }: { para
           <form action={cancelPortalOrderAction} className={styles.form}>
             <input type="hidden" name="orderId" value={order.id} />
             <input type="hidden" name="operationId" value={randomUUID()} />
-            <div className={styles.field}><label htmlFor="cancel-reason">Lý do hủy</label><textarea id="cancel-reason" name="reason" minLength={3} maxLength={300} required /></div>
+            <div className={styles.field}><label htmlFor="cancel-reason">Ghi chú (không bắt buộc)</label><textarea id="cancel-reason" name="reason" maxLength={300} /></div>
             <button className={styles.buttonDanger} type="submit">Hủy đơn này</button>
           </form>
         </details>}

@@ -1125,8 +1125,6 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .price-up { color: var(--success); }
 .price-down { color: var(--danger); }
 .price-book-save { display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; align-items: end; position: sticky; bottom: 0.5rem; z-index: 5; }
-.price-book-reason { flex: 1 1 320px; }
-.price-book-reason input { width: 100%; }
 .price-book-save > p { flex-basis: 100%; margin: 0; }
 @media (max-width: 760px) {
   .price-book-tools, .price-book-save { position: static; }
@@ -1196,7 +1194,7 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
   .stock-count-table td { padding: 0; border: 0; white-space: normal; }
   .stock-count-table td.numeric { text-align: left; }
   .stock-count-table td[data-label]::before { content: attr(data-label); display: block; color: var(--muted); font-size: var(--font-size-caption); }
-  .stock-count-table td[data-label="Vật tư"], .stock-count-table td[data-label="Lý do"] { grid-column: 1 / -1; }
+  .stock-count-table td[data-label="Vật tư"], .stock-count-table td[data-label="Ghi chú"] { grid-column: 1 / -1; }
   .stock-count-table .unit-ratio { justify-content: flex-start; }
   .stock-count-table .unit-ratio input, .stock-count-cost input { max-width: none; text-align: left; }
   .stock-count-cost { justify-items: start; }

@@ -74,7 +74,9 @@ it("opens accessible confirmation with identity, exact cost, version and consequ
   expect(screen.getByText(/Mã quy tắc: old.*Phiên bản: 7/)).toBeInTheDocument();
   expect(screen.getByText("Giá hiện tại: 9.007.199.254.740.993 ₫")).toBeInTheDocument();
   expect(screen.getByText(/thông tin trên chứng từ đã chốt không thay đổi/)).toBeInTheDocument();
-  expect(screen.getByLabelText("Lý do ngừng sử dụng *")).toHaveFocus();
+  // FB7: nothing to type; focus starts on the safe choice.
+  expect(screen.queryByLabelText(/Lý do/)).not.toBeInTheDocument();
+  expect(screen.getByRole("button",{name:"Quay lại"})).toHaveFocus();
   expect(savePurchasePricingRuleAction).not.toHaveBeenCalled();
 });
 it("cancel performs zero commands and restores focus",()=>{
@@ -83,14 +85,8 @@ it("cancel performs zero commands and restores focus",()=>{
   expect(savePurchasePricingRuleAction).not.toHaveBeenCalled();
   expect(screen.getByRole("button",{name:"Ngừng sử dụng"})).toHaveFocus();
 });
-it("rejects missing or whitespace reason without dispatching even with formNoValidate",()=>{
-  confirmation();fireEvent.change(screen.getByLabelText("Lý do ngừng sử dụng *"),{target:{value:"   "}});
-  fireEvent.click(screen.getByRole("button",{name:"Xác nhận ngừng sử dụng"}));
-  expect(screen.getByRole("alert")).toHaveTextContent("Cần lý do ngừng sử dụng");
-  expect(savePurchasePricingRuleAction).not.toHaveBeenCalled();
-});
 it("confirms exactly one deactivation without requiring creation fields",async()=>{
-  confirmation();fireEvent.change(screen.getByLabelText("Lý do ngừng sử dụng *"),{target:{value:"QA ngừng giá"}});
+  confirmation();
   fireEvent.click(screen.getByRole("button",{name:"Xác nhận ngừng sử dụng"}));
   await waitFor(()=>{
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -99,7 +95,7 @@ it("confirms exactly one deactivation without requiring creation fields",async()
   });
   expect(savePurchasePricingRuleAction).toHaveBeenCalledTimes(1);
   const payload=vi.mocked(savePurchasePricingRuleAction).mock.calls[0][1];
-  expect(Object.fromEntries(payload)).toEqual({mode:"deactivate",supersedesId:"old",expectedVersion:"7",operationId:"stable-operation",reason:"QA ngừng giá"});
+  expect(Object.fromEntries(payload)).toEqual({mode:"deactivate",supersedesId:"old",expectedVersion:"7",operationId:"stable-operation"});
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   expect(screen.getByRole("button",{name:"Ngừng sử dụng"})).toBeDisabled();
   expect(screen.getByRole("status")).toHaveFocus();
@@ -107,16 +103,16 @@ it("confirms exactly one deactivation without requiring creation fields",async()
 });
 it.each(["Không có quyền quản lý giá mua trong chi nhánh này.","Phiên bản hoặc thao tác đã thay đổi. Tải lại trước khi lưu."])("retains confirmation metadata after controlled error: %s",async message=>{
   vi.mocked(savePurchasePricingRuleAction).mockResolvedValueOnce({message});
-  confirmation();fireEvent.change(screen.getByLabelText("Lý do ngừng sử dụng *"),{target:{value:"QA ngừng giá"}});
+  confirmation();
   fireEvent.click(screen.getByRole("button",{name:"Xác nhận ngừng sử dụng"}));
   await waitFor(()=>expect(screen.getAllByRole("status").every(x=>x.textContent===message)).toBe(true));
-  expect(screen.getByLabelText("Lý do ngừng sử dụng *")).toHaveValue("QA ngừng giá");
+  expect(screen.getByRole("dialog")).toBeInTheDocument();
   expect(screen.getByRole("button",{name:"Xác nhận ngừng sử dụng"})).toBeEnabled();
 });
 it("blocks a duplicate confirmation while the intended command is pending",async()=>{
   let resolve!: (value:{success:true;message:string})=>void;
   vi.mocked(savePurchasePricingRuleAction).mockImplementationOnce(()=>new Promise(r=>{resolve=r;}));
-  confirmation();fireEvent.change(screen.getByLabelText("Lý do ngừng sử dụng *"),{target:{value:"QA ngừng giá"}});
+  confirmation();
   const form=screen.getByRole("form",{name:"Xác nhận ngừng sử dụng"});
   fireEvent.submit(form);fireEvent.submit(form);
   await waitFor(()=>expect(savePurchasePricingRuleAction).toHaveBeenCalledTimes(1));
@@ -127,7 +123,6 @@ it("blocks a duplicate confirmation while the intended command is pending",async
 it("uses the same confirmed path for Sales without leaking a purchase command",async()=>{
   render(<PricingRuleEditor rule={{id:"sales-rule",scope_type:"DEFAULT",customer_id:null,material_id:"material",material_group_id:null,customer_tier_code:null,price_uom_id:"uom",unit_price_vnd:"95000",version:2,source_type:"LIST",effective_from:"2026-10-10T00:00:00+07:00",effective_to:null,active:true}} options={{customers:[],groups:[],materials:[],units:[]}}/>);
   fireEvent.click(screen.getByRole("button",{name:"Ngừng sử dụng"}));
-  fireEvent.change(screen.getByLabelText("Lý do ngừng sử dụng *"),{target:{value:"QA sales reason"}});
   fireEvent.click(screen.getByRole("button",{name:"Xác nhận ngừng sử dụng"}));
   await waitFor(()=>expect(savePricingRuleAction).toHaveBeenCalledTimes(1));
   expect(vi.mocked(savePricingRuleAction).mock.calls[0][1].get("mode")).toBe("deactivate");
@@ -136,21 +131,21 @@ it("uses the same confirmed path for Sales without leaking a purchase command",a
 
 it("Escape cancels without dispatch and restores the originating focus",()=>{
  confirmation();
- fireEvent.keyDown(screen.getByLabelText("Lý do ngừng sử dụng *"),{key:"Escape"});
+ fireEvent.keyDown(screen.getByRole("button",{name:"Quay lại"}),{key:"Escape"});
  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
  expect(screen.getByRole("button",{name:"Ngừng sử dụng"})).toHaveFocus();
  expect(savePurchasePricingRuleAction).not.toHaveBeenCalled();
 });
 it("wraps Tab and Shift-Tab at dialog boundaries without document listeners",()=>{
  confirmation();
- const first=screen.getByLabelText("Lý do ngừng sử dụng *"),last=screen.getByRole("button",{name:"Xác nhận ngừng sử dụng"});
+ const first=screen.getByRole("button",{name:"Quay lại"}),last=screen.getByRole("button",{name:"Xác nhận ngừng sử dụng"});
  first.focus();fireEvent.keyDown(first,{key:"Tab",shiftKey:true});expect(last).toHaveFocus();
  fireEvent.keyDown(last,{key:"Tab"});expect(first).toHaveFocus();
 });
 it("does not dismiss or dispatch twice while the command is pending",async()=>{
  let resolve!: (value:{success:true;message:string})=>void;
  vi.mocked(savePurchasePricingRuleAction).mockImplementationOnce(()=>new Promise(r=>{resolve=r;}));
- confirmation();fireEvent.change(screen.getByLabelText("Lý do ngừng sử dụng *"),{target:{value:"QA ngừng giá"}});
+ confirmation();
  fireEvent.click(screen.getByRole("button",{name:"Xác nhận ngừng sử dụng"}));
  await waitFor(()=>expect(savePurchasePricingRuleAction).toHaveBeenCalledTimes(1));
  fireEvent.keyDown(screen.getByRole("dialog"),{key:"Escape"});
@@ -172,7 +167,6 @@ it("waits for native close before hiding or focusing the visible success status"
   vi.spyOn(HTMLDialogElement.prototype,"close").mockImplementationOnce(function(this:HTMLDialogElement){expect(this).not.toHaveAttribute("hidden");this.removeAttribute("open");});
   confirmation();
   const modal=screen.getByRole("dialog");
-  fireEvent.change(screen.getByLabelText("Lý do ngừng sử dụng *"),{target:{value:"QA success close order"}});
   fireEvent.click(screen.getByRole("button",{name:"Xác nhận ngừng sử dụng"}));
   await waitFor(()=>expect(modal).not.toHaveAttribute("open"));
   expect(modal).not.toHaveAttribute("hidden");
@@ -201,7 +195,6 @@ it.each([false,true])("restores connected fallback after revalidation before nat
   const view=render(<main><h1 tabIndex={-1}>Bảng giá QA</h1><details open data-price-rule-id="old"><summary>Quy tắc giá QA</summary><PricingRuleEditor purchase purchaseRule={existing} options={options} /></details></main>);
   fireEvent.click(screen.getByRole("button",{name:"Ngừng sử dụng"}));
   const modal=screen.getByRole("dialog");
-  fireEvent.change(screen.getByLabelText("Lý do ngừng sử dụng *"),{target:{value:"QA revalidation close order"}});
   fireEvent.click(screen.getByRole("button",{name:"Xác nhận ngừng sử dụng"}));
   await waitFor(()=>expect(modal).not.toHaveAttribute("open"));
   view.rerender(<main><h1 tabIndex={-1}>Bảng giá QA</h1>{!filtered&&<details open data-price-rule-id="old"><summary>Quy tắc giá QA</summary></details>}</main>);

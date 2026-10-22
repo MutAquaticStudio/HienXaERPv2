@@ -60,8 +60,8 @@ export function OpenReturnCaseForm({ deliveryId, operationId: initialOperationId
           onChange={(event) => setDraft({ ...draft, quantity: event.target.value })} />
       </div>
       <div className="field">
-        <label htmlFor="returnReason">Lý do</label>
-        <textarea id="returnReason" name="reason" required disabled={pending} value={draft.reason}
+        <label htmlFor="returnReason">Ghi chú (không bắt buộc)</label>
+        <textarea id="returnReason" name="reason" maxLength={500} disabled={pending} value={draft.reason}
           onChange={(event) => setDraft({ ...draft, reason: event.target.value })} />
       </div>
       {state.error && <p className="form-message" role="alert">{state.error}</p>}

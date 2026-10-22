@@ -1,4 +1,4 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
 const m = vi.hoisted(() => ({ permissions: new Set<string>(), rpc: vi.fn(), calls: [] as { table: string; method: string; args: unknown[] }[], tables: {} as Record<string, unknown[]> }));
@@ -60,6 +60,10 @@ it("offers receipts, payments and row handling in popups by permission", async (
   const row = screen.getByText("PT-1").closest("tr")!;
   expect(within(row).getByRole("link", { name: "In phiếu thu" })).toHaveAttribute("href", "/api/payments/p1/voucher/pdf");
   expect(within(row).getByRole("button", { name: "Xử lý" })).toBeInTheDocument();
+  fireEvent.click(within(row).getByRole("button", { name: "Xử lý" }));
+  // FB7: reversing takes an optional note; nothing has to be typed.
+  expect(screen.getByLabelText("Ghi chú (không bắt buộc)")).not.toBeRequired();
+  expect(screen.queryByLabelText(/Lý do/)).not.toBeInTheDocument();
   cleanup();
   m.calls = [];
   m.permissions = new Set(["finance.ar.read"]);

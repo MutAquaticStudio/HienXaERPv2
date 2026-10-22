@@ -32,10 +32,21 @@ it("preserves all line quantities after rejection and reload, retries the same i
   expect(JSON.parse(fetcher.mock.calls[1][1].body).operationId).toBe(original.operationId);
   expect(localStorage.getItem("hx:work-draft:" + workItemId)).toBeNull();
 });
-it("asks for a missing-arrival reason and disables sending without a current source assignment", async () => {
+it("offers an optional arrival note and disables sending without a current source assignment", async () => {
   render(<WorkResultDraftForm workItemId={workItemId} version={2} delivery={{ ...delivery, state: "DISPATCHED", assignment_version: null }} />);
-  await screen.findByLabelText("Lý do chưa ghi nhận bước tới nơi");
+  expect(await screen.findByLabelText("Ghi chú bước tới nơi (không bắt buộc)")).not.toBeRequired();
   expect(screen.getByRole("button", { name: "Gửi kết quả công việc" })).toBeDisabled();
+});
+
+it("sends a plain arrival note when the worker wrote none on a delivery still on the way (FB7)", async () => {
+  fetcher.mockResolvedValue({ ok: true, json: async () => ({ resultId: "saved" }) });
+  render(<WorkResultDraftForm workItemId={workItemId} version={2} delivery={{ ...delivery, state: "DISPATCHED" }} />);
+  await screen.findByLabelText("Ghi chú bước tới nơi (không bắt buộc)");
+  fireEvent.change(screen.getByLabelText("Lượng thực tế · Material A (unit)"), { target: { value: "2" } });
+  fireEvent.change(screen.getByLabelText("Lượng thực tế · Material B (kg)"), { target: { value: "3" } });
+  fireEvent.submit(screen.getByRole("button", { name: "Gửi kết quả công việc" }).closest("form")!);
+  await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(1));
+  expect(JSON.parse(fetcher.mock.calls[0][1].body).missingArrivalReason).toBe("Thợ chưa bấm Đã tới nơi");
 });
 
 it("shows actual pickup and uses the server limit rather than the planned quantity", async () => {

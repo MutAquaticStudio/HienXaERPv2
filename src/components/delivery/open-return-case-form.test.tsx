@@ -15,7 +15,7 @@ function fill() {
   fireEvent.change(screen.getByLabelText("Dòng giao cần xử lý"), { target: { value: "line-2" } });
   fireEvent.change(screen.getByLabelText("Vấn đề"), { target: { value: "CUSTOMER_RETURN" } });
   fireEvent.change(screen.getByLabelText("Số lượng theo đơn vị cơ sở"), { target: { value: "3" } });
-  fireEvent.change(screen.getByLabelText("Lý do"), { target: { value: "QA return reason" } });
+  fireEvent.change(screen.getByLabelText("Ghi chú (không bắt buộc)"), { target: { value: "QA return reason" } });
 }
 function submit() {
   fireEvent.submit(screen.getByRole("button", { name: "Mở hồ sơ xử lý" }).closest("form")!);
@@ -29,7 +29,7 @@ it("keeps every draft field and the operation identifier after rejection and ret
   expect(screen.getByLabelText("Dòng giao cần xử lý")).toHaveValue("line-2");
   expect(screen.getByLabelText("Vấn đề")).toHaveValue("CUSTOMER_RETURN");
   expect(screen.getByLabelText("Số lượng theo đơn vị cơ sở")).toHaveValue("3");
-  expect(screen.getByLabelText("Lý do")).toHaveValue("QA return reason");
+  expect(screen.getByLabelText("Ghi chú (không bắt buộc)")).toHaveValue("QA return reason");
   fireEvent.change(screen.getByLabelText("Số lượng theo đơn vị cơ sở"), { target: { value: "1" } });
   submit();
   await waitFor(() => expect(fixture.action).toHaveBeenCalledTimes(2));
@@ -45,7 +45,7 @@ it("clears the completed draft and creates a new intent only after success", asy
   fill(); submit();
   await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Đã mở hồ sơ"));
   expect(screen.getByLabelText("Số lượng theo đơn vị cơ sở")).toHaveValue("");
-  expect(screen.getByLabelText("Lý do")).toHaveValue("");
+  expect(screen.getByLabelText("Ghi chú (không bắt buộc)")).toHaveValue("");
   expect(screen.getByLabelText("Vấn đề")).toHaveValue("TRANSIT_REMAINDER");
   expect(screen.getByLabelText("Dòng giao cần xử lý")).toHaveValue("line-2");
   const data = fixture.action.mock.calls[0][1] as FormData;

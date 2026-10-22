@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
+import { reasonOrDefault } from "@/lib/core/reason";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 function errorMessage(message?: string) {
@@ -18,7 +19,7 @@ export async function cancelPlannedDeliveryAction(formData: FormData) {
   const parsed = z.object({
     deliveryId: z.guid(),
     version: z.coerce.number().int().positive(),
-    reason: z.string().trim().min(3).max(500),
+    reason: z.string().trim().max(500).optional(),
     operationId: z.guid(),
   }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
@@ -30,7 +31,7 @@ export async function cancelPlannedDeliveryAction(formData: FormData) {
   const { data, error } = await supabase.rpc("cancel_planned_delivery", {
     target_delivery_id: parsed.data.deliveryId,
     expected_version: parsed.data.version,
-    cancellation_reason: parsed.data.reason,
+    cancellation_reason: reasonOrDefault(parsed.data.reason, "Hủy kế hoạch giao hàng"),
     operation_id: parsed.data.operationId,
   });
   const destination = `/admin/deliveries/${parsed.data.deliveryId}/cancel`;

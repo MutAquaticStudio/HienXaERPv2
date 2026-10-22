@@ -38,11 +38,12 @@ it("adds a selling unit, splits a per-tonne price by the ratios and saves everyt
   expect(screen.getByLabelText("Giá bán 1 kg")).toHaveValue("6.000");
   expect(screen.getByLabelText("Giá bán 1 bao")).toHaveValue("300.000");
 
-  fireEvent.change(screen.getByLabelText("Lý do thay đổi *"), { target: { value: "Bán theo tấn" } });
+  expect(screen.queryByLabelText(/Lý do/)).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: /Lưu đơn vị & giá \(4 thay đổi\)/ }));
   await waitFor(() => expect(m.save).toHaveBeenCalledOnce());
+  expect(m.save.mock.calls[0][0]).not.toHaveProperty("reason");
   expect(m.save.mock.calls[0][0]).toMatchObject({
-    materialId: "m1", reason: "Bán theo tấn", effectiveDate: "2026-10-16", stopConversionIds: [],
+    materialId: "m1", effectiveDate: "2026-10-16", stopConversionIds: [],
     addUnits: [{ uomId: "tan", ratio: "1000", direction: "UNIT_TO_BASE", type: "EXACT", sourceNote: "" }],
     prices: [{ uomId: "kg", priceVnd: "6000", supersedesId: "r-kg", expectedVersion: 3 }, { uomId: "bao", priceVnd: "300000" }, { uomId: "tan", priceVnd: "6000000" }],
   });
@@ -54,7 +55,6 @@ it("stops a unit instead of editing its ratio, and leaves its price out", async 
   render(<MaterialUnitsEditor materialId="m1" />);
   fireEvent.click(await screen.findByRole("button", { name: "Ngừng đơn vị bao" }));
   expect(screen.queryByLabelText("Giá bán 1 bao")).not.toBeInTheDocument();
-  fireEvent.change(screen.getByLabelText("Lý do thay đổi *"), { target: { value: "Ngừng bán bao" } });
   fireEvent.click(screen.getByRole("button", { name: /Lưu đơn vị & giá \(1 thay đổi\)/ }));
   await waitFor(() => expect(m.save).toHaveBeenCalledWith(expect.objectContaining({ stopConversionIds: ["c-bao"], prices: [], addUnits: [] })));
 });
@@ -82,7 +82,6 @@ it("takes a new unit as 1 base unit = N new units (Owner 18/10: 1 tấn = 20 bao
   fireEvent.change(screen.getByRole("combobox", { name: "Từ giá 1" }), { target: { value: "tan" } });
   fireEvent.click(screen.getByRole("button", { name: "Tính giá các đơn vị khác" }));
   expect(screen.getByLabelText("Giá bán 1 bao")).toHaveValue("80.000");
-  fireEvent.change(screen.getByLabelText("Lý do thay đổi *"), { target: { value: "Bán theo bao" } });
   fireEvent.click(screen.getByRole("button", { name: /Lưu đơn vị & giá/ }));
   await waitFor(() => expect(m.save).toHaveBeenCalledOnce());
   expect(m.save.mock.calls[0][0]).toMatchObject({ addUnits: [{ uomId: "bao", ratio: "20", direction: "BASE_TO_UNIT", type: "PACKAGING" }],

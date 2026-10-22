@@ -14,6 +14,11 @@ it("saves the group code in upper case", async () => {
   expect(m.rpc).toHaveBeenCalledWith("save_customer_price_group", { target_branch_id: "branch-a", group_code: "DAI_LY", group_name: "Đại lý", group_active: true, change_reason: "Thêm nhóm", operation_id: operationId });
 });
 
+it("saves without a reason and records a plain description instead (FB7)", async () => {
+  expect((await savePriceGroupAction({ operationId, code: "SI", name: "Sỉ", active: true })).success).toBe(true);
+  expect(m.rpc).toHaveBeenCalledWith("save_customer_price_group", expect.objectContaining({ change_reason: "Cập nhật nhóm giá" }));
+});
+
 it("refuses unreadable codes before the database and keeps a lost reply retryable", async () => {
   expect((await savePriceGroupAction({ operationId, code: "Đại lý", name: "Đại lý", active: true, reason: "Thêm nhóm" })).message).toContain("Mã nhóm");
   expect(m.rpc).not.toHaveBeenCalled();

@@ -91,8 +91,6 @@ export function PurchaseOrderForm({ options, operationId, confirmOperationId, ca
   const [committedWarehouseId, setCommittedWarehouseId] = useState(existing?.warehouseId ?? "");
   const [snapshotAddress, setSnapshotAddress] = useState(existing?.destinationAddress ?? "");
   const [addressInput, setAddressInput] = useState("");
-  const [addressReason, setAddressReason] = useState("");
-  const [destinationReason, setDestinationReason] = useState("");
   const [warehousePending, setWarehousePending] = useState(false);
   const [warehouseMessage, setWarehouseMessage] = useState("");
   const destinationIntent = useRef<{ payload: string; operationId: string } | null>(null);
@@ -166,7 +164,7 @@ export function PurchaseOrderForm({ options, operationId, confirmOperationId, ca
     const target = warehouseId;
     setWarehousePending(true);
     try {
-      const result = await updatePurchaseWarehouseAddressAction({ warehouseId: target, address: addressInput, expectedAddress: selectedAddress, reason: addressReason, operationId: crypto.randomUUID() });
+      const result = await updatePurchaseWarehouseAddressAction({ warehouseId: target, address: addressInput, expectedAddress: selectedAddress, operationId: crypto.randomUUID() });
       setWarehouseMessage(result.message);
       if (result.success && result.address) setWarehouseAddresses((current) => ({ ...current, [target]: result.address! }));
     } catch { setWarehouseMessage("Không thể cập nhật địa chỉ kho. Nội dung đơn mua được giữ nguyên."); }
@@ -174,7 +172,7 @@ export function PurchaseOrderForm({ options, operationId, confirmOperationId, ca
   }
   async function refreshDraftDestination() {
     if (!existing || warehousePending || pending || addressMissing) return;
-    const payload = JSON.stringify({ documentId: existing.id, expectedVersion: documentVersion, warehouseId, reason: destinationReason });
+    const payload = JSON.stringify({ documentId: existing.id, expectedVersion: documentVersion, warehouseId });
     if (destinationIntent.current && destinationIntent.current.payload !== payload) {
       setWarehouseMessage("Thao tác trước chưa rõ kết quả. Giữ nội dung và thử lại cùng dữ liệu hoặc tải lại đơn mua trước khi đổi yêu cầu."); return;
     }
@@ -182,7 +180,7 @@ export function PurchaseOrderForm({ options, operationId, confirmOperationId, ca
     destinationIntent.current = intent;
     setWarehousePending(true);
     try {
-      const result = await updatePurchaseDraftDestinationAction({ documentId: existing.id, expectedVersion: documentVersion, warehouseId, reason: destinationReason, operationId: intent.operationId });
+      const result = await updatePurchaseDraftDestinationAction({ documentId: existing.id, expectedVersion: documentVersion, warehouseId, operationId: intent.operationId });
       setWarehouseMessage(result.message);
       if (result.success && result.version && result.warehouseId && result.address) {
         setDocumentVersion(result.version); setCommittedWarehouseId(result.warehouseId); setSnapshotAddress(result.address); destinationIntent.current = null; invalidate();
@@ -231,7 +229,7 @@ export function PurchaseOrderForm({ options, operationId, confirmOperationId, ca
         detail={createsSales ? (line, index) => <>
           {canManageSalesPrice && <span className="doc-editor-reason"><label>Giá bán thủ công dòng {index + 1}<MoneyInput value={line.manualSalesPriceVnd} onValue={(manualSalesPriceVnd) => changeLines((current) => current.map((item) => item.key === line.key ? { ...item, manualSalesPriceVnd } : item))} /></label>
             <input type="hidden" name="manualSalesPriceVnd" value={line.manualSalesPriceVnd} />
-            {line.manualSalesPriceVnd && <label>Lý do giá bán dòng {index + 1}<input name="manualSalesReason" maxLength={500} value={line.manualSalesReason} onChange={(event) => changeLines((current) => current.map((item) => item.key === line.key ? { ...item, manualSalesReason: event.target.value } : item))} /></label>}
+            {line.manualSalesPriceVnd && <label>Ghi chú giá bán dòng {index + 1} (không bắt buộc)<input name="manualSalesReason" maxLength={500} value={line.manualSalesReason} onChange={(event) => changeLines((current) => current.map((item) => item.key === line.key ? { ...item, manualSalesReason: event.target.value } : item))} /></label>}
             {!line.manualSalesPriceVnd && <input type="hidden" name="manualSalesReason" value="" />}</span>}
           {preview?.success && preview.sales?.lines[index] && <small className="muted">Giá bán khách: <strong>{formatVnd(vnd(preview.sales.lines[index].unitPriceVnd))}</strong> · {priceSourceLabel(preview.sales.lines[index].priceSourceType)} · Thành tiền bán: <strong>{formatVnd(vnd(preview.sales.lines[index].lineTotalVnd))}</strong></small>}
         </> : undefined} />
@@ -243,11 +241,11 @@ export function PurchaseOrderForm({ options, operationId, confirmOperationId, ca
         onSelect={(option) => { setSupplier(option); invalidate(); }}
         action={!existing ? <button type="button" className="quick-create-trigger" onClick={() => setQuickSupplier(true)}>+ Thêm NCC</button> : undefined} />
       {!existing && !salesLine && <div className="field"><label htmlFor="mode">Giao đến</label><select id="mode" value={mode} onChange={(event) => { setMode(event.target.value as typeof mode); invalidate(); }}><option value="WAREHOUSE">Kho Hiền Xa</option><option value="LINKED_DIRECT" disabled={!canCreateSales}>Giao thẳng khách · tạo bản nháp bán liên kết</option></select></div>}
-      {warehouseMode && <div className="field"><label htmlFor="warehouseId">Kho nhận</label><select id="warehouseId" name="warehouseId" value={warehouseId} disabled={warehousePending || pending} onChange={(event) => { setWarehouseId(event.target.value); setWarehouseMessage(""); setAddressInput(""); setAddressReason(""); }} required>{options.warehouses.map((warehouse) => <option value={warehouse.id} key={warehouse.id}>{warehouse.name}</option>)}</select>
+      {warehouseMode && <div className="field"><label htmlFor="warehouseId">Kho nhận</label><select id="warehouseId" name="warehouseId" value={warehouseId} disabled={warehousePending || pending} onChange={(event) => { setWarehouseId(event.target.value); setWarehouseMessage(""); setAddressInput(""); }} required>{options.warehouses.map((warehouse) => <option value={warehouse.id} key={warehouse.id}>{warehouse.name}</option>)}</select>
         <small className="muted">Địa chỉ kho: {normalizeWarehouseAddress(selectedAddress) ?? "Chưa được bổ sung"}</small>
         {addressMissing && <><p role="alert" className="form-message">{warehouseAddressRequired}</p>{!canManageWarehouse && <p className="muted">Vui lòng liên hệ người phụ trách có quyền sửa kho để bổ sung địa chỉ. Nội dung đơn mua được giữ nguyên.</p>}</>}
-        {canManageWarehouse && addressMissing && <details><summary>Bổ sung địa chỉ kho</summary><label htmlFor="warehouseAddress">Địa chỉ kho</label><textarea id="warehouseAddress" value={addressInput} maxLength={2000} onChange={(event) => setAddressInput(event.target.value)} /><label htmlFor="warehouseAddressReason">Lý do bổ sung địa chỉ</label><input id="warehouseAddressReason" value={addressReason} maxLength={500} onChange={(event) => setAddressReason(event.target.value)} /><button type="button" className="button button-secondary" disabled={pending || warehousePending || !normalizeWarehouseAddress(addressInput) || addressReason.trim().length < 3} onClick={saveWarehouseAddress}>Lưu địa chỉ kho</button></details>}
-        {existing && <><p>Địa chỉ nhận đã lưu trên đơn mua: {normalizeWarehouseAddress(snapshotAddress) ?? "Còn thiếu — cần cập nhật trước khi xác nhận"}</p><label htmlFor="destinationReason">Lý do cập nhật kho nhận</label><input id="destinationReason" value={destinationReason} maxLength={500} onChange={(event) => setDestinationReason(event.target.value)} /><button type="button" className="button button-secondary" disabled={pending || warehousePending || addressMissing || destinationReason.trim().length < 3} onClick={refreshDraftDestination}>{warehouseId === committedWarehouseId ? "Cập nhật địa chỉ từ kho" : "Áp dụng kho nhận"}</button>{warehouseId !== committedWarehouseId && <p role="alert">Bấm áp dụng kho nhận trước khi lưu thay đổi đơn mua.</p>}</>}
+        {canManageWarehouse && addressMissing && <details><summary>Bổ sung địa chỉ kho</summary><label htmlFor="warehouseAddress">Địa chỉ kho</label><textarea id="warehouseAddress" value={addressInput} maxLength={2000} onChange={(event) => setAddressInput(event.target.value)} /><button type="button" className="button button-secondary" disabled={pending || warehousePending || !normalizeWarehouseAddress(addressInput)} onClick={saveWarehouseAddress}>Lưu địa chỉ kho</button></details>}
+        {existing && <><p>Địa chỉ nhận đã lưu trên đơn mua: {normalizeWarehouseAddress(snapshotAddress) ?? "Còn thiếu — cần cập nhật trước khi xác nhận"}</p><button type="button" className="button button-secondary" disabled={pending || warehousePending || addressMissing} onClick={refreshDraftDestination}>{warehouseId === committedWarehouseId ? "Cập nhật địa chỉ từ kho" : "Áp dụng kho nhận"}</button>{warehouseId !== committedWarehouseId && <p role="alert">Bấm áp dụng kho nhận trước khi lưu thay đổi đơn mua.</p>}</>}
         {warehouseMessage && <p role="status" className="form-message">{warehouseMessage}</p>}
       </div>}
       {createsSales && <>

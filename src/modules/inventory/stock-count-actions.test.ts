@@ -53,7 +53,7 @@ it("tells a saved sheet whose approval was refused apart from an unknown outcome
   expect(refused).toMatchObject({ status: "FAILED", version: 4 });
   expect(refused.message).toMatch(/^Đã lưu số đếm nhưng chưa cân bằng kho: Chưa thể duyệt/);
   m.rpc.mockResolvedValueOnce({ data: null, error: { code: "22023", message: "variance_reason_required" } });
-  expect(await saveStockCountSheetAction(base)).toEqual({ status: "FAILED", message: "Dòng có chênh lệch cần lý do (ít nhất 3 ký tự)." });
+  expect(await saveStockCountSheetAction(base)).toEqual({ status: "FAILED", message: "Chưa ghi được ghi chú cho dòng có chênh lệch. Tải lại phiếu rồi lưu lại." });
   m.rpc.mockResolvedValueOnce({ data: null, error: { message: "fetch failed" } });
   expect((await saveStockCountSheetAction(base)).status).toBe("UNKNOWN");
   m.rpc.mockRejectedValueOnce(new Error("socket hang up"));

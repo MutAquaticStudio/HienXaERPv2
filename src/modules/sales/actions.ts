@@ -9,6 +9,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { AppError, operationalPostingError, quantityInputError } from "@/lib/core/errors";
 import { isExactBaseQuantity } from "@/lib/core/quantity";
+import { reasonOrDefault } from "@/lib/core/reason";
 import { requireCustomerAccess, requireInternalAccess, requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { QUOTATIONS_DISABLED_MESSAGE, QUOTATIONS_ENABLED } from "@/lib/features";
@@ -46,7 +47,7 @@ function commandError(message: string, confirmingOrder = false) {
   if (postingError) return postingError;
   const quantityError = quantityInputError(message);
   if (quantityError) return quantityError;
-  if (message.includes("pricing_rule_priority_mismatch") || message.includes("pricing_source_snapshot_mismatch")) return "Bảng giá hoặc nguồn giá đã thay đổi. Tải lại và xem trước giá, hoặc dùng giá thủ công được phê duyệt kèm lý do.";
+  if (message.includes("pricing_rule_priority_mismatch") || message.includes("pricing_source_snapshot_mismatch")) return "Bảng giá hoặc nguồn giá đã thay đổi. Tải lại và xem trước giá, hoặc nhập giá thủ công.";
   if (message.includes("pricing_priority_ambiguous")) return "Có nhiều bảng giá cùng mức ưu tiên và phiên bản. Cần đối chiếu bảng giá hoặc dùng giá thủ công được phê duyệt.";
   if (message.includes("sales_order_not_confirmable")) return "Đơn bán không còn ở trạng thái có thể xác nhận. Hãy tải lại để kiểm tra.";
   if (message.includes("order_lines_required")) return "Vui lòng thêm ít nhất một dòng vật tư cho đơn bán.";
@@ -186,17 +187,18 @@ async function createCommercialLines(input: z.infer<typeof documentSchema>, bran
       new Decimal(original.conversion_denominator).eq(conversionDenominator) && original.rounding_mode === conversionRounding;
     if (manualPriceVnd) {
       if (!canManagePrice && !preserveApprovedPrice) throw new AppError({ code: "FORBIDDEN", message: `Dòng ${index + 1}: không có quyền đổi giá đã duyệt.`, status: 403 });
+      if (!/^[1-9]\d*$/.test(manualPriceVnd) || manualPriceVnd.length > 19 || BigInt(manualPriceVnd) > 9223372036854775807n) {
+        throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: giá thủ công phải là số VND nguyên dương.`, status: 422 });
+      }
+      // FB7: the note is optional; without one the history keeps the discount against the price list, or "Giá nhập tay".
+      let reference: PriceRule | null = null;
       if (!manualReason) {
-        let reference: PriceRule | null = null;
         try { reference = resolvePrice({ branchId, customerId: input.customerId, customerTierCode, materialId: inputLine.materialId, materialGroupId: material.group_id, priceUomId: inputLine.orderedUomId, at: now, rules }); }
         catch (error) { if (!(error instanceof AppError)) throw error; }
-        manualReason = finalSellingPriceReason(manualPriceVnd, "", reference);
       }
-      if (!/^[1-9]\d*$/.test(manualPriceVnd) || manualPriceVnd.length > 19 || BigInt(manualPriceVnd) > 9223372036854775807n || manualReason.length < 3 || manualReason.length > 500) {
-        throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: giá thủ công phải dương và có lý do từ 3 đến 500 ký tự.`, status: 422 });
-      }
+      manualReason = finalSellingPriceReason(manualPriceVnd, manualReason, reference);
     } else if (manualReason) {
-      throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: cần nhập giá khi ghi lý do ngoại lệ.`, status: 422 });
+      throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: có ghi chú giá nhưng chưa nhập giá thủ công.`, status: 422 });
     }
     let selected: PriceRule | null = null;
     if (!manualPriceVnd) {
@@ -441,15 +443,15 @@ export async function autoSourceOrderAction(formData: FormData) {
 }
 
 export async function cancelSalesOrderAction(formData: FormData) {
-  const parsed = commandSchema.extend({ reason: z.string().trim().min(3).max(500) }).safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId"), reason: formData.get("reason") });
+  const parsed = commandSchema.extend({ reason: z.string().trim().max(500).nullish() }).safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId"), reason: formData.get("reason") });
   if (!parsed.success) redirect("/admin/orders?error=invalid-command");
-  return internalCommand("orders.cancel", "cancel_sales_order", { target_order_id: parsed.data.entityId, cancel_reason: parsed.data.reason, operation_id: parsed.data.operationId }, `/admin/orders/${parsed.data.entityId}`, "cancelled");
+  return internalCommand("orders.cancel", "cancel_sales_order", { target_order_id: parsed.data.entityId, cancel_reason: reasonOrDefault(parsed.data.reason, "Hủy đơn"), operation_id: parsed.data.operationId }, `/admin/orders/${parsed.data.entityId}`, "cancelled");
 }
 
 export async function closeSalesOrderRemainingAction(formData: FormData) {
-  const parsed = commandSchema.extend({ reason: z.string().trim().min(3).max(500) }).safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId"), reason: formData.get("reason") });
+  const parsed = commandSchema.extend({ reason: z.string().trim().max(500).nullish() }).safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId"), reason: formData.get("reason") });
   if (!parsed.success) redirect("/admin/orders?error=invalid-command");
-  return internalCommand("orders.cancel", "close_sales_order_remaining", { target_order_id: parsed.data.entityId, close_reason: parsed.data.reason, operation_id: parsed.data.operationId }, `/admin/orders/${parsed.data.entityId}`, "remaining-closed");
+  return internalCommand("orders.cancel", "close_sales_order_remaining", { target_order_id: parsed.data.entityId, close_reason: reasonOrDefault(parsed.data.reason, "Đóng phần còn lại"), operation_id: parsed.data.operationId }, `/admin/orders/${parsed.data.entityId}`, "remaining-closed");
 }
 
 export async function sendQuotationAction(formData: FormData) {

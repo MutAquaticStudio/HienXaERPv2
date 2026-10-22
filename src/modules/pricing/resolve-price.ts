@@ -1,4 +1,5 @@
 import { AppError } from "@/lib/core/errors";
+import { reasonOrDefault } from "@/lib/core/reason";
 
 export type PriceScope = "CUSTOMER_MATERIAL" | "CUSTOMER_GROUP" | "CUSTOMER_TIER" | "DEFAULT";
 
@@ -77,8 +78,8 @@ export function createPriceSnapshot(input: {
   overrideActorId?: string;
   overrideReason?: string;
 }): PriceSnapshot {
-  if (!input.rule && (!input.manualPriceVnd || !input.overrideActorId || !input.overrideReason?.trim())) {
-    throw new AppError({ code: "VALIDATION_FAILED", message: "Giá thủ công cần người duyệt và lý do.", status: 422 });
+  if (!input.rule && (!input.manualPriceVnd || !input.overrideActorId)) {
+    throw new AppError({ code: "VALIDATION_FAILED", message: "Giá thủ công cần người duyệt.", status: 422 });
   }
   return Object.freeze({
     unitPriceVnd: input.manualPriceVnd ?? input.rule!.unitPriceVnd,
@@ -91,6 +92,7 @@ export function createPriceSnapshot(input: {
     ruleVersion: input.rule?.version ?? null,
     sourceType: input.rule?.sourceType ?? "MANUAL_APPROVED",
     overriddenBy: input.manualPriceVnd ? input.overrideActorId ?? null : null,
-    overrideReason: input.manualPriceVnd ? input.overrideReason ?? null : null,
+    // FB7: the note is optional; the history keeps a plain description when none was written.
+    overrideReason: input.manualPriceVnd ? reasonOrDefault(input.overrideReason, "Giá nhập tay") : null,
   });
 }

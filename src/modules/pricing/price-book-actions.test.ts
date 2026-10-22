@@ -22,8 +22,15 @@ it("sends one atomic batch with exact text prices and the client operation ID", 
     effective_from: "2099-01-01T00:00:00+07:00", items: [{ material_id: ids.m1, price_uom_id: ids.uom, unit_price_vnd: "105000", supersedes_id: ids.rule, expected_version: 3 }] });
 });
 
+it("saves without a reason and records a plain description instead (FB7)", async () => {
+  expect(await savePriceBookAction(input({ reason: undefined }))).toMatchObject({ success: true });
+  expect(m.rpc).toHaveBeenCalledWith("save_pricing_rules_batch", expect.objectContaining({ change_reason: "Cập nhật giá" }));
+  await savePriceBookAction(input({ reason: "x" }));
+  expect(m.rpc).toHaveBeenLastCalledWith("save_pricing_rules_batch", expect.objectContaining({ change_reason: "Cập nhật giá: x" }));
+});
+
 it("rejects bad input before any permission or database call", async () => {
-  for (const bad of [input({ reason: "x" }), input({ items: [] }), input({ items: [{ materialId: ids.m1, uomId: ids.uom, priceVnd: "0" }] }),
+  for (const bad of [input({ items: [] }), input({ items: [{ materialId: ids.m1, uomId: ids.uom, priceVnd: "0" }] }),
     input({ items: [{ materialId: ids.m1, uomId: ids.uom, priceVnd: "1000", supersedesId: ids.rule }] }), input({ effectiveDate: "2020-01-01" })]) {
     expect((await savePriceBookAction(bad)).success).toBe(false);
   }

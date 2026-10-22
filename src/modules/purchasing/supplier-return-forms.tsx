@@ -9,18 +9,19 @@ export function SupplierReturnCreateForm({ operationId, scope, sources }: { oper
  return <ReliableCommandForm action={createSupplierReturnAction} command="create_supplier_return" operationId={operationId} scope={scope} className="command-panel">
   <div className="field"><label htmlFor="supplier-return-source">Nguồn nhận hàng hoặc giao thẳng</label><select id="supplier-return-source" name="source" required><option value="">Chọn nguồn đã ghi</option>{sources.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select></div>
   <div className="field"><label htmlFor="supplier-return-qty">Lượng dự kiến trả theo đơn vị cơ sở</label><input id="supplier-return-qty" name="quantity" inputMode="decimal" required /></div>
-  <div className="field"><label htmlFor="supplier-return-reason">Lý do trả nhà cung cấp</label><input id="supplier-return-reason" name="reason" minLength={3} maxLength={500} required /></div>
+  <div className="field"><label htmlFor="supplier-return-reason">Ghi chú (không bắt buộc)</label><input id="supplier-return-reason" name="reason" maxLength={500} /></div>
   <p className="muted">Giao thẳng cần hồ sơ hàng trả đang mở trên đúng phiếu giao. Lượng phải bằng hồ sơ đó; xác nhận trả thẳng về nhà cung cấp sẽ giữ kho nội bộ đúng thực tế.</p>
   <button className="button button-primary" type="submit" disabled={!sources.length}>Mở hồ sơ trả nhà cung cấp</button>
  </ReliableCommandForm>;
 }
 export function SupplierReturnEventForm({ caseId, kind, version, operationId, scope, canRecord }: { caseId: string; kind: "PHYSICAL_RETURN" | "SUPPLIER_ACCEPTANCE" | "CLOSE_DISPATCH"; version: number; operationId: string; scope: string; canRecord: boolean }) {
  const labels = { PHYSICAL_RETURN: "Xác nhận lượng thực trả", SUPPLIER_ACCEPTANCE: "Ghi nhà cung cấp chấp nhận", CLOSE_DISPATCH: "Đóng phần chưa trả" };
+ const notes = { PHYSICAL_RETURN: "Ghi chú thực trả", SUPPLIER_ACCEPTANCE: "Ghi chú chấp nhận", CLOSE_DISPATCH: "Ghi chú đóng phần chưa trả" };
  return <ReliableCommandForm action={recordSupplierReturnAction} command="record_supplier_return_event" operationId={operationId} scope={scope} className="command-panel">
   <input type="hidden" name="caseId" value={caseId} /><input type="hidden" name="kind" value={kind} /><input type="hidden" name="version" value={version} />
   {kind === "CLOSE_DISPATCH" ? <input type="hidden" name="quantity" value="0" /> : <div className="field"><label htmlFor={`sr-qty-${kind}`}>Lượng thực tế theo đơn vị cơ sở</label><input id={`sr-qty-${kind}`} name="quantity" inputMode="decimal" required /></div>}
   {kind === "SUPPLIER_ACCEPTANCE" ? <div className="field"><label htmlFor="sr-supplier-reference">Tham chiếu nhà cung cấp chấp nhận</label><input id="sr-supplier-reference" name="supplierReference" minLength={3} maxLength={100} required /></div> : <input type="hidden" name="supplierReference" value="" />}
-  <div className="field"><label htmlFor={`sr-reason-${kind}`}>Lý do / ghi nhận</label><input id={`sr-reason-${kind}`} name="reason" minLength={3} maxLength={500} required /></div>
+  <div className="field"><label htmlFor={`sr-reason-${kind}`}>{notes[kind]} (không bắt buộc)</label><input id={`sr-reason-${kind}`} name="reason" maxLength={500} /></div>
   <button className="button button-primary" type="submit" disabled={!canRecord}>{labels[kind]}</button>
  </ReliableCommandForm>;
 }
@@ -28,7 +29,7 @@ export function SupplierCreditApprovalForm({ caseId, acceptanceId, version, amou
  return <ReliableCommandForm action={approveSupplierCreditAction} command="approve_supplier_return_credit" operationId={operationId} scope={scope} className="command-panel">
   <input type="hidden" name="caseId" value={caseId} /><input type="hidden" name="acceptanceId" value={acceptanceId} /><input type="hidden" name="version" value={version} />
   <div className="field"><label htmlFor={`sr-approval-amount-${acceptanceId}`}>Số tiền giảm phải trả được duyệt</label><MoneyInput id={`sr-approval-amount-${acceptanceId}`} name="amount" defaultValue={amount} required /></div>
-  <div className="field"><label htmlFor={`sr-approval-reason-${acceptanceId}`}>Lý do quyết định giảm phải trả</label><input id={`sr-approval-reason-${acceptanceId}`} name="reason" minLength={3} maxLength={500} required /></div>
+  <div className="field"><label htmlFor={`sr-approval-reason-${acceptanceId}`}>Ghi chú duyệt giảm (không bắt buộc)</label><input id={`sr-approval-reason-${acceptanceId}`} name="reason" maxLength={500} /></div>
   <button className="button button-primary" type="submit" disabled={!canRecord}>Duyệt giảm phải trả theo chấp nhận</button>
  </ReliableCommandForm>;
 }

@@ -123,8 +123,8 @@ function RevokeDialog({ customerId, account, onClose }: { customerId: string; ac
       : <form action={action} className="form-stack">
         <input type="hidden" name="customerId" value={customerId} />
         <input type="hidden" name="membershipId" value={account.membership_id} />
-        <div className="field"><label htmlFor="portal-revoke-reason">Lý do</label>
-          <textarea id="portal-revoke-reason" name="reason" minLength={3} maxLength={300} required /></div>
+        <div className="field"><label htmlFor="portal-revoke-reason">Ghi chú (không bắt buộc)</label>
+          <textarea id="portal-revoke-reason" name="reason" maxLength={300} /></div>
         {state?.message && <p className="form-message" role="alert">{state.message}</p>}
         <div className="form-actions"><button type="button" className="button button-secondary" onClick={onClose}>Hủy</button>
           <button type="submit" className="button button-danger" disabled={pending}>{pending ? "Đang thu hồi..." : "Thu hồi"}</button></div>

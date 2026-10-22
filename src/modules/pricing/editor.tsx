@@ -20,15 +20,13 @@ export function PricingRuleEditor({ rule, options, purchase = false, purchaseRul
   const deactivateButton = useRef<HTMLButtonElement>(null);
   const root = useRef<HTMLDivElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
-  const reasonInput = useRef<HTMLInputElement>(null);
+  const backButton = useRef<HTMLButtonElement>(null);
   const status = useRef<HTMLParagraphElement>(null);
   const fallback = useRef<HTMLElement | null>(null);
   const returnFocus = useRef(false);
   const completed = useRef(false);
   const closePending = useRef(false);
   const [confirming, setConfirming] = useState(false);
-  const [reason, setReason] = useState("");
-  const [validation, setValidation] = useState<string>();
   const [state, action, pending] = useActionState(async (previous: Parameters<typeof savePricingRuleAction>[0], form: FormData) => {
     try { return await (purchase ? savePurchasePricingRuleAction : savePricingRuleAction)(previous, form); }
     finally { submitting.current = false; }
@@ -71,7 +69,7 @@ export function PricingRuleEditor({ rule, options, purchase = false, purchaseRul
     } else if (confirming) {
       if (dialog.current && !dialog.current.open && !closePending.current) {
         dialog.current.showModal();
-        reasonInput.current?.focus();
+        backButton.current?.focus();
       }
     } else if (returnFocus.current && !closePending.current) {
       returnFocus.current = false;
@@ -92,17 +90,13 @@ export function PricingRuleEditor({ rule, options, purchase = false, purchaseRul
        options.materials.find(x => x.id === purchaseRule.material_id)?.name ?? purchaseRule.material_id].join(" · ")
     : rule ? [pricingScopeLabel(rule.scope_type), options.customers.find(x => x.id === rule.customer_id)?.name ?? rule.customer_id ?? rule.customer_tier_code,
        options.materials.find(x => x.id === rule.material_id)?.name ?? options.groups.find(x => x.id === rule.material_group_id)?.name ?? rule.material_id ?? rule.material_group_id].filter(Boolean).join(" · ") : "");
-  function submit(event: React.FormEvent<HTMLFormElement>, deactivate = false) {
+  function submit(event: React.FormEvent<HTMLFormElement>) {
     if (pending || submitting.current || (targetRule && state?.success)) { event.preventDefault(); return; }
-    if (deactivate && (reason.trim().length < 3 || reason.trim().length > 500)) {
-      event.preventDefault(); setValidation("Cần lý do ngừng sử dụng từ 3 đến 500 ký tự."); return;
-    }
-    setValidation(undefined); submitting.current = true;
+    submitting.current = true;
   }
   function cancel() {
     if (pending || submitting.current) return;
     returnFocus.current = true;
-    setValidation(undefined);
     if (dialog.current?.open) {
       closePending.current = true;
       dialog.current.close();
@@ -135,11 +129,10 @@ export function PricingRuleEditor({ rule, options, purchase = false, purchaseRul
       <div className="field"><label htmlFor={`${id}-from`}>Hiệu lực từ ngày *</label><input id={`${id}-from`} name="effectiveFrom" type="date" required /></div>
       <div className="field"><label htmlFor={`${id}-to`}>Đến trước ngày</label><input id={`${id}-to`} name="effectiveTo" type="date" /></div>
       {purchase && !targetRule && <label className="check-inline field-full"><input type="checkbox" name="splitUnits" value="1" defaultChecked /> Tự tính giá cho các đơn vị khác của vật tư theo quy đổi (vd nhập giá 1 bao → có luôn giá 1 tấn); đơn vị NCC đã có giá thì giữ nguyên</label>}
-      <div className="field field-full"><label htmlFor={`${id}-reason`}>Lý do thay đổi *</label><input id={`${id}-reason`} name="reason" value={reason} onChange={event => setReason(event.target.value)} required minLength={3} maxLength={500} /></div>
     </div>
     {targetRule && <p className="muted">Không sửa giá cũ: tạo phiên bản mới hoặc ngừng sử dụng. Thông tin trên chứng từ đã chốt được giữ nguyên.</p>}
     {state && <p ref={status} tabIndex={-1} role="status" className="form-message">{state.message}</p>}
-    <div className="form-actions"><button className="button button-primary" type="submit" name="mode" value={targetRule ? "replace" : "create"} disabled={pending || (!!targetRule && state?.success)}>{pending ? "Đang lưu..." : targetRule ? "Tạo phiên bản mới" : "Tạo chính sách giá"}</button>{targetRule && <button ref={deactivateButton} className="button button-secondary" type="button" disabled={pending || state?.success || confirming} onClick={() => { setValidation(undefined); setConfirming(true); }}>Ngừng sử dụng</button>}</div>
+    <div className="form-actions"><button className="button button-primary" type="submit" name="mode" value={targetRule ? "replace" : "create"} disabled={pending || (!!targetRule && state?.success)}>{pending ? "Đang lưu..." : targetRule ? "Tạo phiên bản mới" : "Tạo chính sách giá"}</button>{targetRule && <button ref={deactivateButton} className="button button-secondary" type="button" disabled={pending || state?.success || confirming} onClick={() => setConfirming(true)}>Ngừng sử dụng</button>}</div>
   </form>
     {targetRule && <dialog ref={dialog} hidden={!confirming} className="card card-pad" aria-labelledby={`${id}-confirm-heading`} aria-describedby={`${id}-confirm-consequence`} aria-modal="true" style={{width:"min(36rem, calc(100vw - 2rem))",maxHeight:"calc(100dvh - 2rem)",overflowY:"auto",margin:"auto"}} onCancel={event => { event.preventDefault(); cancel(); }} onClose={() => { closePending.current = false; setConfirming(false); }} onKeyDown={dialogKeyDown}>
       <h3 id={`${id}-confirm-heading`}>Xác nhận ngừng sử dụng giá</h3>
@@ -147,16 +140,14 @@ export function PricingRuleEditor({ rule, options, purchase = false, purchaseRul
       <p>Mã quy tắc: {targetRule.id} · Phiên bản: {targetRule.version}</p>
       <p>Giá hiện tại: {formatVnd(vnd((purchase ? purchaseRule?.unit_cost_vnd : rule?.unit_price_vnd)!))}</p>
       <p id={`${id}-confirm-consequence`}>Ngừng chọn giá này cho chứng từ mới. Lịch sử phiên bản và thông tin trên chứng từ đã chốt không thay đổi.</p>
-      <form action={action} aria-label="Xác nhận ngừng sử dụng" onSubmit={event => submit(event, true)}>
+      <form action={action} aria-label="Xác nhận ngừng sử dụng" onSubmit={event => submit(event)}>
         <input type="hidden" name="mode" value="deactivate" />
         <input type="hidden" name="supersedesId" value={targetRule.id} />
         <input type="hidden" name="expectedVersion" value={targetRule.version} />
         {command && <input type="hidden" name="operationId" value={command.operationId} />}
-        <div className="field"><label htmlFor={`${id}-deactivate-reason`}>Lý do ngừng sử dụng *</label><input ref={reasonInput} id={`${id}-deactivate-reason`} name="reason" value={reason} onChange={event => setReason(event.target.value)} required minLength={3} maxLength={500} disabled={pending || state?.success} /></div>
-        {validation && <p role="alert" className="form-message">{validation}</p>}
         {state && <p role="status" className="form-message">{state.message}</p>}
         <div className="form-actions">
-          <button type="button" className="button button-secondary" disabled={pending} onClick={cancel}>Quay lại</button>
+          <button ref={backButton} type="button" className="button button-secondary" disabled={pending} onClick={cancel}>Quay lại</button>
           <button type="submit" formNoValidate className="button button-primary" disabled={pending || state?.success}>{pending ? "Đang ngừng sử dụng..." : "Xác nhận ngừng sử dụng"}</button>
         </div>
       </form>

@@ -12,7 +12,7 @@ vi.mock("next/navigation", () => ({
 }));
 vi.mock("@/lib/access/context", () => ({ requireInternalPermission: fixture.permission }));
 vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: vi.fn(async () => ({ rpc: fixture.rpc })) }));
-import { openReturnCaseAction } from "./actions";
+import { openReturnCaseAction, submitSupplierDeliveryDoneAction } from "./actions";
 
 const ids = {
   delivery: "10000000-0000-4000-8000-000000000001",
@@ -72,11 +72,33 @@ describe("ReturnCase action feedback and retry safety", () => {
     expect(fixture.rpc.mock.calls.map((call) => call[1].operation_id)).toEqual([ids.operation, ids.operation]);
     expect(fixture.rpc.mock.calls[1][1].requested_base_quantity).toBe("1");
   });
+  it("opens a case without a note and records a plain description (FB7)", async () => {
+    const data = input(); data.set("reason", "");
+    expect(await openReturnCaseAction(initial, data)).toEqual({ success: true, error: null });
+    expect(fixture.rpc).toHaveBeenCalledWith("open_return_case", expect.objectContaining({ case_kind: "CUSTOMER_RETURN", reason: "Khách trả hàng" }));
+  });
   it("revalidates the detail only after success without adding stock or cash operations", async () => {
     expect(await openReturnCaseAction(initial, input())).toEqual({ success: true, error: null });
     expect(fixture.rpc).toHaveBeenCalledTimes(1);
     expect(fixture.rpc).toHaveBeenCalledWith("open_return_case", expect.objectContaining({ target_delivery_verification_line_id: ids.line, operation_id: ids.operation }));
     expect(fixture.revalidate).toHaveBeenCalledWith(`/admin/deliveries/${ids.delivery}`);
     expect(fixture.redirect).not.toHaveBeenCalled();
+  });
+});
+
+describe("NCC đã giao without a reason (FB7)", () => {
+  function done(quantity: string, note = "") {
+    const data = new FormData();
+    Object.entries({ deliveryId: ids.delivery, deliveryLineId: ids.line, actualQuantity: quantity, receiverName: "", note, evidenceId: "", version: "2", operationId: ids.operation })
+      .forEach(([key, value]) => data.set(key, value));
+    return data;
+  }
+  it("keeps a plain note when nothing was delivered and no note was written", async () => {
+    await submitSupplierDeliveryDoneAction(done("0"));
+    expect(fixture.rpc).toHaveBeenCalledWith("submit_supplier_delivery_done", expect.objectContaining({ note: "Không giao được" }));
+  });
+  it("leaves the note empty for a delivered quantity", async () => {
+    await submitSupplierDeliveryDoneAction(done("2"));
+    expect(fixture.rpc).toHaveBeenCalledWith("submit_supplier_delivery_done", expect.objectContaining({ note: "" }));
   });
 });

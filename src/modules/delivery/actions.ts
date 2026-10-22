@@ -223,7 +223,7 @@ export async function submitDeliveryResultAction(formData: FormData) {
 
 /**
  * D20 "NCC đã giao": staff report a supplier-direct delivery in one step (taken on the way → arrived → result); a delivered
- * quantity needs the photo uploaded on this page first, nothing delivered needs a reason.
+ * quantity needs the photo uploaded on this page first. Nothing delivered keeps the note, or "Không giao được" (FB7: no reason to type).
  */
 export async function submitSupplierDeliveryDoneAction(formData: FormData) {
   const parsed = z.object({ deliveryId: z.guid(), receiverName: z.string().trim().max(120).optional(), note: z.string().trim().max(500).optional(),
@@ -236,8 +236,10 @@ export async function submitSupplierDeliveryDoneAction(formData: FormData) {
   }
   await requireInternalPermission("delivery.submit");
   const supabase = await createServerSupabase();
+  const nothingDelivered = lines.length > 0 && lines.every((line) => Number(line.actual_base_quantity) === 0);
   const { error } = await supabase.rpc("submit_supplier_delivery_done", {
-    target_delivery_id: parsed.data.deliveryId, result_lines: lines, receiver_name: parsed.data.receiverName || "", note: parsed.data.note || "",
+    target_delivery_id: parsed.data.deliveryId, result_lines: lines, receiver_name: parsed.data.receiverName || "",
+    note: nothingDelivered ? reasonOrDefault(parsed.data.note, "Không giao được") : parsed.data.note || "",
     target_evidence_id: parsed.data.evidenceId || null, expected_version: parsed.data.version, operation_id: parsed.data.operationId,
   });
   const destination = `/admin/deliveries/${parsed.data.deliveryId}`;
@@ -308,14 +310,15 @@ export async function verifyDeliveryAction(formData: FormData) {
 }
 
 export type OpenReturnCaseState = { success: boolean; error: string | null };
+const RETURN_CASE_NOTE = { CUSTOMER_RETURN: "Khách trả hàng", TRANSIT_REMAINDER: "Hàng còn trên xe", TRANSIT_LOSS: "Hỏng hoặc hao hụt khi giao" } as const;
 
 export async function openReturnCaseAction(_previous: OpenReturnCaseState, formData: FormData): Promise<OpenReturnCaseState> {
-  const parsed = z.object({ deliveryId: z.guid(), verificationLineId: z.guid(), caseKind: z.enum(["CUSTOMER_RETURN", "TRANSIT_REMAINDER", "TRANSIT_LOSS"]), quantity: positive, reason: z.string().trim().min(3).max(500), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return { success: false, error: "Kiểm tra dòng giao, loại vấn đề, số lượng dương và lý do ít nhất 3 ký tự." };
+  const parsed = z.object({ deliveryId: z.guid(), verificationLineId: z.guid(), caseKind: z.enum(["CUSTOMER_RETURN", "TRANSIT_REMAINDER", "TRANSIT_LOSS"]), quantity: positive, reason: z.string().trim().max(500).optional(), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { success: false, error: "Kiểm tra dòng giao, loại vấn đề và số lượng dương." };
   try {
     await requireInternalPermission("delivery.exception");
     const supabase = await createServerSupabase();
-    const { error } = await supabase.rpc("open_return_case", { target_delivery_verification_line_id: parsed.data.verificationLineId, case_kind: parsed.data.caseKind, requested_base_quantity: parsed.data.quantity, reason: parsed.data.reason, target_evidence_id: null, operation_id: parsed.data.operationId });
+    const { error } = await supabase.rpc("open_return_case", { target_delivery_verification_line_id: parsed.data.verificationLineId, case_kind: parsed.data.caseKind, requested_base_quantity: parsed.data.quantity, reason: reasonOrDefault(parsed.data.reason, RETURN_CASE_NOTE[parsed.data.caseKind]), target_evidence_id: null, operation_id: parsed.data.operationId });
     if (error) return { success: false, error: message(error.message) };
   } catch (error) {
     unstable_rethrow(error);

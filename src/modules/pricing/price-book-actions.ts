@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
+import { reasonOrDefault } from "@/lib/core/reason";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 export type PriceBookResult = { success: boolean; message: string; count?: number; outcomeUnknown?: boolean };
@@ -15,7 +16,7 @@ const itemSchema = z.object({
 }).refine((item) => Boolean(item.supersedesId) === Boolean(item.expectedVersion) && BigInt(item.priceVnd) <= 9223372036854775807n);
 const inputSchema = z.object({
   operationId: z.guid(),
-  reason: z.string().trim().min(3).max(500),
+  reason: z.string().trim().max(500).optional(),
   effectiveDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   items: z.array(itemSchema).min(1).max(500),
 });
@@ -38,7 +39,7 @@ function priceBookError(message: string, code?: string): string {
 /** Saves many general prices at once; either every price is saved or none is (save_pricing_rules_batch). */
 export async function savePriceBookAction(input: unknown): Promise<PriceBookResult> {
   const parsed = inputSchema.safeParse(input);
-  if (!parsed.success) return { success: false, message: parsed.error.issues.some((issue) => issue.path[0] === "reason") ? "Cần lý do thay đổi từ 3 đến 500 ký tự." : "Bảng giá có dòng chưa hợp lệ. Kiểm tra giá mới (số nguyên dương)." };
+  if (!parsed.success) return { success: false, message: "Bảng giá có dòng chưa hợp lệ. Kiểm tra giá mới (số nguyên dương)." };
   if (parsed.data.effectiveDate < businessToday()) return { success: false, message: "Ngày áp dụng không được trước hôm nay." };
   const access = await requireInternalPermission("pricing.manage");
   const supabase = await createServerSupabase();
@@ -48,7 +49,7 @@ export async function savePriceBookAction(input: unknown): Promise<PriceBookResu
       ...(item.tierCode ? { customer_tier_code: item.tierCode } : {}),
       ...(item.supersedesId ? { supersedes_id: item.supersedesId, expected_version: item.expectedVersion } : {}) })),
     effective_from: `${parsed.data.effectiveDate}T00:00:00+07:00`,
-    change_reason: parsed.data.reason,
+    change_reason: reasonOrDefault(parsed.data.reason, "Cập nhật giá"),
     operation_id: parsed.data.operationId,
   });
   if (error) return { success: false, message: priceBookError(error.message, error.code) };

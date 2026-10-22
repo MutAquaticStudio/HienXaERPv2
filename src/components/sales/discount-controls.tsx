@@ -38,7 +38,7 @@ export function DiscountField({ id, label, draft, onChange, disabled, hint }: {
 }
 
 /**
- * KiotViet-style price popup of one sales line: "Đơn giá" (price list price, or a manual price with reason),
+ * KiotViet-style price popup of one sales line: "Đơn giá" (price list price, or a manual price with an optional note),
  * "Giảm giá" per unit by VND or %, and the resulting "Giá bán".
  */
 export function LinePriceDialog({ row, name, unit, listUnitVnd, systemUnitVnd, manualPriceVnd, discount, canManagePrice, onChange, onClose }: {
@@ -61,7 +61,7 @@ export function LinePriceDialog({ row, name, unit, listUnitVnd, systemUnitVnd, m
           ? <MoneyInput id={`line-price-${row}`} value={price} placeholder={systemUnitVnd ? new Intl.NumberFormat("vi-VN").format(BigInt(systemUnitVnd)) : "Giá bảng giá"}
             onValue={setPrice} />
           : <strong>{list ? formatVnd(vnd(list)) : "—"}</strong>}
-        <small className="muted">{price ? "Giá thủ công: cần ghi lý do ở dòng hàng." : "Để trống: dùng giá theo bảng giá."}</small>
+        <small className="muted">{price ? "Giá thủ công: có thể ghi chú ở dòng hàng (không bắt buộc)." : "Để trống: dùng giá theo bảng giá."}</small>
       </div>
       <div className="field-full"><DiscountField id={`line-discount-${row}`} label="Giảm giá mỗi đơn vị" draft={draft} onChange={setDraft} /></div>
       <dl className="detail-grid field-full line-price-result">

@@ -21,6 +21,13 @@ it("shows phone logins as the phone number and only offers commands on active lo
   expect(screen.getAllByRole("button", { name: "Thu hồi" })).toHaveLength(1);
 });
 
+it("revokes with an optional note only (FB7)", () => {
+  render(<PortalAccountsCard customerId="c1" customerPhone="0912345678" accounts={accounts} canManage />);
+  fireEvent.click(screen.getByRole("button", { name: "Thu hồi" }));
+  expect(screen.getByLabelText("Ghi chú (không bắt buộc)")).not.toBeRequired();
+  expect(screen.queryByLabelText(/Lý do/)).not.toBeInTheDocument();
+});
+
 it("opens the create form with the customer's phone and a temporary password", () => {
   render(<PortalAccountsCard customerId="c1" customerPhone="0912 345 678" accounts={[]} canManage />);
   fireEvent.click(screen.getByRole("button", { name: "+ Tạo tài khoản" }));

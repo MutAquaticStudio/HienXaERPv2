@@ -17,7 +17,7 @@ export function CommissionReviewForm({ caseId, operationId, scope, targets, rule
   {method === "RECOVER_UNPAID_COMMISSION" ? <><label htmlFor={`commission-target-${caseId}`}>Nguồn hoa hồng còn chưa trả</label><select id={`commission-target-${caseId}`} name="target" value={target} onChange={event => setTarget(event.target.value)} required><option value="">Chọn khoản cùng nhân viên</option>{targets.map(item => <option key={item.id} value={`${item.id}:${item.version}`}>{item.label} · còn {formatVnd(vnd(item.remaining))}</option>)}</select>
    <label htmlFor={`commission-rule-${caseId}`}>Quy tắc điều chỉnh theo VND</label><select id={`commission-rule-${caseId}`} name="ruleId" value={rule} onChange={event => setRule(event.target.value)} required><option value="">Chọn ADJUSTMENT, hệ số 1</option>{rules.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select>
    {!rules.length && <p className="muted">Cần quy tắc điều chỉnh hợp lệ tại phân hệ thu nhập trước khi xử lý khoản chưa trả.</p>}</> : <><input type="hidden" name="target" value="" /><input type="hidden" name="ruleId" value="" /></>}
-  <label htmlFor={`commission-reason-${caseId}`}>Lý do quyết định</label><input id={`commission-reason-${caseId}`} name="reason" value={reason} onChange={event => setReason(event.target.value)} minLength={3} maxLength={500} required />
+  <label htmlFor={`commission-reason-${caseId}`}>Ghi chú (không bắt buộc)</label><input id={`commission-reason-${caseId}`} name="reason" value={reason} onChange={event => setReason(event.target.value)} maxLength={500} />
   <button className="button button-primary" type="submit">Ghi quyết định đối chiếu hoa hồng</button>
  </ReliableCommandForm>;
 }

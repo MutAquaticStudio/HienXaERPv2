@@ -94,7 +94,7 @@ it("does not passively reprice a stored draft when it first opens", async () => 
   await act(async () => { await new Promise(resolve => setTimeout(resolve, 350)); });
   expect(mocks.preview).not.toHaveBeenCalled();
   expect(screen.getByRole("button", { name: "Đơn giá và giảm giá dòng 1" })).toHaveTextContent("90.000");
-  expect(screen.getByLabelText("Lý do giá thủ công dòng 1")).toHaveValue("Old approved reason");
+  expect(screen.getByLabelText("Ghi chú giá thủ công dòng 1 (không bắt buộc)")).toHaveValue("Old approved reason");
   expect(screen.getByText("Khách A")).toBeInTheDocument();
 });
 
@@ -115,7 +115,7 @@ it("preserves customer, site, all line fields, date, notes and intent after a re
   fireEvent.change(screen.getByLabelText("ĐVT bán dòng 1"), { target: { value: "uom-b" } });
   fireEvent.change(quantity(), { target: { value: "2.5" } });
   setLinePrice(1, { price: "120000" });
-  fireEvent.change(screen.getByLabelText("Lý do giá thủ công dòng 1"), { target: { value: "Giá đã duyệt" } });
+  fireEvent.change(screen.getByLabelText("Ghi chú giá thủ công dòng 1 (không bắt buộc)"), { target: { value: "Giá đã duyệt" } });
   fireEvent.change(screen.getByLabelText("Ngày giao dự kiến"), { target: { value: "2026-10-28T09:00" } });
   fireEvent.change(screen.getByLabelText("Điều khoản / ghi chú"), { target: { value: "Giữ nguyên ghi chú" } });
   await waitForPrice();
@@ -125,7 +125,7 @@ it("preserves customer, site, all line fields, date, notes and intent after a re
   expect(container.querySelector<HTMLInputElement>("input[name=siteId]")?.value).toBe("site-b");
   expect(screen.getByLabelText("ĐVT bán dòng 1")).toHaveValue("uom-b");
   expect(quantity()).toHaveValue("2.5");
-  expect(screen.getByLabelText("Lý do giá thủ công dòng 1")).toHaveValue("Giá đã duyệt");
+  expect(screen.getByLabelText("Ghi chú giá thủ công dòng 1 (không bắt buộc)")).toHaveValue("Giá đã duyệt");
   expect(screen.getByLabelText("Ngày giao dự kiến")).toHaveValue("2026-10-28T09:00");
   expect(screen.getByLabelText("Điều khoản / ghi chú")).toHaveValue("Giữ nguyên ghi chú");
   const first = mocks.save.mock.calls[0][1] as FormData;
@@ -143,7 +143,7 @@ it("posts one value per field for every line, in line order", async () => {
   render(<CommercialDocumentForm {...ready} />);
   searchMaterial("DA12");
   setLinePrice(2, { price: "500000" });
-  fireEvent.change(screen.getByLabelText("Lý do giá thủ công dòng 2"), { target: { value: "Giá công trình" } });
+  fireEvent.change(screen.getByLabelText("Ghi chú giá thủ công dòng 2 (không bắt buộc)"), { target: { value: "Giá công trình" } });
   mocks.preview.mockResolvedValue({ success: true, message: "", totalVnd: "620000", lines: [
     { unitPriceVnd: "120000", priceSourceType: "LIST", lineTotalVnd: "120000" }, { unitPriceVnd: "500000", priceSourceType: "MANUAL_APPROVED", lineTotalVnd: "500000" }] });
   await waitForPrice();
