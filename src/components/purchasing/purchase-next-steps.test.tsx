@@ -6,7 +6,7 @@ import { PurchaseNextSteps } from "./purchase-next-steps";
 afterEach(cleanup);
 
 it("after confirming a warehouse order, leads to sending it to the supplier, receiving it and a new order", () => {
-  render(<PurchaseNextSteps number="PO-1" supplierId="s1" toWarehouse sent={false} deliveryCreated={false} can={{ send: true, receive: true, create: true }} />);
+  render(<PurchaseNextSteps number="PO-1" supplierId="s1" toWarehouse sent={false} deliveryCreated={false} justConfirmed can={{ send: true, receive: true, create: true }} />);
   const card = screen.getByRole("region", { name: "Đã xác nhận PO-1 — bước tiếp theo" });
   expect(within(card).getByRole("link", { name: "Gửi NCC" })).toHaveAttribute("href", "#gui-ncc");
   expect(within(card).getByRole("link", { name: "Nhận hàng" })).toHaveAttribute("href", "#nhan-hang");

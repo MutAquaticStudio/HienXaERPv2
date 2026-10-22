@@ -2,16 +2,16 @@ import Link from "next/link";
 import { ButtonLink } from "@/components/ui/button-link";
 
 /**
- * FB5 (Owner 18/10): right after a purchase order is confirmed, say what comes next — send it to the supplier, then receive
+ * FB5/FB7 (Owner): while a purchase order is confirmed and open, say what comes next — send it to the supplier, then receive
  * the goods (or have the supplier deliver to the site) — and offer a new order for the same supplier. The steps themselves are
  * the existing ones on this page.
  */
-export function PurchaseNextSteps({ number, supplierId, toWarehouse, sent, deliveryCreated, can }: {
-  number: string; supplierId: string; toWarehouse: boolean; sent: boolean; deliveryCreated: boolean;
+export function PurchaseNextSteps({ number, supplierId, toWarehouse, sent, deliveryCreated, can, justConfirmed = false }: {
+  number: string; supplierId: string; toWarehouse: boolean; sent: boolean; deliveryCreated: boolean; justConfirmed?: boolean;
   can: { send: boolean; receive: boolean; create: boolean };
 }) {
   return <section className="card card-pad order-next-steps" aria-labelledby="purchase-next-steps-title">
-    <h2 id="purchase-next-steps-title">Đã xác nhận {number} — bước tiếp theo</h2>
+    <h2 id="purchase-next-steps-title">{justConfirmed ? `Đã xác nhận ${number} — bước tiếp theo` : `Bước tiếp theo của ${number}`}</h2>
     <ul>
       {can.send && <li><span>{sent ? "Đã gửi đơn cho NCC." : "Gửi đơn cho NCC qua Zalo (kèm PDF) để NCC chuẩn bị hàng."}</span>{!sent && <Link className="code-link" href="#gui-ncc">Gửi NCC</Link>}</li>}
       {toWarehouse
