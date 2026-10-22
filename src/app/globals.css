@@ -1412,3 +1412,7 @@ a.portal-choice:hover, a.portal-choice:focus-visible { border-color: var(--prima
 .service-job-form .form-section legend { padding: 0 6px; font-weight: 700; }
 .service-job-form .form-section .field-full { grid-column: 1 / -1; }
 .service-job-steps { margin: 0; }
+/* FB8: credit popup */
+.credit-dialog { border: 0; background: transparent; padding: 0; }
+.credit-dialog .credit-summary { margin-top: 0; }
+.credit-approvers { display: grid; gap: 8px; margin: 0; padding-left: 1.2rem; }

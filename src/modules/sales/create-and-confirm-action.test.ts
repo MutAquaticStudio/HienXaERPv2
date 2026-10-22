@@ -64,13 +64,23 @@ it("stays confirmed when sourcing fails or is switched off for the branch", asyn
   expect(await redirectOf(await form("confirm"))).toBe(`/admin/orders/${order}?notice=confirmed-unsourced`);
 });
 
-it("keeps the saved draft and explains in Vietnamese when confirmation is rejected", async () => {
+it("keeps the saved draft and opens the credit popup when credit stops the confirmation (FB8)", async () => {
   fixture(["orders.create", "orders.confirm"]);
   m.rpc.mockImplementation(async (name: string) => name === "confirm_sales_order"
     ? { data: null, error: { message: "credit_limit_exceeded" } } : { data: order, error: null });
   const target = new URL(await redirectOf(await form("confirm")), "http://localhost");
   expect(target.pathname).toBe(`/admin/orders/${order}`);
-  expect(target.searchParams.get("error")).toBe("Đã lưu bản nháp nhưng chưa xác nhận được: Hạn mức tín dụng không đủ để xác nhận đơn.");
+  expect(target.searchParams.get("notice")).toBe("created");
+  expect(target.searchParams.get("credit")).toBe("limit");
+  expect(target.searchParams.get("error")).toBeNull();
+});
+
+it("keeps the saved draft and explains in Vietnamese when confirmation is rejected otherwise", async () => {
+  fixture(["orders.create", "orders.confirm"]);
+  m.rpc.mockImplementation(async (name: string) => name === "confirm_sales_order"
+    ? { data: null, error: { message: "sales_order_not_confirmable" } } : { data: order, error: null });
+  const target = new URL(await redirectOf(await form("confirm")), "http://localhost");
+  expect(target.searchParams.get("error")).toBe("Đã lưu bản nháp nhưng chưa xác nhận được: Đơn bán không còn ở trạng thái có thể xác nhận. Hãy tải lại để kiểm tra.");
 });
 
 it("refuses to create anything when the actor cannot confirm", async () => {

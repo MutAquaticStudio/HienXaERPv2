@@ -1,5 +1,6 @@
 "use server";
 
+import { creditBlockOf } from "./credit-block";
 import Decimal from "decimal.js";
 import { applySalesDiscounts, readDiscountInputs } from "./discounts";
 import { finalSellingPriceReason } from "./final-price";
@@ -388,6 +389,9 @@ async function saveDocument(kind: "order" | "quote", mode: "create" | "edit", fo
   if (confirmOperationId) {
     const confirmed = await supabase.rpc("confirm_sales_order", { target_order_id: result.data, operation_id: confirmOperationId });
     revalidatePath(`/admin/orders/${result.data}`);
+    // FB8: stopped by credit → the draft is saved and the order page opens the credit popup.
+    const block = creditBlockOf(confirmed.error?.message);
+    if (block) redirect(`/admin/orders/${result.data}?notice=created&credit=${block}${prepaymentQuery}`);
     if (confirmed.error) redirect(`/admin/orders/${result.data}?error=${encodeURIComponent(`Đã lưu bản nháp nhưng chưa xác nhận được: ${commandError(confirmed.error.message, true)}${prepaymentProblem ? ` ${prepaymentProblem}` : ""}`)}`);
     // D19: confirmed orders are sourced by the system; a failure leaves the order confirmed with "Tự phân nguồn" to retry.
     const sourced = await autoSourceConfirmedOrder(supabase, access.branchId, result.data, derivedOperationId(confirmOperationId, "auto-source"), { onlyIfEnabled: true });
@@ -420,6 +424,8 @@ export async function confirmSalesOrderAction(formData: FormData) {
   const supabase = await createServerSupabase();
   const destination = `/admin/orders/${parsed.data.entityId}`;
   const { error } = await supabase.rpc("confirm_sales_order", { target_order_id: parsed.data.entityId, operation_id: parsed.data.operationId });
+  const block = creditBlockOf(error?.message);
+  if (block) redirect(`${destination}?credit=${block}`);
   if (error) redirect(`${destination}?error=${encodeURIComponent(commandError(error.message, true))}`);
   const sourced = await autoSourceConfirmedOrder(supabase, access.branchId, parsed.data.entityId, derivedOperationId(parsed.data.operationId, "auto-source"), { onlyIfEnabled: true });
   revalidatePath(destination);
