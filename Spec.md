@@ -18,6 +18,8 @@
 
 > Quyết định Owner 18/10/2026 tối (đợt `FB6`): **D26** màn "Đặt hàng" của cổng khách đồng nhất với "Tạo đơn bán" nội bộ và chọn được hàng cùng loại (variant) trên từng dòng (SPEC-CUSTPORTAL-005).
 
+> Quyết định Owner 22/10/2026 (đợt `FB7`, Owner tự QA sau phát hành): **D27** (a) giao hàng: điều phối chỉ phân người + xe; **thợ** xác nhận "Đã lấy hàng lên xe" kèm 1–5 ảnh (trừ kho) và "Đã giao" kèm ảnh; báo "Đã giao" **là xác minh** (kể cả giao thiếu / không giao được), phần chưa giao tự nhập lại kho xuất; bỏ bước "Tới nơi"; ảnh hiện ở phiếu giao; khách thấy đơn **Hoàn tất** — thay luật cũ "xác minh do người có quyền `delivery.verify` sau khi thợ báo" (SPEC-FB7 §1); (b) "bước tiếp theo" của đơn bán/đơn mua hiện thường trực, không chỉ ngay sau xác nhận (§2); (c) cổng khách có trang **Tài khoản** (§3); (d) trang chủ chọn một trong ba cổng (Khối vận hành / Thợ & tài xế / Khách hàng + Đăng ký) (§4); (e) kiểm kho lệch âm → chi phí **"Hao hụt kiểm kho"** không dùng tiền: trừ lợi nhuận, hiện ở Chi phí và Sổ quỹ, không trừ số dư quỹ (§5); (f) công trình bỏ vĩ độ, kinh độ, khung giờ nhận trên form (§6); (g) **bỏ "Lý do" bắt buộc ở mọi nơi**: danh mục/giá/cài đặt/quyền bỏ hẳn ô; thao tác tiền/hàng có ô "Ghi chú (không bắt buộc)"; hệ thống tự ghi câu mặc định vào nhật ký (§7); (h) chi phí kiểu KiotViet: người nhận bất kỳ (Khác / NCC / Nhân viên), trả ngay từ quỹ hoặc ghi nợ NCC, mua tài sản có thể không tính lợi nhuận — thay luật cũ "chi phí luôn gắn NCC và qua duyệt + công nợ phải trả" (§8); (i) form lỗi không còn nút "Bắt đầu thao tác mới": giữ dữ liệu, đánh dấu ô lỗi, gửi lại được ngay (§9).
+
 # Spec.md — HIỀN XA ERP V2
 
 > **Bộ tài liệu:** `HX-V2-DOCSET-4.4`  
@@ -3068,6 +3070,65 @@ Các lát cắt ưu tiên:
 8. Invoice intent → external provider → reconciliation.
 
 Mỗi lát cắt dùng cùng entity/source hiện có; không tạo bản ghi “workflow state” thứ hai chỉ để theo dõi tiến độ.
+
+# SPEC-FB7 — Góp ý Owner 22/10/2026 (D27)
+
+## 1. Thợ lấy hàng và giao hàng, giao xong là xác minh
+- Luồng phiếu giao: Lập phiếu → **Phân người & xe** (nhân viên; việc tự sang cổng thợ, trạng thái việc CLAIMED) → **Thợ lấy hàng lên xe** →
+  **Thợ đã giao** (Hoàn tất). Không còn bước "Tới nơi" trên trang phiếu giao.
+- "Đã lấy hàng lên xe" (`portal_delivery_loaded`): chỉ người đang được giao việc, phiếu ở ASSIGNED, 1–5 ảnh (ảnh `WORK_RESULT`, mỗi ảnh gắn một nơi,
+  bảng `delivery_handoff_portal_evidence`); số lượng mặc định theo kế hoạch, "Lấy thiếu" nhập số thực lấy. Ghi bàn giao như `handoff_delivery_actual`
+  (trừ kho, phiếu DISPATCHED); việc → IN_PROGRESS. Idempotent (command_receipts + payload hash).
+- "Đã giao" (`submit_portal_delivery_done`): ghi kết quả rồi **tự xác minh** (số khách nhận = số tính tiền = số thợ báo): công nợ, doanh thu, giá vốn
+  như `verify_delivery`; phần còn trên xe nhập lại kho xuất (return case TRANSIT_REMAINDER → RETURNED); việc VERIFIED (thu nhập theo quy tắc sẵn có).
+  Giao thiếu / không giao được cũng tự xác minh; ghi chú không bắt buộc. Xác minh lỗi kế toán (vd thiếu hạn mức) không chặn thợ: phiếu giữ
+  RESULT_SUBMITTED và nhân viên nhận thông báo "Cần xác minh tay …".
+- Trang quản lý: form bàn giao / báo kết quả nằm trong "Làm thay thợ (khi thợ không dùng được điện thoại)"; báo thay thợ bởi người có `delivery.verify`
+  cũng tự xác minh. Phiếu đổi trạng thái từ trang quản lý thì việc bên cổng thợ đổi theo (RESULT_SUBMITTED/VERIFIED → DONE/VERIFIED, CANCELLED →
+  CANCELLED); việc treo của phiếu đã xác minh/hủy được đóng một lần (CANCELLED, không tạo thu nhập hồi tố).
+- Cổng khách: đơn giao đủ (FULFILLED) hiện **"Hoàn tất"**.
+
+## 2. Bước tiếp theo luôn hiện
+- Đơn bán CONFIRMED/CLOSED luôn có khung "Tiến độ đơn …" (ngay sau xác nhận: "Đã xác nhận … — bước tiếp theo"; giao đủ: "… đã giao xong") với từng
+  phiếu giao và trạng thái mới, nút Thu tiền / In đơn / Tạo đơn mới cho khách này. Đơn mua CONFIRMED luôn có `PurchaseNextSteps`.
+
+## 3. Cổng khách — Tài khoản
+- `customer_portal_account(target_customer_id)` (security definer, theo membership, không cấp anon): mã, tên, loại, SĐT, email, địa chỉ, MST, hạn
+  thanh toán (chỉ Chủ tài khoản/Kế toán), vai trò cổng, công trình đang dùng. Trang `/customer/profile` "Tài khoản": đăng nhập bằng, thông tin khách,
+  quyền, địa chỉ giao hàng, Đổi mật khẩu (tự nguyện), Đăng xuất.
+
+## 4. Trang chủ chọn cổng
+- `/` chưa đăng nhập nội bộ: ba thẻ **Khối vận hành** (`/login`), **Thợ & tài xế** (`/work/login`), **Khách hàng** (`/customer/login` + **Đăng ký**
+  `/customer/register`). Nhân viên đã đăng nhập vẫn chuyển thẳng vào trang làm việc. Màn đăng nhập ghi tên cổng và "← Chọn cổng khác".
+
+## 5. Hao hụt kiểm kho
+- Duyệt phiếu kiểm có dòng giảm: trigger `stock_counts_record_loss` ghi **một** chi phí APPROVED, `settlement = NON_CASH`, loại "Hao hụt kiểm kho"
+  (tự tạo nếu chi nhánh chưa có), số tiền = tổng giá trị các movement giảm (giá vốn bình quân × số lượng), mô tả "Kiểm kho KK-…: {vật tư} −{SL} {đvt}
+  ({ghi chú})", người nhận "Kho {tên kho}", gắn `stock_count_id` (duy nhất). Không tạo phiếu chi, không tạo công nợ NCC. Lệch tăng không ghi.
+- Lợi nhuận trừ khoản này (chi phí đã duyệt, tính lợi nhuận). Sổ quỹ hiện khung "Chi phí không dùng tiền trong kỳ (hao hụt kho)", không tính vào số dư.
+- Ghi chú lệch không bắt buộc; để trống thì lưu "Lệch khi kiểm kho".
+
+## 6. Công trình
+- Form công trình bỏ vĩ độ, kinh độ, khung giờ nhận; cột DB giữ nguyên, dữ liệu cũ không mất.
+
+## 7. Lý do không bắt buộc
+- Danh mục, giá bán/mua, bảng giá, nhóm giá, đơn vị, hàng cùng loại, quyền, cài đặt: **không còn ô lý do**.
+- Hủy chứng từ, điều chỉnh công nợ, đảo phiếu, giá tay, vượt hạn mức, chuyển kho, trả NCC, tín dụng khách, hoa hồng, hóa đơn, trả hàng, thợ từ chối
+  việc, tài khoản cổng khách, kiểm kho: ô **"Ghi chú (không bắt buộc)"**.
+- DB vẫn đòi lý do ≥ 3 ký tự ở các RPC và `audit_events`; server gửi `reasonOrDefault(ghi chú, câu mặc định)` (`src/lib/core/reason.ts`).
+
+## 8. Chi phí kiểu KiotViet
+- `expenses`: `supplier_id` không bắt buộc; `payee_kind` OTHER/SUPPLIER/EMPLOYEE, `payee_name`, `employee_id`, `settlement` PAYABLE/PAID_NOW/NON_CASH,
+  `counts_in_profit`, `stock_count_id`. Ràng buộc: SUPPLIER ⇒ có NCC; PAYABLE ⇒ SUPPLIER. Dữ liệu cũ = SUPPLIER/PAYABLE.
+- `record_operating_expense(...)` (quyền `finance.expense.manage`; trả ngay cần thêm `finance.payment.post`): ghi + duyệt một bước; loại chi chọn hoặc
+  gõ mới (tự tạo, so tên không phân biệt hoa thường); **Đã trả ngay** → phiếu chi trong Sổ quỹ từ quỹ chọn (tiền mặt → CASH, ngân hàng →
+  BANK_TRANSFER), với NCC thì cấn ngay khoản phải trả vừa tạo; **Ghi nợ NCC** → công nợ phải trả theo hạn NCC. Idempotent.
+- `payments` cho phép phiếu chi không đối tác khi có `expense_id` + `payee_name`; `payment_read`/`expense_read` hiện tên người nhận.
+- Lợi nhuận (`finance_dashboard_snapshot`) chỉ cộng chi phí `counts_in_profit` (bỏ chọn khi mua tài sản dùng lâu như xe). Chi phí chuyến giữ nguyên.
+
+## 9. Form lỗi
+- `ReliableCommandForm` không còn "Bắt đầu thao tác mới": từ chối → giữ giá trị, đổi `operationId`, đánh dấu + focus ô lỗi (`field` trong kết quả);
+  thành công → tự sẵn sàng nhập mới; chưa rõ kết quả (mất mạng) → vẫn "Tra cứu kết quả" / "Thử lại cùng thao tác".
 
 # KẾT THÚC Spec.md
 

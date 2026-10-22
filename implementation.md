@@ -3149,3 +3149,22 @@ xong toàn bộ rồi QA một lần; tệp áp QA sẽ chia < 20.000 ký tự. 
 - PR #57 merge, `main` = `68d04a4`. Migration `20261018230000_portal_catalog_variants.sql` áp lên Production qua MCP (một transaction + `schema_migrations`
   sha256 `609351a9…`); `customer_portal_catalog` khớp md5 + ACL với QA. Giả lập phiên khách demo KH01: danh mục có nhóm "Xi Măng Bút Sơn"
   (PCB30/PCB40) và "Xi măng Hoàng Long" (HL30/HL40) kèm nhãn thuộc tính. Deploy `dpl_8HJ7Bk1gsnNJcpKsdZFJXeNEdRE8`; quay lui: `dpl_6aDAWYt8JkQDD6Fnhxaar9Kw8obB`.
+
+## 2026-10-22 — FB7: góp ý Owner (D27) — thợ tự lấy hàng & giao, chi phí kiểu KiotViet, hao hụt kho, bỏ lý do
+
+- Nguyên nhân ảnh 1 của Owner (đọc Production, không ghi): việc `WRK-202610-000002` của `DL-2026-000010` kẹt CLAIMED vì Owner tự bấm "Tới nơi" +
+  "Xác minh" trên trang phiếu giao; `submit_delivery_result`/`verify_delivery` không chạm `work_items`, và việc giao hàng không có nút Bắt đầu. Cùng lỗi
+  `WRK-…003` (DL-011), `WRK-…006` (DL-014). Sửa bằng trigger `deliveries_sync_work_item` + đóng việc treo một lần (CANCELLED, không thu nhập hồi tố).
+- Giao hàng (D27a): migration `20261022100000`…`100400` — lõi `private.handoff_delivery_core` / `private.verify_delivery_core` (thân chép nguyên bản mới
+  nhất, hàm public giữ chữ ký + kiểm quyền), `private.return_delivery_remainder`, bảng `delivery_handoff_portal_evidence`, RPC `portal_delivery_loaded`,
+  `submit_portal_delivery_done` tự xác minh trong savepoint (lỗi kế toán → giữ RESULT_SUBMITTED + thông báo "Cần xác minh tay"), payload cổng thợ thêm
+  `can_load`, `is_assignee`, `assignee_name`. App: `delivery-load-form.tsx`, `job-photos.tsx`, route `api/portal/delivery-loaded`, trang phiếu giao 4 bước
+  + "Làm thay thợ". Native 240 (giao đủ / thiếu / không giao được / thiếu hạn mức / báo thay thợ), 180 cập nhật.
+- Bước tiếp theo luôn hiện (D27b), công trình bỏ tọa độ + khung giờ (D27f), `ReliableCommandForm` bỏ "Bắt đầu thao tác mới" (D27i).
+- Cổng khách "Tài khoản" (`20261022130000_fb7_portal_account.sql`, native 255); trang chủ chọn cổng (D27c/d).
+- Chi phí kiểu KiotViet (D27h): `20261022110000_fb7_expenses_payees.sql` (cột người nhận / thanh toán / tính lợi nhuận; nới `payments_party_shape` —
+  có `drop constraint`), `20261022110100_fb7_record_operating_expense.sql`, `20261022110200_fb7_dashboard_profit_assets.sql` (21.565 ký tự, chỉ
+  `create or replace function`). Form `src/modules/finance/expense-form.tsx` + `operating-expense(-actions).ts`. Native 245.
+- Hao hụt kiểm kho (D27e): `20261022120000_fb7_stock_count_loss.sql` — trigger `stock_counts_record_loss` (không sửa `approve_stock_count`); Sổ quỹ khung
+  "Chi phí không dùng tiền trong kỳ"; ghi chú lệch mặc định "Lệch khi kiểm kho". Native 250.
+- Bỏ lý do bắt buộc (D27g): `src/lib/core/reason.ts` `reasonOrDefault`; danh mục/giá/quyền bỏ ô; thao tác tiền/hàng "Ghi chú (không bắt buộc)".
