@@ -33,7 +33,6 @@ export function MaterialUnitsEditor({ materialId }: { materialId: string }) {
   const [splitFrom, setSplitFrom] = useState("");
   const [step, setStep] = useState<RoundingStep>(1000);
   const [effectiveDate, setEffectiveDate] = useState("");
-  const [reason, setReason] = useState("");
   const [operationId, setOperationId] = useState(() => crypto.randomUUID());
   const [result, setResult] = useState<MaterialUnitsResult | null>(null);
   const [pending, startTransition] = useTransition();
@@ -82,14 +81,14 @@ export function MaterialUnitsEditor({ materialId }: { materialId: string }) {
   }
 
   function save() {
-    if (pending || !changes || reason.trim().length < 3) return;
+    if (pending || !changes) return;
     startTransition(async () => {
       try {
-        const saved = await saveMaterialUnitsAction({ operationId, materialId, reason: reason.trim(), effectiveDate,
+        const saved = await saveMaterialUnitsAction({ operationId, materialId, effectiveDate,
           addUnits, stopConversionIds: [...stopped], prices: priceChanges });
         setResult(saved);
         // Show the saved state only once it is read back; the typed rows must not linger as if still unsaved.
-        if (saved.success) { setOperationId(crypto.randomUUID()); setReason(""); setData(undefined); setReload((value) => value + 1); router.refresh(); }
+        if (saved.success) { setOperationId(crypto.randomUUID()); setData(undefined); setReload((value) => value + 1); router.refresh(); }
       } catch {
         setResult({ success: false, outcomeUnknown: true, message: "Chưa xác định được kết quả lưu. Bấm lưu lại đúng thao tác này để kiểm tra; hệ thống không lưu trùng." });
       }
@@ -177,15 +176,13 @@ export function MaterialUnitsEditor({ materialId }: { materialId: string }) {
       <button type="button" className="button button-secondary" onClick={suggestPrices} disabled={pending}>Tính giá các đơn vị khác</button>
     </fieldset>}
 
-    {(editUnits || editPrice) && <div className="form-grid">
-      {editPrice && priceChanges.length > 0 && <div className="field"><label htmlFor={`units-date-${materialId}`}>Giá áp dụng từ ngày *</label>
-        <input id={`units-date-${materialId}`} type="date" min={loaded.today} value={effectiveDate} onChange={(event) => setEffectiveDate(event.target.value)} disabled={pending} /></div>}
-      <div className="field"><label htmlFor={`units-reason-${materialId}`}>Lý do thay đổi *</label>
-        <input id={`units-reason-${materialId}`} value={reason} maxLength={500} minLength={3} onChange={(event) => setReason(event.target.value)} disabled={pending} placeholder="vd Thêm bán theo bao và tấn" /></div>
+    {editPrice && priceChanges.length > 0 && <div className="form-grid">
+      <div className="field"><label htmlFor={`units-date-${materialId}`}>Giá áp dụng từ ngày *</label>
+        <input id={`units-date-${materialId}`} type="date" min={loaded.today} value={effectiveDate} onChange={(event) => setEffectiveDate(event.target.value)} disabled={pending} /></div>
     </div>}
     {result && <p className={`form-message${result.success ? " success" : ""}`} role="status">{result.message}</p>}
     {(editUnits || editPrice) && <div className="form-actions">
-      <button type="button" className="button button-primary" disabled={pending || !changes || reason.trim().length < 3} onClick={save}>
+      <button type="button" className="button button-primary" disabled={pending || !changes} onClick={save}>
         {pending ? "Đang lưu..." : unknown ? "Lưu lại đúng thao tác" : `Lưu đơn vị & giá${changes ? ` (${changes} thay đổi)` : ""}`}</button>
     </div>}
   </div>;

@@ -78,7 +78,7 @@ export default async function ServiceJobDetail({ params, searchParams }: { param
         </form>}
         {job.execution_state === "SCHEDULED" && !job.work_item_id && access.permissions.has("service.manage") && <form className="command-panel" action={cancelScheduledServiceJobAction}>
           <input type="hidden" name="serviceJobId" value={job.id} /><input type="hidden" name="version" value={job.version} /><input type="hidden" name="operationId" value={randomUUID()} />
-          <div className="field"><label htmlFor="serviceCancelReason">Lý do hủy lịch dịch vụ</label><input id="serviceCancelReason" name="reason" minLength={3} maxLength={500} required /></div>
+          <div className="field"><label htmlFor="serviceCancelReason">Ghi chú (không bắt buộc)</label><input id="serviceCancelReason" name="reason" maxLength={500} /></div>
           <button className="button button-danger" type="submit">Hủy lịch dịch vụ</button>
         </form>}
         {job.execution_state === "CANCELLED" && <p className="muted">Lịch dịch vụ đã hủy trước khi phát hành phiếu việc. Không thể phát hành hoặc ghi kết quả cho lịch này.</p>}

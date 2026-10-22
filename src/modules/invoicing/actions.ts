@@ -1,5 +1,6 @@
 "use server";
 import { operationalPostingError } from "@/lib/core/errors";
+import { reasonOrDefault } from "@/lib/core/reason";
 
 
 import { revalidatePath } from "next/cache";
@@ -34,8 +35,8 @@ export async function createInvoiceDraftAction(_state: InvoiceActionState, formD
 export async function approveInvoiceBusinessAction(_state: InvoiceActionState, formData: FormData): Promise<InvoiceActionState> {
   await requireInternalPermission("finance.reconcile");
   const id = input(formData, "invoice_id"), operation = input(formData, "operation_id");
-  const reason = input(formData, "reason"), version = Number(input(formData, "version"));
-  if (!validId(id) || !validId(operation) || !Number.isInteger(version) || version < 1 || reason.length < 3 || reason.length > 500) return failure("Nhập lý do duyệt hợp lệ.");
+  const reason = reasonOrDefault(input(formData, "reason"), "Duyệt nguồn nghiệp vụ"), version = Number(input(formData, "version"));
+  if (!validId(id) || !validId(operation) || !Number.isInteger(version) || version < 1) return failure("Phiên bản hoặc mã thao tác không hợp lệ. Tải lại trang.");
   const supabase = await createServerSupabase();
   const { error } = await supabase.rpc("approve_invoice_business", { target_invoice_id: id, expected_version: version, review_reason: reason, operation_id: operation });
   if (error) return failure(safeError(error.message));
@@ -47,8 +48,8 @@ export async function approveInvoiceBusinessAction(_state: InvoiceActionState, f
 export async function cancelInvoiceDraftAction(_state: InvoiceActionState, formData: FormData): Promise<InvoiceActionState> {
   await requireInternalPermission("finance.ar.adjust");
   const id = input(formData, "invoice_id"), operation = input(formData, "operation_id");
-  const reason = input(formData, "reason"), version = Number(input(formData, "version"));
-  if (!validId(id) || !validId(operation) || !Number.isInteger(version) || version < 1 || reason.length < 3 || reason.length > 500) return failure("Nhập lý do hủy hợp lệ.");
+  const reason = reasonOrDefault(input(formData, "reason"), "Hủy nháp hóa đơn"), version = Number(input(formData, "version"));
+  if (!validId(id) || !validId(operation) || !Number.isInteger(version) || version < 1) return failure("Phiên bản hoặc mã thao tác không hợp lệ. Tải lại trang.");
   const supabase = await createServerSupabase();
   const { error } = await supabase.rpc("cancel_invoice_draft", { target_invoice_id: id, expected_version: version, cancel_reason: reason, operation_id: operation });
   if (error) return failure(safeError(error.message));

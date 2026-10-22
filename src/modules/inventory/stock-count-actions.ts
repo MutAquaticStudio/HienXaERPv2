@@ -5,6 +5,7 @@ import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
 import { isAuthoritativeRejection } from "@/lib/core/command-outcome";
 import { isExactEntryQuantity } from "@/lib/core/quantity";
+import { reasonOrDefault } from "@/lib/core/reason";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { inventoryCommandMessage } from "./errors";
 
@@ -78,19 +79,19 @@ export async function saveStockCountSheetAction(input: unknown): Promise<StockCo
   }
 }
 
-const cancelSchema = z.object({ operationId: z.guid(), stockCountId: z.guid(), version: z.number().int().positive(), reason: z.string().trim().min(3).max(500) });
+const cancelSchema = z.object({ operationId: z.guid(), stockCountId: z.guid(), version: z.number().int().positive(), reason: z.string().trim().max(500).optional() });
 
 /** "Hủy phiếu": an open count is closed without any stock movement; what was counted stays as history. */
 export async function cancelStockCountAction(input: unknown): Promise<StockCountSheetResult> {
   const parsed = cancelSchema.safeParse(input);
-  if (!parsed.success) return { status: "FAILED", message: "Nhập lý do hủy phiếu (ít nhất 3 ký tự)." };
+  if (!parsed.success) return { status: "FAILED", message: "Phiếu kiểm đã thay đổi. Tải lại trang rồi hủy lại." };
   await requireInternalPermission("inventory.count");
   const supabase = await createServerSupabase();
   try {
     const { error } = await supabase.rpc("cancel_stock_count", {
       target_stock_count_id: parsed.data.stockCountId,
       expected_count_version: parsed.data.version,
-      cancel_reason: parsed.data.reason,
+      cancel_reason: reasonOrDefault(parsed.data.reason, "Hủy phiếu kiểm"),
       operation_id: parsed.data.operationId,
     });
     if (error) return isAuthoritativeRejection(error.code) ? { status: "FAILED", message: inventoryCommandMessage(error.message) } : { status: "UNKNOWN", message: UNKNOWN };

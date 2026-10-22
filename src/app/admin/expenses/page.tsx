@@ -9,35 +9,38 @@ import { CORE_LIST_PAGE_SIZE, ilikePattern, parseCoreListQuery } from "@/lib/cor
 import { formatVnd, vnd } from "@/lib/core/money";
 import { formatBusinessDate } from "@/lib/core/business-time";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { createExpenseAction, createExpenseCategoryAction } from "@/modules/finance/actions";
+import { createExpenseCategoryAction } from "@/modules/finance/actions";
+import { OperatingExpenseForm } from "@/modules/finance/expense-form";
+import { recordOperatingExpenseAction } from "@/modules/finance/operating-expense-actions";
+import { expenseSettlementLabel } from "@/modules/finance/operating-expense";
 
 import { DeliveryExpenseForm, ExpenseApprovalForm } from "@/modules/finance/delivery-expense-form";
 import { AutoFilterForm } from "@/components/ui/auto-filter-form";
 import { ExpenseCreateChooser } from "@/components/finance/expense-create-chooser";
 import { DetailTabs } from "@/components/ui/detail-tabs";
 import { FormDialog } from "@/components/ui/form-dialog";
-import { MoneyInput } from "@/components/ui/money-input";
 
-type Expense = { id: string; expense_number: string; category_name: string; supplier_name: string; amount_vnd: string; effective_at: string; due_date: string; description: string; activity_kind: string; approval_state: string; version: number };
+type Expense = { id: string; expense_number: string; category_name: string; supplier_name: string | null; payee_display: string | null; settlement: string | null; counts_in_profit: boolean | null; amount_vnd: string; effective_at: string; due_date: string; description: string; activity_kind: string; approval_state: string; version: number };
 function localNow() { return new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date()).replace(" ", "T"); }
 function localDate() { return localNow().slice(0, 10); }
 
-export default async function ExpensesPage({ searchParams }: { searchParams: Promise<{ notice?: string; error?: string; focus?: string; q?: string; state?: string; page?: string }> }) {
+export default async function ExpensesPage({ searchParams }: { searchParams: Promise<{ notice?: string; error?: string; focus?: string; new?: string; q?: string; state?: string; page?: string }> }) {
   const access = await requireInternalPermission("finance.expense.read");
   const query = await searchParams;
   const list = parseCoreListQuery(query);
   const state = list.state === "DRAFT" || list.state === "APPROVED" ? list.state : "";
   const focusId = /^[0-9a-f-]{36}$/i.test(query.focus ?? "") ? query.focus : undefined;
   const canManage = access.permissions.has("finance.expense.manage");
+  const canPay = canManage && access.permissions.has("finance.payment.post");
   const supabase = await createServerSupabase();
-  const fields = "id, expense_number, category_name, supplier_name, amount_vnd::text, effective_at, due_date, description, activity_kind, approval_state, version";
+  const fields = "id, expense_number, category_name, supplier_name, payee_display, settlement, counts_in_profit, amount_vnd::text, effective_at, due_date, description, activity_kind, approval_state, version";
   let request = supabase.from("expense_read").select(fields).eq("branch_id", access.branchId);
-  if (list.q) request = request.or(`expense_number.ilike.${ilikePattern(list.q)},category_name.ilike.${ilikePattern(list.q)},supplier_name.ilike.${ilikePattern(list.q)},description.ilike.${ilikePattern(list.q)}`);
+  if (list.q) request = request.or(`expense_number.ilike.${ilikePattern(list.q)},category_name.ilike.${ilikePattern(list.q)},payee_display.ilike.${ilikePattern(list.q)},description.ilike.${ilikePattern(list.q)}`);
   if (state) request = request.eq("approval_state", state);
   // Tab counts stop at 99: an exact count over a large expense history is too slow to wait for on every visit.
   const countOf = (value: string) => supabase.from("expense_read").select("id").eq("branch_id", access.branchId).eq("approval_state", value).limit(100);
   const shown = (result: { data: unknown[] | null }) => result.data ? result.data.length > 99 ? "99+" : result.data.length : undefined;
-  const [pageResult, categoryResult, supplierResult, orderResult, focusedResult, assignmentResult, sourceResult, draftCount, approvedCount] = await Promise.all([
+  const [pageResult, categoryResult, supplierResult, orderResult, focusedResult, assignmentResult, sourceResult, draftCount, approvedCount, accountResult, employeeResult] = await Promise.all([
     request.order("effective_at", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1),
     canManage ? supabase.from("expense_categories").select("id, code, name").eq("branch_id", access.branchId).eq("active", true).order("name") : Promise.resolve({ data: [] }),
     canManage ? supabase.from("suppliers").select("id, code, name").eq("branch_id", access.branchId).eq("active", true).order("name") : Promise.resolve({ data: [] }),
@@ -47,6 +50,8 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
     supabase.from("delivery_expense_sources").select("expense_id, assignment_id, cost_scope, supplier_reference").eq("branch_id", access.branchId),
     countOf("DRAFT"),
     countOf("APPROVED"),
+    canPay ? supabase.from("finance_accounts").select("id, code, name, account_kind").eq("branch_id", access.branchId).eq("active", true).order("code").limit(50) : Promise.resolve({ data: [] }),
+    canManage ? supabase.from("employee_branch_access").select("employees!inner(id, code, display_name)").eq("branch_id", access.branchId).eq("active", true).eq("employees.active", true).limit(300) : Promise.resolve({ data: [] }),
   ]);
   if (pageResult.error) throw new Error("Không thể tải chi phí.");
   const pageRows = (pageResult.data ?? []) as Expense[];
@@ -58,16 +63,24 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
   const categories = categoryResult.data;
   const suppliers = supplierResult.data;
   const orders = orderResult.data;
+  const accounts = ((accountResult.data ?? []) as { id: string; code: string; name: string; account_kind: string }[])
+    .map((item) => ({ id: item.id, kind: item.account_kind, label: `${item.name} (${item.account_kind === "CASH" ? "tiền mặt" : "ngân hàng"})` }));
+  type Person = { id: string; code: string; display_name: string };
+  const people = new Map<string, Person>();
+  for (const row of (employeeResult.data ?? []) as { employees: Person | Person[] | null }[]) for (const person of [row.employees].flat()) if (person) people.set(person.id, person);
+  const employees = [...people.values()].sort((a, b) => a.display_name.localeCompare(b.display_name)).map((item) => ({ id: item.id, label: `${item.display_name} (${item.code})` }));
   if (assignmentResult.error || sourceResult.error) throw new Error("Không thể tải nguồn chi phí chuyến.");
   const sources = new Map((sourceResult.data ?? []).map(item => [item.expense_id, item]));
   const assignments = (assignmentResult.data ?? []).map(item => ({ id: item.assignment_id, version: item.delivery_version, label: `${item.delivery_number} · lần ${item.assignment_version} · ${item.plate_number || item.external_carrier_name} · ${item.execution_state}` }));
   const assignmentLabels = new Map(assignments.map(item => [item.id, item.label]));
   const tabs = [{ id: "all", label: "Tất cả" }, { id: "DRAFT", label: "Chờ duyệt", count: shown(draftCount) }, { id: "APPROVED", label: "Đã duyệt", count: shown(approvedCount) }];
-  return <div className="page-stack"><header className="page-heading"><div><p className="eyebrow">Chi phí vận hành</p><h1>Chi phí vận hành</h1><p className="lede">Chi phí ghi nhận sau duyệt; thanh toán theo khoản phải trả.</p></div>
+  return <div className="page-stack"><header className="page-heading"><div><p className="eyebrow">Chi phí vận hành</p><h1>Chi phí vận hành</h1><p className="lede">Ghi khoản chi như KiotViet: trả ngay từ quỹ (vào Sổ quỹ) hoặc ghi nợ nhà cung cấp.</p></div>
       {canManage && <div className="action-cluster">
-        <FormDialog label="Ghi chi phí" title="Ghi chi phí chờ duyệt" size="lg" buttonClassName="button button-primary"
-          description="Chi phí chỉ vào sổ và thành khoản phải trả sau khi duyệt.">
-          <ExpenseCreateChooser general={<form className="command-panel" action={createExpenseAction}><input type="hidden" name="operationId" value={randomUUID()} /><div className="field"><label>Nhóm</label><select name="categoryId" required><option value="">Chọn nhóm</option>{(categories ?? []).map((item) => <option key={item.id} value={item.id}>{item.code} · {item.name}</option>)}</select></div><div className="field"><label>Nhà cung cấp</label><select name="supplierId" required><option value="">Chọn NCC</option>{(suppliers ?? []).map((item) => <option key={item.id} value={item.id}>{item.code} · {item.name}</option>)}</select></div><div className="field"><label>Số tiền</label><MoneyInput name="amount" required /></div><div className="field"><label>Ngày phát sinh</label><input name="effectiveAt" type="datetime-local" defaultValue={localNow()} required /></div><div className="field"><label>Hạn trả</label><input name="dueDate" type="date" defaultValue={localDate()} required /></div><div className="field"><label>Loại hoạt động</label><select name="activityKind"><option value="OPERATIONS">Vận hành</option><option value="SALES">Bán hàng</option><option value="DELIVERY">Giao hàng</option><option value="SERVICE">Dịch vụ</option><option value="ADMIN">Hành chính</option></select></div><div className="field"><label>Đơn bán liên quan</label><select name="salesOrderId"><option value="">Chi phí chung chưa phân bổ</option>{(orders ?? []).map((item) => <option key={item.id} value={item.id}>{item.order_number} · {item.customer_name_snapshot} / {item.site_name_snapshot}</option>)}</select></div><div className="field"><label>Mô tả</label><textarea name="description" minLength={3} required /></div><div className="field"><label>Mã minh chứng đã xác minh</label><input name="evidenceId" /></div><button className="button button-primary" type="submit" disabled={!categories?.length || !suppliers?.length}>Tạo chi phí nháp</button></form>} trip={<DeliveryExpenseForm operationId={randomUUID()} scope={`${access.authUserId}:${access.branchId}:trip-expense`} assignments={assignments} categories={(categories ?? []).map(item => ({ id: item.id, label: `${item.code} · ${item.name}` }))} suppliers={(suppliers ?? []).map(item => ({ id: item.id, label: `${item.code} · ${item.name}` }))} now={localNow()} today={localDate()} />} />
+        <FormDialog label="Ghi chi phí" title="Ghi chi phí" size="lg" buttonClassName="button button-primary" defaultOpen={query.new === "1"}
+          description="Chi phí vào sổ ngay. Đã trả ngay thì thành phiếu chi trong Sổ quỹ; ghi nợ thì thành công nợ nhà cung cấp.">
+          <ExpenseCreateChooser general={<OperatingExpenseForm action={recordOperatingExpenseAction} canPay={canPay} now={localNow()} accounts={accounts} employees={employees}
+            types={(categories ?? []).map((item) => item.name)} suppliers={(suppliers ?? []).map((item) => ({ id: item.id, label: `${item.code} · ${item.name}` }))}
+            orders={(orders ?? []).map((item) => ({ id: item.id, label: `${item.order_number} · ${item.customer_name_snapshot} / ${item.site_name_snapshot}` }))} />} trip={<DeliveryExpenseForm operationId={randomUUID()} scope={`${access.authUserId}:${access.branchId}:trip-expense`} assignments={assignments} categories={(categories ?? []).map(item => ({ id: item.id, label: `${item.code} · ${item.name}` }))} suppliers={(suppliers ?? []).map(item => ({ id: item.id, label: `${item.code} · ${item.name}` }))} now={localNow()} today={localDate()} />} />
         </FormDialog>
         <FormDialog label="Nhóm chi phí" title="Nhóm chi phí">
           {(categories ?? []).length > 0 && <ul className="clean-list expense-categories">{(categories ?? []).map((item) => <li key={item.id}><span className="mono">{item.code}</span> · {item.name}</li>)}</ul>}
@@ -76,9 +89,9 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
       </div>}
     </header><ActionNotice notice={query.notice} error={query.error} />
     <DetailTabs tabs={tabs} active={state || "all"} label="Trạng thái chi phí" href={(tab) => `/admin/expenses${tab === "all" ? (list.q ? `?q=${encodeURIComponent(list.q)}` : "") : `?state=${tab}${list.q ? `&q=${encodeURIComponent(list.q)}` : ""}`}`} />
-    <AutoFilterForm>{state && <input type="hidden" name="state" value={state} />}<label>Tìm kiếm<input name="q" defaultValue={list.q} placeholder="Mã, nhóm, NCC, mô tả" /></label>{(list.q || state) && <Link className="code-link" href="/admin/expenses">Xóa lọc</Link>}</AutoFilterForm>
-    <section className="card"><div className="section-head"><h2>{visibleRows.length} khoản chi phí trên trang này{pinned ? " + 1 khoản được ghim" : ""}</h2><span className="scope-chip">Chỉ tính chi phí đã duyệt</span></div><div className="table-wrap"><table><thead><tr><th>Mã</th><th>Ngày</th><th>Nhóm / mô tả</th><th>NCC</th><th>Phạm vi</th><th>Số tiền</th><th>Trạng thái</th><th></th></tr></thead><tbody>{rows.map((item) => <tr className={focusId === item.id ? "row-focus" : undefined} key={item.id}><td className="mono">{item.expense_number}{focusId === item.id && <small className="table-subline">Được ghim</small>}</td><td>{formatBusinessDate(item.effective_at)}</td><td>{item.category_name}<small className="table-subline">{item.description}</small></td><td>{item.supplier_name}</td><td>{activityKindLabel(item.activity_kind)}{sources.get(item.id) && <small className="table-subline">{sources.get(item.id)?.cost_scope === "DIRECT_DELIVERY" ? "Trực tiếp" : "Chi phí chung"} · {assignmentLabels.get(sources.get(item.id)!.assignment_id) || sources.get(item.id)?.assignment_id} · {sources.get(item.id)?.supplier_reference}</small>}</td><td className="mono">{formatVnd(vnd(String(item.amount_vnd)))}</td><td><StatusBadge tone={item.approval_state === "APPROVED" ? "success" : "warning"}>{item.approval_state === "APPROVED" ? "Đã duyệt" : "Chờ duyệt"}</StatusBadge></td><td className="table-actions">{item.approval_state === "DRAFT" && canManage && <FormDialog label="Duyệt" title={`Duyệt chi phí ${item.expense_number}`} buttonClassName="button button-secondary button-compact" defaultOpen={focusId === item.id}
-            description={<>{item.category_name} · {item.supplier_name} · <strong>{formatVnd(vnd(String(item.amount_vnd)))}</strong>. Sau khi duyệt, chi phí vào sổ và thành khoản phải trả nhà cung cấp; không sửa lại được.</>}>
+    <AutoFilterForm>{state && <input type="hidden" name="state" value={state} />}<label>Tìm kiếm<input name="q" defaultValue={list.q} placeholder="Mã, loại chi, người nhận, ghi chú" /></label>{(list.q || state) && <Link className="code-link" href="/admin/expenses">Xóa lọc</Link>}</AutoFilterForm>
+    <section className="card"><div className="section-head"><h2>{visibleRows.length} khoản chi phí trên trang này{pinned ? " + 1 khoản được ghim" : ""}</h2><span className="scope-chip">Chỉ tính chi phí đã duyệt</span></div><div className="table-wrap"><table><thead><tr><th>Mã</th><th>Ngày</th><th>Loại chi / ghi chú</th><th>Người nhận</th><th>Phạm vi</th><th>Số tiền</th><th>Trạng thái</th><th></th></tr></thead><tbody>{rows.map((item) => <tr className={focusId === item.id ? "row-focus" : undefined} key={item.id}><td className="mono">{item.expense_number}{focusId === item.id && <small className="table-subline">Được ghim</small>}</td><td>{formatBusinessDate(item.effective_at)}</td><td>{item.category_name}<small className="table-subline">{item.description}</small></td><td>{item.payee_display ?? item.supplier_name}<small className="table-subline">{expenseSettlementLabel(item.settlement)}{item.counts_in_profit === false ? " · không tính lợi nhuận" : ""}</small></td><td>{activityKindLabel(item.activity_kind)}{sources.get(item.id) && <small className="table-subline">{sources.get(item.id)?.cost_scope === "DIRECT_DELIVERY" ? "Trực tiếp" : "Chi phí chung"} · {assignmentLabels.get(sources.get(item.id)!.assignment_id) || sources.get(item.id)?.assignment_id} · {sources.get(item.id)?.supplier_reference}</small>}</td><td className="mono">{formatVnd(vnd(String(item.amount_vnd)))}</td><td><StatusBadge tone={item.approval_state === "APPROVED" ? "success" : "warning"}>{item.approval_state === "APPROVED" ? "Đã duyệt" : "Chờ duyệt"}</StatusBadge></td><td className="table-actions">{item.approval_state === "DRAFT" && canManage && <FormDialog label="Duyệt" title={`Duyệt chi phí ${item.expense_number}`} buttonClassName="button button-secondary button-compact" defaultOpen={focusId === item.id}
+            description={<>{item.category_name} · {item.payee_display ?? item.supplier_name} · <strong>{formatVnd(vnd(String(item.amount_vnd)))}</strong>. Sau khi duyệt, chi phí vào sổ và thành khoản phải trả nhà cung cấp; không sửa lại được.</>}>
             <ExpenseApprovalForm expenseId={item.id} version={item.version} operationId={randomUUID()} scope={`${access.authUserId}:${access.branchId}:expense:${item.id}`} /></FormDialog>}</td></tr>)}</tbody></table>{!rows.length && <p className="empty-inline">Chưa có chi phí.</p>}</div><ListPager page={list.page} hasNext={hasNext} params={{ q: list.q, state }} /></section>
   </div>;
 }

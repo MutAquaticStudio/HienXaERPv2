@@ -11,7 +11,7 @@ const ids = { op: "11111111-1111-4111-8111-111111111111", group: "22222222-2222-
   kg: "44444444-4444-4444-8444-444444444444", bao: "55555555-5555-4555-8555-555555555555", old: "66666666-6666-4666-8666-666666666666" };
 const future = "2099-01-01";
 const base = {
-  operationId: ids.op, groupId: ids.group, reason: "Tạo xi măng Bút Sơn", effectiveDate: future,
+  operationId: ids.op, groupId: ids.group, effectiveDate: future,
   group: { name: "Xi măng Bút Sơn", attributeNames: ["Mác"], active: true }, expected: null,
   template: { groupId: ids.materialGroup, baseUomId: ids.kg, specification: "", saleEnabled: true, purchaseEnabled: true,
     units: [{ uomId: ids.bao, numerator: "50", denominator: "1", type: "PACKAGING" as const, sourceNote: "" }] },
@@ -36,14 +36,14 @@ it("creates the group, its variants, the shared unit and prices in one command",
       { attributes: { Mác: "PCB40" }, code: "BS40", name: "Xi măng Bút Sơn PCB40", prices: [] },
       { material_id: ids.old, attributes: { Mác: "PCB50" } },
     ],
-    effective_from: `${future}T00:00:00+07:00`, change_reason: "Tạo xi măng Bút Sơn", operation_id: ids.op,
+    effective_from: `${future}T00:00:00+07:00`, change_reason: "Cập nhật hàng cùng loại", operation_id: ids.op,
   });
 });
 
 it("detaches members and sends no price date without prices", async () => {
-  await saveVariantGroupAction({ ...base, template: null, expected: { name: "Xi măng Bút Sơn", attribute_names: ["Mác"], active: true },
+  await saveVariantGroupAction({ ...base, reason: "Tách loại cũ", template: null, expected: { name: "Xi măng Bút Sơn", attribute_names: ["Mác"], active: true },
     variants: [{ materialId: ids.old, detach: true }] });
-  expect(m.rpc.mock.calls[0][1]).toMatchObject({ template: null, variants: [{ material_id: ids.old, detach: true }], effective_from: null });
+  expect(m.rpc.mock.calls[0][1]).toMatchObject({ template: null, variants: [{ material_id: ids.old, detach: true }], effective_from: null, change_reason: "Tách loại cũ" });
 });
 
 it("checks codes, templates and dates before calling the database", async () => {

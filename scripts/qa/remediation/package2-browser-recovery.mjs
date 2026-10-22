@@ -55,7 +55,6 @@ try {
   assert.deepEqual(after, { n: 1, amount: "1000000" });
   report.checks.push({ name: "ACTUAL_COMMIT_RESPONSE_LOST_RELOAD_RECONCILES_ONE_RECEIPT", status: "PASS", facts: after, browserIdentifierOnly: true });
   await page.screenshot({ path: args.screenshots + "/g15-payment-recovered-after-reload.png", fullPage: true });
-  await page.getByRole("button", { name: "Bắt đầu thao tác mới", exact: true }).click();
   await page.getByLabel("Số tiền nhận", { exact: false }).fill("1000000");
   await page.locator('select[name="accountId"]').selectOption(documents.account);
   await page.getByRole("button", { name: "Ghi nhận thu tiền", exact: true }).click();

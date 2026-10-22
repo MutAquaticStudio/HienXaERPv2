@@ -63,7 +63,7 @@ export function CustomerCreditPanel({ customerId, pending, credits, accounts, ta
           operationId={approvalOperations[row.id]} scope={`${actorScope}:RETURN:${row.id}`}>
           <input type="hidden" name="returnCaseId" value={row.id} />
           <div className="field"><label htmlFor={"return-credit-" + row.id}>{row.legacy_adjustment_exists ? "Giá trị điều chỉnh đã ghi (VND)" : "Số tiền giảm cho hàng trả (VND)"}</label><MoneyInput id={"return-credit-" + row.id} name="amount" readOnly={row.legacy_adjustment_exists} defaultValue={row.legacy_credit_amount_vnd ?? row.maximum_credit_vnd} required /></div>
-          <div className="field"><label htmlFor={"return-reason-" + row.id}>{row.legacy_adjustment_exists ? "Lý do đối chiếu nguồn tiền" : "Lý do duyệt giảm"}</label><input id={"return-reason-" + row.id} name="reason" minLength={3} maxLength={500} required /></div>
+          <div className="field"><label htmlFor={"return-reason-" + row.id}>Ghi chú (không bắt buộc)</label><input id={"return-reason-" + row.id} name="reason" maxLength={500} /></div>
           <button className="button button-danger" type="submit">{row.legacy_adjustment_exists ? "Đối chiếu nguồn điều chỉnh đã ghi" : "Duyệt giảm theo hàng trả"}</button>
         </ReliableCommandForm> : <p className="muted">Cần người có quyền duyệt điều chỉnh công nợ.</p>}
     </article>)}

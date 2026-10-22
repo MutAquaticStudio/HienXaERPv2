@@ -1,5 +1,6 @@
 "use server";
 import { operationalPostingError, quantityInputError } from "@/lib/core/errors";
+import { reasonOrDefault } from "@/lib/core/reason";
 
 
 import { revalidatePath } from "next/cache";
@@ -127,13 +128,13 @@ export async function postPaymentAction(formData: FormData) {
 }
 
 export async function reversePaymentAction(formData: FormData) {
-  const parsed = z.object({ paymentId: z.guid(), reason: z.string().trim().min(3).max(500), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ paymentId: z.guid(), reason: z.string().trim().max(500).optional(), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect("/admin/cashbook?error=invalid-reversal");
   await requireInternalPermission("finance.payment.reverse");
   const supabase = await createServerSupabase();
   const { error } = await supabase.rpc("reverse_payment", {
     target_payment_id: parsed.data.paymentId,
-    reversal_reason: parsed.data.reason,
+    reversal_reason: reasonOrDefault(parsed.data.reason, "Đảo phiếu"),
     operation_id: parsed.data.operationId,
   });
   if (error) redirect(`/admin/cashbook?error=${encodeURIComponent(message(error.message))}`);
@@ -187,40 +188,6 @@ export async function createExpenseCategoryAction(formData: FormData) {
   redirect("/admin/expenses?notice=category-created");
 }
 
-export async function createExpenseAction(formData: FormData) {
-  const parsed = z.object({
-    categoryId: z.guid(),
-    supplierId: z.guid(),
-    amount: money,
-    effectiveAt: localDateTime,
-    dueDate: z.iso.date(),
-    description: z.string().trim().min(3).max(500),
-    activityKind: z.enum(["OPERATIONS", "SALES", "DELIVERY", "SERVICE", "ADMIN"]),
-    salesOrderId: optionalUuid,
-    evidenceId: optionalUuid,
-    operationId: z.guid(),
-  }).safeParse(Object.fromEntries(formData));
-  if (!parsed.success) redirect("/admin/expenses?error=invalid-expense");
-  const access = await requireInternalPermission("finance.expense.manage");
-  const supabase = await createServerSupabase();
-  const { error } = await supabase.rpc("create_expense", {
-    target_branch_id: access.branchId,
-    target_category_id: parsed.data.categoryId,
-    target_supplier_id: parsed.data.supplierId,
-    amount_vnd: parsed.data.amount,
-    effective_at: toInstant(parsed.data.effectiveAt),
-    due_date: parsed.data.dueDate,
-    description: parsed.data.description,
-    activity_kind: parsed.data.activityKind,
-    target_sales_order_id: parsed.data.salesOrderId || null,
-    target_evidence_id: parsed.data.evidenceId || null,
-    operation_id: parsed.data.operationId,
-  });
-  if (error) redirect(`/admin/expenses?error=${encodeURIComponent(message(error.message))}`);
-  revalidatePath("/admin/expenses");
-  redirect("/admin/expenses?notice=expense-created");
-}
-
 export async function approveExpenseAction(formData: FormData) {
   const parsed = z.object({ expenseId: z.guid(), version: z.coerce.number().int().positive(), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect("/admin/expenses?error=invalid-approval");
@@ -242,7 +209,7 @@ async function adjustmentAction(formData: FormData, side: "AR" | "AP") {
   const parsed = z.object({
     obligationId: z.guid(),
     amount: signedMoney,
-    reason: z.string().trim().min(3).max(500),
+    reason: z.string().trim().max(500).optional(),
     evidenceId: optionalUuid,
     operationId: z.guid(),
   }).safeParse(Object.fromEntries(formData));
@@ -256,7 +223,7 @@ async function adjustmentAction(formData: FormData, side: "AR" | "AP") {
   const { error } = await supabase.rpc(side === "AR" ? "record_receivable_adjustment_typed" : "record_payable_adjustment", {
     target_obligation_id: parsed.data.obligationId,
     amount_delta_vnd: parsed.data.amount,
-    reason: parsed.data.reason,
+    reason: reasonOrDefault(parsed.data.reason, "Điều chỉnh công nợ"),
     target_evidence_id: parsed.data.evidenceId || null,
     operation_id: parsed.data.operationId,
     ...(kind?.success ? { adjustment_kind: kind.data } : {}),

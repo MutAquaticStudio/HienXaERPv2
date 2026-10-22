@@ -30,12 +30,12 @@ export default async function CancelPlannedDeliveryPage({ params, searchParams }
       </> : <>
         <h2>Xác nhận hủy phiếu chưa thực thi</h2>
         <p>Thao tác này giữ lịch sử phiếu, giải phóng tồn đã đặt trước và cho phép lập phiếu giao thay thế từ cùng nguồn. Không hủy đơn bán hay công nợ.</p>
-        {query.error && <p role="alert">{query.error === "invalid" ? "Hãy nhập lý do hủy hợp lệ." : query.error}</p>}
+        {query.error && <p role="alert">{query.error === "invalid" ? "Phiếu giao đã thay đổi hoặc ghi chú quá 500 ký tự. Tải lại trang rồi thử lại." : query.error}</p>}
         <form action={cancelPlannedDeliveryAction}>
           <input type="hidden" name="deliveryId" value={delivery.id} />
           <input type="hidden" name="version" value={delivery.version} />
           <input type="hidden" name="operationId" value={crypto.randomUUID()} />
-          <label>Lý do hủy<textarea name="reason" required minLength={3} maxLength={500} placeholder="Ghi lý do hủy kế hoạch giao hàng" /></label>
+          <label>Ghi chú (không bắt buộc)<textarea name="reason" maxLength={500} placeholder="Ví dụ: Khách dời ngày nhận" /></label>
           <button className="button" type="submit">Xác nhận hủy kế hoạch</button>
         </form>
       </>}

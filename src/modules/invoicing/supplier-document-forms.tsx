@@ -34,7 +34,7 @@ export function SupplierDocumentForm({ sources, operationId, scope, today }: { s
 export function SupplierDocumentReviewForm({ documentId, version, decision, operationId, scope, canReview }: { documentId: string; version: number; decision: "APPROVE_MATCH" | "CANCEL"; operationId: string; scope: string; canReview: boolean }) {
  return <ReliableCommandForm action={reviewSupplierDocumentAction} command="review_supplier_document" operationId={operationId} scope={scope} className="command-panel">
   <input type="hidden" name="documentId" value={documentId} /><input type="hidden" name="version" value={version} /><input type="hidden" name="decision" value={decision} />
-  <div className="field"><label htmlFor={`doc-reason-${decision}`}>Căn cứ quyết định</label><input id={`doc-reason-${decision}`} name="reason" minLength={3} maxLength={500} required /></div>
+  <div className="field"><label htmlFor={`doc-reason-${decision}`}>{decision === "APPROVE_MATCH" ? "Ghi chú duyệt (không bắt buộc)" : "Ghi chú hủy (không bắt buộc)"}</label><input id={`doc-reason-${decision}`} name="reason" maxLength={500} /></div>
   <button className="button button-secondary" type="submit" disabled={!canReview}>{decision === "APPROVE_MATCH" ? "Duyệt đã khớp nguồn nội bộ" : "Hủy bản đối chiếu nháp"}</button>
  </ReliableCommandForm>;
 }

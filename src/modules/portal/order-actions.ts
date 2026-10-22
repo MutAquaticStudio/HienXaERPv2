@@ -7,6 +7,7 @@ import { z } from "zod";
 import { parseBusinessDateTime } from "@/lib/core/business-time";
 import { isAuthoritativeRejection, type CommandOutcome } from "@/lib/core/command-outcome";
 import { isExactEntryQuantity } from "@/lib/core/quantity";
+import { reasonOrDefault } from "@/lib/core/reason";
 import { authenticatedPortalClient } from "@/modules/portal/server";
 import type { PortalCatalog } from "@/modules/portal/types";
 
@@ -77,12 +78,12 @@ export async function submitPortalOrderAction(input: PortalOrderInput): Promise<
 
 /** "Hủy đơn" while the order still waits for approval. */
 export async function cancelPortalOrderAction(form: FormData) {
-  const parsed = z.object({ orderId: z.guid(), reason: z.string().trim().min(3).max(300), operationId: z.guid() })
+  const parsed = z.object({ orderId: z.guid(), reason: z.string().trim().max(300).nullish(), operationId: z.guid() })
     .safeParse({ orderId: form.get("orderId"), reason: form.get("reason"), operationId: form.get("operationId") });
   if (!parsed.success) redirect(`/customer/orders/${String(form.get("orderId") ?? "")}?notice=cancel-reason`);
   const context = await authenticatedPortalClient();
   if (!context) redirect("/customer/login");
-  const { error } = await context.supabase.rpc("cancel_portal_order", { target_order_id: parsed.data.orderId, reason: parsed.data.reason,
+  const { error } = await context.supabase.rpc("cancel_portal_order", { target_order_id: parsed.data.orderId, reason: reasonOrDefault(parsed.data.reason, "Khách hủy đơn"),
     operation_id: parsed.data.operationId });
   revalidatePath(`/customer/orders/${parsed.data.orderId}`);
   revalidatePath("/customer/orders");

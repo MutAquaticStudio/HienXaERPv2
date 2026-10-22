@@ -73,8 +73,8 @@ export default async function OrderDetailPage({ params, searchParams }: { params
     access.permissions.has("finance.ar.read") ? supabase.from("payment_read").select("id, payment_number, method, amount_vnd::text, posting_state, reversal_of_payment_id")
       .eq("branch_id", access.branchId).eq("customer_id", order.customer_id).eq("direction", "RECEIPT").eq("external_reference", prepaymentReference(order.order_number)).limit(20)
       : Promise.resolve({ data: [] }),
-    // FB5: who and what took the deliveries, for "bước tiếp theo" right after confirming.
-    searchParams.then((params) => params.notice?.startsWith("confirmed") ? resourceNames(supabase, access.branchId, deliveries) : null),
+    // FB5/FB7: who and what took the deliveries, for "bước tiếp theo" — shown on every visit of a confirmed order.
+    ["CONFIRMED", "CLOSED"].includes(order.commercial_state) ? resourceNames(supabase, access.branchId, deliveries) : Promise.resolve(null),
   ]);
   const prepaid = prepaymentSummary((prepaidResult.data ?? []) as PrepaymentReceipt[], order.total_vnd ?? "0");
   const now = new Date();
@@ -83,10 +83,11 @@ export default async function OrderDetailPage({ params, searchParams }: { params
   const requestedAt = order.requested_delivery_at && new Date(order.requested_delivery_at) > now ? businessInputValue(order.requested_delivery_at) : null;
   return <div className="page-stack">
     <header className="page-heading"><div><p className="eyebrow">Đơn bán</p><h1>{order.order_number}</h1><p className="lede">Theo dõi đơn bán, phân nguồn hàng và giao hàng tại một nơi.</p></div><div className="inline-actions"><ButtonLink href={`/api/orders/${order.id}/pdf`} variant="secondary">Tải PDF đơn bán</ButtonLink><ButtonLink href="/admin/orders" variant="secondary">Về danh sách</ButtonLink></div></header>
-    {fromPortal && <p className="form-message warning" role="note"><strong>Đơn khách tự đặt trên cổng khách{order.commercial_state === "DRAFT" ? " — chờ duyệt" : ""}.</strong>{order.commercial_state === "DRAFT" ? " Kiểm tra hàng, giá và ngày giao (sửa bản nháp nếu cần), rồi bấm “Duyệt đơn” để giữ hạn mức và tự phân nguồn; hoặc hủy kèm lý do — khách thấy lý do." : ""}{channel?.portal_note ? ` Ghi chú của khách: “${channel.portal_note}”.` : ""}</p>}
+    {fromPortal && <p className="form-message warning" role="note"><strong>Đơn khách tự đặt trên cổng khách{order.commercial_state === "DRAFT" ? " — chờ duyệt" : ""}.</strong>{order.commercial_state === "DRAFT" ? " Kiểm tra hàng, giá và ngày giao (sửa bản nháp nếu cần), rồi bấm “Duyệt đơn” để giữ hạn mức và tự phân nguồn; hoặc hủy đơn — khách thấy ghi chú hủy nếu có." : ""}{channel?.portal_note ? ` Ghi chú của khách: “${channel.portal_note}”.` : ""}</p>}
     <SalesOrderCreditOverride orderId={id} />
       <ActionNotice notice={query.notice} error={query.error} />
-    {names && order.commercial_state === "CONFIRMED" && <OrderNextSteps orderId={order.id} orderNumber={order.order_number} customerId={order.customer_id} siteId={order.site_id}
+    {names && <OrderNextSteps orderId={order.id} orderNumber={order.order_number} customerId={order.customer_id} siteId={order.site_id}
+      justConfirmed={!!query.notice?.startsWith("confirmed")} delivered={["FULFILLED", "CLOSED_REMAINDER"].includes(order.fulfillment_state ?? "")}
       deliveries={deliveries.map((delivery) => ({ id: delivery.id, number: delivery.delivery_number, state: delivery.execution_state, scheduledAt: delivery.scheduled_at,
         vehicle: delivery.vehicle_id ? names.vehicles.get(delivery.vehicle_id) ?? null : null, driver: delivery.employee_id ? names.employees.get(delivery.employee_id) ?? null : null,
         assigned: !!delivery.employee_id && delivery.execution_state !== "PLANNED" }))}

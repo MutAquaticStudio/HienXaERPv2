@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
+import { reasonOrDefault } from "@/lib/core/reason";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { checkSavedCommandFieldsAction } from "@/lib/core/command-outcome-actions";
 import { isAuthoritativeRejection, type CommandOutcome } from "@/lib/core/command-outcome";
@@ -22,11 +23,11 @@ export async function registerSupplierDocumentAction(form: FormData): Promise<Co
  if (error || !data) return failed(error?.message, error?.code); refresh(); return { status: "SUCCESS", resultId: String(data), message: "Đã ghi đối chiếu theo nguồn. Không tạo phải trả hoặc giảm phải trả lần nữa; chứng từ pháp lý chưa được xác minh." };
 }
 export async function reviewSupplierDocumentAction(form: FormData): Promise<CommandOutcome> {
- const parsed = z.object({ documentId: z.guid(), decision: z.enum(["APPROVE_MATCH", "CANCEL"]), reason: z.string().trim().min(3).max(500), version: z.coerce.number().int().positive(), operationId: z.guid() }).safeParse(Object.fromEntries(form));
- if (!parsed.success) return { status: "FAILED", message: "Chọn quyết định và ghi căn cứ rà soát." };
+ const parsed = z.object({ documentId: z.guid(), decision: z.enum(["APPROVE_MATCH", "CANCEL"]), reason: z.string().trim().max(500).optional(), version: z.coerce.number().int().positive(), operationId: z.guid() }).safeParse(Object.fromEntries(form));
+ if (!parsed.success) return { status: "FAILED", message: "Chứng từ đã thay đổi hoặc ghi chú quá 500 ký tự. Tải lại trước khi rà soát." };
  const access = await requireInternalPermission(parsed.data.decision === "CANCEL" ? "finance.ap.adjust" : "finance.reconcile"), changed = await checkSavedCommandFieldsAction(form, "review_supplier_document"); if (changed) return changed;
  const db = await createServerSupabase(); const { data: source } = await db.from("supplier_document_read").select("id").eq("id", parsed.data.documentId).eq("branch_id", access.branchId).maybeSingle(); if (!source) return { status: "FAILED", message: "Chứng từ không thuộc chi nhánh đang chọn." };
- const { data, error } = await db.rpc("review_supplier_document", { target_document_id: parsed.data.documentId, review_decision: parsed.data.decision, review_reason: parsed.data.reason, expected_version: parsed.data.version, operation_id: parsed.data.operationId });
+ const { data, error } = await db.rpc("review_supplier_document", { target_document_id: parsed.data.documentId, review_decision: parsed.data.decision, review_reason: reasonOrDefault(parsed.data.reason, parsed.data.decision === "CANCEL" ? "Hủy bản đối chiếu" : "Duyệt khớp nguồn"), expected_version: parsed.data.version, operation_id: parsed.data.operationId });
  if (error || !data) return failed(error?.message, error?.code); refresh(parsed.data.documentId); return { status: "SUCCESS", resultId: String(data), message: "Đã ghi quyết định nội bộ; trạng thái phát hành và công nợ không đổi bởi thao tác này." };
 }
 
@@ -36,6 +37,7 @@ export async function invoiceCommandWithOutcomeAction(form: FormData): Promise<C
  const config = { draft: ["create_invoice_draft", "finance.ar.adjust"], approve: ["approve_invoice_business", "finance.reconcile"], cancel: ["cancel_invoice_draft", "finance.ar.adjust"], adjustment: ["create_invoice_adjustment_draft", "finance.ar.adjust"], purchase: ["register_purchase_invoice_source", "finance.ap.adjust"] } as const;
  const [command, permission] = config[kind.data], access = await requireInternalPermission(permission), changed = await checkSavedCommandFieldsAction(form, command); if (changed) return changed;
  const db = await createServerSupabase(), sourceId = String(form.get("source_id") || ""), invoiceId = String(form.get("invoice_id") || ""), adjustmentId = String(form.get("adjustment_id") || ""), version = Number(form.get("version")), reason = String(form.get("reason") || "").trim();
+ if (reason.length > 500) return { status: "FAILED", message: "Ghi chú tối đa 500 ký tự." };
  if (!z.guid().safeParse(kind.data === "draft" || kind.data === "purchase" ? sourceId : invoiceId).success) return { status: "FAILED", message: "Nguồn chứng từ không hợp lệ." };
  const table = kind.data === "draft" ? "receivable_read" : kind.data === "purchase" ? "payable_read" : "invoice_intents", id = kind.data === "draft" || kind.data === "purchase" ? sourceId : invoiceId;
  const { data: source } = await db.from(table).select("id").eq("id", id).eq("branch_id", access.branchId).maybeSingle(); if (!source) return { status: "FAILED", message: "Nguồn không thuộc chi nhánh đang chọn." };
@@ -46,7 +48,7 @@ export async function invoiceCommandWithOutcomeAction(form: FormData): Promise<C
   if (number.length > 100 || date && !z.iso.date().safeParse(date).success) return { status: "FAILED", message: "Tham chiếu hoặc ngày chứng từ không hợp lệ." };
   payload = { target_payable_obligation_id: sourceId, target_document_number: number || null, target_document_date: date || null };
  } else if (kind.data === "adjustment") { if (!z.guid().safeParse(adjustmentId).success) return { status: "FAILED", message: "Nguồn điều chỉnh không hợp lệ." }; payload = { target_invoice_id: invoiceId, target_receivable_adjustment_id: adjustmentId }; }
- else { if (!Number.isInteger(version) || version < 1 || reason.length < 3 || reason.length > 500) return { status: "FAILED", message: "Nhập phiên bản và lý do hợp lệ." }; payload = { target_invoice_id: invoiceId, expected_version: version, ...(kind.data === "approve" ? { review_reason: reason } : { cancel_reason: reason }) }; }
+ else { if (!Number.isInteger(version) || version < 1) return { status: "FAILED", message: "Phiên bản chứng từ không hợp lệ. Tải lại trang." }; payload = { target_invoice_id: invoiceId, expected_version: version, ...(kind.data === "approve" ? { review_reason: reasonOrDefault(reason, "Duyệt nguồn nghiệp vụ") } : { cancel_reason: reasonOrDefault(reason, "Hủy nháp hóa đơn") }) }; }
  const { data, error } = await db.rpc(command, { ...payload, operation_id: op.data }); if (error || !data) return failed(error?.message, error?.code);
  refresh(); revalidatePath(`/admin/invoices/${invoiceId || String(data)}`); return { status: "SUCCESS", resultId: String(data), message: "Đã ghi hồ sơ nghiệp vụ. Đây là duyệt nội bộ, chưa phát hành hóa đơn điện tử; không ghi công nợ lần hai." };
 }

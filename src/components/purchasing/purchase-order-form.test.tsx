@@ -164,12 +164,12 @@ it("completes the warehouse address in context and preserves supplier, lines, pr
   render(<PurchaseOrderForm operationId="operation" canCreateSales={false} canManageWarehouse canManagePrice canReadPrice={false} initialSupplierId="supplier" initialMaterialId="material" options={addressOptions} />);
   fireEvent.change(quantity(), { target: { value: "2.5" } });
   fireEvent.change(screen.getByLabelText("Giá mua thủ công dòng 1"), { target: { value: "3000" } });
-  fireEvent.change(screen.getByLabelText("Lý do giá thủ công dòng 1"), { target: { value: "Giá đã duyệt" } });
+  fireEvent.change(screen.getByLabelText("Ghi chú giá thủ công dòng 1 (không bắt buộc)"), { target: { value: "Giá đã duyệt" } });
   fireEvent.change(screen.getByLabelText("Ngày dự kiến"), { target: { value: "2026-10-10T10:00" } });
   fireEvent.change(screen.getByLabelText("Điều khoản mua"), { target: { value: "Giữ ghi chú" } });
   fireEvent.click(screen.getByText("Bổ sung địa chỉ kho"));
   fireEvent.change(screen.getByLabelText("Địa chỉ kho"), { target: { value: "12 Đường kho" } });
-  fireEvent.change(screen.getByLabelText("Lý do bổ sung địa chỉ"), { target: { value: "Bổ sung thông tin" } });
+  expect(screen.queryByLabelText(/Lý do/)).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "Lưu địa chỉ kho" }));
   await screen.findByText("Địa chỉ kho: 12 Đường kho");
   expect(hidden("supplierId")).toBe("supplier");
@@ -180,6 +180,7 @@ it("completes the warehouse address in context and preserves supplier, lines, pr
   expect(screen.getByLabelText("Điều khoản mua")).toHaveValue("Giữ ghi chú");
   expect(screen.getByRole("button", { name: "Lưu nháp" })).toBeEnabled();
   expect(updatePurchaseWarehouseAddressAction).toHaveBeenCalledWith(expect.objectContaining({ warehouseId: "warehouse", expectedAddress: null, address: "12 Đường kho" }));
+  expect(vi.mocked(updatePurchaseWarehouseAddressAction).mock.calls[0][0]).not.toHaveProperty("reason");
 });
 
 it("refreshes a legacy draft snapshot only by explicit action and advances its expected version", async () => {
@@ -188,7 +189,7 @@ it("refreshes a legacy draft snapshot only by explicit action and advances its e
       lines: [{ sourceLineId: "line", salesLineId: "", materialId: "material", uomId: "uom", quantity: "2", manualCostVnd: "", manualCostReason: "" }] }} />);
   fireEvent.change(quantity(), { target: { value: "3" } });
   expect(updatePurchaseDraftDestinationAction).not.toHaveBeenCalled();
-  fireEvent.change(screen.getByLabelText("Lý do cập nhật kho nhận"), { target: { value: "Bổ sung snapshot" } });
+  expect(screen.queryByLabelText(/Lý do/)).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "Cập nhật địa chỉ từ kho" }));
   await screen.findByText("Địa chỉ nhận đã lưu trên đơn mua: Địa chỉ mới");
   expect(quantity()).toHaveValue("3");
@@ -205,11 +206,10 @@ function enterBusinessDraft() {
   searchMaterial("VT-A");
   fireEvent.change(quantity(1), { target: { value: "10" } });
   fireEvent.change(screen.getByLabelText("Giá mua thủ công dòng 1"), { target: { value: "60000" } });
-  fireEvent.change(screen.getByLabelText("Lý do giá thủ công dòng 1"), { target: { value: "Giá fixture được duyệt" } });
+  fireEvent.change(screen.getByLabelText("Ghi chú giá thủ công dòng 1 (không bắt buộc)"), { target: { value: "Giá fixture được duyệt" } });
   searchMaterial("VT-B");
   fireEvent.change(quantity(2), { target: { value: "2" } });
   fireEvent.change(screen.getByLabelText("Giá mua thủ công dòng 2"), { target: { value: "200000" } });
-  fireEvent.change(screen.getByLabelText("Lý do giá thủ công dòng 2"), { target: { value: "Giá fixture được duyệt" } });
   fireEvent.change(screen.getByLabelText("Ngày dự kiến"), { target: { value: "2026-10-20T09:30" } });
   fireEvent.change(screen.getByLabelText("Điều khoản mua"), { target: { value: "Ghi chú nghiệm thu giữ nguyên" } });
 }
@@ -238,7 +238,6 @@ it("NV-02 component retains the full business draft after warehouse update fails
   enterBusinessDraft();
   fireEvent.click(screen.getByText("Bổ sung địa chỉ kho"));
   fireEvent.change(screen.getByLabelText("Địa chỉ kho"), { target: { value: "Địa chỉ kho nghiệm thu" } });
-  fireEvent.change(screen.getByLabelText("Lý do bổ sung địa chỉ"), { target: { value: "Bổ sung cho nghiệm thu" } });
   fireEvent.click(screen.getByRole("button", { name: "Lưu địa chỉ kho" }));
   await screen.findByText("Địa chỉ kho đã được người khác sửa");
   expectBusinessDraft();
@@ -258,6 +257,7 @@ it("NV-01 server rejection preserves business input and the creation operation I
   expect(document.querySelector('input[name="operationId"]')).toHaveValue("business-stable-intent");
   const data = vi.mocked(createPurchaseOrderAction).mock.calls[0][1] as FormData;
   expect(data.getAll("manualCostVnd")).toEqual(["60000", "200000"]);
-  expect(data.getAll("manualCostReason")).toEqual(["Giá fixture được duyệt", "Giá fixture được duyệt"]);
+  // FB7: the price note is optional; an empty one is sent as is and the server keeps a plain description.
+  expect(data.getAll("manualCostReason")).toEqual(["Giá fixture được duyệt", ""]);
   expect(data.getAll("salesLineId")).toEqual(["", ""]);
 });

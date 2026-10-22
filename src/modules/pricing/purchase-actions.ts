@@ -2,6 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
+import { reasonOrDefault } from "@/lib/core/reason";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { portalRpc, PortalRpcError } from "@/modules/portal/server";
 import { formatVnd, vnd } from "@/lib/core/money";
@@ -40,9 +41,9 @@ function revalidate(){revalidatePath("/admin/suppliers/pricing");revalidatePath(
 function validDay(v:string){const d=new Date(v+"T12:00:00Z");return /^\d{4}-\d{2}-\d{2}$/.test(v)&&!v.startsWith("0000")&&Number.isFinite(d.getTime())&&d.toISOString().slice(0,10)===v;}
 export async function savePurchasePricingRuleAction(_:PricingState|undefined,form:FormData):Promise<PricingState>{
  const access=await requireInternalPermission("purchasing.price.manage");
- const mode=String(form.get("mode")??""),reason=String(form.get("reason")??"").trim(),operation=String(form.get("operationId")??""),oldId=String(form.get("supersedesId")??"");
+ const mode=String(form.get("mode")??""),reason=reasonOrDefault(form.get("reason"),mode==="deactivate"?"Ngừng sử dụng giá mua":"Cập nhật giá mua"),operation=String(form.get("operationId")??""),oldId=String(form.get("supersedesId")??"");
  const version=Number(form.get("expectedVersion"));
- if(!z.guid().safeParse(operation).success||reason.length<3||reason.length>500)return{message:"Cần mã thao tác và lý do thay đổi hợp lệ."};
+ if(!z.guid().safeParse(operation).success)return{message:"Mã thao tác không hợp lệ. Hãy tải lại màn hình."};
  try{
   const db=await createServerSupabase();
   if(mode==="deactivate"){

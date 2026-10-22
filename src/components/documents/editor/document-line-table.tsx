@@ -125,7 +125,7 @@ export function DocumentLineTable<L extends EditorLine>({ lines, materials, canM
         {(!quantityValid || (canManagePrice && line.manualPriceVnd) || priceLocked || extra) && <tr className="doc-editor-line-detail"><td /><td colSpan={7}>
           {!quantityValid && <small id={`qty-error-${line.key}`} role="alert" className="field-error">Nhập số lượng lớn hơn 0, tối đa 6 chữ số thập phân (vd 1,5 hoặc 1.250).</small>}
           {canManagePrice && line.manualPriceVnd
-            ? <label className="doc-editor-reason">Lý do giá thủ công dòng {row}<input name={fields.reason} maxLength={500} value={line.manualReason} placeholder="Bắt buộc khi giá khác bảng giá"
+            ? <label className="doc-editor-reason">Ghi chú giá thủ công dòng {row} (không bắt buộc)<input name={fields.reason} maxLength={500} value={line.manualReason} placeholder="Ví dụ: Giá công trình đã thỏa thuận"
               onChange={(event) => onChange(line.key, { manualReason: event.target.value } as Partial<L>)} onKeyDown={enterMovesOn} /></label>
             : null}
           {priceLocked && <small className="muted">Giá thủ công đã duyệt: {formatVnd(vnd(line.manualPriceVnd))}. Đổi giá hoặc đơn vị cần quyền quản lý giá.</small>}

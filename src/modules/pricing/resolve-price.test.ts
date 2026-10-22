@@ -33,4 +33,10 @@ describe("pricing precedence and snapshots", () => {
   it("requires approval metadata for a manual price", () => {
     expect(() => createPriceSnapshot({ manualPriceVnd: "2800000", orderedUomId: "ton", baseUomId: "kg", conversionNumerator: "1000", conversionDenominator: "1", roundingMode: "HALF_UP" })).toThrow();
   });
+
+  it("keeps a plain description for a manual price saved without a note (FB7)", () => {
+    const manual = { manualPriceVnd: "2800000", overrideActorId: "owner", orderedUomId: "ton", baseUomId: "kg", conversionNumerator: "1000", conversionDenominator: "1", roundingMode: "HALF_UP" } as const;
+    expect(createPriceSnapshot(manual).overrideReason).toBe("Giá nhập tay");
+    expect(createPriceSnapshot({ ...manual, overrideReason: "Khách quen" }).overrideReason).toBe("Khách quen");
+  });
 });

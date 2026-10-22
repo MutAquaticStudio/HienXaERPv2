@@ -11,7 +11,7 @@ export function CreateTransferForm({ operationId, scope, warehouses, materials }
   <label htmlFor="transfer-to">Kho đến</label><select id="transfer-to" name="toWarehouseId" required><option value="">Chọn kho đến</option>{warehouses.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select>
   <label htmlFor="transfer-material">Vật tư chuyển</label><select id="transfer-material" name="materialId" required><option value="">Chọn vật tư</option>{materials.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select>
   <label htmlFor="transfer-quantity">Lượng kế hoạch theo đơn vị cơ sở</label><input id="transfer-quantity" name="quantity" inputMode="decimal" required />
-  <label htmlFor="transfer-reason">Lý do chuyển kho</label><input id="transfer-reason" name="reason" minLength={3} maxLength={500} required />
+  <label htmlFor="transfer-reason">Ghi chú (không bắt buộc)</label><input id="transfer-reason" name="reason" maxLength={500} />
   <button className="button button-primary" type="submit" disabled={warehouses.length < 2 || !materials.length}>Mở phiếu chuyển kho</button>
  </ReliableCommandForm>;
 }
@@ -25,7 +25,7 @@ export function TransferEventForm({ transferId, kind, version, operationId, scop
    {kind === "REPORT_SHORTAGE" ? <input type="hidden" name="issueId" value="" /> : <><label htmlFor={`transfer-issue-${kind}`}>Hồ sơ thiếu nguồn</label><select id={`transfer-issue-${kind}`} name="issueId" required={kind === "APPROVE_LOSS"}><option value="">Nhận thông thường, chưa có hồ sơ thiếu</option>{issues.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select></>}
   </>}
   {closed ? <input type="hidden" name="quantity" value="0" /> : <><label htmlFor={`transfer-q-${kind}`}>Lượng thực tế theo đơn vị cơ sở</label><input id={`transfer-q-${kind}`} name="quantity" inputMode="decimal" required /></>}
-  <label htmlFor={`transfer-note-${kind}`}>Lý do / ghi nhận</label><input id={`transfer-note-${kind}`} name="reason" minLength={3} maxLength={500} required />
+  <label htmlFor={`transfer-note-${kind}`}>Ghi chú {transferEventLabel[kind].toLowerCase()} (không bắt buộc)</label><input id={`transfer-note-${kind}`} name="reason" maxLength={500} />
   <button className="button button-primary" type="submit" disabled={!canRecord}>{transferEventLabel[kind]}</button>
  </ReliableCommandForm>;
 }

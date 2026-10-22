@@ -7,7 +7,7 @@ vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({ r
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("next/navigation", () => ({ redirect: (url: string) => { throw new Error("REDIRECT:" + url); } }));
 
-import { createServiceJobAction } from "./actions";
+import { cancelScheduledServiceJobAction, createServiceJobAction } from "./actions";
 
 const ids = {
   customerId: "2bdfbe30-d09c-4f0e-b66a-3e820ddf4c55", siteId: "61c446b6-cb9f-49b2-994c-70c73e3e5802",
@@ -53,5 +53,16 @@ describe("createServiceJobAction (D23)", () => {
     mocks.rpc.mockResolvedValue({ data: null, error: { message: code } });
     const error = await createServiceJobAction(form()).catch((caught: Error) => caught);
     expect(decodeURIComponent(String((error as Error).message))).toContain(text);
+  });
+});
+
+describe("cancelScheduledServiceJobAction (FB7)", () => {
+  beforeEach(() => { vi.clearAllMocks(); mocks.permission.mockResolvedValue({ branchId: "branch-a", permissions: new Set(["service.manage"]) }); mocks.rpc.mockResolvedValue({ data: null, error: null }); });
+
+  it("cancels without a note and records a plain description", async () => {
+    const job = "7a1d4b8e-3c2f-4e5a-9b6c-1d2e3f4a5b6c", data = new FormData();
+    Object.entries({ serviceJobId: job, version: "3", reason: "", operationId: ids.operationId }).forEach(([key, value]) => data.set(key, value));
+    await expect(cancelScheduledServiceJobAction(data)).rejects.toThrow(`REDIRECT:/admin/service-jobs/${job}?notice=service-cancelled`);
+    expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith("cancel_scheduled_service_job", { target_service_job_id: job, expected_version: 3, cancellation_reason: "Hủy lịch dịch vụ", operation_id: ids.operationId });
   });
 });

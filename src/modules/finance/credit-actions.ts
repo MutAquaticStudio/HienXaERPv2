@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
 import { parseBusinessDateTime } from "@/lib/core/business-time";
+import { reasonOrDefault } from "@/lib/core/reason";
 import { checkSavedCommandFieldsAction } from "@/lib/core/command-outcome-actions";
 import { isAuthoritativeRejection, type CommandOutcome } from "@/lib/core/command-outcome";
 import { createServerSupabase } from "@/lib/supabase/server";
@@ -45,10 +46,10 @@ async function run(form: FormData, command: CreditCommand, permission: string, s
   return { status: "SUCCESS", resultId: String(data), message: command === "adjust_return_receivable" ? "Đã ghi quyết định theo hàng trả. Xem công nợ và khoản có bên dưới." : command === "refund_customer_credit" ? "Đã ghi phiếu hoàn tiền từ khoản có đã duyệt." : "Đã cấn trừ khoản có vào nghĩa vụ được chọn; không ghi thu tiền lần nữa." };
 }
 export async function approveReturnCreditAction(form: FormData): Promise<CommandOutcome> {
-  const parsed = z.object({ returnCaseId: z.guid(), amount: wholeMoney, reason: z.string().trim().min(3).max(500), operationId: z.guid() }).safeParse(Object.fromEntries(form));
-  if (!parsed.success) return { status: "FAILED", message: "Chọn hồ sơ hàng đã nhận lại, số tiền VND nguyên và lý do duyệt." };
+  const parsed = z.object({ returnCaseId: z.guid(), amount: wholeMoney, reason: z.string().trim().max(500).optional(), operationId: z.guid() }).safeParse(Object.fromEntries(form));
+  if (!parsed.success) return { status: "FAILED", message: "Chọn hồ sơ hàng đã nhận lại và nhập số tiền VND nguyên." };
   return run(form, "adjust_return_receivable", "finance.ar.adjust", parsed.data.returnCaseId, { target_return_case_id: parsed.data.returnCaseId,
-    credit_amount_vnd: parsed.data.amount, adjustment_reason: parsed.data.reason, operation_id: parsed.data.operationId });
+    credit_amount_vnd: parsed.data.amount, adjustment_reason: reasonOrDefault(parsed.data.reason, "Giảm công nợ theo hàng trả"), operation_id: parsed.data.operationId });
 }
 export async function refundCustomerCreditAction(form: FormData): Promise<CommandOutcome> {
   const parsed = z.object({ ...identity, amount: positiveMoney, accountId: z.guid(), refundedAt: z.string(),

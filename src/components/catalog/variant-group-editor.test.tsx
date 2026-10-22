@@ -43,10 +43,11 @@ it("creates one variant per typed value with suggested codes, the shared unit an
   fireEvent.change(screen.getByRole("combobox", { name: "Nhập giá theo" }), { target: { value: "bao" } });
   fireEvent.change(screen.getByLabelText("Giá bán loại PCB30"), { target: { value: "90.000" } });
   expect(screen.getByText("kg 1.800 ₫")).toBeInTheDocument();
-  fireEvent.change(screen.getByLabelText("Lý do thay đổi *"), { target: { value: "Thêm xi măng Bút Sơn" } });
+  expect(screen.queryByLabelText(/Lý do/)).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "Tạo 2 loại" }));
 
   await waitFor(() => expect(m.save).toHaveBeenCalledOnce());
+  expect(m.save.mock.calls[0][0]).not.toHaveProperty("reason");
   expect(m.save.mock.calls[0][0]).toMatchObject({
     expected: null, group: { name: "Xi măng Bút Sơn", attributeNames: ["Mác"], active: true },
     template: { groupId: "mg-xm", baseUomId: "kg", units: [{ uomId: "bao", numerator: "50", denominator: "1", type: "PACKAGING" }] },
@@ -72,7 +73,6 @@ it("adds only new values to an existing product, re-labels, detaches and attache
   const attached = screen.getByText("XM_CU").closest("tr")!;
   fireEvent.change(within(attached).getByLabelText("Mác của XM_CU"), { target: { value: "Cũ" } });
   fireEvent.click(screen.getByRole("button", { name: "Bỏ khỏi hàng BS30" }));
-  fireEvent.change(screen.getByLabelText("Lý do thay đổi *"), { target: { value: "Sắp xếp lại" } });
   fireEvent.click(screen.getByRole("button", { name: /Lưu hàng cùng loại \(3 thay đổi\)/ }));
 
   await waitFor(() => expect(m.save).toHaveBeenCalledOnce());
@@ -88,7 +88,6 @@ it("explains what is missing instead of saving", async () => {
   render(<VariantGroupEditor groupId={null} onSaved={vi.fn()} />);
   fireEvent.change(await screen.findByLabelText("Tên thuộc tính 1"), { target: { value: "Mác" } });
   fireEvent.change(screen.getByLabelText("Giá trị"), { target: { value: "PCB30" } });
-  fireEvent.change(screen.getByLabelText("Lý do thay đổi *"), { target: { value: "Thử" } });
   expect(screen.getByRole("status")).toHaveTextContent("Nhập tên hàng chung");
   expect(screen.getByRole("status")).toHaveTextContent("Chọn nhóm vật tư và đơn vị cơ sở");
   expect(screen.getByRole("button", { name: "Tạo 1 loại" })).toBeDisabled();
@@ -114,7 +113,6 @@ it("takes the selling units as 1 base unit = N units (Owner 18/10: base tấn, 1
   fireEvent.change(screen.getByLabelText("Số quy đổi đơn vị bán 2"), { target: { value: "1.000" } });
   fireEvent.change(screen.getByLabelText("Giá bán loại PCB30"), { target: { value: "1.600.000" } });
   expect(screen.getByText("bao 80.000 ₫ · kg 1.600 ₫")).toBeInTheDocument();
-  fireEvent.change(screen.getByLabelText("Lý do thay đổi *"), { target: { value: "Thêm xi măng theo tấn" } });
   fireEvent.click(screen.getByRole("button", { name: "Tạo 1 loại" }));
   await waitFor(() => expect(m.save).toHaveBeenCalledOnce());
   expect(m.save.mock.calls[0][0].template.units).toEqual([

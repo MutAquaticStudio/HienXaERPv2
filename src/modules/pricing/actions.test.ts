@@ -11,7 +11,7 @@ const operationId = "10000000-0000-4000-8000-000000000001", targetId = "10000000
 const material = "10000000-0000-4000-8000-000000000003", uom = "10000000-0000-4000-8000-000000000004";
 function createForm(withIds = true) {
   const form = new FormData();
-  for (const [key, value] of Object.entries({ mode: "create", reason: "Giá niêm yết mới", unitPriceVnd: "95000", sourceType: "LIST", effectiveFrom: "2026-10-20", scopeType: "DEFAULT", materialId: material, priceUomId: uom })) form.set(key, value);
+  for (const [key, value] of Object.entries({ mode: "create", unitPriceVnd: "95000", sourceType: "LIST", effectiveFrom: "2026-10-20", scopeType: "DEFAULT", materialId: material, priceUomId: uom })) form.set(key, value);
   if (withIds) { form.set("operationId", operationId); form.set("targetId", targetId); }
   return form;
 }
@@ -24,6 +24,14 @@ it("sends the client's operation and rule IDs, so a retried submit replays inste
   for (const call of m.rpc.mock.calls) expect(call[2]).toMatchObject({ operation_id: operationId, target_id: targetId });
 });
 
+it("no longer asks for a reason: the history gets a plain description, or the note when one is sent (FB7)", async () => {
+  await savePricingRuleAction(undefined, createForm());
+  expect(m.rpc).toHaveBeenLastCalledWith(expect.anything(), "save_pricing_rule", expect.objectContaining({ change_reason: "Cập nhật giá" }));
+  const form = createForm(); form.set("reason", "Giá niêm yết mới");
+  await savePricingRuleAction(undefined, form);
+  expect(m.rpc).toHaveBeenLastCalledWith(expect.anything(), "save_pricing_rule", expect.objectContaining({ change_reason: "Giá niêm yết mới" }));
+});
+
 it("refuses a save without a client operation ID instead of inventing one", async () => {
   expect((await savePricingRuleAction(undefined, createForm(false))).message).toContain("Mã thao tác không hợp lệ");
   expect(m.rpc).not.toHaveBeenCalled();
@@ -31,7 +39,7 @@ it("refuses a save without a client operation ID instead of inventing one", asyn
 
 it("uses the client operation ID for deactivation too", async () => {
   const form = new FormData();
-  for (const [key, value] of Object.entries({ mode: "deactivate", reason: "Ngừng bán", supersedesId: targetId, expectedVersion: "2", operationId })) form.set(key, value);
+  for (const [key, value] of Object.entries({ mode: "deactivate", supersedesId: targetId, expectedVersion: "2", operationId })) form.set(key, value);
   await savePricingRuleAction(undefined, form);
-  expect(m.rpc).toHaveBeenCalledWith(expect.anything(), "deactivate_pricing_rule", expect.objectContaining({ operation_id: operationId, expected_version: 2 }));
+  expect(m.rpc).toHaveBeenCalledWith(expect.anything(), "deactivate_pricing_rule", expect.objectContaining({ operation_id: operationId, expected_version: 2, change_reason: "Ngừng sử dụng giá" }));
 });

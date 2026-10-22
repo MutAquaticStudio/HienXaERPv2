@@ -11,7 +11,7 @@ vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
 vi.mock("@/modules/portal/server", () => ({ portalRpc: vi.fn() }));
 import { inviteEmployeeAction, assignRoleAction, createActivationLinkAction } from "./actions";
 const branch = "11111111-1111-4111-8111-111111111111", role = "22222222-2222-4222-8222-222222222222";
-function form(otherBranch = branch, delivery = "email") { const f = new FormData(); Object.entries({ email: "qa-invite@example.test", code: "QA_RBAC", name: "QA nhân viên", branchId: otherBranch, roleId: role, reason: "QA cấp quyền", delivery }).forEach(([k,v]) => f.set(k,v)); return f; }
+function form(otherBranch = branch, delivery = "email") { const f = new FormData(); Object.entries({ email: "qa-invite@example.test", code: "QA_RBAC", name: "QA nhân viên", branchId: otherBranch, roleId: role, delivery }).forEach(([k,v]) => f.set(k,v)); return f; }
 const newUser = "33333333-3333-4333-8333-333333333333";
 beforeEach(() => {
  vi.clearAllMocks(); vi.stubEnv("SUPABASE_SECRET_KEY", "test-only-not-a-credential");
@@ -27,7 +27,7 @@ afterEach(() => vi.unstubAllEnvs());
 it("checks the active server role before sending an authorized worker invite", async () => {
  expect((await inviteEmployeeAction(undefined, form()))?.success).toBe(true);
  expect(m.access).toHaveBeenCalledWith("roles.manage"); expect(m.eq.mock.calls).toEqual([["id",role],["active",true]]);
- expect(m.invite).toHaveBeenCalledOnce(); expect(m.rpc).toHaveBeenCalledWith("register_invited_employee", expect.objectContaining({ target_branch_id: branch, target_role_id: role }));
+ expect(m.invite).toHaveBeenCalledOnce(); expect(m.rpc).toHaveBeenCalledWith("register_invited_employee", expect.objectContaining({ target_branch_id: branch, target_role_id: role, change_reason: "Mời nhân viên" }));
  expect(m.role.mock.invocationCallOrder[0]).toBeLessThan(m.invite.mock.invocationCallOrder[0]);
 });
 it("sends the invite to the app's password setup page, not the Supabase default", async () => {
@@ -55,7 +55,7 @@ it("does not report linkage success if the DB recheck rejects a changed role aft
  m.rpc.mockResolvedValue({ error: { code: "42501" } }); const result=await inviteEmployeeAction(undefined,form()); expect(result?.success).not.toBe(true); expect(result?.message).toContain("chưa liên kết"); expect(m.invite).toHaveBeenCalledOnce();
 });
 
-it("forwards a stable role-assignment operation id for retry",async()=>{const f=form();f.set('employeeId','55555555-5555-4555-8555-555555555555');f.set('operationId','66666666-6666-4666-8666-666666666666');await assignRoleAction(undefined,f);await assignRoleAction(undefined,f);expect(m.rpc.mock.calls.map(c=>c[1].operation_id)).toEqual(['66666666-6666-4666-8666-666666666666','66666666-6666-4666-8666-666666666666']);});
+it("forwards a stable role-assignment operation id for retry",async()=>{const f=form();f.set('employeeId','55555555-5555-4555-8555-555555555555');f.set('operationId','66666666-6666-4666-8666-666666666666');await assignRoleAction(undefined,f);await assignRoleAction(undefined,f);expect(m.rpc.mock.calls.map(c=>c[1].operation_id)).toEqual(['66666666-6666-4666-8666-666666666666','66666666-6666-4666-8666-666666666666']);expect(m.rpc.mock.calls[0][1].change_reason).toBe('Cập nhật quyền');});
 it("rejects missing assignment operation ids and cross-branch intent without a mutation",async()=>{const f=form();f.set('employeeId','55555555-5555-4555-8555-555555555555');await assignRoleAction(undefined,f);expect(m.rpc).not.toHaveBeenCalled();f.set('operationId','66666666-6666-4666-8666-666666666666');f.set('branchId','44444444-4444-4444-8444-444444444444');await assignRoleAction(undefined,f);expect(m.rpc).not.toHaveBeenCalled();});
 
 it("creates the account with a one-time activation link by default, without relying on email", async () => {

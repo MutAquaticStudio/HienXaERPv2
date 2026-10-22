@@ -89,7 +89,7 @@ export function StockCountSheet({ countId, version, open, rows: initialRows, ext
   }
 
   function cancel() {
-    if (pending || cancelReason.trim().length < 3) return;
+    if (pending) return;
     startTransition(async () => {
       let outcome: StockCountSheetResult;
       try {
@@ -126,7 +126,7 @@ export function StockCountSheet({ countId, version, open, rows: initialRows, ext
     </div>
     <div className="table-wrap"><table className="stock-count-table">
       <thead><tr><th scope="col">Vật tư</th><th scope="col" className="numeric">Tồn sổ sách</th><th scope="col" className="numeric">Thực tế</th>
-        <th scope="col" className="numeric">Lệch</th>{can.cost && <th scope="col" className="numeric">Giá trị lệch</th>}<th scope="col">Lý do</th></tr></thead>
+        <th scope="col" className="numeric">Lệch</th>{can.cost && <th scope="col" className="numeric">Giá trị lệch</th>}<th scope="col">Ghi chú</th></tr></thead>
       <tbody>{visible.map((row) => {
         const entry = entryOf(row, typed[row.materialId]);
         const variance = varianceOf(row, entry.counted);
@@ -146,8 +146,8 @@ export function StockCountSheet({ countId, version, open, rows: initialRows, ext
                 onValue={(next) => setEntry(row.materialId, { unitCost: next })} disabled={pending} /></label>}</td>
           <td className={`numeric mono${variance?.gt(0) ? " text-success" : variance?.lt(0) ? " text-danger" : ""}`} data-label="Lệch">{variance ? variance.isZero() ? "Khớp" : signed(variance.toFixed()) : "—"}</td>
           {can.cost && <td className="numeric mono" data-label="Giá trị lệch">{variance && !variance.isZero() && cost ? signed(variance.mul(cost).toDecimalPlaces(0).toFixed(0)) + " ₫" : "—"}</td>}
-          <td data-label="Lý do">{editable && variance && !variance.isZero()
-            ? <input aria-label={`Lý do ${row.name}`} value={entry.reason} placeholder={sharedReason.trim() ? `Dùng lý do chung: ${sharedReason.trim()}` : "Lý do chênh lệch"} onChange={(event) => setEntry(row.materialId, { reason: event.target.value })} disabled={pending} />
+          <td data-label="Ghi chú">{editable && variance && !variance.isZero()
+            ? <input aria-label={`Ghi chú ${row.name}`} value={entry.reason} placeholder={sharedReason.trim() ? `Dùng ghi chú chung: ${sharedReason.trim()}` : "Không bắt buộc"} onChange={(event) => setEntry(row.materialId, { reason: event.target.value })} disabled={pending} />
             : entry.reason || <span className="muted">{variance && !variance.isZero() ? "Chưa có" : ""}</span>}</td>
         </tr>;
       })}</tbody>
@@ -157,7 +157,7 @@ export function StockCountSheet({ countId, version, open, rows: initialRows, ext
       <p className="stock-count-summary" aria-live="polite">Đã đếm <strong>{summary.counted}/{summary.total}</strong> · Lệch tăng <strong className="text-success">{summary.increase}</strong>
         {summary.valueVnd && summary.increase > 0 && <> ({value(summary.valueVnd.increase)})</>} · Lệch giảm <strong className="text-danger">{summary.decrease}</strong>
         {summary.valueVnd && summary.decrease > 0 && <> ({value(summary.valueVnd.decrease)})</>} · Khớp {summary.match}</p>
-      {editable && <label className="stock-count-shared">Lý do chung cho dòng lệch<input value={sharedReason} onChange={(event) => setSharedReason(event.target.value)} placeholder="Ví dụ: Kiểm kê cuối tháng" disabled={pending} /></label>}
+      {editable && <label className="stock-count-shared">Ghi chú chung cho dòng lệch (không bắt buộc)<input value={sharedReason} onChange={(event) => setSharedReason(event.target.value)} placeholder="Ví dụ: Kiểm kê cuối tháng" disabled={pending} /></label>}
       {result && <p className={result.status === "SUCCESS" ? "form-message success" : "form-message"} role={result.status === "SUCCESS" ? "status" : "alert"}>{result.message}</p>}
       {open && (can.count || can.approve) && <div className="form-actions">
         {can.count && <button type="button" className="button button-secondary" onClick={() => { setResult(null); setDialog("cancel"); }} disabled={pending}>Hủy phiếu</button>}
@@ -176,6 +176,7 @@ export function StockCountSheet({ countId, version, open, rows: initialRows, ext
           <div className="detail-item"><dt>Lệch giảm</dt><dd>{summary.decrease}{summary.valueVnd && summary.decrease > 0 && ` · ${value(summary.valueVnd.decrease)}`}</dd></div>
         </dl>
         <p className="muted">Kho được điều chỉnh theo số thực tế của các dòng đã đếm; vật tư chưa đếm giữ nguyên. Sau khi cân bằng, phiếu bị khóa — muốn sửa phải lập phiếu kiểm mới.</p>
+        {summary.decrease > 0 && <p className="muted">Phần hàng thiếu được ghi vào Chi phí thành &quot;Hao hụt kiểm kho&quot; (theo giá vốn), trừ vào lợi nhuận; không trừ tiền quỹ.</p>}
         {result && result.status !== "SUCCESS" && <p className="form-message" role="alert">{result.message}</p>}
         <div className="form-actions">
           <button type="button" className="button button-secondary" onClick={() => setDialog(null)} disabled={pending}>Quay lại</button>
@@ -186,12 +187,12 @@ export function StockCountSheet({ countId, version, open, rows: initialRows, ext
 
     {dialog === "cancel" && <Dialog title="Hủy phiếu kiểm" onClose={() => setDialog(null)} initialFocusId="stock-count-cancel-reason">
       <p className="muted">Phiếu chuyển sang Đã hủy và không thay đổi tồn kho. Số đã đếm vẫn được lưu làm lịch sử.</p>
-      <div className="field"><label htmlFor="stock-count-cancel-reason">Lý do hủy *</label>
+      <div className="field"><label htmlFor="stock-count-cancel-reason">Ghi chú (không bắt buộc)</label>
         <input id="stock-count-cancel-reason" value={cancelReason} onChange={(event) => setCancelReason(event.target.value)} disabled={pending} placeholder="Ví dụ: Chọn nhầm kho" /></div>
       {result && result.status !== "SUCCESS" && <p className="form-message" role="alert">{result.message}</p>}
       <div className="form-actions">
         <button type="button" className="button button-secondary" onClick={() => setDialog(null)} disabled={pending}>Quay lại</button>
-        <button type="button" className="button button-danger" onClick={cancel} disabled={pending || cancelReason.trim().length < 3}>{pending ? "Đang hủy..." : "Hủy phiếu"}</button>
+        <button type="button" className="button button-danger" onClick={cancel} disabled={pending}>{pending ? "Đang hủy..." : "Hủy phiếu"}</button>
       </div>
     </Dialog>}
   </section>;

@@ -9,7 +9,7 @@ import { deliveryStateLabel } from "@/modules/delivery/presentation";
 import { QUOTATIONS_ENABLED } from "@/lib/features";
 import { randomUUID } from "node:crypto";
 import { formatQuantity } from "@/lib/core/quantity";
-import { portalOrderStateLabel } from "@/modules/portal/presentation";
+import { customerDeliveryStateLabel, portalOrderStateLabel } from "@/modules/portal/presentation";
 import { cancelPortalOrderAction } from "@/modules/portal/order-actions";
 
 
@@ -17,7 +17,7 @@ const notices: Record<string, string> = {
   submitted: "Đã gửi đơn. Cửa hàng sẽ duyệt và báo ngày giao.",
   cancelled: "Đã hủy đơn.",
   "cancel-failed": "Không hủy được đơn — có thể cửa hàng vừa duyệt. Tải lại trang để xem trạng thái mới.",
-  "cancel-reason": "Ghi lý do hủy (từ 3 ký tự).",
+  "cancel-reason": "Không hủy được đơn. Tải lại trang rồi thử lại (ghi chú tối đa 300 ký tự).",
 };
 
 export default async function CustomerOrderPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ notice?: string }> }) {
@@ -50,7 +50,7 @@ export default async function CustomerOrderPage({ params, searchParams }: { para
           <form action={cancelPortalOrderAction} className={styles.form}>
             <input type="hidden" name="orderId" value={order.id} />
             <input type="hidden" name="operationId" value={randomUUID()} />
-            <div className={styles.field}><label htmlFor="cancel-reason">Lý do hủy</label><textarea id="cancel-reason" name="reason" minLength={3} maxLength={300} required /></div>
+            <div className={styles.field}><label htmlFor="cancel-reason">Ghi chú (không bắt buộc)</label><textarea id="cancel-reason" name="reason" maxLength={300} /></div>
             <button className={styles.buttonDanger} type="submit">Hủy đơn này</button>
           </form>
         </details>}
@@ -60,11 +60,11 @@ export default async function CustomerOrderPage({ params, searchParams }: { para
         <div className={styles.timeline}>
           {order.deliveries.length ? order.deliveries.map((delivery) => (
             <article className={styles.timelineItem} id={"delivery-" + delivery.id} key={delivery.id}>
-              <strong>{delivery.number ?? "Lượt giao"} · {deliveryStateLabel(delivery.state ?? "PLANNED")}</strong>
+              <strong>{delivery.number ?? "Lượt giao"} · {customerDeliveryStateLabel(delivery.state ?? "PLANNED")}</strong>
               {delivery.result ? <span className={styles.badge}>{deliveryStateLabel(delivery.result)}</span> : null}
               <span className={styles.hint}>{delivery.address ?? delivery.site_name ?? "Địa điểm đang cập nhật"}</span>
               {delivery.scheduled_at ? <span className={styles.hint}>Dự kiến: {formatBusinessDateTime(delivery.scheduled_at)}</span> : null}
-              {delivery.delivered_at ? <span className={styles.hint}>Xác minh: {formatBusinessDateTime(delivery.delivered_at)}</span> : null}
+              {delivery.delivered_at ? <span className={styles.hint}>Đã giao lúc {formatBusinessDateTime(delivery.delivered_at)}</span> : null}
             </article>
           )) : <p className={styles.empty}>Chưa phát sinh lượt giao.</p>}
         </div>

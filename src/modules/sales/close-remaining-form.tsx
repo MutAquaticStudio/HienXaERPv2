@@ -11,7 +11,7 @@ export function CloseRemainingForm({ orderId, commercialState, fulfillmentState,
     <form className="command-panel" action={closeSalesOrderRemainingAction}>
       <input type="hidden" name="entityId" value={orderId} />
       <input type="hidden" name="operationId" value={randomUUID()} />
-      <label className="field">{"L\u00fd do \u0111\u00f3ng ph\u1ea7n c\u00f2n l\u1ea1i"}<textarea name="reason" required minLength={3} maxLength={500} /></label>
+      <label className="field">{"Ghi ch\u00fa (kh\u00f4ng b\u1eaft bu\u1ed9c)"}<textarea name="reason" maxLength={500} /></label>
       <button className="button button-secondary" type="submit">{"\u0110\u00f3ng ph\u1ea7n c\u00f2n l\u1ea1i"}</button>
     </form>
   </details>;

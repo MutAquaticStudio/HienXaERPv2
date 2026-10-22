@@ -88,7 +88,7 @@ export default async function PurchaseOrderDetailPage({ params, searchParams }: 
   return <>
     <header className="page-heading"><div><p className="eyebrow">Đơn mua</p><h1>{order.purchase_order_number}</h1><p className="lede">{order.supplier_name_snapshot} · {purchaseStateLabel(order.destination_type)}</p></div><div className="inline-actions"><ButtonLink href={`/api/purchase-orders/${order.id}/pdf`} variant="secondary">Tải PDF đơn mua</ButtonLink><ButtonLink href="/admin/purchase-orders" variant="secondary">Về danh sách</ButtonLink></div></header>
     <ActionNotice notice={query.notice} error={query.error} />
-    {order.state === "CONFIRMED" && (query.notice === "confirmed" || query.notice === "supplier-delivery-created") && <PurchaseNextSteps number={order.purchase_order_number} supplierId={order.supplier_id}
+    {order.state === "CONFIRMED" && <PurchaseNextSteps number={order.purchase_order_number} supplierId={order.supplier_id} justConfirmed={query.notice === "confirmed"}
       toWarehouse={order.destination_type === "WAREHOUSE"} sent={!!sentResult.data} deliveryCreated={query.notice === "supplier-delivery-created"}
       can={{ send: canSend, receive: access.permissions.has("inventory.receive") && openLines.length > 0, create: access.permissions.has("purchasing.create") }} />}
     <CommandRecoveryNotice scope={access.authUserId + ":" + access.branchId + ":" + order.id} command="receive_purchase_order" />

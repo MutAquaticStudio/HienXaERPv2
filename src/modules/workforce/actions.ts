@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
+import { reasonOrDefault } from "@/lib/core/reason";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { earningCommandError } from "./earning-command-error";
 import { validCompensationRate } from "./compensation-rate";
@@ -62,7 +63,7 @@ export async function createServiceJobAction(formData: FormData) {
 export async function cancelScheduledServiceJobAction(formData: FormData) {
   const parsed = z.object({
     serviceJobId: z.guid(), version: z.coerce.number().int().positive(),
-    reason: z.string().trim().min(3).max(500), operationId: z.guid(),
+    reason: z.string().trim().max(500).optional(), operationId: z.guid(),
   }).safeParse(Object.fromEntries(formData));
   const target = parsed.success ? "/admin/service-jobs/" + parsed.data.serviceJobId : "/admin/service-jobs";
   if (!parsed.success) return fail(target, "invalid-service-cancel");
@@ -71,7 +72,7 @@ export async function cancelScheduledServiceJobAction(formData: FormData) {
   const { error } = await supabase.rpc("cancel_scheduled_service_job", {
     target_service_job_id: parsed.data.serviceJobId,
     expected_version: parsed.data.version,
-    cancellation_reason: parsed.data.reason,
+    cancellation_reason: reasonOrDefault(parsed.data.reason, "Hủy lịch dịch vụ"),
     operation_id: parsed.data.operationId,
   });
   if (error) fail(target, error.message);

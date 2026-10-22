@@ -20,7 +20,11 @@ describe("close remaining server action",()=>{
     await expect(closeSalesOrderRemainingAction(form())).rejects.toThrow("FORBIDDEN");
     expect(mocks.rpc).not.toHaveBeenCalled();
   });
-  it.each(["","x","x".repeat(501)])("fails invalid reason before execution",async reason=>{
+  it("closes without a note and records a plain description (FB7)",async()=>{
+    await expect(closeSalesOrderRemainingAction(form(""))).rejects.toThrow("remaining-closed");
+    expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith("close_sales_order_remaining",{target_order_id:id,close_reason:"Đóng phần còn lại",operation_id:op});
+  });
+  it.each(["x".repeat(501)])("fails an over-long note before execution",async reason=>{
     await expect(closeSalesOrderRemainingAction(form(reason))).rejects.toThrow("invalid-command");
     expect(mocks.rpc).not.toHaveBeenCalled();
   });

@@ -1,5 +1,9 @@
 import Decimal from "decimal.js";
+import { reasonOrDefault } from "@/lib/core/reason";
 import { normalizeDecimalInput } from "@/lib/core/vn-number";
+
+/** Note kept for a varied line saved without one (FB7: the note is optional). */
+export const DEFAULT_VARIANCE_NOTE = "Lệch khi kiểm kho";
 
 /** One material of a count sheet (FB2 Đợt 5). Quantities are canonical base-unit decimals. */
 export type SheetRow = {
@@ -42,7 +46,7 @@ const sameDecimal = (left: string | null, right: string | null) => left === righ
 
 /**
  * Lines to send to record_stock_count_lines_batch: every counted row that is new or changed since it was saved.
- * A variance needs a reason (its own, else the shared one); an increase with nothing on the books needs a unit cost.
+ * A variance takes its own note, else the shared one, else "Lệch khi kiểm kho"; an increase with nothing on the books needs a unit cost.
  * Rows left empty are not counted yet and are skipped.
  */
 export function sheetLines(rows: SheetRow[], typed: Record<string, SheetEntry>, sharedReason: string): SheetCheck {
@@ -54,8 +58,8 @@ export function sheetLines(rows: SheetRow[], typed: Record<string, SheetEntry>, 
     const counted = normalizeDecimalInput(entry.counted);
     if (counted === null) { problems[row.materialId] = "Số đếm không hợp lệ (tối đa 6 chữ số thập phân)."; continue; }
     const variance = new Decimal(counted).minus(row.book);
-    const reason = entry.reason.trim() || (variance.isZero() ? "" : sharedReason.trim());
-    if (!variance.isZero() && reason.length < 3) { problems[row.materialId] = "Nhập lý do chênh lệch (ít nhất 3 ký tự) hoặc lý do chung."; continue; }
+    const typedReason = entry.reason.trim() || (variance.isZero() ? "" : sharedReason.trim());
+    const reason = variance.isZero() ? typedReason : reasonOrDefault(typedReason, DEFAULT_VARIANCE_NOTE);
     const unitCost = entry.unitCost.trim() ? normalizeDecimalInput(entry.unitCost) : null;
     if (entry.unitCost.trim() && (unitCost === null || new Decimal(unitCost).lte(0))) { problems[row.materialId] = "Giá vốn phải là số lớn hơn 0."; continue; }
     if (needsUnitCost(row, variance) && unitCost === null) { problems[row.materialId] = `Chưa có giá vốn: nhập giá vốn mỗi ${row.symbol} cho phần tăng.`; continue; }

@@ -30,7 +30,6 @@ export function PriceBookEditor({ rows, operationId, today, canManage, showCost,
   const [amount, setAmount] = useState("");
   const [step, setStep] = useState<RoundingStep>(1000);
   const [effectiveDate, setEffectiveDate] = useState(today);
-  const [reason, setReason] = useState("");
   const [result, setResult] = useState<PriceBookResult | null>(null);
   const [notice, setNotice] = useState("");
   const [pending, startTransition] = useTransition();
@@ -59,14 +58,14 @@ export function PriceBookEditor({ rows, operationId, today, canManage, showCost,
   }
 
   function save() {
-    if (!changes.length || reason.trim().length < 3 || pending) return;
+    if (!changes.length || pending) return;
     const items = changes.map(({ row, price }) => ({ materialId: row.materialId, uomId: row.uomId, priceVnd: price.toString(), ...(tierCode ? { tierCode } : {}),
       ...(row.target ? { supersedesId: row.target.ruleId, expectedVersion: row.target.version } : {}) }));
     startTransition(async () => {
       try {
-        const saved = await savePriceBookAction({ operationId, reason: reason.trim(), effectiveDate, items });
+        const saved = await savePriceBookAction({ operationId, effectiveDate, items });
         setResult(saved);
-        if (saved.success) { setNext({}); setSelected(new Set()); setReason(""); setNotice(""); router.refresh(); }
+        if (saved.success) { setNext({}); setSelected(new Set()); setNotice(""); router.refresh(); }
       } catch {
         setResult({ success: false, outcomeUnknown: true, message: "Chưa xác định kết quả lưu. Giữ nguyên nội dung và bấm Lưu lại; hệ thống không lưu trùng." });
       }
@@ -115,8 +114,7 @@ export function PriceBookEditor({ rows, operationId, today, canManage, showCost,
 
     {canManage && <section className="card card-pad price-book-save" aria-label="Lưu bảng giá">
       <label>Ngày áp dụng<input type="date" min={today} value={effectiveDate} onChange={(event) => setEffectiveDate(event.target.value)} /></label>
-      <label className="price-book-reason">Lý do thay đổi *<input value={reason} maxLength={500} placeholder="Ví dụ: Nhà cung cấp tăng giá tháng 10" onChange={(event) => setReason(event.target.value)} /></label>
-      <button type="button" className="button button-primary" disabled={!changes.length || reason.trim().length < 3 || pending} onClick={save}>{pending ? "Đang lưu..." : `Lưu bảng giá (${changes.length} thay đổi)`}</button>
+      <button type="button" className="button button-primary" disabled={!changes.length || pending} onClick={save}>{pending ? "Đang lưu..." : `Lưu bảng giá (${changes.length} thay đổi)`}</button>
       {result && <p className={`form-message${result.success ? " success" : ""}`} role="status">{result.message}</p>}
       <p className="muted">Tất cả giá được lưu cùng lúc: nếu một dòng lỗi, không dòng nào bị thay đổi. Đơn đã chốt giữ giá cũ.</p>
     </section>}

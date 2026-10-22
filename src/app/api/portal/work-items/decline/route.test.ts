@@ -20,8 +20,15 @@ it("hands the job back to dispatch with the reason", async () => {
   expect(m.rpc).toHaveBeenCalledWith({}, "decline_portal_work_item", { target_work_item_id: valid.workItemId, reason: "Xe hỏng lốp", expected_version: 3, operation_id: valid.operationId });
 });
 
-it("needs a reason and a signed-in worker; a started job is explained in Vietnamese", async () => {
-  expect((await post({ ...valid, reason: "x" })).status).toBe(400);
+it("declines without a note and records a plain description (FB7)", async () => {
+  expect((await post({ ...valid, reason: undefined })).status).toBe(200);
+  expect(m.rpc).toHaveBeenCalledWith({}, "decline_portal_work_item", expect.objectContaining({ reason: "Thợ từ chối việc" }));
+  expect((await post({ ...valid, reason: "x" })).status).toBe(200);
+  expect(m.rpc).toHaveBeenLastCalledWith({}, "decline_portal_work_item", expect.objectContaining({ reason: "Thợ từ chối việc: x" }));
+});
+
+it("needs a signed-in worker and a bounded note; a started job is explained in Vietnamese", async () => {
+  expect((await post({ ...valid, reason: "x".repeat(301) })).status).toBe(400);
   m.client.mockResolvedValueOnce(null);
   expect((await post(valid)).status).toBe(401);
   m.rpc.mockRejectedValueOnce(new m.PortalRpcError({ code: "23514", message: "work_already_started" }));

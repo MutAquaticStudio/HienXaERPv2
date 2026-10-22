@@ -10,6 +10,8 @@ import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
 import { parseBusinessDateTime } from "@/lib/core/business-time";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { reasonOrDefault } from "@/lib/core/reason";
+import { derivedOperationId } from "@/modules/sales/auto-sourcing";
 
 const positive = z.string().trim().refine((value) => { try { const quantity = new Decimal(value); return quantity.isFinite() && quantity.gt(0) && quantity.decimalPlaces() <= 6; } catch { return false; } });
 const nonNegative = z.string().trim().refine((value) => { try { const quantity = new Decimal(value); return quantity.isFinite() && !quantity.isNegative() && quantity.decimalPlaces() <= 6; } catch { return false; } });
@@ -36,7 +38,8 @@ function quantityLines(formData: FormData, idName: string, quantityName: string,
 }
 
 function verificationLines(formData: FormData) {
-  const adjustmentReason = String(formData.get("verificationAdjustmentReason") ?? "").trim();
+  // FB7: notes are optional; the history still records why quantities were changed.
+  const adjustmentReason = reasonOrDefault(formData.get("verificationAdjustmentReason"), "Điều chỉnh lượng khi xác minh");
   if (adjustmentReason.length > 500) return null;
   const ids = formData.getAll("deliveryLineId");
   const accepted = formData.getAll("acceptedQuantity");
@@ -53,7 +56,9 @@ function verificationLines(formData: FormData) {
     const parsedBillable = typeof billable[index] === "string" ? nonNegative.safeParse(billable[index]) : null;
     if (!parsedId?.success || !parsedAccepted?.success || !parsedBillable?.success || seen.has(parsedId.data) || typeof reason !== "string" || reason.trim().length > 500) return null;
     seen.add(parsedId.data);
-    lines.push({ delivery_line_id: parsedId.data, accepted_base_quantity: parsedAccepted.data, billable_base_quantity: parsedBillable.data, billing_variance_reason: reason.trim(), verification_adjustment_reason: adjustmentReason });
+    const differs = !new Decimal(parsedAccepted.data).eq(parsedBillable.data);
+    lines.push({ delivery_line_id: parsedId.data, accepted_base_quantity: parsedAccepted.data, billable_base_quantity: parsedBillable.data,
+      billing_variance_reason: differs ? reasonOrDefault(reason, "Điều chỉnh lượng tính tiền khi xác minh") : reason.trim(), verification_adjustment_reason: adjustmentReason });
   }
   return lines;
 }
@@ -183,15 +188,16 @@ export async function submitDeliveryResultAction(formData: FormData) {
     const path = deliveryId.success ? `/admin/deliveries/${deliveryId.data}` : "/admin/deliveries";
     redirect(`${path}?error=${encodeURIComponent("Kết quả chưa hợp lệ. Kiểm tra số lượng không âm của từng dòng và thông tin kết quả.")}`);
   }
-  await requireInternalPermission("delivery.submit");
+  const access = await requireInternalPermission("delivery.submit");
   const supabase = await createServerSupabase();
-  const { error } = await supabase.rpc("submit_delivery_result", {
+  // FB7: no arrival step; a report made on this page for the worker says so in the history.
+  const { data: resultId, error } = await supabase.rpc("submit_delivery_result", {
     target_delivery_id: parsed.data.deliveryId,
     result_kind: parsed.data.resultKind,
     result_lines: lines,
     receiver_name: parsed.data.receiverName || "",
     note: parsed.data.note || "",
-    missing_arrival_reason: parsed.data.missingArrivalReason || "",
+    missing_arrival_reason: reasonOrDefault(parsed.data.missingArrivalReason, "Nhân viên báo giao thay thợ"),
     target_evidence_id: parsed.data.evidenceId || null,
     expected_version: parsed.data.version,
     operation_id: parsed.data.operationId,
@@ -199,12 +205,25 @@ export async function submitDeliveryResultAction(formData: FormData) {
   const destination = `/admin/deliveries/${parsed.data.deliveryId}`;
   if (error) redirect(`${destination}?error=${encodeURIComponent(message(error.message))}`);
   revalidatePath(destination);
+  // Like the worker's "Đã giao", the report is the verification when the reporter may verify; otherwise it waits on this page.
+  if (access.permissions.has("delivery.verify") && typeof resultId === "string") {
+    const { error: verifyError } = await supabase.rpc("verify_delivery", {
+      target_delivery_result_id: resultId,
+      verification_lines: lines.map((line) => ({ delivery_line_id: line.delivery_line_id, accepted_base_quantity: line.actual_base_quantity, billable_base_quantity: line.actual_base_quantity })),
+      expected_delivery_version: parsed.data.version + 1,
+      operation_id: derivedOperationId(parsed.data.operationId, "verify"),
+    });
+    if (!verifyError) {
+      revalidatePath("/admin/inventory");
+      redirect(`${destination}?notice=verified`);
+    }
+  }
   redirect(`${destination}?notice=result-submitted`);
 }
 
 /**
  * D20 "NCC đã giao": staff report a supplier-direct delivery in one step (taken on the way → arrived → result); a delivered
- * quantity needs the photo uploaded on this page first, nothing delivered needs a reason.
+ * quantity needs the photo uploaded on this page first. Nothing delivered keeps the note, or "Không giao được" (FB7: no reason to type).
  */
 export async function submitSupplierDeliveryDoneAction(formData: FormData) {
   const parsed = z.object({ deliveryId: z.guid(), receiverName: z.string().trim().max(120).optional(), note: z.string().trim().max(500).optional(),
@@ -217,8 +236,10 @@ export async function submitSupplierDeliveryDoneAction(formData: FormData) {
   }
   await requireInternalPermission("delivery.submit");
   const supabase = await createServerSupabase();
+  const nothingDelivered = lines.length > 0 && lines.every((line) => Number(line.actual_base_quantity) === 0);
   const { error } = await supabase.rpc("submit_supplier_delivery_done", {
-    target_delivery_id: parsed.data.deliveryId, result_lines: lines, receiver_name: parsed.data.receiverName || "", note: parsed.data.note || "",
+    target_delivery_id: parsed.data.deliveryId, result_lines: lines, receiver_name: parsed.data.receiverName || "",
+    note: nothingDelivered ? reasonOrDefault(parsed.data.note, "Không giao được") : parsed.data.note || "",
     target_evidence_id: parsed.data.evidenceId || null, expected_version: parsed.data.version, operation_id: parsed.data.operationId,
   });
   const destination = `/admin/deliveries/${parsed.data.deliveryId}`;
@@ -289,14 +310,15 @@ export async function verifyDeliveryAction(formData: FormData) {
 }
 
 export type OpenReturnCaseState = { success: boolean; error: string | null };
+const RETURN_CASE_NOTE = { CUSTOMER_RETURN: "Khách trả hàng", TRANSIT_REMAINDER: "Hàng còn trên xe", TRANSIT_LOSS: "Hỏng hoặc hao hụt khi giao" } as const;
 
 export async function openReturnCaseAction(_previous: OpenReturnCaseState, formData: FormData): Promise<OpenReturnCaseState> {
-  const parsed = z.object({ deliveryId: z.guid(), verificationLineId: z.guid(), caseKind: z.enum(["CUSTOMER_RETURN", "TRANSIT_REMAINDER", "TRANSIT_LOSS"]), quantity: positive, reason: z.string().trim().min(3).max(500), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return { success: false, error: "Kiểm tra dòng giao, loại vấn đề, số lượng dương và lý do ít nhất 3 ký tự." };
+  const parsed = z.object({ deliveryId: z.guid(), verificationLineId: z.guid(), caseKind: z.enum(["CUSTOMER_RETURN", "TRANSIT_REMAINDER", "TRANSIT_LOSS"]), quantity: positive, reason: z.string().trim().max(500).optional(), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { success: false, error: "Kiểm tra dòng giao, loại vấn đề và số lượng dương." };
   try {
     await requireInternalPermission("delivery.exception");
     const supabase = await createServerSupabase();
-    const { error } = await supabase.rpc("open_return_case", { target_delivery_verification_line_id: parsed.data.verificationLineId, case_kind: parsed.data.caseKind, requested_base_quantity: parsed.data.quantity, reason: parsed.data.reason, target_evidence_id: null, operation_id: parsed.data.operationId });
+    const { error } = await supabase.rpc("open_return_case", { target_delivery_verification_line_id: parsed.data.verificationLineId, case_kind: parsed.data.caseKind, requested_base_quantity: parsed.data.quantity, reason: reasonOrDefault(parsed.data.reason, RETURN_CASE_NOTE[parsed.data.caseKind]), target_evidence_id: null, operation_id: parsed.data.operationId });
     if (error) return { success: false, error: message(error.message) };
   } catch (error) {
     unstable_rethrow(error);
@@ -307,11 +329,11 @@ export async function openReturnCaseAction(_previous: OpenReturnCaseState, formD
 }
 
 export async function resolveReturnCaseAction(formData: FormData) {
-  const parsed = z.object({ deliveryId: z.guid(), returnCaseId: z.guid(), resolution: z.enum(["RETURNED", "LOSS_APPROVED"]), warehouseId: z.string().optional(), reason: z.string().trim().min(3).max(500), version: z.coerce.number().int().positive(), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ deliveryId: z.guid(), returnCaseId: z.guid(), resolution: z.enum(["RETURNED", "LOSS_APPROVED"]), warehouseId: z.string().optional(), reason: z.string().trim().max(500).optional(), version: z.coerce.number().int().positive(), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect("/admin/deliveries?error=invalid-resolution");
   await requireInternalPermission("delivery.exception");
   const supabase = await createServerSupabase();
-  const { error } = await supabase.rpc("resolve_return_case", { target_return_case_id: parsed.data.returnCaseId, resolution: parsed.data.resolution, target_warehouse_id: parsed.data.warehouseId || null, resolution_reason: parsed.data.reason, target_evidence_id: null, expected_version: parsed.data.version, operation_id: parsed.data.operationId });
+  const { error } = await supabase.rpc("resolve_return_case", { target_return_case_id: parsed.data.returnCaseId, resolution: parsed.data.resolution, target_warehouse_id: parsed.data.warehouseId || null, resolution_reason: reasonOrDefault(parsed.data.reason, parsed.data.resolution === "RETURNED" ? "Nhập lại kho" : "Duyệt hao hụt"), target_evidence_id: null, expected_version: parsed.data.version, operation_id: parsed.data.operationId });
   const destination = `/admin/deliveries/${parsed.data.deliveryId}`;
   if (error) redirect(`${destination}?error=${encodeURIComponent(message(error.message))}`);
   revalidatePath("/admin/inventory");

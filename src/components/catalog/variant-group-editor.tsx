@@ -71,7 +71,6 @@ function VariantGroupForm({ data, onSaved }: { data: VariantGroupData; onSaved: 
   // Split prices are saved as typed, so they are not rounded unless the user asks for it.
   const [step, setStep] = useState<RoundingStep>(1);
   const [effectiveDate, setEffectiveDate] = useState(data.today);
-  const [reason, setReason] = useState("");
   const [result, setResult] = useState<VariantGroupResult | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -135,7 +134,7 @@ function VariantGroupForm({ data, onSaved }: { data: VariantGroupData; onSaved: 
     !editing && created.length + attached.length === 0 && "Nhập giá trị thuộc tính để tạo các loại (vd PCB30, PCB40).",
   ].filter(Boolean) as string[];
   const changes = created.length + memberChanges.length + attached.length + Number(editing && (name.trim() !== data.group!.name || active !== data.group!.active || renamed));
-  const ready = !problems.length && changes > 0 && reason.trim().length >= 3;
+  const ready = !problems.length && changes > 0;
   const usedUnits = new Set([baseUomId, ...units.map((unit) => unit.uomId)]);
   const hasPrices = created.some((row) => row.prices.length);
 
@@ -144,7 +143,7 @@ function VariantGroupForm({ data, onSaved }: { data: VariantGroupData; onSaved: 
     startTransition(async () => {
       try {
         const saved = await saveVariantGroupAction({
-          operationId, groupId, reason: reason.trim(), effectiveDate,
+          operationId, groupId, effectiveDate,
           group: { name: name.trim(), attributeNames: names.map((attribute) => attribute.trim()), active },
           expected: data.group ? { name: data.group.name, attribute_names: data.group.attributeNames, active: data.group.active } : null,
           template: materialGroupId && baseUomId ? { groupId: materialGroupId, baseUomId, specification: specification.trim(), saleEnabled: sale, purchaseEnabled: purchase,
@@ -297,12 +296,10 @@ function VariantGroupForm({ data, onSaved }: { data: VariantGroupData; onSaved: 
           <option value="">Chọn vật tư...</option>{attachable.map((option) => <option key={option.id} value={option.id}>{option.code} · {option.name}</option>)}</select></label>}
     </section>
 
-    <div className="form-grid">
-      {hasPrices && <div className="field"><label htmlFor="variant-date">Giá áp dụng từ ngày *</label>
-        <input id="variant-date" type="date" min={data.today} value={effectiveDate} onChange={(event) => setEffectiveDate(event.target.value)} disabled={pending} /></div>}
-      <div className="field"><label htmlFor="variant-reason">Lý do thay đổi *</label>
-        <input id="variant-reason" value={reason} maxLength={500} placeholder="vd Thêm xi măng Bút Sơn các mác" onChange={(event) => setReason(event.target.value)} disabled={pending} /></div>
-    </div>
+    {hasPrices && <div className="form-grid">
+      <div className="field"><label htmlFor="variant-date">Giá áp dụng từ ngày *</label>
+        <input id="variant-date" type="date" min={data.today} value={effectiveDate} onChange={(event) => setEffectiveDate(event.target.value)} disabled={pending} /></div>
+    </div>}
     {problems.length > 0 && changes > 0 && <ul className="form-message variant-problems" role="status">{problems.map((problem) => <li key={problem}>{problem}</li>)}</ul>}
     {result && !result.success && <p className="form-message" role="alert">{result.message}</p>}
     <div className="form-actions"><button type="button" className="button button-primary" disabled={pending || !ready} onClick={save}>

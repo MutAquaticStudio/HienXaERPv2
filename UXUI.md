@@ -8,6 +8,8 @@
 
 > Quyết định Owner 17/10/2026 (D14–D17, D19, D22, C1, C2, F5 — triển khai 18/10/2026, xem đầu Spec.md): chuông thông báo trên thanh trên cùng nội bộ (UX-NOTIFY-001); trang đơn có khung "Nguồn hàng" do hệ thống tự phân, trang Điều phối theo tài xế (UX-DISPATCH-001); "Gửi NCC qua Zalo" trên đơn mua; cổng khách có đăng ký, đăng nhập bằng số điện thoại, đổi mật khẩu tạm và "Đặt hàng" (UX-CUST-008/009); Khách hàng 360 có khung "Tài khoản cổng khách"; Cài đặt → "Quy tắc tự động" và "Bật thông báo trên máy này" (UX-AUTO-001).
 
+> Quyết định Owner 22/10/2026 (D27, `FB7`): thợ tự lấy hàng + giao (giao xong là xác minh), bước tiếp theo luôn hiện, cổng khách Tài khoản, trang chủ chọn cổng, chi phí kiểu KiotViet, hao hụt kiểm kho, bỏ lý do bắt buộc, form lỗi không còn "Bắt đầu thao tác mới" (UX-FB7-001).
+
 > Quyết định Owner 18/10/2026 (D25, `FB5`): quy đổi đơn vị nhập hai chiều và hiện bằng câu "1 Tấn = 20 Bao"; giá mua tự tính cho các đơn vị khác; xe không cần căn cứ sức chở, sức chở tự quy đổi; đơn bán có "Khách trả trước"; xác nhận xong đơn bán/đơn mua hiện "bước tiếp theo" (UX-FB5-001).
 
 # UXUI.md — HIỀN XA ERP V2
@@ -1571,6 +1573,36 @@ báo đúng quyền và chi nhánh. Trang Thông báo có khung **"Thông báo t
 - **Điều phối** (`/admin/dispatch?day=`): chọn ngày; hàng "Chờ điều phối" (phiếu, khách, giờ cần, lý do chưa chia) với "Áp dụng" khi có gợi ý; nút
   **"Tự chia việc"**; mỗi tài xế một cột: xe, số phiếu, dòng thời gian các phiếu theo giờ (giờ, mã phiếu, khách, trạng thái); 390 px thành danh sách.
 - Cổng thợ: việc đã nhận chưa bắt đầu có link **"Từ chối việc"** (bắt nhập lý do) → về trang chủ với "Đã từ chối việc, điều phối sẽ chia lại".
+
+# UX-FB7-001 — Thợ lấy hàng & giao, bước tiếp theo, cổng khách Tài khoản, chọn cổng, chi phí, hao hụt kho, lý do, form lỗi (D27, 22/10/2026)
+
+- **Cổng thợ — việc giao hàng**: phiếu "Chờ lấy hàng" có nút **"Đã lấy hàng lên xe · chụp ảnh"** (mở camera; có ảnh thì "Xác nhận đã lấy hàng lên
+  xe (n ảnh)"), lưới ảnh "Đã tải / Đang tải / Lỗi tải" + "Xóa" / "+ Chụp thêm" (tối đa 5), link "Lấy thiếu hàng" mở ô số lượng từng dòng theo đơn vị
+  bán. Sau đó "Đang giao": **"Đã giao · chụp ảnh"** → "Xác nhận đã giao (n ảnh)", "Người nhận", link "Giao thiếu / Không giao được" (số lượng + "Ghi
+  chú (không bắt buộc)"). Xong: về danh sách, việc "Đã giao". Người xem không phải người được giao: "Việc này đang giao cho {tên}". Không còn câu
+  "Bắt đầu công việc trước khi ghi nhận kết quả" cho việc giao hàng.
+- **Trang phiếu giao (nội bộ)**: thanh 4 bước Lập phiếu → Phân người & xe → Thợ lấy hàng lên xe → Thợ đã giao (Hoàn tất); không còn nút "Đã tới nơi
+  giao". Ảnh chia hai nhóm "Ảnh lấy hàng lên xe" / "Ảnh giao hàng". Form bàn giao / báo kết quả của nhân viên nằm trong khung gập **"Làm thay thợ (khi
+  thợ không dùng được điện thoại)"**. Form xác minh chỉ hiện cho phiếu "Cần xác minh tay".
+- **Bước tiếp theo**: khung viền xanh trên trang đơn bán luôn hiện khi đơn đã xác nhận — tiêu đề "Đã xác nhận SO-… — bước tiếp theo" (ngay sau xác
+  nhận), "Tiến độ đơn SO-…" (khi quay lại), "Đơn SO-… đã giao xong"; mỗi phiếu: số · xe · tài xế · trạng thái (chờ phân xe / chờ lấy hàng / đang giao /
+  đã giao); nút Thu tiền, In đơn, Tạo đơn mới cho khách này. Đơn mua đã xác nhận luôn có khung tương tự.
+- **Cổng khách**: menu "Tài khoản" (thay "Hồ sơ"): Đăng nhập bằng, lần đăng nhập gần nhất, thông tin khách (mã, tên, SĐT, email, địa chỉ, MST, hạn
+  thanh toán khi được xem công nợ), quyền của tài khoản, địa chỉ giao hàng (công trình), nút **Đổi mật khẩu**, **Đăng xuất**. Đơn giao đủ: **"Hoàn tất"**.
+- **Trang chủ `/`**: ba thẻ lớn **Khối vận hành** (chủ, văn phòng, kho, điều phối), **Thợ & tài xế**, **Khách hàng** (nút "Đăng nhập" + **"Đăng
+  ký"**); 390 px một cột. Màn đăng nhập ghi tên cổng và link **"← Chọn cổng khác"**.
+- **Chi phí — "Ghi chi phí"** (popup, kiểu KiotViet): Loại chi (gõ hoặc chọn; gợi ý Lương thưởng, Thuê mặt bằng, Điện nước, Marketing, Mua tài
+  sản/xe, Sửa chữa, Vận chuyển, Khác), Số tiền, Ngày chi, **Người nhận** Khác / Nhà cung cấp / Nhân viên (Khác: "Tên người nhận (không bắt buộc)"),
+  **Thanh toán** (chỉ khi NCC) Đã trả ngay / Ghi nợ nhà cung cấp, **Chi từ quỹ** (mặc định tiền mặt; "Thành phiếu chi trong Sổ quỹ"), ô tích **Tính vào
+  lợi nhuận** (gợi ý bỏ chọn khi mua tài sản dùng lâu), Ghi chú (không bắt buộc), Đơn bán liên quan. Bảng chi phí: cột "Người nhận" + dòng phụ "Đã trả
+  ngay / Ghi nợ NCC / Không dùng tiền · không tính lợi nhuận". Sổ quỹ có nút **"Chi phí khác"** mở popup này.
+- **Kiểm kho**: cột "Ghi chú" (không bắt buộc) thay "Lý do"; "Ghi chú chung cho dòng lệch (không bắt buộc)"; popup Hoàn thành báo "Phần hàng thiếu
+  được ghi vào Chi phí thành Hao hụt kiểm kho …". Sổ quỹ có khung **"Chi phí không dùng tiền trong kỳ (hao hụt kho)"** (mã, loại chi / ghi chú, số
+  tiền, tổng) ghi rõ "không tính vào số dư quỹ".
+- **Công trình**: form bỏ vĩ độ, kinh độ, khung giờ nhận; bảng công trình bỏ cột "Giờ nhận".
+- **Lý do**: không form nào bắt nhập lý do; danh mục/giá/quyền bỏ hẳn ô; thao tác tiền/hàng có ô "Ghi chú (không bắt buộc)".
+- **Form lỗi**: không còn nút "Bắt đầu thao tác mới"; lỗi hiện đỏ ngay trên nút gửi, ô liên quan viền đỏ và được đặt con trỏ, dữ liệu đã nhập giữ
+  nguyên, sửa xong bấm gửi lại. Lưu xong form tự trống để nhập tiếp.
 
 # UX-FB5-001 — Quy đổi hai chiều, giá mua tự tính, sức chở, khách trả trước, bước tiếp theo (D25, 18/10/2026)
 

@@ -56,9 +56,8 @@ export async function SalesOrderCreditOverride({ orderId }: { orderId: string })
       <input type="hidden" name="orderId" value={orderId} />
       <input type="hidden" name="operationId" value={randomUUID()} />
       <input type="hidden" name="snapshotHash" value={snapshot.snapshot_hash} />
-      <label className="field">Lý do ngoại lệ tín dụng
-        <textarea name="reason" required minLength={3} maxLength={500} rows={3}
-           />
+      <label className="field">Ghi chú (không bắt buộc)
+        <textarea name="reason" maxLength={500} rows={3} />
       </label>
       <button type="submit" className="button button-primary">Duyệt ngoại lệ và xác nhận đơn</button>
     </form>

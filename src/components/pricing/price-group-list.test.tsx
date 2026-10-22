@@ -18,9 +18,9 @@ it("lists groups with their customers and creates one in a popup", async () => {
   const dialog = screen.getByRole("dialog", { name: "Thêm nhóm giá khách" });
   fireEvent.change(within(dialog).getByLabelText("Mã nhóm *"), { target: { value: "dai_ly" } });
   fireEvent.change(within(dialog).getByLabelText("Tên nhóm *"), { target: { value: "Đại lý cấp 1" } });
-  fireEvent.change(within(dialog).getByLabelText("Lý do thay đổi *"), { target: { value: "Thêm nhóm đại lý" } });
+  expect(within(dialog).queryByLabelText(/Lý do/)).not.toBeInTheDocument();
   fireEvent.click(within(dialog).getByRole("button", { name: "Tạo nhóm giá" }));
-  await waitFor(() => expect(m.save).toHaveBeenCalledWith(expect.objectContaining({ code: "dai_ly", name: "Đại lý cấp 1", active: true, reason: "Thêm nhóm đại lý" })));
+  await waitFor(() => expect(m.save).toHaveBeenCalledWith({ operationId: expect.any(String), code: "dai_ly", name: "Đại lý cấp 1", active: true }));
   await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
   expect(screen.getByRole("status")).toHaveTextContent("Đã lưu nhóm giá Khách sỉ.");
 });
@@ -31,7 +31,6 @@ it("keeps the code fixed when renaming or stopping a group", async () => {
   const dialog = screen.getByRole("dialog", { name: "Nhóm giá · Khách sỉ" });
   expect(within(dialog).getByLabelText("Mã nhóm *")).toHaveAttribute("readonly");
   fireEvent.click(within(dialog).getByLabelText("Đang dùng"));
-  fireEvent.change(within(dialog).getByLabelText("Lý do thay đổi *"), { target: { value: "Tạm ngừng" } });
   fireEvent.click(within(dialog).getByRole("button", { name: "Lưu nhóm giá" }));
   await waitFor(() => expect(m.save).toHaveBeenCalledWith(expect.objectContaining({ code: "SI", active: false })));
 });

@@ -176,7 +176,7 @@ export default async function AuditPage({
                 <tr>
                   <th>Thời gian</th>
                   <th>Sự kiện</th>
-                  <th>Lý do</th>
+                  <th>Ghi chú</th>
                   <th>Chi tiết</th>
                 </tr>
               </thead>
@@ -188,7 +188,7 @@ export default async function AuditPage({
                       <strong>{summary(event)}</strong>
                       <div className="muted">Mã đối tượng: <span className="mono">{event.entityId}</span></div>
                     </td>
-                    <td>{event.reason || <span className="muted">Không ghi nhận lý do</span>}</td>
+                    <td>{event.reason || <span className="muted">Không có ghi chú</span>}</td>
                     <td>
                       <details>
                         <summary>Xem dữ liệu kỹ thuật</summary>

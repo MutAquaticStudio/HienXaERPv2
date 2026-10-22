@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireInternalAccess } from "@/lib/access/context";
+import { reasonOrDefault } from "@/lib/core/reason";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { MATERIAL_CODE_PATTERN, MAX_VARIANT_ATTRIBUTES, MAX_VARIANTS, type VariantAttributes } from "./variants";
 
@@ -75,7 +76,7 @@ const attributes = z.record(z.string().min(1).max(40), z.string().trim().min(1).
 const inputSchema = z.object({
   operationId: z.guid(),
   groupId: z.guid(),
-  reason: z.string().trim().min(3).max(500),
+  reason: z.string().trim().max(500).optional(),
   effectiveDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   group: z.object({ name: z.string().trim().min(2).max(160), attributeNames: z.array(z.string().trim().min(1).max(40)).min(1).max(MAX_VARIANT_ATTRIBUTES), active: z.boolean() }),
   expected: z.object({ name: z.string(), attribute_names: z.array(z.string()), active: z.boolean() }).nullable(),
@@ -113,8 +114,7 @@ export async function saveVariantGroupAction(input: unknown): Promise<VariantGro
   const parsed = inputSchema.safeParse(input);
   if (!parsed.success) {
     const field = parsed.error.issues[0]?.path[0];
-    return { success: false, message: field === "reason" ? "Cần lý do thay đổi từ 3 đến 500 ký tự."
-      : field === "group" ? "Cần tên hàng (2–160 ký tự) và 1–3 thuộc tính."
+    return { success: false, message: field === "group" ? "Cần tên hàng (2–160 ký tự) và 1–3 thuộc tính."
       : field === "template" ? "Chọn nhóm vật tư, đơn vị cơ sở và kiểm tra các đơn vị bán (đơn vị ước lượng cần ghi nguồn)."
       : field === "variants" ? "Kiểm tra các loại: mã 2–32 ký tự (chữ không dấu, số, _ hoặc -), tên 2–160 ký tự, đủ giá trị thuộc tính, giá là số nguyên dương."
       : "Dữ liệu chưa hợp lệ." };
@@ -141,7 +141,7 @@ export async function saveVariantGroupAction(input: unknown): Promise<VariantGro
         : "materialId" in item ? { material_id: item.materialId, attributes: item.attributes }
         : { attributes: item.attributes, code: item.code, name: item.name, prices: item.prices.map((price) => ({ price_uom_id: price.uomId, unit_price_vnd: price.priceVnd })) }),
       effective_from: hasPrices ? `${data.effectiveDate}T00:00:00+07:00` : null,
-      change_reason: data.reason,
+      change_reason: reasonOrDefault(data.reason, "Cập nhật hàng cùng loại"),
       operation_id: data.operationId,
     });
     if (error) return { success: false, message: variantError(error.message, error.code) };

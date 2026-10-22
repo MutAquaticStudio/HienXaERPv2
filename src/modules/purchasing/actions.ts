@@ -9,6 +9,7 @@ import { revalidatePath } from "next/cache";
 import { redirect, unstable_rethrow } from "next/navigation";
 import { z } from "zod";
 import { AppError, operationalPostingError, quantityInputError } from "@/lib/core/errors";
+import { reasonOrDefault } from "@/lib/core/reason";
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { resolvePrice, type PriceRule } from "@/modules/pricing/resolve-price";
@@ -90,7 +91,7 @@ function errorMessage(message: string, confirmingOrder = false) {
   if (postingError) return postingError;
   const quantityError = quantityInputError(message);
   if (quantityError) return quantityError;
-  if (message.includes("purchase_price_priority_mismatch")) return "Bảng giá mua đã thay đổi. Tải lại và xem trước giá mua, hoặc dùng giá được phê duyệt kèm lý do.";
+  if (message.includes("purchase_price_priority_mismatch")) return "Bảng giá mua đã thay đổi. Tải lại và xem trước giá mua, hoặc nhập giá mua thủ công.";
   if (message.includes("purchase_price_priority_ambiguous")) return "Có nhiều bảng giá mua cùng phiên bản ưu tiên. Cần đối chiếu bảng giá trước khi lưu.";
   if (message.includes("purchase_order_not_confirmable")) return "Đơn mua không còn ở trạng thái có thể xác nhận. Hãy tải lại để kiểm tra.";
   if (message.includes("purchase_lines_required")) return "Vui lòng thêm ít nhất một dòng vật tư cho đơn mua.";
@@ -175,7 +176,7 @@ async function buildWarehouseLines(input: z.infer<typeof documentSchema>, branch
       if (!reason && original?.price_source_type === "MANUAL_APPROVED" && original.material_id === entry.materialId && original.ordered_uom_id === entry.orderedUomId && original.unit_cost_vnd === manual) reason = original.override_reason ?? "";
       reason = finalPurchaseCostReason(manual, reason, reference ? { id: reference.id, version: reference.version, unitCostVnd: reference.unit_cost_vnd.toString() } : null);
     }
-    if (!manual && reason) throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: lý do giá thủ công thiếu đơn giá.`, status: 422 });
+    if (!manual && reason) throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: có ghi chú giá nhưng chưa nhập giá mua thủ công.`, status: 422 });
     const rule = manual ? null : priceResult.data?.find((row) => row.material_id === entry.materialId && row.purchase_uom_id === entry.orderedUomId);
     if (!manual && !rule) throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: không có giá mua hiệu lực.`, status: 422 });
     return { source_line_id: entry.sourceLineId ?? null, linked_sales_order_line_id: entry.salesLineId ?? null,
@@ -343,7 +344,7 @@ async function buildSalesLines(customerId: string, purchaseLines: { material_id:
       try { reference = resolvePrice({ branchId, customerId, customerTierCode, materialId: line.material_id, materialGroupId: materials.get(line.material_id)!.group_id, priceUomId: line.ordered_uom_id, at, rules }); } catch (error) { if (!(error instanceof AppError)) throw error; }
       reason = finalSellingPriceReason(manual, reason, reference);
     }
-    if (!manual && reason) throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: cần nhập giá bán khi ghi lý do.`, status: 422 });
+    if (!manual && reason) throw new AppError({ code: "VALIDATION_FAILED", message: `Dòng ${index + 1}: có ghi chú giá bán nhưng chưa nhập giá bán thủ công.`, status: 422 });
     const selected = manual ? null : resolvePrice({ branchId, customerId, customerTierCode,
       materialId: line.material_id, materialGroupId: materials.get(line.material_id)!.group_id,
       priceUomId: line.ordered_uom_id, at, rules });
@@ -423,11 +424,11 @@ export async function createSupplierDirectDeliveryAction(formData: FormData) {
 }
 
 export async function cancelPurchaseOrderAction(formData: FormData) {
-  const parsed = z.object({ entityId: z.guid(), operationId: z.guid(), reason: z.string().trim().min(3).max(500) }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ entityId: z.guid(), operationId: z.guid(), reason: z.string().trim().max(500).optional() }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect("/admin/purchase-orders?error=invalid-command");
   await requireInternalPermission("purchasing.cancel");
   const supabase = await createServerSupabase();
-  const { error } = await supabase.rpc("cancel_purchase_order", { target_purchase_order_id: parsed.data.entityId, cancel_reason: parsed.data.reason, operation_id: parsed.data.operationId });
+  const { error } = await supabase.rpc("cancel_purchase_order", { target_purchase_order_id: parsed.data.entityId, cancel_reason: reasonOrDefault(parsed.data.reason, "Hủy đơn mua"), operation_id: parsed.data.operationId });
   const destination = `/admin/purchase-orders/${parsed.data.entityId}`;
   if (error) redirect(`${destination}?error=${encodeURIComponent(errorMessage(error.message))}`);
   revalidatePath("/admin/purchase-orders");
@@ -447,10 +448,10 @@ export async function createSupplierQuickAction(_: PurchaseActionState, formData
 
 
 export async function updatePurchaseWarehouseAddressAction(input: {
-  warehouseId: string; address: string; expectedAddress: string | null; reason: string; operationId: string;
+  warehouseId: string; address: string; expectedAddress: string | null; reason?: string; operationId: string;
 }): Promise<{ success: boolean; message: string; address?: string }> {
-  const parsed = z.object({ warehouseId: z.guid(), address: z.string().max(2000), expectedAddress: z.string().nullable(), reason: z.string().trim().min(3).max(500), operationId: z.guid() }).safeParse(input);
-  if (!parsed.success) return { success: false, message: "Nhập địa chỉ và lý do cập nhật hợp lệ." };
+  const parsed = z.object({ warehouseId: z.guid(), address: z.string().max(2000), expectedAddress: z.string().nullable(), reason: z.string().trim().max(500).optional(), operationId: z.guid() }).safeParse(input);
+  if (!parsed.success) return { success: false, message: "Địa chỉ kho chưa hợp lệ (tối đa 2.000 ký tự)." };
   const address = normalizeWarehouseAddress(parsed.data.address);
   if (!address) return { success: false, message: warehouseAddressRequired };
   try {
@@ -460,7 +461,7 @@ export async function updatePurchaseWarehouseAddressAction(input: {
     const { data: warehouse, error: readError } = await supabase.from("warehouses").select("id").eq("id", parsed.data.warehouseId).eq("branch_id", access.branchId).eq("active", true).maybeSingle();
     if (readError || !warehouse) return { success: false, message: "Kho không còn khả dụng trong chi nhánh hiện tại." };
     const { error } = await supabase.rpc("save_catalog_record", { kind: "warehouses", target_id: parsed.data.warehouseId, target_branch_id: access.branchId,
-      values_json: { address_text: address }, expected_json: { address_text: parsed.data.expectedAddress }, change_reason: parsed.data.reason, operation_id: parsed.data.operationId });
+      values_json: { address_text: address }, expected_json: { address_text: parsed.data.expectedAddress }, change_reason: reasonOrDefault(parsed.data.reason, "Bổ sung địa chỉ kho"), operation_id: parsed.data.operationId });
     if (error) return { success: false, message: errorMessage(error.message) };
     revalidatePath("/admin/purchase-orders");
     return { success: true, message: "Đã bổ sung địa chỉ kho. Nội dung đơn mua được giữ nguyên.", address };
@@ -468,15 +469,15 @@ export async function updatePurchaseWarehouseAddressAction(input: {
 }
 
 export async function updatePurchaseDraftDestinationAction(input: {
-  documentId: string; expectedVersion: number; warehouseId: string; reason: string; operationId: string;
+  documentId: string; expectedVersion: number; warehouseId: string; reason?: string; operationId: string;
 }): Promise<{ success: boolean; message: string; version?: number; warehouseId?: string; address?: string }> {
-  const parsed = z.object({ documentId: z.guid(), expectedVersion: z.number().int().positive(), warehouseId: z.guid(), reason: z.string().trim().min(3).max(500), operationId: z.guid() }).safeParse(input);
-  if (!parsed.success) return { success: false, message: "Thông tin kho nhận hoặc lý do chưa hợp lệ." };
+  const parsed = z.object({ documentId: z.guid(), expectedVersion: z.number().int().positive(), warehouseId: z.guid(), reason: z.string().trim().max(500).optional(), operationId: z.guid() }).safeParse(input);
+  if (!parsed.success) return { success: false, message: "Thông tin kho nhận chưa hợp lệ. Tải lại đơn mua rồi thử lại." };
   try {
     const access = await requireInternalPermission("purchasing.create");
     const supabase = await createServerSupabase();
     const { error } = await supabase.rpc("update_purchase_order_warehouse", { target_purchase_order_id: parsed.data.documentId, expected_version: parsed.data.expectedVersion,
-      target_warehouse_id: parsed.data.warehouseId, change_reason: parsed.data.reason, operation_id: parsed.data.operationId });
+      target_warehouse_id: parsed.data.warehouseId, change_reason: reasonOrDefault(parsed.data.reason, "Cập nhật kho nhận"), operation_id: parsed.data.operationId });
     if (error) return { success: false, message: errorMessage(error.message) };
     const { data, error: readError } = await supabase.from("purchase_orders").select("draft_version, warehouse_id, destination_address_snapshot")
       .eq("id", parsed.data.documentId).eq("branch_id", access.branchId).eq("state", "DRAFT").maybeSingle();

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
+import { reasonOrDefault } from "@/lib/core/reason";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { portalRpc, PortalRpcError } from "@/modules/portal/server";
 
@@ -11,8 +12,7 @@ export type PricingState = { message: string; success?: boolean };
 export async function savePricingRuleAction(_: PricingState | undefined, form: FormData): Promise<PricingState> {
   const access = await requireInternalPermission("pricing.manage");
   const mode = String(form.get("mode") ?? "");
-  const reason = String(form.get("reason") ?? "").trim();
-  if (reason.length < 3 || reason.length > 500) return { message: "Cần lý do thay đổi từ 3 đến 500 ký tự." };
+  const reason = reasonOrDefault(form.get("reason"), mode === "deactivate" ? "Ngừng sử dụng giá" : "Cập nhật giá");
   const supersedesId = String(form.get("supersedesId") ?? "");
   const expectedVersion = Number(form.get("expectedVersion"));
   // Retry-safe: the client keeps the same operation (and new rule) ID for a repeated submit.

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import styles from "@/components/portal/portal.module.css";
 
-/** C2: "Từ chối việc" before the goods are handed over; dispatch gets the job back with the reason. */
+/** C2: "Từ chối việc" before the goods are handed over; dispatch gets the job back with the optional note (FB7). */
 export function DeclineJobButton({ workItemId, version }: { workItemId: string; version: number }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -15,7 +15,6 @@ export function DeclineJobButton({ workItemId, version }: { workItemId: string; 
 
   async function decline() {
     if (sending) return;
-    if (reason.trim().length < 3) { setMessage("Ghi lý do từ chối (ít nhất 3 ký tự)."); return; }
     setSending(true);
     setMessage("Đang gửi...");
     try {
@@ -38,7 +37,7 @@ export function DeclineJobButton({ workItemId, version }: { workItemId: string; 
 
   if (!open) return <button type="button" className={styles.link} onClick={() => setOpen(true)}>Từ chối việc này</button>;
   return <div className={styles.form}>
-    <div className={styles.field}><label htmlFor="decline-reason">Lý do từ chối</label>
+    <div className={styles.field}><label htmlFor="decline-reason">Ghi chú (không bắt buộc)</label>
       <textarea id="decline-reason" value={reason} maxLength={300} disabled={sending} onChange={(event) => { setReason(event.target.value); setOperationId(crypto.randomUUID()); }} /></div>
     {message && <p className={styles.status} role="status">{message}</p>}
     <button type="button" className={styles.buttonSecondary} disabled={sending} onClick={() => { void decline(); }}>{sending ? "Đang gửi..." : "Gửi từ chối"}</button>

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { operationalPostingError } from "@/lib/core/errors";
+import { reasonOrDefault } from "@/lib/core/reason";
 import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
@@ -10,7 +11,7 @@ import { autoSourceConfirmedOrder, derivedOperationId } from "./auto-sourcing";
 
 const inputSchema = z.object({
   orderId: z.guid(), operationId: z.guid(),
-  reason: z.string().trim().min(3).max(500),
+  reason: z.string().trim().max(500).optional(),
   snapshotHash: z.string().regex(/^[a-f0-9]{64}$/),
 });
 
@@ -24,7 +25,7 @@ export async function confirmSalesOrderCreditOverride(formData: FormData): Promi
   if (!context.permissions.has("finance.ar.adjust")) {
     message = "Bạn không có quyền duyệt ngoại lệ tín dụng.";
   } else if (!input.success) {
-    message = "Nhập lý do từ 3 đến 500 ký tự; tải lại nếu bản duyệt đã cũ.";
+    message = "Bản duyệt đã cũ hoặc ghi chú quá 500 ký tự. Tải lại trang rồi duyệt lại.";
   } else {
     const supabase = await createServerSupabase();
     const { data: order, error: orderError } = await supabase.from("sales_orders")
@@ -33,7 +34,7 @@ export async function confirmSalesOrderCreditOverride(formData: FormData): Promi
       message = "Không thể duyệt đơn ngoài chi nhánh đang hoạt động.";
     } else {
       const { error } = await supabase.rpc("confirm_sales_order_with_credit_override", {
-        target_order_id: input.data.orderId, override_reason: input.data.reason,
+        target_order_id: input.data.orderId, override_reason: reasonOrDefault(input.data.reason, "Vượt hạn mức tín dụng"),
         expected_snapshot_hash: input.data.snapshotHash, operation_id: input.data.operationId,
       });
       if (error) {

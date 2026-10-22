@@ -53,18 +53,20 @@ it("tells a saved sheet whose approval was refused apart from an unknown outcome
   expect(refused).toMatchObject({ status: "FAILED", version: 4 });
   expect(refused.message).toMatch(/^Đã lưu số đếm nhưng chưa cân bằng kho: Chưa thể duyệt/);
   m.rpc.mockResolvedValueOnce({ data: null, error: { code: "22023", message: "variance_reason_required" } });
-  expect(await saveStockCountSheetAction(base)).toEqual({ status: "FAILED", message: "Dòng có chênh lệch cần lý do (ít nhất 3 ký tự)." });
+  expect(await saveStockCountSheetAction(base)).toEqual({ status: "FAILED", message: "Chưa ghi được ghi chú cho dòng có chênh lệch. Tải lại phiếu rồi lưu lại." });
   m.rpc.mockResolvedValueOnce({ data: null, error: { message: "fetch failed" } });
   expect((await saveStockCountSheetAction(base)).status).toBe("UNKNOWN");
   m.rpc.mockRejectedValueOnce(new Error("socket hang up"));
   expect((await saveStockCountSheetAction(base)).status).toBe("UNKNOWN");
 });
 
-it("cancels with a reason and nothing else", async () => {
-  expect((await cancelStockCountAction({ operationId: ids.op, stockCountId: ids.count, version: 3, reason: " " })).status).toBe("FAILED");
+it("cancels with an optional note and nothing else", async () => {
+  expect((await cancelStockCountAction({ operationId: ids.op, stockCountId: "x", version: 3 })).status).toBe("FAILED");
   expect(m.rpc).not.toHaveBeenCalled();
   expect(await cancelStockCountAction({ operationId: ids.op, stockCountId: ids.count, version: 3, reason: "Đếm nhầm kho" })).toMatchObject({ status: "SUCCESS" });
   expect(m.rpc).toHaveBeenCalledWith("cancel_stock_count", { target_stock_count_id: ids.count, expected_count_version: 3, cancel_reason: "Đếm nhầm kho", operation_id: ids.op });
   m.rpc.mockResolvedValueOnce({ data: null, error: { code: "PT409", message: "stock_count_version_conflict" } });
   expect((await cancelStockCountAction({ operationId: ids.op, stockCountId: ids.count, version: 3, reason: "Đếm nhầm kho" })).message).toContain("đã thay đổi");
+  await cancelStockCountAction({ operationId: ids.op, stockCountId: ids.count, version: 3 });
+  expect(m.rpc).toHaveBeenLastCalledWith("cancel_stock_count", expect.objectContaining({ cancel_reason: "Hủy phiếu kiểm" }));
 });

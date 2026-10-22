@@ -29,11 +29,12 @@ it("raises selected prices by a percentage with rounding, previews the change an
   const row = screen.getByLabelText("Giá mới Xi măng").closest("tr")!;
   expect(within(row).getByText("+10.000 ₫")).toBeInTheDocument();
   expect(saveButton()).toHaveTextContent("Lưu bảng giá (2 thay đổi)");
-  expect(saveButton()).toBeDisabled();
-  fireEvent.change(screen.getByLabelText("Lý do thay đổi *"), { target: { value: "NCC tăng giá" } });
+  // FB7: no reason to type before saving.
+  expect(screen.queryByLabelText(/Lý do/)).not.toBeInTheDocument();
+  expect(saveButton()).toBeEnabled();
   fireEvent.click(saveButton());
   await waitFor(() => expect(m.save).toHaveBeenCalledTimes(1));
-  expect(m.save).toHaveBeenCalledWith({ operationId: props.operationId, reason: "NCC tăng giá", effectiveDate: "2026-10-16", items: [
+  expect(m.save).toHaveBeenCalledWith({ operationId: props.operationId, effectiveDate: "2026-10-16", items: [
     { materialId: "m1", uomId: "bao", priceVnd: "105000", supersedesId: "r1", expectedVersion: 3 },
     { materialId: "m2", uomId: "m3", priceVnd: "495000", supersedesId: "r2", expectedVersion: 1 },
   ] });
@@ -44,7 +45,6 @@ it("creates a first price for a material without one and ignores unchanged rows"
   render(<PriceBookEditor {...props} />);
   fireEvent.change(screen.getByLabelText("Giá mới Cát vàng"), { target: { value: "320.000 ₫" } });
   fireEvent.change(screen.getByLabelText("Giá mới Xi măng"), { target: { value: "95000" } });
-  fireEvent.change(screen.getByLabelText("Lý do thay đổi *"), { target: { value: "Giá mở bán" } });
   expect(saveButton()).toHaveTextContent("(1 thay đổi)");
   fireEvent.click(saveButton());
   await waitFor(() => expect(m.save).toHaveBeenCalledWith(expect.objectContaining({ items: [{ materialId: "m3", uomId: "m3", priceVnd: "320000" }] })));
@@ -54,7 +54,6 @@ it("keeps every edit and the same operation when the save outcome is unknown", a
   m.save.mockRejectedValueOnce(new Error("network"));
   render(<PriceBookEditor {...props} />);
   fireEvent.change(screen.getByLabelText("Giá mới Xi măng"), { target: { value: "99000" } });
-  fireEvent.change(screen.getByLabelText("Lý do thay đổi *"), { target: { value: "Điều chỉnh" } });
   fireEvent.click(saveButton());
   expect(await screen.findByText(/Chưa xác định kết quả lưu/)).toBeInTheDocument();
   expect(screen.getByLabelText("Giá mới Xi măng")).toHaveValue("99.000");
@@ -81,7 +80,6 @@ it("edits a customer group's book next to the general price and saves the group 
   expect(row.querySelector('td[data-label="Giá hiện tại"]')).toHaveTextContent("Theo giá chung");
   expect(row).toHaveTextContent("tấn 1.900.000 ₫");
   fireEvent.change(screen.getByLabelText("Giá mới Xi măng"), { target: { value: "92.000" } });
-  fireEvent.change(screen.getByLabelText("Lý do thay đổi *"), { target: { value: "Giá sỉ tháng 10" } });
   fireEvent.click(saveButton());
   await waitFor(() => expect(m.save).toHaveBeenCalledWith(expect.objectContaining({ items: [{ materialId: "m1", uomId: "bao", priceVnd: "92000", tierCode: "SI" }] })));
 });

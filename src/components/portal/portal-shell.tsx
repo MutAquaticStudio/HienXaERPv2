@@ -35,7 +35,7 @@ const customerLinks = [
   { href: "/customer/orders", label: "Đơn hàng", icon: BriefcaseBusiness },
   { href: "/customer/debts", label: "Công nợ", icon: CircleDollarSign },
   { href: "/customer/messages", label: "Tin nhắn", icon: MessageSquare },
-  { href: "/customer/profile", label: "Hồ sơ", icon: UserRound },
+  { href: "/customer/profile", label: "Tài khoản", icon: UserRound },
 ];
 
 export function PortalShell({

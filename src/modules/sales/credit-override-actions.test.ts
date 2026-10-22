@@ -32,8 +32,12 @@ describe("one-confirmation credit override server action", () => {
     await expect(confirmSalesOrderCreditOverride(input())).rejects.toThrow("error=");
     expect(mocks.requirePermission).toHaveBeenCalledWith("orders.confirm"); expect(mocks.rpc).not.toHaveBeenCalled();
   });
-  it("rejects blank/short reasons before any write", async () => {
-    await expect(confirmSalesOrderCreditOverride(input(" "))).rejects.toThrow("error=");
+  it("confirms without a note and records a plain description (FB7)", async () => {
+    await expect(confirmSalesOrderCreditOverride(input(" "))).rejects.toThrow("notice=confirmed-override");
+    expect(mocks.rpc).toHaveBeenCalledWith("confirm_sales_order_with_credit_override", expect.objectContaining({ override_reason: "Vượt hạn mức tín dụng" }));
+  });
+  it("rejects an over-long note before any write", async () => {
+    await expect(confirmSalesOrderCreditOverride(input("x".repeat(501)))).rejects.toThrow("error=");
     expect(mocks.rpc).not.toHaveBeenCalled();
   });
   it("does not confirm another active branch's order", async () => {

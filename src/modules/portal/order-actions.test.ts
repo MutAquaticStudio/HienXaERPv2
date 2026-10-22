@@ -37,11 +37,15 @@ it("explains database rejections and keeps transport failures unknown", async ()
   expect((await submitPortalOrderAction(input)).status).toBe("UNKNOWN");
 });
 
-it("cancels a waiting order with a reason and returns to it", async () => {
+it("cancels a waiting order with an optional note and returns to it", async () => {
   m.rpc.mockResolvedValue({ data: ids.order, error: null });
   const form = new FormData(); form.set("orderId", ids.order); form.set("reason", "Đặt nhầm"); form.set("operationId", ids.op);
   await expect(cancelPortalOrderAction(form)).rejects.toThrow(`REDIRECT:/customer/orders/${ids.order}?notice=cancelled`);
   expect(m.rpc).toHaveBeenCalledWith("cancel_portal_order", { target_order_id: ids.order, reason: "Đặt nhầm", operation_id: ids.op });
-  form.set("reason", "x");
+  // FB7: no reason has to be typed; the history keeps a plain description.
+  form.set("reason", "");
+  await expect(cancelPortalOrderAction(form)).rejects.toThrow("notice=cancelled");
+  expect(m.rpc).toHaveBeenLastCalledWith("cancel_portal_order", { target_order_id: ids.order, reason: "Khách hủy đơn", operation_id: ids.op });
+  form.set("reason", "x".repeat(301));
   await expect(cancelPortalOrderAction(form)).rejects.toThrow("notice=cancel-reason");
 });

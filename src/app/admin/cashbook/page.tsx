@@ -46,14 +46,14 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
   const range = period(query);
   const accountId = UUID.test(query.account ?? "") ? query.account! : "";
   const direction = query.direction === "RECEIPT" || query.direction === "DISBURSEMENT" ? query.direction : "";
-  const can = { post: access.permissions.has("finance.payment.post"), payables: access.permissions.has("finance.ap.read"), reconcile: access.permissions.has("finance.reconcile"), reverse: access.permissions.has("finance.payment.reverse") };
+  const can = { post: access.permissions.has("finance.payment.post"), payables: access.permissions.has("finance.ap.read"), reconcile: access.permissions.has("finance.reconcile"), reverse: access.permissions.has("finance.payment.reverse"), expense: access.permissions.has("finance.expense.manage") };
   const supabase = await createServerSupabase();
   let paymentRequest = supabase.from("payment_read").select("id, payment_number, direction, counterparty_name, account_code, amount_vnd::text, allocated_amount_vnd::text, advance_amount_vnd::text, unallocated_amount_vnd::text, effective_at, posting_state, reconciliation_state, reconciliation_difference_vnd::text, reversal_of_payment_id")
     .eq("branch_id", access.branchId).gte("effective_at", range.fromAt).lt("effective_at", range.toAt);
   if (accountId) paymentRequest = paymentRequest.eq("account_id", accountId);
   if (direction) paymentRequest = paymentRequest.eq("direction", direction);
   const none = Promise.resolve({ data: [] as never[], error: null });
-  const [paymentsResult, summaryResult, periodResult, accountsResult, advancesResult, customerResult, supplierResult] = await Promise.all([
+  const [paymentsResult, summaryResult, periodResult, accountsResult, advancesResult, customerResult, supplierResult, nonCashResult] = await Promise.all([
     paymentRequest.order("effective_at", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1),
     supabase.rpc("cashbook_summary", { target_branch_id: access.branchId }).select("net_cash_vnd::text,unmatched_count").single(),
     supabase.rpc("cashbook_period_summary", { target_branch_id: access.branchId, from_at: range.fromAt, to_at: range.toAt, target_account_id: accountId || null }),
@@ -61,6 +61,9 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
     supabase.from("advance_position_read").select("advance_side, counterparty_name, balance_vnd::text").eq("branch_id", access.branchId),
     can.post ? supabase.from("customers").select("id, code, display_name").eq("branch_id", access.branchId).eq("active", true).order("display_name").limit(1000) : none,
     can.post && can.payables ? supabase.from("suppliers").select("id, code, name").eq("branch_id", access.branchId).eq("active", true).order("name").limit(1000) : none,
+    // FB7: losses found by stock counts are expenses that move no money; listed beside the cash, never in its balance.
+    access.permissions.has("finance.expense.read") ? supabase.from("expense_read").select("id, expense_number, category_name, description, amount_vnd::text, effective_at")
+      .eq("branch_id", access.branchId).eq("settlement", "NON_CASH").gte("effective_at", range.fromAt).lt("effective_at", range.toAt).order("effective_at", { ascending: false }).limit(50) : none,
   ]);
   if (paymentsResult.error || summaryResult.error || periodResult.error || accountsResult.error || advancesResult.error) throw new Error("Không thể tải sổ quỹ đầy đủ.");
   const fetched = (paymentsResult.data ?? []) as Payment[];
@@ -73,6 +76,8 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
   const customers = ((customerResult.data ?? []) as { id: string; code: string; display_name: string }[]).map((row) => ({ id: row.id, code: row.code, name: row.display_name }));
   const suppliers = (supplierResult.data ?? []) as { id: string; code: string; name: string }[];
   const money = (value: string) => formatVnd(vnd(String(value)));
+  const nonCash = (nonCashResult.data ?? []) as { id: string; expense_number: string; category_name: string; description: string; amount_vnd: string; effective_at: string }[];
+  const nonCashTotal = nonCash.reduce((sum, item) => sum + BigInt(item.amount_vnd), 0n);
   const filtered = Boolean(query.from || query.to || accountId || direction);
   const params = { from: query.from ? range.from : undefined, to: query.to ? range.to : undefined, account: accountId || undefined, direction: direction || undefined };
 
@@ -80,6 +85,7 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
       <div className="action-cluster">
         {can.post && <PartyPaymentLauncher label="Lập phiếu thu" title="Lập phiếu thu · chọn khách hàng" partyLabel="khách hàng" parties={customers} hrefPrefix="/admin/receivables?customer=" className="button button-primary" />}
         {can.post && can.payables && <PartyPaymentLauncher label="Lập phiếu chi" title="Lập phiếu chi · chọn nhà cung cấp" partyLabel="nhà cung cấp" parties={suppliers} hrefPrefix="/admin/payables?supplier=" />}
+        {can.post && can.expense && <Link className="button button-secondary" href="/admin/expenses?new=1">Chi phí khác</Link>}
         {access.permissions.has("finance.account.manage") && <FormDialog label="Tạo tài khoản tiền" title="Tạo tài khoản tiền">
           <form className="form-grid" action={createFinanceAccountAction}><input type="hidden" name="operationId" value={randomUUID()} />
             <label className="field">Mã<input name="code" required /></label><label className="field">Tên<input name="name" required /></label>
@@ -114,10 +120,15 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
             {canHandle && <FormDialog label="Xử lý" title={`Xử lý ${item.payment_number}`} buttonClassName="button button-secondary button-compact"
               description={<>{item.counterparty_name} · {money(String(item.amount_vnd))} · {formatBusinessDate(item.effective_at)}</>}>
               {can.reconcile && item.reconciliation_state !== "MATCHED" && <form className="mini-command" action={reconcilePaymentAction}><h3>Đối soát ngân hàng</h3><input type="hidden" name="paymentId" value={item.id} /><input type="hidden" name="operationId" value={randomUUID()} /><label className="field" htmlFor={`reconcile-amount-${item.id}`}>Số tiền đối soát (VND)<MoneyInput id={`reconcile-amount-${item.id}`} name="amount" placeholder="Số tiền đối soát" required /></label><label className="field" htmlFor={`reconcile-time-${item.id}`}>Thời điểm đối soát<input id={`reconcile-time-${item.id}`} type="datetime-local" name="effectiveAt" defaultValue={localNow()} required /></label><label className="field" htmlFor={`reconcile-reference-${item.id}`}>Mã dòng ngân hàng<input id={`reconcile-reference-${item.id}`} name="reference" placeholder="Mã dòng ngân hàng" required /></label><button className="button button-secondary" type="submit">Ghi đối soát</button></form>}
-              {can.reverse && <form className="mini-command" action={reversePaymentAction}><h3>Đảo giao dịch</h3><p className="muted">Ghi một giao dịch ngược chiều cùng số tiền; giao dịch gốc giữ nguyên trong sổ.</p><input type="hidden" name="paymentId" value={item.id} /><input type="hidden" name="operationId" value={randomUUID()} /><label className="field" htmlFor={`reverse-reason-${item.id}`}>Lý do đảo<input id={`reverse-reason-${item.id}`} name="reason" minLength={3} placeholder="Lý do đảo" required /></label><button className="button button-danger" type="submit">Đảo giao dịch</button></form>}
+              {can.reverse && <form className="mini-command" action={reversePaymentAction}><h3>Đảo giao dịch</h3><p className="muted">Ghi một giao dịch ngược chiều cùng số tiền; giao dịch gốc giữ nguyên trong sổ.</p><input type="hidden" name="paymentId" value={item.id} /><input type="hidden" name="operationId" value={randomUUID()} /><label className="field" htmlFor={`reverse-reason-${item.id}`}>Ghi chú (không bắt buộc)<input id={`reverse-reason-${item.id}`} name="reason" maxLength={500} placeholder="Ví dụ: Ghi nhầm số tiền" /></label><button className="button button-danger" type="submit">Đảo giao dịch</button></form>}
             </FormDialog>}</td></tr>;
       })}</tbody></table>{!rows.length && <p className="empty-inline">{filtered ? "Không có giao dịch phù hợp bộ lọc." : "Chưa có giao dịch tiền trong kỳ này."}</p>}</div>
       <ListPager page={list.page} hasNext={hasNext} params={params} /></section>
+      {nonCash.length > 0 && <section className="card" aria-label="Chi phí không dùng tiền"><div className="section-head"><h2>Chi phí không dùng tiền trong kỳ (hao hụt kho)</h2><span className="scope-chip">Tổng {money(String(nonCashTotal))}</span></div>
+        <p className="muted">Ghi vào chi phí và trừ lợi nhuận; không tính vào số dư quỹ.</p>
+        <div className="table-wrap"><table><thead><tr><th>Mã</th><th>Loại chi / ghi chú</th><th className="numeric">Số tiền</th></tr></thead><tbody>{nonCash.map((item) => <tr key={item.id}>
+          <td><Link className="code-link mono" href={`/admin/expenses?focus=${item.id}`}>{item.expense_number}</Link><small className="table-subline">{formatBusinessDate(item.effective_at)}</small></td>
+          <td>{item.category_name}<small className="table-subline">{item.description}</small></td><td className="numeric mono">{money(item.amount_vnd)}</td></tr>)}</tbody></table></div></section>}
     </div>
   </div>;
 }

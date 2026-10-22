@@ -8,14 +8,15 @@ vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({ f
 } }) }));
 beforeEach(() => { mocks.report.data = { source_work_item_result_id: "work-result" }; mocks.report.error = null; mocks.evidence.error = null; mocks.requested = []; });
 afterEach(cleanup);
-it("shows private authorization-gated photos linked to the exact worker result and exposes adjustment reason", async () => {
+it("shows private authorization-gated photos linked to the exact worker result and exposes an optional adjustment note", async () => {
   render(await OwnerWorkResultEvidence({ deliveryId: "delivery" }));
   expect(mocks.requested).toContainEqual(["delivery_id", "delivery"]);
   expect(mocks.requested).toContainEqual(["work_result_id", "work-result"]);
   // Photos show as thumbnails read through the permission-checked route (A3b).
   expect(screen.getAllByRole("button", { name: /Xem ảnh/ })).toHaveLength(2);
   expect([...document.querySelectorAll("img")].map(image => image.getAttribute("src"))).toEqual(["/api/evidence/proof-a/download", "/api/evidence/proof-b/download"]);
-  expect(screen.getByLabelText("Lý do điều chỉnh số lượng thợ (nếu thay đổi)")).toHaveAttribute("maxlength", "500");
+  expect(screen.getByLabelText("Ghi chú điều chỉnh số lượng thợ (không bắt buộc)")).toHaveAttribute("maxlength", "500");
+  expect(screen.getByLabelText("Ghi chú điều chỉnh số lượng thợ (không bắt buộc)")).not.toBeRequired();
 });
 it("does not expose evidence links after an RLS/read failure", async () => {
   mocks.evidence.error = { message: "permission denied" };

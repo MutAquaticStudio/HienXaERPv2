@@ -1,4 +1,4 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
 const m = vi.hoisted(() => ({ permissions: new Set<string>(), rpc: vi.fn(), calls: [] as { table: string; method: string; args: unknown[] }[], tables: {} as Record<string, unknown[]> }));
@@ -60,6 +60,10 @@ it("offers receipts, payments and row handling in popups by permission", async (
   const row = screen.getByText("PT-1").closest("tr")!;
   expect(within(row).getByRole("link", { name: "In phiếu thu" })).toHaveAttribute("href", "/api/payments/p1/voucher/pdf");
   expect(within(row).getByRole("button", { name: "Xử lý" })).toBeInTheDocument();
+  fireEvent.click(within(row).getByRole("button", { name: "Xử lý" }));
+  // FB7: reversing takes an optional note; nothing has to be typed.
+  expect(screen.getByLabelText("Ghi chú (không bắt buộc)")).not.toBeRequired();
+  expect(screen.queryByLabelText(/Lý do/)).not.toBeInTheDocument();
   cleanup();
   m.calls = [];
   m.permissions = new Set(["finance.ar.read"]);
@@ -72,4 +76,17 @@ it("falls back to this month for an impossible date", async () => {
   await page({ from: "2026-02-31" });
   const call = m.calls.find((item) => item.table === "rpc:cashbook_period_summary")!;
   expect((call.args[0] as { from_at: string }).from_at).toMatch(/^\d{4}-\d{2}-(?:\d{2})T17:00:00\.000Z$/);
+});
+
+it("lists stock-count losses as non-cash expenses beside the cash, and links other expenses (FB7)", async () => {
+  m.permissions = new Set([...m.permissions, "finance.expense.read", "finance.expense.manage"]);
+  m.tables.expense_read = [{ id: "e1", expense_number: "EXP-202610-000001", category_name: "Hao hụt kiểm kho", description: "Kiểm kho KK-1: Thép −2 kg",
+    amount_vnd: "3000", effective_at: "2026-10-22T03:00:00Z" }];
+  await page();
+  const panel = screen.getByRole("region", { name: "Chi phí không dùng tiền" });
+  expect(within(panel).getByText("Tổng 3.000 ₫")).toBeInTheDocument();
+  expect(within(panel).getByText("không tính vào số dư quỹ", { exact: false })).toBeInTheDocument();
+  expect(within(panel).getByRole("link", { name: "EXP-202610-000001" })).toHaveAttribute("href", "/admin/expenses?focus=e1");
+  expect(m.calls).toEqual(expect.arrayContaining([{ table: "expense_read", method: "eq", args: ["settlement", "NON_CASH"] }]));
+  expect(screen.getByRole("link", { name: "Chi phí khác" })).toHaveAttribute("href", "/admin/expenses?new=1");
 });

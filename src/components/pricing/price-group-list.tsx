@@ -20,7 +20,7 @@ function PriceGroupForm({ group, onDone }: { group?: PriceGroupRow; onDone: (mes
     startTransition(async () => {
       try {
         const saved = await savePriceGroupAction({ operationId, code: group?.code ?? String(form.get("code") ?? ""), name: String(form.get("name") ?? ""),
-          active: group ? form.get("active") === "on" : true, reason: String(form.get("reason") ?? "") });
+          active: group ? form.get("active") === "on" : true });
         setResult(saved);
         if (saved.success) { router.refresh(); onDone(saved.message); }
       } catch {
@@ -35,7 +35,6 @@ function PriceGroupForm({ group, onDone }: { group?: PriceGroupRow; onDone: (mes
     <div className="field"><label htmlFor="price-group-name">Tên nhóm *</label><input id="price-group-name" name="name" defaultValue={group?.name} required maxLength={80} placeholder="vd Khách sỉ" /></div>
     {group && <div className="field"><label htmlFor="price-group-active"><input id="price-group-active" name="active" type="checkbox" defaultChecked={group.active} /> Đang dùng</label>
       <small className="muted">Ngừng nhóm: không chọn được cho khách mới và không đặt giá mới; khách đang ở nhóm giữ nguyên.</small></div>}
-    <div className="field field-full"><label htmlFor="price-group-reason">Lý do thay đổi *</label><input id="price-group-reason" name="reason" required minLength={3} maxLength={500} /></div>
     {result && !result.success && <p className="form-message field-full" role="status">{result.message}</p>}
     <div className="form-actions field-full"><button className="button button-primary" type="submit" disabled={pending}>{pending ? "Đang lưu..." : result?.outcomeUnknown ? "Lưu lại đúng thao tác" : group ? "Lưu nhóm giá" : "Tạo nhóm giá"}</button></div>
   </form>;

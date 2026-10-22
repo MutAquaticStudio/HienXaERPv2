@@ -331,6 +331,8 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
 .form-message { margin: 14px 0 0; padding: 10px 12px; border-radius: 8px; color: var(--danger); background: var(--danger-soft); font-size: var(--font-size-caption); }
 .form-message.success { color: var(--success); background: var(--success-soft); }
+/* FB7: the field a refused submit is about stays editable and is marked. */
+.reliable-command-fields [aria-invalid="true"] { border-color: var(--danger); box-shadow: 0 0 0 3px var(--danger-soft); }
 .form-hint { margin: 18px 0 0; font-size: var(--font-size-caption); }
 .action-cluster { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 9px; }
 .axis-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 20px; }
@@ -1123,8 +1125,6 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .price-up { color: var(--success); }
 .price-down { color: var(--danger); }
 .price-book-save { display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; align-items: end; position: sticky; bottom: 0.5rem; z-index: 5; }
-.price-book-reason { flex: 1 1 320px; }
-.price-book-reason input { width: 100%; }
 .price-book-save > p { flex-basis: 100%; margin: 0; }
 @media (max-width: 760px) {
   .price-book-tools, .price-book-save { position: static; }
@@ -1194,7 +1194,7 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
   .stock-count-table td { padding: 0; border: 0; white-space: normal; }
   .stock-count-table td.numeric { text-align: left; }
   .stock-count-table td[data-label]::before { content: attr(data-label); display: block; color: var(--muted); font-size: var(--font-size-caption); }
-  .stock-count-table td[data-label="Vật tư"], .stock-count-table td[data-label="Lý do"] { grid-column: 1 / -1; }
+  .stock-count-table td[data-label="Vật tư"], .stock-count-table td[data-label="Ghi chú"] { grid-column: 1 / -1; }
   .stock-count-table .unit-ratio { justify-content: flex-start; }
   .stock-count-table .unit-ratio input, .stock-count-cost input { max-width: none; text-align: left; }
   .stock-count-cost { justify-items: start; }
@@ -1377,6 +1377,22 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .portal-account-list > li { display: grid; gap: 6px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; }
 .portal-account-list > li.row-muted { color: var(--muted); }
 .portal-share { display: grid; gap: 10px; }
+/* FB7: the home page chooses the portal to sign in to. */
+.portal-chooser-list { display: grid; gap: 14px; width: min(520px, 100%); }
+.portal-chooser-list h2 { margin: 0 0 6px; font-size: 26px; }
+.portal-choice { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; padding: 18px 20px; border: 1px solid var(--border);
+  border-radius: 16px; background: rgba(255, 255, 255, 0.96); box-shadow: 0 14px 40px rgba(23, 44, 73, 0.08); color: inherit; text-decoration: none; }
+a.portal-choice:hover, a.portal-choice:focus-visible { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
+.portal-choice strong { display: block; font-size: 18px; }
+.portal-choice small { display: block; margin-top: 4px; color: var(--muted); line-height: 1.45; }
+.portal-choice-mark { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: var(--primary-soft, #eaf2ff); color: var(--primary); font-weight: 800; }
+.portal-choice-go { color: var(--primary); font-size: 22px; font-weight: 800; }
+.portal-choice-actions { display: flex; gap: 8px; }
+@media (max-width: 560px) {
+  .portal-choice-customer { grid-template-columns: auto 1fr; }
+  .portal-choice-actions { grid-column: 1 / -1; }
+  .portal-choice-actions .button { flex: 1; }
+}
 .auth-note { margin: 0; color: var(--muted); font-size: var(--font-size-caption); text-align: center; }
 
 /* F5 automation settings and push toggle. */

@@ -1,6 +1,7 @@
 "use client";
 import { formatQuantity, isExactEntryQuantity } from "@/lib/core/quantity";
 import { userFacingError } from "@/lib/core/errors";
+import { reasonOrDefault } from "@/lib/core/reason";
 import { FilePicker } from "@/components/ui/file-picker";
 
 import type { ChangeEvent, FormEvent } from "react";
@@ -14,6 +15,9 @@ import {
   type SafeWorkDraft,
 } from "@/modules/portal/draft";
 import type { WorkerJob } from "@/modules/portal/types";
+
+/** Kept when a result is sent before "Đã tới nơi" was pressed and no note was written. */
+export const MISSING_ARRIVAL_NOTE = "Thợ chưa bấm Đã tới nơi";
 
 export function WorkResultDraftForm({
   workItemId,
@@ -112,7 +116,8 @@ export function WorkResultDraftForm({
             deliveryLines: draft.delivery.lines,
             expectedDeliveryVersion: draft.delivery.expectedVersion,
             expectedAssignmentVersion: draft.delivery.expectedAssignmentVersion,
-            missingArrivalReason: draft.delivery.missingArrivalReason,
+            // FB7: the note is optional; a delivery still marked "on the way" keeps a plain description.
+            missingArrivalReason: delivery?.state === "DISPATCHED" ? reasonOrDefault(draft.delivery.missingArrivalReason, MISSING_ARRIVAL_NOTE) : draft.delivery.missingArrivalReason,
           } : {}),
         }),
       });
@@ -160,8 +165,8 @@ export function WorkResultDraftForm({
         <input id="actual-quantity" inputMode="decimal" onChange={update("actualQuantity")} required value={draft.actualQuantity} />
       </div>}
       {delivery?.state === "DISPATCHED" && draft.delivery && <div className={styles.field}>
-        <label htmlFor="missing-arrival">Lý do chưa ghi nhận bước tới nơi</label>
-        <textarea id="missing-arrival" minLength={3} maxLength={1000} required value={draft.delivery.missingArrivalReason}
+        <label htmlFor="missing-arrival">Ghi chú bước tới nơi (không bắt buộc)</label>
+        <textarea id="missing-arrival" maxLength={1000} value={draft.delivery.missingArrivalReason}
           onChange={(event) => setDraft((current) => current?.delivery ? { ...current,
             delivery: { ...current.delivery, missingArrivalReason: event.target.value } } : current)} />
       </div>}

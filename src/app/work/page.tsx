@@ -1,4 +1,4 @@
-import { workStateLabel } from "@/modules/portal/presentation";
+import { jobStateLabel } from "@/modules/portal/presentation";
 import Link from "next/link";
 
 import styles from "@/components/portal/portal.module.css";
@@ -10,7 +10,7 @@ const timeOf = (value?: string) => value ? new Intl.DateTimeFormat("vi-VN", { ti
 
 function JobRow({ job }: { job: WorkerJob }) {
   return <li><Link className={styles.card + " " + styles.cardAccent} href={"/work/jobs/" + job.id}>
-    <span className={styles.badge}>{timeOf(job.scheduled_start)} · {workStateLabel(job.state)}{job.delivery?.awaiting_handoff ? " · chờ kho" : ""}</span>
+    <span className={styles.badge}>{timeOf(job.scheduled_start)} · {jobStateLabel(job)}</span>
     <h3>{job.title ?? job.number}</h3>
     <div className={styles.meta}><span>{job.address ?? job.site_name ?? "Địa điểm đang cập nhật"}</span>{job.receiver_phone && <span>{job.receiver_name ?? "Người nhận"} · {job.receiver_phone}</span>}</div>
   </Link></li>;
@@ -28,11 +28,11 @@ export default async function WorkHomePage({ searchParams }: { searchParams: Pro
     <div className={styles.page}>
       {query.notice === "work-unavailable" && <p className={styles.status} role="status">Công việc đã chuyển người phụ trách hoặc bạn không còn quyền mở. Hãy dùng danh sách công việc hiện tại hoặc liên hệ điều phối.</p>}
       {query.notice === "work-declined" && <p className={styles.status} role="status">Đã từ chối việc. Điều phối sẽ giao cho người khác.</p>}
-      {query.notice === "delivery-reported" && <p className={styles.status} role="status">Đã báo giao hàng kèm ảnh. Điều phối sẽ xác minh.{todays.length ? " Việc kế tiếp ở bên dưới." : ""}</p>}
+      {query.notice === "delivery-reported" && <p className={styles.status} role="status">Đã báo giao hàng kèm ảnh.{todays.length ? " Việc kế tiếp ở bên dưới." : ""}</p>}
       <header className={styles.hero}>
         <p className={styles.heroEyebrow}>Ca làm việc của {snapshot.employee.display_name}</p>
         <h1>{todays.length ? `Hôm nay: ${todays.length} việc` : "Hôm nay chưa có việc"}</h1>
-        <p>Mở việc để xem địa chỉ, người nhận; giao xong bấm &quot;Đã giao&quot; và chụp ảnh.</p>
+        <p>Mở việc, lấy hàng lên xe thì bấm &quot;Đã lấy hàng lên xe&quot;; giao xong bấm &quot;Đã giao&quot;. Cả hai đều chụp ảnh.</p>
       </header>
       <section className={styles.sectionHead}><div><h2>Việc hôm nay</h2></div></section>
       {todays.length ? <ul className={styles.jobList}>{todays.map((job) => <JobRow key={job.id} job={job} />)}</ul>

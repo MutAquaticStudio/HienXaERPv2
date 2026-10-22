@@ -25,9 +25,9 @@ it("converts what the worker types in the sold unit to an exact base quantity", 
   expect(enteredBase("2", { ...cement, sold_unit: null })).toBe("2");
 });
 
-it("waits for the warehouse before the goods are on the truck", () => {
+it("asks to load the truck first", () => {
   render(<DeliveryDoneForm workItemId={workItemId} version={2} delivery={{ ...delivery, can_submit_result: false, awaiting_handoff: true }} />);
-  expect(screen.getByRole("button", { name: "Chờ kho bàn giao hàng lên xe" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Lấy hàng lên xe trước" })).toBeDisabled();
 });
 
 it("opens the camera, uploads the photo and reports every line as loaded", async () => {
@@ -52,19 +52,27 @@ it("opens the camera, uploads the photo and reports every line as loaded", async
     expectedVersion: 2, expectedDeliveryVersion: 4, expectedAssignmentVersion: 1 });
 });
 
-it("reports a short delivery in the sold unit and asks a reason when nothing was delivered", async () => {
+it("reports a short delivery in the sold unit; nothing delivered needs no note (FB7)", async () => {
   fetcher.mockResolvedValueOnce({ ok: false, json: async () => ({ error: "Công việc vừa được cập nhật. Tải lại công việc rồi báo lại." }) });
   render(<DeliveryDoneForm workItemId={workItemId} version={2} delivery={delivery} savedPhotoIds={["66666666-6666-4666-8666-666666666666"]} />);
   fireEvent.click(screen.getByRole("button", { name: "Giao thiếu / Không giao được" }));
   const quantity = screen.getByLabelText(/Xi măng · đã lấy 60 bao \(3\.000 kg\)/);
   expect(quantity).toHaveValue("60");
-  fireEvent.change(quantity, { target: { value: "0" } });
-  fireEvent.click(screen.getByRole("button", { name: "Gửi báo cáo giao" }));
-  expect(screen.getByRole("alert")).toHaveTextContent("Ghi lý do không giao được");
+  expect(screen.getByLabelText("Ghi chú (không bắt buộc)")).not.toBeRequired();
   fireEvent.change(quantity, { target: { value: "58" } });
   fireEvent.click(screen.getByRole("button", { name: "Gửi báo cáo giao" }));
   expect(await screen.findByRole("alert")).toHaveTextContent("Tải lại công việc");
   expect(JSON.parse(fetcher.mock.calls[0][1].body)).toMatchObject({ lines: [{ deliveryLineId: cement.id, actualBaseQuantity: "2900" }],
     evidenceIds: ["66666666-6666-4666-8666-666666666666"] });
   expect(navigation.push).not.toHaveBeenCalled();
+});
+
+it("sends a failed delivery without a note", async () => {
+  fetcher.mockResolvedValueOnce({ ok: true, json: async () => ({ resultId: "r2" }) });
+  render(<DeliveryDoneForm workItemId={workItemId} version={2} delivery={delivery} />);
+  fireEvent.click(screen.getByRole("button", { name: "Giao thiếu / Không giao được" }));
+  fireEvent.change(screen.getByLabelText(/Xi măng · đã lấy/), { target: { value: "0" } });
+  fireEvent.click(screen.getByRole("button", { name: "Gửi báo cáo giao" }));
+  await waitFor(() => expect(navigation.push).toHaveBeenCalledWith("/work?notice=delivery-reported"));
+  expect(JSON.parse(fetcher.mock.calls[0][1].body)).toMatchObject({ lines: [{ deliveryLineId: cement.id, actualBaseQuantity: "0" }], note: "", evidenceIds: [] });
 });

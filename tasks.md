@@ -25,7 +25,7 @@ QA_SCHEMA_MUTATION: PO_PATCH_ALREADY_APPLIED_NEW_PATCHES_NOT_AUTHORIZED
 QA_APPROVED_PATCH_SHA256: 9e74a7976728bb33b4401d642b79329e5d5ece9ac016e8509c06bbf238bf2f7d
 QA_SCHEMA_APPLY: APPLIED
 PRODUCTION_MUTATION: FORBIDDEN_WITHOUT_OWNER
-ACTIVE_FEEDBACK_BATCH: FB6_20261018  # Claude Code, branch nox/elegant-volta-kr29iz; FB5 đã lên Production (main 555ce1e); FB6 = cổng khách Đặt hàng như Tạo đơn bán, see FB5 section
+ACTIVE_FEEDBACK_BATCH: FB7_20261022  # Claude Code, branch nox/elegant-volta-kr29iz; Owner tự QA theo kịch bản FB7, see FB7 rows
 ```
 
 Historical R0–R9 tasks are not repeated here. Their source/evidence lives in implementation.md.
@@ -773,4 +773,14 @@ Quyết định D25 ở đầu Spec.md; giao diện UX-FB5-001. Migration `20261
 | FB5-N | "Bước tiếp theo" sau xác nhận đơn bán (phiếu giao, xe/tài xế, đơn mua chờ duyệt, Thu tiền, In, Đơn mới) và đơn mua (Gửi NCC, Nhận hàng, "Nhận đủ"); duyệt ngoại lệ tín dụng chuyển về bằng mã notice | DONE_LOCAL |
 | FB5-E2E | 390 px: bảng Quy tắc tự động dạng thẻ, bảng Điều phối xếp dọc; E2E trên QA | DONE |
 | FB5-REL | QA project (áp migration 220000), PR, CI, merge, Production, deploy, kịch bản QA thủ công | DONE — PR #56 merge `555ce1e`, migration 220000 trên Production (md5 khớp QA), deploy `dpl_6aDAWYt8JkQDD6Fnhxaar9Kw8obB` |
-| FB6 | Cổng khách "Đặt hàng" cùng bộ soạn đơn với "Tạo đơn bán" nội bộ, chọn/đổi hàng cùng loại trên từng dòng (D26; migration `20261018230000_portal_catalog_variants.sql`, native 230) | IN_PROGRESS |
+| FB6 | Cổng khách "Đặt hàng" cùng bộ soạn đơn với "Tạo đơn bán" nội bộ, chọn/đổi hàng cùng loại trên từng dòng (D26; migration `20261018230000_portal_catalog_variants.sql`, native 230) | DONE — PR #57 merge `68d04a4`; migration 230000 trên Production (md5 khớp QA); deploy `dpl_8HJ7Bk1gsnNJcpKsdZFJXeNEdRE8` |
+| FB7-A | Thợ "Đã lấy hàng lên xe" + ảnh (`portal_delivery_loaded`), "Đã giao" = tự xác minh + trả phần dư về kho, bỏ bước Tới nơi, trigger đồng bộ việc ↔ phiếu, đóng việc treo; cổng khách "Hoàn tất" (D27a; migration `20261022100000`…`100400`, native 240, 180) | DONE (code) |
+| FB7-B | Bước tiếp theo đơn bán / đơn mua luôn hiện (D27b) | DONE (code) |
+| FB7-C | Cổng khách trang "Tài khoản", `customer_portal_account` (D27c; migration `20261022130000`, native 255) | DONE (code) |
+| FB7-D | Trang chủ chọn cổng Khối vận hành / Thợ & tài xế / Khách hàng + Đăng ký (D27d) | DONE (code) |
+| FB7-E | Kiểm kho lệch âm → chi phí "Hao hụt kiểm kho" NON_CASH, khung Sổ quỹ, ghi chú lệch không bắt buộc (D27e; migration `20261022120000`, native 250) | DONE (code) |
+| FB7-I | Công trình bỏ vĩ độ, kinh độ, khung giờ nhận (D27f) | DONE (code) |
+| FB7-G | Bỏ "Lý do" bắt buộc ở mọi nơi; `reasonOrDefault` (D27g) | DONE (code) |
+| FB7-F | Chi phí kiểu KiotViet: người nhận Khác/NCC/NV, trả ngay/ghi nợ, không tính lợi nhuận, `record_operating_expense` (D27h; migration `20261022110000`…`110200`, native 245) | DONE (code) |
+| FB7-H | `ReliableCommandForm` bỏ "Bắt đầu thao tác mới", đánh dấu ô lỗi (D27i) | DONE (code) |
+| FB7-REL | PR, CI, merge, migration QA rồi Production (md5), deploy, kịch bản QA `KICH-BAN-QA-FB7.md` cho Owner tự QA | IN PROGRESS |

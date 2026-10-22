@@ -21,7 +21,7 @@ const schema = z.object({
 /** Vietnamese reason for a refused report; the technical code is never shown. */
 export function deliveryDoneMessage(raw: string) {
   if (raw.includes("delivery_photo_required")) return "Chụp ít nhất 1 ảnh hàng đã giao rồi xác nhận.";
-  if (raw.includes("delivery_receiver_or_failure_reason_required")) return "Ghi lý do không giao được (ít nhất 3 ký tự), hoặc tên người nhận.";
+  if (raw.includes("delivery_receiver_or_failure_reason_required")) return "Ghi tên người nhận hàng.";
   if (raw.includes("delivery_work_not_submittable")) return "Kho chưa bàn giao hàng lên xe hoặc việc đã được báo. Tải lại công việc.";
   if (raw.includes("stale_work_or_delivery_version")) return "Công việc vừa được cập nhật. Tải lại công việc rồi báo lại.";
   if (raw.includes("work_result_evidence_invalid")) return "Có ảnh không hợp lệ hoặc đã được dùng. Xóa ảnh đó và chụp lại.";

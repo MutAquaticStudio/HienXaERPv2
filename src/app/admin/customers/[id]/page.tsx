@@ -17,7 +17,7 @@ import { catalogHref } from "@/modules/catalog/ownership";
 import { PortalAccountsCard, type PortalAccount } from "@/components/customers/portal-accounts-card";
 
 type CustomerProfile = { id: string; code: string; display_name: string; customer_type: string; phone: string | null; email: string | null; address_text: string | null; tax_code: string | null; tier_code: string | null; payment_terms_days: number; active: boolean; source?: string };
-type SiteRow = { id: string; code: string; name: string; address_text: string; receiver_name: string | null; receiver_phone: string | null; receiving_window: string | null; access_note: string | null; active: boolean };
+type SiteRow = { id: string; code: string; name: string; address_text: string; receiver_name: string | null; receiver_phone: string | null; access_note: string | null; active: boolean };
 type PriceRow = { id: string; scope_type: string; unit_price_vnd: string; version: number; source_type: string; material_id: string | null; material_group_id: string | null; price_uom_id: string; effective_from: string };
 type QuoteRow = { id: string; quotation_number: string; revision_number: number; created_at: string };
 type OrderRow = { id: string; order_number: string; commercial_state: string; fulfillment_state: string; payment_state: string; total_vnd: string; site_name_snapshot: string; created_at: string };
@@ -125,7 +125,7 @@ type Supabase = Awaited<ReturnType<typeof createServerSupabase>>;
 
 async function InfoTab({ customer, note, can, supabase }: { customer: CustomerProfile; note: string | null | undefined; can: { createOrder: boolean; service: boolean; manage: boolean }; supabase: Supabase }) {
   const [{ data }, accountsResult] = await Promise.all([
-    supabase.from("customer_sites").select("id, code, name, address_text, receiver_name, receiver_phone, receiving_window, access_note, active").eq("customer_id", customer.id).order("active", { ascending: false }).order("name").limit(100),
+    supabase.from("customer_sites").select("id, code, name, address_text, receiver_name, receiver_phone, access_note, active").eq("customer_id", customer.id).order("active", { ascending: false }).order("name").limit(100),
     supabase.rpc("customer_portal_accounts", { target_customer_id: customer.id }),
   ]);
   const sites = (data ?? []) as unknown as SiteRow[];
@@ -133,11 +133,10 @@ async function InfoTab({ customer, note, can, supabase }: { customer: CustomerPr
   return <div className="two-column">
     <section className="card list-main"><div className="section-head"><h2>Công trình ({sites.length})</h2></div>
       {sites.length ? <div className="table-wrap"><table>
-        <thead><tr><th scope="col">Công trình</th><th scope="col">Người nhận</th><th scope="col">Giờ nhận</th><th scope="col"><span className="sr-only">Thao tác</span></th></tr></thead>
+        <thead><tr><th scope="col">Công trình</th><th scope="col">Người nhận</th><th scope="col"><span className="sr-only">Thao tác</span></th></tr></thead>
         <tbody>{sites.map((site) => <tr key={site.id} className={site.active ? undefined : "row-muted"}>
-          <td data-label="Công trình"><strong>{site.name}</strong><small className="table-subline">{site.address_text}</small>{site.access_note && <small className="table-subline">{site.access_note}</small>}</td>
+          <td data-label="Công trình"><strong>{site.name}</strong><small className="table-subline">{site.address_text}</small>{site.access_note && <small className="table-subline">{site.access_note}</small>}{!site.active && <small className="table-subline">Đã ngừng</small>}</td>
           <td data-label="Người nhận">{site.receiver_name ?? "Chưa chỉ định"}{site.receiver_phone && <small className="table-subline">{site.receiver_phone}</small>}</td>
-          <td data-label="Giờ nhận">{site.receiving_window ?? "Không giới hạn"}{!site.active && <small className="table-subline">Đã ngừng</small>}</td>
           <td className="table-actions">{site.active && can.createOrder && <Link className="code-link" href={`/admin/orders/new?customer=${customer.id}&site=${site.id}`}>Tạo đơn</Link>}
             {site.active && can.service && <Link className="code-link" href={`/admin/service-jobs?customerId=${customer.id}&siteId=${site.id}`}>Tạo dịch vụ</Link>}
             {can.manage && <Link className="code-link" href={catalogHref("sites", { id: site.id })}>Sửa</Link>}</td>
