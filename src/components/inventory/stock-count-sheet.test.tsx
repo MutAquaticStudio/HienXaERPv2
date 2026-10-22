@@ -26,7 +26,7 @@ it("shows the variance as counts are typed and saves only new or changed lines",
   expect(within(cement).getByText("−1,5")).toBeInTheDocument();
   expect(within(cement).getByText("−2.250 ₫")).toBeInTheDocument();
   expect(screen.getByText(/Đã đếm/)).toHaveTextContent("Đã đếm 2/3 · Lệch tăng 0 · Lệch giảm 1 (2.250 ₫) · Khớp 1");
-  fireEvent.change(screen.getByLabelText("Lý do chung cho dòng lệch"), { target: { value: "Kiểm cuối tháng" } });
+  fireEvent.change(screen.getByLabelText("Ghi chú chung cho dòng lệch (không bắt buộc)"), { target: { value: "Kiểm cuối tháng" } });
   fireEvent.click(screen.getByRole("button", { name: "Lưu tạm (1 dòng)" }));
   await waitFor(() => expect(m.save).toHaveBeenCalledTimes(1));
   expect(m.save.mock.calls[0][0]).toMatchObject({ stockCountId: COUNT, version: 4, approveOperationId: null,
@@ -35,10 +35,10 @@ it("shows the variance as counts are typed and saves only new or changed lines",
   expect(screen.getByRole("status")).toHaveTextContent("Đã lưu 1 dòng kiểm.");
 });
 
-it("marks rows that need a reason or a cost before anything is sent", async () => {
+it("marks rows that need a cost before anything is sent", async () => {
   sheet();
   fireEvent.change(screen.getByLabelText("Thực tế Đá 1x2"), { target: { value: "3" } });
-  fireEvent.change(screen.getByLabelText("Lý do Đá 1x2"), { target: { value: "Tìm thấy ở bãi" } });
+  fireEvent.change(screen.getByLabelText("Ghi chú Đá 1x2"), { target: { value: "Tìm thấy ở bãi" } });
   expect(screen.getByLabelText("Giá vốn Đá 1x2")).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: /Lưu tạm/ }));
   expect(m.save).not.toHaveBeenCalled();
@@ -86,13 +86,13 @@ it("lets an approver who does not count complete the saved count", async () => {
   await waitFor(() => expect(m.save).toHaveBeenCalledWith(expect.objectContaining({ lines: [], version: 4, approveOperationId: expect.any(String) })));
 });
 
-it("cancels with a reason and is read-only once closed", async () => {
+it("cancels without having to give a reason and is read-only once closed", async () => {
   m.cancel.mockResolvedValue({ status: "SUCCESS", message: "Đã hủy phiếu kiểm. Tồn kho không thay đổi." });
   sheet();
   fireEvent.click(screen.getByRole("button", { name: "Hủy phiếu" }));
   const dialog = screen.getByRole("dialog", { name: "Hủy phiếu kiểm" });
-  expect(within(dialog).getByRole("button", { name: "Hủy phiếu" })).toBeDisabled();
-  fireEvent.change(within(dialog).getByLabelText("Lý do hủy *"), { target: { value: "Chọn nhầm kho" } });
+  expect(within(dialog).getByRole("button", { name: "Hủy phiếu" })).toBeEnabled();
+  fireEvent.change(within(dialog).getByLabelText("Ghi chú (không bắt buộc)"), { target: { value: "Chọn nhầm kho" } });
   fireEvent.click(within(dialog).getByRole("button", { name: "Hủy phiếu" }));
   await waitFor(() => expect(m.cancel).toHaveBeenCalledWith(expect.objectContaining({ stockCountId: COUNT, version: 4, reason: "Chọn nhầm kho" })));
   cleanup();

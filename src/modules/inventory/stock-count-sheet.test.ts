@@ -22,12 +22,12 @@ describe("count sheet", () => {
     ]);
   });
 
-  it("flags a variance without a reason, a bad count and a missing cost basis", () => {
+  it("keeps a default note for a variance without one (FB7) and flags a bad count and a missing cost basis", () => {
     const rows = [row({ materialId: "a" }), row({ materialId: "b" }), row({ materialId: "c", book: "0" }), row({ materialId: "d", book: "0" })];
     const check = sheetLines(rows, { a: { counted: "90" }, b: { counted: "abc" }, c: { counted: "5", reason: "Tìm thấy ở bãi" }, d: { counted: "5", reason: "Tìm thấy", unitCost: "2.000" } }, "");
-    expect(Object.keys(check.problems)).toEqual(["a", "b", "c"]);
+    expect(Object.keys(check.problems)).toEqual(["b", "c"]);
     expect(check.problems.c).toContain("giá vốn mỗi kg");
-    expect(check.lines).toEqual([{ materialId: "d", counted: "5", reason: "Tìm thấy", unitCost: "2000" }]);
+    expect(check.lines).toEqual([{ materialId: "a", counted: "90", reason: "Lệch khi kiểm kho", unitCost: null }, { materialId: "d", counted: "5", reason: "Tìm thấy", unitCost: "2000" }]);
   });
 
   it("resends only rows changed since they were saved", () => {

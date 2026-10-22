@@ -53,7 +53,7 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
   if (accountId) paymentRequest = paymentRequest.eq("account_id", accountId);
   if (direction) paymentRequest = paymentRequest.eq("direction", direction);
   const none = Promise.resolve({ data: [] as never[], error: null });
-  const [paymentsResult, summaryResult, periodResult, accountsResult, advancesResult, customerResult, supplierResult] = await Promise.all([
+  const [paymentsResult, summaryResult, periodResult, accountsResult, advancesResult, customerResult, supplierResult, nonCashResult] = await Promise.all([
     paymentRequest.order("effective_at", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1),
     supabase.rpc("cashbook_summary", { target_branch_id: access.branchId }).select("net_cash_vnd::text,unmatched_count").single(),
     supabase.rpc("cashbook_period_summary", { target_branch_id: access.branchId, from_at: range.fromAt, to_at: range.toAt, target_account_id: accountId || null }),
@@ -61,6 +61,9 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
     supabase.from("advance_position_read").select("advance_side, counterparty_name, balance_vnd::text").eq("branch_id", access.branchId),
     can.post ? supabase.from("customers").select("id, code, display_name").eq("branch_id", access.branchId).eq("active", true).order("display_name").limit(1000) : none,
     can.post && can.payables ? supabase.from("suppliers").select("id, code, name").eq("branch_id", access.branchId).eq("active", true).order("name").limit(1000) : none,
+    // FB7: losses found by stock counts are expenses that move no money; listed beside the cash, never in its balance.
+    access.permissions.has("finance.expense.read") ? supabase.from("expense_read").select("id, expense_number, category_name, description, amount_vnd::text, effective_at")
+      .eq("branch_id", access.branchId).eq("settlement", "NON_CASH").gte("effective_at", range.fromAt).lt("effective_at", range.toAt).order("effective_at", { ascending: false }).limit(50) : none,
   ]);
   if (paymentsResult.error || summaryResult.error || periodResult.error || accountsResult.error || advancesResult.error) throw new Error("Không thể tải sổ quỹ đầy đủ.");
   const fetched = (paymentsResult.data ?? []) as Payment[];
@@ -73,6 +76,8 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
   const customers = ((customerResult.data ?? []) as { id: string; code: string; display_name: string }[]).map((row) => ({ id: row.id, code: row.code, name: row.display_name }));
   const suppliers = (supplierResult.data ?? []) as { id: string; code: string; name: string }[];
   const money = (value: string) => formatVnd(vnd(String(value)));
+  const nonCash = (nonCashResult.data ?? []) as { id: string; expense_number: string; category_name: string; description: string; amount_vnd: string; effective_at: string }[];
+  const nonCashTotal = nonCash.reduce((sum, item) => sum + BigInt(item.amount_vnd), 0n);
   const filtered = Boolean(query.from || query.to || accountId || direction);
   const params = { from: query.from ? range.from : undefined, to: query.to ? range.to : undefined, account: accountId || undefined, direction: direction || undefined };
 
@@ -119,6 +124,11 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
             </FormDialog>}</td></tr>;
       })}</tbody></table>{!rows.length && <p className="empty-inline">{filtered ? "Không có giao dịch phù hợp bộ lọc." : "Chưa có giao dịch tiền trong kỳ này."}</p>}</div>
       <ListPager page={list.page} hasNext={hasNext} params={params} /></section>
+      {nonCash.length > 0 && <section className="card" aria-label="Chi phí không dùng tiền"><div className="section-head"><h2>Chi phí không dùng tiền trong kỳ (hao hụt kho)</h2><span className="scope-chip">Tổng {money(String(nonCashTotal))}</span></div>
+        <p className="muted">Ghi vào chi phí và trừ lợi nhuận; không tính vào số dư quỹ.</p>
+        <div className="table-wrap"><table><thead><tr><th>Mã</th><th>Loại chi / ghi chú</th><th className="numeric">Số tiền</th></tr></thead><tbody>{nonCash.map((item) => <tr key={item.id}>
+          <td><Link className="code-link mono" href={`/admin/expenses?focus=${item.id}`}>{item.expense_number}</Link><small className="table-subline">{formatBusinessDate(item.effective_at)}</small></td>
+          <td>{item.category_name}<small className="table-subline">{item.description}</small></td><td className="numeric mono">{money(item.amount_vnd)}</td></tr>)}</tbody></table></div></section>}
     </div>
   </div>;
 }
