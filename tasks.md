@@ -25,7 +25,7 @@ QA_SCHEMA_MUTATION: PO_PATCH_ALREADY_APPLIED_NEW_PATCHES_NOT_AUTHORIZED
 QA_APPROVED_PATCH_SHA256: 9e74a7976728bb33b4401d642b79329e5d5ece9ac016e8509c06bbf238bf2f7d
 QA_SCHEMA_APPLY: APPLIED
 PRODUCTION_MUTATION: FORBIDDEN_WITHOUT_OWNER
-ACTIVE_FEEDBACK_BATCH: FB8_20261023  # Claude Code, branch nox/elegant-volta-kr29iz; FB8 (dịch vụ + / −, popup vượt hạn mức); Owner tự QA theo kịch bản toàn hệ thống, see FB8 rows
+ACTIVE_FEEDBACK_BATCH: FB8_20261023  # Claude Code, branch nox/elegant-volta-kr29iz; FB8 đã lên Production (main 9287615); Owner tự QA theo kịch bản toàn hệ thống, see FB8 rows
 ```
 
 Historical R0–R9 tasks are not repeated here. Their source/evidence lives in implementation.md.
@@ -786,4 +786,4 @@ Quyết định D25 ở đầu Spec.md; giao diện UX-FB5-001. Migration `20261
 | FB7-REL | PR, CI, merge, migration QA rồi Production (md5), deploy, kịch bản QA `KICH-BAN-QA-FB7.md` cho Owner tự QA | DONE — PR #58 merge `bc8d66f`; 10 migration `20261022100000…130000` trên QA + Production (md5 khớp `5aed2b31…`); 3 việc treo DL-010/011/014 đã đóng; deploy `dpl_CTjqqBV3DCZwi5jWyYXTgVWfwkud`; chờ Owner QA |
 | FB8-1 | Đơn dịch vụ: số lượng dự kiến không bắt buộc ("Theo thực tế"), mô tả không bắt buộc, nút + / − khi tạo / thợ hoàn tất / xác minh, làm lại danh sách + chi tiết (D28a; migration `20261023090000`, native 260) | DONE (code) |
 | FB8-2 | Vượt hạn mức tín dụng dạng popup tự mở; người duyệt hiện tên, mã, vai trò thay UID; người không có quyền thấy danh sách người duyệt được (D28b; migration `20261023090100`, native 265) | DONE (code) |
-| FB8-REL | PR, CI, merge, migration QA rồi Production (md5), deploy, kịch bản QA toàn hệ thống `KICH-BAN-QA-TOAN-HE-THONG.md` cho Owner tự QA | IN PROGRESS |
+| FB8-REL | PR, CI, merge, migration QA rồi Production (md5), deploy, kịch bản QA toàn hệ thống `KICH-BAN-QA-TOAN-HE-THONG.md` cho Owner tự QA | DONE — PR #59 merge `9287615`; migration `20261023090000`, `20261023090100` trên QA + Production (md5 khớp `cd3cae49…`); deploy `dpl_GFdP4h2M4KoAemhEW1FTPbW7phUq`; chờ Owner QA |

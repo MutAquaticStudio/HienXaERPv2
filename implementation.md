@@ -3194,3 +3194,14 @@ xong toàn bộ rồi QA một lần; tệp áp QA sẽ chia < 20.000 ký tự. 
 - App: `src/modules/sales/credit-block.ts`; `createSalesOrderAction` / `confirmSalesOrderAction` gặp lỗi tín dụng → `?credit=…` (bản nháp giữ nguyên);
   `src/components/sales/credit-override.tsx` thành popup tự mở + nút mở lại; người không có quyền thấy người duyệt được.
 - Câu hỏi 3 của Owner (các kiểu tạo giá bán) trả lời trong phiên, không đổi code.
+
+## 2026-10-23 — Phát hành FB8 lên Production
+
+- Owner: "Up lên production nhé. Và làm kịch bản QA tổng thể hệ thống". PR #59 (CI `phase-gate` + `db-migrations` xanh) merge, `main` = `9287615`.
+  Trước đó: `pnpm check` (216 file / 1162 test, build), native 41/41, `node --test scripts/qa/*` 15/15.
+- 2 migration `20261023090000`, `20261023090100` áp lên QA rồi Production qua MCP, mỗi tệp một transaction + `schema_migrations` (sha256 của tệp
+  trong repo); tệp `090000` có `drop constraint service_jobs_planned_quantity_check` rồi thêm lại bản nới, chạy qua MCP không cần dán SQL Editor.
+  md5 chuẩn hoá của 2 hàm, ràng buộc, cột và quyền: QA = Production = DB dựng từ repo (`cd3cae49428715e2612166dde2705db5`).
+- Deploy `dpl_GFdP4h2M4KoAemhEW1FTPbW7phUq` (`main@9287615`); quay lui: `dpl_CTjqqBV3DCZwi5jWyYXTgVWfwkud`.
+- Kịch bản QA toàn hệ thống `KICH-BAN-QA-TOAN-HE-THONG.md` gửi Owner (Owner tự QA).
+
