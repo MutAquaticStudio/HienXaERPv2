@@ -25,7 +25,7 @@ QA_SCHEMA_MUTATION: PO_PATCH_ALREADY_APPLIED_NEW_PATCHES_NOT_AUTHORIZED
 QA_APPROVED_PATCH_SHA256: 9e74a7976728bb33b4401d642b79329e5d5ece9ac016e8509c06bbf238bf2f7d
 QA_SCHEMA_APPLY: APPLIED
 PRODUCTION_MUTATION: FORBIDDEN_WITHOUT_OWNER
-ACTIVE_FEEDBACK_BATCH: FB7_20261022  # Claude Code, branch nox/elegant-volta-kr29iz; Owner tự QA theo kịch bản FB7, see FB7 rows
+ACTIVE_FEEDBACK_BATCH: FB7_20261022  # Claude Code, branch nox/elegant-volta-kr29iz; FB7 đã lên Production (main bc8d66f); Owner tự QA theo kịch bản FB7, see FB7 rows
 ```
 
 Historical R0–R9 tasks are not repeated here. Their source/evidence lives in implementation.md.
@@ -783,4 +783,4 @@ Quyết định D25 ở đầu Spec.md; giao diện UX-FB5-001. Migration `20261
 | FB7-G | Bỏ "Lý do" bắt buộc ở mọi nơi; `reasonOrDefault` (D27g) | DONE (code) |
 | FB7-F | Chi phí kiểu KiotViet: người nhận Khác/NCC/NV, trả ngay/ghi nợ, không tính lợi nhuận, `record_operating_expense` (D27h; migration `20261022110000`…`110200`, native 245) | DONE (code) |
 | FB7-H | `ReliableCommandForm` bỏ "Bắt đầu thao tác mới", đánh dấu ô lỗi (D27i) | DONE (code) |
-| FB7-REL | PR, CI, merge, migration QA rồi Production (md5), deploy, kịch bản QA `KICH-BAN-QA-FB7.md` cho Owner tự QA | IN PROGRESS |
+| FB7-REL | PR, CI, merge, migration QA rồi Production (md5), deploy, kịch bản QA `KICH-BAN-QA-FB7.md` cho Owner tự QA | DONE — PR #58 merge `bc8d66f`; 10 migration `20261022100000…130000` trên QA + Production (md5 khớp `5aed2b31…`); 3 việc treo DL-010/011/014 đã đóng; deploy `dpl_CTjqqBV3DCZwi5jWyYXTgVWfwkud`; chờ Owner QA |

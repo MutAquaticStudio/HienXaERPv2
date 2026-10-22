@@ -3168,3 +3168,13 @@ xong toàn bộ rồi QA một lần; tệp áp QA sẽ chia < 20.000 ký tự. 
 - Hao hụt kiểm kho (D27e): `20261022120000_fb7_stock_count_loss.sql` — trigger `stock_counts_record_loss` (không sửa `approve_stock_count`); Sổ quỹ khung
   "Chi phí không dùng tiền trong kỳ"; ghi chú lệch mặc định "Lệch khi kiểm kho". Native 250.
 - Bỏ lý do bắt buộc (D27g): `src/lib/core/reason.ts` `reasonOrDefault`; danh mục/giá/quyền bỏ ô; thao tác tiền/hàng "Ghi chú (không bắt buộc)".
+
+## 2026-10-22 — Phát hành FB7 lên Production
+
+- PR #58 (CI `phase-gate` + `db-migrations` xanh) merge, `main` = `bc8d66f`. Trước đó: `pnpm check` (210 file / 1142 test, build) và native 39/39 đạt.
+- 10 migration `20261022100000…20261022130000` áp lên QA rồi Production qua MCP, mỗi tệp một transaction + `schema_migrations` (sha256 của tệp
+  trong repo). Tệp `110000` (`drop constraint payments_party_shape` rồi thêm lại bản nới) chạy qua MCP không cần dán SQL Editor. md5 chuẩn hoá của
+  15 hàm, 2 view, 3 ràng buộc, 2 trigger và quyền 3 RPC: QA = Production = DB dựng từ repo (`5aed2b312f8e9f507c7be3449a98fc22`).
+- Production: 3 việc treo của DL-2026-000010/011/014 → CANCELLED; không còn việc mở nào của phiếu đã xác minh/hủy.
+- Deploy `dpl_CTjqqBV3DCZwi5jWyYXTgVWfwkud` (`main@bc8d66f`); quay lui: `dpl_8HJ7Bk1gsnNJcpKsdZFJXeNEdRE8`.
+- Kịch bản QA thủ công `KICH-BAN-QA-FB7.md` gửi Owner (Owner tự QA).
