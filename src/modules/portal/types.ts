@@ -188,3 +188,11 @@ export type PortalCatalog = {
   sites: { id: string; name: string; address_text: string; receiver_name: string | null; receiver_phone: string | null }[];
   items: PortalCatalogItem[];
 };
+
+/** FB7 "Tài khoản": the customer's own details (customer_portal_account); staff-only fields are never returned. */
+export type CustomerPortalAccount = {
+  customer: { id: string; code: string; display_name: string; customer_type?: string; phone?: string; email?: string;
+    address_text?: string; tax_code?: string; payment_terms_days?: number };
+  membership_role: string;
+  sites: { id: string; name: string; address_text?: string; receiver_name?: string; receiver_phone?: string }[];
+};

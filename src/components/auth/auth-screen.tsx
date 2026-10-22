@@ -2,9 +2,9 @@ import type { ReactNode } from "react";
 import { LoginForm } from "./login-form";
 
 const copy = {
-  admin: { eyebrow: "Cổng điều hành", title: "Đăng nhập để tiếp tục", detail: "Dành cho chủ doanh nghiệp và nhân viên văn phòng.", switchHref: "/work/login", switchLabel: "Đi tới cổng tác nghiệp" },
-  work: { eyebrow: "Cổng tác nghiệp", title: "Bắt đầu ca làm việc", detail: "Dành cho kho, tài xế và đội hiện trường.", switchHref: "/login", switchLabel: "Đi tới cổng điều hành" },
-  customer: { eyebrow: "Cổng khách hàng", title: "Theo dõi giao dịch", detail: "Đặt hàng, theo dõi giao nhận và công nợ của tài khoản này.", switchHref: "/login", switchLabel: "Đi tới cổng điều hành" },
+  admin: { eyebrow: "Khối vận hành", title: "Đăng nhập để tiếp tục", detail: "Dành cho chủ doanh nghiệp, văn phòng, kho và điều phối.", switchHref: "/", switchLabel: "← Chọn cổng khác" },
+  work: { eyebrow: "Cổng thợ & tài xế", title: "Bắt đầu ca làm việc", detail: "Xem việc hôm nay, lấy hàng lên xe và báo đã giao.", switchHref: "/", switchLabel: "← Chọn cổng khác" },
+  customer: { eyebrow: "Cổng khách hàng", title: "Theo dõi giao dịch", detail: "Đặt hàng, theo dõi giao nhận và công nợ của tài khoản này.", switchHref: "/", switchLabel: "← Chọn cổng khác" },
 } as const;
 
 /** The sign-in screen; `title`/`detail`/`children` replace the login form for the other auth pages (register, change password). */
