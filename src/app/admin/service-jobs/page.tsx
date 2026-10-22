@@ -16,8 +16,15 @@ import { CORE_LIST_PAGE_SIZE, parseCoreListQuery, ilikePattern } from "@/lib/cor
 import { createServerSupabase } from "@/lib/supabase/server";
 import { createServiceJobAction } from "@/modules/workforce/actions";
 import { AutoFilterForm } from "@/components/ui/auto-filter-form";
+import { DetailTabs } from "@/components/ui/detail-tabs";
+import { FormDialog } from "@/components/ui/form-dialog";
+import { ServiceJobTimeFields } from "@/components/workforce/service-job-time-fields";
 
-type Job = { id: string; job_number: string; customer_name: string; site_name: string; service_type: string; scheduled_start: string; planned_quantity: string; unit_label: string; operator_name: string | null; execution_state: string };
+type Job = { id: string; job_number: string; customer_name: string; site_name: string; service_type: string; scheduled_start: string; planned_quantity: string | null; unit_label: string; operator_name: string | null; execution_state: string };
+const STATES = ["SCHEDULED", "IN_PROGRESS", "RESULT_SUBMITTED", "VERIFIED", "CANCELLED"] as const;
+const stateTone = (state: string) => state === "VERIFIED" ? "success" as const : state === "RESULT_SUBMITTED" ? "warning" as const : state === "CANCELLED" ? "danger" as const : "info" as const;
+/** FB8: an empty planned quantity is counted on site. */
+const plannedText = (job: Pick<Job, "planned_quantity" | "unit_label">) => job.planned_quantity == null ? "Theo thực tế" : `${formatQuantity(String(job.planned_quantity))} ${job.unit_label}`;
 type Query = { notice?: string; error?: string; q?: string; state?: string; page?: string; customerId?: string; siteId?: string };
 const localNow = () => new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date()).replace(" ", "T");
 
@@ -67,13 +74,17 @@ export default async function ServiceJobsPage({ searchParams }: { searchParams: 
     });
     return { jobs, hasNext: pageRows.length > CORE_LIST_PAGE_SIZE };
   }
-  const [jobResult, customerResult, employeeResult, vehicleResult, machineResult, typeResult] = await Promise.all([
+  // Tab counts stop at 99: an exact count over a long history is not worth the wait on every visit.
+  const countOf = (state: string) => supabase.from("service_jobs").select("id").eq("branch_id", branchId).eq("execution_state", state).limit(100);
+  const shown = (result: { data: unknown[] | null }) => result.data ? result.data.length > 99 ? "99+" : result.data.length : undefined;
+  const [jobResult, customerResult, employeeResult, vehicleResult, machineResult, typeResult, ...counts] = await Promise.all([
     loadJobs(),
     canManage ? supabase.from("customers").select("id, code, display_name").eq("branch_id", branchId).eq("active", true).order("display_name").order("id").limit(25) : Promise.resolve({ data: [] }),
     canManage ? supabase.from("workforce_read").select("id, code, display_name").eq("branch_id", branchId).eq("active", true).order("display_name").order("id").limit(25) : Promise.resolve({ data: [] }),
     canManage ? supabase.from("vehicles").select("id, code, plate_number").eq("branch_id", branchId).eq("active", true).order("code").order("id").limit(25) : Promise.resolve({ data: [] }),
     canManage ? supabase.from("machines").select("id, code, name").eq("branch_id", branchId).eq("active", true).order("code").order("id").limit(25) : Promise.resolve({ data: [] }),
     canManage ? supabase.from("service_types").select("id, code, name, unit_label, default_price_vnd::text, resource_kind").eq("branch_id", branchId).eq("active", true).order("name").order("id").limit(200) : Promise.resolve({ data: [] }),
+    ...STATES.map(countOf),
   ]);
   const serviceTypes = (typeResult.data ?? []) as ServiceTypeOption[];
   const jobs = jobResult.jobs;
@@ -83,13 +94,32 @@ export default async function ServiceJobsPage({ searchParams }: { searchParams: 
     supabase.from("customers").select("id, code, display_name").eq("branch_id", branchId).eq("id", query.customerId!).maybeSingle(),
     uuid.test(query.siteId ?? "") ? supabase.from("customer_sites").select("id, customer_id, name").eq("customer_id", query.customerId!).eq("id", query.siteId!).maybeSingle() : Promise.resolve({ data: null, error: null }),
   ]) : [{ data: null }, { data: null }];
+  const tabs = [{ id: "all", label: "Tất cả" }, ...STATES.map((state, index) => ({ id: state, label: serviceStateLabel(state), count: shown(counts[index]) }))];
+  const tabHref = (tab: string) => `/admin/service-jobs${tab === "all" ? (list.q ? `?q=${encodeURIComponent(list.q)}` : "") : `?state=${tab}${list.q ? `&q=${encodeURIComponent(list.q)}` : ""}`}`;
   return <>
-    <header className="page-heading"><div><p className="eyebrow">Điều phối dịch vụ</p><h1>Công việc dịch vụ</h1><p className="lede">Lịch, sản lượng thực tế, sản lượng tính khách và sản lượng tính công được ghi nhận riêng.</p></div>{canManage && <Link className="button button-secondary" href="/admin/service-jobs/types">Loại dịch vụ</Link>}</header>
+    <header className="page-heading"><div><p className="eyebrow">Điều phối dịch vụ</p><h1>Đơn dịch vụ</h1>
+      <p className="lede">Chở hàng theo chuyến, máy theo giờ, bốc xếp theo công. Chưa biết số lượng thì để trống: thợ bấm số thực tế khi hoàn tất, văn phòng xác minh và ghi công nợ.</p></div>
+      {canManage && <div className="action-cluster">
+        <FormDialog label="+ Tạo đơn dịch vụ" title="Tạo đơn dịch vụ" size="lg" buttonClassName="button button-primary" defaultOpen={!!startCustomer.data}
+          description="Chọn khách, công trình và loại dịch vụ. Số lượng có thể để trống nếu chưa biết.">
+          <form className="command-panel service-job-form" action={createServiceJobAction}><input type="hidden" name="operationId" value={randomUUID()} />
+            <fieldset className="form-section"><legend>Khách & công trình</legend>
+              <ServiceJobLocationFields initialCustomers={customerResult.data ?? []} initialCustomer={startCustomer.data ?? undefined} initialSite={startSite.data ?? undefined} /></fieldset>
+            <fieldset className="form-section"><legend>Dịch vụ</legend>
+              <ServiceTypeFields types={serviceTypes} scope={catalogEditorScope(access, "service_types")}
+                vehicleField={<ServiceJobResourceField kind="vehicle" label="Xe" name="vehicleId" initialOptions={(vehicleResult.data ?? []).map((item) => ({ id: item.id, label: `${item.code} · ${item.plate_number}` }))} />}
+                machineField={<ServiceJobResourceField kind="machine" label="Máy" name="machineId" initialOptions={(machineResult.data ?? []).map((item) => ({ id: item.id, label: `${item.code} · ${item.name}` }))} />} /></fieldset>
+            <fieldset className="form-section"><legend>Thời gian</legend><ServiceJobTimeFields defaultStart={localNow()} /></fieldset>
+            <fieldset className="form-section"><legend>Thêm (không bắt buộc)</legend>
+              <ServiceJobResourceField kind="employee" label="Nhân viên kinh doanh phụ trách" name="salesEmployeeId" initialOptions={(employeeResult.data ?? []).map((item) => ({ id: item.id, label: `${item.code} · ${item.display_name}` }))} />
+              <div className="field field-full"><label htmlFor="service-description">Ghi chú công việc</label><textarea id="service-description" name="description" maxLength={500} placeholder="VD: chở cát từ bãi A lên công trình, đường hẹp" /></div></fieldset>
+            <button className="button button-primary" type="submit">Tạo đơn dịch vụ</button></form>
+        </FormDialog>
+        <Link className="button button-secondary" href="/admin/service-jobs/types">Loại dịch vụ</Link></div>}
+    </header>
     <ActionNotice notice={query.notice} error={query.error} />
-    <AutoFilterForm><label>Tìm kiếm<input name="q" defaultValue={list.q} placeholder="Mã, khách, điểm, dịch vụ, người làm" /></label><label>Trạng thái<select name="state" defaultValue={list.state}><option value="">Tất cả</option><option value="SCHEDULED">Đã lên lịch</option><option value="IN_PROGRESS">Đang làm</option><option value="RESULT_SUBMITTED">Chờ xác minh</option><option value="VERIFIED">Đã xác minh</option><option value="CANCELLED">Đã hủy</option></select></label>{(list.q || list.state) && <Link className="code-link" href="/admin/service-jobs">Xóa lọc</Link>}</AutoFilterForm>
-    {canManage && <details className="card card-pad quick-create" open={!!startCustomer.data}><summary>Lập lịch công việc dịch vụ</summary><form className="command-panel" action={createServiceJobAction}><input type="hidden" name="operationId" value={randomUUID()} /><ServiceJobLocationFields initialCustomers={customerResult.data ?? []} initialCustomer={startCustomer.data ?? undefined} initialSite={startSite.data ?? undefined} /><ServiceTypeFields types={serviceTypes} scope={catalogEditorScope(access, "service_types")}
-          vehicleField={<ServiceJobResourceField kind="vehicle" label="Xe" name="vehicleId" initialOptions={(vehicleResult.data ?? []).map((item) => ({ id: item.id, label: `${item.code} · ${item.plate_number}` }))} />}
-          machineField={<ServiceJobResourceField kind="machine" label="Máy" name="machineId" initialOptions={(machineResult.data ?? []).map((item) => ({ id: item.id, label: `${item.code} · ${item.name}` }))} />} /><div className="field field-full"><label htmlFor="service-description">Mô tả công việc</label><textarea id="service-description" name="description" minLength={3} required /></div><div className="field"><label htmlFor="service-start">Bắt đầu</label><input id="service-start" type="datetime-local" name="scheduledStart" defaultValue={localNow()} required /></div><div className="field"><label htmlFor="service-end">Kết thúc dự kiến</label><input id="service-end" type="datetime-local" name="scheduledEnd" required /></div><ServiceJobResourceField kind="employee" label="Nhân viên kinh doanh phụ trách" name="salesEmployeeId" initialOptions={(employeeResult.data ?? []).map((item) => ({ id: item.id, label: `${item.code} · ${item.display_name}` }))} /><button className="button button-primary" type="submit">Lập lịch dịch vụ</button></form></details>}
-    <section className="card"><div className="section-head"><h2>{jobs.length} công việc dịch vụ trên trang này</h2><span className="scope-chip">25 / trang</span></div><div className="table-wrap"><table><thead><tr><th>Mã</th><th>Khách / điểm</th><th>Dịch vụ</th><th>Lịch</th><th>Kế hoạch</th><th>Người làm</th><th>Trạng thái</th></tr></thead><tbody>{jobs.map((job) => <tr key={job.id}><td><Link className="code-link" href={`/admin/service-jobs/${job.id}`}>{job.job_number}</Link></td><td>{job.customer_name}<small className="table-subline">{job.site_name}</small></td><td>{job.service_type}</td><td>{formatBusinessDateTime(job.scheduled_start)}</td><td className="mono">{formatQuantity(String(job.planned_quantity))} {job.unit_label}</td><td>{job.operator_name ?? "Chưa nhận"}</td><td><StatusBadge tone={job.execution_state === "VERIFIED" ? "success" : job.execution_state === "RESULT_SUBMITTED" ? "warning" : "info"}>{serviceStateLabel(job.execution_state)}</StatusBadge></td></tr>)}</tbody></table>{!jobs.length && <p className="empty-inline">Không có công việc dịch vụ phù hợp.</p>}</div><ListPager page={list.page} hasNext={jobResult.hasNext} params={{ q: list.q, state: list.state }} /></section>
+    <DetailTabs tabs={tabs} active={STATES.includes(list.state as typeof STATES[number]) ? list.state : "all"} label="Trạng thái đơn dịch vụ" href={tabHref} />
+    <AutoFilterForm>{list.state && <input type="hidden" name="state" value={list.state} />}<label>Tìm kiếm<input name="q" defaultValue={list.q} placeholder="Mã, khách, công trình, dịch vụ, người làm" /></label>{(list.q || list.state) && <Link className="code-link" href="/admin/service-jobs">Xóa lọc</Link>}</AutoFilterForm>
+    <section className="card"><div className="section-head"><h2>{jobs.length} đơn dịch vụ trên trang này</h2><span className="scope-chip">25 / trang</span></div><div className="table-wrap"><table><thead><tr><th>Mã</th><th>Khách / công trình</th><th>Dịch vụ</th><th>Lịch</th><th>Số lượng dự kiến</th><th>Người làm</th><th>Trạng thái</th></tr></thead><tbody>{jobs.map((job) => <tr key={job.id}><td><Link className="code-link" href={`/admin/service-jobs/${job.id}`}>{job.job_number}</Link></td><td>{job.customer_name}<small className="table-subline">{job.site_name}</small></td><td>{job.service_type}</td><td>{formatBusinessDateTime(job.scheduled_start)}</td><td className="mono">{plannedText(job)}</td><td>{job.operator_name ?? "Chưa giao"}</td><td><StatusBadge tone={stateTone(job.execution_state)}>{serviceStateLabel(job.execution_state)}</StatusBadge></td></tr>)}</tbody></table>{!jobs.length && <p className="empty-inline">{list.q || list.state ? "Không có đơn dịch vụ phù hợp bộ lọc." : "Chưa có đơn dịch vụ. Bấm “+ Tạo đơn dịch vụ”."}</p>}</div><ListPager page={list.page} hasNext={jobResult.hasNext} params={{ q: list.q, state: list.state }} /></section>
   </>;
 }

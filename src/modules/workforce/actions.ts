@@ -22,7 +22,10 @@ function workCommandMessage(message?: string) {
   if (message?.includes("version") || message?.includes("stale")) return "Dữ liệu công việc đã thay đổi. Vui lòng tải lại trước khi tiếp tục.";
   if (message === "forbidden") return "Bạn không có quyền thực hiện thao tác này.";
   if (message === "resource_conflict" || message?.includes("schedule_collision")) return "Nhân viên hoặc xe đã có lịch trùng. Chọn lịch khác rồi thử lại.";
-  if (message === "invalid-service-job") return "Kiểm tra lại loại dịch vụ, thời gian (kết thúc sau bắt đầu) và sản lượng kế hoạch.";
+  if (message === "invalid-service-job" || message === "invalid_service_job") return "Kiểm tra lại loại dịch vụ, thời gian (kết thúc sau bắt đầu) và số lượng dự kiến (lớn hơn 0 hoặc để trống).";
+  if (message === "invalid-work-result") return "Nhập số lượng thực tế (số từ 0 trở lên, tối đa 6 chữ số thập phân).";
+  if (message === "invalid-service-verification") return "Kiểm tra số lượng tính khách, số lượng tính công, giá trị tính khách và hạn thu.";
+  if (message === "direct_employee_required") return "Chọn thợ để giao thẳng, hoặc chọn “Để thợ tự nhận”.";
   if (message === "invalid_service_type") return "Loại dịch vụ đã ngừng dùng hoặc không thuộc chi nhánh này. Chọn loại khác.";
   if (message === "service_resource_mismatch") return "Loại dịch vụ này không dùng xe hoặc máy đã chọn. Bỏ chọn rồi thử lại.";
   return userFacingError(message);
@@ -32,8 +35,8 @@ const fail = (path: string, message?: string): never => redirect(path + "?error=
 export async function createServiceJobAction(formData: FormData) {
   const parsed = z.object({
     customerId: z.guid(), siteId: z.guid(), salesEmployeeId: optionalUuid,
-    serviceTypeId: z.guid(), description: z.string().trim().min(3).max(500),
-    scheduledStart: localDateTime, scheduledEnd: localDateTime, plannedQuantity: decimal,
+    serviceTypeId: z.guid(), description: z.string().trim().max(500).optional(),
+    scheduledStart: localDateTime, scheduledEnd: localDateTime, plannedQuantity: z.union([decimal, z.literal("")]).optional(),
     vehicleId: optionalUuid, machineId: optionalUuid,
     operationId: z.guid(),
   }).safeParse(Object.fromEntries(formData));
@@ -46,10 +49,11 @@ export async function createServiceJobAction(formData: FormData) {
     target_customer_id: parsed.data.customerId,
     target_site_id: parsed.data.siteId,
     target_service_type_id: parsed.data.serviceTypeId,
-    description: parsed.data.description,
+    // FB8: both may stay empty; the database keeps the type's name and "Tính theo thực tế".
+    description: parsed.data.description ?? "",
     scheduled_start: toInstant(parsed.data.scheduledStart),
     scheduled_end: toInstant(parsed.data.scheduledEnd),
-    planned_quantity: parsed.data.plannedQuantity,
+    planned_quantity: parsed.data.plannedQuantity || null,
     target_sales_employee_id: parsed.data.salesEmployeeId || null,
     target_vehicle_id: parsed.data.vehicleId || null,
     target_machine_id: parsed.data.machineId || null,
@@ -145,7 +149,7 @@ export async function heartbeatWorkItemAction(formData: FormData) {
 export async function submitWorkResultAction(formData: FormData) {
   const parsed = z.object({
     workItemId: z.guid(), serviceJobId: z.guid(), actualQuantity: decimal,
-    note: z.string().trim().min(3).max(1000), receiverName: z.string().trim().max(160),
+    note: z.string().trim().max(1000).optional(), receiverName: z.string().trim().max(160).optional(),
     evidenceId: optionalUuid, version: z.coerce.number().int().positive(), operationId: z.guid(),
   }).safeParse(Object.fromEntries(formData));
   const target = parsed.success ? "/admin/service-jobs/" + parsed.data.serviceJobId : "/admin/service-jobs";
@@ -154,7 +158,7 @@ export async function submitWorkResultAction(formData: FormData) {
   const supabase = await createServerSupabase();
   const { error } = await supabase.rpc("submit_work_result", {
     target_work_item_id: parsed.data.workItemId, actual_quantity: parsed.data.actualQuantity,
-    note: parsed.data.note, receiver_name: parsed.data.receiverName || null,
+    note: parsed.data.note && parsed.data.note.length >= 3 ? parsed.data.note : null, receiver_name: parsed.data.receiverName || null,
     target_evidence_id: parsed.data.evidenceId || null, expected_version: parsed.data.version,
     operation_id: parsed.data.operationId,
   });
@@ -168,7 +172,7 @@ export async function verifyServiceJobAction(formData: FormData) {
   const parsed = z.object({
     serviceJobId: z.guid(), billableQuantity: decimal, compensableQuantity: decimal,
     billableAmount: z.string().trim().regex(/^\d+$/), dueDate: z.iso.date(),
-    note: z.string().trim().min(3).max(1000), jobVersion: z.coerce.number().int().positive(),
+    note: z.string().trim().max(1000).optional(), jobVersion: z.coerce.number().int().positive(),
     workVersion: z.coerce.number().int().positive(), operationId: z.guid(),
   }).safeParse(Object.fromEntries(formData));
   const target = parsed.success ? "/admin/service-jobs/" + parsed.data.serviceJobId : "/admin/service-jobs";
@@ -178,7 +182,7 @@ export async function verifyServiceJobAction(formData: FormData) {
   const { error } = await supabase.rpc("verify_service_job", {
     target_service_job_id: parsed.data.serviceJobId, billable_quantity: parsed.data.billableQuantity,
     compensable_quantity: parsed.data.compensableQuantity, billable_amount_vnd: parsed.data.billableAmount,
-    due_date: parsed.data.dueDate, verification_note: parsed.data.note,
+    due_date: parsed.data.dueDate, verification_note: reasonOrDefault(parsed.data.note, "Đã đối chiếu sản lượng thực tế"),
     expected_job_version: parsed.data.jobVersion, expected_work_version: parsed.data.workVersion,
     operation_id: parsed.data.operationId,
   });

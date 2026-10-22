@@ -3,6 +3,7 @@ import { CancelDocumentForm } from "@/components/documents/cancel-document-form"
 import { WarehouseAllocationFields } from "@/components/inventory/material-stock-hint";
 import { loadWarehouseAvailability } from "@/modules/inventory/availability-server";
 import { SalesOrderCreditOverride } from "@/components/sales/credit-override";
+import { parseCreditBlock } from "@/modules/sales/credit-block";
 import { OrderSourcingPanel, sourcingRun } from "@/components/sales/order-sourcing-panel";
 import { OrderDeliveryButton, type OrderDeliveryLine } from "@/components/delivery/order-delivery-dialog";
 import { OrderNextSteps } from "@/components/sales/order-next-steps";
@@ -37,7 +38,7 @@ type Allocation = { id: string; sales_order_line_id: string; supply_mode: string
 type Delivery = { id: string; delivery_number: string; execution_state: string; employee_id: string | null; vehicle_id: string | null; scheduled_at: string | null };
 function relation<T>(value: T | T[] | null) { return Array.isArray(value) ? value[0] ?? null : value; }
 
-export default async function OrderDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ notice?: string; error?: string }> }) {
+export default async function OrderDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ notice?: string; error?: string; credit?: string }> }) {
   const access = await requireInternalPermission("orders.read");
   const { id } = await params;
   const supabase = await createServerSupabase();
@@ -84,8 +85,8 @@ export default async function OrderDetailPage({ params, searchParams }: { params
   return <div className="page-stack">
     <header className="page-heading"><div><p className="eyebrow">Đơn bán</p><h1>{order.order_number}</h1><p className="lede">Theo dõi đơn bán, phân nguồn hàng và giao hàng tại một nơi.</p></div><div className="inline-actions"><ButtonLink href={`/api/orders/${order.id}/pdf`} variant="secondary">Tải PDF đơn bán</ButtonLink><ButtonLink href="/admin/orders" variant="secondary">Về danh sách</ButtonLink></div></header>
     {fromPortal && <p className="form-message warning" role="note"><strong>Đơn khách tự đặt trên cổng khách{order.commercial_state === "DRAFT" ? " — chờ duyệt" : ""}.</strong>{order.commercial_state === "DRAFT" ? " Kiểm tra hàng, giá và ngày giao (sửa bản nháp nếu cần), rồi bấm “Duyệt đơn” để giữ hạn mức và tự phân nguồn; hoặc hủy đơn — khách thấy ghi chú hủy nếu có." : ""}{channel?.portal_note ? ` Ghi chú của khách: “${channel.portal_note}”.` : ""}</p>}
-    <SalesOrderCreditOverride orderId={id} />
-      <ActionNotice notice={query.notice} error={query.error} />
+    <SalesOrderCreditOverride orderId={id} blocked={parseCreditBlock(query.credit)} />
+    <ActionNotice notice={query.notice} error={query.error} />
     {names && <OrderNextSteps orderId={order.id} orderNumber={order.order_number} customerId={order.customer_id} siteId={order.site_id}
       justConfirmed={!!query.notice?.startsWith("confirmed")} delivered={["FULFILLED", "CLOSED_REMAINDER"].includes(order.fulfillment_state ?? "")}
       deliveries={deliveries.map((delivery) => ({ id: delivery.id, number: delivery.delivery_number, state: delivery.execution_state, scheduledAt: delivery.scheduled_at,

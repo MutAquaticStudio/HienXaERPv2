@@ -90,7 +90,7 @@ export default async function WorkJobPage({ params }: { params: Promise<{ id: st
           <section className={styles.card}>
             <h2>Hoàn tất tại hiện trường</h2>
             <WorkResultDraftForm initialEvidenceId={job.proofs?.[0]?.id} initialReceiverName={job.receiver_name}
-              delivery={job.delivery} version={job.version} workItemId={job.id} />
+              delivery={job.delivery} version={job.version} workItemId={job.id} unit={job.unit} plannedQuantity={job.quantity} />
           </section>
         ) : (
           <section className={styles.card}>
