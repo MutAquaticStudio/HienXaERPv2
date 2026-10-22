@@ -5,6 +5,7 @@ const m = vi.hoisted(() => ({ save: vi.fn(), lookup: vi.fn(), draft: vi.fn(), re
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: m.refresh }) }));
 vi.mock("@/lib/core/command-outcome-actions", () => ({ saveCommandDraftAction: m.save, lookupCommandOutcomeAction: m.lookup, getCommandDraftAction: m.draft }));
 import { ReliableCommandForm } from "./reliable-command-form";
+import type { CommandOutcome } from "@/lib/core/command-outcome";
 
 const first = "11111111-1111-4111-8111-111111111111";
 beforeEach(() => {
@@ -13,7 +14,7 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
-function setup(action: ReturnType<typeof vi.fn>, onNew = vi.fn()) {
+function setup(action: (form: FormData) => Promise<CommandOutcome>, onNew = vi.fn()) {
   render(<ReliableCommandForm action={action} command="post_payment" scope="s" operationId={first} onNew={onNew}>
     <label htmlFor="amount">Số tiền</label><input id="amount" name="amount" defaultValue="" />
     <label htmlFor="note">Ghi chú</label><input id="note" name="note" defaultValue="" />
