@@ -60,7 +60,6 @@ export async function saveCatalogAction(_:CatalogState|undefined, form:FormData)
    const scale=Number(values.rounding_scale);
    if(!Number.isInteger(scale)||scale<0||scale>6) return {message:'Số chữ số làm tròn phải từ 0 đến 6.'};
   }
-  if(kind==='sites'&&Boolean(values.latitude)!==Boolean(values.longitude)) return {message:'Cần nhập cả vĩ độ và kinh độ, hoặc để trống cả hai.'};
   if(kind==='branches'&&!/^[A-Z0-9_-]{2,24}$/.test(String(values.code))) return {message:'Mã chi nhánh phải viết hoa, gồm 2–24 ký tự A–Z, 0–9, _ hoặc -.'};
   if(kind==='machines'&&String(values.machine_type).length>60) return {message:'Loại máy tối đa 60 ký tự.'};
   if(kind==='vehicles'){
