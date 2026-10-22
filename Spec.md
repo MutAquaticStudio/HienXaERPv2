@@ -20,6 +20,8 @@
 
 > Quyết định Owner 22/10/2026 (đợt `FB7`, Owner tự QA sau phát hành): **D27** (a) giao hàng: điều phối chỉ phân người + xe; **thợ** xác nhận "Đã lấy hàng lên xe" kèm 1–5 ảnh (trừ kho) và "Đã giao" kèm ảnh; báo "Đã giao" **là xác minh** (kể cả giao thiếu / không giao được), phần chưa giao tự nhập lại kho xuất; bỏ bước "Tới nơi"; ảnh hiện ở phiếu giao; khách thấy đơn **Hoàn tất** — thay luật cũ "xác minh do người có quyền `delivery.verify` sau khi thợ báo" (SPEC-FB7 §1); (b) "bước tiếp theo" của đơn bán/đơn mua hiện thường trực, không chỉ ngay sau xác nhận (§2); (c) cổng khách có trang **Tài khoản** (§3); (d) trang chủ chọn một trong ba cổng (Khối vận hành / Thợ & tài xế / Khách hàng + Đăng ký) (§4); (e) kiểm kho lệch âm → chi phí **"Hao hụt kiểm kho"** không dùng tiền: trừ lợi nhuận, hiện ở Chi phí và Sổ quỹ, không trừ số dư quỹ (§5); (f) công trình bỏ vĩ độ, kinh độ, khung giờ nhận trên form (§6); (g) **bỏ "Lý do" bắt buộc ở mọi nơi**: danh mục/giá/cài đặt/quyền bỏ hẳn ô; thao tác tiền/hàng có ô "Ghi chú (không bắt buộc)"; hệ thống tự ghi câu mặc định vào nhật ký (§7); (h) chi phí kiểu KiotViet: người nhận bất kỳ (Khác / NCC / Nhân viên), trả ngay từ quỹ hoặc ghi nợ NCC, mua tài sản có thể không tính lợi nhuận — thay luật cũ "chi phí luôn gắn NCC và qua duyệt + công nợ phải trả" (§8); (i) form lỗi không còn nút "Bắt đầu thao tác mới": giữ dữ liệu, đánh dấu ô lỗi, gửi lại được ngay (§9).
 
+> Quyết định Owner 23/10/2026 (đợt `FB8`, Owner tự QA sau phát hành): **D28** (a) đơn dịch vụ: **số lượng dự kiến không bắt buộc** (để trống = "Theo thực tế", vd chở theo chuyến chưa biết bao nhiêu chuyến), mô tả không bắt buộc; thợ **chỉ nhập số lượng một lần khi bấm Hoàn tất**, bằng nút **+ / −** (vẫn gõ được); văn phòng xác minh số tính khách / tính công cũng bằng + / −; giao diện đơn dịch vụ làm lại (SPEC-FB8 §1); (b) xác nhận đơn bán bị chặn vì công nợ / hạn mức → **popup** (không còn dòng lỗi đỏ): người có quyền duyệt xem số liệu và duyệt trong popup, người khác thấy danh sách người duyệt được; người duyệt hiện **tên, mã, vai trò** thay cho UID (§2).
+
 # Spec.md — HIỀN XA ERP V2
 
 > **Bộ tài liệu:** `HX-V2-DOCSET-4.4`  
@@ -3129,6 +3131,29 @@ Mỗi lát cắt dùng cùng entity/source hiện có; không tạo bản ghi �
 ## 9. Form lỗi
 - `ReliableCommandForm` không còn "Bắt đầu thao tác mới": từ chối → giữ giá trị, đổi `operationId`, đánh dấu + focus ô lỗi (`field` trong kết quả);
   thành công → tự sẵn sàng nhập mới; chưa rõ kết quả (mất mạng) → vẫn "Tra cứu kết quả" / "Thử lại cùng thao tác".
+
+# SPEC-FB8 — Góp ý Owner 23/10/2026 (D28)
+
+## 1. Đơn dịch vụ: số lượng theo thực tế, nút + / −
+- `service_jobs.planned_quantity` cho phép NULL (CHECK: NULL hoặc > 0). `schedule_service_job(...)` nhận `planned_quantity` NULL; số 0 hoặc âm vẫn bị
+  từ chối (`invalid_service_job`). Mô tả không bắt buộc (tối đa 500 ký tự); dưới 3 ký tự thì lưu "Dịch vụ {tên loại}". Migration
+  `20261023090000_fb8_service_quantity_optional.sql`, native 260.
+- Không lưu bộ đếm tiến độ: thợ nhập **tổng** số lượng thực tế một lần khi "Hoàn tất công việc" (cổng thợ) hoặc văn phòng "Hoàn tất thay thợ"; số đó
+  là gợi ý cho "Số lượng tính khách" và "Số lượng tính công" khi xác minh; giá trị tính khách = số lượng × đơn giá của loại dịch vụ (làm tròn nửa
+  lên), vẫn sửa được.
+- Ghi chú kết quả, ghi chú xác minh, người xác nhận tại công trình: không bắt buộc (DB vẫn đòi ghi chú khi số tính khách/tính công khác số thợ báo —
+  server gửi câu mặc định "Đã đối chiếu sản lượng thực tế").
+
+## 2. Vượt hạn mức tín dụng: popup và người duyệt
+- `confirm_sales_order` trả `credit_limit_exceeded` / `credit_limit_not_approved` / `overdue_receivable_blocks_credit` → app giữ bản nháp, chuyển về
+  trang đơn với `?credit=limit|no-limit|overdue` và **tự mở popup**. Không đổi luật tín dụng hay quyền.
+- Người có cả `orders.confirm` và `finance.ar.adjust`: popup "Duyệt vượt hạn mức tín dụng" (hạn mức, quá hạn, đã cam kết, giá trị đơn, tổng sau xác
+  nhận, ghi chú không bắt buộc) → `confirm_sales_order_with_credit_override` như cũ; nút "Duyệt vượt hạn mức" mở lại popup bất cứ lúc nào khi đơn còn
+  vượt.
+- Người khác: popup "Cần duyệt vượt hạn mức" liệt kê tối đa 10 người duyệt được của chi nhánh (tên + vai trò).
+- `sales_order_credit_people(target_order_id)` (security definer, cần `orders.read` ở chi nhánh của đơn, không cấp anon): `approved` = tên, mã, vai trò
+  của người đã duyệt và thời điểm; `approvers` = nhân viên đang hoạt động có quyền truy cập chi nhánh, giữ đủ hai quyền qua vai trò hoặc cấp thêm.
+  Không trả UID, email hay thông tin khác. Migration `20261023090100_fb8_credit_override_people.sql`, native 265.
 
 # KẾT THÚC Spec.md
 

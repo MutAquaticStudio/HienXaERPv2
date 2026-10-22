@@ -1574,6 +1574,28 @@ báo đúng quyền và chi nhánh. Trang Thông báo có khung **"Thông báo t
   **"Tự chia việc"**; mỗi tài xế một cột: xe, số phiếu, dòng thời gian các phiếu theo giờ (giờ, mã phiếu, khách, trạng thái); 390 px thành danh sách.
 - Cổng thợ: việc đã nhận chưa bắt đầu có link **"Từ chối việc"** (bắt nhập lý do) → về trang chủ với "Đã từ chối việc, điều phối sẽ chia lại".
 
+# UX-FB8-001 — Đơn dịch vụ đếm bằng + / −, popup vượt hạn mức (D28, 23/10/2026)
+
+- **Ô số lượng + / −** (`QuantityStepper`): nút "−" và "+" 44 px hai bên ô số, đơn vị bên phải ("chuyến", "giờ"); gõ được "2,5". Ô không bắt buộc
+  bấm "−" từ 1 thì về trống; ô cho phép 0 dừng ở 0.
+- **Danh sách đơn dịch vụ** (`/admin/service-jobs`, tiêu đề "Đơn dịch vụ"): tab Tất cả / Đã lên lịch / Đang thực hiện / Chờ xác minh / Đã xác minh / Đã hủy
+  (số đếm, quá 99 ghi "99+"), tìm kiếm, cột "Số lượng dự kiến" ("Theo thực tế" khi để trống), "Người làm" ("Chưa giao"). Nút **"+ Tạo đơn dịch vụ"**
+  mở popup chia nhóm: Khách & công trình → Dịch vụ (loại, xe/máy, "Số lượng dự kiến (không bắt buộc)" với gợi ý "Chưa biết thì để trống: thợ bấm số
+  {đơn vị} thực tế khi hoàn tất") → Thời gian (Bắt đầu; Kết thúc dự kiến tự = bắt đầu + 4 giờ cho tới khi sửa tay) → Thêm (không bắt buộc): nhân viên
+  kinh doanh, Ghi chú công việc. Mở từ đơn bán / khách ("Tạo dịch vụ") thì popup tự mở với khách + công trình đã chọn.
+- **Chi tiết đơn dịch vụ**: thanh 5 bước Lên lịch → Giao thợ → Đang làm → Chờ xác minh → Đã xác minh, dưới là câu "bước tiếp theo"; 4 ô số Dự kiến /
+  Thợ báo / Tính khách / Thành tiền (tạm tính theo đơn giá khi chưa xác minh). Khung **"Việc cần làm"** theo trạng thái: "Giao thẳng cho một thợ" /
+  "Để thợ tự nhận" + "Giao việc"; "Tôi nhận việc này"; "Bắt đầu thay thợ"; khung gập **"Hoàn tất thay thợ (khi thợ không dùng được điện thoại)"** (số
+  lượng + / −, người xác nhận, ghi chú không bắt buộc, "Ghi nhận vẫn đang làm"); xác minh: "Thợ báo N {đơn vị}. Sửa nếu khách chỉ chịu một phần.",
+  Số lượng tính khách (+ / −, thành tiền tự theo), Số lượng tính công cho thợ (+ / −), Hạn thu, Ghi chú (không bắt buộc), nút **"Xác minh & ghi công
+  nợ"**. "Hủy đơn dịch vụ" là nút đỏ mở popup (chỉ khi chưa giao việc).
+- **Cổng thợ — việc dịch vụ**: "Số {đơn vị} thực tế" với + / − lớn, gợi ý "Bấm + mỗi {đơn vị} đã làm (hoặc gõ số). Dự kiến: …"; ghi chú không bắt
+  buộc; nút **"Hoàn tất công việc"**. Số đã bấm được giữ trong bản nháp trên máy khi tải lại trang.
+- **Đơn bán vượt hạn mức**: bấm Xác nhận / Duyệt đơn mà bị chặn vì tín dụng → về trang đơn, báo "Đã lưu bản nháp." và **popup tự mở**.
+  Người duyệt được: popup "Duyệt vượt hạn mức tín dụng" (5 ô số, ghi chú không bắt buộc, nút "Duyệt vượt hạn mức và xác nhận đơn"); trên trang có khung
+  vàng "Đơn vượt hạn mức tín dụng" + nút "Duyệt vượt hạn mức". Người khác: popup "Cần duyệt vượt hạn mức" với danh sách **tên · vai trò** người duyệt
+  được (hoặc "Chưa có ai … Nhờ chủ doanh nghiệp cấp quyền"), nút "Xem người duyệt" mở lại. Đơn đã duyệt: "Người duyệt: Tên (mã) · vai trò · thời gian".
+
 # UX-FB7-001 — Thợ lấy hàng & giao, bước tiếp theo, cổng khách Tài khoản, chọn cổng, chi phí, hao hụt kho, lý do, form lỗi (D27, 22/10/2026)
 
 - **Cổng thợ — việc giao hàng**: phiếu "Chờ lấy hàng" có nút **"Đã lấy hàng lên xe · chụp ảnh"** (mở camera; có ảnh thì "Xác nhận đã lấy hàng lên

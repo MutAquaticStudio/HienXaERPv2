@@ -3178,3 +3178,19 @@ xong toàn bộ rồi QA một lần; tệp áp QA sẽ chia < 20.000 ký tự. 
 - Production: 3 việc treo của DL-2026-000010/011/014 → CANCELLED; không còn việc mở nào của phiếu đã xác minh/hủy.
 - Deploy `dpl_CTjqqBV3DCZwi5jWyYXTgVWfwkud` (`main@bc8d66f`); quay lui: `dpl_8HJ7Bk1gsnNJcpKsdZFJXeNEdRE8`.
 - Kịch bản QA thủ công `KICH-BAN-QA-FB7.md` gửi Owner (Owner tự QA).
+
+## 2026-10-23 — FB8: góp ý Owner (D28) — đơn dịch vụ đếm bằng + / −, popup vượt hạn mức
+
+- Owner chọn "Chỉ nhập khi Hoàn tất": không lưu bộ đếm tiến độ; thợ bấm tổng số một lần khi hoàn tất (bản nháp giữ trên máy).
+- `20261023090000_fb8_service_quantity_optional.sql`: `planned_quantity` cho phép NULL (CHECK NULL hoặc > 0, `drop constraint` + thêm lại),
+  `schedule_service_job` nhận NULL, mô tả trống → "Dịch vụ {loại}". Native 260 (không số lượng → chạy hết luồng giao / hoàn tất 5 / xác minh / công nợ
+  2.250.000; 0 bị từ chối; replay).
+- App: `src/components/ui/quantity-stepper.tsx` (dùng chung), `service-job-time-fields.tsx`, `service-job-progress.tsx`; trang
+  `/admin/service-jobs` (tab, popup tạo) và `/admin/service-jobs/[id]` (5 bước, việc cần làm theo trạng thái, hoàn tất thay thợ, xác minh + / −);
+  `work-result-draft-form.tsx` (cổng thợ) có + / − và "Hoàn tất công việc"; action dịch vụ: ghi chú / mô tả không bắt buộc, thông báo lỗi tiếng Việt
+  cho `direct_employee_required`, `invalid_service_job`.
+- `20261023090100_fb8_credit_override_people.sql`: `sales_order_credit_people` (security definer; tên, mã, vai trò người duyệt + danh sách người duyệt
+  được, không trả UID). Native 265 (vai trò + cấp thêm, nhân viên nghỉ bị loại, chi nhánh khác 42501, anon không có quyền).
+- App: `src/modules/sales/credit-block.ts`; `createSalesOrderAction` / `confirmSalesOrderAction` gặp lỗi tín dụng → `?credit=…` (bản nháp giữ nguyên);
+  `src/components/sales/credit-override.tsx` thành popup tự mở + nút mở lại; người không có quyền thấy người duyệt được.
+- Câu hỏi 3 của Owner (các kiểu tạo giá bán) trả lời trong phiên, không đổi code.
