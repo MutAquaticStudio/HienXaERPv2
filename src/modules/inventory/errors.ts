@@ -10,6 +10,9 @@ export function inventoryCommandMessage(value?: string) {
   if (value?.includes("stock_count_adjustment_below_reserved_or_on_hand")) return "Chưa thể duyệt: lượng sau điều chỉnh thấp hơn lượng đang giữ chỗ hoặc làm tồn kho âm. Hãy đối chiếu hàng và các phiếu giữ chỗ.";
   if (value?.includes("stock_count_inventory_value_inconsistent")) return "Chưa thể duyệt: lượng và giá trị tồn sau điều chỉnh không khớp. Hãy kiểm tra căn cứ giá vốn.";
   if (value?.includes("variance_reason_required")) return "Chưa ghi được ghi chú cho dòng có chênh lệch. Tải lại phiếu rồi lưu lại.";
+  if (value?.includes("invalid_stock_count_scope")) return "Kho đã ngừng dùng hoặc không thuộc chi nhánh này. Chọn kho khác rồi tạo phiếu kiểm.";
+  if (value?.includes("invalid_stock_count_quantity")) return "Số đếm phải là số từ 0 trở lên.";
+  if (value?.includes("forbidden")) return "Bạn chưa có quyền kiểm kho ở chi nhánh này.";
   if (value?.includes("duplicate_stock_count_line")) return "Một vật tư xuất hiện hai lần trong phiếu kiểm. Hãy tải lại trang.";
   if (value?.includes("invalid_stock_count_lines")) return "Chưa có số đếm hợp lệ để lưu.";
   if (value?.includes("cancel_reason_required")) return "Chưa hủy được phiếu. Tải lại trang rồi thử lại.";
