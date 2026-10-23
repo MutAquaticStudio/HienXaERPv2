@@ -1565,3 +1565,23 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
   .credit-dialog .credit-summary { grid-template-columns: minmax(0, 1fr); }
 }
 .credit-dialog .command-panel > .button { justify-self: end; }
+/* UI-R1 responsive: tablets and phones. */
+@media (max-width: 1100px) {
+  /* Line cards keep the card's inner margin (the table runs edge to edge only on wide screens). */
+  .doc-editor-main > .doc-editor-lines { margin: 0 16px; }
+}
+@media (max-width: 1080px) {
+  /* Status filters become a wrapping row of chips above the list instead of a tall column. */
+  .list-filters .list-filter-group { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
+  .list-filter-group legend { width: 100%; }
+  .list-filters .list-filter-option { min-height: 36px; padding: 4px 12px 4px 10px; border: 1px solid var(--border-strong); border-radius: 999px; background: var(--surface); }
+  .list-filters .list-filter-option:has(input:checked) { border-color: var(--primary); }
+  .list-filter-count { margin-left: 2px; }
+  /* A table wider than the screen scrolls sideways; the quick view stays in sight at the left edge. */
+  .row-expansion > td > .row-expansion-grid { position: sticky; left: 18px; max-width: calc(100vw - 100px); }
+}
+@media (max-width: 760px) {
+  .doc-editor-main > .doc-editor-lines { margin: 0 12px; }
+  .list-filters .list-filter-option { min-height: 40px; }
+  .row-expansion > td > .row-expansion-grid { position: static; max-width: none; }
+}
