@@ -2,7 +2,7 @@ import { z } from "zod";
 import { operationalPostingError } from "@/lib/core/errors";
 
 /** Types offered while typing "Loại chi" when the branch has not used them yet (FB7, like KiotViet). */
-export const EXPENSE_TYPE_SUGGESTIONS = ["Lương thưởng", "Thuê mặt bằng", "Điện nước", "Marketing", "Mua tài sản/xe", "Sửa chữa", "Vận chuyển", "Khác"];
+export const EXPENSE_TYPE_SUGGESTIONS = ["Lương thưởng", "Mua đồ dùng công ty", "Marketing", "Thuê mặt bằng", "Điện nước", "Sửa chữa", "Mua tài sản/xe", "Vận chuyển", "Khác"];
 
 export type OperatingExpenseInput = {
   categoryName: string; amount: string; effectiveAt: string; payeeKind: "OTHER" | "SUPPLIER" | "EMPLOYEE";

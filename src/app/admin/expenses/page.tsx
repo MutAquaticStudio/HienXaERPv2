@@ -40,11 +40,10 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
   // Tab counts stop at 99: an exact count over a large expense history is too slow to wait for on every visit.
   const countOf = (value: string) => supabase.from("expense_read").select("id").eq("branch_id", access.branchId).eq("approval_state", value).limit(100);
   const shown = (result: { data: unknown[] | null }) => result.data ? result.data.length > 99 ? "99+" : result.data.length : undefined;
-  const [pageResult, categoryResult, supplierResult, orderResult, focusedResult, assignmentResult, sourceResult, draftCount, approvedCount, accountResult, employeeResult] = await Promise.all([
+  const [pageResult, categoryResult, supplierResult, focusedResult, assignmentResult, sourceResult, draftCount, approvedCount, accountResult, employeeResult] = await Promise.all([
     request.order("effective_at", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1),
     canManage ? supabase.from("expense_categories").select("id, code, name").eq("branch_id", access.branchId).eq("active", true).order("name") : Promise.resolve({ data: [] }),
     canManage ? supabase.from("suppliers").select("id, code, name").eq("branch_id", access.branchId).eq("active", true).order("name") : Promise.resolve({ data: [] }),
-    canManage ? supabase.from("sales_order_read").select("id, order_number, customer_name_snapshot, site_name_snapshot").eq("branch_id", access.branchId).order("created_at", { ascending: false }).limit(50) : Promise.resolve({ data: [] }),
     focusId ? supabase.from("expense_read").select(fields).eq("branch_id", access.branchId).eq("id", focusId).maybeSingle() : Promise.resolve({ data: null }),
     canManage ? supabase.from("delivery_expense_assignment_read").select("assignment_id, delivery_id, delivery_number, delivery_version, assignment_version, plate_number, external_carrier_name, execution_state").eq("branch_id", access.branchId).order("handed_off_at", { ascending: false }).limit(100) : Promise.resolve({ data: [], error: null }),
     supabase.from("delivery_expense_sources").select("expense_id, assignment_id, cost_scope, supplier_reference").eq("branch_id", access.branchId),
@@ -62,7 +61,6 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
   const rows = pinned ? [pinned, ...visibleRows] : visibleRows;
   const categories = categoryResult.data;
   const suppliers = supplierResult.data;
-  const orders = orderResult.data;
   const accounts = ((accountResult.data ?? []) as { id: string; code: string; name: string; account_kind: string }[])
     .map((item) => ({ id: item.id, kind: item.account_kind, label: `${item.name} (${item.account_kind === "CASH" ? "tiền mặt" : "ngân hàng"})` }));
   type Person = { id: string; code: string; display_name: string };
@@ -79,8 +77,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
         <FormDialog label="Ghi chi phí" title="Ghi chi phí" size="lg" buttonClassName="button button-primary" defaultOpen={query.new === "1"}
           description="Chi phí vào sổ ngay. Đã trả ngay thì thành phiếu chi trong Sổ quỹ; ghi nợ thì thành công nợ nhà cung cấp.">
           <ExpenseCreateChooser general={<OperatingExpenseForm action={recordOperatingExpenseAction} canPay={canPay} now={localNow()} accounts={accounts} employees={employees}
-            types={(categories ?? []).map((item) => item.name)} suppliers={(suppliers ?? []).map((item) => ({ id: item.id, label: `${item.code} · ${item.name}` }))}
-            orders={(orders ?? []).map((item) => ({ id: item.id, label: `${item.order_number} · ${item.customer_name_snapshot} / ${item.site_name_snapshot}` }))} />} trip={<DeliveryExpenseForm operationId={randomUUID()} scope={`${access.authUserId}:${access.branchId}:trip-expense`} assignments={assignments} categories={(categories ?? []).map(item => ({ id: item.id, label: `${item.code} · ${item.name}` }))} suppliers={(suppliers ?? []).map(item => ({ id: item.id, label: `${item.code} · ${item.name}` }))} now={localNow()} today={localDate()} />} />
+            types={(categories ?? []).map((item) => item.name)} suppliers={(suppliers ?? []).map((item) => ({ id: item.id, label: `${item.code} · ${item.name}` }))} />} trip={<DeliveryExpenseForm operationId={randomUUID()} scope={`${access.authUserId}:${access.branchId}:trip-expense`} assignments={assignments} categories={(categories ?? []).map(item => ({ id: item.id, label: `${item.code} · ${item.name}` }))} suppliers={(suppliers ?? []).map(item => ({ id: item.id, label: `${item.code} · ${item.name}` }))} now={localNow()} today={localDate()} />} />
         </FormDialog>
         <FormDialog label="Nhóm chi phí" title="Nhóm chi phí">
           {(categories ?? []).length > 0 && <ul className="clean-list expense-categories">{(categories ?? []).map((item) => <li key={item.id}><span className="mono">{item.code}</span> · {item.name}</li>)}</ul>}

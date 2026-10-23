@@ -17,7 +17,7 @@ function setup(results: CommandOutcome[], canPay = true) {
     return results[sent.length - 1] ?? results[results.length - 1];
   });
   render(<OperatingExpenseForm action={action} canPay={canPay} now="2026-10-22T09:00" accounts={accounts} types={["Điện nước"]}
-    suppliers={[{ id: "s1", label: "NCC01 · Nhà xe Minh" }]} employees={[{ id: "e1", label: "Thợ 01 (NV01)" }]} orders={[]} />);
+    suppliers={[{ id: "s1", label: "NCC01 · Nhà xe Minh" }]} employees={[{ id: "e1", label: "Thợ 01 (NV01)" }]} />);
   return { action, sent };
 }
 const type = (label: string, value: string) => fireEvent.change(screen.getByLabelText(label), { target: { value } });
@@ -90,4 +90,12 @@ it("without the right to pay from a fund, only a supplier debt can be recorded",
   expect(screen.getByRole("radio", { name: "Đã trả ngay" })).toBeDisabled();
   expect(screen.getByRole("radio", { name: "Ghi nợ nhà cung cấp" })).toBeChecked();
   expect(screen.getByRole("button", { name: "Ghi chi phí" })).toBeEnabled();
+});
+
+it("has no related-order box, keeps the profit switch under Thêm and explains salaries (FB10)", () => {
+  render(<OperatingExpenseForm action={vi.fn()} canPay now="2026-10-24T09:00" accounts={[{ id: "a", kind: "CASH", label: "Tiền mặt" }]} types={[]} suppliers={[]} employees={[]} />);
+  expect(screen.queryByLabelText(/Đơn bán liên quan/)).not.toBeInTheDocument();
+  expect(screen.getByText("Thêm").closest("details")).toContainElement(screen.getByLabelText("Tính vào lợi nhuận"));
+  fireEvent.change(screen.getByLabelText("Loại chi"), { target: { value: "Lương thưởng" } });
+  expect(screen.getByText(/chi trả tại Thu nhập/)).toBeInTheDocument();
 });
