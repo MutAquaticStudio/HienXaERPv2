@@ -3222,3 +3222,14 @@ xong toàn bộ rồi QA một lần; tệp áp QA sẽ chia < 20.000 ký tự. 
 - F `552115a`: `portal.module.css` viết lại theo bảng màu D29; bộ đếm 72 px, nút hoàn tất dính đáy; `portalOrderProgress` + `OrderProgress`;
   trang chủ khách có "Đặt hàng mới", đơn đang theo dõi, đơn gần đây; `aria-current="page"` trên menu cổng.
 - Kiểm tra trực quan từng đợt bằng ảnh chụp 1440 / 1280 / 390 px (HTML thật dựng qua test tạm, không commit).
+
+## 2026-10-23 — Phát hành UI-R1 (D29) lên Production
+
+- Bổ sung trước phát hành: responsive máy tính bảng (`421baf4`: trạng thái dạng chip dưới 1080 px, phần xem nhanh dính trái khi bảng
+  cuộn ngang, thẻ dòng hàng có lề) và `README.md` mới (`3d8ab5e`). Preview Vercel dữ liệu QA (`dpl_Gke1NBi8FvvLFrQWXGSZNUZaRemg`).
+- Owner hỏi đã merge / deploy chưa và yêu cầu cập nhật README; xác nhận "Merge + deploy luôn". PR #60 (CI `phase-gate` +
+  `db-migrations` xanh) merge, `main` = `6a4ff60`. Trước đó: `pnpm check` (222 file / 1183 test, build), native 41/41,
+  `node --test scripts/qa/*` 15/15, 17 class mà script QA dùng vẫn còn.
+- Không có migration. Deploy `dpl_9ng2vYxbhDgMa6e73Z4yaN5BbFjK` (`main@6a4ff60`); `/api/health` đúng sha, không lỗi runtime;
+  quay lui: `dpl_GFdP4h2M4KoAemhEW1FTPbW7phUq`.
+- Kịch bản QA giao diện `KICH-BAN-QA-GIAO-DIEN.md` gửi Owner (Owner tự QA).
