@@ -16,11 +16,12 @@ import { CORE_LIST_PAGE_SIZE, parseCoreListQuery, ilikePattern } from "@/lib/cor
 import { createServerSupabase } from "@/lib/supabase/server";
 import { createServiceJobAction } from "@/modules/workforce/actions";
 import { AutoFilterForm } from "@/components/ui/auto-filter-form";
-import { DetailTabs } from "@/components/ui/detail-tabs";
+import { ExpandableRows } from "@/components/lists/expandable-rows";
+import { ListFilterGroup } from "@/components/lists/list-filter-group";
 import { FormDialog } from "@/components/ui/form-dialog";
 import { ServiceJobTimeFields } from "@/components/workforce/service-job-time-fields";
 
-type Job = { id: string; job_number: string; customer_name: string; site_name: string; service_type: string; scheduled_start: string; planned_quantity: string | null; unit_label: string; operator_name: string | null; execution_state: string };
+type Job = { id: string; job_number: string; customer_name: string; site_name: string; service_type: string; scheduled_start: string; scheduled_end?: string | null; description?: string | null; planned_quantity: string | null; unit_label: string; operator_name: string | null; execution_state: string };
 const STATES = ["SCHEDULED", "IN_PROGRESS", "RESULT_SUBMITTED", "VERIFIED", "CANCELLED"] as const;
 const stateTone = (state: string) => state === "VERIFIED" ? "success" as const : state === "RESULT_SUBMITTED" ? "warning" as const : state === "CANCELLED" ? "danger" as const : "info" as const;
 /** FB8: an empty planned quantity is counted on site. */
@@ -42,7 +43,7 @@ export default async function ServiceJobsPage({ searchParams }: { searchParams: 
   const canManage = access.permissions.has("service.manage");
   async function loadJobs(): Promise<{ jobs: Job[]; hasNext: boolean }> {
     if (list.q) {
-      let request = supabase.from("service_job_read").select("id, job_number, customer_name, site_name, service_type, scheduled_start, planned_quantity, unit_label, operator_name, execution_state")
+      let request = supabase.from("service_job_read").select("id, job_number, customer_name, site_name, service_type, scheduled_start, scheduled_end, description, planned_quantity, unit_label, operator_name, execution_state")
         .eq("branch_id", branchId)
         .or(`job_number.ilike.${ilikePattern(list.q)},customer_name.ilike.${ilikePattern(list.q)},site_name.ilike.${ilikePattern(list.q)},service_type.ilike.${ilikePattern(list.q)},operator_name.ilike.${ilikePattern(list.q)}`);
       if (list.state) request = request.eq("execution_state", list.state);
@@ -52,7 +53,7 @@ export default async function ServiceJobsPage({ searchParams }: { searchParams: 
       return { jobs: rows.slice(0, CORE_LIST_PAGE_SIZE), hasNext: rows.length > CORE_LIST_PAGE_SIZE };
     }
 
-    let request = supabase.from("service_jobs").select("id, job_number, service_type, scheduled_start, planned_quantity, unit_label, execution_state")
+    let request = supabase.from("service_jobs").select("id, job_number, service_type, scheduled_start, scheduled_end, description, planned_quantity, unit_label, execution_state")
       .eq("branch_id", branchId);
     if (list.state) request = request.eq("execution_state", list.state);
     const { data, error } = await request.order("scheduled_start", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1);
@@ -94,9 +95,9 @@ export default async function ServiceJobsPage({ searchParams }: { searchParams: 
     supabase.from("customers").select("id, code, display_name").eq("branch_id", branchId).eq("id", query.customerId!).maybeSingle(),
     uuid.test(query.siteId ?? "") ? supabase.from("customer_sites").select("id, customer_id, name").eq("customer_id", query.customerId!).eq("id", query.siteId!).maybeSingle() : Promise.resolve({ data: null, error: null }),
   ]) : [{ data: null }, { data: null }];
-  const tabs = [{ id: "all", label: "Tất cả" }, ...STATES.map((state, index) => ({ id: state, label: serviceStateLabel(state), count: shown(counts[index]) }))];
-  const tabHref = (tab: string) => `/admin/service-jobs${tab === "all" ? (list.q ? `?q=${encodeURIComponent(list.q)}` : "") : `?state=${tab}${list.q ? `&q=${encodeURIComponent(list.q)}` : ""}`}`;
-  return <>
+  const stateFilter = STATES.includes(list.state as typeof STATES[number]) ? list.state : "";
+  const filterOptions = [{ value: "", label: "Tất cả" }, ...STATES.map((state, index) => ({ value: state, label: serviceStateLabel(state), count: shown(counts[index]) }))];
+  return <div className="page-stack">
     <header className="page-heading"><div><p className="eyebrow">Điều phối dịch vụ</p><h1>Đơn dịch vụ</h1>
       <p className="lede">Chở hàng theo chuyến, máy theo giờ, bốc xếp theo công. Chưa biết số lượng thì để trống: thợ bấm số thực tế khi hoàn tất, văn phòng xác minh và ghi công nợ.</p></div>
       {canManage && <div className="action-cluster">
@@ -118,8 +119,35 @@ export default async function ServiceJobsPage({ searchParams }: { searchParams: 
         <Link className="button button-secondary" href="/admin/service-jobs/types">Loại dịch vụ</Link></div>}
     </header>
     <ActionNotice notice={query.notice} error={query.error} />
-    <DetailTabs tabs={tabs} active={STATES.includes(list.state as typeof STATES[number]) ? list.state : "all"} label="Trạng thái đơn dịch vụ" href={tabHref} />
-    <AutoFilterForm>{list.state && <input type="hidden" name="state" value={list.state} />}<label>Tìm kiếm<input name="q" defaultValue={list.q} placeholder="Mã, khách, công trình, dịch vụ, người làm" /></label>{(list.q || list.state) && <Link className="code-link" href="/admin/service-jobs">Xóa lọc</Link>}</AutoFilterForm>
-    <section className="card"><div className="section-head"><h2>{jobs.length} đơn dịch vụ trên trang này</h2><span className="scope-chip">25 / trang</span></div><div className="table-wrap"><table><thead><tr><th>Mã</th><th>Khách / công trình</th><th>Dịch vụ</th><th>Lịch</th><th>Số lượng dự kiến</th><th>Người làm</th><th>Trạng thái</th></tr></thead><tbody>{jobs.map((job) => <tr key={job.id}><td><Link className="code-link" href={`/admin/service-jobs/${job.id}`}>{job.job_number}</Link></td><td>{job.customer_name}<small className="table-subline">{job.site_name}</small></td><td>{job.service_type}</td><td>{formatBusinessDateTime(job.scheduled_start)}</td><td className="mono">{plannedText(job)}</td><td>{job.operator_name ?? "Chưa giao"}</td><td><StatusBadge tone={stateTone(job.execution_state)}>{serviceStateLabel(job.execution_state)}</StatusBadge></td></tr>)}</tbody></table>{!jobs.length && <p className="empty-inline">{list.q || list.state ? "Không có đơn dịch vụ phù hợp bộ lọc." : "Chưa có đơn dịch vụ. Bấm “+ Tạo đơn dịch vụ”."}</p>}</div><ListPager page={list.page} hasNext={jobResult.hasNext} params={{ q: list.q, state: list.state }} /></section>
-  </>;
+    <div className="list-layout">
+      <AutoFilterForm className="card card-pad list-filters" aria-label="Bộ lọc đơn dịch vụ">
+        <label className="list-filters-search">Tìm kiếm<input type="search" name="q" defaultValue={list.q} placeholder="Mã, khách, công trình, dịch vụ, người làm" /></label>
+        <ListFilterGroup key={stateFilter} legend="Trạng thái" name="state" value={stateFilter} options={filterOptions} />
+        {(list.q || list.state) && <Link className="code-link" href="/admin/service-jobs">Xóa lọc</Link>}
+      </AutoFilterForm>
+      <section className="card list-main"><div className="section-head"><h2>{jobs.length} đơn dịch vụ trên trang này</h2><span className="scope-chip">25 / trang</span></div>
+        <div className="table-wrap"><table className="row-link-table">
+          <thead><tr><th><span className="sr-only">Xem nhanh</span></th><th>Mã</th><th>Khách / công trình</th><th>Dịch vụ</th><th>Lịch</th><th>Số lượng dự kiến</th><th>Người làm</th><th>Trạng thái</th></tr></thead>
+          <ExpandableRows columns={8} rows={jobs.map((job) => {
+            const href = `/admin/service-jobs/${job.id}`;
+            return { id: job.id, label: job.job_number, className: job.execution_state === "CANCELLED" ? "row-muted" : undefined,
+              cells: <>
+                <td className="mono" data-label="Mã"><Link className="code-link" href={href} tabIndex={-1}>{job.job_number}</Link></td>
+                <td className="row-title" data-label="Khách / công trình"><Link className="code-link row-link" href={href}>{job.customer_name}</Link><small className="table-subline">{job.site_name}</small></td>
+                <td data-label="Dịch vụ">{job.service_type}</td>
+                <td data-label="Lịch">{formatBusinessDateTime(job.scheduled_start)}</td>
+                <td className="mono" data-label="Số lượng dự kiến">{plannedText(job)}</td>
+                <td data-label="Người làm">{job.operator_name ?? "Chưa giao"}</td>
+                <td data-label="Trạng thái"><StatusBadge tone={stateTone(job.execution_state)}>{serviceStateLabel(job.execution_state)}</StatusBadge></td>
+              </>,
+              detail: <div className="row-expansion-grid">
+                <section><h3>Công việc</h3><ul className="clean-list"><li>{job.service_type} · {plannedText(job)}</li>{job.description && <li>{job.description}</li>}</ul></section>
+                <section><h3>Lịch & người làm</h3><ul className="clean-list"><li>{formatBusinessDateTime(job.scheduled_start)}{job.scheduled_end ? ` – ${formatBusinessDateTime(job.scheduled_end)}` : ""}</li><li>{job.operator_name ?? "Chưa giao thợ"}</li></ul></section>
+                <section className="row-expansion-actions"><Link className="button button-primary" href={href}>Mở đơn dịch vụ</Link></section>
+              </div> };
+          })} />
+        </table>{!jobs.length && <p className="empty-inline">{list.q || list.state ? "Không có đơn dịch vụ phù hợp bộ lọc." : "Chưa có đơn dịch vụ. Bấm “+ Tạo đơn dịch vụ”."}</p>}</div>
+        <ListPager page={list.page} hasNext={jobResult.hasNext} params={{ q: list.q, state: list.state }} /></section>
+    </div>
+  </div>;
 }
