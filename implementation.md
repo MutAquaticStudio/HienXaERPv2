@@ -3306,4 +3306,4 @@ Thay đổi (migration `20261024090000`–`20261024090900`, native 285, 290, 295
 - QA `ffrwiglcrlumfvhubaxg`: áp đủ 10 migration `20261024090000`–`20261024090900`. Chín file ghi sổ có md5 khớp file. Riêng `20261024090600` có câu `delete` trong thân hàm: công cụ SQL đòi xác nhận "destructive" nhưng hết giờ chờ, nên Owner tự chạy trong SQL Editor. Bản ghi sổ khác file ở khoảng trắng; thân 4 hàm (chuẩn hóa khoảng trắng) trùng md5 với file.
 - Production `nbwynrwkdbtfsitafsxa`: áp 9 migration (trừ 090600), md5 khớp từng file. 090700 thêm 3 quy đổi chuẩn. 090000 trả phần dư cho phiếu VERIFIED còn hàng trên xe. Còn chờ: Owner chạy `20261024090600` (tự chia việc).
 - Vercel deploy production `dpl_5swppcWJWVj6Bcxo3PVVsgk73Qxb` READY: `/api/health` buildSha `3a088de`, không có lỗi runtime.
-
+- Owner chạy `20261024090600` trên Production bằng SQL Editor. Đã kiểm: thân 4 hàm (chuẩn hóa khoảng trắng) trùng md5 với file và với QA; trigger `vehicle_default_capacity_note` có; không xe nào thiếu ghi chú sức chở; migration đã ghi sổ. FB10 hoàn tất.
