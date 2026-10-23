@@ -1599,3 +1599,8 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .return-total { display: flex; justify-content: space-between; align-items: baseline; margin: 0; }
 .return-total strong { font-size: 1.35rem; color: var(--primary); }
 @media (max-width: 900px) { .return-layout { grid-template-columns: 1fr; } .return-summary { position: static; } }
+/* FB10 (4.7): supplier invoice matching — differences from the receipt are tinted. */
+.matching-table td.variance { background: var(--warning-soft); }
+.matching-table td.variance input { border-color: var(--warning); }
+.matching-table td.numeric input { width: 7.5rem; text-align: right; }
+.matching-table tr.selected { background: var(--primary-soft); }
