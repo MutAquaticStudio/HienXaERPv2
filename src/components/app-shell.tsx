@@ -1,9 +1,9 @@
 "use client";
 
-import { BarChart3, Boxes, ChevronDown, ClipboardCheck, Factory, FileText, LayoutDashboard, LogOut, Menu, MessageSquare, PackageSearch, Route, ScrollText, Settings2, ShieldCheck, ShoppingCart, Truck, UserRound, UsersRound, WalletCards, Warehouse, X, type LucideIcon } from "lucide-react";
+import { BarChart3, Boxes, ChevronDown, ClipboardCheck, Factory, FileText, LayoutDashboard, LogOut, MapPin, Menu, MessageSquare, PackageSearch, Plus, Route, ScrollText, Settings2, ShieldCheck, ShoppingCart, Truck, UserRound, UsersRound, WalletCards, Warehouse, X, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { AppearanceButton } from "@/components/settings/appearance-button";
 import { UatBrowserTiming } from "@/components/uat-browser-timing";
@@ -67,15 +67,32 @@ const navigation: Record<Surface, readonly NavigationItem[]> = {
   ],
 } as const;
 
-const surfaceNames = { admin: "Điều hành", work: "Tác nghiệp", customer: "Khách hàng" } as const;
+/** Below this width the blue menu becomes a drawer opened from the top bar (D29). */
+const COMPACT_QUERY = "(max-width: 1179px)";
+function subscribeCompact(onChange: () => void) {
+  const query = typeof window !== "undefined" ? window.matchMedia?.(COMPACT_QUERY) : undefined;
+  query?.addEventListener("change", onChange);
+  return () => query?.removeEventListener("change", onChange);
+}
+const compactNow = () => typeof window !== "undefined" && Boolean(window.matchMedia?.(COMPACT_QUERY).matches);
 
-export function AppShell({ surface, children, permissions, actorName, branchId }: { surface: Surface; children: React.ReactNode; permissions?: readonly string[]; actorName?: string; branchName?: string; branchId?: string }) {
+/**
+ * D29 office frame: a white bar (brand, branch, bell, the user's menu) over a blue menu bar whose groups open as
+ * drop-downs; the current section reads as a tab joined to the page. On narrow screens the same menu is a drawer.
+ */
+export function AppShell({ surface, children, permissions, actorName, branchName, branchId }: { surface: Surface; children: React.ReactNode; permissions?: readonly string[]; actorName?: string; branchName?: string; branchId?: string }) {
   const pathname = usePathname();
+  const compact = useSyncExternalStore(subscribeCompact, compactNow, () => false);
   const [open, setOpen] = useState(false);
+  const [dropdown, setDropdown] = useState<string | null>(null);
+  const [userMenu, setUserMenu] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, { pathname: string; open: boolean }>>({});
   const menuButton = useRef<HTMLButtonElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
   const restoreMenuFocus = useRef(false);
+  const navRef = useRef<HTMLElement>(null);
+  const userRef = useRef<HTMLDivElement>(null);
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const visibleItems = navigation[surface].filter((item) => item.permissionsAny
     ? item.permissionsAny.some((permission) => permissions?.includes(permission))
     : !item.permission || permissions?.includes(item.permission) || Boolean(item.managementPermission && permissions?.includes(item.managementPermission)))
@@ -85,6 +102,7 @@ export function AppShell({ surface, children, permissions, actorName, branchId }
   const activeHref = visibleItems.filter((item) => pathname === item.href || (!item.exact && pathname.startsWith(`${item.href}/`)) || item.activePrefixes?.some(under))
     .sort((left, right) => right.href.length - left.href.length)[0]?.href;
   const initials = actorName?.trim().split(/\s+/).filter(Boolean).slice(-2).map((part) => part[0]?.toLocaleUpperCase("vi-VN")).join("") ?? "";
+  const canCreateOrder = surface === "admin" && Boolean(permissions?.includes("orders.create"));
 
   useEffect(() => {
     if (open) closeButton.current?.focus();
@@ -94,17 +112,65 @@ export function AppShell({ surface, children, permissions, actorName, branchId }
     }
   }, [open]);
 
+  // A drop-down or the user menu closes on a click elsewhere; the page under it stays usable.
+  useEffect(() => {
+    if (!dropdown && !userMenu) return;
+    const close = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (dropdown && !navRef.current?.contains(target)) setDropdown(null);
+      if (userMenu && !userRef.current?.contains(target)) setUserMenu(false);
+    };
+    document.addEventListener("pointerdown", close);
+    return () => document.removeEventListener("pointerdown", close);
+  }, [dropdown, userMenu]);
+
+  useEffect(() => () => { if (hoverTimer.current) clearTimeout(hoverTimer.current); }, []);
+
   function closeMenu() { restoreMenuFocus.current = true; setOpen(false); }
+  function navigated() { setOpen(false); setDropdown(null); }
   function renderLink(item: NavigationItem, nested = false) {
     const Icon = item.icon;
     const active = item.href === activeHref;
-    return <Link className={`nav-link${nested ? " nav-link-nested" : ""}${active ? " active" : ""}`} href={item.href} key={item.href} aria-current={active ? "page" : undefined} onClick={() => setOpen(false)}><Icon aria-hidden="true" size={nested ? 18 : 20} strokeWidth={1.8} /><span>{item.label}</span></Link>;
+    return <Link className={`nav-link${nested ? " nav-link-nested" : ""}${active ? " active" : ""}`} href={item.href} key={item.href} aria-current={active ? "page" : undefined} onClick={navigated}><Icon aria-hidden="true" size={nested ? 18 : 17} strokeWidth={1.9} /><span>{item.label}</span></Link>;
+  }
+  // Mouse users get KiotViet-style hover menus; touch, pen and keyboard use the button.
+  function hover(groupId: string | null, pointerType: string) {
+    if (compact || pointerType !== "mouse") return;
+    if (hoverTimer.current) clearTimeout(hoverTimer.current);
+    hoverTimer.current = setTimeout(() => setDropdown(groupId), groupId ? 60 : 160);
   }
 
   return (
     <div className="app-shell">
       {open && <button className="sidebar-backdrop" type="button" tabIndex={-1} aria-label="Đóng điều hướng" onClick={closeMenu} />}
-      <aside id="app-sidebar" className={`sidebar${open ? " open" : ""}`} aria-label={`Điều hướng ${surfaceNames[surface]}`} onKeyDown={(event) => {
+      <header className="utility-bar" inert={open}>
+        <div className="utility-inner">
+          <button ref={menuButton} className="mobile-menu" type="button" aria-label="Mở menu" aria-expanded={open} aria-controls="app-menu" onClick={() => setOpen(true)}><Menu size={22} /></button>
+          <Link className="brand" href={surface === "admin" ? "/admin" : `/${surface}`}><span className="brand-mark" aria-hidden="true">HX</span><strong>Hiền Xa ERP</strong></Link>
+          {branchName && <span className="utility-branch"><MapPin aria-hidden="true" size={15} />{branchName}</span>}
+          <div className="utility-actions">
+            {surface === "admin" && branchId && <NotificationBell branchId={branchId} />}
+            <div className="user-menu" ref={userRef} onKeyDown={(event) => { if (event.key === "Escape" && userMenu) { event.preventDefault(); setUserMenu(false); } }}>
+              <button className="identity" type="button" aria-expanded={userMenu} aria-controls="user-menu-panel" onClick={() => setUserMenu((value) => !value)}>
+                <span className="identity-avatar" aria-hidden="true">{initials}</span><span className="identity-name">{actorName}</span><ChevronDown className="nav-chevron" aria-hidden="true" size={15} />
+              </button>
+              <div id="user-menu-panel" className="user-menu-panel" hidden={!userMenu}>
+                <p className="user-menu-head"><strong>{actorName}</strong>{branchName && <span>{branchName}</span>}</p>
+                <AppearanceButton />
+                <form action="/auth/logout" method="post"><button className="logout-button" type="submit"><LogOut size={17} />Đăng xuất</button></form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+      <nav id="app-menu" ref={navRef} className={`main-menu${open ? " open" : ""}`} aria-label="Menu chính" onKeyDown={(event) => {
+        if (event.key === "Escape" && dropdown && !open) {
+          event.preventDefault();
+          const owner = dropdown;
+          setDropdown(null);
+          navRef.current?.querySelector<HTMLButtonElement>(`[aria-controls="nav-${owner}"]`)?.focus();
+          return;
+        }
         if (!open) return;
         if (event.key === "Escape") { event.preventDefault(); closeMenu(); }
         if (event.key === "Tab") {
@@ -114,43 +180,43 @@ export function AppShell({ surface, children, permissions, actorName, branchId }
           else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
         }
       }}>
-        <div className="brand">
-          <div><strong>Hiền Xa ERP</strong></div>
+        <div className="menu-drawer-head">
+          <strong>Hiền Xa ERP</strong>
           <button ref={closeButton} className="mobile-close" type="button" aria-label="Đóng menu" onClick={closeMenu}><X size={22} /></button>
         </div>
-        <nav className="nav-list" aria-label="Các phân hệ">
-          {surface !== "admin" ? visibleItems.map((item) => renderLink(item)) : <>
-            {visibleItems.filter((item) => item.href === "/admin").map((item) => renderLink(item))}
-            {adminGroups.map((group) => {
-              const items = visibleItems.filter((item) => item.group === group.id);
-              if (!items.length) return null;
-              if (items.length === 1) return renderLink(items[0]);
-              const active = items.some((item) => item.href === activeHref);
-              const preference = expandedGroups[group.id];
-              const expanded = preference?.pathname === pathname ? preference.open : active;
-              const Icon = group.icon;
-              return <section className="nav-group" key={group.id}>
-                <button className={`nav-group-toggle${active ? " current" : ""}`} type="button" aria-expanded={expanded} aria-controls={`nav-${group.id}`} onClick={() => setExpandedGroups((current) => ({ ...current, [group.id]: { pathname, open: !expanded } }))}>
-                  <Icon aria-hidden="true" size={20} strokeWidth={1.8} /><span>{group.label}</span><ChevronDown className="nav-chevron" aria-hidden="true" size={16} />
-                </button>
-                <div id={`nav-${group.id}`} className="nav-group-links" hidden={!expanded}>{items.map((item) => renderLink(item, true))}</div>
-              </section>;
-            })}
-            {visibleItems.filter((item) => !item.group && item.href !== "/admin").map((item) => renderLink(item))}
-          </>}
-        </nav>
-        <div className="sidebar-foot">
-          <AppearanceButton />
-          <form action="/auth/logout" method="post"><button className="logout-button" type="submit"><LogOut size={17} />Đăng xuất</button></form>
-          Phiên làm việc có phân quyền
+        <div className="main-menu-inner">
+          <div className="nav-list">
+            {surface !== "admin" ? visibleItems.map((item) => renderLink(item)) : <>
+              {visibleItems.filter((item) => item.href === "/admin").map((item) => renderLink(item))}
+              {adminGroups.map((group) => {
+                const items = visibleItems.filter((item) => item.group === group.id);
+                if (!items.length) return null;
+                if (items.length === 1) return renderLink(items[0]);
+                const active = items.some((item) => item.href === activeHref);
+                const preference = expandedGroups[group.id];
+                const expanded = compact || open
+                  ? (preference?.pathname === pathname ? preference.open : active)
+                  : dropdown === group.id;
+                const Icon = group.icon;
+                return <div className={`nav-group${expanded ? " expanded" : ""}`} key={group.id}
+                  onPointerEnter={(event) => hover(group.id, event.pointerType)} onPointerLeave={(event) => hover(null, event.pointerType)}
+                  onBlur={(event) => { if (!compact && !open && !event.currentTarget.contains(event.relatedTarget as Node | null)) setDropdown((current) => current === group.id ? null : current); }}>
+                  <button className={`nav-group-toggle${active ? " current" : ""}`} type="button" aria-expanded={expanded} aria-controls={`nav-${group.id}`}
+                    onClick={() => compact || open
+                      ? setExpandedGroups((current) => ({ ...current, [group.id]: { pathname, open: !expanded } }))
+                      : setDropdown(expanded ? null : group.id)}>
+                    <Icon aria-hidden="true" size={17} strokeWidth={1.9} /><span>{group.label}</span><ChevronDown className="nav-chevron" aria-hidden="true" size={15} />
+                  </button>
+                  <div id={`nav-${group.id}`} className="nav-group-links" hidden={!expanded}>{items.map((item) => renderLink(item, true))}</div>
+                </div>;
+              })}
+              {visibleItems.filter((item) => !item.group && item.href !== "/admin").map((item) => renderLink(item))}
+            </>}
+          </div>
+          {canCreateOrder && <Link className="button button-commerce menu-cta" href="/admin/orders/new" onClick={navigated}><Plus aria-hidden="true" size={17} strokeWidth={2.4} />Tạo đơn bán</Link>}
         </div>
-      </aside>
+      </nav>
       <div className="workspace" inert={open}>
-        <header className="topbar">
-          <button ref={menuButton} className="mobile-menu" type="button" aria-label="Mở menu" aria-expanded={open} aria-controls="app-sidebar" onClick={() => setOpen(true)}><Menu size={24} /></button>
-          {surface === "admin" && branchId && <NotificationBell branchId={branchId} />}
-          <div className="identity"><span>{actorName}</span><span className="identity-avatar" aria-hidden="true">{initials}</span></div>
-        </header>
         <main className="content">{children}{surface === "admin" && <UatBrowserTiming />}</main>
       </div>
     </div>
