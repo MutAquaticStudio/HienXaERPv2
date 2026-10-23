@@ -10,8 +10,10 @@ import { ilikePattern, parseCoreListQuery } from "@/lib/core-list";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { availableReportKinds, loadFixedReport, type ReportKind } from "@/modules/reports/server";
+import { availableCenterReports } from "@/modules/reports/center";
+import { ReportCenterView } from "./report-center-view";
 
-type Query = { report?: string; from?: string; to?: string; asOf?: string; customer?: string; customerSearch?: string; activity?: string; cutoff?: string; page?: string };
+type Query = { report?: string; warehouse?: string; from?: string; to?: string; asOf?: string; customer?: string; customerSearch?: string; activity?: string; cutoff?: string; page?: string };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const labels: Record<ReportKind, string> = { receivables: "Phải thu", payables: "Phải trả", expenses: "Chi phí vận hành" };
@@ -23,6 +25,16 @@ function reportHref(query: Query) { const params = new URLSearchParams(); for (c
 export default async function ReportsPage({ searchParams }: { searchParams: Promise<Query> }) {
   const access = await requireInternalPermission("dashboard.read");
   const query = await searchParams;
+  // FB10 (12): the KiotViet-style hub is the default; the older detailed finance reports stay one click away.
+  const centerReports = availableCenterReports(access.permissions);
+  if (!["receivables", "payables", "expenses"].includes(query.report ?? "") && centerReports.length) {
+    const today = localDate();
+    const report = centerReports.find((item) => item.key === query.report) ?? centerReports[0];
+    const centerTo = DATE.test(query.to ?? "") && query.to! <= today ? query.to! : today;
+    const centerFrom = DATE.test(query.from ?? "") && query.from! <= centerTo ? query.from! : report.key === "END_OF_DAY" ? centerTo : `${centerTo.slice(0, 7)}-01`;
+    return <ReportCenterView access={access} report={report} today={today}
+      filters={{ from: centerFrom, to: centerTo, warehouse: UUID.test(query.warehouse ?? "") ? query.warehouse : undefined }} />;
+  }
   const available = availableReportKinds(access.permissions);
   const requested = available.includes(query.report as ReportKind) ? query.report as ReportKind : available[0];
   const today = localDate();
