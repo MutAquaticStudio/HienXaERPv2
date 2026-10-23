@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     if (!extension) return failure("Chỉ chấp nhận PNG, JPEG hoặc PDF.", 400);
     const supabase = await createServerSupabase();
     const { data: order, error: orderError } = await supabase.from("purchase_order_read").select("id")
-      .eq("id", parsed.data.purchaseOrderId).eq("branch_id", access.branchId).eq("state", "CONFIRMED").maybeSingle();
+      .eq("id", parsed.data.purchaseOrderId).eq("branch_id", access.branchId).in("state", ["DRAFT", "CONFIRMED"]).maybeSingle();
     if (orderError) return failure("Không thể kiểm tra đơn mua.", 503);
     if (!order) return failure("Đơn mua không còn nhận hàng được.", 404);
 
