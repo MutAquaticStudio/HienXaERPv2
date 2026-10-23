@@ -1451,3 +1451,38 @@ a.portal-choice:hover, a.portal-choice:focus-visible { border-color: var(--prima
 .credit-dialog { border: 0; background: transparent; padding: 0; }
 .credit-dialog .credit-summary { margin-top: 0; }
 .credit-approvers { display: grid; gap: 8px; margin: 0; padding-left: 1.2rem; }
+/* D29 motion: short and purposeful — pages rise in, popups pop, menus drop, rows open in place. Everything here is
+   switched off by the prefers-reduced-motion block above. */
+@keyframes rise-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes dialog-in { from { opacity: 0; transform: translateY(10px) scale(0.97); } to { opacity: 1; transform: none; } }
+@keyframes dialog-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: scale(0.98); } }
+@keyframes sheet-in { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+@keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes notice-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+@keyframes step-pulse { 0% { box-shadow: 0 0 0 0 rgba(11, 99, 198, 0.45); } 80% { box-shadow: 0 0 0 9px rgba(11, 99, 198, 0); } 100% { box-shadow: 0 0 0 0 rgba(11, 99, 198, 0); } }
+@keyframes shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+@keyframes bump-a { from { transform: scale(0.86); } to { transform: none; } }
+@keyframes bump-b { from { transform: scale(0.86); } to { transform: none; } }
+.content > :not(.page-stack), .content > .page-stack > * { animation: rise-in 260ms var(--ease-out) both; }
+.content > :nth-child(2), .content > .page-stack > :nth-child(2) { animation-delay: 30ms; }
+.content > :nth-child(3), .content > .page-stack > :nth-child(3) { animation-delay: 60ms; }
+.content > :nth-child(4), .content > .page-stack > :nth-child(4) { animation-delay: 90ms; }
+.content > :nth-child(n + 5), .content > .page-stack > :nth-child(n + 5) { animation-delay: 120ms; }
+.dialog-backdrop { background: rgba(16, 34, 58, 0.48); backdrop-filter: blur(2px); animation: fade-in var(--dur) var(--ease-out) both; }
+.dialog-panel { border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); animation: dialog-in var(--dur-slow) cubic-bezier(0.2, 0.9, 0.25, 1.05) both; }
+.dialog-backdrop[data-state="closing"] { animation: fade-out var(--dur-exit) ease both; }
+.dialog-backdrop[data-state="closing"] .dialog-panel { animation: dialog-out var(--dur-exit) ease both; }
+@media (max-width: 640px) { .dialog-panel { border-radius: 0; animation-name: sheet-in; } }
+.form-message, .row-expansion > td > *, details[open] > :not(summary) { animation: notice-in var(--dur) var(--ease-out) both; }
+.doc-editor-listbox, .more-actions-menu, .notification-panel { animation: menu-in var(--dur) var(--ease-out) both; }
+a.card { transition: transform var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out); }
+a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: var(--border-strong); box-shadow: var(--shadow); }
+.delivery-progress li.current .delivery-progress-dot { animation: step-pulse 1.8s ease-out infinite; }
+.qty-bump-a { animation: bump-a 220ms var(--ease-spring); }
+.qty-bump-b { animation: bump-b 220ms var(--ease-spring); }
+.qty-step { transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out), transform 80ms var(--ease-out); }
+.qty-step:active:not(:disabled) { transform: scale(0.9); }
+/* Loading: grey shapes where the page will be, so the frame never goes blank while the next screen loads. */
+.skeleton { display: block; border-radius: 6px; background: linear-gradient(90deg, var(--surface-sunken) 0%, var(--border) 40%, var(--surface-sunken) 80%); background-size: 200% 100%; animation: shimmer 1.2s linear infinite; }
+.skeleton-page { display: grid; gap: 18px; }
+.skeleton-row { display: grid; grid-template-columns: 1.2fr 2fr 1fr 1fr; gap: 16px; padding: 14px 18px; border-top: 1px solid var(--border); }

@@ -40,3 +40,16 @@ describe("QuantityStepper", () => {
     expect(screen.getByLabelText("Số giờ")).toBeRequired();
   });
 });
+
+describe("QuantityStepper motion (D29)", () => {
+  it("restarts a small bounce on every tap", () => {
+    render(<QuantityStepper id="q" label="Số chuyến" defaultValue="1" />);
+    const box = screen.getByLabelText("Số chuyến");
+    expect(box).not.toHaveClass("qty-bump-a");
+    fireEvent.click(screen.getByRole("button", { name: "Thêm 1 · Số chuyến" }));
+    expect(box).toHaveClass("qty-bump-a");
+    fireEvent.click(screen.getByRole("button", { name: "Thêm 1 · Số chuyến" }));
+    expect(box).toHaveClass("qty-bump-b");
+    expect(box).toHaveValue("3");
+  });
+});

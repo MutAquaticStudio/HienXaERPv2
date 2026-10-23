@@ -29,6 +29,9 @@ export function QuantityStepper({ id, name, label, unit, value, defaultValue = "
   const current = controlled ? value : own;
   const hidden = useRef<HTMLInputElement>(null);
   const set = (next: string) => { if (!controlled) setOwn(next); onValue?.(next); };
+  // D29: the number gives a small bounce on each tap of − / + (two class names so the animation restarts).
+  const [bump, setBump] = useState<"" | "qty-bump-a" | "qty-bump-b">("");
+  const tap = (next: string) => { set(next); setBump((current) => current === "qty-bump-a" ? "qty-bump-b" : "qty-bump-a"); };
 
   // A form reset or a restored draft writes the hidden field; show it in the box too.
   useEffect(() => {
@@ -48,13 +51,13 @@ export function QuantityStepper({ id, name, label, unit, value, defaultValue = "
   const invalid = current.trim() !== "" && normalizeDecimalInput(current) === null;
   return <span className="qty-stepper qty-stepper-large">
     <button type="button" className="qty-step" aria-label={`Bớt 1 · ${label}`} disabled={disabled || (down === null && !clears)}
-      onClick={() => set(down ?? "")}><Minus size={18} aria-hidden="true" /></button>
-    <NumberEntry id={id} aria-label={label} inputMode="decimal" value={current} normalize={normalizeDecimalInput} display={decimalForEditing}
+      onClick={() => tap(down ?? "")}><Minus size={18} aria-hidden="true" /></button>
+    <NumberEntry id={id} className={bump || undefined} aria-label={label} inputMode="decimal" value={current} normalize={normalizeDecimalInput} display={decimalForEditing}
       placeholder={placeholder} required={required && !allowEmpty} disabled={disabled} aria-invalid={invalid || undefined} aria-describedby={describedBy}
       onValue={set} />
     {unit && <span className="qty-stepper-unit">{unit}</span>}
     <button type="button" className="qty-step" aria-label={`Thêm 1 · ${label}`} disabled={disabled}
-      onClick={() => set(stepBy(current, 1, min) ?? String(Math.max(1, min)))}><Plus size={18} aria-hidden="true" /></button>
+      onClick={() => tap(stepBy(current, 1, min) ?? String(Math.max(1, min)))}><Plus size={18} aria-hidden="true" /></button>
     {name && <input ref={hidden} type="hidden" name={name} value={normalizeDecimalInput(current) ?? current.trim()} />}
   </span>;
 }
