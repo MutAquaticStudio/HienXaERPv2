@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { AuthFrame } from "./auth-frame";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { createBrowserSupabase } from "@/lib/supabase/browser";
 
@@ -120,11 +121,7 @@ export function RecoveryConfirmForm({ surface, hasAuthError }: { surface: "admin
     : status === "invalid" ? (expired ? "Liên kết đã hết hạn hoặc đã được dùng" : "Liên kết không hợp lệ hoặc đã hết hạn")
     : status === "updated" ? (invite ? "Tài khoản đã sẵn sàng" : "Đã cập nhật mật khẩu")
     : invite ? "Đặt mật khẩu cho tài khoản mới" : "Đặt mật khẩu mới";
-  return <main className="auth-screen"><section className="auth-story"><span className="brand-mark">HX</span>
-    <p className="eyebrow">{invite ? "Kích hoạt tài khoản" : "Khôi phục tài khoản"}</p>
-    <h1>{invite ? "Chào mừng đến Hiền Xa ERP." : "Quay lại công việc an toàn."}</h1>
-    <p>{invite ? "Đặt mật khẩu một lần để bắt đầu làm việc theo vai trò quản lý đã cấp." : "Liên kết khôi phục cần được xác minh trước khi đặt mật khẩu mới."}</p></section>
-    <section className="auth-panel"><div className="auth-card"><p className="eyebrow">Xác minh tài khoản</p><h2>{heading}</h2>
+  return <AuthFrame><p className="eyebrow">{invite ? "Kích hoạt tài khoản" : "Khôi phục tài khoản"}</p><h1>{heading}</h1>
     {status === "checking" && <p className="muted" role="status">Đang kiểm tra liên kết. Vui lòng chờ.</p>}
     {status === "invalid" && <><p className="form-message" role="alert">{expired
       ? "Liên kết chỉ dùng được một lần và có hạn. Hãy nhờ quản lý bấm \"Link kích hoạt\" ở danh sách nhân viên để tạo link mới, hoặc yêu cầu liên kết khôi phục bằng đúng email của bạn."
@@ -133,5 +130,5 @@ export function RecoveryConfirmForm({ surface, hasAuthError }: { surface: "admin
     {status === "ready" && <form className="auth-form" onSubmit={submitPassword}><p className="muted">{invite ? "Tạo mật khẩu để đăng nhập những lần sau." : "Tạo mật khẩu mới cho tài khoản của bạn."}</p><div className="field"><label htmlFor="recovery-new-password">Mật khẩu mới</label><input id="recovery-new-password" type="password" autoComplete="new-password" minLength={8} maxLength={200} required value={password} onChange={(event) => setPassword(event.target.value)} /></div><div className="field"><label htmlFor="recovery-confirm-password">Nhập lại mật khẩu mới</label><input id="recovery-confirm-password" type="password" autoComplete="new-password" minLength={8} maxLength={200} required value={confirmation} onChange={(event) => setConfirmation(event.target.value)} /></div>{message && <p className="form-message" role="alert">{message}</p>}<button className="button button-primary auth-submit" type="submit" disabled={pending}>{pending ? "Đang cập nhật..." : invite ? "Đặt mật khẩu" : "Cập nhật mật khẩu"}</button></form>}
     {status === "updated" && <><p className="form-message success" role="status">{invite ? "Mật khẩu đã được lưu. Bạn có thể bắt đầu làm việc." : "Mật khẩu mới đã được lưu."}</p>
       {invite ? <Link className="button button-primary auth-submit" href="/">Vào hệ thống</Link> : <Link className="button button-secondary auth-submit" href={loginHref}>Tiếp tục đăng nhập</Link>}</>}
-  </div></section></main>;
+  </AuthFrame>;
 }

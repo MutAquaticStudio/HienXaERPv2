@@ -51,3 +51,17 @@ it("shows no create popups to readers", async () => {
   render(await Page({ searchParams: Promise.resolve({}) }));
   expect(screen.queryByRole("button", { name: /Tạo phiên bản|Ghi căn cứ|Phê duyệt ghi nhận/ })).not.toBeInTheDocument();
 });
+
+it("lets a trip rule for every worker be approved for automatic recognition (D31)", async () => {
+  m.tables.compensation_rules = [...m.tables.compensation_rules,
+    { id: "r3", code: "CHUYEN", name: "Tiền chuyến", version: 1, employee_id: null, earning_type: "PER_TRIP", calculation_kind: "FIXED_PER_BASIS", classification: "DIRECT_LABOR", rate_vnd_per_unit: "30000", rate_bps: null, effective_from: "2026-10-18", effective_to: null },
+    { id: "r4", code: "CHUYEN_CU", name: "Tiền chuyến cũ", version: 1, employee_id: null, earning_type: "PER_TRIP", calculation_kind: "FIXED_PER_BASIS", classification: "DIRECT_LABOR", rate_vnd_per_unit: "25000", rate_bps: null, effective_from: "2026-10-01", effective_to: null }];
+  m.tables.compensation_recognition_policies = [{ rule_id: "r4", employee_id: null, recognition_kind: "WORK_ITEM_VERIFICATION", effective_at: "2026-10-02T01:00:00Z" }];
+  render(await Page({ searchParams: Promise.resolve({}) }));
+  fireEvent.click(screen.getByRole("button", { name: "Phê duyệt ghi nhận tự động theo sự kiện" }));
+  const dialog = screen.getByRole("dialog");
+  const options = within(dialog.querySelector<HTMLSelectElement>("select[name=ruleId]")!).getAllByRole("option").map(option => option.textContent);
+  expect(options).toEqual(["Chọn quy tắc", "CONG_CA · Phiên bản 1 · Thợ Hùng", "CHUYEN · Phiên bản 1 · Mọi thợ"]);
+  expect(within(dialog).getByRole("option", { name: "Việc của thợ được xác minh (gồm chuyến giao thợ báo đã giao)" })).toBeInTheDocument();
+  expect(within(dialog).getByText(/CHUYEN_CU · Mọi thợ/)).toBeInTheDocument();
+});
