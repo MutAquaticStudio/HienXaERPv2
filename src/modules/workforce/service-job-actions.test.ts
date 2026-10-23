@@ -41,6 +41,16 @@ describe("createServiceJobAction (D23)", () => {
     });
   });
 
+  it.each([
+    ["a truck service (no machine field on the form)", ["machineId"], ids.vehicleId],
+    ["a service without truck or machine", ["machineId", "vehicleId"], null],
+  ])("FB9: schedules %s", async (_name, missing, vehicle) => {
+    const data = form({ salesEmployeeId: "" });
+    for (const key of missing) data.delete(key);
+    await expect(createServiceJobAction(data)).rejects.toThrow("REDIRECT:/admin/service-jobs/job-1?notice=service-created");
+    expect(mocks.rpc).toHaveBeenCalledWith("schedule_service_job", expect.objectContaining({ target_vehicle_id: vehicle, target_machine_id: null }));
+  });
+
   it("needs a service type before calling the database", async () => {
     await expect(createServiceJobAction(form({ serviceTypeId: "" }))).rejects.toThrow("REDIRECT:/admin/service-jobs?error=");
     expect(mocks.rpc).not.toHaveBeenCalled();

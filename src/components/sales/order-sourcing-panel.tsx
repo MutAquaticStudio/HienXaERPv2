@@ -6,7 +6,8 @@ import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { formatQuantity } from "@/lib/core/quantity";
 import { autoSourceOrderAction } from "@/modules/sales/actions";
 
-export type SourcingLine = { id: string; name: string; required: string; baseSymbol: string };
+/** `available`: stock that can still be sold across the branch's warehouses (null when it cannot be read). */
+export type SourcingLine = { id: string; name: string; required: string; baseSymbol: string; available?: string | null };
 export type SourcingAllocation = { lineId: string; mode: string; quantity: string; warehouseName: string | null;
   purchaseOrder: { id: string; number: string; state: string } | null };
 export type SourcingRun = { createdAt: string; reasons: Record<string, string> };
@@ -35,7 +36,8 @@ export function OrderSourcingPanel({ orderId, lines, allocations, run, canSource
         const left = remaining.get(line.id)!;
         return <li key={line.id}>
           <div className="sourcing-line-head"><strong>{line.name}</strong>
-            {left.lte(0) ? <StatusBadge tone="success">Đủ nguồn</StatusBadge> : <StatusBadge tone="warning">{`Thiếu ${formatQuantity(left.toFixed())} ${line.baseSymbol}`}</StatusBadge>}</div>
+            {confirmed ? (left.lte(0) ? <StatusBadge tone="success">Đủ nguồn</StatusBadge> : <StatusBadge tone="warning">{`Thiếu ${formatQuantity(left.toFixed())} ${line.baseSymbol}`}</StatusBadge>)
+              : <DraftStock line={line} />}</div>
           {rows.length > 0 && <ul className="sourcing-sources">{rows.map((item, index) => <li key={index}>
             {item.mode === "SUPPLIER_DIRECT"
               ? <>NCC giao thẳng · {item.purchaseOrder ? <Link className="code-link mono" href={`/admin/purchase-orders/${item.purchaseOrder.id}`}>{item.purchaseOrder.number}</Link> : "đơn mua"}
@@ -47,6 +49,20 @@ export function OrderSourcingPanel({ orderId, lines, allocations, run, canSource
       })}
     </ul>
   </section>;
+}
+
+/**
+ * FB9: a draft has no source yet, so it shows what confirming would do from today's stock instead of "Thiếu" on every
+ * line: enough in stock, or the part a supplier will deliver.
+ */
+function DraftStock({ line }: { line: SourcingLine }) {
+  if (line.available === undefined || line.available === null) return null;
+  const available = Decimal.max(new Decimal(line.available), 0);
+  const short = new Decimal(line.required).minus(available);
+  if (short.lte(0)) return <span className="sourcing-draft"><StatusBadge tone="success">Kho đủ hàng</StatusBadge>
+    <small className="muted">{`Có thể bán ${formatQuantity(available.toFixed())} ${line.baseSymbol}`}</small></span>;
+  return <span className="sourcing-draft"><StatusBadge tone="warning">{`Kho có ${formatQuantity(available.toFixed())} · thiếu ${formatQuantity(short.toFixed())} ${line.baseSymbol}`}</StatusBadge>
+    <small className="muted">Khi xác nhận, phần thiếu đặt NCC giao thẳng.</small></span>;
 }
 
 /** Reasons of the latest run per line, from the stored plan. */

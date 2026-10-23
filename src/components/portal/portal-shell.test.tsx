@@ -9,6 +9,8 @@ describe("portal logout", () => {
       const form = screen.getByRole("button", { name: /Đăng xuất/ }).closest("form");
       expect(form).toHaveAttribute("action", "/auth/logout");
       expect(form).toHaveAttribute("method", "post");
+      // FB9: back to the sign-in page on this portal's tab.
+      expect(form?.querySelector("input[name=surface]")).toHaveValue(audience === "worker" ? "work" : "customer");
       unmount();
     });
   }

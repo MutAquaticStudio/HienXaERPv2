@@ -30,6 +30,9 @@ function one<T>(relation: T | T[] | null): T | null {
   return Array.isArray(relation) ? relation[0] ?? null : relation;
 }
 
+/** The account has no staff record (e.g. a customer). */
+export const NO_EMPLOYEE_MESSAGE = "Không có hồ sơ nhân viên hợp lệ.";
+
 async function resolveInternalAccessUncached() {
   const supabase = await createServerSupabase();
   const { data: authData, error: authError } = await supabase.auth.getUser();
@@ -40,7 +43,7 @@ async function resolveInternalAccessUncached() {
     .select("id, display_name, active")
     .eq("auth_user_id", authData.user.id)
     .maybeSingle();
-  if (employeeError || !employee) throw new AppError({ code: "FORBIDDEN", message: "Không có hồ sơ nhân viên hợp lệ.", status: 403 });
+  if (employeeError || !employee) throw new AppError({ code: "FORBIDDEN", message: NO_EMPLOYEE_MESSAGE, status: 403 });
 
   const { data: accessRows, error: accessError } = await supabase
     .from("employee_branch_access")

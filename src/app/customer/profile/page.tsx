@@ -30,7 +30,7 @@ export default async function CustomerAccountPage() {
         <Row label="Vai trò" value={roleLabel(account.membership_role)} />
         <div className={styles.actions}>
           <Link className={styles.buttonSecondary} href="/customer/change-password?from=account">Đổi mật khẩu</Link>
-          <form action="/auth/logout" method="post"><button className={styles.buttonSecondary} type="submit">Đăng xuất</button></form>
+          <form action="/auth/logout" method="post"><input type="hidden" name="surface" value="customer" /><button className={styles.buttonSecondary} type="submit">Đăng xuất</button></form>
         </div>
       </section>
       <section className={styles.card} aria-labelledby="account-customer">

@@ -29,3 +29,9 @@ it("sends someone already signed in on the operations side straight to work, and
   await expect(Home(params())).rejects.toThrow("redirect:/admin");
   await expect(Home(params({ code: "abc" }))).rejects.toThrow("redirect:/recovery/confirm?surface=admin&code=abc");
 });
+
+it("FB9: after signing out of a portal, opens on that portal's tab", async () => {
+  m.access.mockRejectedValue(new AppError({ code: "UNAUTHENTICATED", message: "Chưa đăng nhập", status: 401 }));
+  render(await Home(params({ portal: "work" })));
+  expect(screen.getByRole("tab", { name: "Thợ & tài xế" })).toHaveAttribute("aria-selected", "true");
+});

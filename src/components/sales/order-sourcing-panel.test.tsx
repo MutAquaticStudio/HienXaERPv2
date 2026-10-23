@@ -40,3 +40,16 @@ it("explains auto-sourcing before confirmation and hides the button without perm
   rerender(<OrderSourcingPanel orderId="o1" confirmed canSource lines={[lines[0]]} allocations={allocations} run={null} />);
   expect(screen.queryByRole("button", { name: "Tự phân nguồn" })).not.toBeInTheDocument();
 });
+
+it("FB9: a draft shows today's stock per line, not \"Thiếu\" on every line", () => {
+  render(<OrderSourcingPanel orderId="o1" confirmed={false} canSource allocations={[]} run={null}
+    lines={[{ ...lines[0], available: "2000" }, { ...lines[1], available: "2" }, { id: "l3", name: "Đá", required: "3", baseSymbol: "m³", available: null }]} />);
+  const cement = screen.getByText("Xi măng").closest("li")!;
+  expect(within(cement).getByText("Kho đủ hàng")).toBeInTheDocument();
+  expect(cement).toHaveTextContent("Có thể bán 2.000 kg");
+  expect(cement).not.toHaveTextContent("Thiếu");
+  const sand = screen.getByText("Cát").closest("li")!;
+  expect(within(sand).getByText("Kho có 2 · thiếu 3 m³")).toBeInTheDocument();
+  expect(sand).toHaveTextContent("phần thiếu đặt NCC giao thẳng");
+  expect(screen.getByText("Đá").closest("li")).not.toHaveTextContent(/Thiếu|thiếu|Kho đủ/);
+});

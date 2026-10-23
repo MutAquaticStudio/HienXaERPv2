@@ -1,4 +1,6 @@
+import { ShieldCheck } from "lucide-react";
 import { MetricNumber } from "@/components/ui/metric-number";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { FormDialog } from "@/components/ui/form-dialog";
 import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { randomUUID } from "node:crypto";
@@ -16,6 +18,9 @@ export type CreditPeople = {
   approved: { name?: string; code?: string; roles?: string; at?: string } | null;
   approvers: { name: string; roles: string | null }[];
 };
+/** The note stored when the approver leaves it empty (credit-override-actions). */
+const DEFAULT_OVERRIDE_REASON = "Vượt hạn mức tín dụng";
+
 function money(value: string | number | null) {
   return value === null ? "Chưa được duyệt" : `${BigInt(value).toLocaleString("vi-VN")} ₫`;
 }
@@ -64,12 +69,23 @@ export async function SalesOrderCreditOverride({ orderId, blocked = null }: { or
       creditPeople(supabase, orderId),
     ]);
     if (error || !data) return null;
-    return <section className="card card-pad credit-override" aria-label="Đã duyệt vượt hạn mức">
-      <h2 className="credit-heading">Đơn này đã được duyệt vượt hạn mức tín dụng</h2>
-      <p>Hạn mức lúc duyệt: {money(data.approved_limit_vnd)}. Công nợ và giá trị đơn đã cam kết: {money(data.exposure_before_vnd)} → {money(data.exposure_after_vnd)}.</p>
-      <p>Công nợ quá hạn lúc duyệt: {money(data.overdue_vnd)}.</p>
-      <p className="muted">Người duyệt: {approverText(people?.approved ?? null)} · {formatBusinessDateTime(data.created_at)}</p>
-      <p className="muted">Ghi chú: {data.reason}</p>
+    // FB9: a settled exception reads as a short record — figures in a grid, then who approved it and when.
+    const approver = people?.approved ?? null;
+    const note = data.reason && data.reason !== DEFAULT_OVERRIDE_REASON ? data.reason : null;
+    return <section className="card card-pad credit-approved" aria-label="Đã duyệt vượt hạn mức">
+      <div className="credit-approved-head"><ShieldCheck size={20} aria-hidden="true" />
+        <h2 className="credit-heading">Đã duyệt vượt hạn mức tín dụng</h2><StatusBadge tone="success">Đã duyệt</StatusBadge></div>
+      <dl className="credit-summary">
+        <div><dt>Hạn mức lúc duyệt</dt><dd>{money(data.approved_limit_vnd)}</dd></div>
+        <div><dt>Công nợ quá hạn lúc duyệt</dt><dd>{money(data.overdue_vnd)}</dd></div>
+        <div><dt>Đã cam kết trước đơn này</dt><dd>{money(data.exposure_before_vnd)}</dd></div>
+        <div><dt>Sau khi xác nhận đơn</dt><dd>{money(data.exposure_after_vnd)}</dd></div>
+      </dl>
+      <div className="credit-approved-by">
+        {approver?.name && <span className="credit-avatar" aria-hidden="true">{nameInitials(approver.name)}</span>}
+        <p><span className="muted">Người duyệt</span><strong>{approverText(approver)}</strong><span className="muted">{formatBusinessDateTime(data.created_at)}</span></p>
+      </div>
+      {note && <p className="credit-approved-note"><span className="muted">Ghi chú:</span> {note}</p>}
     </section>;
   }
 

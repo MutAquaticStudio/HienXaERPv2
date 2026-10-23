@@ -157,7 +157,7 @@ export function AppShell({ surface, children, permissions, actorName, branchName
               <div id="user-menu-panel" className="user-menu-panel" hidden={!userMenu}>
                 <p className="user-menu-head"><strong>{actorName}</strong>{branchName && <span>{branchName}</span>}</p>
                 <AppearanceButton />
-                <form action="/auth/logout" method="post"><button className="logout-button" type="submit"><LogOut size={17} />Đăng xuất</button></form>
+                <form action="/auth/logout" method="post"><input type="hidden" name="surface" value={surface} /><button className="logout-button" type="submit"><LogOut size={17} />Đăng xuất</button></form>
               </div>
             </div>
           </div>
