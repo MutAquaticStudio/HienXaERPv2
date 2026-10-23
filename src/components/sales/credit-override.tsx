@@ -26,6 +26,19 @@ export function approverText(approved: CreditPeople["approved"]): string {
   return `${approved.name}${approved.code ? ` (${approved.code})` : ""}${approved.roles ? ` · ${approved.roles}` : ""}`;
 }
 
+/** Two letters for an approver's round badge: first and last word of the name ("Nguyễn Kế Toán" → "NT"). */
+export function nameInitials(name: string): string {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return "?";
+  return ((words[0][0] ?? "") + (words.length > 1 ? words[words.length - 1][0] ?? "" : "")).toLocaleUpperCase("vi-VN");
+}
+
+/** Share of `part` in `whole` as a percentage with one decimal, for the bar widths (never below 0 or above 100). */
+function share(part: bigint, whole: bigint): number {
+  if (whole <= 0n || part <= 0n) return 0;
+  return Math.min(100, Number((part * 1000n) / whole) / 10);
+}
+
 async function creditPeople(supabase: Awaited<ReturnType<typeof createServerSupabase>>, orderId: string): Promise<CreditPeople | null> {
   const { data, error } = await supabase.rpc("sales_order_credit_people", { target_order_id: orderId });
   return error || !data ? null : data as CreditPeople;
@@ -72,7 +85,8 @@ export async function SalesOrderCreditOverride({ orderId, blocked = null }: { or
         <div className="command-panel">
           <p>Bản nháp đã được lưu. Nhờ một trong những người sau duyệt vượt hạn mức cho đơn này:</p>
           {approvers.length ? <ul className="credit-approvers">{approvers.map((person) => <li key={person.name + (person.roles ?? "")}>
-            <strong>{person.name}</strong>{person.roles && <span className="muted"> · {person.roles}</span>}</li>)}</ul>
+            <span className="credit-avatar" aria-hidden="true">{nameInitials(person.name)}</span>
+            <span><strong>{person.name}</strong>{person.roles && <small className="muted">{person.roles}</small>}</span></li>)}</ul>
             : <p className="muted">Chưa có ai trong chi nhánh có đủ quyền duyệt (xác nhận đơn và điều chỉnh công nợ). Nhờ chủ doanh nghiệp cấp quyền.</p>}
           <p className="muted">Hoặc khách trả bớt công nợ rồi bấm xác nhận lại.</p>
         </div>
@@ -84,10 +98,15 @@ export async function SalesOrderCreditOverride({ orderId, blocked = null }: { or
   if (error || !data) return <p role="alert" className="quality-callout">Chưa tải được thông tin tín dụng. Không thể duyệt vượt hạn mức lúc này.</p>;
   const snapshot = data as Snapshot;
   if (!snapshot.customer_active || snapshot.state !== "DRAFT") return null;
-  const after = BigInt(snapshot.exposure_vnd) + BigInt(snapshot.order_amount_vnd);
+  const exposure = BigInt(snapshot.exposure_vnd);
+  const amount = BigInt(snapshot.order_amount_vnd);
+  const after = exposure + amount;
   const needsOverride = snapshot.approved_limit_vnd === null || BigInt(snapshot.overdue_vnd) > 0n
     || after > BigInt(snapshot.approved_limit_vnd);
   if (!needsOverride) return null;
+  const limit = snapshot.approved_limit_vnd === null ? null : BigInt(snapshot.approved_limit_vnd);
+  // The bar is drawn to the larger of the limit and the total after confirming, so the limit mark always fits.
+  const scale = limit !== null && limit > after ? limit : after;
   const reason: CreditBlock = blocked ?? (snapshot.approved_limit_vnd === null ? "no-limit" : BigInt(snapshot.overdue_vnd) > 0n ? "overdue" : "limit");
   return <section className="card card-pad credit-override" aria-label="Đơn vượt hạn mức tín dụng">
     <h2 className="credit-heading">Đơn vượt hạn mức tín dụng</h2>
@@ -95,12 +114,24 @@ export async function SalesOrderCreditOverride({ orderId, blocked = null }: { or
     <FormDialog label="Duyệt vượt hạn mức" title="Duyệt vượt hạn mức tín dụng" defaultOpen={!!blocked} buttonClassName="button button-primary"
       description={creditBlockText(reason)}>
       <div className="credit-override credit-dialog">
+        {limit !== null && <div className="credit-meter">
+          <p className="credit-meter-head"><span>Đã cam kết + đơn này</span><span>Hạn mức {money(snapshot.approved_limit_vnd)}</span></p>
+          <div className="credit-meter-track" aria-hidden="true">
+            <span className="credit-meter-committed" style={{ width: `${share(exposure, scale)}%` }} />
+            <span className="credit-meter-order" style={{ width: `${share(amount, scale)}%` }} />
+            <span className="credit-meter-limit" style={{ left: `${share(limit, scale)}%` }} />
+          </div>
+          <ul className="credit-meter-legend">
+            <li><i className="credit-key-committed" aria-hidden="true" />Công nợ và đơn đã cam kết {money(snapshot.exposure_vnd)}</li>
+            <li><i className="credit-key-order" aria-hidden="true" />Giá trị đơn {money(snapshot.order_amount_vnd)}</li>
+          </ul>
+        </div>}
         <dl className="credit-summary">
           <div><dt>Hạn mức được duyệt</dt><dd>{snapshot.approved_limit_vnd === null ? money(null) : <MetricNumber value={money(snapshot.approved_limit_vnd)} />}</dd></div>
           <div><dt>Công nợ quá hạn</dt><dd><MetricNumber value={money(snapshot.overdue_vnd)} /></dd></div>
-          <div><dt>Công nợ và giá trị đơn đã cam kết</dt><dd><MetricNumber value={money(snapshot.exposure_vnd)} /></dd></div>
-          <div><dt>Giá trị đơn</dt><dd><MetricNumber value={money(snapshot.order_amount_vnd)} /></dd></div>
-          <div><dt>Tổng sau xác nhận</dt><dd><MetricNumber value={money(after.toString())} /></dd></div>
+          {limit === null && <><div><dt>Công nợ và giá trị đơn đã cam kết</dt><dd><MetricNumber value={money(snapshot.exposure_vnd)} /></dd></div>
+            <div><dt>Giá trị đơn</dt><dd><MetricNumber value={money(snapshot.order_amount_vnd)} /></dd></div></>}
+          <div className="credit-summary-after"><dt>Tổng sau xác nhận</dt><dd><MetricNumber value={money(after.toString())} /></dd></div>
         </dl>
         <p className="muted">Chỉ áp dụng cho đơn này, không thay đổi hạn mức khách hàng. Tên bạn được ghi là người duyệt.</p>
         <form action={confirmSalesOrderCreditOverride} className="command-panel">
@@ -110,7 +141,7 @@ export async function SalesOrderCreditOverride({ orderId, blocked = null }: { or
           <label className="field">Ghi chú (không bắt buộc)
             <textarea name="reason" maxLength={500} rows={3} />
           </label>
-          <button type="submit" className="button button-primary">Duyệt vượt hạn mức và xác nhận đơn</button>
+          <button type="submit" className="button button-commerce">Duyệt vượt hạn mức và xác nhận đơn</button>
         </form>
       </div>
     </FormDialog>

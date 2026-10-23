@@ -16,6 +16,7 @@ export type EditorLine = {
   discountValue?: string;
 };
 
-export type PricedLine = { unitPriceVnd: string; lineTotalVnd: string; sourceLabel: string };
+/** `sourceType` (LIST, CONTRACT, MANUAL_APPROVED) only colours the price-source chip. */
+export type PricedLine = { unitPriceVnd: string; lineTotalVnd: string; sourceLabel: string; sourceType?: string };
 
 export type EntityOption = { id: string; label: string; detail?: string };

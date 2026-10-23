@@ -124,9 +124,9 @@ export function PortalOrderForm({ catalog, operationId: initialOperationId }: { 
 
   return <div className={`doc-editor ${styles.orderEditor}`}>
     <section className="card doc-editor-main" aria-label="Dòng hàng">
-      <MaterialSearchBox ref={searchRef} materials={materials} onPick={pick} label="Tìm hàng" placeholder="Tìm hàng theo tên hoặc mã"
+      <div className="doc-editor-toolbar"><MaterialSearchBox ref={searchRef} materials={materials} onPick={pick} label="Tìm hàng" placeholder="Tìm hàng theo tên hoặc mã"
         hint={(material) => { const unit = material.uoms[0]; const price = unit ? prices.get(priceKey(material.id, unit.id)) : null;
-          return [price && unit ? `${money(price)} / ${unit.symbol}` : null, inStock.get(material.id) ? "Còn hàng" : "Đặt trước"].filter(Boolean).join(" · "); }} />
+          return [price && unit ? `${money(price)} / ${unit.symbol}` : null, inStock.get(material.id) ? "Còn hàng" : "Đặt trước"].filter(Boolean).join(" · "); }} /></div>
       <DocumentLineTable lines={lines} materials={materials} canManagePrice={false} isValidQuantity={isExactEntryQuantity} focusKey={focusKey} focusSeq={focusSeq}
         labels={{ uom: "Đơn vị", price: "Đơn giá" }}
         emptyText="Chưa có hàng trong đơn. Bấm ô tìm hàng ở trên để xem danh sách và chọn."

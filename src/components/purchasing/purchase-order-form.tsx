@@ -212,16 +212,16 @@ export function PurchaseOrderForm({ options, operationId, confirmOperationId, ca
 
     <section className="card doc-editor-main" aria-label="Dòng mua">
       {salesLine && <section className="context-strip"><strong>{salesLine.orderNumber} · {salesLine.materialName}</strong><span>{salesLine.customerName} · {salesLine.siteName}</span><span>Còn thiếu nguồn: {formatQuantity(salesLine.remainingOrderedQuantity)} {salesLine.orderedUomSymbol}</span></section>}
-      {sourceMode
+      <div className="doc-editor-toolbar">{sourceMode
         ? <EntityCombobox label="Thêm dòng từ đơn bán" name="" value={null} disabled={!unusedSourceLines.length}
           placeholder={unusedSourceLines.length ? "Chọn dòng đơn bán còn thiếu nguồn" : "Đã gắn hết các dòng còn thiếu nguồn"}
           options={unusedSourceLines.map((item) => ({ id: item.id, label: item.materialName, detail: `Còn ${formatQuantity(item.remainingOrderedQuantity)} ${item.uomSymbol}` }))}
           onSelect={addSourceLine} />
-        : <MaterialSearchBox ref={searchRef} materials={options.materials} onPick={pickMaterial} disabled={!options.materials.length} />}
+        : <MaterialSearchBox ref={searchRef} materials={options.materials} onPick={pickMaterial} disabled={!options.materials.length} />}</div>
       <DocumentLineTable<PurchaseLine> lines={lines} materials={options.materials} canManagePrice={canManagePrice} isValidQuantity={isPositiveSalesQuantity} focusKey={focusKey} focusSeq={focusSeq}
         fields={COST_FIELDS} labels={{ uom: "ĐVT mua", price: "Giá mua" }} lockedMaterial={() => sourceMode}
         emptyText={sourceMode ? "Chưa có dòng mua. Chọn dòng đơn bán ở ô phía trên." : undefined}
-        priced={(index) => canReadPrice && preview?.success && preview.lines?.[index] ? { unitPriceVnd: preview.lines[index].unitCostVnd, lineTotalVnd: preview.lines[index].lineTotalVnd, sourceLabel: priceSourceLabel(preview.lines[index].priceSourceType) } : null}
+        priced={(index) => canReadPrice && preview?.success && preview.lines?.[index] ? { unitPriceVnd: preview.lines[index].unitCostVnd, lineTotalVnd: preview.lines[index].lineTotalVnd, sourceLabel: priceSourceLabel(preview.lines[index].priceSourceType), sourceType: preview.lines[index].priceSourceType } : null}
         onChange={(key, change) => changeLines((current) => current.map((line) => line.key === key ? { ...line, ...change } : line))}
         onRemove={(key) => { changeLines((current) => current.filter((line) => line.key !== key)); searchRef.current?.focus(); }}
         onDone={() => searchRef.current?.focus()}
