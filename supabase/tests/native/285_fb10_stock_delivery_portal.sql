@@ -103,6 +103,7 @@ begin
   assert (select base_quantity from private.delivery_line_transit_position((select id from public.delivery_lines where delivery_id = delivery))) = 0,
     'nothing left on the truck';
   assert pg_temp.warehouse285() = 440, format('40 kg back in the warehouse, %s', pg_temp.warehouse285());
+  assert not private.delivery_has_unresolved_exception(delivery), 'a finished partial delivery leaves the dispatch board';
   assert not private.delivery_has_unresolved_exception(delivery), 'no longer an exception on the dispatch board';
 
   -- 6.9 A worker declines a planned delivery; the office can still cancel it, and the job closes.

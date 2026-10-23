@@ -24,3 +24,9 @@ it("labels a vehicle as free or out on a delivery in the pickers (FB10)", () => 
   expect(vehicleStatusLabel(base)).toBe(" · chở 5 tấn · Rảnh");
   expect(vehicleStatusLabel({ ...base, busy_delivery_number: "PG-00012", busy_state: "DISPATCHED", busy_until: "2026-10-24T03:30:00Z" })).toBe(" · chở 5 tấn · Đang giao PG-00012 đến 10:30");
 });
+
+import { deliveryCommandMessage } from "./errors";
+it("explains result and open-execution refusals in Vietnamese (FB10)", () => {
+  expect(deliveryCommandMessage("delivery_result_kind_mismatch")).toContain("không khớp số lượng");
+  expect(deliveryCommandMessage("sales_order_unresolved_execution")).toContain("chưa xử lý");
+});

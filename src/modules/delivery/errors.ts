@@ -31,6 +31,8 @@ export function deliveryCommandMessage(value?: string, hint?: string | null) {
   if (value?.includes("delivery_employee_cannot_report_work")) return "Người giao phải có tài khoản đang hoạt động và quyền nhận, báo kết quả công việc trong chi nhánh.";
   if (value?.includes("vehicle_actual_cargo_capacity_exceeded")) return "Tổng hàng thực lấy và hàng còn trên xe vượt sức chứa đã xác minh. Xử lý hàng của phiếu trước hoặc chọn xe phù hợp trước khi bàn giao.";
   if (value?.includes("vehicle_cargo_source_requires_reconciliation")) return "Dữ liệu hàng còn trên xe chưa khớp nguồn. Đối chiếu bàn giao, xác minh và xử lý hàng còn trước khi lấy thêm.";
+  if (value?.includes("delivery_result_kind_mismatch")) return "Kết quả chọn không khớp số lượng: giao đủ thì nhập đủ, giao thiếu thì có dòng ít hơn kế hoạch, không giao thì để 0.";
+  if (value?.includes("sales_order_unresolved_execution")) return "Đơn còn phiếu giao, việc hoặc hàng trên xe chưa xử lý. Hoàn tất hoặc hủy chúng trước.";
   if (value?.includes("vehicle_capacity_exceeded")) return "Lượng kế hoạch vượt sức chứa đã khai báo của xe. Chọn xe phù hợp hoặc tách phiếu giao.";
   if (value?.includes("vehicle_capacity_conversion_missing")) return "Chưa quy đổi được hàng sang đơn vị sức chở của xe. Thêm quy đổi trong Đơn vị tính của vật tư (vd 1 tấn = 20 bao) rồi thử lại.";
   if (value?.includes("vehicle_capacity")) return "Xe chưa có sức chở. Nhập sức chở tối đa và đơn vị trong danh mục Xe.";
