@@ -825,4 +825,4 @@ Quyết định D25 ở đầu Spec.md; giao diện UX-FB5-001. Migration `20261
 | FB10-E2 | Ghi chi phí gọn (bỏ đơn bán liên quan, loại chi gợi ý, "Thêm") | DONE (code) |
 | FB10-F | Thu nhập tự áp quy tắc, "Tính lương tháng" (`post_monthly_salaries`), sửa `calculate_earning_event` (migration `20261024090800`, native 302; test 275 cập nhật) | DONE (code) |
 | FB10-G | Trung tâm báo cáo kiểu KiotViet (`report_center`, migration `20261024090900`, native 303; `/api/reports/center` CSV) | DONE (code) |
-| FB10-REL | `pnpm check`, native, PR → CI → merge → migration QA + Production → deploy → kịch bản QA | IN PROGRESS |
+| FB10-REL | `pnpm check`, native, PR → CI → merge → migration QA + Production → deploy → kịch bản QA | IN PROGRESS — merge `3a088de`, deploy Production; còn `20261024090600` trên Production (Owner chạy tay) |
