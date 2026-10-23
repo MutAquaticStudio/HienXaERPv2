@@ -12,6 +12,11 @@ describe("appearance", () => {
     expect(parseAppearance("system")).toEqual({ ...DEFAULT_APPEARANCE, theme: "system" });
   });
 
+  it("starts in Be Vietnam Pro at the compact size (D29) and still honours a saved Noto Sans choice", () => {
+    expect(DEFAULT_APPEARANCE).toEqual({ theme: "light", fontSize: "md", font: "be-vietnam" });
+    expect(parseAppearance("light.md.noto").font).toBe("noto");
+  });
+
   it("renders the resolved colour only for an explicit choice", () => {
     expect(appearanceAttributes({ theme: "dark", fontSize: "sm", font: "noto" })).toEqual({ "data-theme": "dark", "data-font-size": "sm", "data-font": "noto", "data-color": "dark" });
     expect(appearanceAttributes({ ...DEFAULT_APPEARANCE, theme: "system" })).not.toHaveProperty("data-color");

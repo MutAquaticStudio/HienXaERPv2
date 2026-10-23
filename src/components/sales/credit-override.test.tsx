@@ -15,7 +15,7 @@ vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({
   rpc(name: string) { m.calls.push(name); return Promise.resolve({ data: m.rpc[name] ?? null, error: m.rpc[name] ? null : { message: "forbidden" } }); },
 }) }));
 
-import { SalesOrderCreditOverride, approverText } from "./credit-override";
+import { SalesOrderCreditOverride, approverText, nameInitials } from "./credit-override";
 
 const snapshot = { state: "DRAFT", customer_active: true, order_amount_vnd: "30000000", approved_limit_vnd: "50000000", exposure_vnd: "40000000",
   overdue_vnd: "0", snapshot_hash: "a".repeat(64) };
@@ -37,6 +37,16 @@ it("opens the approval popup by itself when confirming was stopped by credit", a
   expect(dialog).toHaveTextContent(/Tổng sau xác nhận\s*70\.000\.000/);
   expect(within(dialog).getByRole("button", { name: "Duyệt vượt hạn mức và xác nhận đơn" })).toBeInTheDocument();
   expect(within(dialog).getByLabelText("Ghi chú (không bắt buộc)")).not.toBeRequired();
+  // 40M committed + 30M order against a 50M limit: the bar is drawn to 70M, the limit mark at 71.4%.
+  expect(dialog.querySelector(".credit-meter-committed")).toHaveStyle({ width: "57.1%" });
+  expect(dialog.querySelector(".credit-meter-limit")).toHaveStyle({ left: "71.4%" });
+  expect(dialog).toHaveTextContent(/Công nợ và đơn đã cam kết 40\.000\.000/);
+});
+
+it("makes two-letter badges from the first and last word of a name", () => {
+  expect(nameInitials("Nguyễn Kế Toán")).toBe("NT");
+  expect(nameInitials("ánh")).toBe("Á");
+  expect(nameInitials("  ")).toBe("?");
 });
 
 it("keeps the popup closed on a normal visit, with a button to open it", async () => {
@@ -57,7 +67,8 @@ it("tells staff who cannot approve which people can, by name and role", async ()
   await view("limit");
   const dialog = screen.getByRole("dialog", { name: "Cần duyệt vượt hạn mức" });
   expect(within(dialog).getByText("Chủ doanh nghiệp")).toBeInTheDocument();
-  expect(within(dialog).getByText("· Kế toán")).toBeInTheDocument();
+  expect(within(dialog).getByText("Kế toán")).toBeInTheDocument();
+  expect(within(dialog).getByText("CN")).toHaveAttribute("aria-hidden", "true");
   expect(m.calls).not.toContain("preview_sales_order_credit_override");
 });
 

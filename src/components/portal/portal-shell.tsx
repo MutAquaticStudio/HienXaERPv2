@@ -62,7 +62,7 @@ export function PortalShell({
     // The deepest matching link wins ("Đặt hàng" on /customer/orders/new, not "Đơn hàng" as well).
     const active = within(href) && !links.some((other) => other.href.length > href.length && within(other.href));
     return (
-      <Link className={styles.navLink + " " + (active ? styles.navLinkActive : "")} href={href} key={href}>
+      <Link className={styles.navLink + " " + (active ? styles.navLinkActive : "")} href={href} key={href} aria-current={active ? "page" : undefined}>
         <Icon aria-hidden size={compact ? 20 : 19} strokeWidth={2.2} />
         <span>{label}</span>
       </Link>

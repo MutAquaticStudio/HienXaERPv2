@@ -117,7 +117,7 @@ export function DocumentLineTable<L extends EditorLine>({ lines, materials, canM
               ? <MoneyInput aria-label={`${labels.price} thủ công dòng ${row}`} value={line.manualPriceVnd}
                 placeholder={price ? formatVnd(vnd(price.unitPriceVnd)) : "Giá hệ thống"} onValue={(manualPriceVnd) => onChange(line.key, { manualPriceVnd } as Partial<L>)} onKeyDown={enterMovesOn} />
               : price ? formatVnd(vnd(price.unitPriceVnd)) : "—"}
-            {price && !renderPrice && <small className="table-subline">{price.sourceLabel}</small>}
+            {price && !renderPrice && <small className="price-source" data-source={price.sourceType}>{price.sourceLabel}</small>}
           </td>
           <td className="numeric" data-label="Thành tiền"><strong>{price ? formatVnd(vnd(price.lineTotalVnd)) : "—"}</strong></td>
           <td className="doc-editor-remove"><button type="button" className="icon-button" aria-label={`Xóa dòng ${row}`} onClick={() => onRemove(line.key)}><X size={16} aria-hidden="true" /></button></td>

@@ -34,5 +34,5 @@ export function LineStock(props: { availability?: WarehouseAvailability; warehou
   if (stock === undefined) return null;
   if (stock === null) return <small className="line-stock">Chưa có tồn tại kho đang xem.</small>;
   const amount = stock.inUnit !== null ? `${formatQuantity(stock.inUnit)} ${stock.symbol} (${formatQuantity(stock.available)} ${stock.baseSymbol})` : `${formatQuantity(stock.available)} ${stock.baseSymbol}`;
-  return <small className={`line-stock${stock.short ? " short" : ""}`}>Có thể bán: {amount} · {stock.warehouse}{stock.short ? " · Thiếu so với số lượng đặt" : ""}</small>;
+  return <small className={`line-stock ${stock.short ? "short" : "ok"}`}>Có thể bán: {amount} · {stock.warehouse}{stock.short ? " · Thiếu so với số lượng đặt" : ""}</small>;
 }

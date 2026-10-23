@@ -117,7 +117,7 @@ function OrderReview({ formId, customer, site, siteAddress, lines, totalVnd, gro
     {debt && debt.overdueVnd !== "0" && <p className="form-message" role="status">Khách đang có nợ quá hạn; đơn có thể bị chặn theo hạn mức. Khi bị chặn, đơn được giữ ở nháp và có lối duyệt vượt hạn mức.</p>}
     <p className="muted">Kiểm tra kỹ khách, công trình, số lượng và giá. Sau khi xác nhận, sửa đơn phải qua điều chỉnh.</p>
     <div className="form-actions">
-      <button id="order-review-confirm" className="button button-primary" type="submit" form={formId} name="intent" value="confirm">Xác nhận đơn</button>
+      <button id="order-review-confirm" className="button button-commerce" type="submit" form={formId} name="intent" value="confirm">Xác nhận đơn</button>
       <button className="button button-secondary" type="button" onClick={onClose}>Quay lại sửa</button>
     </div>
   </Dialog>;
@@ -262,14 +262,15 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
     <input type="hidden" name="pricePreview" value={preview?.success ? JSON.stringify(preview.lines) : ""} />
 
     <section className="card doc-editor-main" aria-label="Dòng hàng">
-      <MaterialSearchBox ref={searchRef} materials={options.materials} onPick={pickMaterial} disabled={!options.materials.length}
+      <div className="doc-editor-toolbar"><MaterialSearchBox ref={searchRef} materials={options.materials} onPick={pickMaterial} disabled={!options.materials.length}
         hint={availability ? (material) => { const stock = lineStock(availability, stockWarehouseId, material, material.uoms[0]?.id ?? "", ""); return stock ? `Có thể bán ${formatQuantity(stock.available)} ${stock.baseSymbol}` : stock === null ? "Chưa có tồn" : null; } : undefined} />
       {availability && availability.warehouses.length > 0 && <label className="doc-editor-stock-warehouse">Xem tồn tại<select value={stockWarehouseId} onChange={(event) => setStockWarehouseId(event.target.value)}>
-        {availability.warehouses.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>}
+        {availability.warehouses.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>}</div>
       <DocumentLineTable lines={lines} materials={options.materials} canManagePrice={canManagePrice} isValidQuantity={isPositiveSalesQuantity} focusKey={focusKey} focusSeq={focusSeq}
         labels={{ uom: "ĐVT bán", price: "Đơn giá" }}
         priced={(index) => preview?.success && preview.lines?.[index] ? { unitPriceVnd: discountedOk?.lines[index]?.unitPriceVnd ?? preview.lines[index].unitPriceVnd,
-          lineTotalVnd: discountedOk?.lines[index]?.lineTotalVnd ?? preview.lines[index].lineTotalVnd, sourceLabel: priceSourceLabel(preview.lines[index].priceSourceType) } : null}
+          lineTotalVnd: discountedOk?.lines[index]?.lineTotalVnd ?? preview.lines[index].lineTotalVnd, sourceLabel: priceSourceLabel(preview.lines[index].priceSourceType),
+          sourceType: preview.lines[index].priceSourceType } : null}
         hiddenFields={kind === "order" ? (line) => <><input type="hidden" name="discountMode" value={line.discountValue?.trim() ? line.discountMode ?? "" : ""} />
           <input type="hidden" name="discountValue" value={line.discountValue?.trim() && line.discountMode ? line.discountValue : ""} /></> : undefined}
         renderPrice={discounts ? (line, index, price) => {
@@ -279,7 +280,10 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
           return <button type="button" className="line-price-button" aria-label={`Đơn giá và giảm giá dòng ${index + 1}`} onClick={() => { needPrice(); setPriceLineKey(line.key); }}>
             <span>{price ? formatVnd(vnd(price.unitPriceVnd)) : line.manualPriceVnd ? formatVnd(vnd(line.manualPriceVnd)) : "Giá hệ thống"}</span>
             {cut && <s className="table-subline">{formatVnd(vnd(result.listUnitVnd))}</s>}
-            <small className="table-subline">{own ? discountLabel(own) : cut ? "Giảm theo đơn" : line.manualPriceVnd ? "Giá thủ công" : price?.sourceLabel ?? "Bấm để giảm giá"}</small>
+            {own || cut ? <small className="table-subline price-discount">{own ? discountLabel(own) : "Giảm theo đơn"}</small>
+              : line.manualPriceVnd ? <small className="price-source" data-source="MANUAL_APPROVED">Giá thủ công</small>
+              : price ? <small className="price-source" data-source={price.sourceType}>{price.sourceLabel}</small>
+              : <small className="table-subline">Bấm để giảm giá</small>}
           </button>;
         } : undefined}
         onChange={(key, change) => changeLines((current) => current.map((line) => line.key === key ? { ...line, ...change } : line))}
@@ -332,8 +336,8 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
         </> : <p className="muted">Chưa có tài khoản tiền. Tạo ở Sổ quỹ để ghi tiền khách trả trước.</p>}
       </fieldset>}</div>
       <div className="doc-editor-actions">
-        {confirmable && <button className="button button-primary" type="button" disabled={!ready} onClick={() => setReviewOpen(true)}>{pending ? "Đang lưu..." : "Xác nhận đơn"}</button>}
-        <button className={confirmable ? "link-button doc-editor-draft" : "button button-primary"} type="submit" name="intent" value="draft" disabled={!ready}>{pending && !confirmable ? "Đang lưu..." : existing ? "Lưu thay đổi bản nháp" : "Lưu nháp"}</button>
+        <button className={confirmable ? "button button-secondary doc-editor-draft" : "button button-primary"} type="submit" name="intent" value="draft" disabled={!ready}>{pending && !confirmable ? "Đang lưu..." : existing ? "Lưu thay đổi bản nháp" : "Lưu nháp"}</button>
+        {confirmable && <button className="button button-commerce doc-editor-confirm" type="button" disabled={!ready} onClick={() => setReviewOpen(true)}>{pending ? "Đang lưu..." : "Xác nhận đơn"}</button>}
         {state?.outcomeUnknown && <button className="button button-secondary" type="button" disabled={pending} onClick={() => { const original = lastSubmission.current; if (original && !submissionPending.current) { submissionPending.current = true; startTransition(() => formAction(original)); } }}>Thử lại đúng thao tác</button>}
       </div>
       {confirmable && <p className="muted doc-editor-hint">“Xác nhận đơn” mở bảng kiểm tra rồi lưu và xác nhận; “Lưu nháp” để sửa tiếp sau.</p>}

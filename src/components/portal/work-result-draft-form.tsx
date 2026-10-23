@@ -202,7 +202,7 @@ export function WorkResultDraftForm({
       {!deliveryReady && <p className={styles.status}>Chưa có lượng thực lấy hoặc công việc chưa được phép báo giao. Kiểm tra bàn giao với kho/điều phối rồi tải dữ liệu mới.</p>}
       {(error || sourceChanged || !deliveryReady) && <button className={styles.buttonSecondary} type="button" onClick={() => router.refresh()}>Tải dữ liệu mới</button>}
       {draft.sourceRejected && sourceChanged && <button className={styles.buttonSecondary} type="button" disabled={!deliveryReady} onClick={useCurrentSource}>Dùng phiên bản mới đã tải</button>}
-      <button className={styles.button} disabled={submitting || uploading || !deliveryReady} type="submit">
+      <button className={`${styles.button} ${styles.buttonCommerce} ${styles.stickyAction}`} disabled={submitting || uploading || !deliveryReady} type="submit">
         {submitting ? "Đang gửi kết quả" : delivery ? "Gửi kết quả công việc" : "Hoàn tất công việc"}
       </button>
     </form>

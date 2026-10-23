@@ -2170,6 +2170,21 @@ Source pages có action rõ:
 - Customer/AR → Đối chiếu công nợ.
 
 
+# UX-UI-R1-001 — Hệ giao diện D29 (KiotViet đẹp hơn, có chuyển động)
+
+- **Màu**: xanh chính `#0B63C6` (menu, nút chính, liên kết), xanh lá `#12804A` chỉ cho hành động tiền / hoàn tất (Tạo đơn bán, Xác nhận đơn, Duyệt
+  vượt hạn mức, Hoàn tất, Đặt hàng mới); cam cho cảnh báo, đỏ cho lỗi / xóa. Tương phản chữ ≥ 4.5:1.
+- **Chữ**: Be Vietnam Pro; cỡ Vừa: chú thích 13, bảng 14, nội dung 15, tiêu đề mục 17, tiêu đề trang 22–26. Ô nhập trên điện thoại ≥ 16 px.
+- **Khung vận hành**: thanh tiện ích trắng + menu xanh ngang; mục đang ở "dính" nền trang như tab; một `aria-current="page"`.
+- **Danh sách**: khung trái = tìm kiếm + nhóm radio trạng thái có số đếm; bảng bên phải; mũi tên đầu dòng "Xem nhanh {mã}" / "Thu gọn {mã}"
+  (`aria-expanded`, `aria-controls`); trên điện thoại mỗi dòng là một thẻ, mũi tên ở góc phải.
+- **Màn tạo đơn**: dải xanh trên cùng bảng dòng hàng (ô tìm hàng F3, chọn kho xem tồn); cột phải dính: khách / công trình, tổng, giảm giá,
+  trả trước, "Lưu nháp" + "Xác nhận đơn"; dưới 1440 px tổng + nút ghim đáy màn hình.
+- **Chuyển động**: 120 ms (hover, nhấn), 200 ms (hiện / trượt), 320 ms (popup, thanh số liệu); đường cong `cubic-bezier(.2,.8,.2,1)`; nút nhấn co
+  .97; tối đa 6 khối hiện so le. `prefers-reduced-motion: reduce` → không chuyển động.
+- **Cổng điện thoại**: menu dưới 64 px có biểu tượng + chữ, vạch xanh trên mục đang ở; nút chính 52–56 px; bộ đếm − / + 72 px; nút kết thúc dính
+  ngay trên menu dưới; tiến trình đơn 4 bước, bước hiện tại `aria-current="step"`.
+
 # KẾT THÚC UXUI.md
 
 

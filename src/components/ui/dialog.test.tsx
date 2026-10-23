@@ -38,3 +38,21 @@ it("keeps the popup open when a control inside already used Escape", () => {
   fireEvent.click(screen.getByRole("button", { name: "Đóng" }));
   expect(onClose).toHaveBeenCalledOnce();
 });
+
+it("fades out before closing when the device allows motion (D29)", () => {
+  vi.useFakeTimers();
+  vi.stubGlobal("matchMedia", (query: string) => ({ matches: query.includes("no-preference"), media: query, addEventListener() {}, removeEventListener() {} }));
+  try {
+    const onClose = vi.fn();
+    render(<Page onClose={onClose} />);
+    fireEvent.click(screen.getByRole("button", { name: "Đóng" }));
+    expect(screen.getByRole("dialog").parentElement).toHaveAttribute("data-state", "closing");
+    expect(onClose).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Đóng" }));
+    vi.advanceTimersByTime(160);
+    expect(onClose).toHaveBeenCalledOnce();
+  } finally {
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+  }
+});

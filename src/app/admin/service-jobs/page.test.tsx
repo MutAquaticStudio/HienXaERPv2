@@ -41,13 +41,16 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
-it("lists jobs with tabs and the count to be measured on site", async () => {
+it("lists jobs with left filters and the count to be measured on site", async () => {
   render(await Page({ searchParams: Promise.resolve({}) }));
   expect(screen.getByRole("heading", { name: "Đơn dịch vụ" })).toBeInTheDocument();
   expect(screen.getByText("Theo thực tế")).toBeInTheDocument();
   expect(screen.getByText("3 chuyến")).toBeInTheDocument();
   expect(screen.getByText("Chưa giao")).toBeInTheDocument();
-  expect(screen.getByRole("link", { name: /Chờ xác minh/ })).toHaveTextContent("1");
+  expect(screen.getByRole("radio", { name: /Chờ xác minh/ }).closest("label")).toHaveTextContent("1");
+  expect(screen.getByRole("radio", { name: /Tất cả/ })).toBeChecked();
+  fireEvent.click(screen.getByRole("button", { name: "Xem nhanh DV-1" }));
+  expect(screen.getByRole("link", { name: "Mở đơn dịch vụ" })).toHaveAttribute("href", "/admin/service-jobs/a");
   fireEvent.click(screen.getByRole("button", { name: "+ Tạo đơn dịch vụ" }));
   expect(screen.getByRole("dialog", { name: "Tạo đơn dịch vụ" })).toBeInTheDocument();
   expect(screen.getByText("Thêm (không bắt buộc)")).toBeInTheDocument();

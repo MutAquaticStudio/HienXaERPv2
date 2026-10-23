@@ -80,7 +80,7 @@ export function DeliveryLoadForm({ workItemId, version, delivery }: { workItemId
     </div>)}
     <JobPhotoGrid photos={photos} label="Ảnh hàng trên xe" disabled={sending} />
     {message && <p className={message.error ? styles.error : styles.status} role={message.error ? "alert" : "status"}>{message.text}</p>}
-    <button type="button" className={styles.button} disabled={sending || uploading} onClick={() => { void send(); }}>
+    <button type="button" className={`${styles.button} ${styles.stickyAction}`} disabled={sending || uploading} onClick={() => { void send(); }}>
       {sending ? "Đang gửi..." : ready.length ? `Xác nhận đã lấy hàng lên xe (${ready.length} ảnh)` : "Đã lấy hàng lên xe · chụp ảnh"}</button>
     <button type="button" className={styles.link} disabled={sending} onClick={() => { setShort(!short); setMessage(null); setOperationId(crypto.randomUUID()); }}>
       {short ? "Lấy đủ như phiếu giao" : "Lấy thiếu hàng"}</button>

@@ -52,3 +52,11 @@ it("keeps the cursor in the price while typing after a material was just picked"
   }
   expect(posted("manualPriceVnd")).toEqual(["55000"]);
 });
+
+it("shows where the price came from as a chip coloured by its kind (D29)", () => {
+  render(<form><DocumentLineTable lines={[line]} materials={materials} canManagePrice={false} isValidQuantity={isPositiveSalesQuantity}
+    priced={() => ({ unitPriceVnd: "91000", lineTotalVnd: "91000", sourceLabel: "Hợp đồng", sourceType: "CONTRACT" })} onChange={() => {}} onRemove={() => {}} /></form>);
+  const chip = screen.getByText("Hợp đồng");
+  expect(chip).toHaveClass("price-source");
+  expect(chip).toHaveAttribute("data-source", "CONTRACT");
+});

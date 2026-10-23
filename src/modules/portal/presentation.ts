@@ -77,3 +77,20 @@ export function portalOrderStateLabel(order: { channel?: string; state?: string;
   }
   return salesStateLabel(order.state);
 }
+
+export type ProgressStep = { label: string; state: "done" | "current" | "todo" };
+
+/**
+ * D29: the order's four steps for the customer (Đã đặt → Cửa hàng duyệt → Giao hàng → Hoàn tất), read from the same
+ * states as portalOrderStateLabel. The first step not done is the current one; a cancelled order has no progress.
+ */
+export function portalOrderProgress(order: { channel?: string; state?: string; fulfillment_state?: string }): ProgressStep[] | null {
+  if (order.state === "CANCELLED") return null;
+  const confirmed = order.state === "CONFIRMED" || order.state === "CLOSED";
+  const delivered = confirmed && (order.fulfillment_state === "FULFILLED" || order.fulfillment_state === "CLOSED_REMAINDER");
+  const delivering = confirmed && order.fulfillment_state === "PARTIAL";
+  const done = [true, confirmed, delivered, delivered];
+  const labels = ["Đã đặt", order.channel === "CUSTOMER_PORTAL" ? "Cửa hàng duyệt" : "Xác nhận đơn", delivering ? "Đang giao" : "Giao hàng", "Hoàn tất"];
+  const current = done.indexOf(false);
+  return labels.map((label, index) => ({ label, state: done[index] ? "done" : index === current ? "current" : "todo" }));
+}

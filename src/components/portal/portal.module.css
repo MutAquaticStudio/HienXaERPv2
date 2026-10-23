@@ -1,16 +1,19 @@
+/* UI-R1-F (D29): worker and customer portals in the system's blue/white palette, built for phones first —
+   blue top bar, icon bottom menu, 16px cards, 52–56px buttons, big +/− counter and a pinned finish button. */
 .shell {
-  --portal-ink: #16352d;
-  --portal-muted: #60736c;
-  --portal-paper: #fffdf7;
-  --portal-line: #d8e0d7;
-  --portal-green: #176b51;
-  --portal-green-dark: #0f4b3b;
-  --portal-sun: #e6a12a;
+  --portal-ink: var(--text);
+  --portal-muted: var(--muted);
+  --portal-paper: #fff;
+  --portal-line: var(--border);
+  --portal-primary: var(--primary);
+  --portal-primary-dark: var(--primary-strong);
+  --portal-soft: var(--primary-soft);
+  --portal-commerce: var(--commerce);
+  --portal-commerce-dark: var(--commerce-strong);
+  --portal-bottom-nav: calc(72px + env(safe-area-inset-bottom));
   min-height: 100dvh;
   color: var(--portal-ink);
-  background:
-    radial-gradient(circle at 9% 8%, rgb(230 161 42 / 18%), transparent 25rem),
-    linear-gradient(145deg, #f4f0df 0%, #edf4eb 55%, #f8f5e9 100%);
+  background: var(--background);
 }
 
 .side {
@@ -19,24 +22,25 @@
 
 .brand {
   display: grid;
-  gap: 0.15rem;
+  gap: 0.1rem;
 }
 
 .brandMark {
-  width: 2.6rem;
-  height: 2.6rem;
+  width: 2.4rem;
+  height: 2.4rem;
   display: grid;
   place-items: center;
-  border-radius: 0.8rem 0.8rem 0.8rem 0.25rem;
-  color: white;
-  background: var(--portal-green);
-  font-weight: 800;
+  border-radius: 10px;
+  color: #fff;
+  background: var(--portal-primary);
+  font-weight: 700;
+  font-size: 0.85rem;
 }
 
 .brandName {
-  font-size: 1rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .brandScope {
@@ -47,29 +51,59 @@
 .main {
   width: min(100%, 72rem);
   margin: 0 auto;
-  padding: 1rem 1rem 6.5rem;
+  padding: 0 1rem calc(var(--portal-bottom-nav) + 1.5rem);
 }
 
+/* Phones: a full-width blue bar on top. */
 .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.5rem;
+  gap: 0.75rem;
+  margin: 0 -1rem 1rem;
+  padding: calc(10px + env(safe-area-inset-top)) 1rem 10px;
+  color: #fff;
+  background: var(--navigation);
+  box-shadow: 0 2px 10px rgb(11 50 100 / 18%);
+}
+
+.topbar .brandMark {
+  color: var(--portal-primary);
+  background: #fff;
+}
+
+.topbar .brandScope {
+  color: rgb(255 255 255 / 82%);
 }
 
 .topIdentity {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.65rem;
 }
 
 .logout {
-  min-height: 48px;
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
-  color: var(--portal-green-dark);
-  font-weight: 800;
+  gap: 0.4rem;
+  padding: 0.45rem 0.75rem;
+  border: 0;
+  border-radius: 10px;
+  color: #fff;
+  background: rgb(255 255 255 / 14%);
+  font: inherit;
+  font-weight: 600;
   text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.logout:hover {
+  background: rgb(255 255 255 / 24%);
 }
 
 .bottomNav {
@@ -79,51 +113,64 @@
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: 1fr;
-  padding: 0.45rem max(0.5rem, env(safe-area-inset-right)) calc(0.45rem + env(safe-area-inset-bottom)) max(0.5rem, env(safe-area-inset-left));
-  background: rgb(255 253 247 / 96%);
+  padding: 0 max(0.25rem, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(0.25rem, env(safe-area-inset-left));
+  background: #fff;
   border-top: 1px solid var(--portal-line);
-  box-shadow: 0 -0.5rem 1.8rem rgb(19 60 47 / 10%);
+  box-shadow: 0 -6px 20px rgb(16 34 58 / 8%);
 }
 
 .navLink {
-  min-height: 56px;
+  position: relative;
+  min-height: 64px;
   display: grid;
   place-items: center;
   align-content: center;
   gap: 0.2rem;
   color: var(--portal-muted);
   text-decoration: none;
-  font-size: var(--font-size-caption);
-  font-weight: 800;
-  border-radius: 0.8rem;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 10px;
+  transition: color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
 }
 
 .navLinkActive {
-  color: var(--portal-green);
-  background: #e5f0e8;
+  color: var(--primary-text);
+  font-weight: 700;
+}
+
+.bottomNav .navLinkActive::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 28%;
+  right: 28%;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: var(--portal-primary);
 }
 
 .page {
   display: grid;
-  gap: 1rem;
+  gap: 0.85rem;
 }
 
 .hero {
   display: grid;
-  gap: 0.55rem;
-  padding: 1.35rem;
-  border-radius: 1.5rem;
-  color: white;
-  background: linear-gradient(135deg, var(--portal-green-dark), var(--portal-green));
-  box-shadow: 0 1rem 2rem rgb(19 75 59 / 18%);
+  gap: 0.45rem;
+  padding: 1.1rem 1.15rem;
+  border-radius: var(--radius-lg);
+  color: #fff;
+  background: linear-gradient(135deg, var(--portal-primary-dark), var(--portal-primary));
+  box-shadow: 0 10px 24px rgb(11 99 198 / 22%);
 }
 
 .heroEyebrow {
   margin: 0;
-  color: #cbe5da;
+  color: rgb(255 255 255 / 80%);
   font-size: var(--font-size-caption);
-  font-weight: 800;
-  letter-spacing: 0.12em;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
@@ -136,15 +183,16 @@
 
 .hero p {
   margin: 0;
-  color: #e4f1eb;
+  color: rgb(255 255 255 / 88%);
 }
 
 .sectionHead {
   display: flex;
+  flex-wrap: wrap;
   align-items: end;
   justify-content: space-between;
-  gap: 1rem;
-  margin-top: 0.5rem;
+  gap: 0.75rem 1rem;
+  margin-top: 0.25rem;
 }
 
 .sectionHead h1,
@@ -159,29 +207,44 @@
 }
 
 .link {
-  color: var(--portal-green);
-  font-weight: 800;
+  padding: 0;
+  border: 0;
+  color: var(--primary-text);
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
   text-decoration: none;
+  cursor: pointer;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+button.link {
+  min-height: 44px;
 }
 
 .grid,
 .gridTwo {
   display: grid;
-  gap: 0.9rem;
+  gap: 0.85rem;
 }
 
 .card {
   display: grid;
-  gap: 0.75rem;
+  align-content: start;
+  gap: 0.7rem;
   padding: 1rem;
-  border: 1px solid rgb(208 220 210 / 90%);
-  border-radius: 1.2rem;
-  background: rgb(255 253 247 / 94%);
-  box-shadow: 0 0.55rem 1.5rem rgb(34 69 57 / 8%);
+  border: 1px solid var(--portal-line);
+  border-radius: var(--radius-lg);
+  background: var(--portal-paper);
+  box-shadow: var(--shadow-sm);
 }
 
 .cardAccent {
-  border-top: 4px solid var(--portal-sun);
+  border-top: 3px solid var(--warning-accent, #e8890c);
 }
 
 .card h2,
@@ -190,40 +253,61 @@
   margin: 0;
 }
 
+.card h2 {
+  font-size: var(--font-size-section);
+}
+
+.cardHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem 0.75rem;
+}
+
+.debtCard {
+  border-top: 3px solid var(--portal-primary);
+}
+
+.debtCard .amount {
+  color: var(--primary-text);
+}
+
 .meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.45rem 0.85rem;
+  gap: 0.35rem 0.85rem;
   color: var(--portal-muted);
-  font-size: 0.88rem;
+  font-size: var(--font-size-label);
 }
 
 .badge {
   width: fit-content;
-  padding: 0.3rem 0.6rem;
+  padding: 0.2rem 0.65rem;
   border-radius: 999px;
-  background: #e3f0e8;
-  color: var(--portal-green-dark);
-  font-size: var(--font-size-caption);
-  font-weight: 800;
-  letter-spacing: 0.04em;
+  background: var(--portal-soft);
+  color: var(--primary-text);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .badgeWarm {
-  background: #fff0cf;
-  color: #7a4a08;
+  background: var(--warning-soft);
+  color: var(--warning);
 }
 
 .amount {
-  font-size: 1.65rem;
-  font-weight: 800;
-  letter-spacing: -0.04em;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
 }
 
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.65rem;
+  gap: 0.6rem;
 }
 
 .button,
@@ -234,34 +318,67 @@
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
-  padding: 0.7rem 1rem;
+  padding: 0.7rem 1.1rem;
   border: 0;
-  border-radius: 0.9rem;
+  border-radius: 14px;
   font: inherit;
-  font-weight: 800;
+  font-weight: 700;
   cursor: pointer;
   text-decoration: none;
+  transition: background-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), transform 90ms var(--ease-out);
+}
+
+.button:active:not(:disabled),
+.buttonSecondary:active:not(:disabled),
+.buttonDanger:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .button {
-  color: white;
-  background: var(--portal-green);
+  color: #fff;
+  background: var(--portal-primary);
+  box-shadow: 0 6px 16px rgb(11 99 198 / 22%);
+}
+
+.button:hover:not(:disabled) {
+  background: var(--portal-primary-dark);
+}
+
+/* D29: green for finishing a job and placing an order. */
+.buttonCommerce {
+  background: var(--portal-commerce);
+  box-shadow: 0 8px 20px rgb(18 128 74 / 28%);
+}
+
+.buttonCommerce:hover:not(:disabled) {
+  background: var(--portal-commerce-dark);
+}
+
+.buttonBlock {
+  width: 100%;
+  min-height: 56px;
+  font-size: 1.05rem;
 }
 
 .buttonSecondary {
-  color: var(--portal-green-dark);
-  background: #e3eee7;
+  color: var(--primary-text);
+  background: var(--portal-soft);
+}
+
+.buttonSecondary:hover:not(:disabled) {
+  background: #dbe9fa;
 }
 
 .buttonDanger {
-  color: #7d251f;
-  background: #fae4df;
+  color: var(--danger);
+  background: var(--danger-soft);
 }
 
 .button:disabled,
 .buttonSecondary:disabled {
   cursor: wait;
-  opacity: 0.65;
+  opacity: 0.6;
+  box-shadow: none;
 }
 
 .form {
@@ -275,7 +392,7 @@
 }
 
 .field label {
-  font-weight: 850;
+  font-weight: 600;
 }
 
 .field input,
@@ -284,11 +401,21 @@
   width: 100%;
   min-height: 52px;
   padding: 0.75rem 0.85rem;
-  border: 1px solid #b8c8bd;
-  border-radius: 0.85rem;
+  border: 1px solid var(--input-border);
+  border-radius: 12px;
   color: var(--portal-ink);
-  background: white;
+  background: #fff;
   font: inherit;
+  font-size: max(16px, 1em);
+  transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.field input:focus-visible,
+.field textarea:focus-visible,
+.field select:focus-visible {
+  outline: none;
+  border-color: var(--portal-primary);
+  box-shadow: var(--focus-ring);
 }
 
 .field textarea {
@@ -302,22 +429,33 @@
 }
 
 .status {
+  margin: 0;
   padding: 0.7rem 0.85rem;
-  border-radius: 0.8rem;
-  background: #edf3e9;
-  color: var(--portal-green-dark);
-  font-weight: 750;
+  border-radius: 12px;
+  background: var(--info-soft, var(--portal-soft));
+  color: var(--info, var(--primary-text));
+  font-weight: 500;
+  animation: notice 200ms var(--ease-out) both;
 }
 
 .error {
-  background: #fae4df;
-  color: #7d251f;
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+  border-radius: 12px;
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-weight: 500;
+}
+
+@keyframes notice {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
 }
 
 .empty {
   padding: 1.2rem;
-  border: 1px dashed #aebfb4;
-  border-radius: 1rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: 12px;
   color: var(--portal-muted);
   text-align: center;
 }
@@ -343,8 +481,8 @@
   width: 0.65rem;
   height: 0.65rem;
   border-radius: 50%;
-  background: var(--portal-sun);
-  box-shadow: 0 0 0 0.25rem #fff0cf;
+  background: var(--portal-primary);
+  box-shadow: 0 0 0 0.25rem var(--portal-soft);
 }
 
 .timelineItem::after {
@@ -354,34 +492,198 @@
   top: 1rem;
   bottom: -1rem;
   width: 2px;
-  background: #d9dfd2;
+  background: var(--portal-line);
 }
 
 .timelineItem:last-child::after {
   display: none;
 }
 
+/* D29 order progress: Đã đặt → Cửa hàng duyệt → Giao hàng → Hoàn tất. */
+.progress {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0.25rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+.progress li {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 6px;
+  padding: 0 2px;
+  color: var(--portal-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.progress li + li::before {
+  content: "";
+  position: absolute;
+  top: 11px;
+  left: calc(-50% + 14px);
+  right: calc(50% + 14px);
+  height: 2px;
+  background: var(--portal-line);
+}
+
+.progress li + li.step_done::before,
+.progress li + li.step_current::before {
+  background: var(--portal-commerce);
+}
+
+.stepDot {
+  position: relative;
+  z-index: 1;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--border-strong);
+  border-radius: 50%;
+  color: #fff;
+  background: #fff;
+}
+
+.progress li.step_done {
+  color: var(--portal-ink);
+}
+
+.step_done .stepDot {
+  border-color: var(--portal-commerce);
+  background: var(--portal-commerce);
+}
+
+.progress li.step_current {
+  color: var(--primary-text);
+  font-weight: 700;
+}
+
+.step_current .stepDot {
+  border-color: var(--portal-primary);
+  background: var(--portal-soft);
+  animation: breathe 2s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(11 99 198 / 28%); }
+  50% { box-shadow: 0 0 0 6px rgb(11 99 198 / 0%); }
+}
+
+.stepLabel {
+  line-height: 1.3;
+}
+
+.progressCompact .stepLabel {
+  font-size: 11px;
+}
+
+.orderList {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.orderList li + li {
+  border-top: 1px solid var(--portal-line);
+}
+
+.orderList a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 52px;
+  padding: 0.5rem 0;
+  color: var(--portal-ink);
+  text-decoration: none;
+}
+
+.orderList a > span:first-child {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
 .split {
   display: grid;
-  gap: 0.8rem;
+  gap: 0.85rem;
 }
 
 .kv {
   display: grid;
   grid-template-columns: minmax(7rem, 0.7fr) 1fr;
   gap: 0.5rem;
-  padding: 0.45rem 0;
-  border-bottom: 1px solid #e3e8df;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--portal-line);
 }
 
 .kv span:first-child {
   color: var(--portal-muted);
 }
 
+/* Phones: the main finishing action stays just above the bottom menu while the form scrolls. */
+.stickyAction {
+  position: sticky;
+  bottom: calc(var(--portal-bottom-nav) + 10px);
+  z-index: 10;
+  width: 100%;
+  min-height: 56px;
+  font-size: 1.05rem;
+}
+
+/* D29: a big counter for trips/hours on site — 72px − / + with the number in between. */
+.shell :global(.qty-stepper-large) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 6px 0;
+}
+
+.shell :global(.qty-stepper-large .qty-step) {
+  width: 72px;
+  height: 72px;
+  flex: none;
+  border: 0;
+  border-radius: 20px;
+  color: var(--portal-ink);
+  background: var(--surface-sunken);
+}
+
+.shell :global(.qty-stepper-large .qty-step:last-child) {
+  color: #fff;
+  background: var(--portal-primary);
+  box-shadow: 0 8px 18px rgb(11 99 198 / 30%);
+}
+
+.shell :global(.qty-stepper-large .qty-step:last-child:hover:not(:disabled)) {
+  color: #fff;
+  background: var(--portal-primary-dark);
+}
+
+.shell :global(.qty-stepper-large .qty-step svg) {
+  width: 28px;
+  height: 28px;
+}
+
+.shell :global(.qty-stepper-large input) {
+  width: 5.5rem;
+  min-height: 60px;
+  padding: 0.25rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  text-align: center;
+}
+
 @media (min-width: 800px) {
   .shell {
     display: grid;
-    grid-template-columns: 15.5rem minmax(0, 1fr);
+    grid-template-columns: 15rem minmax(0, 1fr);
   }
 
   .side {
@@ -390,36 +692,47 @@
     height: 100dvh;
     display: flex;
     flex-direction: column;
-    gap: 2rem;
-    padding: 1.5rem 1rem;
-    background: rgb(255 253 247 / 84%);
+    gap: 1.75rem;
+    padding: 1.25rem 0.85rem;
+    background: #fff;
     border-right: 1px solid var(--portal-line);
-    backdrop-filter: blur(18px);
   }
 
   .sideBrand {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.7rem;
     padding: 0 0.5rem;
   }
 
   .sideNav {
     display: grid;
-    gap: 0.35rem;
+    gap: 0.25rem;
   }
 
   .navLink {
+    min-height: 44px;
     grid-template-columns: 1.5rem 1fr;
     justify-content: start;
     place-items: center start;
     align-content: center;
     padding: 0 0.8rem;
-    font-size: 0.9rem;
+    font-size: 0.92rem;
+  }
+
+  .navLink:hover {
+    color: var(--portal-ink);
+    background: var(--surface-sunken);
+  }
+
+  .sideNav .navLinkActive,
+  .sideNav .navLinkActive:hover {
+    color: var(--primary-text);
+    background: var(--portal-soft);
   }
 
   .main {
-    padding: 1.6rem 2rem 3rem;
+    padding: 1.5rem 2rem 3rem;
   }
 
   .bottomNav {
@@ -431,7 +744,23 @@
   }
 
   .topbar {
+    position: static;
     justify-content: flex-end;
+    margin: 0 0 1rem;
+    padding: 0;
+    color: inherit;
+    background: none;
+    box-shadow: none;
+  }
+
+  .logout {
+    color: var(--primary-text);
+    background: #fff;
+    border: 1px solid var(--portal-line);
+  }
+
+  .logout:hover {
+    background: var(--portal-soft);
   }
 
   .gridTwo {
@@ -442,12 +771,23 @@
     grid-template-columns: 1.2fr 0.8fr;
     align-items: start;
   }
+
+  .stickyAction {
+    position: static;
+  }
+
+  .buttonBlock {
+    width: auto;
+    min-width: 16rem;
+    justify-self: start;
+  }
 }
 
-/* Keep the portal's established green palette and phone navigation. */
-.logout { gap: 0.4rem; padding: 0.5rem 0.75rem; border: 1px solid var(--portal-line); border-radius: 0.8rem; background: var(--portal-paper); font: inherit; cursor: pointer; }
-.logout:hover { border-color: var(--portal-green); background: #e3eee7; }
-.shell :focus-visible { outline: 3px solid var(--portal-green); outline-offset: 3px; }
+.shell :focus-visible {
+  outline: 3px solid var(--portal-primary);
+  outline-offset: 3px;
+}
+
 .quantityScope { display: grid; gap: 0.2rem; font-variant-numeric: tabular-nums; }
 .quantityScope > span { min-width: 0; overflow-wrap: anywhere; }
 .kv .quantityScope > span:first-child { color: inherit; }
@@ -471,7 +811,7 @@
   object-fit: cover;
   border-radius: 10px;
   border: 1px solid var(--portal-line);
-  background: var(--portal-paper);
+  background: var(--surface-sunken);
 }
 
 .photo figcaption {
@@ -487,13 +827,12 @@
   list-style: none;
 }
 
-/* D15 customer ordering; FB6: the same editor as the internal sales order, in the portal's colours. */
-.orderEditor { --primary: var(--portal-green); --primary-strong: var(--portal-green-dark); }
+/* D15 customer ordering; FB6: the same editor as the internal sales order, now in the same blue. */
 .lineMeta { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.75rem; }
 .lineMeta select { min-width: 8rem; max-width: 100%; }
 /* Phones: the total and "Xem lại đơn" sit just above the bottom menu instead of under it. */
 @media (max-width: 799px) {
-  .orderEditor :global(.doc-editor-footer) { bottom: calc(88px + env(safe-area-inset-bottom)); }
+  .orderEditor :global(.doc-editor-footer) { bottom: calc(var(--portal-bottom-nav) + 8px); }
 }
 .orderLines { display: grid; gap: 0.4rem; margin: 0; padding: 0; list-style: none; }
-.orderLines li { display: flex; justify-content: space-between; gap: 0.8rem; padding: 0.45rem 0; border-bottom: 1px dashed #d6e0d9; }
+.orderLines li { display: flex; justify-content: space-between; gap: 0.8rem; padding: 0.45rem 0; border-bottom: 1px dashed var(--portal-line); }
