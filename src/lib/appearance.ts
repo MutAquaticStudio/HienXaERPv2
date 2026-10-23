@@ -7,10 +7,11 @@ export const APPEARANCE_MAX_AGE_SECONDS = 400 * 24 * 60 * 60;
 
 export const THEMES = [{ value: "light", label: "Sáng" }, { value: "dark", label: "Tối" }, { value: "system", label: "Theo thiết bị" }] as const;
 export const FONT_SIZES = [{ value: "sm", label: "Nhỏ" }, { value: "md", label: "Vừa" }, { value: "lg", label: "Lớn" }] as const;
-export const FONTS = [{ value: "noto", label: "Noto Sans" }, { value: "be-vietnam", label: "Be Vietnam Pro" }] as const;
+// D29: Be Vietnam Pro is the default face; Noto Sans stays for whoever prefers it.
+export const FONTS = [{ value: "be-vietnam", label: "Be Vietnam Pro" }, { value: "noto", label: "Noto Sans" }] as const;
 
 export type Appearance = { theme: (typeof THEMES)[number]["value"]; fontSize: (typeof FONT_SIZES)[number]["value"]; font: (typeof FONTS)[number]["value"] };
-export const DEFAULT_APPEARANCE: Appearance = { theme: "light", fontSize: "md", font: "noto" };
+export const DEFAULT_APPEARANCE: Appearance = { theme: "light", fontSize: "md", font: "be-vietnam" };
 
 const pick = <T extends string>(options: readonly { value: T }[], value: string | undefined, fallback: T): T =>
   options.some((option) => option.value === value) ? value as T : fallback;
