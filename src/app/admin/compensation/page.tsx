@@ -57,8 +57,9 @@ export default async function CompensationPage({ searchParams }: { searchParams:
   const resolutions = new Map((resolutionsResult.data ?? []).map(item => [item.case_id, item]));
   const rows = (data ?? []) as Earning[];
   const workerOptions = [...new Map((workers ?? []).map((worker) => [worker.id, worker] as const)).values()];
-  const { data: recognitionPolicies, error: recognitionError } = await supabase.from("compensation_recognition_policies").select("rule_id, recognition_kind, effective_at").eq("branch_id", access.branchId);
+  const { data: recognitionPolicies, error: recognitionError } = await supabase.from("compensation_recognition_policies").select("rule_id, employee_id, recognition_kind, effective_at").eq("branch_id", access.branchId);
   if (recognitionError) throw new Error("Không tải được cấu hình ghi nhận thu nhập.");
+  const recognitionScope = (employeeId?: string | null) => employeeId ? workerOptions.find(worker => worker.id === employeeId)?.display_name ?? "Một nhân viên" : "Mọi thợ";
   const canManage = access.permissions.has("compensation.manage");
   const canApprove = access.permissions.has("compensation.approve");
   const canPay = access.permissions.has("finance.payment.post");
@@ -98,14 +99,15 @@ export default async function CompensationPage({ searchParams }: { searchParams:
         </FormDialog>
         {canApprove && <FormDialog label="Phê duyệt ghi nhận tự động theo sự kiện" title="Ghi nhận tự động theo sự kiện" size="lg">
       <p>Áp dụng cho nghiệp vụ phát sinh sau thời điểm hiệu lực. Quy tắc và lịch sử phê duyệt được lưu đầy đủ.</p>
+      <p className="muted">Quy tắc toàn chi nhánh (tính theo chuyến hoặc theo việc): mỗi phiếu giao xong tính cho thợ được giao. Thợ có quy tắc riêng đã duyệt thì tính theo quy tắc riêng.</p>
       <form className="command-panel" action={configureRecognitionAction}>
         <input type="hidden" name="operationId" value={randomUUID()} />
-        <div className="field"><label>Quy tắc và phiên bản áp dụng</label><select name="ruleId" required><option value="">Chọn quy tắc</option>{(rules ?? []).filter(r => r.employee_id && !recognitionPolicies?.some(p => p.rule_id === r.id)).map(r => <option key={r.id} value={r.id}>{r.code} · Phiên bản {r.version}</option>)}</select></div>
-        <div className="field"><label>Sự kiện ghi nhận</label><select name="recognitionKind"><option value="WORK_ITEM_VERIFICATION">Chủ doanh nghiệp xác minh kết quả thợ</option><option value="AR_PAYMENT_ALLOCATION">Phân bổ tiền thu vào công nợ do nhân viên kinh doanh phụ trách</option></select></div>
+        <div className="field"><label>Quy tắc và phiên bản áp dụng</label><select name="ruleId" required><option value="">Chọn quy tắc</option>{(rules ?? []).filter(r => (r.employee_id || ["PER_JOB", "PER_TRIP"].includes(r.earning_type)) && !recognitionPolicies?.some(p => p.rule_id === r.id)).map(r => <option key={r.id} value={r.id}>{r.code} · Phiên bản {r.version} · {recognitionScope(r.employee_id)}</option>)}</select></div>
+        <div className="field"><label>Sự kiện ghi nhận</label><select name="recognitionKind"><option value="WORK_ITEM_VERIFICATION">Việc của thợ được xác minh (gồm chuyến giao thợ báo đã giao)</option><option value="AR_PAYMENT_ALLOCATION">Phân bổ tiền thu vào công nợ do nhân viên kinh doanh phụ trách</option></select></div>
         <div className="field"><label>Hiệu lực (giờ Việt Nam)</label><input name="effectiveAt" type="datetime-local" required /></div>
         <button type="submit" className="button button-primary">Phê duyệt ghi nhận tự động</button>
       </form>
-      <ul>{recognitionPolicies?.map(p => <li key={p.rule_id}>{recognitionKindLabel(p.recognition_kind)} · {formatBusinessDateTime(p.effective_at)} · {rules?.find(rule => rule.id === p.rule_id)?.code ?? "Quy tắc đã chọn"}</li>)}</ul>
+      <ul>{recognitionPolicies?.map(p => <li key={p.rule_id}>{recognitionKindLabel(p.recognition_kind)} · {formatBusinessDateTime(p.effective_at)} · {rules?.find(rule => rule.id === p.rule_id)?.code ?? "Quy tắc đã chọn"} · {recognitionScope(p.employee_id)}</li>)}</ul>
         </FormDialog>}
       </div>}
     </header>

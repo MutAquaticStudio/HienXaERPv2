@@ -3243,3 +3243,19 @@ xong toàn bộ rồi QA một lần; tệp áp QA sẽ chia < 20.000 ký tự. 
   `localStorage` `hx.lastPortal`, ghi khi bấm đăng nhập), `auth-screen.tsx` (đăng nhập → `PortalLogin`, còn lại thẻ gọn); `/`,
   `/recovery`, `/select-branch`, xác minh liên kết dùng `AuthFrame`; bỏ `portal-chooser.tsx` và CSS `.auth-story`, `.portal-choice*`.
 - Form đăng nhập, `surface`, route và điều hướng sau đăng nhập không đổi; script QA vẫn bấm nút "Đăng nhập" và nhãn "Mật khẩu".
+
+## 2026-10-23 — HOTFIX-EVIDENCE + D31: ảnh thợ và tiền chuyến
+
+- Owner (ảnh cổng thợ Production "Lỗi tải — Có ảnh chưa tải lên được"): log Supabase cho thấy `POST /rest/v1/rpc/finalize_portal_evidence_verified`
+  (service role) trả 403 "permission denied for function auth_actor_active". Hook `require_active_api_actor` (migration 12/10) có biểu thức
+  `current_user='authenticated' and not private.auth_actor_active()`; Postgres kiểm quyền mọi hàm trong biểu thức khi chuẩn bị, nên service role
+  và anon bị chặn. Production: 5 ảnh kẹt `PENDING`, chưa ảnh nào hoàn tất kể từ 12/10. Sửa: IF lồng nhau (`20261023120000`), native 270 tái hiện
+  lỗi trước khi sửa (service_role, anon qua; tài khoản bị khóa vẫn `account_inactive`).
+- Owner: "Khi chuyến hàng giao tính công giao ở thu nhập cho thợ luôn? Ở đây thợ và tài xế là 1 … chở đơn xi măng xong sẽ dc tính tiền chuyến
+  theo rule tính công đã có." Kiểm Production (chỉ đọc): 1 quy tắc `CHUYEN` PER_TRIP 30.000 ₫ **toàn chi nhánh**, 0 phê duyệt ghi nhận tự động,
+  0 khoản thu nhập; ghi nhận tự động chỉ nhận quy tắc gắn một nhân viên (`configure_compensation_recognition` → `invalid_recognition_policy`,
+  trang Thu nhập lọc bỏ quy tắc không có nhân viên). D31 (`20261023120100`): `compensation_recognition_policies.employee_id` cho phép trống
+  (chỉ với WORK_ITEM_VERIFICATION); `recognize_verified_work` chọn quy tắc riêng của thợ trước, rồi quy tắc toàn chi nhánh mới nhất (chỉ phiếu
+  giao); `post_recognized_earning` lấy thợ từ phân công của việc đã xác minh. Native 275 (đỏ khi bỏ migration, xanh khi có): trước phê duyệt
+  không tính; sau phê duyệt tài xế báo "Đã giao" → 30.000 ₫ APPROVED + phải trả, hiện ở cổng thợ; thợ có quy tắc riêng 45.000 ₫ tính theo quy tắc
+  riêng; hoa hồng toàn chi nhánh bị từ chối; không tính tay trùng. Không tính bù chuyến cũ.
