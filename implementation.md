@@ -3278,4 +3278,4 @@ xong toàn bộ rồi QA một lần; tệp áp QA sẽ chia < 20.000 ký tự. 
 - Vai trò: `builtin_worker` → "Thợ & tài xế", `builtin_driver` ngừng dùng (Production 0 người giữ), preset bỏ "Tài xế".
 - Đăng nhập đúng cổng: `accountPortals` đọc quyền của chính tài khoản; sai tab → `signOut` + báo tab đúng; `/admin` layout đẩy thợ về `/work`, khách về `/customer`.
 - Native 280; vitest bổ sung (logout, trang chủ `?portal`, action dịch vụ, nguồn hàng nháp, thẻ duyệt, đăng nhập 3 tab).
-
+- Phát hành: migration `20261023150000` áp QA rồi Production (md5 `b9350e53…` khớp; Production: vai trò "Thợ & tài xế", `builtin_driver` ngừng dùng, validator đã sửa); PR #62 CI xanh → merge `f5ae600` → deploy `dpl_CCnnSqYBJHUGcFBhqM6Xr1XFGjDv`.
