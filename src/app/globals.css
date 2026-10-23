@@ -1591,3 +1591,11 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
   .list-filters .list-filter-option { min-height: 40px; }
   .row-expansion > td > .row-expansion-grid { position: static; max-width: none; }
 }
+
+/* FB10 (4.6): "Trả hàng nhập" — lines left, amount and refund choice right (KiotViet). */
+.return-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; align-items: start; }
+.return-layout th.numeric, .return-layout td.numeric { text-align: right; white-space: nowrap; }
+.return-summary { display: grid; gap: 12px; position: sticky; top: 16px; }
+.return-total { display: flex; justify-content: space-between; align-items: baseline; margin: 0; }
+.return-total strong { font-size: 1.35rem; color: var(--primary); }
+@media (max-width: 900px) { .return-layout { grid-template-columns: 1fr; } .return-summary { position: static; } }

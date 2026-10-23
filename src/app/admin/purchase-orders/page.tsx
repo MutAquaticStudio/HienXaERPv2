@@ -66,7 +66,7 @@ export default async function PurchaseOrdersPage({ searchParams }: { searchParam
   const isFiltered = Boolean(list.q || list.state);
   return <div className="page-stack">
     <header className="page-heading"><div><p className="eyebrow">Mua hàng</p><h1>Đơn mua</h1><p className="lede">Nguồn hàng giữ liên kết về nhu cầu bán. Mũi tên để xem nhanh hàng hóa của đơn.</p></div>
-      <div className="action-cluster"><Link className="button button-secondary" href="/admin/purchases/returns">Trả nhà cung cấp</Link>{access.permissions.has("purchasing.create") && <ButtonLink href="/admin/purchase-orders/new">+ Tạo đơn mua</ButtonLink>}</div></header>
+      <div className="action-cluster"><Link className="button button-secondary" href="/admin/purchases/returns">Trả hàng nhập</Link>{access.permissions.has("purchasing.create") && <ButtonLink href="/admin/purchase-orders/new">+ Tạo đơn mua</ButtonLink>}</div></header>
     <ActionNotice notice={query.notice} error={query.error} />
     <div className="list-layout">
       <AutoFilterForm className="card card-pad list-filters" aria-label="Bộ lọc đơn mua">
