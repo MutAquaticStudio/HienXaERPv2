@@ -22,6 +22,8 @@
 
 > Quyết định Owner 23/10/2026 (đợt `FB8`, Owner tự QA sau phát hành): **D28** (a) đơn dịch vụ: **số lượng dự kiến không bắt buộc** (để trống = "Theo thực tế", vd chở theo chuyến chưa biết bao nhiêu chuyến), mô tả không bắt buộc; thợ **chỉ nhập số lượng một lần khi bấm Hoàn tất**, bằng nút **+ / −** (vẫn gõ được); văn phòng xác minh số tính khách / tính công cũng bằng + / −; giao diện đơn dịch vụ làm lại (SPEC-FB8 §1); (b) xác nhận đơn bán bị chặn vì công nợ / hạn mức → **popup** (không còn dòng lỗi đỏ): người có quyền duyệt xem số liệu và duyệt trong popup, người khác thấy danh sách người duyệt được; người duyệt hiện **tên, mã, vai trò** thay cho UID (§2).
 
+> Quyết định Owner 23/10/2026 (đợt `UI-R1`, làm lại giao diện): **D29** giữ bố cục kiểu KiotViet nhưng đẹp và chuyên nghiệp hơn, có chuyển động; chỉ đổi phần **trình bày** (không đổi DB, RPC, quyền, route, server action, nghiệp vụ). (a) khối vận hành dùng **thanh tiện ích trắng + thanh menu xanh ngang** có menu thả xuống, thay sidebar dọc; (b) mật độ **gọn kiểu KiotViet**: Be Vietnam Pro mặc định, chữ 14–15 px, vẫn chọn được cỡ "Lớn" và font Noto Sans; (c) phạm vi **làm hết**: khung + màu + chuyển động, danh sách bộ lọc trái + xem nhanh dòng, màn tạo đơn kiểu bán hàng + popup tín dụng, cổng thợ & cổng khách điện thoại; (d) phát hành **một lần khi xong hết**, Owner duyệt bản preview (dữ liệu QA) trước khi lên Production (SPEC-UI-R1). Ô tìm nhanh toàn hệ thống (Ctrl K), khung "Hàng hay bán", phím F9 trong ảnh concept **không** thuộc D29.
+
 # Spec.md — HIỀN XA ERP V2
 
 > **Bộ tài liệu:** `HX-V2-DOCSET-4.4`  
@@ -3154,6 +3156,28 @@ Mỗi lát cắt dùng cùng entity/source hiện có; không tạo bản ghi �
 - `sales_order_credit_people(target_order_id)` (security definer, cần `orders.read` ở chi nhánh của đơn, không cấp anon): `approved` = tên, mã, vai trò
   của người đã duyệt và thời điểm; `approvers` = nhân viên đang hoạt động có quyền truy cập chi nhánh, giữ đủ hai quyền qua vai trò hoặc cấp thêm.
   Không trả UID, email hay thông tin khác. Migration `20261023090100_fb8_credit_override_people.sql`, native 265.
+
+# SPEC-UI-R1 — Làm lại giao diện (D29)
+
+Chỉ trình bày. Không migration, không RPC mới, không đổi quyền, route, dữ liệu gửi của form hay luật nghiệp vụ. Tên class CSS hiện có giữ nguyên
+(script QA và test chọn theo chúng); chữ trên giao diện toàn tiếng Việt.
+
+1. **Nền tảng**: bộ token mới trong `src/app/globals.css` (xanh `#0B63C6`, xanh lá thương mại `#12804A`, nền `#F2F5F9`, bo 8/12/16 px, bóng 2 cấp,
+   thời lượng chuyển động 120/200/320 ms); Be Vietnam Pro mặc định (`src/lib/appearance.ts`), giữ Noto Sans, cỡ chữ Nhỏ/Vừa/Lớn và chế độ tối.
+2. **Khung**: thanh tiện ích (logo, chi nhánh, chuông, menu người dùng có Giao diện + Đăng xuất) + menu xanh ngang (nhóm nhiều mục mở bảng thả xuống,
+   Escape / bấm ra ngoài đóng); nút "Tạo đơn bán" xanh lá chỉ khi có `orders.create`; dưới 1180 px là ngăn kéo trái (accordion, khóa focus).
+3. **Chuyển động**: trang hiện dần so le, popup phóng + mờ (đóng 160 ms), dòng mở rộng trượt xuống, khung xương khi tải, số nảy khi bấm + / −;
+   `prefers-reduced-motion` tắt toàn bộ.
+4. **Danh sách** Đơn bán, Đơn mua, Phiếu giao, Đơn dịch vụ: bộ lọc trạng thái dạng radio có số đếm (tối đa "99+") ở khung trái, áp ngay; mũi tên
+   "Xem nhanh" mở tóm tắt hàng hóa / giao hàng dưới dòng (dữ liệu đọc sẵn theo quyền hiện có); bấm dòng vẫn mở chứng từ.
+5. **Màn tạo / sửa đơn** (đơn bán, đơn mua, đặt hàng cổng khách dùng chung): dải xanh thêm hàng, chip nguồn giá (Hợp đồng / Bảng giá / Giá nhập),
+   tồn kho xanh / đỏ theo tình trạng, tổng tiền nổi bật, "Lưu nháp" cạnh nút xanh lá "Xác nhận đơn". Thanh công nợ / hạn mức trong màn tạo đơn
+   **không** làm vì cần đọc thêm dữ liệu.
+6. **Popup vượt hạn mức**: thanh "đã cam kết + đơn này" so với vạch hạn mức, 3 ô số (hạn mức, quá hạn, tổng sau xác nhận), người duyệt có chữ cái viết
+   tắt; nút duyệt xanh lá. Luật tín dụng giữ nguyên (SPEC-FB8 §2).
+7. **Cổng thợ & cổng khách**: thanh trên xanh, menu dưới có biểu tượng, thẻ bo 16, nút 52–56 px; thợ có bộ đếm − / + 72 px và nút Hoàn tất / Đã giao
+   xanh lá dính đáy; khách có nút "Đặt hàng mới", thẻ đơn đang theo dõi với tiến trình Đã đặt → Cửa hàng duyệt → Giao hàng → Hoàn tất (suy từ trạng
+   thái đơn sẵn có, `portalOrderProgress`), đơn gần đây, thẻ công nợ.
 
 # KẾT THÚC Spec.md
 

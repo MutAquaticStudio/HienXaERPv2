@@ -25,7 +25,7 @@ QA_SCHEMA_MUTATION: PO_PATCH_ALREADY_APPLIED_NEW_PATCHES_NOT_AUTHORIZED
 QA_APPROVED_PATCH_SHA256: 9e74a7976728bb33b4401d642b79329e5d5ece9ac016e8509c06bbf238bf2f7d
 QA_SCHEMA_APPLY: APPLIED
 PRODUCTION_MUTATION: FORBIDDEN_WITHOUT_OWNER
-ACTIVE_FEEDBACK_BATCH: FB8_20261023  # Claude Code, branch nox/elegant-volta-kr29iz; FB8 đã lên Production (main 9287615); Owner tự QA theo kịch bản toàn hệ thống, see FB8 rows
+ACTIVE_FEEDBACK_BATCH: UI_R1_20261023  # Claude Code, branch nox/elegant-volta-kr29iz; làm lại giao diện D29, chờ Owner duyệt preview rồi mới lên Production, see UI-R1 rows
 ```
 
 Historical R0–R9 tasks are not repeated here. Their source/evidence lives in implementation.md.
@@ -787,3 +787,11 @@ Quyết định D25 ở đầu Spec.md; giao diện UX-FB5-001. Migration `20261
 | FB8-1 | Đơn dịch vụ: số lượng dự kiến không bắt buộc ("Theo thực tế"), mô tả không bắt buộc, nút + / − khi tạo / thợ hoàn tất / xác minh, làm lại danh sách + chi tiết (D28a; migration `20261023090000`, native 260) | DONE (code) |
 | FB8-2 | Vượt hạn mức tín dụng dạng popup tự mở; người duyệt hiện tên, mã, vai trò thay UID; người không có quyền thấy danh sách người duyệt được (D28b; migration `20261023090100`, native 265) | DONE (code) |
 | FB8-REL | PR, CI, merge, migration QA rồi Production (md5), deploy, kịch bản QA toàn hệ thống `KICH-BAN-QA-TOAN-HE-THONG.md` cho Owner tự QA | DONE — PR #59 merge `9287615`; migration `20261023090000`, `20261023090100` trên QA + Production (md5 khớp `cd3cae49…`); deploy `dpl_GFdP4h2M4KoAemhEW1FTPbW7phUq`; chờ Owner QA |
+| UI-R1-0 | Bộ ảnh concept 8 màn (canvas) gửi Owner trước khi làm (D29) | DONE |
+| UI-R1-A | Token màu / chữ / bo / bóng / chuyển động, Be Vietnam Pro mặc định, chế độ tối, restyle nút, bảng, ô nhập, chip (D29) | DONE (code) |
+| UI-R1-B | Thanh tiện ích + menu xanh ngang có menu thả xuống, ngăn kéo dưới 1180 px, nút "Tạo đơn bán" theo quyền (D29a) | DONE (code) |
+| UI-R1-C | Chuyển động: trang hiện dần, popup phóng / mờ có đóng 160 ms, khung xương khi tải, số nảy; tắt khi reduced-motion | DONE (code) |
+| UI-R1-D | Đơn bán, đơn mua, phiếu giao, đơn dịch vụ: bộ lọc trái có số đếm + xem nhanh dòng (`src/components/lists`) | DONE (code) |
+| UI-R1-E | Màn tạo đơn kiểu bán hàng (dải xanh, chip nguồn giá, Xác nhận đơn xanh lá) + popup vượt hạn mức theo concept | DONE (code) |
+| UI-R1-F | Cổng thợ & cổng khách điện thoại: thanh xanh, menu dưới, bộ đếm 72 px, nút hoàn tất dính đáy, tiến trình đơn | DONE (code) |
+| UI-R1-REL | Kiểm chứng (`pnpm check`, native, script QA), preview Vercel dữ liệu QA, Owner duyệt preview, rồi PR → CI → merge → Production | IN_PROGRESS — chờ Owner duyệt preview |

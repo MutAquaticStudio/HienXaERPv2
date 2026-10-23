@@ -3205,3 +3205,20 @@ xong toàn bộ rồi QA một lần; tệp áp QA sẽ chia < 20.000 ký tự. 
 - Deploy `dpl_GFdP4h2M4KoAemhEW1FTPbW7phUq` (`main@9287615`); quay lui: `dpl_CTjqqBV3DCZwi5jWyYXTgVWfwkud`.
 - Kịch bản QA toàn hệ thống `KICH-BAN-QA-TOAN-HE-THONG.md` gửi Owner (Owner tự QA).
 
+## 2026-10-23 — UI-R1: làm lại giao diện (D29)
+
+- Owner: phần giống KiotViet làm đẹp hơn nhưng giữ style KiotViet; UX/UI chuyên nghiệp có animation / transition; làm ảnh concept trước. Owner chọn
+  menu xanh ngang, mật độ gọn, làm hết, phát hành một lần sau khi duyệt preview. Canvas concept 8 màn gửi Owner trước khi code.
+- Chỉ trình bày: không migration, không RPC, không đổi quyền / route / dữ liệu gửi. Giữ tên class "móc" cho script QA (`.metric-value`,
+  `.row-link-table`, `.field`, `.price-book-table`, `.payment-editor`, `.dispatch-column`, `.portal-choice`…).
+- A `b8b4745`: token mới, Be Vietnam Pro mặc định (`src/lib/appearance.ts`), restyle class chung, reduced-motion toàn cục.
+- B `36f651b`: `src/components/app-shell.tsx` viết lại — thanh tiện ích + menu xanh ngang, menu người dùng, ngăn kéo < 1180 px; test 21 ca.
+- C `1ccda92`: `Dialog` đóng có animation 160 ms (bỏ qua khi không có `prefers-reduced-motion: no-preference`), `QuantityStepper` số nảy,
+  `src/app/admin/loading.tsx` khung xương, lớp chuyển động CSS.
+- D `b6b8834`: `ListFilterGroup`, `ExpandableRows` (`src/components/lists`); 4 trang danh sách dùng bộ lọc trái + xem nhanh, đếm `.limit(100)`
+  → "99+", dòng hàng của trang hiện tại đọc một lần `.in(...)`. Bỏ CSS thẻ đơn cũ không còn dùng.
+- E `e205388`: dải xanh thêm hàng (`.doc-editor-toolbar`), chip nguồn giá (`PricedLine.sourceType`), `line-stock ok/short`, "Lưu nháp" +
+  "Xác nhận đơn" xanh lá; popup tín dụng có thanh cam kết / hạn mức, 3 ô số, `nameInitials`. Thanh công nợ trong màn tạo đơn không làm (cần đọc thêm).
+- F `552115a`: `portal.module.css` viết lại theo bảng màu D29; bộ đếm 72 px, nút hoàn tất dính đáy; `portalOrderProgress` + `OrderProgress`;
+  trang chủ khách có "Đặt hàng mới", đơn đang theo dõi, đơn gần đây; `aria-current="page"` trên menu cổng.
+- Kiểm tra trực quan từng đợt bằng ảnh chụp 1440 / 1280 / 390 px (HTML thật dựng qua test tạm, không commit).
