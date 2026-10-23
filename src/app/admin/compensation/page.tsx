@@ -4,7 +4,7 @@ import { earningTypeLabel, earningClassificationLabel, recognitionKindLabel } fr
 import { financeStateLabel } from "@/modules/finance/presentation";
 import { formatBusinessDate, formatBusinessDateTime } from "@/lib/core/business-time";
 import { randomUUID } from "node:crypto";
-import { configureRecognitionAction } from "@/modules/workforce/recognition-action";
+import { configureRecognitionAction, postMonthlySalariesAction } from "@/modules/workforce/recognition-action";
 import { EarningSourceTrace, type EarningSource } from "@/modules/workforce/earning-source-trace";
 import { ActionNotice } from "@/components/sales/action-notice";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -97,15 +97,22 @@ export default async function CompensationPage({ searchParams }: { searchParams:
           <button className="button button-primary" type="submit">Tạo phiên bản quy tắc mới</button>
         </form>
         </FormDialog>
-        {canApprove && <FormDialog label="Phê duyệt ghi nhận tự động theo sự kiện" title="Ghi nhận tự động theo sự kiện" size="lg">
-      <p>Áp dụng cho nghiệp vụ phát sinh sau thời điểm hiệu lực. Quy tắc và lịch sử phê duyệt được lưu đầy đủ.</p>
-      <p className="muted">Quy tắc toàn chi nhánh (tính theo chuyến hoặc theo việc): mỗi phiếu giao xong tính cho thợ được giao. Thợ có quy tắc riêng đã duyệt thì tính theo quy tắc riêng.</p>
+        {canApprove && <FormDialog label="Tính lương tháng" title="Tính lương tháng" buttonClassName="button button-primary"
+          description="Tạo khoản lương đã duyệt (ghi phải trả) cho mọi người có quy tắc Lương tháng còn hiệu lực. Bấm lại cùng tháng không tính hai lần.">
+          <form className="command-panel" action={postMonthlySalariesAction}>
+            <input type="hidden" name="operationId" value={randomUUID()} />
+            <div className="field"><label htmlFor="salary-month">Tháng</label><input id="salary-month" name="month" type="month" defaultValue={currentDate().slice(0, 7)} max={currentDate().slice(0, 7)} required /></div>
+            <button type="submit" className="button button-primary">Tính lương tháng</button>
+          </form>
+        </FormDialog>}
+        {canApprove && <FormDialog label="Hoa hồng tự động" title="Hoa hồng tự động theo tiền thu" size="lg">
+      <p className="muted">Quy tắc Theo chuyến / Theo việc tự áp dụng khi việc được xác minh, không cần phê duyệt. Mục này chỉ bật hoa hồng tự tính khi thu tiền khách của nhân viên kinh doanh.</p>
       <form className="command-panel" action={configureRecognitionAction}>
         <input type="hidden" name="operationId" value={randomUUID()} />
-        <div className="field"><label>Quy tắc và phiên bản áp dụng</label><select name="ruleId" required><option value="">Chọn quy tắc</option>{(rules ?? []).filter(r => (r.employee_id || ["PER_JOB", "PER_TRIP"].includes(r.earning_type)) && !recognitionPolicies?.some(p => p.rule_id === r.id)).map(r => <option key={r.id} value={r.id}>{r.code} · Phiên bản {r.version} · {recognitionScope(r.employee_id)}</option>)}</select></div>
-        <div className="field"><label>Sự kiện ghi nhận</label><select name="recognitionKind"><option value="WORK_ITEM_VERIFICATION">Việc của thợ được xác minh (gồm chuyến giao thợ báo đã giao)</option><option value="AR_PAYMENT_ALLOCATION">Phân bổ tiền thu vào công nợ do nhân viên kinh doanh phụ trách</option></select></div>
+        <input type="hidden" name="recognitionKind" value="AR_PAYMENT_ALLOCATION" />
+        <div className="field"><label>Quy tắc hoa hồng</label><select name="ruleId" required><option value="">Chọn quy tắc</option>{(rules ?? []).filter(r => r.employee_id && r.earning_type === "SALES_COMMISSION" && !recognitionPolicies?.some(p => p.rule_id === r.id)).map(r => <option key={r.id} value={r.id}>{r.code} · Phiên bản {r.version} · {recognitionScope(r.employee_id)}</option>)}</select></div>
         <div className="field"><label>Hiệu lực (giờ Việt Nam)</label><input name="effectiveAt" type="datetime-local" required /></div>
-        <button type="submit" className="button button-primary">Phê duyệt ghi nhận tự động</button>
+        <button type="submit" className="button button-primary">Bật hoa hồng tự động</button>
       </form>
       <ul>{recognitionPolicies?.map(p => <li key={p.rule_id}>{recognitionKindLabel(p.recognition_kind)} · {formatBusinessDateTime(p.effective_at)} · {rules?.find(rule => rule.id === p.rule_id)?.code ?? "Quy tắc đã chọn"} · {recognitionScope(p.employee_id)}</li>)}</ul>
         </FormDialog>}
