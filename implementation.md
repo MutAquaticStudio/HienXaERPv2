@@ -3259,3 +3259,8 @@ xong toàn bộ rồi QA một lần; tệp áp QA sẽ chia < 20.000 ký tự. 
   giao); `post_recognized_earning` lấy thợ từ phân công của việc đã xác minh. Native 275 (đỏ khi bỏ migration, xanh khi có): trước phê duyệt
   không tính; sau phê duyệt tài xế báo "Đã giao" → 30.000 ₫ APPROVED + phải trả, hiện ở cổng thợ; thợ có quy tắc riêng 45.000 ₫ tính theo quy tắc
   riêng; hoa hồng toàn chi nhánh bị từ chối; không tính tay trùng. Không tính bù chuyến cũ.
+- Phát hành 23/10 (Owner: "Deploy lên production"): migration `20261023120000` + `20261023120100` áp QA rồi Production qua MCP (mỗi file một
+  transaction + bản ghi `schema_migrations`, md5 `81e970d2…` / `95b969c1…` khớp file; kiểm `prosrc`, ràng buộc, quyền hàm). QA: yêu cầu anon qua
+  Data API nay bị chặn ở quyền bảng ("permission denied for table"), không còn ở hook. PR #61 (D30 + hotfix + D31) CI `phase-gate` + `db-migrations`
+  xanh → merge `45a5e1c` → deploy Production `dpl_BtFzNRnfaZAWzXBoDAaAWJ5DFzW7`. Owner còn phải bật một lần "CHUYEN · Mọi thợ" ở Thu nhập →
+  Phê duyệt ghi nhận tự động; 5 ảnh `PENDING` cũ không tự lưu lại (thợ chụp lại).
