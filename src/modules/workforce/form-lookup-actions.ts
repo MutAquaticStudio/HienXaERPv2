@@ -3,10 +3,11 @@
 import { requireInternalPermission } from "@/lib/access/context";
 import { ilikePattern } from "@/lib/core-list";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { loadSalesStaffOptions } from "./sales-staff";
 
 export type ServiceJobCustomerOption = { id: string; code: string; display_name: string };
 export type ServiceJobSiteOption = { id: string; customer_id: string; name: string };
-export type ServiceJobResourceKind = "employee" | "vehicle" | "machine";
+export type ServiceJobResourceKind = "employee" | "sales" | "vehicle" | "machine";
 export type ServiceJobResourceOption = { id: string; label: string };
 
 export async function searchServiceJobCustomersAction(term: string): Promise<ServiceJobCustomerOption[]> {
@@ -40,6 +41,7 @@ export async function searchServiceJobResourcesAction(kind: ServiceJobResourceKi
   const supabase = await createServerSupabase();
   const search = term.trim().slice(0, 80);
   const pattern = ilikePattern(search);
+  if (kind === "sales") return loadSalesStaffOptions(supabase, access.branchId, search);
   if (kind === "employee") {
     let request = supabase.from("workforce_read").select("id, code, display_name")
       .eq("branch_id", access.branchId).eq("active", true);

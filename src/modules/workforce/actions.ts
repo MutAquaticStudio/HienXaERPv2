@@ -34,10 +34,11 @@ const fail = (path: string, message?: string): never => redirect(path + "?error=
 
 export async function createServiceJobAction(formData: FormData) {
   const parsed = z.object({
-    customerId: z.guid(), siteId: z.guid(), salesEmployeeId: optionalUuid,
+    customerId: z.guid(), siteId: z.guid(), salesEmployeeId: optionalUuid.optional(),
     serviceTypeId: z.guid(), description: z.string().trim().max(500).optional(),
     scheduledStart: localDateTime, scheduledEnd: localDateTime, plannedQuantity: z.union([decimal, z.literal("")]).optional(),
-    vehicleId: optionalUuid, machineId: optionalUuid,
+    // FB9: the form shows only the truck or the machine the service type needs; the other field is not sent at all.
+    vehicleId: optionalUuid.optional(), machineId: optionalUuid.optional(),
     operationId: z.guid(),
   }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fail("/admin/service-jobs", "invalid-service-job");

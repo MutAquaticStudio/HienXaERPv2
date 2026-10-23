@@ -103,7 +103,9 @@ export default async function OrderDetailPage({ params, searchParams }: { params
       canSource={["orders.confirm", "purchasing.create", "delivery.create"].some((permission) => access.permissions.has(permission))}
       lines={lines.map((line) => ({ id: line.id, name: line.material_name_snapshot, required: supplies.get(line.id)
         ? new Decimal(supplies.get(line.id)!.allocated_base_quantity).plus(supplies.get(line.id)!.remaining_base_quantity).toFixed() : "0",
-        baseSymbol: relation(line.base_units)?.symbol ?? "" }))}
+        baseSymbol: relation(line.base_units)?.symbol ?? "",
+        available: availability && !availability.incomplete ? availability.positions.filter((position) => position.material_id === line.material_id)
+          .reduce((sum, position) => sum.plus(position.available_base_quantity), new Decimal(0)).toFixed() : null }))}
       allocations={allocations.map((allocation) => ({ lineId: allocation.sales_order_line_id, mode: allocation.supply_mode, quantity: String(allocation.allocated_base_quantity),
         warehouseName: warehouses.find((warehouse) => warehouse.id === allocation.warehouse_id)?.name ?? null,
         purchaseOrder: (() => { const purchase = relation(allocation.purchase_order_lines?.purchase_orders ?? null); return purchase ? { id: purchase.id, number: purchase.purchase_order_number, state: purchase.state } : null; })() }))}

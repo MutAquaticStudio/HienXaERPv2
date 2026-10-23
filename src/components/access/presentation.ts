@@ -3,7 +3,7 @@ function lookupLabel(labels: Record<string, string>, value: string | null | unde
 }
 
 export function roleLabel(value?: string | null) {
-  return lookupLabel({ Owner: "Chủ doanh nghiệp", OWNER: "Chủ doanh nghiệp", Admin: "Quản trị viên", ADMIN: "Quản trị viên", Sales: "Nhân viên kinh doanh", SALES: "Nhân viên kinh doanh", Warehouse: "Nhân viên kho", WAREHOUSE: "Nhân viên kho", Accountant: "Kế toán", ACCOUNTANT: "Kế toán", Finance: "Kế toán", FINANCE: "Kế toán", Worker: "Thợ", WORKER: "Thợ", Customer: "Khách hàng", CUSTOMER: "Khách hàng", FINANCE_CONTACT: "Người phụ trách thanh toán", RECEIVER: "Người nhận hàng", "Finance Contact": "Người phụ trách thanh toán", Driver: "Tài xế", DRIVER: "Tài xế" }, value, (value && /[À-ỹ]/.test(value) ? value : "Vai trò được phân công"));
+  return lookupLabel({ Owner: "Chủ doanh nghiệp", OWNER: "Chủ doanh nghiệp", Admin: "Quản trị viên", ADMIN: "Quản trị viên", Sales: "Nhân viên kinh doanh", SALES: "Nhân viên kinh doanh", Warehouse: "Nhân viên kho", WAREHOUSE: "Nhân viên kho", Accountant: "Kế toán", ACCOUNTANT: "Kế toán", Finance: "Kế toán", FINANCE: "Kế toán", Worker: "Thợ & tài xế", WORKER: "Thợ & tài xế", Customer: "Khách hàng", CUSTOMER: "Khách hàng", FINANCE_CONTACT: "Người phụ trách thanh toán", RECEIVER: "Người nhận hàng", "Finance Contact": "Người phụ trách thanh toán", Driver: "Thợ & tài xế", DRIVER: "Thợ & tài xế" }, value, (value && /[À-ỹ]/.test(value) ? value : "Vai trò được phân công"));
 }
 
 /**

@@ -145,17 +145,7 @@
   },
   {
     "code": "builtin_worker",
-    "name": "Thợ",
-    "landingPermission": "work.read",
-    "landingPath": "/work",
-    "permissions": [
-      "work.read",
-      "work.claim"
-    ]
-  },
-  {
-    "code": "builtin_driver",
-    "name": "Tài xế",
+    "name": "Thợ & tài xế",
     "landingPermission": "work.read",
     "landingPath": "/work",
     "permissions": [

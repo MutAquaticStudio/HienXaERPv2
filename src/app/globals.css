@@ -901,6 +901,15 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); align-items: end; gap: 14px; }
 .credit-override { border-color: #e2c894; background: var(--warning-soft); }
 .credit-override h2 { margin-bottom: 8px; }
+.credit-approved { border-left: 4px solid var(--commerce); }
+.credit-approved-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; color: var(--commerce); }
+.credit-approved-head h2 { margin: 0; color: var(--text); }
+.credit-approved .credit-summary { margin: 14px 0; }
+.credit-approved .credit-summary > div:last-child { grid-column: auto; }
+.credit-approved-by { display: flex; align-items: center; gap: 12px; }
+.credit-approved-by p { display: grid; gap: 2px; margin: 0; }
+.credit-approved-note { margin: 12px 0 0; }
+@media (max-width: 760px) { .credit-approved .credit-summary { grid-template-columns: 1fr; } }
 .credit-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 18px 0; }
 .credit-summary > div { min-width: 0; padding: 12px 14px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); }
 .credit-summary > div:last-child { grid-column: 1 / -1; }
@@ -1386,6 +1395,7 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .sourcing-lines { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
 .sourcing-lines > li { display: grid; gap: 4px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; }
 .sourcing-line-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.sourcing-draft { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 4px 8px; }
 .sourcing-sources { display: grid; gap: 2px; margin: 0; padding-left: 18px; }
 
 /* D22 dispatch day board. */

@@ -8,7 +8,7 @@ import { AppError } from "@/lib/core/errors";
 
 export default async function Home({ searchParams }: PageProps<"/">) {
   // Supabase falls back to the site root when a recovery redirect is not allowed; finish it on the password page.
-  const { code } = await searchParams;
+  const { code, portal } = await searchParams;
   if (typeof code === "string" && code) redirect(`/recovery/confirm?surface=admin&code=${encodeURIComponent(code)}`);
   // Someone already signed in on the operations side goes straight to work; everyone else signs in here, on the tab
   // of the portal this device used last (D30).
@@ -20,5 +20,5 @@ export default async function Home({ searchParams }: PageProps<"/">) {
     if (error instanceof AppError && error.code === "CONFLICT") redirect("/select-branch?surface=admin");
   }
   if (landing) redirect(landing);
-  return <AuthFrame footnote={LOGIN_FOOTNOTE}><PortalLogin initial="admin" remember /></AuthFrame>;
+  return <AuthFrame footnote={LOGIN_FOOTNOTE}><PortalLogin initial={portal === "work" || portal === "customer" ? portal : "admin"} remember={portal !== "work" && portal !== "customer"} /></AuthFrame>;
 }

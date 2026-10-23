@@ -15,6 +15,6 @@ export function ChangePasswordForm({ surface }: { surface: "customer" | "work" |
       {state?.message && <p className="form-message" role="alert">{state.message}</p>}
       <button className="button button-primary auth-submit" type="submit" disabled={pending}><KeyRound size={19} />{pending ? "Đang lưu..." : "Đổi mật khẩu và tiếp tục"}</button>
     </form>
-    <form action="/auth/logout" method="post" className="auth-note"><button className="link-button" type="submit">Đăng xuất</button></form>
+    <form action="/auth/logout" method="post" className="auth-note"><input type="hidden" name="surface" value={surface} /><button className="link-button" type="submit">Đăng xuất</button></form>
   </>);
 }

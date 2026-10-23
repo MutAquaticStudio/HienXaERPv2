@@ -3259,3 +3259,23 @@ xong toàn bộ rồi QA một lần; tệp áp QA sẽ chia < 20.000 ký tự. 
   giao); `post_recognized_earning` lấy thợ từ phân công của việc đã xác minh. Native 275 (đỏ khi bỏ migration, xanh khi có): trước phê duyệt
   không tính; sau phê duyệt tài xế báo "Đã giao" → 30.000 ₫ APPROVED + phải trả, hiện ở cổng thợ; thợ có quy tắc riêng 45.000 ₫ tính theo quy tắc
   riêng; hoa hồng toàn chi nhánh bị từ chối; không tính tay trùng. Không tính bù chuyến cũ.
+- Phát hành 23/10 (Owner: "Deploy lên production"): migration `20261023120000` + `20261023120100` áp QA rồi Production qua MCP (mỗi file một
+  transaction + bản ghi `schema_migrations`, md5 `81e970d2…` / `95b969c1…` khớp file; kiểm `prosrc`, ràng buộc, quyền hàm). QA: yêu cầu anon qua
+  Data API nay bị chặn ở quyền bảng ("permission denied for table"), không còn ở hook. PR #61 (D30 + hotfix + D31) CI `phase-gate` + `db-migrations`
+  xanh → merge `45a5e1c` → deploy Production `dpl_BtFzNRnfaZAWzXBoDAaAWJ5DFzW7`. Owner còn phải bật một lần "CHUYEN · Mọi thợ" ở Thu nhập →
+  Phê duyệt ghi nhận tự động; 5 ảnh `PENDING` cũ không tự lưu lại (thợ chụp lại).
+
+## 2026-10-23 — FB9 (D32): 6 lỗi sau QA mục 0–3 + 2 thay đổi nhỏ
+
+- Đăng xuất: `/auth/logout` luôn về `/login` và `Clear-Site-Data: storage` xóa cổng đã nhớ → nay về `/` (`?portal=work|customer`), form gửi `surface`.
+- Ngừng dùng vật tư: log Production `save_catalog_record` 400 `base_unit_immutable` ×3 — nút chỉ gửi `{active}`, validator coi thiếu `base_uom_id` là đổi.
+  Migration `20261023150000` (thân hàm như `20261018220000`, thêm `values_json ? 'base_uom_id'`).
+- NV kinh doanh: `customer_site_sales_owner_options` lọc người có `orders.create` (vai trò hoặc quyền bổ sung), cho cả `service.manage`;
+  đơn dịch vụ thôi dùng `workforce_read` (`loadSalesStaffOptions`).
+- Tạo dịch vụ: FB8 chỉ hiện ô Xe hoặc Máy → ô ẩn không gửi → `optionalUuid` không nhận `undefined` → zod lỗi (log: không có `schedule_service_job`).
+- Đơn nháp "Thiếu" mọi dòng: `OrderSourcingPanel` tính thiếu = cần − đã phân nguồn, nháp chưa phân nguồn; nay nháp hiện dự kiến theo tồn khả dụng.
+- Thẻ đã duyệt vượt hạn mức: lưới 4 số liệu, người duyệt có huy hiệu chữ cái, ẩn ghi chú mặc định.
+- Vai trò: `builtin_worker` → "Thợ & tài xế", `builtin_driver` ngừng dùng (Production 0 người giữ), preset bỏ "Tài xế".
+- Đăng nhập đúng cổng: `accountPortals` đọc quyền của chính tài khoản; sai tab → `signOut` + báo tab đúng; `/admin` layout đẩy thợ về `/work`, khách về `/customer`.
+- Native 280; vitest bổ sung (logout, trang chủ `?portal`, action dịch vụ, nguồn hàng nháp, thẻ duyệt, đăng nhập 3 tab).
+

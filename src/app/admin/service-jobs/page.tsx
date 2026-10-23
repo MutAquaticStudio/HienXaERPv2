@@ -20,6 +20,7 @@ import { ExpandableRows } from "@/components/lists/expandable-rows";
 import { ListFilterGroup } from "@/components/lists/list-filter-group";
 import { FormDialog } from "@/components/ui/form-dialog";
 import { ServiceJobTimeFields } from "@/components/workforce/service-job-time-fields";
+import { loadSalesStaffOptions } from "@/modules/workforce/sales-staff";
 
 type Job = { id: string; job_number: string; customer_name: string; site_name: string; service_type: string; scheduled_start: string; scheduled_end?: string | null; description?: string | null; planned_quantity: string | null; unit_label: string; operator_name: string | null; execution_state: string };
 const STATES = ["SCHEDULED", "IN_PROGRESS", "RESULT_SUBMITTED", "VERIFIED", "CANCELLED"] as const;
@@ -78,10 +79,10 @@ export default async function ServiceJobsPage({ searchParams }: { searchParams: 
   // Tab counts stop at 99: an exact count over a long history is not worth the wait on every visit.
   const countOf = (state: string) => supabase.from("service_jobs").select("id").eq("branch_id", branchId).eq("execution_state", state).limit(100);
   const shown = (result: { data: unknown[] | null }) => result.data ? result.data.length > 99 ? "99+" : result.data.length : undefined;
-  const [jobResult, customerResult, employeeResult, vehicleResult, machineResult, typeResult, ...counts] = await Promise.all([
+  const [jobResult, customerResult, salesStaff, vehicleResult, machineResult, typeResult, ...counts] = await Promise.all([
     loadJobs(),
     canManage ? supabase.from("customers").select("id, code, display_name").eq("branch_id", branchId).eq("active", true).order("display_name").order("id").limit(25) : Promise.resolve({ data: [] }),
-    canManage ? supabase.from("workforce_read").select("id, code, display_name").eq("branch_id", branchId).eq("active", true).order("display_name").order("id").limit(25) : Promise.resolve({ data: [] }),
+    canManage ? loadSalesStaffOptions(supabase, branchId) : Promise.resolve([]),
     canManage ? supabase.from("vehicles").select("id, code, plate_number").eq("branch_id", branchId).eq("active", true).order("code").order("id").limit(25) : Promise.resolve({ data: [] }),
     canManage ? supabase.from("machines").select("id, code, name").eq("branch_id", branchId).eq("active", true).order("code").order("id").limit(25) : Promise.resolve({ data: [] }),
     canManage ? supabase.from("service_types").select("id, code, name, unit_label, default_price_vnd::text, resource_kind").eq("branch_id", branchId).eq("active", true).order("name").order("id").limit(200) : Promise.resolve({ data: [] }),
@@ -112,7 +113,7 @@ export default async function ServiceJobsPage({ searchParams }: { searchParams: 
                 machineField={<ServiceJobResourceField kind="machine" label="Máy" name="machineId" initialOptions={(machineResult.data ?? []).map((item) => ({ id: item.id, label: `${item.code} · ${item.name}` }))} />} /></fieldset>
             <fieldset className="form-section"><legend>Thời gian</legend><ServiceJobTimeFields defaultStart={localNow()} /></fieldset>
             <fieldset className="form-section"><legend>Thêm (không bắt buộc)</legend>
-              <ServiceJobResourceField kind="employee" label="Nhân viên kinh doanh phụ trách" name="salesEmployeeId" initialOptions={(employeeResult.data ?? []).map((item) => ({ id: item.id, label: `${item.code} · ${item.display_name}` }))} />
+              <ServiceJobResourceField kind="sales" label="Nhân viên kinh doanh phụ trách" name="salesEmployeeId" initialOptions={salesStaff} />
               <div className="field field-full"><label htmlFor="service-description">Ghi chú công việc</label><textarea id="service-description" name="description" maxLength={500} placeholder="VD: chở cát từ bãi A lên công trình, đường hẹp" /></div></fieldset>
             <button className="button button-primary" type="submit">Tạo đơn dịch vụ</button></form>
         </FormDialog>

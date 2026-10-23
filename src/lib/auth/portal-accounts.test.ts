@@ -2,20 +2,21 @@ import { beforeEach, expect, it, vi } from "vitest";
 
 const m = vi.hoisted(() => ({
   access: vi.fn(), rpc: vi.fn(), customer: vi.fn(), signIn: vi.fn(), signUp: vi.fn(), getUser: vi.fn(), updateUser: vi.fn(), refresh: vi.fn(),
-  createUser: vi.fn(), deleteUser: vi.fn(), updateUserById: vi.fn(),
+  createUser: vi.fn(), deleteUser: vi.fn(), updateUserById: vi.fn(), signOut: vi.fn(), portals: vi.fn(),
   redirect: vi.fn((url: string) => { throw new Error(`REDIRECT:${url}`); }),
 }));
 vi.mock("@/lib/access/context", () => ({ requireInternalPermission: m.access }));
 vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => {
   const query = { select: () => query, eq: () => query, maybeSingle: m.customer };
   return { from: () => query, rpc: m.rpc,
-    auth: { signInWithPassword: m.signIn, signUp: m.signUp, getUser: m.getUser, updateUser: m.updateUser, refreshSession: m.refresh } };
+    auth: { signInWithPassword: m.signIn, signOut: m.signOut, signUp: m.signUp, getUser: m.getUser, updateUser: m.updateUser, refreshSession: m.refresh } };
 } }));
 vi.mock("@/lib/supabase/config", () => ({ getSupabaseConfig: () => ({ url: "https://qa.example.test" }) }));
 vi.mock("@supabase/supabase-js", () => ({ createClient: () => ({ auth: { admin: { createUser: m.createUser, deleteUser: m.deleteUser, updateUserById: m.updateUserById } } }) }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("next/headers", () => ({ cookies: vi.fn(), headers: vi.fn(async () => new Headers({ host: "erp.example.test", "x-forwarded-proto": "https" })) }));
 vi.mock("server-only", () => ({}));
+vi.mock("./account-portals", async (original) => ({ ...(await original<typeof import("./account-portals")>()), accountPortals: m.portals }));
 vi.mock("next/navigation", () => ({ redirect: m.redirect }));
 vi.mock("@/modules/portal/server", () => ({ portalRpc: vi.fn(), deterministicUuid: (seed: string) => `uuid(${seed})` }));
 import { changeOwnPasswordAction, createCustomerPortalAccountAction, loginAction, registerCustomerAccountAction, resetCustomerPortalPasswordAction } from "./actions";
@@ -36,6 +37,7 @@ beforeEach(() => {
   m.updateUser.mockResolvedValue({ data: {}, error: null });
   m.refresh.mockResolvedValue({ data: {}, error: null });
   m.deleteUser.mockResolvedValue({ data: {}, error: null });
+  m.portals.mockResolvedValue({ admin: false, work: true, customer: true });
 });
 
 it("signs in with a phone number as the internal phone login", async () => {
@@ -43,6 +45,27 @@ it("signs in with a phone number as the internal phone login", async () => {
   await expect(loginAction(undefined, form({ email: "0912 345 678", password: "matkhau123", surface: "work" }))).rejects.toThrow("REDIRECT:/");
   expect(m.signIn).toHaveBeenCalledWith({ email: "0912345678@sdt.hienxavlxd.com", password: "matkhau123" });
   expect(m.rpc).not.toHaveBeenCalled();
+});
+
+it.each([
+  ["a worker on Vận hành", "admin", { admin: false, work: true, customer: false }, "tab “Thợ & tài xế”"],
+  ["a customer on Vận hành", "admin", { admin: false, work: false, customer: true }, "tab “Khách hàng”"],
+  ["a customer on Thợ & tài xế", "work", { admin: false, work: false, customer: true }, "tab “Khách hàng”"],
+  ["staff on Khách hàng", "customer", { admin: true, work: true, customer: false }, "tab “Vận hành”"],
+])("FB9: signs %s out again and names the right tab", async (_who, surface, portals, tab) => {
+  m.signIn.mockResolvedValue({ data: { user: { id: userId, user_metadata: {} } }, error: null });
+  m.portals.mockResolvedValue(portals);
+  const result = await loginAction(undefined, form({ email: "nguoi@example.test", password: "matkhau123", surface }));
+  expect(result?.message).toContain(tab);
+  expect(m.signOut).toHaveBeenCalledOnce();
+  expect(m.redirect).not.toHaveBeenCalled();
+});
+
+it("FB9: lets staff with operations permissions in on Vận hành", async () => {
+  m.signIn.mockResolvedValue({ data: { user: { id: userId, user_metadata: {} } }, error: null });
+  m.portals.mockResolvedValue({ admin: true, work: true, customer: false });
+  await expect(loginAction(undefined, form({ email: "chu@example.test", password: "matkhau123", surface: "admin" }))).rejects.toThrow("REDIRECT:/");
+  expect(m.signOut).not.toHaveBeenCalled();
 });
 
 it("finishes a pending self-registration at the first customer sign-in with one operation id per login", async () => {

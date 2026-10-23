@@ -76,7 +76,19 @@ it("names the approver of a confirmed order instead of a login id", async () => 
   m.tables = { sales_orders: [{ commercial_state: "CONFIRMED" }], sales_order_credit_overrides: [{ reason: "Khách quen", created_at: "2026-10-23T02:00:00Z",
     approved_limit_vnd: "50000000", exposure_before_vnd: "40000000", order_amount_vnd: "30000000", exposure_after_vnd: "70000000", overdue_vnd: "0" }] };
   await view();
-  expect(screen.getByText(/Người duyệt: Nguyễn Kế Toán \(NV02\) · Kế toán/)).toBeInTheDocument();
-  expect(screen.getByText("Ghi chú: Khách quen")).toBeInTheDocument();
+  const box = screen.getByRole("region", { name: "Đã duyệt vượt hạn mức" });
+  expect(within(box).getByText("Đã duyệt")).toBeInTheDocument();
+  expect(within(box).getByText("Nguyễn Kế Toán (NV02) · Kế toán")).toBeInTheDocument();
+  expect(within(box).getByText("NT")).toHaveAttribute("aria-hidden", "true");
+  expect(within(box).getByText("Hạn mức lúc duyệt").nextSibling).toHaveTextContent("50.000.000 ₫");
+  expect(within(box).getByText("Sau khi xác nhận đơn").nextSibling).toHaveTextContent("70.000.000 ₫");
+  expect(box).toHaveTextContent("Ghi chú: Khách quen");
   expect(approverText(null)).toBe("Người duyệt không còn trong danh sách nhân viên");
+});
+
+it("FB9: hides the default note when the approver left it empty", async () => {
+  m.tables = { sales_orders: [{ commercial_state: "CONFIRMED" }], sales_order_credit_overrides: [{ reason: "Vượt hạn mức tín dụng", created_at: "2026-10-23T02:00:00Z",
+    approved_limit_vnd: "50000000", exposure_before_vnd: "40000000", order_amount_vnd: "30000000", exposure_after_vnd: "70000000", overdue_vnd: "0" }] };
+  await view();
+  expect(screen.getByRole("region", { name: "Đã duyệt vượt hạn mức" })).not.toHaveTextContent("Ghi chú");
 });

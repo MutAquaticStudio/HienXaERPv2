@@ -10,6 +10,7 @@ vi.mock("@/components/workforce/service-job-resource-field", () => ({ ServiceJob
 vi.mock("@/components/workforce/service-type-fields", () => ({ ServiceTypeFields: () => <p>Loại dịch vụ</p> }));
 vi.mock("@/modules/catalog/editor-data", () => ({ catalogEditorScope: () => "scope" }));
 vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({
+  rpc: async () => ({ data: [], error: null }),
   from(table: string) {
     const query: Record<string, unknown> = {};
     const filters: Record<string, unknown> = {};

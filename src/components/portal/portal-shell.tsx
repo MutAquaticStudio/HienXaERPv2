@@ -91,6 +91,7 @@ export function PortalShell({
             </span>
           </div>
           <form action="/auth/logout" method="post">
+            <input type="hidden" name="surface" value={audience === "worker" ? "work" : "customer"} />
             <button className={styles.logout} type="submit">
               <LogOut aria-hidden size={18} />
               &nbsp;Đăng xuất

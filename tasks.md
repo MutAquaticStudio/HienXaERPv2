@@ -25,7 +25,7 @@ QA_SCHEMA_MUTATION: PO_PATCH_ALREADY_APPLIED_NEW_PATCHES_NOT_AUTHORIZED
 QA_APPROVED_PATCH_SHA256: 9e74a7976728bb33b4401d642b79329e5d5ece9ac016e8509c06bbf238bf2f7d
 QA_SCHEMA_APPLY: APPLIED
 PRODUCTION_MUTATION: FORBIDDEN_WITHOUT_OWNER
-ACTIVE_FEEDBACK_BATCH: UI_R1_20261023  # Claude Code, branch nox/elegant-volta-kr29iz; D29 trên Production (main 6a4ff60); D30 + D31 + HOTFIX-EVIDENCE đang phát hành, see UI-R1/UI-R2/HOTFIX-EVIDENCE/D31-TRIP-PAY rows
+ACTIVE_FEEDBACK_BATCH: UI_R1_20261023  # Claude Code, branch nox/elegant-volta-kr29iz; D29 trên Production (main 6a4ff60); D30 + D31 + HOTFIX-EVIDENCE trên Production (main 45a5e1c, PR #61); FB9 (D32) đang làm, see UI-R1/UI-R2/HOTFIX-EVIDENCE/D31-TRIP-PAY rows
 ```
 
 Historical R0–R9 tasks are not repeated here. Their source/evidence lives in implementation.md.
@@ -796,6 +796,15 @@ Quyết định D25 ở đầu Spec.md; giao diện UX-FB5-001. Migration `20261
 | UI-R1-F | Cổng thợ & cổng khách điện thoại: thanh xanh, menu dưới, bộ đếm 72 px, nút hoàn tất dính đáy, tiến trình đơn | DONE (code) |
 | UI-R1-REL | Kiểm chứng (`pnpm check`, native, script QA), preview Vercel dữ liệu QA, Owner duyệt preview, rồi PR → CI → merge → Production | DONE — PR #60 merge `6a4ff60`; không migration; deploy `dpl_9ng2vYxbhDgMa6e73Z4yaN5BbFjK`; kịch bản `KICH-BAN-QA-GIAO-DIEN.md`; chờ Owner QA |
 | UI-R2-LOGIN | Cổng vào `/` = thẻ đăng nhập 3 tab nhớ cổng lần trước; mọi trang xác thực dùng khung gọn, bỏ khối giới thiệu (D30; concept 09–10, Owner chọn hướng A) | DONE (code) |
-| UI-R2-REL | Preview, Owner duyệt, PR → CI → merge → Production | IN_PROGRESS — Owner yêu cầu lên Production 23/10 kèm D31 + HOTFIX-EVIDENCE |
-| HOTFIX-EVIDENCE | Ảnh thợ lấy hàng / giao hàng báo "Lỗi tải": hook `require_active_api_actor` chỉ kiểm tra vai trò `authenticated` (migration `20261023120000`, native 270) | DONE (code) |
-| D31-TRIP-PAY | Quy tắc toàn chi nhánh (Theo chuyến / Theo việc) được duyệt ghi nhận tự động: phiếu giao xác minh → thu nhập + phải trả cho thợ được giao; quy tắc riêng ưu tiên (migration `20261023120100`, native 275, trang Thu nhập) | DONE (code) |
+| UI-R2-REL | Preview, Owner duyệt, PR → CI → merge → Production | DONE — Owner yêu cầu lên Production 23/10 kèm D31 + HOTFIX-EVIDENCE; PR #61 merge `45a5e1c`; migration `20261023120000`, `20261023120100` trên QA + Production (md5 khớp); deploy `dpl_BtFzNRnfaZAWzXBoDAaAWJ5DFzW7` |
+| HOTFIX-EVIDENCE | Ảnh thợ lấy hàng / giao hàng báo "Lỗi tải": hook `require_active_api_actor` chỉ kiểm tra vai trò `authenticated` (migration `20261023120000`, native 270) | DONE — Production 23/10 (PR #61) |
+| D31-TRIP-PAY | Quy tắc toàn chi nhánh (Theo chuyến / Theo việc) được duyệt ghi nhận tự động: phiếu giao xác minh → thu nhập + phải trả cho thợ được giao; quy tắc riêng ưu tiên (migration `20261023120100`, native 275, trang Thu nhập) | DONE — Production 23/10 (PR #61) |
+| FB9-1 | Đăng xuất về `/` mở tab cổng vừa rời (`logoutDestination`, form gửi `surface`) | DONE (code) |
+| FB9-2 | Ngừng dùng / Dùng lại vật tư đã có giao dịch (`canonical_save_catalog_record` chỉ xét đơn vị gốc khi có gửi; migration `20261023150000`, native 280) | DONE (code) |
+| FB9-3 | "Nhân viên kinh doanh phụ trách" chỉ nhân viên có quyền tạo đơn bán (`customer_site_sales_owner_options`; đơn dịch vụ dùng chung) | DONE (code) |
+| FB9-4 | Tạo đơn dịch vụ không còn báo lỗi khi form chỉ có ô Xe hoặc Máy (`createServiceJobAction`) | DONE (code) |
+| FB9-5 | Đơn nháp: "Nguồn hàng" dự kiến từ tồn kho thay vì "Thiếu" mọi dòng | DONE (code) |
+| FB9-6 | Thẻ "Đã duyệt vượt hạn mức tín dụng" trình bày lại | DONE (code) |
+| FB9-7 | Một vai trò "Thợ & tài xế" (`builtin_driver` ngừng dùng) | DONE (code) |
+| FB9-8 | Đăng nhập đúng cổng (`accountPortals`, `wrongPortalMessage`), `/admin` chặn thợ / khách | DONE (code) |
+| FB9-REL | PR → CI → merge → migration QA + Production → deploy | IN_PROGRESS |
