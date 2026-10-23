@@ -13,3 +13,11 @@ describe("portal logout", () => {
     });
   }
 });
+
+it("tells assistive technology which menu item is the current page, in both the side and the bottom menu", () => {
+  const { unmount } = render(<PortalShell audience="worker">QA content</PortalShell>);
+  const current = screen.getAllByRole("link", { current: "page" });
+  expect(current).toHaveLength(2);
+  expect(current.every((link) => link.textContent === "Công việc")).toBe(true);
+  unmount();
+});

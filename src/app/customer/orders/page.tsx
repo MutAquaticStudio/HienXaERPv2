@@ -2,6 +2,7 @@ import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { portalOrderStateLabel } from "@/modules/portal/presentation";
 import Link from "next/link";
 
+import { OrderProgress } from "@/components/portal/order-progress";
 import styles from "@/components/portal/portal.module.css";
 import { getCustomerPortalSnapshot } from "@/modules/portal/actions";
 
@@ -25,6 +26,7 @@ export default async function CustomerOrdersPage({ searchParams }: { searchParam
               <span>{order.deliveries.length} lượt giao</span>
               <span>{order.requested_delivery_date ? formatBusinessDateTime(order.requested_delivery_date) : "Chưa chốt ngày giao"}</span>
             </div>
+            <OrderProgress order={order} compact />
             <Link className={styles.buttonSecondary} href={"/customer/orders/" + order.id}>Xem tiến trình</Link>
           </article>
         )) : <p className={styles.empty}>Chưa có đơn hàng.</p>}

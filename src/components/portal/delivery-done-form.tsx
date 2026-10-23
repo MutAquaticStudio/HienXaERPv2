@@ -116,7 +116,7 @@ export function DeliveryDoneForm({ workItemId, version, delivery, receiverName, 
     <div className={styles.field}><label htmlFor="done-receiver">Người nhận</label>
       <input id="done-receiver" value={receiver} maxLength={120} disabled={sending} onChange={(event) => setReceiver(event.target.value)} /></div>
     {message && <p className={message.error ? styles.error : styles.status} role={message.error ? "alert" : "status"}>{message.text}</p>}
-    <button type="button" className={styles.button} disabled={sending || uploading} onClick={() => { void send(); }}>
+    <button type="button" className={`${styles.button} ${styles.buttonCommerce} ${styles.stickyAction}`} disabled={sending || uploading} onClick={() => { void send(); }}>
       {sending ? "Đang gửi..." : mode === "OTHER" ? "Gửi báo cáo giao" : ready.length ? `Xác nhận đã giao (${ready.length} ảnh)` : "Đã giao · chụp ảnh"}</button>
     <button type="button" className={styles.link} disabled={sending} onClick={() => { setMode(mode === "DONE" ? "OTHER" : "DONE"); setMessage(null); setOperationId(crypto.randomUUID()); }}>
       {mode === "DONE" ? "Giao thiếu / Không giao được" : "Giao đủ như đã lấy lên xe"}</button>

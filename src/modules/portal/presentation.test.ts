@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from "vitest";
-import { earningKindLabel, earningStateLabel, salesStateLabel, soldQuantityLabel, workKindLabel, workStateLabel, portalOrderStateLabel } from "./presentation";
+import { earningKindLabel, earningStateLabel, salesStateLabel, soldQuantityLabel, workKindLabel, workStateLabel, portalOrderStateLabel, portalOrderProgress } from "./presentation";
 afterEach(() => vi.restoreAllMocks());
 it("translates existing worker, earning and sales states", () => {
   expect(workStateLabel("DONE")).toBe("Chờ xác minh"); expect(workKindLabel("DELIVERY")).toBe("Chuyến giao hàng");
@@ -29,4 +29,13 @@ it("shows a customer's own order as waiting, approved, delivering or delivered",
   expect(portalOrderStateLabel({ state: "CONFIRMED", fulfillment_state: "PARTIAL" })).toBe("Đang giao");
   expect(portalOrderStateLabel({ state: "CLOSED", fulfillment_state: "FULFILLED" })).toBe("Hoàn tất");
   expect(portalOrderStateLabel({ channel: "CUSTOMER_PORTAL", state: "CANCELLED" })).toBe("Đã hủy");
+});
+
+it("shows the customer's order progress from the existing order states (D29)", () => {
+  const states = (order: Parameters<typeof portalOrderProgress>[0]) => portalOrderProgress(order)?.map((step) => `${step.label}:${step.state}`);
+  expect(states({ channel: "CUSTOMER_PORTAL", state: "DRAFT" })).toEqual(["Đã đặt:done", "Cửa hàng duyệt:current", "Giao hàng:todo", "Hoàn tất:todo"]);
+  expect(states({ channel: "INTERNAL", state: "CONFIRMED", fulfillment_state: "NOT_STARTED" })).toEqual(["Đã đặt:done", "Xác nhận đơn:done", "Giao hàng:current", "Hoàn tất:todo"]);
+  expect(states({ state: "CONFIRMED", fulfillment_state: "PARTIAL" })?.[2]).toBe("Đang giao:current");
+  expect(states({ state: "CLOSED", fulfillment_state: "FULFILLED" })?.every((step) => step.endsWith(":done"))).toBe(true);
+  expect(portalOrderProgress({ state: "CANCELLED" })).toBeNull();
 });
