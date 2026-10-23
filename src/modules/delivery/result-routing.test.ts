@@ -17,3 +17,10 @@ describe("Invalid delivery result feedback", () => {
     await expect(submitDeliveryResultAction(data)).rejects.toThrow("REDIRECT:/admin/deliveries?error=");
   });
 });
+
+import { vehicleStatusLabel } from "./presentation";
+it("labels a vehicle as free or out on a delivery in the pickers (FB10)", () => {
+  const base = { vehicle_id: "v", capacity_quantity: "5.000000", capacity_symbol: "tấn", busy_delivery_number: null, busy_state: null, busy_until: null };
+  expect(vehicleStatusLabel(base)).toBe(" · chở 5 tấn · Rảnh");
+  expect(vehicleStatusLabel({ ...base, busy_delivery_number: "PG-00012", busy_state: "DISPATCHED", busy_until: "2026-10-24T03:30:00Z" })).toBe(" · chở 5 tấn · Đang giao PG-00012 đến 10:30");
+});
