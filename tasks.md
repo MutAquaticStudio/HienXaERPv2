@@ -25,7 +25,7 @@ QA_SCHEMA_MUTATION: PO_PATCH_ALREADY_APPLIED_NEW_PATCHES_NOT_AUTHORIZED
 QA_APPROVED_PATCH_SHA256: 9e74a7976728bb33b4401d642b79329e5d5ece9ac016e8509c06bbf238bf2f7d
 QA_SCHEMA_APPLY: APPLIED
 PRODUCTION_MUTATION: FORBIDDEN_WITHOUT_OWNER
-ACTIVE_FEEDBACK_BATCH: UI_R1_20261023  # Claude Code, branch nox/elegant-volta-kr29iz; D29 trên Production (main 6a4ff60); D30 + D31 + HOTFIX-EVIDENCE trên Production (main 45a5e1c, PR #61); FB9 (D32) trên Production (main f5ae600, PR #62), see UI-R1/UI-R2/HOTFIX-EVIDENCE/D31-TRIP-PAY rows
+ACTIVE_FEEDBACK_BATCH: UI_R1_20261023  # Claude Code, branch nox/elegant-volta-kr29iz; D29 trên Production (main 6a4ff60); D30 + D31 + HOTFIX-EVIDENCE trên Production (main 45a5e1c, PR #61); FB9 (D32) trên Production (main f5ae600, PR #62); FB10 (D33) code + kiểm chứng xong trên nhánh, chờ phát hành, see UI-R1/UI-R2/HOTFIX-EVIDENCE/D31-TRIP-PAY rows
 ```
 
 Historical R0–R9 tasks are not repeated here. Their source/evidence lives in implementation.md.
@@ -808,3 +808,21 @@ Quyết định D25 ở đầu Spec.md; giao diện UX-FB5-001. Migration `20261
 | FB9-7 | Một vai trò "Thợ & tài xế" (`builtin_driver` ngừng dùng) | DONE — Production 23/10 (PR #62) |
 | FB9-8 | Đăng nhập đúng cổng (`accountPortals`, `wrongPortalMessage`), `/admin` chặn thợ / khách | DONE — Production 23/10 (PR #62) |
 | FB9-REL | PR → CI → merge → migration QA + Production → deploy | DONE — PR #62 merge `f5ae600`; migration `20261023150000` QA + Production (md5 `b9350e53…`); deploy `dpl_CCnnSqYBJHUGcFBhqM6Xr1XFGjDv` |
+| FB10-A1 | Nhận hàng là xác nhận đơn mua (migration `20261024090100`, native 290; test 190 cập nhật) | DONE (code) |
+| FB10-A2 | Trả hàng nhập một bước `complete_supplier_return` + màn "Trả hàng nhập" (migration `20261024090200`, native 295) | DONE (code) |
+| FB10-A3 | Đối chiếu hóa đơn NCC: SL đặt / nhận / hóa đơn, nguồn giá, tô lệch (`supplier_document_source_context_read`, migration `20261024090300`, native 296) | DONE (code) |
+| FB10-A4 | Ảnh "NCC đã giao" ở phiếu giao lưu được (kiểm byte + `finalizeVerifiedEvidence`) | DONE (code) |
+| FB10-B1 | Tồn kho: Chờ xuất giao / Đã hứa cho đơn / Có thể bán (`warehouse_stock_promised`, migration `20261024090400`, native 298) | DONE (code) |
+| FB10-B2 | Chuyển kho nhiều dòng + Xuất kho / Nhận đủ một chạm (`create_warehouse_transfers`, `quick_warehouse_transfer_step`, migration `20261024090500`, native 299) | DONE (code) |
+| FB10-B3 | Kiểm kho giờ chốt lệch máy (migration `20261024090000`, native 285) | DONE (code) |
+| FB10-C1 | Tự chia việc mọi thợ × mọi xe, quyền bổ sung, ghi chú sức chở mặc định (migration `20261024090600`, native 300; test 225 cập nhật) | DONE (code) |
+| FB10-C2 | Quy đổi chuẩn kg/yến/tạ/tấn, lít/khối; trạng thái xe Rảnh / Đang giao (migration `20261024090700`, native 301) | DONE (code) |
+| FB10-C3 | Giao thiếu: xác minh văn phòng trả phần dư về kho, hiển thị theo đơn vị bán, rời bảng điều phối (migration `20261024090000`, native 285) | DONE (code) |
+| FB10-C4 | Hủy phiếu đã bị từ chối; thông báo lỗi giao hàng tiếng Việt | DONE (code) |
+| FB10-C5 | GPS ~15 s khi mở trang + bản đồ OpenStreetMap (Leaflet) trên Lộ trình, `/api/gps/fleet` | DONE (code) |
+| FB10-D | Kế toán khách không đặt / hủy đơn (`portal_ordering_customer` chỉ OWNER) | DONE (code) |
+| FB10-E1 | Thu tiền tự phân bổ khoản cũ nhất, tiền ứng trước chọn rõ, đóng popup khi lưu | DONE (code) |
+| FB10-E2 | Ghi chi phí gọn (bỏ đơn bán liên quan, loại chi gợi ý, "Thêm") | DONE (code) |
+| FB10-F | Thu nhập tự áp quy tắc, "Tính lương tháng" (`post_monthly_salaries`), sửa `calculate_earning_event` (migration `20261024090800`, native 302; test 275 cập nhật) | DONE (code) |
+| FB10-G | Trung tâm báo cáo kiểu KiotViet (`report_center`, migration `20261024090900`, native 303; `/api/reports/center` CSV) | DONE (code) |
+| FB10-REL | `pnpm check`, native, PR → CI → merge → migration QA + Production → deploy → kịch bản QA | IN PROGRESS |
