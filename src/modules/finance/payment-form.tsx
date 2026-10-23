@@ -1,7 +1,7 @@
 "use client";
 import { formatBusinessDate } from "@/lib/core/business-time";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { submitPaymentWithOutcomeAction } from "@/modules/finance/actions";
 import { ReliableCommandForm } from "@/components/reliable-command-form";
@@ -55,7 +55,8 @@ export function PaymentForm(props: Props) {
   const [allocations, setAllocations] = useState<Record<string, string>>({});
   const [visible, setVisible] = useState(props.obligations);
   // FB10: after a save the page refreshes; show its current debts, not the ones the popup opened with.
-  useEffect(() => { setVisible(props.obligations); }, [props.obligations]);
+  const [shown, setShown] = useState(props.obligations);
+  if (shown !== props.obligations) { setShown(props.obligations); setVisible(props.obligations); }
   function changeAmount(value: string) {
     setAmount(value);
     if (!manual) setAllocations(autoAllocate(integer(value), visible));
