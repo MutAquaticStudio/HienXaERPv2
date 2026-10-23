@@ -21,8 +21,8 @@ type Query = { notice?: string; error?: string; q?: string; state?: string; page
 
 const STATES = [
   { value: "", label: "Đang làm việc" },
-  { value: "DRAFT", label: "Nháp" },
-  { value: "CONFIRMED", label: "Đã xác nhận" },
+  { value: "DRAFT", label: "Chờ nhận hàng" },
+  { value: "CONFIRMED", label: "Đang nhận hàng" },
   { value: "CLOSED", label: "Đã hoàn tất" },
   { value: "CANCELLED", label: "Đã hủy" },
   { value: "ALL", label: "Tất cả" },
