@@ -163,13 +163,12 @@ begin
   perform pg_temp.act_as_admin();
   assert exists (select 1 from public.notifications where kind = 'sales_order.needs_purchase' and entity_id = order3), 'purchasing notified';
 
-  -- The draft is approved; its delivery is made with the supplier as contact.
+  -- FB10: planning the supplier's delivery confirms the draft; the delivery is made with the supplier as contact.
   perform pg_temp.act_as('10000000-0000-4000-8000-000000000001');
-  failed := null;
-  begin perform public.create_supplier_direct_delivery(po, '7f190000-0000-4000-8000-0000000000c0'); exception when others then failed := sqlstate; end;
-  assert failed = '23514', format('a draft purchase order has no delivery yet, got %s', failed);
-  perform public.confirm_purchase_order(po, '7f190000-0000-4000-8000-0000000000c1');
   delivery := public.create_supplier_direct_delivery(po, '7f190000-0000-4000-8000-0000000000c2');
+  perform pg_temp.act_as_admin();
+  assert (select state from public.purchase_orders where id = po) = 'CONFIRMED', 'draft confirmed by planning the delivery';
+  perform pg_temp.act_as('10000000-0000-4000-8000-000000000001');
   assert public.create_supplier_direct_delivery(po, '7f190000-0000-4000-8000-0000000000c2') = delivery, 'replay returns the same delivery';
   assert (select d.execution_state || ':' || a.external_carrier_name || ':' || coalesce(a.external_carrier_phone, '')
     from public.deliveries d join public.delivery_assignments a on a.delivery_id = d.id and a.superseded_at is null where d.id = delivery)

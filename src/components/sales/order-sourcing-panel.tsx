@@ -12,7 +12,7 @@ export type SourcingAllocation = { lineId: string; mode: string; quantity: strin
   purchaseOrder: { id: string; number: string; state: string } | null };
 export type SourcingRun = { createdAt: string; reasons: Record<string, string> };
 
-const purchaseState: Record<string, string> = { DRAFT: "nháp chờ duyệt", CONFIRMED: "đã duyệt", CLOSED: "đã đóng", CANCELLED: "đã hủy" };
+const purchaseState: Record<string, string> = { DRAFT: "chờ nhận hàng", CONFIRMED: "đang nhận hàng", CLOSED: "đã đóng", CANCELLED: "đã hủy" };
 
 /**
  * D19 "Nguồn hàng": what each line is sourced from (warehouse, supplier-direct purchase order) and why, as decided by the
@@ -29,7 +29,7 @@ export function OrderSourcingPanel({ orderId, lines, allocations, run, canSource
       {confirmed && canSource && missing && <form action={autoSourceOrderAction}><input type="hidden" name="entityId" value={orderId} />
         <input type="hidden" name="operationId" value={randomUUID()} /><button className="button button-secondary" type="submit">Tự phân nguồn</button></form>}</div>
     {run && <p className="muted">Hệ thống tự phân nguồn lúc {formatBusinessDateTime(run.createdAt)}: ưu tiên kho, phần thiếu đặt NCC giao thẳng giá thấp nhất.</p>}
-    {!confirmed && <p className="muted">Xác nhận đơn để hệ thống tự phân nguồn: lấy kho trước, phần thiếu tạo đơn mua NCC giao thẳng chờ duyệt.</p>}
+    {!confirmed && <p className="muted">Xác nhận đơn để hệ thống tự phân nguồn: lấy kho trước, phần thiếu tạo đơn mua NCC giao thẳng.</p>}
     <ul className="sourcing-lines">
       {lines.map((line) => {
         const rows = allocations.filter((item) => item.lineId === line.id);

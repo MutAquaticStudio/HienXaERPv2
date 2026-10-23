@@ -20,14 +20,14 @@ const MATERIAL_LIMIT = 3000;
 
 type Query = { q?: string; warehouse?: string; group?: string; stock?: string; unit?: string; page?: string; card?: string; material?: string; notice?: string; error?: string };
 type Material = { id: string; code: string; name: string; group_id: string; base_uom_id: string };
-type Position = { warehouse_id: string; material_id: string; on_hand_base_quantity: string; reserved_base_quantity: string; available_base_quantity: string; inventory_value_vnd: string | null };
+type Position = { warehouse_id: string; material_id: string; on_hand_base_quantity: string; reserved_base_quantity: string; available_base_quantity: string; promised_base_quantity?: string; inventory_value_vnd: string | null };
 type Threshold = { warehouse_id: string; material_id: string; threshold_base_quantity: string; active: boolean };
 type Alert = { warehouse_id: string; material_id: string };
 type Conversion = { material_id: string | null; from_uom_id: string; to_uom_id: string; numerator: string; denominator: string };
 type Movement = CardMovement & { movement_type: string; delivery_id: string | null };
 
 const zero = new Decimal(0);
-const sum = (rows: Position[], key: "on_hand_base_quantity" | "reserved_base_quantity" | "available_base_quantity") => rows.reduce((total, row) => total.plus(row[key]), zero);
+const sum = (rows: Position[], key: "on_hand_base_quantity" | "reserved_base_quantity" | "available_base_quantity" | "promised_base_quantity") => rows.reduce((total, row) => total.plus(row[key] ?? 0), zero);
 
 /**
  * Inventory (FB2 Đợt 5, KiotViet style): one row per material with on hand, held for orders, available to sell and value,
@@ -59,7 +59,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
     thresholdRequest = thresholdRequest.eq("warehouse_id", warehouseId);
     alertRequest = alertRequest.eq("warehouse_id", warehouseId);
   }
-  const [materialResult, positionResult, thresholdResult, alertResult, warehouseResult, groupResult, unitResult] = await Promise.all([
+  const [materialResult, positionResult, thresholdResult, alertResult, warehouseResult, groupResult, unitResult, promisedResult] = await Promise.all([
     materialRequest.order("name").order("id").limit(MATERIAL_LIMIT),
     positionRequest.limit(10000),
     thresholdRequest.limit(5000),
@@ -67,9 +67,15 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
     supabase.from("warehouses").select("id, name").eq("branch_id", access.branchId).eq("active", true).order("name").limit(200),
     supabase.from("material_groups").select("id, name").order("name").limit(500),
     supabase.from("units_of_measure").select("id, symbol").limit(1000),
+    supabase.rpc("warehouse_stock_promised", { target_branch_id: access.branchId }),
   ]);
   if (materialResult.error || positionResult.error || warehouseResult.error) throw new Error("Không thể tải tồn kho.");
-  const positions = (positionResult.data ?? []) as unknown as Position[];
+  // FB10 (5.1): "Có thể bán" = tồn − chờ xuất giao − đã hứa cho đơn chưa lập phiếu giao (the figure automatic sourcing uses).
+  const promised = new Map(((promisedResult.data ?? []) as { warehouse_id: string; material_id: string; promised_base_quantity: string }[]).map((row) => [`${row.warehouse_id}:${row.material_id}`, row.promised_base_quantity]));
+  const positions = ((positionResult.data ?? []) as unknown as Position[]).map((row) => {
+    const held = promised.get(`${row.warehouse_id}:${row.material_id}`) ?? "0";
+    return { ...row, promised_base_quantity: held, available_base_quantity: new Decimal(row.available_base_quantity).minus(held).toFixed() };
+  });
   const thresholds = (thresholdResult.data ?? []) as Threshold[];
   const alerts = (alertResult.data ?? []) as Alert[];
   const warehouses = (warehouseResult.data ?? []) as { id: string; name: string }[];
@@ -112,10 +118,10 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
   };
   const back = href({ card: cardId || undefined });
   const filtered = Boolean(list.q || warehouseId || group || stockFilter || only);
-  const columns = 5 + (can.cost ? 1 : 0);
+  const columns = 6 + (can.cost ? 1 : 0);
 
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Kho hàng</p><h1>Tồn kho</h1><p className="lede">Tồn theo từng vật tư: đã ghi nhận, đang giữ cho đơn và có thể bán. Bấm một dòng để xem thẻ kho.</p></div>
+    <header className="page-heading"><div><p className="eyebrow">Kho hàng</p><h1>Tồn kho</h1><p className="lede">Có thể bán = Tồn kho − Chờ xuất giao (đã lên phiếu giao, chưa lấy lên xe) − Đã hứa cho đơn (đơn đã xác nhận lấy từ kho, chưa lập phiếu giao). Bấm một dòng để xem thẻ kho.</p></div>
       <div className="action-cluster">
         <Link className="button button-secondary" href="/admin/inventory/transfers">Chuyển kho</Link>
         <Link className={`button ${can.count ? "button-primary" : "button-secondary"}`} href="/admin/stock-counts">Kiểm kho</Link>
@@ -144,7 +150,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
         <div className="section-head"><h2>{inScope.length} vật tư</h2><span className="scope-chip">{warehouseId ? warehouseName.get(warehouseId) ?? "Kho" : "Tất cả kho"}</span></div>
         {materials.length >= MATERIAL_LIMIT && <p className="card-scope-note">Đang xem {MATERIAL_LIMIT} vật tư đầu tiên; thu hẹp bằng tìm kiếm hoặc nhóm.</p>}
         <div className="table-wrap"><table className="row-link-table inventory-table">
-          <thead><tr><th scope="col">Vật tư</th><th scope="col" className="numeric">Tồn kho</th><th scope="col" className="numeric">Đang giữ</th><th scope="col" className="numeric">Có thể bán</th>
+          <thead><tr><th scope="col">Vật tư</th><th scope="col" className="numeric">Tồn kho</th><th scope="col" className="numeric" title="Đã lên phiếu giao, chưa lấy lên xe">Chờ xuất giao</th><th scope="col" className="numeric" title="Đơn đã xác nhận lấy từ kho, chưa lập phiếu giao">Đã hứa cho đơn</th><th scope="col" className="numeric">Có thể bán</th>
             {can.cost && <th scope="col" className="numeric">Giá trị tồn</th>}<th scope="col">Ngưỡng</th></tr></thead>
           <tbody>{pageRows.map((material) => {
             const rows = byMaterial.get(material.id) ?? [];
@@ -158,7 +164,8 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
             return [<tr key={material.id} className={opened ? "row-open" : undefined}>
               <td className="row-title" data-label="Vật tư"><Link className="row-link" href={href({ card: opened ? undefined : material.id })} scroll={false} aria-expanded={opened}><strong>{material.name}</strong></Link><small className="table-subline"><span className="mono">{material.code}</span> · {groups.get(material.group_id) ?? "Chưa phân nhóm"}</small></td>
               <td className="numeric mono" data-label="Tồn kho">{show(sum(rows, "on_hand_base_quantity"))}</td>
-              <td className="numeric mono" data-label="Đang giữ">{show(sum(rows, "reserved_base_quantity"))}</td>
+              <td className="numeric mono" data-label="Chờ xuất giao">{show(sum(rows, "reserved_base_quantity"))}</td>
+              <td className="numeric mono" data-label="Đã hứa cho đơn">{show(sum(rows, "promised_base_quantity"))}</td>
               <td className="numeric mono" data-label="Có thể bán"><strong>{show(sum(rows, "available_base_quantity"))}</strong></td>
               {can.cost && <td className="numeric mono" data-label="Giá trị tồn">{value === null ? "—" : formatVnd(vnd(value))}</td>}
               <td className="table-actions" data-label="Ngưỡng"><div className="inventory-threshold">{low.length ? <StatusBadge tone="warning">Dưới ngưỡng{warehouseId ? "" : ` · ${low.length} kho`}</StatusBadge>
@@ -170,8 +177,8 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
             opened && <tr key={`${material.id}-card`} className="row-expansion"><td colSpan={columns}>
               <div className="stock-card">
                 <section><h3>Tồn theo kho</h3>{rows.length ? <ul className="clean-list">{rows.map((row) => <li key={row.warehouse_id}><span>{warehouseName.get(row.warehouse_id) ?? "Kho"}</span>
-                  <small>Tồn {formatQuantity(row.on_hand_base_quantity)} · giữ {formatQuantity(row.reserved_base_quantity)} · có thể bán {formatQuantity(row.available_base_quantity)} {symbol}</small></li>)}</ul> : <p className="muted">Chưa có tồn ở kho nào.</p>}
-                  <Link className="code-link" href={`/admin/products/${material.id}`}>Mở vật tư</Link></section>
+                  <small>Tồn {formatQuantity(row.on_hand_base_quantity)} · chờ xuất giao {formatQuantity(row.reserved_base_quantity)} · đã hứa {formatQuantity(row.promised_base_quantity ?? "0")} · có thể bán {formatQuantity(row.available_base_quantity)} {symbol}</small></li>)}</ul> : <p className="muted">Chưa có tồn ở kho nào.</p>}
+                  <Link className="code-link" href={`/admin/products/${material.id}`}>Mở vật tư</Link>{sum(rows, "reserved_base_quantity").gt(0) && <> · <Link className="code-link" href="/admin/dispatch">Xem phiếu giao đang chờ xuất</Link></>}</section>
                 <section><h3>Thẻ kho{warehouseId ? ` · ${warehouseName.get(warehouseId) ?? "Kho"}` : ""}</h3>{card.length ? <div className="table-wrap"><table>
                   <thead><tr><th scope="col">Thời điểm</th><th scope="col">Loại</th>{!warehouseId && <th scope="col">Vị trí</th>}<th scope="col" className="numeric">Nhập / xuất</th><th scope="col" className="numeric">Tồn sau</th><th scope="col">Chứng từ</th></tr></thead>
                   <tbody>{card.map((row) => <tr key={row.id}>

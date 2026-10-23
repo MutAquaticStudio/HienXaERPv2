@@ -3,6 +3,7 @@ import { operationalPostingError } from "@/lib/core/errors";
 import { deliveryCommandMessage as message } from "./errors";
 
 
+import { createHash } from "node:crypto";
 import Decimal from "decimal.js";
 import { revalidatePath } from "next/cache";
 import { redirect, unstable_rethrow } from "next/navigation";
@@ -12,6 +13,7 @@ import { parseBusinessDateTime } from "@/lib/core/business-time";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { reasonOrDefault } from "@/lib/core/reason";
 import { derivedOperationId } from "@/modules/sales/auto-sourcing";
+import { finalizeVerifiedEvidence } from "@/modules/portal/evidence-storage";
 
 const positive = z.string().trim().refine((value) => { try { const quantity = new Decimal(value); return quantity.isFinite() && quantity.gt(0) && quantity.decimalPlaces() <= 6; } catch { return false; } });
 const nonNegative = z.string().trim().refine((value) => { try { const quantity = new Decimal(value); return quantity.isFinite() && !quantity.isNegative() && quantity.decimalPlaces() <= 6; } catch { return false; } });
@@ -278,13 +280,19 @@ export async function uploadDeliveryEvidenceAction(formData: FormData) {
   const { error: uploadError } = await supabase.storage.from(bucketName).upload(objectPath, candidate, { contentType: candidate.type || "application/octet-stream", upsert: false });
   if (uploadError) redirect(`${destination}?error=${encodeURIComponent(message(uploadError.message))}`);
 
-  const { error: finalizeError } = await supabase.rpc("finalize_evidence_upload", {
-    target_evidence_id: evidenceId,
-    checksum_sha256: checksum,
-    byte_size: candidate.size,
-    operation_id: crypto.randomUUID(),
-  });
-  if (finalizeError) redirect(`${destination}?error=${encodeURIComponent(message(finalizeError.message))}`);
+  // FB10: a user session cannot finalize stored evidence; check the stored bytes, then finalize on the server.
+  const { data: stored, error: downloadError } = await supabase.storage.from(bucketName).download(objectPath);
+  const storedBytes = stored ? new Uint8Array(await stored.arrayBuffer()) : null;
+  if (downloadError || !storedBytes || storedBytes.length !== candidate.size || createHash("sha256").update(storedBytes).digest("hex") !== checksum) {
+    redirect(`${destination}?error=${encodeURIComponent("Ảnh chưa lưu đầy đủ. Hãy tải lại.")}`);
+  }
+  const { data: actor } = await supabase.auth.getUser();
+  if (!actor.user) redirect(`${destination}?error=${encodeURIComponent("Phiên đăng nhập đã hết hạn.")}`);
+  let finalized = true;
+  try {
+    await finalizeVerifiedEvidence("INTERNAL", { actorUuid: actor.user.id, evidenceId, checksum, byteSize: candidate.size, operationId: crypto.randomUUID() });
+  } catch { finalized = false; }
+  if (!finalized) redirect(`${destination}?error=${encodeURIComponent("Không thể xác minh ảnh đã lưu. Hãy thử lại.")}`);
 
   revalidatePath(destination);
   redirect(`${destination}?notice=evidence-uploaded&evidence=${evidenceId}`);

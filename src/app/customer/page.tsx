@@ -20,7 +20,8 @@ const notices: Record<string, string> = {
 export default async function CustomerHomePage({ searchParams }: { searchParams: Promise<{ notice?: string }> }) {
   const notice = notices[(await searchParams).notice ?? ""];
   const snapshot = await getCustomerPortalSnapshot();
-  const canOrder = snapshot.membership_role !== "RECEIVER";
+  // FB10: only the account owner orders; the accountant follows orders, debts and payments.
+  const canOrder = snapshot.membership_role === "OWNER";
   const waiting = snapshot.orders.filter((order) => order.channel === "CUSTOMER_PORTAL" && order.state === "DRAFT").length;
   const canRespondToQuote = snapshot.quotation?.can_respond === true;
   // D29: the first order still on its way is followed step by step on the home page.

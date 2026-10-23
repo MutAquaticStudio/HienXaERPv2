@@ -14,7 +14,7 @@ export default async function CustomerOrdersPage({ searchParams }: { searchParam
       {query.notice === "order-unavailable" && <p className={styles.status} role="status">Đơn hàng không thuộc phạm vi truy cập của bạn. Hãy chọn đơn trong danh sách khách hàng hiện tại.</p>}
       <header className={styles.sectionHead}>
         <div><h1>Đơn hàng và giao nhận</h1><p>Theo dõi tiến trình giao nhận và thông tin đơn hàng của bạn.</p></div>
-        {snapshot.membership_role !== "RECEIVER" && <Link className={styles.button} href="/customer/orders/new">Đặt hàng</Link>}
+        {snapshot.membership_role === "OWNER" && <Link className={styles.button} href="/customer/orders/new">Đặt hàng</Link>}
       </header>
       <div className={styles.grid}>
         {snapshot.orders.length ? snapshot.orders.map((order) => (

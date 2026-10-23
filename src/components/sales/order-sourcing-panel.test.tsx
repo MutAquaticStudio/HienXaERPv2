@@ -23,7 +23,7 @@ it("shows each line's sources, the purchase order waiting for approval and the r
   expect(within(cement).getByText("Đủ nguồn")).toBeInTheDocument();
   expect(cement).toHaveTextContent("Kho chính · 500 kg");
   expect(within(cement).getByRole("link", { name: "PO-2026-000012" })).toHaveAttribute("href", "/admin/purchase-orders/po1");
-  expect(cement).toHaveTextContent("(nháp chờ duyệt)");
+  expect(cement).toHaveTextContent("(chờ nhận hàng)");
   expect(cement).toHaveTextContent("dùng tồn kho trước");
   const sand = screen.getByText("Cát").closest("li")!;
   expect(within(sand).getByText("Thiếu 5 m³")).toBeInTheDocument();

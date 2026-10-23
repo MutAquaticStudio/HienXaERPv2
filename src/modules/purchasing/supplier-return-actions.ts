@@ -14,6 +14,7 @@ const reason = z.string().trim().max(500).optional();
 const EVENT_NOTE = { PHYSICAL_RETURN: "Thực trả nhà cung cấp", SUPPLIER_ACCEPTANCE: "Nhà cung cấp chấp nhận trả hàng", CLOSE_DISPATCH: "Đóng phần chưa trả" } as const;
 function failure(message?: string, code?: string): CommandOutcome {
  return { status: isAuthoritativeRejection(code) ? "FAILED" : "UNKNOWN", message: message?.includes("version") ? "Hồ sơ trả nhà cung cấp đã thay đổi. Tải lại và đối chiếu nguồn."
+  : message?.includes("supplier_return_exceeds_source_quantity") ? "Số lượng trả vượt phần còn lại của phiếu nhập."
   : message?.includes("exceeds") ? "Lượng hoặc tiền vượt phần nguồn đã nhận, thực trả, được chấp nhận hoặc còn khả dụng."
   : message?.includes("insufficient_available") ? "Kho không đủ lượng khả dụng đã ghi nhận để thực trả."
   : message?.includes("custody") ? "Nguồn giao thẳng cần hồ sơ hàng trả đang mở đúng dòng giao; hàng được trả thẳng tới nhà cung cấp."
@@ -66,4 +67,26 @@ export async function settleSupplierCreditAction(form: FormData): Promise<Comman
   : { target_credit_id: parsed.data.creditId, target_obligation_id: parsed.data.obligationId, offset_amount_vnd: parsed.data.amount, operation_id: parsed.data.operationId };
  const { data, error } = await db.rpc(command, payload); if (error || !data) return failure(error?.message, error?.code);
  refresh(parsed.data.caseId); return { status: "SUCCESS", resultId: String(data), message: refund ? "Đã ghi phiếu thu tiền nhà cung cấp hoàn theo nguồn." : "Đã bù trừ vào phải trả cùng nhà cung cấp; không tạo thu hoặc chi lần nữa." };
+}
+
+/** FB10 (4.6): "Trả hàng nhập" in one step — lines of one receipt in the unit they were bought in; refund into a fund when paid. */
+export async function completeSupplierReturnAction(form: FormData): Promise<CommandOutcome> {
+ const parsed = z.object({ receiptId: z.guid(), operationId: z.guid(), accountId: uuidOrBlank, note: z.string().trim().max(300) }).safeParse({
+  receiptId: form.get("receiptId"), operationId: form.get("operationId"), accountId: form.get("accountId") ?? "", note: form.get("note") ?? "" });
+ const lineIds = form.getAll("lineId").map(String), quantities = form.getAll("quantity").map(String);
+ const lines = lineIds.map((id, index) => ({ receipt_line_id: id, quantity: quantities[index]?.trim() ?? "" })).filter(line => line.quantity !== "" && Number(line.quantity) !== 0);
+ if (!parsed.success || lineIds.length !== quantities.length || !lines.every(line => z.guid().safeParse(line.receipt_line_id).success && quantity.safeParse(line.quantity).success))
+  return { status: "FAILED", message: "Số lượng trả phải là số dương, tối đa 6 chữ số thập phân." };
+ if (!lines.length) return { status: "FAILED", message: "Nhập số lượng trả cho ít nhất một hàng." };
+ await requireInternalPermission("purchasing.create");
+ const db = await createServerSupabase();
+ const { data, error } = await db.rpc("complete_supplier_return", { target_receipt_id: parsed.data.receiptId, return_lines: lines,
+  refund_account_id: parsed.data.accountId || null, return_note: parsed.data.note, operation_id: parsed.data.operationId });
+ if (error || !data) {
+  if (error?.code === "42501") return { status: "FAILED", message: "Bạn cần quyền mua hàng, xuất kho và điều chỉnh công nợ NCC để trả hàng nhập." };
+  if (error?.message?.includes("invalid_finance_account")) return { status: "FAILED", message: "Quỹ nhận tiền hoàn không còn dùng được. Chọn quỹ khác." };
+  return failure(error?.message, error?.code);
+ }
+ refresh(); revalidatePath("/admin/purchase-orders");
+ return { status: "SUCCESS", resultId: String(data), message: "Đã trả hàng nhập: hàng đã xuất khỏi kho và công nợ nhà cung cấp đã giảm." };
 }

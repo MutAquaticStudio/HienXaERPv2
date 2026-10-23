@@ -1591,3 +1591,36 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
   .list-filters .list-filter-option { min-height: 40px; }
   .row-expansion > td > .row-expansion-grid { position: static; max-width: none; }
 }
+
+/* FB10 (4.6): "Trả hàng nhập" — lines left, amount and refund choice right (KiotViet). */
+.return-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; align-items: start; }
+.return-layout th.numeric, .return-layout td.numeric { text-align: right; white-space: nowrap; }
+.return-summary { display: grid; gap: 12px; position: sticky; top: 16px; }
+.return-total { display: flex; justify-content: space-between; align-items: baseline; margin: 0; }
+.return-total strong { font-size: 1.35rem; color: var(--primary); }
+@media (max-width: 900px) { .return-layout { grid-template-columns: 1fr; } .return-summary { position: static; } }
+/* FB10 (4.7): supplier invoice matching — differences from the receipt are tinted. */
+.matching-table td.variance { background: var(--warning-soft); }
+.matching-table td.variance input { border-color: var(--warning); }
+.matching-table td.numeric input { width: 7.5rem; text-align: right; }
+.matching-table tr.selected { background: var(--primary-soft); }
+/* FB10 (6.10): OpenStreetMap fleet map on Lộ trình. */
+.fleet-map-layout { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 12px; padding: 0 16px 16px; }
+.fleet-map { height: 440px; border-radius: var(--radius-sm); overflow: hidden; z-index: 0; }
+.fleet-map-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; align-content: start; max-height: 440px; overflow: auto; }
+.fleet-map-list button { width: 100%; display: grid; gap: 2px; text-align: left; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); cursor: pointer; }
+.fleet-map-list button.active { border-color: var(--primary); background: var(--primary-soft); }
+@media (max-width: 900px) { .fleet-map-layout { grid-template-columns: 1fr; } .fleet-map { height: 320px; } }
+/* FB10 (12): KiotViet-style report hub. */
+.report-hub { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 16px; align-items: start; }
+.report-nav { display: grid; gap: 14px; position: sticky; top: 16px; }
+.report-nav h2 { margin: 0 0 6px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+.report-nav ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.report-nav a { display: block; padding: 7px 10px; border-radius: var(--radius-sm); color: inherit; text-decoration: none; }
+.report-nav a:hover { background: var(--primary-soft); }
+.report-nav a.active { background: var(--primary-soft); color: var(--primary); font-weight: 700; }
+.report-presets { display: flex; flex-wrap: wrap; gap: 6px; flex-basis: 100%; }
+.chip-link { padding: 5px 12px; border: 1px solid var(--border); border-radius: 999px; color: inherit; text-decoration: none; font-size: 0.9rem; }
+.chip-link.active { border-color: var(--primary); background: var(--primary-soft); color: var(--primary); font-weight: 600; }
+.report-filters { flex-wrap: wrap; }
+@media (max-width: 900px) { .report-hub { grid-template-columns: 1fr; } .report-nav { position: static; } }

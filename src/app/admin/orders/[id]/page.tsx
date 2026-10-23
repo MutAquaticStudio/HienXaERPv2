@@ -22,7 +22,7 @@ import { businessInputValue, formatBusinessDateTime } from "@/lib/core/business-
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { allocateWarehouseSourceAction, createDeliveryAction } from "@/modules/delivery/actions";
-import { deliveryStateLabel, sourceModeLabel } from "@/modules/delivery/presentation";
+import { deliveryStateLabel, sourceModeLabel, vehicleStatusLabel, type VehicleStatus } from "@/modules/delivery/presentation";
 import { cancelSalesOrderAction, confirmSalesOrderAction } from "@/modules/sales/actions";
 import { salesDeliveryStateLabel, salesStateLabel, salesStateTone } from "@/modules/sales/presentation";
 import styles from "./order-detail.module.css";
@@ -143,7 +143,7 @@ type PlanRow = { sales_order_line_id: string; line_number: number; material_id: 
 
 /** Left to deliver per line (order_delivery_plan) for the one-step "Lập phiếu giao" popup, plus drivers and vehicles when allowed. */
 async function loadDeliveryPlan(supabase: Awaited<ReturnType<typeof createServerSupabase>>, orderId: string, lines: Line[], branchId: string, canAssign: boolean) {
-  const [planResult, unitResult, vehicleResult, employees, settingsResult, capacityResult] = await Promise.all([
+  const [planResult, unitResult, vehicleResult, employees, settingsResult, capacityResult, statusResult] = await Promise.all([
     supabase.rpc("order_delivery_plan", { target_sales_order_id: orderId }),
     supabase.from("units_of_measure").select("id, symbol").limit(1000),
     canAssign ? supabase.from("vehicles").select("id, code, plate_number, capacity_quantity::text, capacity_uom_id").eq("branch_id", branchId).eq("active", true).order("code").limit(200) : Promise.resolve({ data: [], error: null }),
@@ -151,7 +151,9 @@ async function loadDeliveryPlan(supabase: Awaited<ReturnType<typeof createServer
     supabase.from("branch_operation_settings").select("stop_minutes").eq("branch_id", branchId).maybeSingle(),
     // FB5: how much of each line each truck carries in the line's unit ("4 tấn ≈ 80 bao"); without it the popup only names the trucks.
     canAssign ? supabase.rpc("vehicle_capacity_by_order", { target_sales_order_id: orderId }) : Promise.resolve({ data: [], error: null }),
+    canAssign ? supabase.from("vehicle_status_read").select("vehicle_id, capacity_quantity, capacity_symbol, busy_delivery_number, busy_state, busy_until").eq("branch_id", branchId) : Promise.resolve({ data: [], error: null }),
   ]);
+  const vehicleStatus = new Map(((statusResult.data ?? []) as VehicleStatus[]).map((row) => [row.vehicle_id, { ...row, capacity_quantity: null }]));
   if (planResult.error || unitResult.error) return null;
   const symbols = new Map((unitResult.data ?? []).map((row) => [row.id, row.symbol]));
   const rows = ((planResult.data as { lines?: PlanRow[] } | null)?.lines ?? []);
@@ -167,7 +169,7 @@ async function loadDeliveryPlan(supabase: Awaited<ReturnType<typeof createServer
   const carried = capacityResult.error ? [] : (capacityResult.data ?? []) as { vehicle_id: string; sales_order_line_id: string; capacity_in_line_unit: string | number | null }[];
   const resources = canAssign && employees ? { employees: employees.data.map((row) => ({ id: row.id, name: row.display_name })),
     vehicles: ((vehicleResult.data ?? []) as { id: string; code: string; plate_number: string; capacity_quantity: string | null; capacity_uom_id: string | null }[]).map((row) => ({
-      id: row.id, label: `${row.code} · ${row.plate_number}`,
+      id: row.id, label: `${row.code} · ${row.plate_number}${vehicleStatusLabel(vehicleStatus.get(row.id))}`,
       capacity: row.capacity_quantity && row.capacity_uom_id && !capacityResult.error ? {
         quantity: row.capacity_quantity, unit: symbols.get(row.capacity_uom_id) ?? "",
         perLine: Object.fromEntries(planLines.map((line) => {

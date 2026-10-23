@@ -98,9 +98,10 @@ declare
   owner_login constant uuid := '10000000-0000-4000-8000-000000000001';
   work uuid; failed text; earning public.earning_events%rowtype; mine jsonb;
 begin
-  -- 1. Before the approval a trip earns nothing.
+  -- 1. FB10: the rule applies by itself — no approval step; approved by whoever created the rule.
   work := pg_temp.trip275(driver, driver_login);
-  assert not exists (select 1 from public.earning_events where employee_id = driver), 'no earning before the approval';
+  assert (select count(*) from public.earning_events e where e.employee_id = driver and e.rule_id = everyone and e.calculated_amount_vnd = 30000
+    and e.approval_state = 'APPROVED' and e.approved_by = (select created_by from public.compensation_rules where id = everyone)) = 1, 'earns without an approval';
 
   -- 2. The owner approves the rule for every worker; a commission for everyone is refused.
   perform pg_temp.act_as(owner_login);
@@ -123,11 +124,11 @@ begin
     format('trip pay for the driver %s', to_jsonb(earning));
   assert (select original_amount_vnd from public.payable_obligations where id = earning.payable_obligation_id and employee_id = driver) = 30000,
     'owed to the driver';
-  assert (select count(*) from public.earning_events where employee_id = driver) = 1, 'one earning per trip';
+  assert (select count(*) from public.earning_events where employee_id = driver) = 2, 'one earning per trip';
   perform pg_temp.act_as(driver_login);
   mine := public.worker_portal_snapshot()->'earnings';
   perform pg_temp.act_as_admin();
-  assert jsonb_array_length(mine) = 1 and mine->0->>'amount_vnd' = '30000' and mine->0->>'type' = 'PER_TRIP', format('driver sees it %s', mine);
+  assert jsonb_array_length(mine) = 2 and mine->0->>'amount_vnd' = '30000' and mine->0->>'type' = 'PER_TRIP', format('driver sees it %s', mine);
 
   -- 4. A worker with an own approved rule earns by it, not by the rule for every worker.
   work := pg_temp.trip275(other, other_login);

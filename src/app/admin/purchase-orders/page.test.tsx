@@ -35,7 +35,7 @@ afterEach(cleanup);
 
 it("filters on the left and shows the lines of an order under its row", async () => {
   render(await Page({ searchParams: Promise.resolve({}) }));
-  expect(screen.getByRole("radio", { name: /Đã xác nhận/ }).closest("label")).toHaveTextContent("1");
+  expect(screen.getByRole("radio", { name: /Đang nhận hàng/ }).closest("label")).toHaveTextContent("1");
   expect(screen.getByText("Chưa gửi")).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "Xem nhanh PO-2026-000044" }));
   expect(screen.getByText(/Xi măng PCB40 · 100 bao/)).toBeInTheDocument();

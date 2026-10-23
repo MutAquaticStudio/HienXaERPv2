@@ -73,12 +73,12 @@ begin
   assert private.capacity_factor(cement, bao, bao, now()) = 1, 'same unit is 1';
   assert private.capacity_factor(cement, bao, cay, now()) is null, 'no path to cây';
 
-  -- A truck is saved with its capacity and no evidence note (Owner 18/10); a blank note is stored as no note.
+  -- A truck is saved with its capacity and no evidence note (Owner 18/10); FB10: a default note is kept so it can be assigned.
   perform pg_temp.act_as('10000000-0000-4000-8000-000000000001');
   perform public.save_catalog_record('vehicles', truck, branch,
     jsonb_build_object('code', 'NT_XE225', 'plate_number', '99C-225.01', 'capacity_quantity', '4', 'capacity_uom_id', tan, 'capacity_source_note', '  '),
     null, 'Xe 4 tấn thử', '7f225600-0000-4000-8000-000000000001');
-  assert (select capacity_source_note is null and capacity_verified_at is not null and capacity_quantity = 4 from public.vehicles where id = truck),
+  assert (select capacity_source_note = 'Sức chở khai báo trên xe' and capacity_verified_at is not null and capacity_quantity = 4 from public.vehicles where id = truck),
     'truck saved without a note, capacity confirmed';
 
   -- The popup reads how much of the line the truck carries: 4 tấn ≈ 80 bao.

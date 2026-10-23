@@ -16,13 +16,14 @@ type PayeeKind = "OTHER" | "SUPPLIER" | "EMPLOYEE";
  * unticked when buying something that lasts, such as a truck. A refusal keeps what was typed and puts the cursor on the field
  * to fix; an unclear answer keeps the same operation, so pressing again cannot record twice.
  */
-export function OperatingExpenseForm({ action, types, suppliers, employees, accounts, orders, canPay, now }: {
+export function OperatingExpenseForm({ action, types, suppliers, employees, accounts, canPay, now }: {
   action: (form: FormData) => Promise<CommandOutcome>;
-  types: string[]; suppliers: Option[]; employees: Option[]; accounts: Account[]; orders: Option[]; canPay: boolean; now: string;
+  types: string[]; suppliers: Option[]; employees: Option[]; accounts: Account[]; canPay: boolean; now: string;
 }) {
   const router = useRouter();
   const form = useRef<HTMLFormElement>(null);
   const [payeeKind, setPayeeKind] = useState<PayeeKind>("OTHER");
+  const [category, setCategory] = useState("");
   const [settlement, setSettlement] = useState<"PAID_NOW" | "PAYABLE">(canPay ? "PAID_NOW" : "PAYABLE");
   const [operationId, setOperationId] = useState(() => crypto.randomUUID());
   const [sending, setSending] = useState(false);
@@ -60,6 +61,7 @@ export function OperatingExpenseForm({ action, types, suppliers, employees, acco
       setOperationId(crypto.randomUUID());
       if (result.status === "SUCCESS") {
         form.current?.reset();
+        setCategory("");
         setPayeeKind("OTHER");
         setSettlement(canPay ? "PAID_NOW" : "PAYABLE");
         router.refresh();
@@ -74,8 +76,9 @@ export function OperatingExpenseForm({ action, types, suppliers, employees, acco
   return <form ref={form} className="command-panel expense-form" onSubmit={(event) => { void submit(event); }} noValidate>
     <fieldset className="reliable-command-fields" disabled={sending}>
       <div className="field"><label htmlFor="expense-categoryName">Loại chi</label>
-        <input id="expense-categoryName" name="categoryName" list="expense-type-options" placeholder="Chọn hoặc gõ loại mới, VD: Marketing" maxLength={120} autoComplete="off" required />
-        <datalist id="expense-type-options">{offered.map((name) => <option key={name} value={name} />)}</datalist></div>
+        <input id="expense-categoryName" name="categoryName" list="expense-type-options" placeholder="Chọn hoặc gõ loại mới, VD: Marketing" maxLength={120} autoComplete="off" required value={category} onChange={(event) => setCategory(event.target.value)} />
+        <datalist id="expense-type-options">{offered.map((name) => <option key={name} value={name} />)}</datalist>
+        {category.trim().toLocaleLowerCase("vi") === "lương thưởng" && <small className="muted">Lương đã tính ở trang Thu nhập thì chi trả tại Thu nhập để không tính hai lần. Dùng mục này cho thưởng, phụ cấp chưa có ở Thu nhập.</small>}</div>
       <div className="field"><label htmlFor="expense-amount">Số tiền</label><MoneyInput id="expense-amount" name="amount" required /></div>
       <div className="field"><label htmlFor="expense-effectiveAt">Ngày chi</label><input id="expense-effectiveAt" name="effectiveAt" type="datetime-local" defaultValue={now} required /></div>
       <fieldset className="segmented-radio" id="expense-payeeKind"><legend>Người nhận</legend>
@@ -98,11 +101,12 @@ export function OperatingExpenseForm({ action, types, suppliers, employees, acco
           <option value="">Chọn quỹ</option>{accounts.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}</select>
         <small className="muted">Thành phiếu chi trong Sổ quỹ.</small></div>}
       {blocked && <p className="muted" role="note">Bạn chưa có quyền chi tiền từ quỹ; chỉ ghi được chi phí nợ nhà cung cấp.</p>}
-      <label className="check-inline"><input type="checkbox" name="countsInProfit" defaultChecked /> Tính vào lợi nhuận</label>
-      <small className="muted">Bỏ chọn khi mua tài sản dùng lâu (xe, máy móc): vẫn trừ quỹ nhưng không trừ lợi nhuận kỳ này.</small>
       <div className="field"><label htmlFor="expense-description">Ghi chú (không bắt buộc)</label><textarea id="expense-description" name="description" maxLength={500} /></div>
-      {orders.length > 0 && <div className="field"><label htmlFor="expense-salesOrderId">Đơn bán liên quan (không bắt buộc)</label>
-        <select id="expense-salesOrderId" name="salesOrderId"><option value="">Chi phí chung</option>{orders.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}</select></div>}
+      {/* FB10: kept out of the way; most expenses count in profit. */}
+      <details className="expense-more"><summary>Thêm</summary>
+        <label className="check-inline"><input type="checkbox" name="countsInProfit" defaultChecked /> Tính vào lợi nhuận</label>
+        <small className="muted">Bỏ chọn khi mua tài sản dùng lâu (xe, máy móc): vẫn trừ quỹ nhưng không trừ lợi nhuận kỳ này.</small>
+      </details>
     </fieldset>
     {outcome && <p className={`form-message ${outcome.status === "SUCCESS" ? "success" : outcome.status === "FAILED" ? "error" : ""}`} role={outcome.status === "SUCCESS" ? "status" : "alert"}>{outcome.message}</p>}
     <button className="button button-primary" type="submit" disabled={sending || blocked}>{sending ? "Đang ghi..." : "Ghi chi phí"}</button>

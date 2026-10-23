@@ -13,6 +13,7 @@ vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({
     query.then = result.then.bind(result);
     return query;
   },
+  rpc: async (name: string) => ({ data: m.tables[`rpc:${name}`] ?? [], error: null }),
 }) }));
 
 import InventoryPage from "./page";
@@ -42,6 +43,7 @@ beforeEach(() => {
       { material_id: XM, from_uom_id: "bao", to_uom_id: "kg", numerator: "50", denominator: "1" },
       { material_id: XM, from_uom_id: "tan", to_uom_id: "kg", numerator: "1000", denominator: "1" },
     ],
+    "rpc:warehouse_stock_promised": [{ warehouse_id: W1, material_id: XM, promised_base_quantity: "200" }],
     inventory_movement_read: [
       { id: "mv2", location_kind: "WAREHOUSE", warehouse_id: W1, delivery_id: "d1", movement_type: "DELIVERY_HANDOFF", base_quantity_delta: "-150", occurred_at: "2026-10-17T03:00:00Z" },
       { id: "mv1", location_kind: "WAREHOUSE", warehouse_id: W1, delivery_id: null, movement_type: "PURCHASE_RECEIPT", base_quantity_delta: "5000", occurred_at: "2026-10-16T03:00:00Z" },
@@ -59,7 +61,11 @@ it("shows one row per material with stock summed over warehouses and the overvie
   expect(within(metrics).getByRole("link", { name: /Dưới ngưỡng\s*1/ })).toBeInTheDocument();
   const cement = screen.getByRole("link", { name: "Xi măng PCB40" }).closest("tr")!;
   expect(within(cement).getByText("4.850 kg")).toBeInTheDocument();
-  expect(within(cement).getByText("4.700 kg")).toBeInTheDocument();
+  // FB10 (5.1): 150 kg waiting to load, 200 kg promised to an order without a delivery → 4 850 − 150 − 200 = 4 500 for sale.
+  expect(within(cement).getByText("150 kg")).toBeInTheDocument();
+  expect(within(cement).getByText("200 kg")).toBeInTheDocument();
+  expect(within(cement).getByText("4.500 kg")).toBeInTheDocument();
+  expect(screen.getByRole("columnheader", { name: "Chờ xuất giao" })).toBeInTheDocument();
   const sand = screen.getByRole("link", { name: "Cát vàng" }).closest("tr")!;
   expect(within(sand).getByText(/Dưới ngưỡng/)).toBeInTheDocument();
   expect(within(sand).getByRole("link", { name: "Đặt mua" })).toHaveAttribute("href", `/admin/purchase-orders/new?warehouse=${W1}&material=${CAT}`);

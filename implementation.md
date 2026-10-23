@@ -3278,4 +3278,26 @@ xong toàn bộ rồi QA một lần; tệp áp QA sẽ chia < 20.000 ký tự. 
 - Vai trò: `builtin_worker` → "Thợ & tài xế", `builtin_driver` ngừng dùng (Production 0 người giữ), preset bỏ "Tài xế".
 - Đăng nhập đúng cổng: `accountPortals` đọc quyền của chính tài khoản; sai tab → `signOut` + báo tab đúng; `/admin` layout đẩy thợ về `/work`, khách về `/customer`.
 - Native 280; vitest bổ sung (logout, trang chủ `?portal`, action dịch vụ, nguồn hàng nháp, thẻ duyệt, đăng nhập 3 tab).
+- Phát hành: migration `20261023150000` áp QA rồi Production (md5 `b9350e53…` khớp; Production: vai trò "Thợ & tài xế", `builtin_driver` ngừng dùng, validator đã sửa); PR #62 CI xanh → merge `f5ae600` → deploy `dpl_CCnnSqYBJHUGcFBhqM6Xr1XFGjDv`.
+
+## 2026-10-24 — FB10 (D33): feedback QA mục 4–12
+
+Nguyên nhân lỗi đọc từ log Production (chỉ đọc):
+- Kiểm kho `open_stock_count` → `invalid_stock_count_scope` ×3: giờ chốt lấy từ đồng hồ máy, nhanh hơn DB vài giây. Migration `20261024090000` cho phép lệch 5 phút, lưu `least(cutoff, now())`.
+- Trả NCC `open_return_case` / `return_quantity_exceeds_source`: ô số lượng đòi đơn vị gốc trong khi người dùng đếm theo bao. Thay bằng `complete_supplier_return` (đơn vị mua, tỷ lệ của phiếu nhập).
+- Ảnh "NCC đã giao": `finalize_evidence_upload` 403 `storage_finalization_requires_server` — action cũ dùng RPC người dùng; nay kiểm byte rồi `finalizeVerifiedEvidence`.
+- Tự chia việc không giao ai: Production không xe nào có tài xế mặc định → không có ứng viên; 2 xe thiếu ghi chú sức chở → `vehicle_capacity_basis_missing`.
+- `assign_delivery_scheduled` → `vehicle_capacity_conversion_missing` / `vehicle_capacity_exceeded`: thiếu quy đổi chung kg ↔ tấn.
+- `calculate_earning_event` → "missing FROM-clause entry": dòng 59 dùng biến cục bộ như tham số.
+- `post_payment` → `allocation_exceeds_outstanding`: popup giữ danh sách khoản cũ, không tự phân bổ.
+- Giao thiếu ở văn phòng: `verify_delivery` không gọi `return_delivery_remainder` → hàng treo trên xe, phiếu kẹt cột "Ngoại lệ"; `cancel_planned_delivery` từ chối mọi phiếu từng được phân (thiếu `superseded_at is null`). Migration `20261024090000` sửa và trả phần dư cho phiếu VERIFIED còn hàng trên xe.
+
+Thay đổi (migration `20261024090000`–`20261024090900`, native 285, 290, 295, 296, 298–303; cập nhật 190, 225, 275 theo quyết định mới):
+- Mua hàng: nhận hàng tự xác nhận đơn nháp; trả hàng nhập một bước; đối chiếu hóa đơn có ngữ cảnh đơn mua.
+- Kho: Chờ xuất giao / Đã hứa cho đơn / Có thể bán; chuyển kho nhiều dòng + một chạm.
+- Giao hàng: tự chia việc mọi thợ × mọi xe; quy đổi chuẩn; trạng thái xe; giao thiếu theo đơn vị bán; GPS + bản đồ OSM (thêm `leaflet` 1.9.4, khóa bằng pnpm 11).
+- Tài chính: thu tiền tự phân bổ; chi phí gọn; kế toán khách chỉ xem.
+- Thu nhập: quy tắc tự áp, lương tháng (nguồn = cơ sở tính tháng), hoa hồng vẫn cần bật.
+- Báo cáo: `report_center` 9 báo cáo + Lãi lỗ từ `finance_dashboard_snapshot`.
+- Kiểm chứng: `pnpm check` xanh (232 file, 1224 test, build), node QA 15/15, native 54/54.
 
