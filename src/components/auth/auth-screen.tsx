@@ -1,17 +1,25 @@
 import type { ReactNode } from "react";
-import { LoginForm } from "./login-form";
+import { AuthFrame } from "./auth-frame";
+import { PortalLogin } from "./portal-login";
 
 const copy = {
-  admin: { eyebrow: "Khối vận hành", title: "Đăng nhập để tiếp tục", detail: "Dành cho chủ doanh nghiệp, văn phòng, kho và điều phối.", switchHref: "/", switchLabel: "← Chọn cổng khác" },
-  work: { eyebrow: "Cổng thợ & tài xế", title: "Bắt đầu ca làm việc", detail: "Xem việc hôm nay, lấy hàng lên xe và báo đã giao.", switchHref: "/", switchLabel: "← Chọn cổng khác" },
-  customer: { eyebrow: "Cổng khách hàng", title: "Theo dõi giao dịch", detail: "Đặt hàng, theo dõi giao nhận và công nợ của tài khoản này.", switchHref: "/", switchLabel: "← Chọn cổng khác" },
+  admin: { eyebrow: "Khối vận hành" },
+  work: { eyebrow: "Cổng thợ & tài xế" },
+  customer: { eyebrow: "Cổng khách hàng" },
 } as const;
 
-/** The sign-in screen; `title`/`detail`/`children` replace the login form for the other auth pages (register, change password). */
+export const LOGIN_FOOTNOTE = "Máy này nhớ cổng bạn dùng lần trước · Quên tài khoản: hỏi quản lý cửa hàng";
+
+/**
+ * A sign-in screen. Without `children` it is the portal's login (D30: the tabbed card, opened on this portal's tab);
+ * with `children` (register, change password) it shows `title`/`detail` and the given form in the same compact card.
+ */
 export function AuthScreen({ surface, title, detail, notice, children, switchLink }: {
   surface: keyof typeof copy; title?: string; detail?: string; notice?: string; children?: ReactNode; switchLink?: { href: string; label: string } | null;
 }) {
-  const content = copy[surface];
-  const link = switchLink === undefined ? { href: content.switchHref, label: content.switchLabel } : switchLink;
-  return <main className="auth-screen"><section className="auth-story"><span className="brand-mark">HX</span><p className="eyebrow">HIỀN XA ERP</p><h1>Một nguồn dữ liệu.<br />Ba không gian làm việc.</h1><p>Quản lý bán hàng, mua hàng, giao nhận và công nợ theo quyền của từng nhân viên.</p></section><section className="auth-panel"><div className="auth-card"><p className="eyebrow">{content.eyebrow}</p><h2>{title ?? content.title}</h2><p className="muted">{detail ?? content.detail}</p>{notice && <p className="form-message" role="status">{notice}</p>}{children ?? <LoginForm surface={surface} />}{link && <a className="auth-switch" href={link.href}>{link.label}</a>}</div></section></main>;
+  if (!children) return <AuthFrame footnote={LOGIN_FOOTNOTE}><PortalLogin initial={surface} notice={notice} /></AuthFrame>;
+  const link = switchLink === undefined ? { href: "/", label: "← Về màn đăng nhập" } : switchLink;
+  return <AuthFrame><p className="eyebrow">{copy[surface].eyebrow}</p><h1>{title}</h1>{detail && <p className="muted">{detail}</p>}
+    {notice && <p className="form-message" role="status">{notice}</p>}{children}
+    {link && <a className="auth-switch" href={link.href}>{link.label}</a>}</AuthFrame>;
 }

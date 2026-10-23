@@ -3233,3 +3233,13 @@ xong toàn bộ rồi QA một lần; tệp áp QA sẽ chia < 20.000 ký tự. 
 - Không có migration. Deploy `dpl_9ng2vYxbhDgMa6e73Z4yaN5BbFjK` (`main@6a4ff60`); `/api/health` đúng sha, không lỗi runtime;
   quay lui: `dpl_GFdP4h2M4KoAemhEW1FTPbW7phUq`.
 - Kịch bản QA giao diện `KICH-BAN-QA-GIAO-DIEN.md` gửi Owner (Owner tự QA).
+
+## 2026-10-23 — D30: cổng vào là màn đăng nhập
+
+- Owner (ảnh chụp trang `/` trên điện thoại): "Phần trang này nên làm lại. Vì đây là erp cho nội bộ. Hãy thiết kế concept trang này
+  trước khi bắt đầu." Thêm 3 artboard vào canvas concept (09 hướng A máy tính, 10 hướng A điện thoại có trạng thái lỗi / đang đăng nhập,
+  11 hướng B danh sách cổng gọn). Owner chọn B rồi đổi sang **A**.
+- `src/components/auth/auth-frame.tsx` (khung chung), `portal-login.tsx` (tab có phím mũi tên, `useSyncExternalStore` đọc
+  `localStorage` `hx.lastPortal`, ghi khi bấm đăng nhập), `auth-screen.tsx` (đăng nhập → `PortalLogin`, còn lại thẻ gọn); `/`,
+  `/recovery`, `/select-branch`, xác minh liên kết dùng `AuthFrame`; bỏ `portal-chooser.tsx` và CSS `.auth-story`, `.portal-choice*`.
+- Form đăng nhập, `surface`, route và điều hướng sau đăng nhập không đổi; script QA vẫn bấm nút "Đăng nhập" và nhãn "Mật khẩu".

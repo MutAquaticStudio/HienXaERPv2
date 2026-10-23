@@ -1711,6 +1711,16 @@ Một form có label, hỗ trợ paste/password manager, bàn phím phù hợp, 
 
 Session hết hạn: giữ draft an toàn, dẫn đăng nhập và trở lại trang đã được kiểm quyền; không lặp redirect giữa admin/work/customer. Logout trên thiết bị dùng chung không để hiện màn công nợ cache của người trước. Nhận hàng không đồng nghĩa thành viên tài chính của khách.
 
+# UX-AUTH-002 — Cổng vào là màn đăng nhập (D30)
+
+- Khung chung (`AuthFrame`): thanh thương hiệu mảnh "HX · Hiền Xa ERP · Hệ thống nội bộ" trên dải xanh của ứng dụng, một thẻ trắng
+  480 px ở giữa (điện thoại: thẻ chồng lên dải xanh, lề 16 px). Không có khối giới thiệu / khẩu hiệu.
+- Thẻ đăng nhập (`PortalLogin`): tiêu đề "Đăng nhập", tab Vận hành / Thợ & tài xế / Khách hàng (`role="tab"`, phím ← → Home End),
+  một dòng gợi ý theo tab, form như cũ (nút "Đăng nhập", "Quên mật khẩu?"; tab Khách hàng thêm "Đăng ký tài khoản").
+- `/` mở tab dùng lần trước trên máy (lưu `localStorage` khi bấm đăng nhập; lần đầu: Vận hành); `/login`, `/work/login`,
+  `/customer/login` mở tab của cổng đó. Ghi chú dưới thẻ: "Máy này nhớ cổng bạn dùng lần trước · Quên tài khoản: hỏi quản lý cửa hàng".
+- Điện thoại (≤ 760 px): tab xếp biểu tượng trên chữ, cao 52 px; ô nhập 16 px.
+
 # UX-TEST-001 — Bài thử trước khi khóa thiết kế
 
 Đây là kế hoạch thử, không kết quả đã quan sát. Prototype phải gắn nhãn dữ liệu giả. Đề xuất ba đại diện vai trò; ghi thời gian thao tác, bước cần trợ giúp, lỗi nhập/hiểu trạng thái và phản hồi.

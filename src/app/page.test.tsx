@@ -5,6 +5,7 @@ const m = vi.hoisted(() => ({ access: vi.fn(), redirect: vi.fn((path: string) =>
 vi.mock("next/navigation", () => ({ redirect: m.redirect }));
 vi.mock("@/lib/access/context", () => ({ resolveInternalAccess: m.access }));
 vi.mock("@/lib/access/landing", () => ({ internalLandingPath: () => "/admin" }));
+vi.mock("@/lib/auth/actions", () => ({ loginAction: vi.fn() }));
 import { AppError } from "@/lib/core/errors";
 import Home from "./page";
 
@@ -12,15 +13,15 @@ const params = (query: Record<string, string> = {}) => ({ searchParams: Promise.
 beforeEach(() => vi.clearAllMocks());
 afterEach(cleanup);
 
-it("lets someone signed out choose one of the three portals, with register for customers (FB7)", async () => {
+it("opens signed-out visitors straight on the sign-in card, a tab per portal and no promotional panel (D30)", async () => {
   m.access.mockRejectedValue(new AppError({ code: "UNAUTHENTICATED", message: "Chưa đăng nhập", status: 401 }));
   render(await Home(params()));
-  expect(screen.getByRole("heading", { name: "Bạn đăng nhập với vai trò nào?" })).toBeInTheDocument();
-  expect(screen.getByRole("link", { name: /Khối vận hành/ })).toHaveAttribute("href", "/login");
-  expect(screen.getByRole("link", { name: /Thợ & tài xế/ })).toHaveAttribute("href", "/work/login");
-  const customer = screen.getByText("Khách hàng").closest(".portal-choice") as HTMLElement;
-  expect(within(customer).getByRole("link", { name: "Đăng nhập" })).toHaveAttribute("href", "/customer/login");
-  expect(within(customer).getByRole("link", { name: "Đăng ký" })).toHaveAttribute("href", "/customer/register");
+  expect(screen.getByRole("heading", { level: 1, name: "Đăng nhập" })).toBeInTheDocument();
+  const tabs = within(screen.getByRole("tablist", { name: "Cổng đăng nhập" })).getAllByRole("tab");
+  expect(tabs.map((tab) => tab.textContent)).toEqual(["Vận hành", "Thợ & tài xế", "Khách hàng"]);
+  expect(screen.getByRole("tab", { name: "Vận hành" })).toHaveAttribute("aria-selected", "true");
+  expect(screen.getByRole("button", { name: "Đăng nhập" })).toBeInTheDocument();
+  expect(screen.queryByText(/Một nguồn dữ liệu/)).not.toBeInTheDocument();
 });
 
 it("sends someone already signed in on the operations side straight to work, and finishes a recovery link", async () => {

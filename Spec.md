@@ -24,6 +24,8 @@
 
 > Quyết định Owner 23/10/2026 (đợt `UI-R1`, làm lại giao diện): **D29** giữ bố cục kiểu KiotViet nhưng đẹp và chuyên nghiệp hơn, có chuyển động; chỉ đổi phần **trình bày** (không đổi DB, RPC, quyền, route, server action, nghiệp vụ). (a) khối vận hành dùng **thanh tiện ích trắng + thanh menu xanh ngang** có menu thả xuống, thay sidebar dọc; (b) mật độ **gọn kiểu KiotViet**: Be Vietnam Pro mặc định, chữ 14–15 px, vẫn chọn được cỡ "Lớn" và font Noto Sans; (c) phạm vi **làm hết**: khung + màu + chuyển động, danh sách bộ lọc trái + xem nhanh dòng, màn tạo đơn kiểu bán hàng + popup tín dụng, cổng thợ & cổng khách điện thoại; (d) phát hành **một lần khi xong hết**, Owner duyệt bản preview (dữ liệu QA) trước khi lên Production (SPEC-UI-R1). Ô tìm nhanh toàn hệ thống (Ctrl K), khung "Hàng hay bán", phím F9 trong ảnh concept **không** thuộc D29.
 
+> Quyết định Owner 23/10/2026 (sau UI-R1): **D30** trang cổng vào `/` làm lại cho đúng ERP nội bộ — bỏ khối giới thiệu "Một nguồn dữ liệu. Ba không gian làm việc."; Owner chọn **hướng A**: mở trang là thấy ngay thẻ **Đăng nhập** với 3 tab Vận hành / Thợ & tài xế / Khách hàng, máy tự nhớ tab dùng lần trước (chỉ lưu trên trình duyệt), "Đăng ký" chỉ ở tab Khách hàng. Các trang `/login`, `/work/login`, `/customer/login` dùng cùng thẻ, mở sẵn tab của cổng đó; đăng ký, đổi mật khẩu, khôi phục mật khẩu, chọn chi nhánh dùng chung khung gọn. Chỉ trình bày: route, form đăng nhập (`surface`), quyền và điều hướng sau đăng nhập giữ nguyên.
+
 # Spec.md — HIỀN XA ERP V2
 
 > **Bộ tài liệu:** `HX-V2-DOCSET-4.4`  

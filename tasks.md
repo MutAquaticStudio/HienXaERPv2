@@ -25,7 +25,7 @@ QA_SCHEMA_MUTATION: PO_PATCH_ALREADY_APPLIED_NEW_PATCHES_NOT_AUTHORIZED
 QA_APPROVED_PATCH_SHA256: 9e74a7976728bb33b4401d642b79329e5d5ece9ac016e8509c06bbf238bf2f7d
 QA_SCHEMA_APPLY: APPLIED
 PRODUCTION_MUTATION: FORBIDDEN_WITHOUT_OWNER
-ACTIVE_FEEDBACK_BATCH: UI_R1_20261023  # Claude Code, branch nox/elegant-volta-kr29iz; giao diện D29 đã lên Production (main 6a4ff60); Owner tự QA theo KICH-BAN-QA-GIAO-DIEN.md, see UI-R1 rows
+ACTIVE_FEEDBACK_BATCH: UI_R1_20261023  # Claude Code, branch nox/elegant-volta-kr29iz; D29 trên Production (main 6a4ff60); D30 cổng vào = màn đăng nhập đang chờ Owner duyệt preview, see UI-R1/UI-R2 rows
 ```
 
 Historical R0–R9 tasks are not repeated here. Their source/evidence lives in implementation.md.
@@ -795,3 +795,5 @@ Quyết định D25 ở đầu Spec.md; giao diện UX-FB5-001. Migration `20261
 | UI-R1-E | Màn tạo đơn kiểu bán hàng (dải xanh, chip nguồn giá, Xác nhận đơn xanh lá) + popup vượt hạn mức theo concept | DONE (code) |
 | UI-R1-F | Cổng thợ & cổng khách điện thoại: thanh xanh, menu dưới, bộ đếm 72 px, nút hoàn tất dính đáy, tiến trình đơn | DONE (code) |
 | UI-R1-REL | Kiểm chứng (`pnpm check`, native, script QA), preview Vercel dữ liệu QA, Owner duyệt preview, rồi PR → CI → merge → Production | DONE — PR #60 merge `6a4ff60`; không migration; deploy `dpl_9ng2vYxbhDgMa6e73Z4yaN5BbFjK`; kịch bản `KICH-BAN-QA-GIAO-DIEN.md`; chờ Owner QA |
+| UI-R2-LOGIN | Cổng vào `/` = thẻ đăng nhập 3 tab nhớ cổng lần trước; mọi trang xác thực dùng khung gọn, bỏ khối giới thiệu (D30; concept 09–10, Owner chọn hướng A) | DONE (code) |
+| UI-R2-REL | Preview, Owner duyệt, PR → CI → merge → Production | IN_PROGRESS — chờ Owner duyệt preview |

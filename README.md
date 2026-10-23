@@ -7,7 +7,7 @@ cổng thợ và cổng khách hàng. Giao diện tiếng Việt, bố cục que
 
 | Đường dẫn | Ai dùng | Ghi chú |
 |---|---|---|
-| `/` | Mọi người | Chọn cổng: Khối vận hành / Thợ & tài xế / Khách hàng |
+| `/` | Mọi người | Màn đăng nhập: 3 tab Vận hành / Thợ & tài xế / Khách hàng, máy nhớ tab dùng lần trước (D30) |
 | `/admin` | Chủ doanh nghiệp, văn phòng, kho, điều phối | Menu xanh ngang, quyền theo vai trò |
 | `/work` | Thợ, tài xế | Thiết kế cho điện thoại: nhận việc, lấy hàng lên xe, đã giao, hoàn tất |
 | `/customer` | Khách hàng | Đặt hàng, theo dõi đơn và giao nhận, công nợ |

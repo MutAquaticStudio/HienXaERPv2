@@ -385,15 +385,25 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .context-strip { display: grid; gap: 3px; margin-bottom: 20px; padding: 16px 18px; border-left: 4px solid var(--primary); border-radius: 0 10px 10px 0; background: var(--surface-soft); }
 .context-strip span { color: var(--muted); font-size: var(--font-size-caption); }
 .phase-note { margin: 20px 0 0; font-size: var(--font-size-caption); }
-.auth-screen { display: grid; min-height: 100vh; grid-template-columns: minmax(360px, 0.9fr) minmax(480px, 1.1fr); }
-.auth-story { display: flex; flex-direction: column; justify-content: center; padding: clamp(38px, 7vw, 96px); color: #fff; background: radial-gradient(circle at 20% 20%, rgba(89, 168, 255, 0.3), transparent 20rem), linear-gradient(150deg, #172c49, #0f2038 70%); }
-.auth-story .brand-mark { margin-bottom: 52px; color: var(--primary); background: #fff; }
-.auth-story .eyebrow { color: #9ecbff; }
-.auth-story h1 { max-width: 650px; font-size: clamp(38px, 5vw, 68px); }
-.auth-story p:last-child { max-width: 590px; color: #c0cee0; }
-.auth-panel { display: grid; place-items: center; padding: 32px; }
-.auth-card { width: min(470px, 100%); padding: clamp(28px, 5vw, 50px); border: 1px solid var(--border); border-radius: 20px; background: rgba(255, 255, 255, 0.94); box-shadow: 0 28px 70px rgba(23, 44, 73, 0.12); }
-.auth-card h2 { margin-bottom: 8px; font-size: 30px; }
+.auth-screen { position: relative; display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; background: var(--background); }
+/* D30: an internal ERP opens on the form — a slim brand bar on the app's blue band and one compact card. */
+.auth-screen::before { content: ""; position: absolute; inset: 0 0 auto; height: 300px; background: var(--navigation); }
+.auth-topbar { position: relative; display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 0 clamp(16px, 4vw, 40px); color: #fff; }
+.auth-topbar .brand-mark { flex: none; width: 36px; height: 36px; color: var(--primary); background: #fff; }
+.auth-brand { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
+.auth-brand strong { font-size: 16px; }
+.auth-brand span { color: rgba(255, 255, 255, 0.82); font-size: var(--font-size-caption); }
+.auth-panel { position: relative; display: flex; flex-direction: column; align-items: center; padding: 40px 16px 48px; }
+.auth-card { width: min(480px, 100%); padding: 32px 36px 28px; border-radius: var(--radius-lg); background: var(--surface); box-shadow: 0 20px 50px rgba(16, 34, 58, 0.16); animation: rise-in var(--dur-slow) var(--ease-out) both; }
+.auth-card h1 { margin: 0 0 4px; font-size: 24px; }
+.auth-card > .muted { margin: 0; }
+.auth-footnote { max-width: 480px; margin: 18px 0 0; color: var(--muted); font-size: var(--font-size-caption); text-align: center; }
+.portal-tabs { display: flex; gap: 4px; margin-top: 18px; padding: 4px; border-radius: 10px; background: var(--surface-sunken); }
+.portal-tab { display: inline-flex; flex: 1 1 0; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 4px 6px; border: 0; border-radius: 8px; color: var(--muted); background: transparent; font: inherit; font-size: var(--font-size-table); font-weight: 500; white-space: nowrap; cursor: pointer; transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out); }
+.portal-tab:hover { color: var(--text); }
+.portal-tab[aria-selected="true"] { color: var(--primary-text); background: var(--surface); font-weight: 600; box-shadow: 0 1px 3px rgba(16, 34, 58, 0.14); }
+.portal-hint { margin: 10px 2px 0; color: var(--muted); font-size: var(--font-size-caption); animation: fade-in var(--dur) var(--ease-out) both; }
+.portal-hint + .auth-form { margin-top: 18px; }
 .auth-form { display: grid; gap: 17px; margin-top: 28px; }
 .password-field { position: relative; }
 .password-field input { padding-right: 48px; }
@@ -424,11 +434,13 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
   .compact-grid { grid-template-columns: 1fr; }
   .field-full { grid-column: auto; }
   th, td { padding: 13px 14px; }
-  .auth-screen { grid-template-columns: 1fr; }
-  .auth-story { min-height: 270px; padding: 36px 24px; }
-  .auth-story .brand-mark { margin-bottom: 24px; }
-  .auth-story h1 { font-size: 34px; }
-  .auth-panel { padding: 20px 14px 42px; }
+  .auth-screen::before { height: 150px; }
+  .auth-topbar { min-height: 0; padding: 18px 20px 26px; }
+  .auth-brand { flex-direction: column; gap: 0; }
+  .auth-panel { padding: 0 16px 32px; }
+  .auth-card { padding: 22px 18px 24px; }
+  .auth-card h1 { font-size: 22px; }
+  .portal-tab { flex-direction: column; gap: 3px; min-height: 52px; font-size: var(--font-size-caption); }
 }
 .filter-bar {
   display: grid;
@@ -1398,22 +1410,6 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .portal-account-list > li { display: grid; gap: 6px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; }
 .portal-account-list > li.row-muted { color: var(--muted); }
 .portal-share { display: grid; gap: 10px; }
-/* FB7: the home page chooses the portal to sign in to. */
-.portal-chooser-list { display: grid; gap: 14px; width: min(520px, 100%); }
-.portal-chooser-list h2 { margin: 0 0 6px; font-size: 26px; }
-.portal-choice { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; padding: 18px 20px; border: 1px solid var(--border);
-  border-radius: 16px; background: rgba(255, 255, 255, 0.96); box-shadow: 0 14px 40px rgba(23, 44, 73, 0.08); color: inherit; text-decoration: none; }
-a.portal-choice:hover, a.portal-choice:focus-visible { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
-.portal-choice strong { display: block; font-size: 18px; }
-.portal-choice small { display: block; margin-top: 4px; color: var(--muted); line-height: 1.45; }
-.portal-choice-mark { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: var(--primary-soft, #eaf2ff); color: var(--primary); font-weight: 800; }
-.portal-choice-go { color: var(--primary); font-size: 22px; font-weight: 800; }
-.portal-choice-actions { display: flex; gap: 8px; }
-@media (max-width: 560px) {
-  .portal-choice-customer { grid-template-columns: auto 1fr; }
-  .portal-choice-actions { grid-column: 1 / -1; }
-  .portal-choice-actions .button { flex: 1; }
-}
 .auth-note { margin: 0; color: var(--muted); font-size: var(--font-size-caption); text-align: center; }
 
 /* F5 automation settings and push toggle. */

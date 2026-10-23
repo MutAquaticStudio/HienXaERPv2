@@ -1,3 +1,4 @@
+import { AuthFrame } from "@/components/auth/auth-frame";
 import { selectBranchAction } from "@/lib/auth/actions";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
@@ -15,5 +16,5 @@ export default async function SelectBranchPage({ searchParams }: PageProps<"/sel
   const { data } = await supabase.from("employee_branch_access").select("branch_id, branches(name, code)").eq("employee_id", employee.id).eq("active", true);
   const branches = (data ?? []) as unknown as BranchAccessRow[];
 
-  return <main className="auth-screen"><section className="auth-story"><span className="brand-mark">HX</span><p className="eyebrow">Phạm vi làm việc</p><h1>Chọn đúng chi nhánh.</h1><p>Chọn chi nhánh bạn đang làm việc. Hệ thống kiểm tra quyền truy cập trước khi mở giao diện.</p></section><section className="auth-panel"><div className="auth-card"><p className="eyebrow">Chi nhánh</p><h2>Bạn đang làm việc tại đâu?</h2><form action={selectBranchAction} className="auth-form"><input type="hidden" name="surface" value={surface} /><div className="field"><label htmlFor="branchId">Chi nhánh đang hoạt động</label><select id="branchId" name="branchId" required>{branches.map((branch) => <option key={branch.branch_id} value={branch.branch_id}>{branch.branches?.name} · {branch.branches?.code}</option>)}</select></div><button className="button button-primary auth-submit" type="submit">Tiếp tục</button></form></div></section></main>;
+  return <AuthFrame><p className="eyebrow">Chi nhánh</p><h1>Bạn đang làm việc tại đâu?</h1><p className="muted">Hệ thống kiểm tra quyền truy cập trước khi mở giao diện.</p><form action={selectBranchAction} className="auth-form"><input type="hidden" name="surface" value={surface} /><div className="field"><label htmlFor="branchId">Chi nhánh đang hoạt động</label><select id="branchId" name="branchId" required>{branches.map((branch) => <option key={branch.branch_id} value={branch.branch_id}>{branch.branches?.name} · {branch.branches?.code}</option>)}</select></div><button className="button button-primary auth-submit" type="submit">Tiếp tục</button></form></AuthFrame>;
 }
