@@ -1,5 +1,6 @@
 "use client";
 import { userFacingError } from "@/lib/core/errors";
+import { GPS_PING_INTERVAL_MS } from "@/modules/routing/device-availability";
 
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -13,6 +14,7 @@ export function ForegroundGpsControl({ deliveryId, assignmentVersion }: Props) {
   const sessionId = useRef<string | null>(null);
   const watchId = useRef<number | null>(null);
   const sequence = useRef(0);
+  const lastSent = useRef(0);
   const pingChain = useRef(Promise.resolve());
 
   const stop = useCallback(async (reason = "Đã dừng chia sẻ vị trí.", finalState: "idle" | "error" = "idle") => {
@@ -83,6 +85,10 @@ export function ForegroundGpsControl({ deliveryId, assignmentVersion }: Props) {
     sequence.current = body.lastSequence!;
     watchId.current = navigator.geolocation.watchPosition((position) => {
       if (document.visibilityState !== "visible" || !sessionId.current) return;
+      // FB10: one position about every 15 seconds is enough for the office map and saves battery and data.
+      const now = Date.now();
+      if (lastSent.current && now - lastSent.current < GPS_PING_INTERVAL_MS) return;
+      lastSent.current = now;
       sequence.current += 1;
       const targetSession = sessionId.current;
       const targetSequence = sequence.current;

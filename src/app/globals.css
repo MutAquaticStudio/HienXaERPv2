@@ -1604,3 +1604,10 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .matching-table td.variance input { border-color: var(--warning); }
 .matching-table td.numeric input { width: 7.5rem; text-align: right; }
 .matching-table tr.selected { background: var(--primary-soft); }
+/* FB10 (6.10): OpenStreetMap fleet map on Lộ trình. */
+.fleet-map-layout { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 12px; padding: 0 16px 16px; }
+.fleet-map { height: 440px; border-radius: var(--radius-sm); overflow: hidden; z-index: 0; }
+.fleet-map-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; align-content: start; max-height: 440px; overflow: auto; }
+.fleet-map-list button { width: 100%; display: grid; gap: 2px; text-align: left; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); cursor: pointer; }
+.fleet-map-list button.active { border-color: var(--primary); background: var(--primary-soft); }
+@media (max-width: 900px) { .fleet-map-layout { grid-template-columns: 1fr; } .fleet-map { height: 320px; } }

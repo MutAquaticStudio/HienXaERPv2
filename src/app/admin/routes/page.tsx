@@ -3,6 +3,7 @@ import { routePlanStateLabel, windowLabel } from "@/modules/routing/presentation
 import Link from "next/link";
 import { ApplyRoutePlanButton, RoutePlanForm } from "@/components/routing/route-plan-controls";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { FleetMap, type FleetPosition } from "@/components/routing/fleet-map";
 import { loadFleetSnapshot, loadRoutingWorkspace } from "@/modules/routing/server";
 
 const stateTone = (status: string): "success" | "danger" | "warning" => status === "APPLIED" ? "success" : status === "CANCELLED" ? "danger" : "warning";
@@ -62,9 +63,7 @@ export default async function RoutesPage({ searchParams }: { searchParams: Promi
         </table>{!workspace.plans.length && <p className="empty-inline">Chưa có lộ trình.</p>}</div>
       </section>
 
-      <section className="card card-pad"><h2>Vị trí đội xe hiện tại</h2><p className="muted">Vị trí chỉ hỗ trợ theo dõi đội xe. Tín hiệu cũ không có nghĩa là chuyến giao thất bại.</p>
-        {fleet.length ? <div className="table-wrap"><table><thead><tr><th>Chuyến giao</th><th>Xe / nhân sự</th><th>Vị trí</th><th>Cập nhật</th></tr></thead><tbody>{fleet.map((item) => <tr key={item.session_id}><td><Link className="code-link" href={`/admin/deliveries/${item.delivery_id}`}>{item.delivery_number}</Link></td><td>{item.plate_number} · {item.employee_name}</td><td><a className="code-link" href={`https://www.openstreetmap.org/?mlat=${item.latitude}&mlon=${item.longitude}#map=16/${item.latitude}/${item.longitude}`} target="_blank" rel="noreferrer">Mở vị trí</a></td><td>{formatBusinessDateTime(item.received_at)}{item.is_stale && <span className="scope-chip">Tín hiệu cũ</span>}</td></tr>)}</tbody></table></div> : <p className="empty-inline">Chưa có vị trí từ chuyến giao đang được phân công.</p>}
-      </section>
+      <FleetMap initial={fleet as FleetPosition[]} />
     </div>
   );
 }
