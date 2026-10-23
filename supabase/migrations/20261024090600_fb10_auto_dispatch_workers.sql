@@ -27,14 +27,13 @@ begin
   end if;
   return new;
 end $function$;
-drop trigger if exists vehicle_default_capacity_note on public.vehicles;
-create trigger vehicle_default_capacity_note before insert or update of capacity_quantity,capacity_source_note on public.vehicles
+create or replace trigger vehicle_default_capacity_note before insert or update of capacity_quantity,capacity_source_note on public.vehicles
   for each row execute function private.default_vehicle_capacity_note();
 update public.vehicles set capacity_source_note='Sức chở khai báo trên xe'
   where capacity_quantity is not null and nullif(trim(coalesce(capacity_source_note,'')),'') is null;
 
-drop function if exists private.dispatch_candidates(uuid);
-create function private.dispatch_candidates(target_delivery_id uuid)
+-- New name (the result gained a column); the older private.dispatch_candidates stays unused.
+create or replace function private.dispatch_pairs(target_delivery_id uuid)
 returns table(vehicle_id uuid, vehicle_code text, plate_number text, employee_id uuid, employee_name text, start_at timestamptz, end_at timestamptz,
   day_count integer, same_site boolean, default_driver boolean)
 language plpgsql stable security definer set search_path = '' as $function$
@@ -84,7 +83,7 @@ begin
   end loop;
 end
 $function$;
-revoke all on function private.dispatch_candidates(uuid) from public, anon, authenticated, service_role;
+revoke all on function private.dispatch_pairs(uuid) from public, anon, authenticated, service_role;
 
 create or replace function private.auto_dispatch_delivery(target_delivery_id uuid, trace uuid, forced_mode text default null) returns jsonb
 language plpgsql security definer set search_path = '' as $function$
@@ -106,7 +105,7 @@ begin
     or exists (select 1 from public.delivery_lines l where l.delivery_id = d.id and l.source_mode = 'SUPPLIER_DIRECT') then
     return jsonb_build_object('status', 'NOT_PLANNED');
   end if;
-  for c in select * from private.dispatch_candidates(d.id) x
+  for c in select * from private.dispatch_pairs(d.id) x
     order by x.start_at, x.default_driver desc, x.day_count, x.same_site desc, x.vehicle_code, x.employee_name, x.vehicle_id, x.employee_id limit 60 loop
     tried := tried + 1;
     refusal := private.try_dispatch_assignment(d.id, c.employee_id, c.vehicle_id, c.start_at, c.end_at, trace, mode = 'SUGGEST');
