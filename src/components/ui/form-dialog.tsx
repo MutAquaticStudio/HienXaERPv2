@@ -1,7 +1,11 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { createContext, useContext, useState, type ReactNode } from "react";
 import { Dialog } from "@/components/ui/dialog";
+
+const CloseDialog = createContext<(() => void) | null>(null);
+/** Lets a form inside a FormDialog close it, e.g. after it saved (FB10). Null outside a dialog. */
+export function useCloseFormDialog() { return useContext(CloseDialog); }
 
 /**
  * A button that opens an existing form in a popup (UX decision D5). The form itself is rendered by the server page and
@@ -23,6 +27,6 @@ export function FormDialog({ label, title, eyebrow, description, defaultOpen = f
   const [open, setOpen] = useState(defaultOpen);
   return <>
     <button type="button" className={buttonClassName} onClick={() => setOpen(true)} {...Object.fromEntries(Object.entries(triggerData ?? {}).map(([key, value]) => [`data-${key}`, value]))}>{label}</button>
-    {open && <Dialog title={title} eyebrow={eyebrow} description={description} size={size} onClose={() => setOpen(false)}>{children}</Dialog>}
+    {open && <Dialog title={title} eyebrow={eyebrow} description={description} size={size} onClose={() => setOpen(false)}><CloseDialog.Provider value={() => setOpen(false)}>{children}</CloseDialog.Provider></Dialog>}
   </>;
 }
