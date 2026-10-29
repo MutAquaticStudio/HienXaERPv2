@@ -52,15 +52,21 @@ export function ClockPanel({ clockedIn, requireLocation }: { clockedIn: boolean;
   function submitWithPosition() {
     if (!("geolocation" in navigator)) { form.current?.requestSubmit(); return; }
     setLocating(true);
-    navigator.geolocation.getCurrentPosition((position) => {
-      if (lat.current) lat.current.value = position.coords.latitude.toFixed(6);
-      if (lng.current) lng.current.value = position.coords.longitude.toFixed(6);
+    // Submit once: with the position, or without it on refusal, error, or when the permission prompt is left unanswered.
+    let sent = false;
+    const send = (position?: GeolocationPosition) => {
+      if (sent) return;
+      sent = true;
+      window.clearTimeout(fallback);
+      if (position && lat.current && lng.current) {
+        lat.current.value = position.coords.latitude.toFixed(6);
+        lng.current.value = position.coords.longitude.toFixed(6);
+      }
       setLocating(false);
       form.current?.requestSubmit();
-    }, () => {
-      setLocating(false);
-      form.current?.requestSubmit();
-    }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 });
+    };
+    const fallback = window.setTimeout(() => send(), 10000);
+    navigator.geolocation.getCurrentPosition(send, () => send(), { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 });
   }
 
   return <form action={run} ref={form} className={styles.form}>

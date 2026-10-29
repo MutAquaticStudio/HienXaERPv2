@@ -1673,3 +1673,4 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .attendance-choices { margin: 0; padding: 0; border: 0; }
 .attendance-choices legend { margin-bottom: 6px; font-weight: 600; }
 .attendance-people { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); max-height: 240px; overflow-y: auto; }
+.attendance-grid tbody th.attendance-name, .attendance-schedule tbody th { color: var(--text); font-size: var(--font-size-table); font-weight: 600; letter-spacing: 0; text-transform: none; }
