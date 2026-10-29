@@ -1,3 +1,4 @@
-export default function Loading() {
-  return <div className="empty-state"><div><p className="eyebrow">Đang tải dữ liệu</p><h1>Vui lòng chờ</h1><div className="loading-bar" aria-label="Đang tải" /></div></div>;
-}
+import { AuthSkeleton } from "@/components/skeletons";
+
+/** FB17: the sign-in screen and anything without its own loading screen. */
+export default function Loading() { return <AuthSkeleton />; }

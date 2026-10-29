@@ -2245,6 +2245,12 @@ Forward candidate: 20261009224842_supplier_purchase_price_commands.sql. SHA256 0
 - **Thu nhập**: nút "Tính lương tháng" (chọn tháng), "Hoa hồng tự động"; không còn "Phê duyệt ghi nhận tự động theo sự kiện".
 - **Báo cáo**: cột trái nhóm báo cáo (Cuối ngày, Bán hàng, Hàng hóa, Khách hàng, Nhà cung cấp, Giao hàng, Tài chính, Tài chính chi tiết); thanh kỳ chọn nhanh (Hôm nay, Hôm qua, 7 ngày, Tháng này, Tháng trước) + từ / đến ngày (+ kho với Xuất nhập tồn); thẻ số liệu chính, biểu đồ thanh, bảng, "Xuất CSV".
 
+# UX-FB17-001 — Màn chờ khi chuyển trang
+
+- **Thanh tiến trình mảnh** (3 px, màu chính, ánh xanh) trên cùng mọi cổng: chạy ngay khi bấm link / menu sang màn khác, nhanh lúc đầu rồi chậm dần tới ~86 %, "vút" tới cuối và mờ đi khi màn mới hiện; không chạy với tải file, mở tab mới, link ngoài hệ thống.
+- **Skeleton theo đúng dạng màn đích** (`src/components/skeletons.tsx`): Danh sách (khung lọc trái + bảng 8 dòng), Chi tiết (tiêu đề, 3 ô trạng thái, thông tin + dòng hàng, khung hành động phải), Biểu mẫu (ô tìm hàng + dòng hàng, khung thông tin phải), Tổng quan / Báo cáo (4 ô số liệu + biểu đồ cột), Cổng nhân sự / khách (thẻ có ảnh đại diện), Đăng nhập (một thẻ giữa màn). Mỗi trang có `loading.tsx` trỏ đúng mẫu.
+- **Cảm giác nhanh, không nhàm**: chỉ hiện sau 150 ms (trang nhanh không nháy), các dòng hiện lần lượt cách nhau 45 ms, một dải sáng chéo mềm lướt liền mạch qua mọi thanh (1,6 s), độ dài thanh khác nhau như chữ thật; điện thoại ẩn khung lọc, bảng còn 2 cột. Bật "giảm chuyển động": khung xám đứng yên.
+
 # UX-FB16-001 — NV bán hàng của đơn (D38)
 
 - **Tạo đơn bán** (chỉ khi người tạo là chủ doanh nghiệp): trong khung "Thông tin đơn", dưới Công trình, ô chọn **"NV bán hàng"** (lựa chọn đầu "Theo NV phụ trách khách / công trình", sau đó tên các nhân viên đang bán hàng) + chú thích nhỏ "Đơn tính doanh số cho người này. Nhân viên tự tạo đơn thì đơn là của họ." Nhân viên thường không thấy ô này.

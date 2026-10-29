@@ -1849,3 +1849,53 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .loading-skeleton, .skeleton-block { height: 160px; margin-top: 12px; border-radius: 8px; background: linear-gradient(90deg, var(--surface-sunken) 0%, var(--border) 40%, var(--surface-sunken) 80%); background-size: 200% 100%; animation: shimmer 1.2s linear infinite; }
 .stack { display: grid; gap: 12px; align-content: start; }
 .seller-change-trigger { margin-left: 10px; }
+
+/* FB17: page-shaped skeletons that feel quick — nothing shows for fast pages (150 ms delay), rows rise in one after
+   another, and a soft diagonal light sweeps across all bars together (background fixed to the page, so the sweep is one
+   continuous wave instead of every bar blinking on its own). Reduced motion: static grey shapes. */
+.skeleton {
+  display: block; border-radius: 6px;
+  background-color: color-mix(in srgb, var(--muted) 15%, var(--surface));
+  background-image: linear-gradient(100deg, transparent 30%, color-mix(in srgb, var(--surface) 80%, transparent) 50%, transparent 70%);
+  background-size: 200vw 100%; background-attachment: fixed; background-repeat: no-repeat;
+  animation: skeleton-sweep 1.6s cubic-bezier(.4, 0, .2, 1) infinite;
+}
+@keyframes skeleton-sweep { from { background-position: 100vw 0; } to { background-position: -100vw 0; } }
+.skeleton-page { display: grid; gap: 18px; animation: skeleton-in 220ms var(--ease-out) 150ms both; }
+@keyframes skeleton-in { from { opacity: 0; } to { opacity: 1; } }
+.skeleton-page [style*="--i"] { animation: skeleton-rise 320ms var(--ease-out) both; animation-delay: calc(170ms + var(--i) * 45ms); }
+.skeleton-page .skeleton[style*="--i"] { animation: skeleton-rise 320ms var(--ease-out) both, skeleton-sweep 1.6s cubic-bezier(.4, 0, .2, 1) infinite; animation-delay: calc(170ms + var(--i) * 45ms), 0ms; }
+@keyframes skeleton-rise { from { opacity: 0; } to { opacity: 1; } }
+.skeleton-heading { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; }
+.skeleton-actions { display: flex; gap: 10px; }
+.skeleton-filters { display: grid; gap: 10px; align-content: start; }
+.skeleton-chip { display: flex; align-items: center; gap: 10px; min-height: 30px; }
+.skeleton-list-row { grid-template-columns: 14px 1.1fr 1.6fr 0.9fr 96px 0.8fr; align-items: center; }
+.skeleton-line-row { grid-template-columns: 2fr 1fr 1fr; align-items: center; padding-inline: 0; }
+.skeleton-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.skeleton-two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 340px); gap: 16px; align-items: start; }
+.skeleton-pairs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px; margin: 18px 0 8px; }
+.skeleton-side { display: grid; gap: 12px; }
+.skeleton-search { padding: 14px 18px; border-bottom: 1px solid var(--border); }
+.skeleton-form .skeleton-line-row { padding-inline: 18px; }
+.skeleton-chart { display: flex; align-items: flex-end; gap: 10px; height: 180px; margin-top: 18px; }
+.skeleton-chart .skeleton { flex: 1; border-radius: 6px 6px 2px 2px; }
+.skeleton-card-head { display: flex; align-items: center; gap: 12px; }
+.skeleton-card-head > div { flex: 1; }
+@media (max-width: 860px) {
+  .skeleton-two, .skeleton-tiles { grid-template-columns: 1fr; }
+  .skeleton-list-row { grid-template-columns: 1fr 1fr; }
+  .skeleton-list-row > :nth-child(1), .skeleton-list-row > :nth-child(5), .skeleton-list-row > :nth-child(6) { display: none; }
+  .skeleton-filters { display: none; }
+}
+
+/* FB17: the thin progress bar at the top — starts on the click, eases towards the end while the server works and
+   jumps to the end when the next screen is there. */
+.nav-progress { position: fixed; inset: 0 0 auto 0; z-index: 1000; height: 3px; pointer-events: none; }
+.nav-progress-bar { height: 100%; transform-origin: left; transform: scaleX(0); background: linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--primary) 55%, #22d3ee)); box-shadow: 0 0 10px color-mix(in srgb, var(--primary) 60%, transparent); opacity: 0; }
+.nav-progress[data-state="loading"] .nav-progress-bar { opacity: 1; transform: scaleX(0.86); transition: transform 8s cubic-bezier(.08, .82, .17, 1), opacity 120ms; }
+.nav-progress[data-state="done"] .nav-progress-bar { opacity: 0; transform: scaleX(1); transition: transform 200ms var(--ease-out), opacity 300ms 180ms; }
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none !important; background-image: none; }
+}
+.skeleton-auth { width: min(420px, 100%); margin: 12vh auto 0; padding: 0 16px; }
