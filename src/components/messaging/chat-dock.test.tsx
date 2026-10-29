@@ -71,3 +71,22 @@ it("collapses to a strip of faces and opens again, remembering the choice", asyn
   expect(screen.getByRole("complementary", { name: "Người liên hệ" })).not.toHaveClass("collapsed");
   expect(window.localStorage.getItem("hx_chat_dock_collapsed")).toBe("0");
 });
+
+it("keeps many chats open: up to three windows, the others as chat heads", async () => {
+  window.localStorage.removeItem("hx_chat_dock_collapsed");
+  Object.defineProperty(window, "innerWidth", { value: 1440, configurable: true });
+  const people = ["Chị Lan", "Anh Minh", "Cô Hoa", "Chú Ba"].map((name, index) => ({ ...lan, auth_user_id: `a1b2c3d4-0000-4000-8000-00000000001${index}`, display_name: name, unread_count: 0 }));
+  mocks.dock.mockResolvedValue({ contacts: people, canAi: true });
+  render(<ChatDock surface="admin" />);
+  for (const name of ["Chị Lan", "Anh Minh", "Cô Hoa", "Chú Ba"]) fireEvent.click(await screen.findByRole("button", { name: new RegExp(`^${name.split(" ")[0]}.*${name.split(" ")[1]}`) }));
+  expect(screen.getAllByRole("region").map((region) => region.getAttribute("aria-label"))).toEqual(["Chat với Anh Minh", "Chat với Cô Hoa", "Chat với Chú Ba"]);
+  const heads = screen.getByRole("list", { name: "Cuộc trò chuyện đang mở" });
+  expect(within(heads).getByRole("button", { name: "Mở chat với Chị Lan" })).toBeInTheDocument();
+  // Minimizing turns a window into a head; opening a head brings it back.
+  fireEvent.click(within(screen.getByRole("region", { name: "Chat với Chú Ba" })).getByRole("button", { name: "Thu nhỏ" }));
+  expect(screen.getAllByRole("region").map((region) => region.getAttribute("aria-label"))).toEqual(["Chat với Chị Lan", "Chat với Anh Minh", "Chat với Cô Hoa"]);
+  fireEvent.click(within(heads).getByRole("button", { name: "Mở chat với Chú Ba" }));
+  expect(screen.getAllByRole("region").map((region) => region.getAttribute("aria-label"))).toEqual(["Chat với Anh Minh", "Chat với Cô Hoa", "Chat với Chú Ba"]);
+  fireEvent.click(within(screen.getByRole("list", { name: "Cuộc trò chuyện đang mở" })).getByRole("button", { name: "Đóng chat với Chị Lan" }));
+  expect(screen.queryByRole("list", { name: "Cuộc trò chuyện đang mở" })).not.toBeInTheDocument();
+});

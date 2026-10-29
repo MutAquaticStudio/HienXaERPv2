@@ -17,7 +17,10 @@ import { loadChatAction, loadDockAction, sendChatAction, type ChatData } from "@
 import type { MessageSurface, MessengerContact } from "@/modules/messaging/server";
 
 type DockWindow = { key: string; contact: MessengerContact | null };
-const MAX_WINDOWS = 2;
+/** Open chats kept at once; those that do not fit as windows (or are minimized) show as round chat heads, like Facebook. */
+const MAX_CHATS = 10;
+const WINDOW_WIDTH = 342;
+
 const COLLAPSED_KEY = "hx_chat_dock_collapsed";
 const readCollapsed = () => { try { return typeof window !== "undefined" && window.localStorage.getItem(COLLAPSED_KEY) === "1"; } catch { return false; } };
 const keyOf = (contact: MessengerContact) => `${contact.auth_user_id}:${contact.customer_id ?? ""}`;
@@ -34,8 +37,9 @@ export function ChatDock({ surface }: { surface: MessageSurface }) {
     try { window.localStorage.setItem(COLLAPSED_KEY, current ? "0" : "1"); } catch { /* private mode: not remembered */ }
     return !current;
   });
-  const [windows, setWindows] = useState<DockWindow[]>([]);
+  const [chats, setChats] = useState<DockWindow[]>([]);
   const [minimized, setMinimized] = useState<string[]>([]);
+  const [viewport, setViewport] = useState(1440);
   const [version, setVersion] = useState(0);
   // The Tin nhắn page already is the messenger.
   const onMessagesPage = pathname.startsWith(`/${surface}/messages`);
@@ -43,10 +47,11 @@ export function ChatDock({ surface }: { surface: MessageSurface }) {
 
   useEffect(() => {
     const media = window.matchMedia(CHAT_DOCK_QUERY);
-    const update = () => setWide(media.matches);
+    const update = () => { setWide(media.matches); setViewport(window.innerWidth); };
     update();
     media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
+    window.addEventListener("resize", update);
+    return () => { media.removeEventListener("change", update); window.removeEventListener("resize", update); };
   }, []);
 
   const reload = useCallback(() => {
@@ -57,9 +62,10 @@ export function ChatDock({ surface }: { surface: MessageSurface }) {
   useEffect(() => { if (active) reload(); }, [active, reload]);
   useMessageInserts(undefined, reload, active);
 
+  // Opening a chat (again) brings it to the front: the newest windows show, older ones become chat heads.
   const open = useCallback((item: DockWindow) => {
     setMinimized((current) => current.filter((key) => key !== item.key));
-    setWindows((current) => current.some((existing) => existing.key === item.key) ? current : [...current, item].slice(-MAX_WINDOWS));
+    setChats((current) => [...current.filter((existing) => existing.key !== item.key), item].slice(-MAX_CHATS));
   }, []);
   useEffect(() => {
     if (!active || !canAi) return;
@@ -102,22 +108,42 @@ export function ChatDock({ surface }: { surface: MessageSurface }) {
       <input id="chat-dock-search" className="chat-dock-search" type="search" placeholder="Tìm người…" value={query} onChange={(event) => setQuery(event.target.value)} />
     </aside>}
     <div className="chat-windows">
-      {windows.map((win) => {
-        const isMin = minimized.includes(win.key);
-        const close = () => { setWindows((current) => current.filter((item) => item.key !== win.key)); setMinimized((current) => current.filter((key) => key !== win.key)); };
-        const toggle = () => setMinimized((current) => isMin ? current.filter((key) => key !== win.key) : [...current, win.key]);
-        const latest = win.contact ? contacts.find((contact) => keyOf(contact) === win.key) ?? win.contact : null;
-        return <section key={win.key} className={`chat-window${isMin ? " minimized" : ""}`} aria-label={latest ? `Chat với ${latest.display_name}` : "Trợ lý AI"}>
-          <header className="chat-window-head">
-            {latest ? <ChatAvatar name={latest.display_name} /> : <ChatAvatar name="Trợ lý AI" ai />}
-            <button type="button" className="chat-window-title" onClick={toggle}><strong>{latest?.display_name ?? "Trợ lý AI"}</strong>
-              <small>{latest ? (latest.contact_kind === "CUSTOMER" ? "Khách hàng" : latest.subtitle) : "Đọc dữ liệu theo quyền của bạn"}</small></button>
-            <button type="button" className="icon-button" aria-label={isMin ? "Mở rộng" : "Thu nhỏ"} onClick={toggle}><Minus size={16} /></button>
-            <button type="button" className="icon-button" aria-label="Đóng" onClick={close}><X size={16} /></button>
-          </header>
-          {!isMin && (latest ? <ContactChat surface={surface} contact={latest} version={version} onSent={reload} /> : <AiWindow />)}
-        </section>;
-      })}
+      {(() => {
+        const slots = Math.max(1, Math.min(3, Math.floor((viewport - (collapsed ? 64 : 280) - 96) / WINDOW_WIDTH)));
+        const shown = chats.filter((chat) => !minimized.includes(chat.key)).slice(-slots);
+        const heads = chats.filter((chat) => !shown.includes(chat));
+        const close = (key: string) => { setChats((current) => current.filter((item) => item.key !== key)); setMinimized((current) => current.filter((item) => item !== key)); };
+        const contactOf = (chat: DockWindow) => chat.contact ? contacts.find((contact) => keyOf(contact) === chat.key) ?? chat.contact : null;
+        return <>
+          {shown.map((win) => {
+            const latest = contactOf(win);
+            const minimize = () => setMinimized((current) => [...current, win.key]);
+            return <section key={win.key} className="chat-window" aria-label={latest ? `Chat với ${latest.display_name}` : "Trợ lý AI"}>
+              <header className="chat-window-head">
+                {latest ? <ChatAvatar name={latest.display_name} /> : <ChatAvatar name="Trợ lý AI" ai />}
+                <button type="button" className="chat-window-title" onClick={minimize}><strong>{latest?.display_name ?? "Trợ lý AI"}</strong>
+                  <small>{latest ? (latest.contact_kind === "CUSTOMER" ? "Khách hàng" : latest.subtitle) : "Đọc dữ liệu theo quyền của bạn"}</small></button>
+                <button type="button" className="icon-button" aria-label="Thu nhỏ" onClick={minimize}><Minus size={16} /></button>
+                <button type="button" className="icon-button" aria-label="Đóng" onClick={() => close(win.key)}><X size={16} /></button>
+              </header>
+              {latest ? <ContactChat surface={surface} contact={latest} version={version} onSent={reload} /> : <AiWindow />}
+            </section>;
+          })}
+          {heads.length > 0 && <ul className="chat-heads" aria-label="Cuộc trò chuyện đang mở">
+            {heads.map((head) => {
+              const latest = contactOf(head);
+              const name = latest?.display_name ?? "Trợ lý AI";
+              return <li key={head.key} className="chat-head">
+                <button type="button" className="chat-head-open" title={name} aria-label={latest?.unread_count ? `Mở chat với ${name}, ${latest.unread_count} tin chưa đọc` : `Mở chat với ${name}`}
+                  onClick={() => open(head)}>
+                  <ChatAvatar name={name} ai={!latest} />{latest && latest.unread_count > 0 && <span className="chat-dock-dot" aria-hidden="true">{latest.unread_count}</span>}
+                </button>
+                <button type="button" className="chat-head-close" aria-label={`Đóng chat với ${name}`} onClick={() => close(head.key)}><X size={12} /></button>
+              </li>;
+            })}
+          </ul>}
+        </>;
+      })()}
     </div>
   </>;
 }
