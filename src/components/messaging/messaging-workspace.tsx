@@ -16,7 +16,7 @@ function shortTime(value: string | null) {
   const date = new Date(value);
   return day(date) === day(new Date())
     ? new Intl.DateTimeFormat("vi-VN", { ...zone, hour: "2-digit", minute: "2-digit" }).format(date)
-    : new Intl.DateTimeFormat("vi-VN", { ...zone, day: "2-digit", month: "2-digit" }).format(date);
+    : day(date).slice(8, 10) + "/" + day(date).slice(5, 7);
 }
 
 /** FB14 (D36): "Tin nhắn" like Messenger — contacts on the left, the chat on the right (one at a time on a phone). */

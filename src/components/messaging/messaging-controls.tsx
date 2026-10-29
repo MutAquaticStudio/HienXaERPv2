@@ -90,12 +90,15 @@ export function MessengerList({ items, others }: { items: MessengerListItem[]; o
   </li>;
   const shown = items.filter(match);
   const shownOthers = others.filter(match);
+  // The search box sits under the list, like Facebook (Owner 30/10).
   return <>
+    <div className="messenger-list-scroll">
+      <ul className="messenger-items" aria-label="Danh bạ">{shown.map(row)}</ul>
+      {!shown.length && <p className="empty-inline">Không có ai phù hợp.</p>}
+      {shownOthers.length > 0 && <><h2 className="messenger-section">Hội thoại khác</h2><ul className="messenger-items" aria-label="Hội thoại khác">{shownOthers.map(row)}</ul></>}
+    </div>
     <label className="sr-only" htmlFor="messenger-search">Tìm người</label>
     <input id="messenger-search" className="messenger-search" type="search" placeholder="Tìm người…" value={query} onChange={(event) => setQuery(event.target.value)} />
-    <ul className="messenger-items" aria-label="Danh bạ">{shown.map(row)}</ul>
-    {!shown.length && <p className="empty-inline">Không có ai phù hợp.</p>}
-    {shownOthers.length > 0 && <><h2 className="messenger-section">Hội thoại khác</h2><ul className="messenger-items" aria-label="Hội thoại khác">{shownOthers.map(row)}</ul></>}
   </>;
 }
 
