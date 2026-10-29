@@ -72,7 +72,9 @@ describe("blue menu bar (D29)", () => {
   it("keeps all existing destinations and exposes existing stock-count and purchase-document routes", () => {
     const { container } = render(shell());
     const hrefs = [...container.querySelectorAll("nav a")].map((link) => link.getAttribute("href"));
-    expect(new Set(hrefs).size).toBe(24);
+    expect(new Set(hrefs).size).toBe(25);
+    // FB12: Bảng lương under Nhân công.
+    expect(hrefs).toContain("/admin/payroll");
     expect(hrefs).not.toContain("/admin/quotations");
     expect(hrefs).not.toContain("/admin/payment-notices");
     expect(hrefs).toContain("/admin/stock-counts");
