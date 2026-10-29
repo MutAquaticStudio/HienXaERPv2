@@ -43,7 +43,8 @@ it("opens the rule, manual basis and recognition forms in popups and lists the r
   fireEvent.click(screen.getByRole("button", { name: "Tạo phiên bản quy tắc" }));
   expect(within(screen.getByRole("dialog")).getByRole("button", { name: "Tạo phiên bản quy tắc mới" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Ghi căn cứ tính thủ công" })).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "Tính lương tháng" })).toBeInTheDocument();
+  // FB12 (D34b): monthly salaries are made from the attendance in "Bảng lương".
+  expect(screen.getByRole("link", { name: "Bảng lương" })).toHaveAttribute("href", "/admin/payroll");
   expect(screen.queryByRole("button", { name: "Phê duyệt ghi nhận tự động theo sự kiện" })).not.toBeInTheDocument();
 });
 
@@ -61,7 +62,4 @@ it("needs no approval for trip rules; the auto setting is only for commission; s
   expect(dialog.querySelector("input[name=recognitionKind]")).toHaveValue("AR_PAYMENT_ALLOCATION");
   const options = within(dialog.querySelector<HTMLSelectElement>("select[name=ruleId]")!).getAllByRole("option").map(option => option.textContent);
   expect(options.some(text => text?.startsWith("CHUYEN"))).toBe(false);
-  fireEvent.click(within(dialog).getByRole("button", { name: /Đóng/ }));
-  fireEvent.click(screen.getByRole("button", { name: "Tính lương tháng" }));
-  expect(within(screen.getByRole("dialog")).getByLabelText("Tháng")).toHaveAttribute("type", "month");
 });

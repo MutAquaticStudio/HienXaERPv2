@@ -4,7 +4,8 @@ import { earningTypeLabel, earningClassificationLabel, recognitionKindLabel } fr
 import { financeStateLabel } from "@/modules/finance/presentation";
 import { formatBusinessDate, formatBusinessDateTime } from "@/lib/core/business-time";
 import { randomUUID } from "node:crypto";
-import { configureRecognitionAction, postMonthlySalariesAction } from "@/modules/workforce/recognition-action";
+import Link from "next/link";
+import { configureRecognitionAction } from "@/modules/workforce/recognition-action";
 import { EarningSourceTrace, type EarningSource } from "@/modules/workforce/earning-source-trace";
 import { ActionNotice } from "@/components/sales/action-notice";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -97,14 +98,7 @@ export default async function CompensationPage({ searchParams }: { searchParams:
           <button className="button button-primary" type="submit">Tạo phiên bản quy tắc mới</button>
         </form>
         </FormDialog>
-        {canApprove && <FormDialog label="Tính lương tháng" title="Tính lương tháng" buttonClassName="button button-primary"
-          description="Tạo khoản lương đã duyệt (ghi phải trả) cho mọi người có quy tắc Lương tháng còn hiệu lực. Bấm lại cùng tháng không tính hai lần.">
-          <form className="command-panel" action={postMonthlySalariesAction}>
-            <input type="hidden" name="operationId" value={randomUUID()} />
-            <div className="field"><label htmlFor="salary-month">Tháng</label><input id="salary-month" name="month" type="month" defaultValue={currentDate().slice(0, 7)} max={currentDate().slice(0, 7)} required /></div>
-            <button type="submit" className="button button-primary">Tính lương tháng</button>
-          </form>
-        </FormDialog>}
+        <Link className="button button-primary" href="/admin/payroll">Bảng lương</Link>
         {canApprove && <FormDialog label="Hoa hồng tự động" title="Hoa hồng tự động theo tiền thu" size="lg">
       <p className="muted">Quy tắc Theo chuyến / Theo việc tự áp dụng khi việc được xác minh, không cần phê duyệt. Mục này chỉ bật hoa hồng tự tính khi thu tiền khách của nhân viên kinh doanh.</p>
       <form className="command-panel" action={configureRecognitionAction}>

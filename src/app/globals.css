@@ -1674,3 +1674,10 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .attendance-choices legend { margin-bottom: 6px; font-weight: 600; }
 .attendance-people { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); max-height: 240px; overflow-y: auto; }
 .attendance-grid tbody th.attendance-name, .attendance-schedule tbody th { color: var(--text); font-size: var(--font-size-table); font-weight: 600; letter-spacing: 0; text-transform: none; }
+/* FB12 (D34b): Bảng lương. */
+.payroll-table td.mono, .payroll-table tfoot td { white-space: nowrap; }
+.payroll-table tfoot th, .payroll-table tfoot td { border-top: 2px solid var(--border); font-weight: 700; }
+.payslip { display: grid; grid-template-columns: minmax(140px, auto) 1fr; gap: 8px 16px; margin: 0; }
+.payslip dt { color: var(--muted); }
+.payslip dd { margin: 0; font-variant-numeric: tabular-nums; }
+.payroll-tiers { display: grid; gap: 4px; }

@@ -1,44 +1,15 @@
 "use client";
 
-// FB12 (D34a): forms of "Chấm công". Each keeps one operation id per attempt (a retry after a lost answer replays, never
-// records twice) and takes a new one after a success; inside a popup a success closes it.
-import { useActionState, useEffect, useRef, useState, type ReactNode } from "react";
+// FB12 (D34a): forms of "Chấm công" (see CommandForm for the operation id and popup behaviour).
+import { useRef, useState } from "react";
 
-import { useCloseFormDialog } from "@/components/ui/form-dialog";
+import { CommandForm, useCommand } from "@/components/ui/command-form";
 import {
   cancelShiftAssignmentAction, clockAttendanceAction, closeAttendancePeriodAction, reopenAttendancePeriodAction,
-  saveAttendanceAction, saveAttendanceSettingsAction, saveWorkShiftAction, scheduleShiftsAction, type AttendanceFormState,
+  saveAttendanceAction, saveAttendanceSettingsAction, saveWorkShiftAction, scheduleShiftsAction,
 } from "@/modules/attendance/actions";
 import { ATTENDANCE_STATUSES, attendanceStatusLabel } from "@/modules/attendance/presentation";
 import styles from "@/components/portal/portal.module.css";
-
-type Action = (state: AttendanceFormState, form: FormData) => Promise<AttendanceFormState>;
-
-/** The form state, its submit and one operation id per attempt, renewed once the command succeeded. */
-function useCommand(action: Action) {
-  const [operationId, setOperationId] = useState(() => crypto.randomUUID());
-  const [state, run, pending] = useActionState(async (previous: AttendanceFormState, form: FormData) => {
-    const outcome = await action(previous, form);
-    if (outcome?.success) setOperationId(crypto.randomUUID());
-    return outcome;
-  }, undefined);
-  return { state, run, pending, operationId };
-}
-
-function CommandForm({ action, submit, danger, children, onSaved, className = "command-panel" }: {
-  action: Action; submit: string; danger?: boolean; children: ReactNode; onSaved?: () => void; className?: string;
-}) {
-  const { state, run, pending, operationId } = useCommand(action);
-  const dialogClose = useCloseFormDialog();
-  const close = onSaved ?? dialogClose;
-  useEffect(() => { if (state?.success && close) close(); }, [state, close]);
-  return <form action={run} className={className}>
-    <input type="hidden" name="operationId" value={operationId} />
-    {children}
-    {state?.message && <p className={`form-message${state.success ? " success" : ""}`} role="status">{state.message}</p>}
-    <button className={`button ${danger ? "button-danger" : "button-primary"}`} disabled={pending}>{pending ? "Đang lưu…" : submit}</button>
-  </form>;
-}
 
 /** The worker's big "Vào ca" / "Ra ca" button; the phone's position is sent when the person allows it (never required unless the branch asks). */
 export function ClockPanel({ clockedIn, requireLocation }: { clockedIn: boolean; requireLocation: boolean }) {
