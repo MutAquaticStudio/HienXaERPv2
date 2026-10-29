@@ -10,13 +10,15 @@ import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
 import { AppError } from "@/lib/core/errors";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { derivedOperationId } from "./auto-sourcing";
+import { autoSourceConfirmedOrder, derivedOperationId, sourcingSummary } from "./auto-sourcing";
+import { commandError, creditBlockOf } from "./command-messages";
 import { createCommercialLines } from "./commercial-lines";
 import { parseOrderWorkbook } from "./order-import";
 import { resolveImport, type ImportPreviewOrder } from "./order-import-data";
 
 export type ImportPreview = { ok: boolean; message: string; fileId?: string; orders: ImportPreviewOrder[]; problems: string[] };
-export type ImportResult = { key: string; orderId?: string; orderNumber?: string; error?: string };
+/** `confirmation`: what "Xác nhận luôn" did — confirmed and sourced like the order screen, or why the order stayed a draft. */
+export type ImportResult = { key: string; orderId?: string; orderNumber?: string; error?: string; confirmed?: boolean; confirmation?: string };
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 
@@ -43,6 +45,7 @@ export async function previewOrderImportAction(_: ImportPreview | undefined, for
 const lineSchema = z.object({ materialId: z.guid(), orderedUomId: z.guid(), quantity: z.string().regex(/^\d+(\.\d{1,6})?$/), manualPriceVnd: z.string().regex(/^[1-9]\d{0,14}$/).optional() });
 const createSchema = z.object({
   fileId: z.guid(),
+  confirm: z.boolean().default(false),
   orders: z.array(z.object({ key: z.string().min(1).max(200), customerId: z.guid(), siteId: z.guid(), deliveryDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
     terms: z.string().max(1000), lines: z.array(lineSchema).min(1).max(50) })).min(1).max(100),
 });
@@ -51,6 +54,7 @@ export async function createImportedOrdersAction(input: unknown): Promise<Import
   const parsed = createSchema.safeParse(input);
   if (!parsed.success) return [{ key: "", error: "Dữ liệu nhập không hợp lệ. Tải file lên lại." }];
   const access = await requireInternalPermission("orders.create");
+  const confirm = parsed.data.confirm && access.permissions.has("orders.confirm");
   const supabase = await createServerSupabase();
   const results: ImportResult[] = [];
   for (const order of parsed.data.orders) {
@@ -62,12 +66,27 @@ export async function createImportedOrdersAction(input: unknown): Promise<Import
         commercial_terms: order.terms || null, order_lines: lines, operation_id: derivedOperationId(parsed.data.fileId, `import:${order.key}`),
       });
       if (error || !data) { results.push({ key: order.key, error: "Chưa tạo được đơn (dữ liệu đã thay đổi hoặc không đủ quyền)." }); continue; }
-      const { data: created } = await supabase.from("sales_orders").select("order_number").eq("id", data).maybeSingle();
-      results.push({ key: order.key, orderId: String(data), orderNumber: created?.order_number ?? undefined });
+      const orderId = String(data);
+      const { data: created } = await supabase.from("sales_orders").select("order_number").eq("id", orderId).maybeSingle();
+      const result: ImportResult = { key: order.key, orderId, orderNumber: created?.order_number ?? undefined };
+      if (confirm) Object.assign(result, await confirmImported(supabase, access.branchId, orderId, derivedOperationId(parsed.data.fileId, `confirm:${order.key}`)));
+      results.push(result);
     } catch (error) {
       results.push({ key: order.key, error: error instanceof AppError ? error.message : "Chưa tạo được đơn." });
     }
   }
   revalidatePath("/admin/orders");
   return results;
+}
+
+/** "Xác nhận luôn": the same steps as "Xác nhận" on the order screen — confirm (credit checked), then source from stock
+ * first and put the rest on a supplier purchase order. A pressed-again file replays the same commands. */
+async function confirmImported(supabase: Awaited<ReturnType<typeof createServerSupabase>>, branchId: string, orderId: string, operationId: string): Promise<Pick<ImportResult, "confirmed" | "confirmation">> {
+  const { error } = await supabase.rpc("confirm_sales_order", { target_order_id: orderId, operation_id: operationId });
+  if (error) {
+    return { confirmed: false, confirmation: creditBlockOf(error.message)
+      ? "Vượt hạn mức công nợ — đơn để nháp, mở đơn để xin duyệt." : `Đơn để nháp: ${commandError(error.message, true)}` };
+  }
+  const sourced = await autoSourceConfirmedOrder(supabase, branchId, orderId, derivedOperationId(operationId, "auto-source"), { onlyIfEnabled: true });
+  return { confirmed: true, confirmation: sourcingSummary(sourced.status, sourced.outcome) };
 }

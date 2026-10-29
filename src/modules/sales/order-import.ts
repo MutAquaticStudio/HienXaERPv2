@@ -11,13 +11,20 @@ export const MAX_IMPORT_ORDERS = 100;
 export const MAX_ORDER_LINES = 50;
 
 export type TemplateReference = {
-  customers: Array<{ code: string; name: string; sites: Array<{ code: string; name: string }> }>;
+  customers: Array<{ code: string; name: string; phone?: string | null; sites: Array<{ code: string; name: string }> }>;
   materials: Array<{ code: string; name: string; units: string[] }>;
 };
 
 export type ImportRow = { row: number; group: string; customerCode: string; siteCode: string; deliveryDate: string | null; materialCode: string;
   unit: string; quantity: string; unitPrice: string; note: string };
 export type ImportGroup = { key: string; rows: ImportRow[]; problems: string[] };
+/** Rows of the template sheet that carry the pick lists and the name formulas. */
+export const TEMPLATE_ROWS = 500;
+
+/** How people write a code or a name: case, Vietnamese accents, spaces and separators do not matter ("xi mang ha tien" = "Xi măng Hà Tiên", "kh 01" = "KH-01" = "KH01"). */
+export function normalizeRef(value: string): string {
+  return value.normalize("NFKD").replace(/\p{M}/gu, "").replace(/[đĐ]/g, "d").toLowerCase().replace(/[\s\-_./,()]+/g, "");
+}
 
 const header = (sheet: ExcelJS.Worksheet, titles: readonly string[], widths: number[]) => {
   sheet.addRow([...titles]);
@@ -42,21 +49,43 @@ export async function buildOrderTemplate(reference: TemplateReference): Promise<
   }
   orders.getColumn(1).numFmt = "@";
   orders.getColumn(4).numFmt = "dd/mm/yyyy";
+  // Pick lists for the codes (typing a name or a phone number is still accepted) and the names shown next to them, so
+  // the person sees at once which customer and goods each line is for.
+  const lists = book.addWorksheet("Danh sách", { state: "hidden" });
+  const customerCodes = reference.customers.map((item) => item.code);
+  const materialCodes = reference.materials.map((item) => item.code);
+  lists.getColumn(1).values = ["Mã khách hàng", ...customerCodes];
+  lists.getColumn(2).values = ["Mã hàng", ...materialCodes];
+  orders.getCell(1, 10).value = "Tên khách (tự hiện)";
+  orders.getCell(1, 11).value = "Tên hàng (tự hiện)";
+  for (const column of [10, 11]) {
+    orders.getColumn(column).width = 32;
+    Object.assign(orders.getCell(1, column), { font: { bold: true, color: { argb: "FF475569" } }, fill: { type: "pattern", pattern: "solid", fgColor: { argb: "FFE2E8F0" } } });
+  }
+  const list = (column: string, count: number) => ({ type: "list" as const, allowBlank: true, showErrorMessage: false, formulae: [`'Danh sách'!$${column}$2:$${column}$${Math.max(count + 1, 2)}`] });
+  for (let row = 2; row <= TEMPLATE_ROWS + 1; row += 1) {
+    if (customerCodes.length) orders.getCell(row, 2).dataValidation = list("A", customerCodes.length);
+    if (materialCodes.length) orders.getCell(row, 5).dataValidation = list("B", materialCodes.length);
+    orders.getCell(row, 10).value = { formula: `IF(B${row}="","",IFERROR(VLOOKUP(B${row},'Khách hàng'!$A:$B,2,FALSE),"(nhận theo tên / SĐT khi tải lên)"))` };
+    orders.getCell(row, 11).value = { formula: `IF(E${row}="","",IFERROR(VLOOKUP(E${row},'Hàng hóa'!$A:$B,2,FALSE),"(nhận theo tên khi tải lên)"))` };
+  }
   const guide = book.addWorksheet("Hướng dẫn");
   for (const line of [
     "Mỗi dòng của sheet \"Đơn hàng\" là một dòng hàng. Các dòng có cùng \"Nhóm đơn\" (ví dụ 1, 2, A, B) gộp thành một đơn bán.",
-    "Mã khách hàng và mã hàng: chép từ sheet \"Khách hàng\" và \"Hàng hóa\".",
+    "Mã khách hàng và mã hàng: chọn trong danh sách của ô (hoặc chép từ sheet \"Khách hàng\", \"Hàng hóa\"). Cột \"Tên khách\" và \"Tên hàng\" tự hiện để kiểm tra.",
+    "Có thể gõ tên thay cho mã (không cần dấu, không phân biệt hoa thường), hoặc số điện thoại của khách. Tên khớp nhiều khách / nhiều hàng sẽ được báo để chọn lại.",
     "Mã công trình: để trống thì dùng công trình đầu tiên của khách. Ngày giao: để trống là giao ngay.",
     "Đơn vị: ký hiệu đơn vị bán (ví dụ bao, tấn); để trống là đơn vị gốc của hàng.",
     "Đơn giá: để trống thì lấy theo bảng giá của khách; nhập giá riêng cần quyền quản lý giá.",
-    "Hệ thống tạo các đơn ở trạng thái nháp để kiểm tra lại rồi xác nhận. Tối đa 100 đơn, mỗi đơn 50 dòng.",
+    "Khi tải lên có thể chọn \"Xác nhận luôn\": đơn được xác nhận như bấm Xác nhận ở màn đơn bán — lấy hàng trong kho trước, phần thiếu tự tạo đơn mua từ nhà cung cấp. Không chọn thì đơn ở trạng thái nháp.",
+    "Tối đa 100 đơn, mỗi đơn 50 dòng.",
   ]) guide.addRow([line]);
   guide.getColumn(1).width = 110;
   const customers = book.addWorksheet("Khách hàng");
-  header(customers, ["Mã khách hàng", "Tên khách hàng", "Mã công trình", "Tên công trình"], [16, 36, 16, 36]);
+  header(customers, ["Mã khách hàng", "Tên khách hàng", "Điện thoại", "Mã công trình", "Tên công trình"], [16, 36, 16, 16, 36]);
   for (const item of reference.customers) {
-    if (!item.sites.length) customers.addRow([item.code, item.name, "", ""]);
-    for (const site of item.sites) customers.addRow([item.code, item.name, site.code, site.name]);
+    if (!item.sites.length) customers.addRow([item.code, item.name, item.phone ?? "", "", ""]);
+    for (const site of item.sites) customers.addRow([item.code, item.name, item.phone ?? "", site.code, site.name]);
   }
   const materials = book.addWorksheet("Hàng hóa");
   header(materials, ["Mã hàng", "Tên hàng", "Đơn vị bán"], [16, 44, 30]);
@@ -103,17 +132,18 @@ export async function parseOrderWorkbook(data: ArrayBuffer): Promise<{ groups: I
     count += 1;
     if (count > MAX_IMPORT_ROWS) return;
     const date = importDate(cells[3]);
-    const item: ImportRow = { row: number, group: text(cells[0]), customerCode: text(cells[1]).toUpperCase(), siteCode: text(cells[2]).toUpperCase(),
-      deliveryDate: date === "invalid" ? null : date, materialCode: text(cells[4]).toUpperCase(), unit: text(cells[5]),
+    const item: ImportRow = { row: number, group: text(cells[0]), customerCode: text(cells[1]), siteCode: text(cells[2]),
+      deliveryDate: date === "invalid" ? null : date, materialCode: text(cells[4]), unit: text(cells[5]),
       quantity: text(cells[6]).replace(",", "."), unitPrice: text(cells[7]).replace(/[.\s₫đ]/g, ""), note: text(cells[8]) };
-    const key = item.group || `${item.customerCode}|${item.siteCode}|${item.deliveryDate ?? ""}`;
+    const key = item.group || `${normalizeRef(item.customerCode)}|${normalizeRef(item.siteCode)}|${item.deliveryDate ?? ""}`;
     const group = groups.get(key) ?? { key, rows: [], problems: [] };
     if (!item.customerCode) group.problems.push(`Dòng ${number}: thiếu mã khách hàng.`);
     if (!item.materialCode) group.problems.push(`Dòng ${number}: thiếu mã hàng.`);
     if (!/^\d+(\.\d{1,6})?$/.test(item.quantity) || Number(item.quantity) <= 0) group.problems.push(`Dòng ${number}: số lượng không hợp lệ.`);
     if (item.unitPrice && !/^[1-9]\d{0,14}$/.test(item.unitPrice)) group.problems.push(`Dòng ${number}: đơn giá phải là số tiền nguyên.`);
     if (date === "invalid") group.problems.push(`Dòng ${number}: ngày giao không đúng dạng dd/mm/yyyy.`);
-    if (group.rows.length && (group.rows[0].customerCode !== item.customerCode || group.rows[0].siteCode !== item.siteCode || group.rows[0].deliveryDate !== item.deliveryDate)) {
+    const head = group.rows[0];
+    if (head && (normalizeRef(head.customerCode) !== normalizeRef(item.customerCode) || normalizeRef(head.siteCode) !== normalizeRef(item.siteCode) || head.deliveryDate !== item.deliveryDate)) {
       group.problems.push(`Dòng ${number}: cùng nhóm đơn "${item.group}" nhưng khác khách hàng, công trình hoặc ngày giao.`);
     }
     group.rows.push(item);
