@@ -3,7 +3,7 @@ import Link from "next/link";
 import { permissionLabel, roleDisplayName } from "@/components/access/presentation";
 import { InviteEmployeeForm } from "@/components/access/invite-employee-form";
 import { ActivationLinkForm } from "@/components/access/activation-link";
-import { ExplicitPermissionForm, ManageAccessForm, ReactivateAccessForm, RevokeAccessForm } from "@/components/access/manage-access-form";
+import { ExplicitPermissionForm, ManageAccessForm, ReactivateAccessForm, RemoveEmployeeForm, RestoreEmployeeForm, RevokeAccessForm } from "@/components/access/manage-access-form";
 import { RoleEditorButton, type EditorPermission, type EditorRole } from "@/components/access/role-editor";
 import { AutoFilterForm } from "@/components/ui/auto-filter-form";
 import { DetailTabs } from "@/components/ui/detail-tabs";
@@ -89,7 +89,7 @@ export default async function AccessManagementPage({ searchParams }: { searchPar
                 {elsewhere.length > 0 && <small className="table-subline">Chi nhánh khác: {elsewhere.map((assignment) => `${assignment.branches?.name ?? "Chi nhánh"} (${assignment.roles ? roleDisplayName(assignment.roles) : "vai trò ẩn"})`).join(", ")}</small>}</td>
               <td data-label="Vai trò">{current?.roles ? roleDisplayName(current.roles) : <span className="muted">Chưa có</span>}</td>
               <td data-label="Quyền bổ sung">{explicit.length ? explicit.map(permissionName).join(", ") : <span className="muted">Không có</span>}</td>
-              <td data-label="Trạng thái"><StatusBadge tone={!employee.active ? "danger" : current?.active ? "success" : "warning"}>{!employee.active ? "Ngừng hoạt động" : current?.active ? "Đang có hiệu lực" : current ? "Đã thu hồi" : "Chưa cấp quyền"}</StatusBadge></td>
+              <td data-label="Trạng thái"><StatusBadge tone={!employee.active ? "danger" : current?.active ? "success" : "warning"}>{!employee.active ? "Ngừng làm việc" : current?.active ? "Đang có hiệu lực" : current ? "Đã thu hồi" : "Chưa cấp quyền"}</StatusBadge></td>
               <td className="table-actions" data-label="Thao tác">{canAct && <div className="action-cluster">
                 <FormDialog label={current?.active ? "Đổi vai trò" : "Cấp vai trò"} title={`${current?.active ? "Đổi vai trò" : "Cấp vai trò"} · ${employee.display_name}`} buttonClassName="button button-secondary button-compact" triggerData={{ "employee-id": employee.id, action: "role" }}>
                   <ManageAccessForm operationId={randomUUID()} employeeId={employee.id} branches={branches.data} roles={roleOptions} /></FormDialog>
@@ -101,7 +101,11 @@ export default async function AccessManagementPage({ searchParams }: { searchPar
                   description="Nhân viên mất quyền tại chi nhánh này ngay cả khi đang đăng nhập."><RevokeAccessForm accessId={current.id} /></FormDialog>}
                 {current && !current.active && <FormDialog label="Kích hoạt lại" title={`Kích hoạt lại · ${employee.display_name}`} buttonClassName="button button-secondary button-compact" triggerData={{ "access-id": current.id, action: "reactivate" }}>
                   <ReactivateAccessForm accessId={current.id} /></FormDialog>}
-              </div>}</td>
+                <FormDialog label="Xóa" title={`Xóa nhân viên · ${employee.display_name}`} buttonClassName="button button-danger button-compact" triggerData={{ "employee-id": employee.id, action: "remove" }}>
+                  <RemoveEmployeeForm employeeId={employee.id} name={employee.display_name} /></FormDialog>
+              </div>}
+              {!employee.active && employee.id !== actor.employeeId && <FormDialog label="Dùng lại" title={`Dùng lại · ${employee.display_name}`} buttonClassName="button button-secondary button-compact" triggerData={{ "employee-id": employee.id, action: "restore" }}>
+                <RestoreEmployeeForm employeeId={employee.id} /></FormDialog>}</td>
             </tr>;
           })}</tbody>
         </table>{!employeeRows.length && <p className="empty-inline">Không có nhân viên phù hợp trong phạm vi bạn được xem.</p>}</div>
