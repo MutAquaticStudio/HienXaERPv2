@@ -1,45 +1,89 @@
-import { formatBusinessDateTime } from "@/lib/core/business-time";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { markConversationReadAction } from "@/modules/messaging/actions";
-import { loadMessagingWorkspace, type MessageSurface } from "@/modules/messaging/server";
-import { MessageRefreshSignal, NewConversationForm, SendMessageForm } from "./messaging-controls";
 
+import { formatBusinessDateTime } from "@/lib/core/business-time";
+import { AiChat } from "@/modules/ai/chat";
+import { loadMessenger, type MessageSurface, type MessengerContact } from "@/modules/messaging/server";
+import { ChatAvatar, ChatComposer, MessageRefreshSignal, MessengerList, ScrollToEnd, type MessengerListItem } from "./messaging-controls";
+
+const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
+
+/** "10:42" today, otherwise "29/10" — like the time column of Messenger. */
+function shortTime(value: string | null) {
+  if (!value) return null;
+  const zone = { timeZone: "Asia/Ho_Chi_Minh" } as const;
+  const day = (date: Date) => new Intl.DateTimeFormat("en-CA", zone).format(date);
+  const date = new Date(value);
+  return day(date) === day(new Date())
+    ? new Intl.DateTimeFormat("vi-VN", { ...zone, hour: "2-digit", minute: "2-digit" }).format(date)
+    : new Intl.DateTimeFormat("vi-VN", { ...zone, day: "2-digit", month: "2-digit" }).format(date);
+}
+
+/** FB14 (D36): "Tin nhắn" like Messenger — contacts on the left, the chat on the right (one at a time on a phone). */
 export async function MessagingWorkspace({ surface, searchParams }: { surface: MessageSurface; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;
-  const first = (value: string | string[] | undefined) => Array.isArray(value) ? value[0] : value;
-  const selectedId = first(params.conversation);
-  const before = first(params.before);
-  const beforeId = first(params.before_id);
-  const data = await loadMessagingWorkspace(surface, selectedId, before, beforeId);
+  const data = await loadMessenger(surface, {
+    conversation: first(params.conversation), contact: first(params.contact), customer: first(params.customer), ai: first(params.ai),
+    before: first(params.before), beforeId: first(params.before_id),
+  });
   const root = `/${surface}/messages`;
-  const names = new Map(data.participants.map((p) => [p.auth_user_id, p.display_name_snapshot]));
-  const oldest = data.messages.at(-1);
-  const olderHref = oldest && data.conversation ? `${root}?${new URLSearchParams({ conversation: data.conversation.id, before: oldest.created_at, before_id: oldest.id })}` : null;
+  const thread = data.thread;
+  const contactHref = (contact: MessengerContact) => contact.conversation_id
+    ? `${root}?conversation=${contact.conversation_id}`
+    : `${root}?${new URLSearchParams({ contact: contact.auth_user_id, customer: contact.customer_id ?? "" })}`;
+  const items: MessengerListItem[] = [
+    ...(data.canAi ? [{ key: "ai", href: `${root}?ai=1`, name: "Trợ lý AI", preview: "Hỏi về số liệu bạn có quyền xem", time: null, unread: 0, active: thread?.kind === "ai", ai: true as const }] : []),
+    ...data.contacts.map((contact) => ({
+      key: `${contact.auth_user_id}:${contact.customer_id ?? ""}`, href: contactHref(contact), name: contact.display_name,
+      preview: contact.last_message_preview ?? contact.subtitle, time: shortTime(contact.last_message_at), unread: contact.unread_count,
+      active: (thread?.kind === "conversation" && !!contact.conversation_id && thread.id === contact.conversation_id)
+        || (thread?.kind === "new" && thread.contact.auth_user_id === contact.auth_user_id && thread.contact.customer_id === contact.customer_id),
+    })),
+  ];
+  const others: MessengerListItem[] = data.others.map((row) => ({
+    key: row.conversation_id, href: `${root}?conversation=${row.conversation_id}`, name: row.subject, preview: row.last_message_preview ?? row.participant_summary,
+    time: shortTime(row.updated_at), unread: row.unread_count, active: thread?.kind === "conversation" && thread.id === row.conversation_id,
+  }));
+  const oldest = thread?.kind === "conversation" ? thread.messages[0] : undefined;
 
   return (
-    <div className="page-stack">
-      <header className="page-heading"><div><p className="eyebrow">Trao đổi</p><h1>Tin nhắn</h1><p className="lede">Hội thoại lưu trong hệ thống. Tin nhắn không phải lệnh nghiệp vụ.</p></div></header>
-      {surface === "admin" && data.options.length > 0 && <section className="card card-pad"><h2>Hội thoại mới</h2><NewConversationForm options={data.options} /></section>}
-      <section className="card card-pad">
-        <h2>Hội thoại của tôi</h2>
-        {data.conversations.length ? <div className="clean-list">{data.conversations.map((conversation) => (
-          <Link className="detail-item" key={conversation.conversation_id} href={`${root}?conversation=${conversation.conversation_id}`}>
-            <strong>{conversation.subject}</strong>
-            <span>{conversation.audience === "CUSTOMER" ? "Khách hàng" : "Nội bộ"} · {conversation.participant_summary}</span>
-            <span className="muted">{conversation.last_message_preview ?? "Chưa có tin nhắn"} · {formatBusinessDateTime(conversation.updated_at)}</span>
-            {conversation.unread_count > 0 && <span className="scope-chip">{conversation.unread_count} chưa đọc</span>}
-          </Link>
-        ))}</div> : <p className="empty-inline">Chưa có hội thoại.</p>}
+    <div className={`messenger${thread ? " has-thread" : ""}`}>
+      <MessageRefreshSignal />
+      <aside className="messenger-list card" aria-label="Danh sách tin nhắn">
+        <header className="messenger-list-head"><h1>Tin nhắn</h1></header>
+        <MessengerList items={items} others={others} />
+      </aside>
+      <section className="messenger-thread card" aria-label="Cuộc trò chuyện">
+        {!thread && <div className="messenger-placeholder"><p>Chọn một người trong danh bạ để nhắn tin.</p></div>}
+        {thread && <header className="messenger-thread-head">
+          <Link className="icon-button messenger-back" href={root} aria-label="Quay lại danh bạ"><ArrowLeft size={20} /></Link>
+          {thread.kind === "ai" ? <><ChatAvatar name="Trợ lý AI" ai /><div><strong>Trợ lý AI</strong><span>Claude · đọc dữ liệu theo quyền của bạn</span></div></>
+            : thread.kind === "new" ? <><ChatAvatar name={thread.contact.display_name} /><div><strong>{thread.contact.display_name}</strong><span>{thread.contact.subtitle}</span></div></>
+            : <><ChatAvatar name={thread.title} /><div><strong>{thread.title}</strong><span>{thread.subtitle}</span></div></>}
+        </header>}
+        {thread?.kind === "ai" && <AiChat initialTurns={thread.turns} />}
+        {thread?.kind === "new" && <>
+          <div className="chat-scroll messenger-messages"><p className="messenger-placeholder">Gửi tin nhắn đầu tiên cho {thread.contact.display_name}.</p></div>
+          <ChatComposer surface={surface} contact={{ authUserId: thread.contact.auth_user_id, customerId: thread.contact.customer_id }} placeholder="Nhập tin nhắn…" />
+        </>}
+        {thread?.kind === "conversation" && <>
+          <div className="chat-scroll messenger-messages">
+            {thread.messages.length === 50 && oldest && <Link className="button button-secondary button-compact messenger-older"
+              href={`${root}?${new URLSearchParams({ conversation: thread.id, before: oldest.created_at, before_id: oldest.id })}`}>Xem tin cũ hơn</Link>}
+            {thread.messages.map((message) => {
+              const mine = message.sender_auth_user_id === data.me;
+              return <div key={message.id} className={`chat-bubble-row ${mine ? "mine" : "theirs"}`}>
+                {thread.group && !mine && <span className="chat-sender">{thread.names[message.sender_auth_user_id] ?? "Người tham gia"}</span>}
+                <div className="chat-bubble">{message.body}</div>
+                <time className="chat-time" dateTime={message.created_at}>{formatBusinessDateTime(message.created_at)}</time>
+              </div>;
+            })}
+            {!thread.messages.length && <p className="messenger-placeholder">Chưa có tin nhắn.</p>}
+            <ScrollToEnd signal={thread.messages.at(-1)?.id ?? thread.id} />
+          </div>
+          <ChatComposer surface={surface} conversationId={thread.id} placeholder="Nhập tin nhắn…" />
+        </>}
       </section>
-      {data.conversation && <section className="card card-pad">
-        <MessageRefreshSignal conversationId={data.conversation.id} />
-        <div className="section-head flush"><div><h2>{data.conversation.subject}</h2><p className="muted">{data.conversation.participant_summary}</p></div>
-          <form action={markConversationReadAction}><input type="hidden" name="conversation_id" value={data.conversation.id} /><input type="hidden" name="surface" value={surface} /><button className="button button-secondary" type="submit">Đánh dấu đã đọc</button></form>
-        </div>
-        {data.messages.length ? <div className="clean-list">{[...data.messages].reverse().map((message) => <article className="detail-item" key={message.id}><strong>{names.get(message.sender_auth_user_id) ?? "Người tham gia"}{message.sender_auth_user_id === data.currentUserId ? " (bạn)" : ""}</strong><p>{message.body}</p><time className="muted" dateTime={message.created_at}>{formatBusinessDateTime(message.created_at)}</time></article>)}</div> : <p className="empty-inline">Hội thoại chưa có tin nhắn.</p>}
-        {data.messages.length === 50 && olderHref && <Link className="button button-secondary" href={olderHref}>Xem tin cũ hơn</Link>}
-        <SendMessageForm conversationId={data.conversation.id} surface={surface} />
-      </section>}
     </div>
   );
 }

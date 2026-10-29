@@ -3349,3 +3349,11 @@ Thay đổi (migration `20261024090000`–`20261024090900`, native 285, 290, 295
 - Giao diện: cách tính mới ở Thu nhập khác; Chi trả trên bảng lương đã chốt (`payEarningAction` nhận `returnTo` giới hạn `/admin/compensation` hoặc `/admin/payroll/<id>`); menu bỏ "Thu nhập"; trang Thu nhập thành "Thu nhập đã ghi" (lịch sử + chi trả + đối chiếu hoa hồng cũ).
 - Không đổi dữ liệu đã có: khoản thu nhập / phải trả cũ giữ nguyên.
 
+## 2026-10-30 — FB14 (D36): Tin nhắn kiểu Messenger, chatbot AI
+
+- Owner: trợ lý AI chia mảng khó dùng → một chatbot; Tin nhắn giống Messenger; chủ thấy khách + nội bộ, khách và nhân viên chỉ thấy người nội bộ. Chốt (AskUserQuestion): AI vừa là liên hệ trong Tin nhắn vừa là bong bóng nổi; chỉ nội bộ `ai.use`; chỉ chat 1-1; khách chỉ thấy chủ + NV phụ trách.
+- Migration `20261030100000_fb14_messenger_direct.sql`: `conversations.direct_key` (duy nhất; nhánh:khách:cặp người), `entity_type/entity_id` cho phép trống với chat trực tiếp; `private.user_has_permission` (quyền của người khác, cùng quy tắc `has_permission`), `private.messenger_scope`, `public.messenger_contacts(branch | customer)` (danh bạ theo vai trò + hội thoại, tin cuối, chưa đọc), `public.open_direct_conversation` (chỉ mở với người trong danh bạ, khóa theo khóa cặp, tìm lại nếu đã có).
+- Migration `20261030100100_fb14_ai_chat_history.sql`: bảng `ai_chat_messages` (RLS chỉ chủ nhân xem), `save_ai_chat_turn` (cần `ai.use`, idempotent), `start_new_ai_chat` (lưu trữ, không xóa).
+- App: `src/modules/ai/sources.ts` (nguồn gắn quyền, bỏ mảng), `tools.ts` (danh mục công cụ `AI_TOOLS`: định nghĩa theo quyền + chạy), `assistant.ts` (vòng lặp chung), `actions.ts` (lịch sử lấy từ DB, chỉ lưu lượt trả lời OK), `chat-history.ts`, `chat.tsx` (bong bóng chat), `ai-bubble.tsx` (bong bóng nổi trong `AppShell`); trang `/admin/ai` bỏ tab. Tin nhắn: `src/modules/messaging/server.ts` (`loadMessenger`, `messengerScope`), `actions.ts` (`sendDirectMessageAction` mở hội thoại rồi gửi), `src/components/messaging/*` (danh bạ có tìm kiếm, khung chat, tự cuộn, realtime toàn bộ hội thoại của người dùng; mở hội thoại thì đánh dấu đã đọc).
+- Kiểm chứng: native 309 (danh bạ 3 vai trò, cấm nhắn ngoài danh bạ, một hội thoại mỗi cặp, chưa đọc, lịch sử AI riêng tư, cần `ai.use`, lưu trữ); Vitest hành động tin nhắn / AI và giao diện Messenger.
+

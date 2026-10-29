@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { NotificationBell } from "@/components/notifications/notification-bell";
-import { aiModuleOf } from "@/modules/ai/sources";
+import { AiBubble, OPEN_AI_EVENT } from "@/modules/ai/ai-bubble";
 import { AppearanceButton } from "@/components/settings/appearance-button";
 import { UatBrowserTiming } from "@/components/uat-browser-timing";
 import { PAYMENT_NOTICES_ENABLED, QUOTATIONS_ENABLED } from "@/lib/features";
@@ -151,8 +151,8 @@ export function AppShell({ surface, children, permissions, actorName, branchName
           <Link className="brand" href={surface === "admin" ? "/admin" : `/${surface}`}><span className="brand-mark" aria-hidden="true">HX</span><strong>Hiền Xa ERP</strong></Link>
           {branchName && <span className="utility-branch"><MapPin aria-hidden="true" size={15} />{branchName}</span>}
           <div className="utility-actions">
-            {surface === "admin" && permissions?.includes("ai.use") && <Link className="utility-ai" href={`/admin/ai?module=${aiModuleOf(visibleItems.find((item) => item.href === activeHref)?.group)}`}
-              aria-label="Hỏi trợ lý AI về trang này"><Sparkles aria-hidden="true" size={17} /><span>Hỏi AI</span></Link>}
+            {surface === "admin" && permissions?.includes("ai.use") && <button type="button" className="utility-ai" onClick={() => window.dispatchEvent(new Event(OPEN_AI_EVENT))}
+              aria-label="Mở trợ lý AI"><Sparkles aria-hidden="true" size={17} /><span>Trợ lý AI</span></button>}
             {surface === "admin" && branchId && <NotificationBell branchId={branchId} />}
             <div className="user-menu" ref={userRef} onKeyDown={(event) => { if (event.key === "Escape" && userMenu) { event.preventDefault(); setUserMenu(false); } }}>
               <button className="identity" type="button" aria-expanded={userMenu} aria-controls="user-menu-panel" onClick={() => setUserMenu((value) => !value)}>
@@ -222,6 +222,7 @@ export function AppShell({ surface, children, permissions, actorName, branchName
       </nav>
       <div className="workspace" inert={open}>
         <main className="content">{children}{surface === "admin" && <UatBrowserTiming />}</main>
+        {surface === "admin" && permissions?.includes("ai.use") && <AiBubble />}
       </div>
     </div>
   );

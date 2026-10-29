@@ -2245,6 +2245,13 @@ Forward candidate: 20261009224842_supplier_purchase_price_commands.sql. SHA256 0
 - **Thu nhập**: nút "Tính lương tháng" (chọn tháng), "Hoa hồng tự động"; không còn "Phê duyệt ghi nhận tự động theo sự kiện".
 - **Báo cáo**: cột trái nhóm báo cáo (Cuối ngày, Bán hàng, Hàng hóa, Khách hàng, Nhà cung cấp, Giao hàng, Tài chính, Tài chính chi tiết); thanh kỳ chọn nhanh (Hôm nay, Hôm qua, 7 ngày, Tháng này, Tháng trước) + từ / đến ngày (+ kho với Xuất nhập tồn); thẻ số liệu chính, biểu đồ thanh, bảng, "Xuất CSV".
 
+# UX-FB14-001 — Tin nhắn kiểu Messenger và chatbot AI (D36)
+
+- **Tin nhắn** (`/admin/messages`, `/work/messages`, `/customer/messages`): hai cột trên máy tính — trái: tiêu đề "Tin nhắn", ô "Tìm người…", danh bạ (ảnh đại diện chữ cái đầu, tên đậm, dòng dưới là tin cuối hoặc vai trò, giờ "10:42" hôm nay / "29/10" ngày khác, chấm xanh số tin chưa đọc), mục "Hội thoại khác" cho hội thoại cũ có tiêu đề; phải: đầu khung (ảnh, tên, vai trò), tin nhắn dạng bong bóng (của mình bên phải nền xanh, người kia bên trái nền xám nhạt, giờ nhỏ dưới bong bóng), ô nhập bo tròn + nút "Gửi" (Enter gửi, Shift+Enter xuống dòng). Điện thoại: một cột, chọn người thì hiện khung chat với nút quay lại.
+- Nhân viên có `ai.use`: dòng đầu danh bạ là **Trợ lý AI** (ảnh tím-xanh biểu tượng lấp lánh); mở ra là khung chat AI cùng kiểu bong bóng, câu gợi ý khi chưa có tin, nút "Cuộc trò chuyện mới".
+- **Bong bóng AI**: nút tròn 56 px góc phải dưới mọi trang quản trị (trừ Trợ lý AI và Tin nhắn); bấm mở khung 400 × 600 px (vừa màn hình điện thoại) có đầu "Trợ lý AI" + nút đóng, cùng cuộc trò chuyện. Nút "Trợ lý AI" trên thanh trên cùng mở bong bóng (ở trang Tin nhắn thì mở chat AI trong Tin nhắn).
+- **Trợ lý AI** (`/admin/ai`): bỏ tab mảng; khung chat + "Chi phí AI tháng này" + "Đề xuất chờ duyệt".
+
 # UX-FB13-001 — Quy tắc thu nhập trong Bảng lương (D35)
 
 - **Bảng lương → Thu nhập khác**: ô "Cách tính" thêm **Mỗi chuyến giao đã xác minh** và **Mỗi việc dịch vụ đã xác minh** (nhãn số tiền "Số tiền mỗi chuyến" / "Số tiền mỗi việc", dòng chú thích cách đếm); "% doanh thu theo bậc (hoa hồng)". Bảng khoản hiện "50.000 ₫ / chuyến".
