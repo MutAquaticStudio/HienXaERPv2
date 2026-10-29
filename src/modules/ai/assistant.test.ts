@@ -46,11 +46,11 @@ describe("AI assistant", () => {
       ] })
       .mockResolvedValueOnce({ stop_reason: "end_turn", usage: usage(1200, 80), content: [{ type: "text", text: "KH01 nợ nhiều nhất; đã ghi đề xuất nhắc nợ." }] });
     const answer = await askAssistant({ supabase: db.client as never, branchId: "branch-a", permissions: new Set(["finance.ar.read"]), history: [], question: "Ai nợ nhiều nhất?", today: "thứ Năm, 29 tháng 10, 2026" });
-    expect(answer).toEqual({ outcome: "OK", text: "KH01 nợ nhiều nhất; đã ghi đề xuất nhắc nợ.", proposals: 1 });
+    expect(answer).toEqual({ outcome: "OK", text: "KH01 nợ nhiều nhất; đã ghi đề xuất nhắc nợ.", proposals: 1, actionIds: [] });
     const request = create.mock.calls[0][0];
     expect(request).toMatchObject({ model: "claude-sonnet-5-5", fallbacks: "default", betas: ["server-side-fallback-2026-07-01"] });
     expect(request.system[0].cache_control).toEqual({ type: "ephemeral" });
-    expect(request.tools.map((tool: { name: string }) => tool.name)).toEqual(["doc_du_lieu", "tao_de_xuat"]);
+    expect(request.tools.map((tool: { name: string }) => tool.name)).toEqual(["doc_du_lieu", "tao_de_xuat", "soan_nhan_tin"]);
     // One chatbot: the read tool lists every source the person may see (here only receivables and the cashbook).
     expect(request.tools[0].input_schema.properties.source.enum).toEqual(["receivable_read", "payment_read"]);
     // The request objects share the growing history: [question, tool calls, tool results, final answer].
@@ -65,7 +65,7 @@ describe("AI assistant", () => {
     create.mockRejectedValueOnce(new APIError(402, { type: "error", error: { type: "billing_error", message: "credit" } }, "credit", new Headers(), "billing_error"));
     const answer = await askAssistant({ supabase: db.client as never, branchId: "branch-a", permissions: new Set<string>(), history: [], question: "Tóm tắt", today: "hôm nay" });
     // A person who may read nothing still talks to the assistant, which then only offers proposals.
-    expect(create.mock.calls[0][0].tools.map((tool: { name: string }) => tool.name)).toEqual(["tao_de_xuat"]);
+    expect(create.mock.calls[0][0].tools.map((tool: { name: string }) => tool.name)).toEqual(["tao_de_xuat", "soan_nhan_tin"]);
     expect(answer.outcome).toBe("QUOTA");
     expect(answer.text).toContain("hết hạn mức");
     expect(db.rpc).toHaveBeenLastCalledWith("log_ai_usage", expect.objectContaining({ call_outcome: "QUOTA" }));

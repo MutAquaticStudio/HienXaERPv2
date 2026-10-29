@@ -2,11 +2,13 @@
 
 // FB14 (D36): the conversation with the chatbot. The same stored conversation shows in Tin nhắn ("Trợ lý AI"), in the
 // floating bubble and on the AI page; each question goes to the server, which adds the earlier turns itself.
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 import { ScrollToEnd } from "@/components/messaging/messaging-controls";
 import { CommandForm } from "@/components/ui/command-form";
 import { askAiAction, decideAiProposalAction, newAiChatAction } from "@/modules/ai/actions";
+import { listAiActionsAction, type AiActionCard } from "@/modules/ai/agent/actions";
+import { AiActionCardView } from "@/modules/ai/agent/action-card";
 import type { AiTurn } from "@/modules/ai/assistant";
 
 export const AI_SUGGESTIONS = [
@@ -14,6 +16,7 @@ export const AI_SUGGESTIONS = [
   "Khách nào nợ quá hạn nhiều nhất?",
   "Hàng nào dưới ngưỡng tồn kho cần nhập?",
   "Hôm nay có những phiếu giao nào, ai đang giao?",
+  "Soạn đơn bán 20 bao xi măng cho khách quen, giao ngày mai.",
 ] as const;
 
 export function AiChat({ initialTurns, compact = false }: { initialTurns: AiTurn[]; compact?: boolean }) {
@@ -21,6 +24,14 @@ export function AiChat({ initialTurns, compact = false }: { initialTurns: AiTurn
   const [question, setQuestion] = useState("");
   const [notice, setNotice] = useState("");
   const [pending, start] = useTransition();
+  // FB15 (D37): actions the assistant prepared — the ones still waiting show when the chat opens.
+  const [cards, setCards] = useState<AiActionCard[]>([]);
+  useEffect(() => {
+    let live = true;
+    listAiActionsAction().then((waiting) => { if (live) setCards(waiting); }, () => null);
+    return () => { live = false; };
+  }, []);
+  const replaceCard = (next: AiActionCard) => setCards((current) => current.map((item) => item.id === next.id ? next : item));
 
   function ask(text: string) {
     const asked = text.trim();
@@ -31,6 +42,7 @@ export function AiChat({ initialTurns, compact = false }: { initialTurns: AiTurn
     start(async () => {
       const answer = await askAiAction({ question: asked });
       setTurns((current) => [...current, { role: "assistant", text: answer.text }]);
+      if (answer.actions.length) setCards((current) => [...current.filter((item) => !answer.actions.some((next) => next.id === item.id)), ...answer.actions]);
       if (answer.proposals) setNotice(`Đã ghi ${answer.proposals} đề xuất chờ duyệt.`);
     });
   }
@@ -45,7 +57,7 @@ export function AiChat({ initialTurns, compact = false }: { initialTurns: AiTurn
 
   return <section className={`ai-chat${compact ? " ai-chat-compact" : ""}`} aria-label="Trò chuyện với trợ lý AI">
     <div className="ai-chat-tools">
-      <span className="muted">Trợ lý đọc dữ liệu bạn có quyền xem; việc ghi sổ thành đề xuất chờ duyệt.</span>
+      <span className="muted">Trợ lý đọc dữ liệu bạn có quyền xem và soạn sẵn việc cần làm; chỉ thực hiện khi bạn bấm Xác nhận.</span>
       {turns.length > 0 && <button type="button" className="button button-secondary button-compact" onClick={restart} disabled={pending}>Cuộc trò chuyện mới</button>}
     </div>
     <div className="ai-turns chat-scroll" aria-live="polite">
@@ -56,8 +68,9 @@ export function AiChat({ initialTurns, compact = false }: { initialTurns: AiTurn
       {turns.map((turn, index) => <div key={index} className={`chat-bubble-row ${turn.role === "user" ? "mine" : "theirs"}`}>
         <div className="chat-bubble">{turn.text}</div>
       </div>)}
+      {cards.length > 0 && <div className="ai-action-list" aria-label="Việc trợ lý soạn sẵn">{cards.map((card) => <AiActionCardView key={card.id} card={card} onChange={replaceCard} />)}</div>}
       {pending && <div className="chat-bubble-row theirs"><div className="chat-bubble muted">Đang đọc dữ liệu và trả lời…</div></div>}
-      <ScrollToEnd signal={`${turns.length}:${pending}`} />
+      <ScrollToEnd signal={`${turns.length}:${pending}:${cards.length}`} />
     </div>
     {notice && <p className="form-message success" role="status">{notice}</p>}
     <form className="chat-composer" onSubmit={(event) => { event.preventDefault(); ask(question); }}>

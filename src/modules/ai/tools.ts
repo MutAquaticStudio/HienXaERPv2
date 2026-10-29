@@ -7,11 +7,12 @@ import { randomUUID } from "node:crypto";
 import { z } from "zod";
 
 import type { createServerSupabase } from "@/lib/supabase/server";
+import { AGENT_TOOLS } from "@/modules/ai/agent/tools";
 import { sourcesFor } from "@/modules/ai/sources";
 
 type Supabase = Awaited<ReturnType<typeof createServerSupabase>>;
 export type AiToolContext = { supabase: Supabase; branchId: string; permissions: ReadonlySet<string> };
-export type AiToolResult = { text: string; isError: boolean; proposal?: true };
+export type AiToolResult = { text: string; isError: boolean; proposal?: true; actionId?: string };
 export type AiTool = {
   name: string;
   /** The definition sent to Claude, or null when the person may not use the tool. */
@@ -113,7 +114,7 @@ const proposalTool: AiTool = {
   name: "tao_de_xuat",
   define: () => ({
     name: "tao_de_xuat",
-    description: "Ghi một đề xuất thay đổi sổ sách cho người quản lý duyệt (không tự thay đổi gì). Dùng khi người dùng muốn lập / sửa / thu / chi / điều chỉnh, hoặc khi bạn thấy việc cần làm.",
+    description: "Ghi một đề xuất cho người quản lý duyệt (không tự thay đổi gì). Dùng khi việc cần làm không có công cụ soạn sẵn hoặc người dùng không có quyền làm, hoặc khi bạn thấy việc nên làm.",
     strict: true,
     input_schema: {
       type: "object",
@@ -138,4 +139,5 @@ const proposalTool: AiTool = {
   },
 };
 
-export const AI_TOOLS: readonly AiTool[] = [readTool, proposalTool];
+// FB15 (D37): the agent tools prepare writes for the person to confirm.
+export const AI_TOOLS: readonly AiTool[] = [readTool, proposalTool, ...AGENT_TOOLS];

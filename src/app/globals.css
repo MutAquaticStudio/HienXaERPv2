@@ -1812,3 +1812,17 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .import-problems { margin: 0; padding-left: 18px; color: var(--danger); font-size: 0.85rem; }
 .import-lines { font-size: 0.85rem; }
 
+
+/* FB15 (D37): actions the assistant prepared, confirmed by the person. */
+.ai-action-list { display: grid; gap: 8px; margin: 4px 0; }
+.ai-action-card { border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 12px; background: var(--surface); padding: 10px 12px; display: grid; gap: 8px; max-width: 520px; }
+.ai-action-card header { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.ai-action-state { font-size: var(--font-size-caption); color: var(--muted); white-space: nowrap; }
+.ai-action-card dl { margin: 0; display: grid; gap: 2px; font-size: var(--font-size-caption); }
+.ai-action-card dl div { display: flex; justify-content: space-between; gap: 12px; }
+.ai-action-card dt { color: var(--muted); }
+.ai-action-card dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.ai-action-buttons { display: flex; gap: 8px; }
+.ai-action-result { margin: 0; font-size: var(--font-size-caption); }
+.ai-action-done { border-left-color: var(--success, #16a34a); }
+.ai-action-cancelled { opacity: .65; border-left-color: var(--border); }

@@ -8,6 +8,7 @@ import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { askAssistant, type AiAnswer } from "@/modules/ai/assistant";
+import { listAiActionsAction, type AiActionCard } from "@/modules/ai/agent/actions";
 import { loadAiChat, type AiChatTurn } from "@/modules/ai/chat-history";
 
 const askSchema = z.object({ question: z.string().trim().min(2).max(2000) });
@@ -17,9 +18,12 @@ export async function loadAiChatAction(): Promise<AiChatTurn[]> {
   return loadAiChat(await createServerSupabase(), access.branchId);
 }
 
-export async function askAiAction(input: unknown): Promise<AiAnswer> {
+/** The answer, with the cards of the actions the assistant prepared in this turn (FB15, D37). */
+export type AiChatAnswer = AiAnswer & { actions: AiActionCard[] };
+
+export async function askAiAction(input: unknown): Promise<AiChatAnswer> {
   const parsed = askSchema.safeParse(input);
-  if (!parsed.success) return { outcome: "ERROR", text: "Câu hỏi cần từ 2 đến 2.000 ký tự.", proposals: 0 };
+  if (!parsed.success) return { outcome: "ERROR", text: "Câu hỏi cần từ 2 đến 2.000 ký tự.", proposals: 0, actions: [] };
   const access = await requireInternalPermission("ai.use");
   const supabase = await createServerSupabase();
   const today = new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", dateStyle: "full" }).format(new Date());
@@ -33,7 +37,8 @@ export async function askAiAction(input: unknown): Promise<AiAnswer> {
     await supabase.rpc("save_ai_chat_turn", { target_branch_id: access.branchId, question: parsed.data.question, answer: answer.text.slice(0, 20000), operation_id: randomUUID() });
   }
   if (answer.proposals) revalidatePath("/admin/ai");
-  return answer;
+  const actions = answer.actionIds?.length ? await listAiActionsAction({ ids: answer.actionIds }) : [];
+  return { ...answer, actions };
 }
 
 /** "Cuộc trò chuyện mới": earlier turns are archived and no longer sent to the assistant. */

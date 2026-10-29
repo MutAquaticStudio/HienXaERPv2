@@ -21,7 +21,7 @@ describe("Nhập đơn bán từ Excel (D37)", () => {
   it("builds a template with the example order and the codes to copy, and reads it back", async () => {
     const file = await buildOrderTemplate(reference);
     const book = new ExcelJS.Workbook();
-    await book.xlsx.load(file);
+    await book.xlsx.load(file as never);
     expect(book.worksheets.map((sheet) => sheet.name)).toEqual([ORDER_SHEET, "Hướng dẫn", "Khách hàng", "Hàng hóa"]);
     expect(book.getWorksheet("Hàng hóa")!.getRow(2).values).toEqual([, "XM01", "Xi măng Hà Tiên", "bao, tấn"]);
     const parsed = await parseOrderWorkbook(file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength) as ArrayBuffer);

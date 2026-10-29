@@ -4,6 +4,7 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({ dock: vi.fn(), chat: vi.fn(), send: vi.fn(), path: "/admin/orders", wide: true }));
 vi.mock("next/navigation", () => ({ usePathname: () => mocks.path }));
 vi.mock("@/modules/messaging/dock-actions", () => ({ loadDockAction: mocks.dock, loadChatAction: mocks.chat, sendChatAction: mocks.send }));
+vi.mock("@/modules/ai/agent/actions", () => ({ listAiActionsAction: vi.fn(async () => []), confirmAiActionAction: vi.fn(), dismissAiActionAction: vi.fn() }));
 vi.mock("@/modules/ai/actions", () => ({ loadAiChatAction: vi.fn(async () => []), askAiAction: vi.fn(), newAiChatAction: vi.fn(), decideAiProposalAction: vi.fn() }));
 vi.mock("@/modules/messaging/actions", () => ({ sendMessageAction: vi.fn(), sendDirectMessageAction: vi.fn() }));
 vi.mock("./messaging-controls", async (original) => ({ ...(await original<typeof import("./messaging-controls")>()), useMessageInserts: () => undefined }));

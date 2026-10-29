@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({ load: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }) }));
 vi.mock("@/modules/messaging/server", () => ({ loadMessenger: mocks.load }));
 vi.mock("@/modules/messaging/actions", () => ({ sendMessageAction: vi.fn(), sendDirectMessageAction: vi.fn() }));
+vi.mock("@/modules/ai/agent/actions", () => ({ listAiActionsAction: vi.fn(async () => []), confirmAiActionAction: vi.fn(), dismissAiActionAction: vi.fn() }));
 vi.mock("@/modules/ai/actions", () => ({ askAiAction: vi.fn(), newAiChatAction: vi.fn(), decideAiProposalAction: vi.fn() }));
 vi.mock("./messaging-controls", async (original) => ({ ...(await original<typeof import("./messaging-controls")>()), MessageRefreshSignal: () => null }));
 
