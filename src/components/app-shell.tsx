@@ -213,7 +213,7 @@ export function AppShell({ surface, children, permissions, actorName, branchName
                       : setDropdown(expanded ? null : group.id)}>
                     <Icon aria-hidden="true" size={17} strokeWidth={1.9} /><span>{group.label}</span><ChevronDown className="nav-chevron" aria-hidden="true" size={15} />
                   </button>
-                  <div id={`nav-${group.id}`} className="nav-group-links" hidden={!expanded}>{items.map((item) => renderLink(item, true))}</div>
+                  <div id={`nav-${group.id}`} className="nav-group-links" data-open={expanded} aria-hidden={!expanded} inert={!expanded}>{items.map((item) => renderLink(item, true))}</div>
                 </div>;
               })}
               {visibleItems.filter((item) => !item.group && item.href !== "/admin").map((item) => renderLink(item))}

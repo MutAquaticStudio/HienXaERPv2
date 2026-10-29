@@ -1,17 +1,15 @@
 "use client";
 
-import { useId, useState, type KeyboardEvent, type PointerEvent } from "react";
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { formatVnd, vnd } from "@/lib/core/money";
 import {
   PROFIT_SERIES, bucketLabel, bucketTitle, compactVnd, granularityLabel, hiddenReason, readySegments, readyValue, valueTicks,
   type MetricQuality, type MoneyMetric, type ProfitSeries, type SeriesKey,
 } from "@/modules/reports/profit-series";
 
-const WIDTH = 720;
-const HEIGHT = 260;
-const PAD = { top: 16, right: 16, bottom: 32, left: 64 };
-const PLOT_W = WIDTH - PAD.left - PAD.right;
-const PLOT_H = HEIGHT - PAD.top - PAD.bottom;
+// FB18: drawn at the width it is shown (text stays 12 px, height fixed) instead of one 720-wide picture stretched to the card.
+const DEFAULT_WIDTH = 720;
+const PAD = { top: 16, right: 12, bottom: 30, left: 58 };
 
 export function qualityReason(quality: MetricQuality): string {
   if (quality === "INCOMPLETE") return "Chưa đủ hoặc chưa khớp giá vốn";
@@ -30,6 +28,18 @@ export function ProfitLineChart({ series }: { series: ProfitSeries }) {
   const titleId = useId();
   const points = series.points;
   const [active, setActive] = useState<number | null>(null);
+  const box = useRef<HTMLDivElement>(null);
+  const [WIDTH, setWidth] = useState(DEFAULT_WIDTH);
+  useEffect(() => {
+    const element = box.current;
+    if (!element || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(([entry]) => setWidth(Math.max(280, Math.round(entry.contentRect.width))));
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+  const HEIGHT = WIDTH < 560 ? 200 : 240;
+  const PLOT_W = WIDTH - PAD.left - PAD.right;
+  const PLOT_H = HEIGHT - PAD.top - PAD.bottom;
   const visible = PROFIT_SERIES.filter((item) => hiddenReason(points, item.key) === null);
   const hidden = PROFIT_SERIES.flatMap((item) => {
     const reason = hiddenReason(points, item.key);
@@ -47,7 +57,12 @@ export function ProfitLineChart({ series }: { series: ProfitSeries }) {
   const span = Number(ticks[ticks.length - 1] - low) || 1;
   const x = (index: number) => PAD.left + (points.length === 1 ? PLOT_W / 2 : (index * PLOT_W) / (points.length - 1));
   const y = (value: bigint) => PAD.top + PLOT_H - (Number(value - low) / span) * PLOT_H;
-  const labelEvery = Math.max(1, Math.ceil(points.length / 8));
+  const labelEvery = Math.max(1, Math.ceil(points.length / Math.max(2, Math.floor(PLOT_W / 72))));
+  // The table lists only the periods with figures (a month by day was 31 rows of 0 đ), totals first.
+  const moving = points.filter((item) => PROFIT_SERIES.some((column) => { const value = readyValue(item[column.key]); return value !== null && value !== 0n; }));
+  const total = (key: SeriesKey) => points.every((item) => readyValue(item[key]) !== null)
+    ? points.reduce((sum, item) => sum + readyValue(item[key])!, 0n) : null;
+  const allZero = drawn.length > 0 && drawn.every((value) => value === 0n);
 
   function path(key: SeriesKey) {
     return readySegments(points, key).map((segment) => segment.map((index, order) =>
@@ -76,8 +91,9 @@ export function ProfitLineChart({ series }: { series: ProfitSeries }) {
       {visible.map((item) => <li key={item.key}><i style={{ background: item.color }} aria-hidden="true" />{item.label}</li>)}
       <li className="muted">{granularityLabel(series.granularity)}</li>
     </ul>
-    <div className="profit-chart-scroll"><div className="profit-chart-plot">
-      <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} role="img" aria-labelledby={titleId} tabIndex={0}
+    {allZero && <p className="metric-note">Chưa có thu chi trong kỳ đã chọn.</p>}
+    <div className="profit-chart-scroll"><div className="profit-chart-plot" ref={box}>
+      <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} width={WIDTH} height={HEIGHT} role="img" aria-labelledby={titleId} tabIndex={0}
         onPointerMove={track} onPointerLeave={() => setActive(null)} onFocus={() => setActive((current) => current ?? points.length - 1)}
         onBlur={() => setActive(null)} onKeyDown={keyboard}>
         {/* A single string: React renders a <title> with several children empty on the server (hydration mismatch). */}
@@ -86,7 +102,7 @@ export function ProfitLineChart({ series }: { series: ProfitSeries }) {
           <line className={tick === 0n ? "profit-chart-zero" : "profit-chart-grid"} x1={PAD.left} x2={WIDTH - PAD.right} y1={y(tick)} y2={y(tick)} />
           <text className="profit-chart-axis" x={PAD.left - 8} y={y(tick)} textAnchor="end" dominantBaseline="middle">{compactVnd(tick)}</text>
         </g>)}
-        {points.map((item, index) => index % labelEvery === 0 || index === points.length - 1
+        {points.map((item, index) => index % labelEvery === 0 || (index === points.length - 1 && index % labelEvery >= Math.ceil(labelEvery / 2))
           ? <text key={item.start} className="profit-chart-axis" x={x(index)} y={HEIGHT - 10} textAnchor="middle">{bucketLabel(item, series.granularity)}</text>
           : null)}
         {active !== null && <line className="profit-chart-crosshair" x1={x(active)} x2={x(active)} y1={PAD.top} y2={PAD.top + PLOT_H} />}
@@ -104,11 +120,15 @@ export function ProfitLineChart({ series }: { series: ProfitSeries }) {
     </div></div>
     {hidden.map((item) => <p key={item.key} className="metric-note">Không vẽ “{item.label}”: {qualityReason(item.reason)}.</p>)}
     <details className="profit-chart-table">
-      <summary>Xem bảng số liệu</summary>
+      <summary>{moving.length ? `Xem bảng số liệu · ${moving.length} ${series.granularity === "DAY" ? "ngày" : series.granularity === "WEEK" ? "tuần" : "tháng"} có phát sinh` : "Xem bảng số liệu"}</summary>
       <div className="table-wrap"><table>
-        <thead><tr><th>Kỳ</th>{PROFIT_SERIES.map((item) => <th key={item.key}>{item.label}</th>)}</tr></thead>
-        <tbody>{points.map((item) => <tr key={item.start}><td>{bucketTitle(item, series.granularity)}</td>
-          {PROFIT_SERIES.map((column) => <td key={column.key} className="mono">{metricText(item[column.key])}</td>)}</tr>)}</tbody>
+        <thead><tr><th>Kỳ</th>{PROFIT_SERIES.map((item) => <th key={item.key} className="numeric">{item.label}</th>)}</tr></thead>
+        <tbody>
+          <tr className="profit-chart-total"><td>Cả kỳ</td>{PROFIT_SERIES.map((column) => { const value = total(column.key); return <td key={column.key} className="numeric mono">{value === null ? "—" : formatVnd(vnd(value.toString()))}</td>; })}</tr>
+          {moving.map((item) => <tr key={item.start}><td>{bucketTitle(item, series.granularity)}</td>
+            {PROFIT_SERIES.map((column) => <td key={column.key} className="numeric mono">{metricText(item[column.key])}</td>)}</tr>)}
+          {!moving.length && <tr><td colSpan={PROFIT_SERIES.length + 1} className="muted">Không có kỳ nào phát sinh thu chi.</td></tr>}
+        </tbody>
       </table></div>
     </details>
   </div>;

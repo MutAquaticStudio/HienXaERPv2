@@ -139,14 +139,28 @@ button, a, input, select, textarea { outline-offset: 3px; }
 .nav-chevron { margin-left: 1px; opacity: 0.8; transition: transform var(--dur) var(--ease-out); }
 .nav-group-toggle[aria-expanded="true"] .nav-chevron { transform: rotate(180deg); }
 .nav-group-links { position: absolute; top: 100%; left: 0; z-index: 40; display: grid; gap: 2px; min-width: 230px; padding: 8px; border: 1px solid var(--border); border-radius: 0 var(--radius) var(--radius) var(--radius); color: var(--text); background: var(--surface); box-shadow: var(--shadow-lg); animation: menu-in var(--dur) var(--ease-out) both; }
-.nav-group-links[hidden] { display: none; }
+/* FB18: the drop-down opens from its corner (fade + small drop + scale), its links follow one after another, and it
+   closes with a short fade instead of vanishing; a hidden bridge keeps it open while the mouse moves down to it. */
+.main-menu .nav-group-links { top: calc(100% + 6px); border-radius: var(--radius); transform-origin: 18px 0; opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(-6px) scale(0.97); animation: none;
+  transition: opacity 140ms var(--ease-out), transform 160ms var(--ease-out), visibility 0s linear 160ms; }
+.main-menu .nav-group-links::before { content: ""; position: absolute; left: 0; right: 0; top: -8px; height: 8px; }
+.main-menu .nav-group-links[data-open="true"] { opacity: 1; visibility: visible; pointer-events: auto; transform: none; transition: opacity 180ms var(--ease-out), transform 240ms var(--ease-spring), visibility 0s; }
+.main-menu .nav-group-links[data-open="true"] > .nav-link-nested { animation: nav-item-in 260ms var(--ease-out) both; }
+.main-menu .nav-group-links > .nav-link-nested:nth-child(2) { animation-delay: 25ms; }
+.main-menu .nav-group-links > .nav-link-nested:nth-child(3) { animation-delay: 50ms; }
+.main-menu .nav-group-links > .nav-link-nested:nth-child(4) { animation-delay: 75ms; }
+.main-menu .nav-group-links > .nav-link-nested:nth-child(5) { animation-delay: 100ms; }
+.main-menu .nav-group-links > .nav-link-nested:nth-child(n+6) { animation-delay: 120ms; }
+@keyframes nav-item-in { from { opacity: 0; transform: translateX(-4px); } to { opacity: 1; transform: none; } }
+.main-menu .nav-link-nested { transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), padding-left var(--dur-fast) var(--ease-out); }
+.main-menu .nav-link-nested:hover { padding-left: 13px; }
 .nav-link-nested { min-height: 40px; gap: 10px; padding: 0 10px; border-radius: var(--radius-sm); color: var(--text); font-weight: 500; }
 .nav-link-nested > svg { color: var(--muted); }
 .main-menu .nav-link-nested:hover { color: var(--primary-text); background: var(--surface-soft); }
 .main-menu .nav-link-nested.active { color: var(--primary-text); background: var(--primary-soft); font-weight: 600; }
 .main-menu .nav-link-nested.active > svg { color: var(--primary-text); }
 .menu-cta { flex-shrink: 0; margin-bottom: 6px; white-space: nowrap; }
-@keyframes menu-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@keyframes menu-in { from { opacity: 0; transform: translateY(-6px) scale(0.98); } to { opacity: 1; transform: none; } }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 .sidebar-backdrop { display: none; }
 .workspace { min-height: calc(100vh - 106px); }
@@ -165,6 +179,11 @@ button, a, input, select, textarea { outline-offset: 3px; }
   .main-menu .nav-list > .nav-link.active, .nav-group-toggle.current { color: #fff; background: rgba(255, 255, 255, 0.16); }
   .nav-chevron { margin-left: auto; }
   .nav-group-links { position: static; min-width: 0; margin: 2px 0 6px 18px; padding: 0 0 0 8px; border: 0; border-left: 1px solid rgba(255, 255, 255, 0.2); border-radius: 0; color: inherit; background: transparent; box-shadow: none; animation: none; }
+  .main-menu .nav-group-links { transform: none; transition: none; }
+  .main-menu .nav-group-links::before { display: none; }
+  .main-menu .nav-group-links[data-open="false"] { display: none; }
+  .main-menu .nav-group-links[data-open="true"] { animation: menu-in var(--dur) var(--ease-out) both; }
+  .main-menu .nav-link-nested:hover { padding-left: 10px; }
   .nav-link-nested, .nav-link-nested > svg { color: inherit; }
   .main-menu .nav-link-nested:hover, .main-menu .nav-link-nested.active { color: #fff; background: rgba(255, 255, 255, 0.14); }
   .main-menu .nav-link-nested.active > svg { color: #fff; }
@@ -703,8 +722,8 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .profit-chart-legend li { display: inline-flex; align-items: center; gap: 0.45rem; }
 .profit-chart-legend i, .profit-chart-tooltip i { display: inline-block; width: 14px; height: 2px; border-radius: 1px; }
 .profit-chart-scroll { overflow-x: auto; overscroll-behavior-x: contain; }
-.profit-chart-plot { position: relative; min-width: 600px; }
-.profit-chart-plot svg { display: block; width: 100%; height: auto; overflow: visible; touch-action: pan-y; }
+.profit-chart-plot { position: relative; min-width: 0; }
+.profit-chart-plot svg { display: block; max-width: 100%; overflow: visible; touch-action: pan-y; }
 .profit-chart-plot svg:focus-visible { outline: 2px solid var(--primary); outline-offset: 4px; border-radius: 6px; }
 .profit-chart-grid { stroke: var(--border); stroke-width: 1; }
 .profit-chart-zero { stroke: var(--muted); stroke-width: 1; }
@@ -719,6 +738,8 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .profit-chart-tooltip span { display: flex; align-items: center; gap: 0.45rem; white-space: nowrap; }
 .profit-chart-table { margin-top: 0.75rem; font-size: var(--font-size-caption); }
 .profit-chart-table summary { cursor: pointer; color: var(--primary); }
+.profit-chart-total td { font-weight: 700; background: var(--surface-soft); }
+.profit-chart-table td.numeric, .profit-chart-table th.numeric { text-align: right; white-space: nowrap; }
 
 .bar-row {
   display: grid;

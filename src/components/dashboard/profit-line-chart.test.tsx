@@ -61,3 +61,13 @@ it("explains an empty period instead of drawing", () => {
   render(<ProfitLineChart series={{ ...series, points: [] }} />);
   expect(screen.getByText("Kỳ đã chọn chưa bắt đầu nên chưa có số liệu để vẽ.")).toBeInTheDocument();
 });
+
+it("lists only the periods with figures, with the whole period first (FB18)", () => {
+  const quiet: ProfitSeries = { ...series, points: [series.points[0], { ...series.points[0], start: "2026-10-05T00:00:00+07:00", end: "2026-10-06T00:00:00+07:00",
+    revenue: ready("0"), total_cost: ready("0"), net_profit: ready("0") }, series.points[2]] };
+  render(<ProfitLineChart series={quiet} />);
+  expect(screen.getByText("Xem bảng số liệu · 2 ngày có phát sinh")).toBeInTheDocument();
+  const rows = screen.getAllByRole("row").slice(1);
+  expect(rows.map((row) => (row as HTMLTableRowElement).cells[0].textContent)).toEqual(["Cả kỳ", "Ngày 01/10/2026", "Ngày 03/10/2026"]);
+  expect(rows[0]).toHaveTextContent("3.000.000");
+});
