@@ -1802,4 +1802,13 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
   body:has(.chat-dock.collapsed) { padding-right: 64px; }
   body:has(.chat-dock) .ai-bubble { display: none; }
 }
+/* FB15 (D37): Nhập đơn bán từ Excel. */
+.import-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 0 0 16px; padding: 0; list-style: none; counter-reset: step; }
+.import-steps li { display: grid; gap: 4px; padding: 12px 14px 12px 48px; border-radius: var(--radius); background: var(--surface-soft); position: relative; counter-increment: step; }
+.import-steps li::before { content: counter(step); position: absolute; left: 14px; top: 12px; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--primary); color: #fff; font-weight: 700; font-size: 0.85rem; }
+.import-steps span { color: var(--muted); font-size: 0.9rem; }
+.import-upload { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin-top: 16px; }
+.import-upload .field { flex: 1; min-width: 240px; }
+.import-problems { margin: 0; padding-left: 18px; color: var(--danger); font-size: 0.85rem; }
+.import-lines { font-size: 0.85rem; }
 

@@ -71,7 +71,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   return <div className="page-stack">
     <header className="page-heading">
       <div><p className="eyebrow">Bán hàng</p><h1>Đơn bán</h1><p className="lede">Bấm một dòng để mở đơn; mũi tên để xem nhanh hàng hóa ngay trong danh sách.</p></div>
-      {canCreate && <ButtonLink href="/admin/orders/new" variant="commerce">+ Tạo đơn bán</ButtonLink>}
+      {canCreate && <div className="action-cluster"><ButtonLink href="/admin/orders/import" variant="secondary">Nhập từ Excel</ButtonLink><ButtonLink href="/admin/orders/new" variant="commerce">+ Tạo đơn bán</ButtonLink></div>}
     </header>
     <ActionNotice notice={query.notice} error={query.error} />
     <div className="list-layout">
