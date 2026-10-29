@@ -9,8 +9,7 @@ import { useEffect, useState, useTransition } from "react";
 import { loadAiChatAction } from "@/modules/ai/actions";
 import type { AiTurn } from "@/modules/ai/assistant";
 import { AiChat } from "@/modules/ai/chat";
-
-export const OPEN_AI_EVENT = "hx:open-ai";
+import { chatDockVisible, OPEN_AI_EVENT } from "@/modules/ai/events";
 
 export function AiBubble() {
   const pathname = usePathname();
@@ -31,7 +30,7 @@ export function AiBubble() {
   }
 
   useEffect(() => {
-    const listener = () => (hidden ? router.push("/admin/messages?ai=1") : show());
+    const listener = () => { if (chatDockVisible()) return; if (hidden) router.push("/admin/messages?ai=1"); else show(); };
     window.addEventListener(OPEN_AI_EVENT, listener);
     return () => window.removeEventListener(OPEN_AI_EVENT, listener);
   });

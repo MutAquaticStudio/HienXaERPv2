@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { ChatDock } from "@/components/messaging/chat-dock";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -103,6 +104,7 @@ export function PortalShell({
         {children}
       </main>
       <nav className={styles.bottomNav} aria-label={scope}>{nav(true)}</nav>
+      <ChatDock surface={audience === "worker" ? "work" : "customer"} />
     </div>
   );
 }

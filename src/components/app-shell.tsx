@@ -5,7 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { NotificationBell } from "@/components/notifications/notification-bell";
-import { AiBubble, OPEN_AI_EVENT } from "@/modules/ai/ai-bubble";
+import { AiBubble } from "@/modules/ai/ai-bubble";
+import { OPEN_AI_EVENT } from "@/modules/ai/events";
+import { ChatDock } from "@/components/messaging/chat-dock";
 import { AppearanceButton } from "@/components/settings/appearance-button";
 import { UatBrowserTiming } from "@/components/uat-browser-timing";
 import { PAYMENT_NOTICES_ENABLED, QUOTATIONS_ENABLED } from "@/lib/features";
@@ -222,6 +224,7 @@ export function AppShell({ surface, children, permissions, actorName, branchName
       </nav>
       <div className="workspace" inert={open}>
         <main className="content">{children}{surface === "admin" && <UatBrowserTiming />}</main>
+        <ChatDock surface={surface} />
         {surface === "admin" && permissions?.includes("ai.use") && <AiBubble />}
       </div>
     </div>

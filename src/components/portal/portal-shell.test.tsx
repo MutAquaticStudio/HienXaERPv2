@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { PortalShell } from "./portal-shell";
+vi.mock("@/components/messaging/chat-dock", () => ({ ChatDock: () => null }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/work" }));
 describe("portal logout", () => {
   for (const audience of ["worker", "customer"] as const) {

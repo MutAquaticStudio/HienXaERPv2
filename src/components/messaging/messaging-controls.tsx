@@ -9,18 +9,19 @@ import { sendDirectMessageAction, sendMessageAction, type MessageActionState } f
 
 const initialState: MessageActionState = { status: "idle", message: "" };
 
-/** Refreshes the page when a message arrives: in one conversation, or in any conversation of the person (no id). */
-export function MessageRefreshSignal({ conversationId }: { conversationId?: string }) {
-  const router = useRouter();
+/** Calls `onMessage` when a message arrives: in one conversation, or in any conversation of the person (no id). */
+export function useMessageInserts(conversationId: string | undefined, onMessage: () => void, enabled = true) {
+  const callback = useRef(onMessage);
+  useEffect(() => { callback.current = onMessage; });
   useEffect(() => {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-    if (!url || !key) return;
+    if (!enabled || !url || !key) return;
     let active = true;
-    const refresh = () => { if (active) router.refresh(); };
+    const refresh = () => { if (active) callback.current(); };
     const supabase = createBrowserClient(url, key);
     const createChannel = () => supabase
-      .channel(`message-refresh-${conversationId ?? "all"}`)
+      .channel(`message-refresh-${conversationId ?? "all"}-${Math.random().toString(36).slice(2)}`)
       // Without a filter, RLS still limits the events to the person's own conversations.
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", ...(conversationId ? { filter: `conversation_id=eq.${conversationId}` } : {}) }, refresh)
       .on("system", {}, (payload) => {
@@ -50,7 +51,13 @@ export function MessageRefreshSignal({ conversationId }: { conversationId?: stri
     };
     window.addEventListener("online", reconnect);
     return () => { active = false; window.removeEventListener("online", reconnect); void supabase.removeChannel(channel); };
-  }, [conversationId, router]);
+  }, [conversationId, enabled]);
+}
+
+/** Refreshes the page when a message arrives (see useMessageInserts). */
+export function MessageRefreshSignal({ conversationId }: { conversationId?: string }) {
+  const router = useRouter();
+  useMessageInserts(conversationId, () => router.refresh());
   return null;
 }
 
