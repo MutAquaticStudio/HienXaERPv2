@@ -5,6 +5,7 @@
 import Link from "next/link";
 import { useActionState, useState, useTransition } from "react";
 
+import { StatusBadge } from "@/components/ui/status-badge";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createImportedOrdersAction, previewOrderImportAction, type ImportPreview, type ImportResult } from "./order-import-actions";
 
@@ -59,7 +60,7 @@ export function OrderImportForm() {
             <td>{result ? (result.orderId ? <Link className="code-link" href={`/admin/orders/${result.orderId}`}>{result.orderNumber ?? "Mở đơn"}</Link>
                 : <span className="form-message">{result.error}</span>)
               : order.problems.length ? <ul className="import-problems">{order.problems.map((problem) => <li key={problem}>{problem}</li>)}</ul>
-              : <span className="status-badge success">Sẵn sàng</span>}</td>
+              : <StatusBadge tone="success">Sẵn sàng</StatusBadge>}</td>
           </tr>;
         })}</tbody>
       </table></div>

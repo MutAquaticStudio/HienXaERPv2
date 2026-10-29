@@ -1809,7 +1809,7 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .import-steps span { color: var(--muted); font-size: 0.9rem; }
 .import-upload { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin-top: 16px; }
 .import-upload .field { flex: 1; min-width: 240px; }
-.import-problems { margin: 0; padding-left: 18px; color: var(--danger); font-size: 0.85rem; }
+.import-problems { margin: 0; padding-left: 18px; color: var(--danger); font-size: 0.85rem; min-width: 220px; max-width: 320px; white-space: normal; }
 .import-lines { font-size: 0.85rem; }
 
 
@@ -1824,5 +1824,6 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .ai-action-card dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
 .ai-action-buttons { display: flex; gap: 8px; }
 .ai-action-result { margin: 0; font-size: var(--font-size-caption); }
+.ai-action-result a { color: var(--primary); font-weight: 600; }
 .ai-action-done { border-left-color: var(--success, #16a34a); }
 .ai-action-cancelled { opacity: .65; border-left-color: var(--border); }
