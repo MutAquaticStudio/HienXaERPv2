@@ -25,3 +25,10 @@ it("shows a cancelled delivery without steps", () => {
   expect(screen.getByRole("status")).toHaveTextContent("Phiếu giao đã hủy.");
   expect(screen.queryByRole("list")).not.toBeInTheDocument();
 });
+
+it("names the supplier's steps on a supplier-direct delivery (FB11)", () => {
+  render(<DeliveryProgress state="VERIFIED" supplierDirect />);
+  expect(screen.getByText("NCC đã giao")).toBeInTheDocument();
+  expect(screen.queryByText("Thợ đã giao")).toBeNull();
+  expect(screen.getByText(/công nợ NCC đã ghi theo lượng NCC giao/)).toBeInTheDocument();
+});

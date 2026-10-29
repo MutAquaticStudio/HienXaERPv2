@@ -3321,3 +3321,10 @@ Thay đổi (migration `20261024090000`–`20261024090900`, native 285, 290, 295
   - Đơn mua đã ghi "NCC đã giao" bằng tay trên trang đơn mua thì giữ nguyên, không ghi chồng.
   - Sửa dữ liệu: chỉ áp cho phiếu đã xác minh mà đơn mua chưa có ghi nhận NCC giao nào.
 - QA: đã áp. Lần áp đầu (bản chưa có điều kiện "đã ghi tay") ghi thêm 2 dòng cho PO-2026-000019 và PO-2026-000045, là dữ liệu thử cũ đã có ghi tay. Sổ chỉ cho ghi thêm nên giữ nguyên làm dấu vết. File đã sửa trước khi lên Production.
+- Xem ảnh bằng chứng (Owner 29/10):
+  - Trang phiếu giao hiện thêm ảnh tải lên ở văn phòng ("Tải bằng chứng lên", "NCC đã giao"), bên cạnh ảnh thợ chụp.
+  - Trang đơn bán có mục "Ảnh giao hàng", gom theo từng phiếu giao.
+  - Trang đơn mua hiện ảnh nhỏ của phiếu nhập và NCC giao thẳng, thay cho link "Xem tệp đã gắn".
+  - Route mới `/api/evidence/internal/[id]`: cần quyền `evidence.manage`, kiểm kích thước và sha256 rồi mới trả tệp; tệp lạ chỉ cho tải về.
+  - Phiếu NCC giao thẳng hiển thị các bước "Giao cho NCC → NCC đang giao → NCC đã giao".
+  - Đã kiểm bố cục trên QA (1440px và 390px): không tràn ngang, phóng to ảnh hoạt động.

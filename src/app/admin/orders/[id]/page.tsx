@@ -5,6 +5,7 @@ import { loadWarehouseAvailability } from "@/modules/inventory/availability-serv
 import { SalesOrderCreditOverride } from "@/components/sales/credit-override";
 import { parseCreditBlock } from "@/modules/sales/credit-block";
 import { OrderSourcingPanel, sourcingRun } from "@/components/sales/order-sourcing-panel";
+import { OrderDeliveryPhotos } from "@/components/delivery/delivery-photos";
 import { OrderDeliveryButton, type OrderDeliveryLine } from "@/components/delivery/order-delivery-dialog";
 import { OrderNextSteps } from "@/components/sales/order-next-steps";
 import { listAssignmentEmployees } from "@/modules/delivery/assignment-options";
@@ -135,6 +136,8 @@ export default async function OrderDetailPage({ params, searchParams }: { params
       {order.commercial_state === "CONFIRMED" && allocations.length === 0 && <p className="muted">Chưa có nguồn hàng. Chọn nguồn hoặc đặt NCC từ dòng hàng.</p>}
       {["CANCELLED", "CLOSED"].includes(order.commercial_state) && <p className="muted">Phần thương mại đã đóng; theo dõi giao hàng, thanh toán và ngoại lệ theo nguồn ở trên.</p>}
     </aside></div>
+    {deliveries.length > 0 && <OrderDeliveryPhotos orderId={order.id} canView={access.permissions.has("evidence.manage") || access.permissions.has("delivery.verify")}
+      canViewInternal={access.permissions.has("evidence.manage")} />}
   </div>;
 }
 

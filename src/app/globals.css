@@ -1640,3 +1640,8 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 /* Page-level notices (e.g. dashboard alerts) are full-width blocks, one under another. */
 .content > .quality-callout { margin-left: 0; margin-right: 0; }
 
+/* FB11: photos on the order, delivery and purchase order pages. */
+.delivery-photos h3, .delivery-photos h4 { margin: 14px 0 4px; }
+.delivery-photos-group + .delivery-photos-group { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.evidence-row { display: grid; gap: 6px; padding: 8px 0; }
+.evidence-row .photo-grid { grid-template-columns: repeat(auto-fill, minmax(96px, 120px)); }
