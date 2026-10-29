@@ -3307,3 +3307,17 @@ Thay đổi (migration `20261024090000`–`20261024090900`, native 285, 290, 295
 - Production `nbwynrwkdbtfsitafsxa`: áp 9 migration (trừ 090600), md5 khớp từng file. 090700 thêm 3 quy đổi chuẩn. 090000 trả phần dư cho phiếu VERIFIED còn hàng trên xe. Còn chờ: Owner chạy `20261024090600` (tự chia việc).
 - Vercel deploy production `dpl_5swppcWJWVj6Bcxo3PVVsgk73Qxb` READY: `/api/health` buildSha `3a088de`, không có lỗi runtime.
 - Owner chạy `20261024090600` trên Production bằng SQL Editor. Đã kiểm: thân 4 hàm (chuẩn hóa khoảng trắng) trùng md5 với file và với QA; trigger `vehicle_default_capacity_note` có; không xe nào thiếu ghi chú sức chở; migration đã ghi sổ. FB10 hoàn tất.
+
+## 2026-10-29 — FB11: "NCC đã giao" đồng bộ đơn mua và đơn bán
+
+- Owner báo: đơn bán thiếu hàng, phân nguồn "NCC giao thẳng"; bấm "NCC đã giao" xong thì đơn mua và đơn bán vẫn "chưa giao".
+- Nguyên nhân (tái hiện bằng test native):
+  - `submit_supplier_delivery_done` chỉ ghi kết quả, phiếu dừng ở "Chờ xác minh".
+  - Ngay cả khi văn phòng xác minh, `verify_delivery` cũng không ghi NCC đã giao vào đơn mua: không có công nợ NCC, đơn mua không đóng.
+- Migration `20261029090000` (native 304; cập nhật 190):
+  - "NCC đã giao" tự xác minh như thợ báo "Đã giao" (FB7).
+  - Ghi nhận phần NCC đã giao vào đơn mua: công nợ NCC, chi phí trực tiếp của đơn, đóng đơn mua khi giao đủ.
+  - Vướng kế toán (vd. hạn mức tín dụng) thì phiếu để văn phòng xác minh tay; lúc đó `verify_delivery` cũng ghi nhận vào đơn mua.
+  - Đơn mua đã ghi "NCC đã giao" bằng tay trên trang đơn mua thì giữ nguyên, không ghi chồng.
+  - Sửa dữ liệu: chỉ áp cho phiếu đã xác minh mà đơn mua chưa có ghi nhận NCC giao nào.
+- QA: đã áp. Lần áp đầu (bản chưa có điều kiện "đã ghi tay") ghi thêm 2 dòng cho PO-2026-000019 và PO-2026-000045, là dữ liệu thử cũ đã có ghi tay. Sổ chỉ cho ghi thêm nên giữ nguyên làm dấu vết. File đã sửa trước khi lên Production.

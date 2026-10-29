@@ -189,7 +189,7 @@ begin
   perform public.submit_supplier_delivery_done(delivery,
     (select jsonb_agg(jsonb_build_object('delivery_line_id', l.id, 'actual_base_quantity', 0)) from public.delivery_lines l where l.delivery_id = delivery),
     'Anh Nhận', 'NCC báo xe hỏng', null, v, '7f190000-0000-4000-8000-0000000000d2');
-  assert (select execution_state || ':' || result_kind from public.deliveries where id = delivery) = 'RESULT_SUBMITTED:FAILED', 'reported as not delivered';
+  assert (select execution_state || ':' || result_kind from public.deliveries where id = delivery) = 'VERIFIED:FAILED', 'reported as not delivered (FB11: the report verifies it)';
   assert exists (select 1 from public.notifications where kind = 'delivery.result_submitted' and entity_id = delivery and title like 'Không giao được%'),
     'the office is told';
   perform pg_temp.act_as_admin();
