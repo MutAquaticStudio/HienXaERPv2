@@ -1759,8 +1759,14 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 @media (max-width: 640px) { .utility-ai span { display: none; } }
 /* FB14 (D36): Facebook-style contact bar on the right of every page (wide screens) and small chat windows at the bottom. */
 .chat-dock { position: fixed; top: 0; right: 0; bottom: 0; z-index: 40; display: flex; flex-direction: column; width: 280px; border-left: 1px solid var(--border); background: var(--surface); }
-.chat-dock-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 16px 14px 8px; }
-.chat-dock-head h2 { margin: 0; font-size: 1rem; color: var(--muted); }
+.chat-dock-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 16px 14px 8px; }
+.chat-dock-head h2 { flex: 1; margin: 0; font-size: 1rem; color: var(--muted); }
+.chat-dock-toggle:hover, .chat-dock-toggle:focus-visible { background: var(--surface-soft); color: var(--text); }
+.chat-dock.collapsed { width: 64px; align-items: center; padding-top: 10px; }
+.chat-dock.collapsed .chat-dock-list { padding: 6px 0; }
+.chat-dock.collapsed .chat-dock-item { position: relative; display: grid; grid-template-columns: auto; padding: 6px; }
+.chat-dock-dot { position: absolute; top: 2px; right: 2px; min-width: 18px; padding: 0 5px; border: 2px solid var(--surface); border-radius: 10px; background: var(--primary); color: #fff; font-size: 0.7rem; font-weight: 700; text-align: center; }
+.chat-dock.collapsed + .chat-windows { right: 80px; }
 .chat-dock-head a { font-size: var(--font-size-caption); }
 .chat-dock-list { flex: 1; margin: 0; padding: 0 6px; list-style: none; overflow-y: auto; }
 .chat-dock-item { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; width: 100%; padding: 6px 8px; border: 0; border-radius: 10px; background: transparent; color: inherit; text-align: left; cursor: pointer; }
@@ -1788,6 +1794,7 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .chat-window-error { margin: 0 10px 6px; }
 @media (min-width: 1280px) {
   body:has(.chat-dock) { padding-right: 280px; }
+  body:has(.chat-dock.collapsed) { padding-right: 64px; }
   body:has(.chat-dock) .ai-bubble { display: none; }
 }
 

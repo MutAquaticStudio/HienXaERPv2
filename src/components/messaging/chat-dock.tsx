@@ -3,7 +3,7 @@
 // FB14 (D36): Facebook-style contacts on every page — a contact bar on the right of wide screens with the search box under
 // the list, and small chat windows at the bottom that stay open while the person works. Narrow screens use the Tin nhắn
 // page instead. The database decides the contacts and checks every message, as on the Tin nhắn page.
-import { Minus, Sparkles, X } from "lucide-react";
+import { Minus, PanelRightClose, PanelRightOpen, Sparkles, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
@@ -18,6 +18,8 @@ import type { MessageSurface, MessengerContact } from "@/modules/messaging/serve
 
 type DockWindow = { key: string; contact: MessengerContact | null };
 const MAX_WINDOWS = 2;
+const COLLAPSED_KEY = "hx_chat_dock_collapsed";
+const readCollapsed = () => { try { return typeof window !== "undefined" && window.localStorage.getItem(COLLAPSED_KEY) === "1"; } catch { return false; } };
 const keyOf = (contact: MessengerContact) => `${contact.auth_user_id}:${contact.customer_id ?? ""}`;
 
 export function ChatDock({ surface }: { surface: MessageSurface }) {
@@ -26,6 +28,12 @@ export function ChatDock({ surface }: { surface: MessageSurface }) {
   const [contacts, setContacts] = useState<MessengerContact[]>([]);
   const [canAi, setCanAi] = useState(false);
   const [query, setQuery] = useState("");
+  // "Thu gọn" leaves a narrow strip of faces (unread still shows); the choice is remembered on this device.
+  const [collapsed, setCollapsed] = useState(readCollapsed);
+  const toggleCollapsed = () => setCollapsed((current) => {
+    try { window.localStorage.setItem(COLLAPSED_KEY, current ? "0" : "1"); } catch { /* private mode: not remembered */ }
+    return !current;
+  });
   const [windows, setWindows] = useState<DockWindow[]>([]);
   const [minimized, setMinimized] = useState<string[]>([]);
   const [version, setVersion] = useState(0);
@@ -64,8 +72,20 @@ export function ChatDock({ surface }: { surface: MessageSurface }) {
   const match = (name: string) => !query.trim() || name.toLocaleLowerCase("vi-VN").includes(query.trim().toLocaleLowerCase("vi-VN"));
   const shown = contacts.filter((contact) => match(contact.display_name));
   return <>
-    <aside className="chat-dock" aria-label="Người liên hệ">
-      <header className="chat-dock-head"><h2>Người liên hệ</h2><Link href={`/${surface}/messages`}>Mở Tin nhắn</Link></header>
+    {collapsed ? <aside className="chat-dock collapsed" aria-label="Người liên hệ">
+      <button type="button" className="icon-button chat-dock-toggle" aria-label="Mở danh bạ" title="Mở danh bạ" onClick={toggleCollapsed}><PanelRightOpen size={18} /></button>
+      <ul className="chat-dock-list">
+        {canAi && <li><button type="button" className="chat-dock-item" aria-label="Trợ lý AI" title="Trợ lý AI" onClick={() => open({ key: "ai", contact: null })}><ChatAvatar name="Trợ lý AI" ai /></button></li>}
+        {contacts.map((contact) => <li key={keyOf(contact)}>
+          <button type="button" className="chat-dock-item" aria-label={contact.unread_count ? `${contact.display_name}, ${contact.unread_count} tin chưa đọc` : contact.display_name}
+            title={contact.display_name} onClick={() => open({ key: keyOf(contact), contact })}>
+            <ChatAvatar name={contact.display_name} />{contact.unread_count > 0 && <span className="chat-dock-dot" aria-hidden="true">{contact.unread_count}</span>}
+          </button>
+        </li>)}
+      </ul>
+    </aside> : <aside className="chat-dock" aria-label="Người liên hệ">
+      <header className="chat-dock-head"><h2>Người liên hệ</h2><Link href={`/${surface}/messages`}>Mở Tin nhắn</Link>
+        <button type="button" className="icon-button chat-dock-toggle" aria-label="Thu gọn danh bạ" title="Thu gọn danh bạ" onClick={toggleCollapsed}><PanelRightClose size={18} /></button></header>
       <ul className="chat-dock-list">
         {canAi && match("Trợ lý AI") && <li><button type="button" className="chat-dock-item" onClick={() => open({ key: "ai", contact: null })}>
           <ChatAvatar name="Trợ lý AI" ai /><span>Trợ lý AI</span></button></li>}
@@ -80,7 +100,7 @@ export function ChatDock({ surface }: { surface: MessageSurface }) {
       </ul>
       <label className="sr-only" htmlFor="chat-dock-search">Tìm người</label>
       <input id="chat-dock-search" className="chat-dock-search" type="search" placeholder="Tìm người…" value={query} onChange={(event) => setQuery(event.target.value)} />
-    </aside>
+    </aside>}
     <div className="chat-windows">
       {windows.map((win) => {
         const isMin = minimized.includes(win.key);

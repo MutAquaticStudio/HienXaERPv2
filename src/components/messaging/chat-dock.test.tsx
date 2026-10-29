@@ -55,3 +55,19 @@ it("stays out of the Tin nhắn page and of narrow screens", async () => {
   expect(render(<ChatDock surface="admin" />).container).toBeEmptyDOMElement();
   expect(mocks.dock).not.toHaveBeenCalled();
 });
+
+it("collapses to a strip of faces and opens again, remembering the choice", async () => {
+  window.localStorage.removeItem("hx_chat_dock_collapsed");
+  const first = render(<ChatDock surface="admin" />);
+  fireEvent.click(await screen.findByRole("button", { name: "Thu gọn danh bạ" }));
+  const strip = screen.getByRole("complementary", { name: "Người liên hệ" });
+  expect(strip).toHaveClass("collapsed");
+  expect(within(strip).queryByPlaceholderText("Tìm người…")).not.toBeInTheDocument();
+  expect(within(strip).getByRole("button", { name: "Chị Lan, 1 tin chưa đọc" })).toBeInTheDocument();
+  expect(window.localStorage.getItem("hx_chat_dock_collapsed")).toBe("1");
+  first.unmount();
+  render(<ChatDock surface="admin" />);
+  fireEvent.click(await screen.findByRole("button", { name: "Mở danh bạ" }));
+  expect(screen.getByRole("complementary", { name: "Người liên hệ" })).not.toHaveClass("collapsed");
+  expect(window.localStorage.getItem("hx_chat_dock_collapsed")).toBe("0");
+});
