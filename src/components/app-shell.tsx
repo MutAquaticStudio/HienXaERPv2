@@ -50,7 +50,6 @@ const navigation: Record<Surface, readonly NavigationItem[]> = {
     { href: "/admin/workforce", label: "Nhân sự & công việc", icon: UsersRound, permission: "workforce.read", group: "workforce" },
     { href: "/admin/attendance", label: "Chấm công", icon: Clock3, permission: "attendance.read", group: "workforce" },
     { href: "/admin/payroll", label: "Bảng lương", icon: WalletCards, permission: "compensation.read", group: "workforce" },
-    { href: "/admin/compensation", label: "Thu nhập", icon: WalletCards, permission: "compensation.read", group: "workforce" },
     { href: "/admin/access", label: "Nhân viên & quyền", icon: ShieldCheck, permission: "roles.manage", group: "administration" },
     { href: "/admin/reports", label: "Báo cáo", icon: BarChart3, permissionsAny: ["finance.ar.read", "finance.ap.read", "finance.expense.read"] },
     { href: "/admin/audit", label: "Nhật ký", icon: ScrollText, permission: "roles.manage", group: "administration" },

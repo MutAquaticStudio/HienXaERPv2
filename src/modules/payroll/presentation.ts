@@ -3,7 +3,7 @@ import { toCsv } from "@/lib/core/csv";
 
 export const PAY_BASES = ["MONTHLY_WORKDAYS", "PER_SHIFT", "PER_HOUR", "FIXED"] as const;
 export const COMPONENT_KINDS = ["ALLOWANCE", "BONUS", "DEDUCTION"] as const;
-export const COMPONENT_METHODS = ["FIXED_PER_PERIOD", "PER_WORKDAY", "PER_LATE", "PER_LATE_MINUTE", "PER_UNPAID_DAY", "SALES_TIERS"] as const;
+export const COMPONENT_METHODS = ["FIXED_PER_PERIOD", "PER_WORKDAY", "PER_LATE", "PER_LATE_MINUTE", "PER_UNPAID_DAY", "SALES_TIERS", "PER_TRIP", "PER_JOB"] as const;
 
 const payBasisLabels: Record<string, string> = {
   MONTHLY_WORKDAYS: "Theo ngày công chuẩn",
@@ -24,7 +24,9 @@ const methodLabels: Record<string, string> = {
   PER_LATE: "Mỗi lần đi muộn / về sớm",
   PER_LATE_MINUTE: "Mỗi phút đi muộn / về sớm",
   PER_UNPAID_DAY: "Mỗi ngày nghỉ không phép / vắng",
-  SALES_TIERS: "% doanh thu theo bậc",
+  SALES_TIERS: "% doanh thu theo bậc (hoa hồng)",
+  PER_TRIP: "Mỗi chuyến giao đã xác minh",
+  PER_JOB: "Mỗi việc dịch vụ đã xác minh",
 };
 const stateLabels: Record<string, string> = { DRAFT: "Tạm tính", CLOSED: "Đã chốt", CANCELLED: "Đã hủy" };
 
@@ -67,7 +69,7 @@ export function payrollError(message: string | null | undefined) {
     ["payroll_period_overlaps", "Khoảng ngày này trùng một bảng lương khác (chưa hủy)."],
     ["payroll_not_draft", "Bảng lương đã chốt hoặc đã hủy, không sửa được nữa."],
     ["payroll_version_conflict", "Bảng lương vừa được người khác cập nhật. Tải lại trang rồi thử lại."],
-    ["invalid_salary_profile", "Thiết lập lương chưa hợp lệ: kiểm tra mức lương và hệ số làm thêm (100–1000%)."],
+    ["invalid_salary_profile", "Thiết lập lương chưa hợp lệ: kiểm tra mức lương (0 nếu chỉ trả theo chuyến / việc) và hệ số làm thêm (100–1000%)."],
     ["invalid_payroll_component", "Khoản thu nhập khác chưa hợp lệ: nhập số tiền, hoặc các bậc doanh thu và % (tối đa 100%)."],
     ["payroll_component_not_found", "Không tìm thấy khoản thu nhập khác."],
     ["invalid_holiday", "Nhập ngày và tên ngày lễ."],

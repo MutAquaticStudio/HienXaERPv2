@@ -60,9 +60,10 @@ export default async function PayrollPage({ searchParams }: { searchParams: Prom
   return <>
     <header className="page-heading">
       <div><p className="eyebrow">Nhân công</p><h1>Bảng lương</h1>
-        <p className="lede">Lương tính từ chấm công đã chốt, thiết lập lương từng người và các khoản thu nhập khác. Chốt bảng lương ghi phải trả nhân viên; chi trả ở mục Thu nhập.</p></div>
+        <p className="lede">Lương tính từ chấm công đã chốt, thiết lập lương từng người và các khoản thu nhập khác (phụ cấp, tiền chuyến, tiền việc, hoa hồng, giảm trừ). Chốt bảng lương ghi phải trả nhân viên; chi trả ngay trên bảng lương đã chốt.</p></div>
       <div className="action-cluster">
         <Link className="button button-secondary" href="/admin/attendance">Chấm công</Link>
+        <Link className="button button-secondary" href="/admin/compensation">Thu nhập đã ghi</Link>
         {canManage && <FormDialog label="Lập bảng lương" title="Lập bảng lương" buttonClassName="button button-primary">
           <CreatePayrollForm from={lastMonthStart} to={lastMonthEnd} name={`Lương tháng ${lastMonthStart.slice(5, 7)}/${lastMonthStart.slice(0, 4)}`} /></FormDialog>}
       </div>
@@ -113,12 +114,12 @@ export default async function PayrollPage({ searchParams }: { searchParams: Prom
           <td className="mono">{component.code}</td><td>{component.name}{!component.active && <small className="table-subline">Ngừng áp dụng</small>}</td>
           <td><StatusBadge tone={component.kind === "DEDUCTION" ? "danger" : component.kind === "BONUS" ? "success" : "info"}>{componentKindLabel(component.kind)}</StatusBadge></td>
           <td>{componentMethodLabel(component.method)}</td>
-          <td className="mono">{component.method === "SALES_TIERS" ? describeTiers(component.tiers) : formatVnd(vnd(component.amount_vnd ?? "0"))}</td>
+          <td className="mono">{component.method === "SALES_TIERS" ? describeTiers(component.tiers) : `${formatVnd(vnd(component.amount_vnd ?? "0"))}${component.method === "PER_TRIP" ? " / chuyến" : component.method === "PER_JOB" ? " / việc" : ""}`}</td>
           <td>{personName(component.employee_id)}</td>
           <td className="table-actions">{canManage && <FormDialog label="Sửa" title={`Sửa ${component.name}`} size="lg" buttonClassName="button button-secondary button-compact">
             <PayrollComponentForm component={component} people={people} /></FormDialog>}</td>
         </tr>)}</tbody>
-      </table>{!components.length && <p className="empty-inline">Chưa có khoản nào. Ví dụ: phụ cấp ăn trưa 30.000 đ mỗi ngày công, phạt đi muộn 50.000 đ mỗi lần, thưởng 1% doanh thu từ 100 triệu.</p>}</div>
+      </table>{!components.length && <p className="empty-inline">Chưa có khoản nào. Ví dụ: phụ cấp ăn trưa 30.000 đ mỗi ngày công, tiền chuyến 50.000 đ mỗi chuyến giao, phạt đi muộn 50.000 đ mỗi lần, hoa hồng 1% doanh thu từ 100 triệu.</p>}</div>
     </section>}
 
     {tab === "holidays" && <section className="card">

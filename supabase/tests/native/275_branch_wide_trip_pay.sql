@@ -1,6 +1,6 @@
--- D31: a rule for every worker (no employee, e.g. CHUYEN 30 000 ₫ a trip), once approved for "work verified", pays the
--- worker of each delivery finished after the approval — here from the worker's own "Đã giao" report. A worker's own
--- approved rule comes first; a rule for every worker cannot be approved for sales commission.
+-- D31 → D35 (FB13): trip pay moved into "Bảng lương". A verified trip no longer posts an earning by an old rule (even an
+-- approved one); the payroll's "Theo chuyến" component pays each verified trip of the period instead, and a person paid only
+-- by trips can have a salary of 0. Old rules no longer post commissions either.
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);
 insert into auth.users(id) values ('10000000-0000-4000-8000-000000000275'), ('10000000-0000-4000-8000-000000000276');
 insert into public.employees(id, auth_user_id, code, display_name) values
@@ -89,59 +89,56 @@ end $$;
 do $test$
 declare
   everyone constant uuid := '7f275900-0000-4000-8000-0000000000c1';
-  own constant uuid := '7f275900-0000-4000-8000-0000000000c2';
   commission constant uuid := '7f275900-0000-4000-8000-0000000000c3';
+  branch constant uuid := '20000000-0000-4000-8000-00000000000a';
   driver constant uuid := '30000000-0000-4000-8000-000000000275';
   driver_login constant uuid := '10000000-0000-4000-8000-000000000275';
   other constant uuid := '30000000-0000-4000-8000-000000000276';
   other_login constant uuid := '10000000-0000-4000-8000-000000000276';
   owner_login constant uuid := '10000000-0000-4000-8000-000000000001';
-  work uuid; failed text; earning public.earning_events%rowtype; mine jsonb;
+  today constant date := (now() at time zone 'Asia/Ho_Chi_Minh')::date;
+  failed text; period uuid; line public.payroll_lines%rowtype;
 begin
-  -- 1. FB10: the rule applies by itself — no approval step; approved by whoever created the rule.
-  work := pg_temp.trip275(driver, driver_login);
-  assert (select count(*) from public.earning_events e where e.employee_id = driver and e.rule_id = everyone and e.calculated_amount_vnd = 30000
-    and e.approval_state = 'APPROVED' and e.approved_by = (select created_by from public.compensation_rules where id = everyone)) = 1, 'earns without an approval';
-
-  -- 2. The owner approves the rule for every worker; a commission for everyone is refused.
+  -- 1. Rules (even approved for "work verified") no longer post earnings of their own.
   perform pg_temp.act_as(owner_login);
-  failed := null;
-  begin perform public.configure_compensation_recognition(commission, 'AR_PAYMENT_ALLOCATION', now(), '7f275a00-0000-4000-8000-000000000001');
-  exception when others then failed := sqlerrm; end;
-  assert failed = 'invalid_recognition_policy', format('commission for everyone refused, got %s', failed);
   assert public.configure_compensation_recognition(everyone, 'WORK_ITEM_VERIFICATION', now(), '7f275a00-0000-4000-8000-000000000002') = everyone, 'approved';
-  assert public.configure_compensation_recognition(everyone, 'WORK_ITEM_VERIFICATION', now(), '7f275a00-0000-4000-8000-000000000002') = everyone, 'approval replay';
-  assert public.configure_compensation_recognition(own, 'WORK_ITEM_VERIFICATION', now(), '7f275a00-0000-4000-8000-000000000003') = own, 'own rule approved';
-  perform pg_temp.act_as_admin();
-  assert (select employee_id is null from public.compensation_recognition_policies where rule_id = everyone), 'policy for every worker';
-
-  -- 3. The driver's next trip earns 30 000 ₫, approved and payable, and shows in the driver's portal.
-  work := pg_temp.trip275(driver, driver_login);
-  select e.* into earning from public.earning_events e join public.work_item_verifications v on v.id = e.work_item_verification_id
-  where v.work_item_id = work;
-  assert earning.employee_id = driver and earning.rule_id = everyone and earning.earning_type = 'PER_TRIP'
-    and earning.calculated_amount_vnd = 30000 and earning.approved_amount_vnd = 30000 and earning.approval_state = 'APPROVED',
-    format('trip pay for the driver %s', to_jsonb(earning));
-  assert (select original_amount_vnd from public.payable_obligations where id = earning.payable_obligation_id and employee_id = driver) = 30000,
-    'owed to the driver';
-  assert (select count(*) from public.earning_events where employee_id = driver) = 2, 'one earning per trip';
-  perform pg_temp.act_as(driver_login);
-  mine := public.worker_portal_snapshot()->'earnings';
-  perform pg_temp.act_as_admin();
-  assert jsonb_array_length(mine) = 2 and mine->0->>'amount_vnd' = '30000' and mine->0->>'type' = 'PER_TRIP', format('driver sees it %s', mine);
-
-  -- 4. A worker with an own approved rule earns by it, not by the rule for every worker.
-  work := pg_temp.trip275(other, other_login);
-  assert (select string_agg(e.rule_id::text || ':' || e.calculated_amount_vnd, ',') from public.earning_events e where e.employee_id = other)
-    = own::text || ':45000', 'own rule first';
-
-  -- 5. The office cannot add the same trip again by hand.
+  perform pg_temp.trip275(driver, driver_login);
+  perform pg_temp.trip275(driver, driver_login);
+  perform pg_temp.trip275(other, other_login);
+  assert not exists (select 1 from public.earning_events where employee_id in (driver, other)), 'no earning by an old rule';
+  assert private.post_recognized_earning(commission, 'AR_PAYMENT_ALLOCATION:nt275', null, null, gen_random_uuid(), 100000, 1000, owner_login) is null,
+    'no new commission by an old rule';
   perform pg_temp.act_as(owner_login);
+
+  -- 2. The payroll pays trips: 30 000 ₫ a verified trip for everyone, on a salary of 0 ("chỉ tính theo chuyến").
+  perform public.save_salary_profile(branch, driver, 'FIXED', 0, false, null, 150, 200, 300, 7, true, gen_random_uuid());
+  perform public.save_salary_profile(branch, other, 'FIXED', 0, false, null, 150, 200, 300, 7, true, gen_random_uuid());
   failed := null;
-  begin perform public.calculate_earning_event(everyone, 'WORK_ITEM_VERIFICATION',
-      (select id from public.work_item_verifications where work_item_id = work), '7f275a00-0000-4000-8000-000000000004');
-  exception when others then failed := sqlstate; end;
+  begin perform public.save_salary_profile(branch, other, 'FIXED', -1, false, null, 150, 200, 300, 7, true, gen_random_uuid());
+  exception when others then failed := sqlerrm; end;
+  assert failed = 'invalid_salary_profile', format('negative salary refused, got %s', failed);
+  perform public.save_payroll_component(branch, null, 'CHUYEN', 'Tiền chuyến', 'BONUS', 'PER_TRIP', 30000, null, null, true, gen_random_uuid());
+  perform public.save_payroll_component(branch, null, 'VIEC', 'Tiền việc dịch vụ', 'BONUS', 'PER_JOB', 50000, null, null, true, gen_random_uuid());
+  period := public.create_payroll(branch, date_trunc('month', today)::date, (date_trunc('month', today) + interval '1 month - 1 day')::date,
+    'Lương thử 275', gen_random_uuid());
+  select * into line from public.payroll_lines where payroll_period_id = period and employee_id = driver;
+  assert line.base_amount_vnd = 0 and line.bonus_vnd = 60000 and line.net_pay_vnd = 60000
+    and line.details @> '[{"code": "CHUYEN", "method": "PER_TRIP", "quantity": 2, "amount_vnd": "60000"}]', format('two trips %s', row_to_json(line));
+  select * into line from public.payroll_lines where payroll_period_id = period and employee_id = other;
+  assert line.bonus_vnd = 30000 and line.net_pay_vnd = 30000, format('one trip %s', row_to_json(line));
+
+  -- 3. A trip already paid by an earning of an old rule (before D35) is not paid again.
   perform pg_temp.act_as_admin();
-  assert failed is not null, 'no manual earning on an automatic rule';
+  perform set_config('request.jwt.claim.sub', owner_login::text, true);
+  insert into public.earning_events(branch_id, employee_id, rule_id, rule_code_snapshot, rule_version_snapshot, earning_type, classification,
+    work_item_verification_id, source_key, basis_quantity, rate_vnd_per_unit_snapshot, calculated_amount_vnd, created_by)
+  select branch, other, everyone, 'NT_CHUYEN', 1, 'PER_TRIP', 'DIRECT_LABOR', v.id, 'WORK_ITEM_VERIFICATION:' || v.id, 1, 30000, 30000, owner_login
+  from public.work_item_verifications v join public.work_item_results r on r.id = v.result_id
+  join public.work_item_assignments a on a.id = r.assignment_id where a.employee_id = other;
+  perform pg_temp.act_as(owner_login);
+  perform public.recalculate_payroll(period, (select version from public.payroll_periods where id = period), gen_random_uuid());
+  select * into line from public.payroll_lines where payroll_period_id = period and employee_id = other;
+  assert line.bonus_vnd = 0 and line.net_pay_vnd = 0, format('paid trip left out %s', row_to_json(line));
+  perform pg_temp.act_as_admin();
 end
 $test$;

@@ -37,7 +37,7 @@ export async function saveSalaryProfileAction(_: PayrollFormState, form: FormDat
     active: z.enum(["on"]).optional(),
     operationId: z.guid(),
   }).safeParse(Object.fromEntries(form));
-  if (!parsed.success || BigInt(parsed.data.baseRate) <= 0n) return { message: "Nhập mức lương lớn hơn 0 và hệ số làm thêm từ 100% đến 1000%." };
+  if (!parsed.success) return { message: "Nhập mức lương (0 nếu chỉ trả theo chuyến / việc) và hệ số làm thêm từ 100% đến 1000%." };
   const input = parsed.data;
   const access = await requireInternalPermission("compensation.manage");
   const supabase = await createServerSupabase();

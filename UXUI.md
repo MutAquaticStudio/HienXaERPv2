@@ -2245,6 +2245,13 @@ Forward candidate: 20261009224842_supplier_purchase_price_commands.sql. SHA256 0
 - **Thu nhập**: nút "Tính lương tháng" (chọn tháng), "Hoa hồng tự động"; không còn "Phê duyệt ghi nhận tự động theo sự kiện".
 - **Báo cáo**: cột trái nhóm báo cáo (Cuối ngày, Bán hàng, Hàng hóa, Khách hàng, Nhà cung cấp, Giao hàng, Tài chính, Tài chính chi tiết); thanh kỳ chọn nhanh (Hôm nay, Hôm qua, 7 ngày, Tháng này, Tháng trước) + từ / đến ngày (+ kho với Xuất nhập tồn); thẻ số liệu chính, biểu đồ thanh, bảng, "Xuất CSV".
 
+# UX-FB13-001 — Quy tắc thu nhập trong Bảng lương (D35)
+
+- **Bảng lương → Thu nhập khác**: ô "Cách tính" thêm **Mỗi chuyến giao đã xác minh** và **Mỗi việc dịch vụ đã xác minh** (nhãn số tiền "Số tiền mỗi chuyến" / "Số tiền mỗi việc", dòng chú thích cách đếm); "% doanh thu theo bậc (hoa hồng)". Bảng khoản hiện "50.000 ₫ / chuyến".
+- **Thiết lập lương**: cho phép mức 0 (chú thích "Người chỉ trả theo chuyến / việc: chọn Cố định, lương 0").
+- **Chi tiết bảng lương**: phiếu lương ghi "Thưởng: Tiền chuyến (12 chuyến)"; bảng lương đã chốt có nút xanh **Chi trả** trên từng dòng còn phải trả (popup: Chi từ quỹ, Số tiền = còn phải trả, Ngày chi, Phương thức, Tham chiếu) → quay lại đúng bảng lương với thông báo. Ô tổng "Thu nhập đã ghi riêng" chỉ còn cho khoản cũ.
+- **Thu nhập đã ghi** (`/admin/compensation`, không còn trong menu; nút "Thu nhập đã ghi" trên trang Bảng lương): danh sách khoản đã ghi + Chi trả, đối chiếu hoa hồng cũ, bảng "Quy tắc thu nhập cũ — Không còn tự tính"; không còn nút tạo quy tắc / ghi căn cứ / hoa hồng tự động.
+
 # UX-FB12-001 — Màn hình đợt FB12 (D34)
 
 - **Cổng nhân sự → Chấm công** (`/work/attendance`, mục menu "Chấm công"): khung xanh ca hôm nay; nút lớn **Vào ca** (xanh) / **Ra ca** (đỏ) cao 72 px, lấy vị trí nếu được cho phép (tối đa 10 giây rồi chấm không kèm vị trí); 4 ô tháng này (Ngày công, Nghỉ có phép, Lần đi muộn, Làm thêm); lịch tuần; danh sách chấm công tháng với nhãn Đủ công / Muộn, sớm / Đang làm.

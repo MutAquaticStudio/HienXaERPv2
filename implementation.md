@@ -3339,3 +3339,13 @@ Thay đổi (migration `20261024090000`–`20261024090900`, native 285, 290, 295
 - FB12-C — Sổ quỹ: tab quỹ, chip kỳ, xuất CSV (tối đa 2.000 dòng của kỳ đang lọc); không đổi nghiệp vụ.
 - FB12-D — trợ lý AI (migration `20261029130000`, native 308; `@anthropic-ai/sdk` 1.3.0): `claude-sonnet-5-5`, effort medium, bật dự phòng phía máy chủ khi bị từ chối (`fallbacks: "default"`), system prompt cache. Hai công cụ: `doc_du_lieu` (chỉ nguồn / cột trong danh sách theo mảng, chạy bằng phiên của người hỏi nên RLS quyết định) và `tao_de_xuat` (ghi `ai_proposals`, không đổi sổ). Lỗi 402 `billing_error` → "hết hạn mức"; mỗi lượt ghi `ai_usage_log`. Không làm tác vụ AI chạy nền theo lịch: cần khóa bí mật Supabase ngoài các chỗ đã cho phép.
 - Kiểm chứng: native 304–308 PASS; Vitest toàn bộ; kiểm giao diện chấm công, bảng lương trên QA (1366 px và 390 px, không tràn ngang).
+
+## 2026-10-30 — FB13 (D35): quy tắc thu nhập chuyển sang Bảng lương
+
+- Owner hỏi quy tắc ở Thu nhập có đồng bộ vào "thu nhập khác" của Bảng lương không; chốt: **chuyển hẳn quy tắc sang Bảng lương, bỏ phần Thu nhập nếu cần**.
+- Migration `20261030090000_fb13_rules_into_payroll.sql`: bỏ trigger `verified_work_earning` (xác minh việc không còn tự ghi thu nhập); `private.post_recognized_earning` trả về ngay khi không phải đảo khoản cũ (tiền khách trả không còn ghi hoa hồng mới; đảo hoa hồng cũ giữ nguyên); `payroll_components.method` thêm `PER_TRIP`, `PER_JOB`; `salary_profiles.base_rate_vnd >= 0`; `save_salary_profile` nhận mức 0, `save_payroll_component` nhận 2 cách tính mới.
+- Migration `20261030090100_fb13_payroll_work_pay.sql`: `private.compute_payroll_line` đếm phiếu giao / việc dịch vụ của người đó (theo phân công của kết quả được xác minh) có ngày xác minh (giờ VN) trong kỳ, bỏ việc đã có `earning_events.work_item_verification_id`; doanh thu tính hoa hồng bỏ đơn đã có khoản thu nhập cũ của người đó (`sales_order_id`). Chi tiết phiếu lương ghi số chuyến / việc (`quantity`).
+- Native 275 viết lại theo D35 (trước là D31): chuyến không tự ghi thu nhập dù quy tắc đã duyệt; hoa hồng mới không ghi; bảng lương trả 30.000 đ × số chuyến trên lương 0; chuyến đã có khoản thu nhập cũ không tính lại; lương âm bị từ chối.
+- Giao diện: cách tính mới ở Thu nhập khác; Chi trả trên bảng lương đã chốt (`payEarningAction` nhận `returnTo` giới hạn `/admin/compensation` hoặc `/admin/payroll/<id>`); menu bỏ "Thu nhập"; trang Thu nhập thành "Thu nhập đã ghi" (lịch sử + chi trả + đối chiếu hoa hồng cũ).
+- Không đổi dữ liệu đã có: khoản thu nhập / phải trả cũ giữ nguyên.
+
