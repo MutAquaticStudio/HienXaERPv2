@@ -1840,3 +1840,12 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .seller-change { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
 .seller-change select { min-width: 180px; flex: 1; }
 .seller-subline { font-family: var(--font-sans, inherit); }
+
+/* FB16 UX audit: classes used by screens but never styled. */
+.error-message { margin: 6px 0 0; color: var(--danger); font-size: var(--font-size-caption); font-weight: 500; }
+.list-pagination, .pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; }
+.pager > div { display: flex; gap: 8px; }
+.list-pagination > span:not(:empty) { color: var(--muted); font-size: var(--font-size-caption); }
+.loading-skeleton, .skeleton-block { height: 160px; margin-top: 12px; border-radius: 8px; background: linear-gradient(90deg, var(--surface-sunken) 0%, var(--border) 40%, var(--surface-sunken) 80%); background-size: 200% 100%; animation: shimmer 1.2s linear infinite; }
+.stack { display: grid; gap: 12px; align-content: start; }
+.seller-change-trigger { margin-left: 10px; }

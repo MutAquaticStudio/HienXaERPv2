@@ -62,3 +62,11 @@ it("shows each order's seller and filters \"Đơn của tôi\" (D38)", async () 
   expect(screen.getByText("NV: Chị Lan")).toBeInTheDocument();
   expect(screen.queryByText("SO-2026-000122")).not.toBeInTheDocument();
 });
+
+it("labels a partly delivered order as delivery, not payment", async () => {
+  m.tables.sales_order_read = [{ ...order, sales_owner_employee_id: "e1", fulfillment_state: "PARTIAL", payment_state: "PARTIAL" }];
+  m.tables.sales_orders = [{ id: "o1", commercial_state: "DRAFT" }];
+  render(await Page({ searchParams: Promise.resolve({}) }));
+  expect(screen.getByRole("cell", { name: "Đã giao một phần" })).toBeInTheDocument();
+  expect(screen.getByRole("cell", { name: "Thanh toán một phần" })).toBeInTheDocument();
+});

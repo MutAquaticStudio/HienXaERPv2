@@ -5,7 +5,7 @@ import { formatBusinessDate, formatBusinessDateTime } from "@/lib/core/business-
 import { OrderProgress } from "@/components/portal/order-progress";
 import styles from "@/components/portal/portal.module.css";
 import { getCustomerPortalOrder } from "@/modules/portal/actions";
-import { salesStateLabel } from "@/modules/sales/presentation";
+import { salesDeliveryStateLabel, salesStateLabel } from "@/modules/sales/presentation";
 import { deliveryStateLabel } from "@/modules/delivery/presentation";
 import { QUOTATIONS_ENABLED } from "@/lib/features";
 import { randomUUID } from "node:crypto";
@@ -34,7 +34,7 @@ export default async function CustomerOrderPage({ params, searchParams }: { para
       <header className={styles.hero}>
         <p className={styles.heroEyebrow}>{order.channel === "CUSTOMER_PORTAL" ? "Đơn bạn đặt" : "Đơn hàng"} · {portalOrderStateLabel(order)}</p>
         <h1>{order.number ?? "Chi tiết đơn hàng"}</h1>
-        <p>Thương mại: {salesStateLabel(order.state ?? "NOT_STARTED")} · Thực hiện: {salesStateLabel(order.fulfillment_state ?? "NOT_STARTED")}</p>
+        <p>Thương mại: {salesStateLabel(order.state ?? "NOT_STARTED")} · Thực hiện: {salesDeliveryStateLabel(order.fulfillment_state ?? "NOT_STARTED")}</p>
         {order.cancel_reason && <p>Lý do hủy: {order.cancel_reason}</p>}
         {order.can_view_finance ? <p>Thanh toán: {salesStateLabel(order.payment_state ?? "NOT_DUE")} · Giá trị: {money(order.total_amount_vnd ?? 0)}</p> : <p>Thông tin công nợ và thanh toán chỉ dành cho chủ tài khoản hoặc người phụ trách thanh toán.</p>}
       </header>

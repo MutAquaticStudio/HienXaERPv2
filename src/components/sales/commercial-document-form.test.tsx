@@ -351,3 +351,14 @@ it("takes what the customer paid up front, into the account matching the method,
   render(<CommercialDocumentForm {...ready} />);
   expect(screen.queryByRole("group", { name: "Khách trả trước" })).not.toBeInTheDocument();
 });
+
+it("shows the seller choice only to the owner, defaulting to the customer's salesperson (D38)", () => {
+  const { unmount } = render(<CommercialDocumentForm {...ready} sellers={[{ id: "e1", name: "Chị Lan" }]} />);
+  const seller = screen.getByRole("combobox", { name: "NV bán hàng" });
+  expect(seller).toHaveValue("");
+  expect(within(seller).getByRole("option", { name: "Theo NV phụ trách khách / công trình" })).toBeInTheDocument();
+  expect(within(seller).getByRole("option", { name: "Chị Lan" })).toBeInTheDocument();
+  unmount();
+  render(<CommercialDocumentForm {...ready} />);
+  expect(screen.queryByRole("combobox", { name: "NV bán hàng" })).not.toBeInTheDocument();
+});

@@ -13,7 +13,7 @@ import { requireInternalPermission } from "@/lib/access/context";
 import { CORE_LIST_PAGE_SIZE, parseCoreListQuery, ilikePattern } from "@/lib/core-list";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { salesStateLabel, salesStateTone } from "@/modules/sales/presentation";
+import { salesDeliveryStateLabel, salesStateLabel, salesStateTone } from "@/modules/sales/presentation";
 import { loadSellers } from "@/modules/sales/seller";
 
 type OrderRow = { id: string; order_number: string; sales_owner_employee_id: string | null; customer_name_snapshot: string; site_name_snapshot: string; commercial_state: string; fulfillment_state: string; payment_state: string; total_vnd: string; requested_delivery_at: string | null; created_at: string };
@@ -105,7 +105,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                 <td className="row-title" data-label="Khách hàng"><Link className="code-link row-link" href={href}>{order.customer_name_snapshot}</Link><small className="table-subline">{order.site_name_snapshot}</small></td>
                 <td className="numeric mono" data-label="Giá trị">{formatVnd(vnd(order.total_vnd))}</td>
                 <td data-label="Trạng thái"><StatusBadge tone={salesStateTone(order.commercial_state)}>{salesStateLabel(order.commercial_state)}</StatusBadge></td>
-                <td data-label="Giao hàng">{salesStateLabel(order.fulfillment_state)}</td>
+                <td data-label="Giao hàng">{salesDeliveryStateLabel(order.fulfillment_state)}</td>
                 <td data-label="Thanh toán">{salesStateLabel(order.payment_state)}</td>
                 <td data-label="Ngày tạo">{formatBusinessDate(order.created_at)}</td>
               </>,
@@ -115,7 +115,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                   : <p className="muted">Chưa có dòng hàng.</p>}</section>
                 <section><h3>Giao hàng & thanh toán</h3><ul className="clean-list">
                   <li>Giao dự kiến: {order.requested_delivery_at ? formatBusinessDateTime(order.requested_delivery_at) : "Chưa hẹn"}</li>
-                  <li>Giao hàng: {salesStateLabel(order.fulfillment_state)}</li>
+                  <li>Giao hàng: {salesDeliveryStateLabel(order.fulfillment_state)}</li>
                   <li>Thanh toán: {salesStateLabel(order.payment_state)}</li>
                 </ul></section>
                 <section className="row-expansion-actions"><Link className="button button-primary" href={href}>Mở đơn</Link><a className="button button-secondary" href={`/api/orders/${order.id}/pdf`}>Tải PDF</a></section>

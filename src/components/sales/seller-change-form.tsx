@@ -9,7 +9,7 @@ export function SellerChangeForm({ orderId, currentId, sellers, operationId }: {
   const [open, setOpen] = useState(false);
   const [state, action, pending] = useActionState<SellerChangeState, FormData>(setSalesOrderSellerAction, undefined);
   if (!open) return <>{state?.message && <small className={`table-subline ${state.success ? "import-ok" : "text-danger"}`} role="status">{state.message}</small>}
-    <button type="button" className="quick-create-trigger" onClick={() => setOpen(true)}>Đổi</button></>;
+    <button type="button" className="quick-create-trigger seller-change-trigger" onClick={() => setOpen(true)}>Đổi</button></>;
   return <form action={action} className="seller-change" onSubmit={() => setOpen(false)}>
     <input type="hidden" name="orderId" value={orderId} />
     <input type="hidden" name="operationId" value={operationId} />
