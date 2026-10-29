@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({ price: vi.fn() }));
 vi.mock("./commercial-lines", () => ({ createCommercialLines: mocks.price }));
 
-import { resolveImport } from "./order-import-data";
+import { customerKey, materialKey, resolveImport, siteKey, unitKey } from "./order-import-data";
 import type { ImportGroup } from "./order-import";
 
 const tables: Record<string, unknown[]> = {
@@ -14,6 +14,7 @@ const tables: Record<string, unknown[]> = {
     { id: "s2", code: "CT2", name: "Kho Q.9", active: true, created_at: "2026-02-01" }, { id: "s1", code: "CT1", name: "Nhà xưởng Q.7", active: true, created_at: "2026-01-01" }] }],
   materials: [{ id: "m1", code: "XM01", name: "Xi măng Hà Tiên", base_uom_id: "u-kg" }, { id: "m2", code: "CAT01", name: "Cát vàng", base_uom_id: "u-kg" },
     { id: "m3", code: "CAT02", name: "Cát đen", base_uom_id: "u-kg" }],
+  material_uom_conversions: [{ material_id: "m1", from_uom_id: "u-bao" }],
   units_of_measure: [{ id: "u-kg", code: "kg", symbol: "kg", name: "Kilôgam" }, { id: "u-bao", code: "bao", symbol: "bao", name: "Bao" }],
 };
 const supabase = { from: (table: string) => { const query: Record<string, unknown> = {}; for (const method of ["select", "eq", "in", "limit"]) query[method] = () => query;
@@ -60,5 +61,33 @@ describe("resolveImport (D37)", () => {
     mocks.price.mockRejectedValue(new AppError({ code: "VALIDATION_FAILED", message: "Dòng 2: không có quy đổi quyết toán hợp lệ.", status: 422 }));
     const [priced] = await resolveImport(supabase as never, "b1", [{ key: "1", problems: [], rows: [row({ row: 7 }), row({ row: 9, unit: "kg" })] }], false);
     expect(priced.problems).toEqual(["Dòng 9: không có quy đổi quyết toán hợp lệ."]);
+  });
+
+  it("offers what to pick for each unrecognised value, and one choice fixes every row typed the same way", async () => {
+    mocks.price.mockReset();
+    mocks.price.mockResolvedValue([{ quantity: "10", unit_price_vnd: "95000" }, { quantity: "10", unit_price_vnd: "95000" }]);
+    const groups = [{ key: "1", problems: [], rows: [row({ customerCode: "anh minh", materialCode: "cat", unit: "" }), row({ row: 3, customerCode: "anh minh", materialCode: "cat", unit: "Bao" })] }];
+    const [before] = await resolveImport(supabase as never, "b1", groups, false);
+    expect(before.fixes).toEqual([
+      { kind: "customer", key: customerKey("anh minh"), text: "anh minh", options: [{ id: "c9", label: "KH09 · Anh Minh Thủ Đức", detail: "0909 111 222" }, { id: "c8", label: "KH08 · Anh Minh Quận 7", detail: undefined }] },
+      { kind: "material", key: materialKey("cat"), text: "cat", row: 2, options: [{ id: "m2", label: "CAT01 · Cát vàng" }, { id: "m3", label: "CAT02 · Cát đen" }] },
+      { kind: "material", key: materialKey("cat"), text: "cat", row: 3, options: [{ id: "m2", label: "CAT01 · Cát vàng" }, { id: "m3", label: "CAT02 · Cát đen" }] },
+    ]);
+    // Picking KH09 and Cát vàng once fixes both rows; "Bao" is then a unit Cát vàng is not sold in, so that is asked next.
+    const overrides = { customers: { [customerKey("anh minh")]: "c9" }, sites: {}, materials: { [materialKey("cat")]: "m2" }, units: {} };
+    const [middle] = await resolveImport(supabase as never, "b1", groups, false, overrides);
+    expect(middle.problems).toEqual(["Dòng 3: CAT01 không bán theo đơn vị \"Bao\"."]);
+    expect(middle.fixes).toEqual([{ kind: "unit", key: unitKey("m2", "bao"), text: "Bao", row: 3, options: [{ id: "u-kg", label: "kg", detail: "Kilôgam" }] }]);
+    const [after] = await resolveImport(supabase as never, "b1", groups, false, { ...overrides, units: { [unitKey("m2", "Bao")]: "u-kg" } });
+    expect(after.problems).toEqual([]);
+    expect(after.input).toMatchObject({ customerId: "c9", siteId: "s9", lines: [{ materialId: "m2" }, { materialId: "m2", orderedUomId: "u-kg" }] });
+  });
+
+  it("asks for a site when the customer has none, and ignores a choice that is not the customer's", async () => {
+    mocks.price.mockReset();
+    const groups = [{ key: "1", problems: [], rows: [row({ customerCode: "KH08" })] }];
+    const [order] = await resolveImport(supabase as never, "b1", groups, false, { customers: {}, sites: { [siteKey("c8", "")]: "s1" }, materials: {}, units: {} });
+    expect(order.fixes).toEqual([{ kind: "site", key: siteKey("c8", ""), text: "", customerId: "c8", options: [] }]);
+    expect(order.input).toBeNull();
   });
 });

@@ -13,10 +13,12 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { autoSourceConfirmedOrder, derivedOperationId, sourcingSummary } from "./auto-sourcing";
 import { commandError, creditBlockOf } from "./command-messages";
 import { createCommercialLines } from "./commercial-lines";
-import { parseOrderWorkbook } from "./order-import";
-import { resolveImport, type ImportPreviewOrder } from "./order-import-data";
+import { ilikePattern, parseCoreListQuery } from "@/lib/core-list";
+import { MAX_IMPORT_ORDERS, MAX_ORDER_LINES, parseOrderWorkbook, type ImportGroup } from "./order-import";
+import { resolveImport, type FixOption, type ImportOverrides, type ImportPreviewOrder } from "./order-import-data";
 
-export type ImportPreview = { ok: boolean; message: string; fileId?: string; orders: ImportPreviewOrder[]; problems: string[] };
+/** `groups` are the rows read from the file: the preview sends them back with the person's choices (D37) instead of re-uploading. */
+export type ImportPreview = { ok: boolean; message: string; fileId?: string; orders: ImportPreviewOrder[]; problems: string[]; groups?: ImportGroup[] };
 /** `confirmation`: what "Xác nhận luôn" did — confirmed and sourced like the order screen, or why the order stayed a draft. */
 export type ImportResult = { key: string; orderId?: string; orderNumber?: string; error?: string; confirmed?: boolean; confirmation?: string };
 
@@ -30,16 +32,60 @@ export async function previewOrderImportAction(_: ImportPreview | undefined, for
   const data = await file.arrayBuffer();
   const parsed = await parseOrderWorkbook(data);
   if (!parsed.groups.length) return { ok: false, message: parsed.problems[0] ?? "File chưa có đơn nào.", orders: [], problems: parsed.problems };
+  const digest = createHash("sha256").update(Buffer.from(data)).update(access.branchId).digest("hex");
+  const fileId = `${digest.slice(0, 8)}-${digest.slice(8, 12)}-4${digest.slice(13, 16)}-8${digest.slice(17, 20)}-${digest.slice(20, 32)}`;
+  return review(access, fileId, parsed.groups, parsed.problems);
+}
+
+async function review(access: { branchId: string; permissions: ReadonlySet<string> }, fileId: string, groups: ImportGroup[], problems: string[], overrides?: ImportOverrides): Promise<ImportPreview> {
   try {
-    const orders = await resolveImport(await createServerSupabase(), access.branchId, parsed.groups, access.permissions.has("pricing.manage"));
-    const digest = createHash("sha256").update(Buffer.from(data)).update(access.branchId).digest("hex");
-    const fileId = `${digest.slice(0, 8)}-${digest.slice(8, 12)}-4${digest.slice(13, 16)}-8${digest.slice(17, 20)}-${digest.slice(20, 32)}`;
+    const orders = await resolveImport(await createServerSupabase(), access.branchId, groups, access.permissions.has("pricing.manage"), overrides);
     const ready = orders.filter((order) => order.input).length;
-    return { ok: true, fileId, orders, problems: parsed.problems,
-      message: ready === orders.length ? `${orders.length} đơn sẵn sàng tạo.` : `${ready}/${orders.length} đơn sẵn sàng; sửa các đơn có lỗi trong file rồi tải lên lại, hoặc tạo trước các đơn đã sẵn sàng.` };
+    return { ok: true, fileId, orders, problems, groups,
+      message: ready === orders.length ? `${orders.length} đơn sẵn sàng tạo.` : `${ready}/${orders.length} đơn sẵn sàng; chọn lại khách / hàng ở các ô bên dưới (hoặc sửa file rồi tải lên lại).` };
   } catch (error) {
     return { ok: false, message: error instanceof AppError ? error.message : "Không kiểm tra được file. Thử lại sau.", orders: [], problems: [] };
   }
+}
+
+const text = (max: number) => z.string().max(max);
+const rowSchema = z.object({ row: z.number().int().min(2).max(100000), group: text(60), customerCode: text(200), siteCode: text(200), deliveryDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
+  materialCode: text(200), unit: text(40), quantity: text(40), unitPrice: text(40), note: text(500) });
+const reviewSchema = z.object({
+  fileId: z.guid(),
+  groups: z.array(z.object({ key: text(400), rows: z.array(rowSchema).min(1).max(MAX_ORDER_LINES + 50), problems: z.array(text(400)).max(200) })).min(1).max(MAX_IMPORT_ORDERS),
+  problems: z.array(text(400)).max(20),
+  overrides: z.object({ customers: z.record(text(400), z.guid()), sites: z.record(text(500), z.guid()), materials: z.record(text(400), z.guid()), units: z.record(text(500), z.guid()) }),
+});
+
+/** The same file again with what the person picked for unrecognised customers, sites, goods and units. */
+export async function reviewOrderImportAction(input: unknown): Promise<ImportPreview> {
+  const parsed = reviewSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, message: "Dữ liệu xem trước không hợp lệ. Tải file lên lại.", orders: [], problems: [] };
+  const access = await requireInternalPermission("orders.create");
+  return review(access, parsed.data.fileId, parsed.data.groups, parsed.data.problems, parsed.data.overrides);
+}
+
+/** Customers of the branch for the "chọn lại khách" box: code, name or phone. */
+export async function searchImportCustomersAction(term: string): Promise<FixOption[]> {
+  const access = await requireInternalPermission("orders.create");
+  const q = parseCoreListQuery({ q: term }).q;
+  let request = (await createServerSupabase()).from("customers").select("id, code, display_name, phone").eq("branch_id", access.branchId).eq("active", true);
+  if (q) request = request.or(`code.ilike.${ilikePattern(q)},display_name.ilike.${ilikePattern(q)},phone.ilike.${ilikePattern(q)}`);
+  const { data, error } = await request.order("display_name").limit(25);
+  if (error) throw new Error("Không thể tìm khách hàng.");
+  return (data ?? []).map((row) => ({ id: row.id, label: `${row.code} · ${row.display_name}`, detail: row.phone ?? undefined }));
+}
+
+/** Goods on sale for the "chọn lại hàng" box. */
+export async function searchImportMaterialsAction(term: string): Promise<FixOption[]> {
+  await requireInternalPermission("orders.create");
+  const q = parseCoreListQuery({ q: term }).q;
+  let request = (await createServerSupabase()).from("materials").select("id, code, name").eq("active", true).eq("sale_enabled", true);
+  if (q) request = request.or(`code.ilike.${ilikePattern(q)},name.ilike.${ilikePattern(q)}`);
+  const { data, error } = await request.order("name").limit(25);
+  if (error) throw new Error("Không thể tìm hàng hóa.");
+  return (data ?? []).map((row) => ({ id: row.id, label: `${row.code} · ${row.name}` }));
 }
 
 const lineSchema = z.object({ materialId: z.guid(), orderedUomId: z.guid(), quantity: z.string().regex(/^\d+(\.\d{1,6})?$/), manualPriceVnd: z.string().regex(/^[1-9]\d{0,14}$/).optional() });

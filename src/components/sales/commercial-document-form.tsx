@@ -43,8 +43,9 @@ function localDateTime(value: string | null) {
 
 const siteOption = (site: Site): EntityOption => ({ id: site.id, label: site.name, detail: site.address });
 
-function QuickCreatePanel({ mode, customerId, onCustomerCreated, onSiteCreated, onClose }: {
-  mode: "customer" | "site"; customerId: string;
+/** "Thêm khách hàng / Thêm công trình" — also used by the Excel import to add a customer the file names (D37). */
+export function QuickCreatePanel({ mode, customerId, onCustomerCreated, onSiteCreated, onClose, defaults }: {
+  mode: "customer" | "site"; customerId: string; defaults?: { name?: string; phone?: string };
   onCustomerCreated: (customer: { id: string; name: string }) => void;
   onSiteCreated: (site: Site) => void;
   onClose: () => void;
@@ -71,8 +72,8 @@ function QuickCreatePanel({ mode, customerId, onCustomerCreated, onSiteCreated, 
       {mode === "site" && <input type="hidden" name="customerId" value={customerId} />}
       <div className="field"><label htmlFor="quick-create-code">Mã *</label><input id="quick-create-code" name="code" required minLength={2} maxLength={32} autoCapitalize="characters" autoComplete="off"
         className={mode === "customer" ? "input-code" : undefined} /></div>
-      <div className="field"><label htmlFor="quick-create-name">{mode === "customer" ? "Tên khách hàng" : "Tên công trình"} *</label><input id="quick-create-name" name="name" required minLength={2} maxLength={160} /></div>
-      {mode === "customer" ? <div className="field"><label htmlFor="quick-create-phone">Điện thoại</label><input id="quick-create-phone" name="phone" maxLength={60} /></div> : <><div className="field field-full"><label htmlFor="quick-create-address">Địa chỉ giao hàng *</label><input id="quick-create-address" name="address" required minLength={3} maxLength={500} /></div><div className="field"><label htmlFor="quick-create-receiver">Người nhận</label><input id="quick-create-receiver" name="receiverName" maxLength={120} /></div><div className="field"><label htmlFor="quick-create-receiver-phone">Điện thoại người nhận</label><input id="quick-create-receiver-phone" name="receiverPhone" maxLength={60} /></div></>}
+      <div className="field"><label htmlFor="quick-create-name">{mode === "customer" ? "Tên khách hàng" : "Tên công trình"} *</label><input id="quick-create-name" name="name" required minLength={2} maxLength={160} defaultValue={defaults?.name} /></div>
+      {mode === "customer" ? <div className="field"><label htmlFor="quick-create-phone">Điện thoại</label><input id="quick-create-phone" name="phone" maxLength={60} defaultValue={defaults?.phone} /></div> : <><div className="field field-full"><label htmlFor="quick-create-address">Địa chỉ giao hàng *</label><input id="quick-create-address" name="address" required minLength={3} maxLength={500} /></div><div className="field"><label htmlFor="quick-create-receiver">Người nhận</label><input id="quick-create-receiver" name="receiverName" maxLength={120} /></div><div className="field"><label htmlFor="quick-create-receiver-phone">Điện thoại người nhận</label><input id="quick-create-receiver-phone" name="receiverPhone" maxLength={60} /></div></>}
       {message && <p className="form-message field-full" role="status">{userFacingError(message)}</p>}
       <div className="form-actions field-full"><button className="button button-primary" type="submit" disabled={pending}>{pending ? "Đang tạo..." : mode === "customer" ? "Tạo khách hàng" : "Tạo công trình"}</button></div>
     </form>

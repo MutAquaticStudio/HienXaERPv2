@@ -10,7 +10,7 @@ const query = { select: () => query, eq: () => query, maybeSingle: async () => (
 vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({ rpc: mocks.rpc, from: () => query }) }));
 
 import { sourcingSummary } from "./auto-sourcing";
-import { createImportedOrdersAction } from "./order-import-actions";
+import { createImportedOrdersAction, reviewOrderImportAction } from "./order-import-actions";
 
 const ORDER = { key: "1", customerId: "11111111-1111-4111-8111-111111111111", siteId: "22222222-2222-4222-8222-222222222222", deliveryDate: null, terms: "",
   lines: [{ materialId: "33333333-3333-4333-8333-333333333333", orderedUomId: "44444444-4444-4444-8444-444444444444", quantity: "10" }] };
@@ -48,5 +48,13 @@ describe("Xác nhận luôn khi nhập Excel (D37)", () => {
     expect(sourcingSummary("SOURCED", { warehouse_lines: 0, purchase_orders: [], waiting_purchase: false, short_lines: [{ material_name: "Cát vàng", short: 3, symbol: "m³" }] }))
       .toBe("Đã xác nhận · còn thiếu 3 m³ Cát vàng (chưa có nhà cung cấp).");
     expect(sourcingSummary("FAILED")).toMatch(/Tự phân nguồn/);
+  });
+
+  it("re-checks only well-formed choices sent back from the preview", async () => {
+    expect(await reviewOrderImportAction({ fileId: FILE, groups: [], problems: [], overrides: { customers: {}, sites: {}, materials: {}, units: {} } }))
+      .toMatchObject({ ok: false, message: "Dữ liệu xem trước không hợp lệ. Tải file lên lại." });
+    const groups = [{ key: "1", problems: [], rows: [{ row: 2, group: "1", customerCode: "x", siteCode: "", deliveryDate: null, materialCode: "y", unit: "", quantity: "1", unitPrice: "", note: "" }] }];
+    expect(await reviewOrderImportAction({ fileId: FILE, groups, problems: [], overrides: { customers: { x: "not-an-id" }, sites: {}, materials: {}, units: {} } }))
+      .toMatchObject({ ok: false });
   });
 });

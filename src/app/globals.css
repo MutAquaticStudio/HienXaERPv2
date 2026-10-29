@@ -1834,3 +1834,6 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .import-warn { color: var(--warning); }
 .import-result { min-width: 240px; max-width: 320px; white-space: normal; }
 .import-result .table-subline, .import-lines li, .import-notes li { white-space: normal; }
+.import-fix { margin-top: 8px; min-width: 240px; max-width: 340px; padding: 8px; border: 1px dashed var(--warning); border-radius: var(--radius); background: var(--warning-soft); }
+.import-fix .field { margin: 0; }
+.import-reviewing { margin: 8px 16px; }
