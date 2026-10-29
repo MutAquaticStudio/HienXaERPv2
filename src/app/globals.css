@@ -1702,8 +1702,11 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .chat-composer-error { grid-column: 1 / -1; margin: 0; }
 .chat-avatar { display: inline-grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 50%; background: var(--primary-soft); color: var(--primary-text); font-weight: 700; font-size: 0.9rem; }
 .chat-avatar-ai { background: linear-gradient(135deg, #7c4dff, var(--primary)); color: #fff; }
-.messenger { display: grid; grid-template-columns: minmax(260px, 340px) 1fr; gap: 16px; height: calc(100vh - 170px); min-height: 520px; }
+.messenger { display: grid; grid-template-columns: 1fr minmax(260px, 340px); gap: 16px; height: calc(100vh - 170px); min-height: 520px; }
 .messenger-list, .messenger-thread { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+/* Contacts and search on the right, like Facebook (Owner 30/10). */
+.messenger-list { order: 2; }
+.messenger-thread { order: 1; }
 .messenger-list-head { padding: 16px 16px 8px; }
 .messenger-list-head h1 { margin: 0; font-size: 1.4rem; }
 .messenger-search { margin: 0 16px 8px; width: auto; border-radius: 20px; background: var(--surface-sunken); }
