@@ -286,8 +286,11 @@ export async function payEarningAction(formData: FormData) {
     employeeId: z.guid(), obligationId: z.guid(), accountId: z.guid(), amount: positiveMoney,
     effectiveAt: localDateTime, method: z.enum(["CASH","BANK_TRANSFER","CARD","OTHER"]),
     reference: z.string().trim().max(160), operationId: z.guid(),
+    // D35: a payslip is paid from its payroll page and returns there.
+    returnTo: z.string().regex(/^\/admin\/(compensation|payroll\/[0-9a-f-]{36})$/i).optional(),
   }).safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return fail("/admin/compensation", "invalid-earning-payment");
+  const back = parsed.success && parsed.data.returnTo ? parsed.data.returnTo : "/admin/compensation";
+  if (!parsed.success) return fail(back, "invalid-earning-payment");
   const access = await requireInternalPermission("finance.payment.post");
   const supabase = await createServerSupabase();
   const { error } = await supabase.rpc("post_payment", {
@@ -299,10 +302,11 @@ export async function payEarningAction(formData: FormData) {
     allocation_lines: [{ obligation_id: parsed.data.obligationId, amount_vnd: parsed.data.amount }],
     advance_amount_vnd: 0, operation_id: parsed.data.operationId,
   });
-  if (error) fail("/admin/compensation", error.message);
+  if (error) fail(back, error.message);
   revalidatePath("/admin");
   revalidatePath("/admin/compensation");
+  revalidatePath("/admin/payroll", "layout");
   revalidatePath("/admin/payables");
   revalidatePath("/admin/cashbook");
-  redirect("/admin/compensation?notice=earning-paid");
+  redirect(`${back}?notice=earning-paid`);
 }

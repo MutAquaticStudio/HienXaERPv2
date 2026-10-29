@@ -39,7 +39,7 @@ export function SalaryProfileForm({ person, profile }: { person: PersonOption; p
       <div className="field"><label htmlFor={`rate-${id}`}>{basis === "MONTHLY_WORKDAYS" ? "Lương tháng (đủ ngày công chuẩn)" : basis === "PER_SHIFT" ? "Lương mỗi ca" : basis === "PER_HOUR" ? "Lương mỗi giờ" : "Lương cố định mỗi kỳ"}</label>
         <MoneyInput id={`rate-${id}`} name="baseRate" defaultValue={profile?.base_rate_vnd} required /></div>
     </div>
-    <p className="muted">{basis === "MONTHLY_WORKDAYS" ? "Lương = lương tháng × (ngày đi làm + nghỉ có phép) ÷ ngày công chuẩn của chi nhánh." : basis === "PER_SHIFT" ? "Lương = lương mỗi ca × số ca đi làm (nghỉ có phép tính 1 ca)." : basis === "PER_HOUR" ? "Lương = lương mỗi giờ × giờ làm trong ca (giờ làm thêm tính riêng)." : "Trả đủ mỗi kỳ, không phụ thuộc ngày công."}</p>
+    <p className="muted">{basis === "MONTHLY_WORKDAYS" ? "Lương = lương tháng × (ngày đi làm + nghỉ có phép) ÷ ngày công chuẩn của chi nhánh." : basis === "PER_SHIFT" ? "Lương = lương mỗi ca × số ca đi làm (nghỉ có phép tính 1 ca)." : basis === "PER_HOUR" ? "Lương = lương mỗi giờ × giờ làm trong ca (giờ làm thêm tính riêng)." : "Trả đủ mỗi kỳ, không phụ thuộc ngày công."} Người chỉ trả theo chuyến / việc: chọn Cố định, lương 0.</p>
     <fieldset className="check-row attendance-choices"><legend>Làm thêm giờ</legend>
       <label className="check-inline"><input type="checkbox" name="overtime" defaultChecked={profile?.overtime_enabled ?? true} /> Tính làm thêm giờ</label>
     </fieldset>
@@ -69,8 +69,9 @@ export function PayrollComponentForm({ component, people }: { component?: Payrol
         {COMPONENT_KINDS.map((item) => <option key={item} value={item}>{componentKindLabel(item)}</option>)}</select></div>
       <div className="field"><label htmlFor={`cmethod-${key}`}>Cách tính</label><select id={`cmethod-${key}`} name="method" value={method} onChange={(event) => setMethod(event.target.value)}>
         {COMPONENT_METHODS.map((item) => <option key={item} value={item}>{componentMethodLabel(item)}</option>)}</select></div>
-      {method !== "SALES_TIERS" && <div className="field"><label htmlFor={`camount-${key}`}>{method === "FIXED_PER_PERIOD" ? "Số tiền mỗi kỳ" : method === "PER_LATE_MINUTE" ? "Số tiền mỗi phút" : method === "PER_WORKDAY" ? "Số tiền mỗi ngày công" : "Số tiền mỗi lần / ngày"}</label>
+      {method !== "SALES_TIERS" && <div className="field"><label htmlFor={`camount-${key}`}>{method === "FIXED_PER_PERIOD" ? "Số tiền mỗi kỳ" : method === "PER_LATE_MINUTE" ? "Số tiền mỗi phút" : method === "PER_WORKDAY" ? "Số tiền mỗi ngày công" : method === "PER_TRIP" ? "Số tiền mỗi chuyến" : method === "PER_JOB" ? "Số tiền mỗi việc" : "Số tiền mỗi lần / ngày"}</label>
         <MoneyInput id={`camount-${key}`} name="amount" defaultValue={component?.amount_vnd} required /></div>}
+      {(method === "PER_TRIP" || method === "PER_JOB") && <p className="muted field-full">{method === "PER_TRIP" ? "Đếm các phiếu giao của người đó được xác minh trong kỳ (theo ngày xác minh)." : "Đếm các việc dịch vụ của người đó được xác minh trong kỳ (theo ngày xác minh)."}</p>}
       <div className="field"><label htmlFor={`cemp-${key}`}>Áp dụng cho</label><select id={`cemp-${key}`} name="employeeId" defaultValue={component?.employee_id ?? ""}>
         <option value="">Mọi nhân viên có thiết lập lương</option>
         {people.map((person) => <option key={person.id} value={person.id}>{person.display_name}</option>)}</select></div>

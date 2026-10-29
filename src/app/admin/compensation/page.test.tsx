@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
 const m = vi.hoisted(() => ({ permissions: new Set<string>(), tables: {} as Record<string, unknown[]> }));
@@ -33,33 +33,13 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
-it("opens the rule, manual basis and recognition forms in popups and lists the rules", async () => {
+it("keeps the recorded earnings and old rules as history; rules are made in Bảng lương (D35)", async () => {
   render(await Page({ searchParams: Promise.resolve({}) }));
-  const rules = screen.getByRole("heading", { name: "Quy tắc thu nhập" }).closest("section")!;
+  expect(screen.getByRole("heading", { name: "Thu nhập đã ghi" })).toBeInTheDocument();
+  const rules = screen.getByRole("heading", { name: "Quy tắc thu nhập cũ" }).closest("section")!;
   expect(within(rules).getByText("2,5%")).toBeInTheDocument();
   expect(within(rules).getByText("350.000 ₫ / đơn vị")).toBeInTheDocument();
   expect(within(rules).getByText("Thợ Hùng")).toBeInTheDocument();
-  expect(screen.queryByRole("button", { name: "Tạo phiên bản quy tắc mới" })).not.toBeInTheDocument();
-  fireEvent.click(screen.getByRole("button", { name: "Tạo phiên bản quy tắc" }));
-  expect(within(screen.getByRole("dialog")).getByRole("button", { name: "Tạo phiên bản quy tắc mới" })).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "Ghi căn cứ tính thủ công" })).toBeInTheDocument();
-  // FB12 (D34b): monthly salaries are made from the attendance in "Bảng lương".
   expect(screen.getByRole("link", { name: "Bảng lương" })).toHaveAttribute("href", "/admin/payroll");
-  expect(screen.queryByRole("button", { name: "Phê duyệt ghi nhận tự động theo sự kiện" })).not.toBeInTheDocument();
-});
-
-it("shows no create popups to readers", async () => {
-  m.permissions = new Set(["compensation.read"]);
-  render(await Page({ searchParams: Promise.resolve({}) }));
   expect(screen.queryByRole("button", { name: /Tạo phiên bản|Ghi căn cứ|Tính lương tháng|Hoa hồng tự động/ })).not.toBeInTheDocument();
-});
-
-it("needs no approval for trip rules; the auto setting is only for commission; salaries by month (FB10)", async () => {
-  render(await Page({ searchParams: Promise.resolve({}) }));
-  fireEvent.click(screen.getByRole("button", { name: "Hoa hồng tự động" }));
-  const dialog = screen.getByRole("dialog");
-  expect(within(dialog).getByText(/tự áp dụng khi việc được xác minh, không cần phê duyệt/)).toBeInTheDocument();
-  expect(dialog.querySelector("input[name=recognitionKind]")).toHaveValue("AR_PAYMENT_ALLOCATION");
-  const options = within(dialog.querySelector<HTMLSelectElement>("select[name=ruleId]")!).getAllByRole("option").map(option => option.textContent);
-  expect(options.some(text => text?.startsWith("CHUYEN"))).toBe(false);
 });

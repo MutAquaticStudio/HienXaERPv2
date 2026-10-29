@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { describeTiers, payrollCsv, payrollError, percentToBps } from "./presentation";
+import { componentMethodLabel, describeTiers, payrollCsv, payrollError, percentToBps } from "./presentation";
 
 describe("payroll presentation", () => {
   it("reads a percent typed with a comma or a dot", () => {
@@ -9,6 +9,11 @@ describe("payroll presentation", () => {
     expect(percentToBps("100")).toBe(10000);
     expect(percentToBps("101")).toBeNull();
     expect(percentToBps("abc")).toBeNull();
+  });
+
+  it("names the trip and job pay of D35", () => {
+    expect(componentMethodLabel("PER_TRIP")).toBe("Mỗi chuyến giao đã xác minh");
+    expect(componentMethodLabel("PER_JOB")).toBe("Mỗi việc dịch vụ đã xác minh");
   });
 
   it("describes sales tiers in order", () => {

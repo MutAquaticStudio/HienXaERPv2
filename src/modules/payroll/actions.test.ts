@@ -40,6 +40,14 @@ describe("payroll commands", () => {
     }));
   });
 
+  it("lets a person paid only by trips have a salary of 0 and pays trips per verified trip (D35)", async () => {
+    expect((await saveSalaryProfileAction(undefined, form({ employeeId, payBasis: "FIXED", baseRate: "0", weekdayPct: "150", restdayPct: "200",
+      holidayPct: "300", restWeekday: "7", active: "on", operationId })))?.success).toBe(true);
+    expect(mocks.rpc).toHaveBeenCalledWith("save_salary_profile", expect.objectContaining({ basis: "FIXED", base_rate: "0" }));
+    await savePayrollComponentAction(undefined, form({ code: "chuyen", name: "Tiền chuyến", kind: "BONUS", method: "PER_TRIP", amount: "50000", operationId }));
+    expect(mocks.rpc).toHaveBeenCalledWith("save_payroll_component", expect.objectContaining({ component_method: "PER_TRIP", amount: "50000", component_tiers: null }));
+  });
+
   it("needs an amount for a fixed allowance", async () => {
     expect(await savePayrollComponentAction(undefined, form({ code: "AN", name: "Ăn trưa", kind: "ALLOWANCE", method: "PER_WORKDAY", amount: "", operationId })))
       .toEqual({ message: "Nhập số tiền lớn hơn 0." });
