@@ -832,4 +832,4 @@ Quyết định D25 ở đầu Spec.md; giao diện UX-FB5-001. Migration `20261
 | FB12-B | Bảng lương: thiết lập lương, thu nhập khác, ngày lễ, Tạm tính → Chốt, phiếu lương cổng nhân sự (migration `20261029120000`, `…120100`, `…120200`, native 307) | DONE (code; QA đã áp) |
 | FB12-C | Sổ quỹ: tab theo quỹ, chọn nhanh kỳ, xuất file | DONE (code) |
 | FB12-D | Trợ lý AI Claude theo mảng: chỉ đọc theo quyền, đề xuất chờ duyệt, nhật ký token (migration `20261029130000`, native 308; cần `ANTHROPIC_API_KEY` trên Vercel) | DONE (code; QA đã áp) |
-| FB12-REL | `pnpm check`, native, PR → CI → merge → migration QA + Production → deploy → kịch bản QA | IN PROGRESS |
+| FB12-REL | `pnpm check`, native, PR → CI → merge → migration QA + Production → deploy → kịch bản QA | DONE — merge `8ed508a` (PR #65), 7/8 migration Production (md5 khớp), `20261029100000` chờ Owner chạy SQL Editor; deploy Production |
