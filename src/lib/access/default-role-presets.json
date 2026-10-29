@@ -28,7 +28,8 @@
       "finance.ap.read",
       "finance.expense.read",
       "finance.profit.read",
-      "dashboard.read"
+      "dashboard.read",
+      "attendance.read"
     ]
   },
   {
@@ -140,7 +141,8 @@
       "finance.expense.read",
       "finance.expense.manage",
       "finance.profit.read",
-      "compensation.read"
+      "compensation.read",
+      "attendance.read"
     ]
   },
   {
