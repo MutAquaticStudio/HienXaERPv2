@@ -836,3 +836,114 @@ button.link {
 }
 .orderLines { display: grid; gap: 0.4rem; margin: 0; padding: 0; list-style: none; }
 .orderLines li { display: flex; justify-content: space-between; gap: 0.8rem; padding: 0.45rem 0; border-bottom: 1px dashed var(--portal-line); }
+
+/* FB12 (D34a): "Chấm công" — a big Vào ca / Ra ca button, the month's counts and the week's schedule. */
+.clockButton {
+  width: 100%;
+  min-height: 72px;
+  font-size: 1.25rem;
+}
+
+.clockOut {
+  background: var(--danger);
+  box-shadow: 0 6px 16px rgb(190 30 45 / 22%);
+}
+
+.clockOut:hover:not(:disabled) {
+  background: var(--danger);
+  filter: brightness(0.92);
+}
+
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.stat {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--portal-line);
+  border-radius: 14px;
+  background: var(--portal-paper);
+}
+
+.stat span {
+  color: var(--portal-muted);
+  font-size: 12px;
+}
+
+.stat strong {
+  font-size: 1.2rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.attendanceList {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.attendanceList li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  padding: 0.6rem 0;
+  border-top: 1px solid var(--portal-line);
+}
+
+.attendanceList li:first-child {
+  border-top: 0;
+}
+
+.attendanceList li > span:nth-child(2) {
+  flex: 1 1 10rem;
+  min-width: 0;
+}
+
+.attendanceDay {
+  min-width: 4.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.attendanceToday {
+  color: var(--primary-text);
+}
+
+@media (max-width: 520px) {
+  .statGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.payslip {
+  width: 100%;
+}
+
+.payslip summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.payslip dl {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.35rem 1rem;
+  margin: 0.5rem 0 0;
+}
+
+.payslip dl > div {
+  display: contents;
+}
+
+.payslip dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}

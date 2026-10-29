@@ -2245,3 +2245,12 @@ Forward candidate: 20261009224842_supplier_purchase_price_commands.sql. SHA256 0
 - **Thu nhập**: nút "Tính lương tháng" (chọn tháng), "Hoa hồng tự động"; không còn "Phê duyệt ghi nhận tự động theo sự kiện".
 - **Báo cáo**: cột trái nhóm báo cáo (Cuối ngày, Bán hàng, Hàng hóa, Khách hàng, Nhà cung cấp, Giao hàng, Tài chính, Tài chính chi tiết); thanh kỳ chọn nhanh (Hôm nay, Hôm qua, 7 ngày, Tháng này, Tháng trước) + từ / đến ngày (+ kho với Xuất nhập tồn); thẻ số liệu chính, biểu đồ thanh, bảng, "Xuất CSV".
 
+# UX-FB12-001 — Màn hình đợt FB12 (D34)
+
+- **Cổng nhân sự → Chấm công** (`/work/attendance`, mục menu "Chấm công"): khung xanh ca hôm nay; nút lớn **Vào ca** (xanh) / **Ra ca** (đỏ) cao 72 px, lấy vị trí nếu được cho phép (tối đa 10 giây rồi chấm không kèm vị trí); 4 ô tháng này (Ngày công, Nghỉ có phép, Lần đi muộn, Làm thêm); lịch tuần; danh sách chấm công tháng với nhãn Đủ công / Muộn, sớm / Đang làm.
+- **Chấm công** (`/admin/attendance`): 4 ô hôm nay (Đang trong ca, Đi muộn, Có lịch chưa vào ca, Nghỉ); tab **Bảng chấm công** (lưới người × ngày, cột tên dính trái, ✓ xanh đủ công, ✓ cam muộn / sớm, P / KP / V, chấm xám = đã xếp ca chưa chấm, ngày đã chốt nền xám không bấm được; bấm ô mở popup chấm hộ), **Lịch làm việc** (tuần, chip tên ca, bấm chip để bỏ ca), **Ca làm việc**, **Chốt công & cài đặt**; nút "Xếp lịch", "Thêm ca".
+- **Bảng lương** (`/admin/payroll`): tab Bảng lương (mã xanh, kỳ, thực lĩnh, trạng thái Tạm tính / Đã chốt / Đã hủy), Thiết lập lương, Thu nhập khác (bậc doanh thu nhập "từ (đ) – %"), Ngày lễ; chi tiết kỳ: 4 ô tổng, bảng Nhân viên · Ngày công · Lương chính · Làm thêm · Phụ cấp · Thưởng · Giảm trừ · Cộng / trừ tay · Thực lĩnh (+ tiền chuyến / việc ghi riêng) · Còn phải trả, dòng tổng, nút Chi tiết (phiếu lương), Cộng / trừ, Tính lại, Hủy, **Chốt bảng lương**, "Xuất file Excel (CSV)".
+- **Cổng nhân sự → Thu nhập**: mục "Phiếu lương" mở từng kỳ đã chốt.
+- **Sổ quỹ**: hàng tab quỹ trên bảng; nhóm chip kỳ (Hôm nay, Tuần này, Tháng này, Tháng trước) đầu bộ lọc; nút "Xuất file" cạnh số giao dịch.
+- **Hỏi AI** (`/admin/ai`, nút "Hỏi AI" trên thanh trên cùng mở đúng mảng của trang đang xem): tab mảng; khung hội thoại (câu hỏi gợi ý dạng chip, Enter để hỏi, Shift+Enter xuống dòng); cột phải: chi phí AI tháng này (người có `ai.manage`), đề xuất chờ duyệt với "Mở màn hình thực hiện", "Đã làm", "Bỏ qua".
+

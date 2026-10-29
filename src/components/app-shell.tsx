@@ -1,10 +1,11 @@
 "use client";
 
-import { BarChart3, Boxes, ChevronDown, ClipboardCheck, Factory, FileText, LayoutDashboard, LogOut, MapPin, Menu, MessageSquare, PackageSearch, Plus, Route, ScrollText, Settings2, ShieldCheck, ShoppingCart, Truck, UserRound, UsersRound, WalletCards, Warehouse, X, type LucideIcon } from "lucide-react";
+import { BarChart3, Boxes, ChevronDown, ClipboardCheck, Clock3, Sparkles, Factory, FileText, LayoutDashboard, LogOut, MapPin, Menu, MessageSquare, PackageSearch, Plus, Route, ScrollText, Settings2, ShieldCheck, ShoppingCart, Truck, UserRound, UsersRound, WalletCards, Warehouse, X, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { NotificationBell } from "@/components/notifications/notification-bell";
+import { aiModuleOf } from "@/modules/ai/sources";
 import { AppearanceButton } from "@/components/settings/appearance-button";
 import { UatBrowserTiming } from "@/components/uat-browser-timing";
 import { PAYMENT_NOTICES_ENABLED, QUOTATIONS_ENABLED } from "@/lib/features";
@@ -47,6 +48,8 @@ const navigation: Record<Surface, readonly NavigationItem[]> = {
     ...(PAYMENT_NOTICES_ENABLED ? [{ href: "/admin/payment-notices", label: "Báo chuyển khoản", icon: WalletCards, permission: "finance.payment_notice.review", group: "finance" }] : []),
     { href: "/admin/invoices", label: "Hóa đơn", icon: FileText, permissionsAny: ["finance.ar.read", "finance.ap.read"], group: "finance" },
     { href: "/admin/workforce", label: "Nhân sự & công việc", icon: UsersRound, permission: "workforce.read", group: "workforce" },
+    { href: "/admin/attendance", label: "Chấm công", icon: Clock3, permission: "attendance.read", group: "workforce" },
+    { href: "/admin/payroll", label: "Bảng lương", icon: WalletCards, permission: "compensation.read", group: "workforce" },
     { href: "/admin/compensation", label: "Thu nhập", icon: WalletCards, permission: "compensation.read", group: "workforce" },
     { href: "/admin/access", label: "Nhân viên & quyền", icon: ShieldCheck, permission: "roles.manage", group: "administration" },
     { href: "/admin/reports", label: "Báo cáo", icon: BarChart3, permissionsAny: ["finance.ar.read", "finance.ap.read", "finance.expense.read"] },
@@ -149,6 +152,8 @@ export function AppShell({ surface, children, permissions, actorName, branchName
           <Link className="brand" href={surface === "admin" ? "/admin" : `/${surface}`}><span className="brand-mark" aria-hidden="true">HX</span><strong>Hiền Xa ERP</strong></Link>
           {branchName && <span className="utility-branch"><MapPin aria-hidden="true" size={15} />{branchName}</span>}
           <div className="utility-actions">
+            {surface === "admin" && permissions?.includes("ai.use") && <Link className="utility-ai" href={`/admin/ai?module=${aiModuleOf(visibleItems.find((item) => item.href === activeHref)?.group)}`}
+              aria-label="Hỏi trợ lý AI về trang này"><Sparkles aria-hidden="true" size={17} /><span>Hỏi AI</span></Link>}
             {surface === "admin" && branchId && <NotificationBell branchId={branchId} />}
             <div className="user-menu" ref={userRef} onKeyDown={(event) => { if (event.key === "Escape" && userMenu) { event.preventDefault(); setUserMenu(false); } }}>
               <button className="identity" type="button" aria-expanded={userMenu} aria-controls="user-menu-panel" onClick={() => setUserMenu((value) => !value)}>

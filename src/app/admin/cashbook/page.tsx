@@ -15,6 +15,8 @@ import { formatVnd, vnd } from "@/lib/core/money";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { createFinanceAccountAction, reconcilePaymentAction, reversePaymentAction } from "@/modules/finance/actions";
 import { MoneyInput } from "@/components/ui/money-input";
+import { CsvDownloadButton } from "@/components/ui/csv-download-button";
+import { toCsv } from "@/lib/core/csv";
 
 type Payment = { id: string; payment_number: string; direction: string; counterparty_name: string; account_code: string; amount_vnd: string; allocated_amount_vnd: string; advance_amount_vnd: string; unallocated_amount_vnd: string; effective_at: string; posting_state: string; reconciliation_state: string; reconciliation_difference_vnd: string; reversal_of_payment_id: string | null };
 type Period = { opening_vnd: string; receipts_vnd: string; disbursements_vnd: string; closing_vnd: string; payment_count: number };
@@ -52,8 +54,13 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
     .eq("branch_id", access.branchId).gte("effective_at", range.fromAt).lt("effective_at", range.toAt);
   if (accountId) paymentRequest = paymentRequest.eq("account_id", accountId);
   if (direction) paymentRequest = paymentRequest.eq("direction", direction);
+  // FB12 (D34c): the whole filtered period (up to 2.000 rows) for "Xuất file".
+  let exportRequest = supabase.from("payment_read").select("payment_number, direction, counterparty_name, account_code, amount_vnd::text, effective_at, posting_state, reconciliation_state")
+    .eq("branch_id", access.branchId).gte("effective_at", range.fromAt).lt("effective_at", range.toAt);
+  if (accountId) exportRequest = exportRequest.eq("account_id", accountId);
+  if (direction) exportRequest = exportRequest.eq("direction", direction);
   const none = Promise.resolve({ data: [] as never[], error: null });
-  const [paymentsResult, summaryResult, periodResult, accountsResult, advancesResult, customerResult, supplierResult, nonCashResult] = await Promise.all([
+  const [paymentsResult, summaryResult, periodResult, accountsResult, advancesResult, customerResult, supplierResult, nonCashResult, exportResult] = await Promise.all([
     paymentRequest.order("effective_at", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1),
     supabase.rpc("cashbook_summary", { target_branch_id: access.branchId }).select("net_cash_vnd::text,unmatched_count").single(),
     supabase.rpc("cashbook_period_summary", { target_branch_id: access.branchId, from_at: range.fromAt, to_at: range.toAt, target_account_id: accountId || null }),
@@ -64,6 +71,7 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
     // FB7: losses found by stock counts are expenses that move no money; listed beside the cash, never in its balance.
     access.permissions.has("finance.expense.read") ? supabase.from("expense_read").select("id, expense_number, category_name, description, amount_vnd::text, effective_at")
       .eq("branch_id", access.branchId).eq("settlement", "NON_CASH").gte("effective_at", range.fromAt).lt("effective_at", range.toAt).order("effective_at", { ascending: false }).limit(50) : none,
+    exportRequest.order("effective_at", { ascending: true }).limit(2000),
   ]);
   if (paymentsResult.error || summaryResult.error || periodResult.error || accountsResult.error || advancesResult.error) throw new Error("Không thể tải sổ quỹ đầy đủ.");
   const fetched = (paymentsResult.data ?? []) as Payment[];
@@ -80,6 +88,28 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
   const nonCashTotal = nonCash.reduce((sum, item) => sum + BigInt(item.amount_vnd), 0n);
   const filtered = Boolean(query.from || query.to || accountId || direction);
   const params = { from: query.from ? range.from : undefined, to: query.to ? range.to : undefined, account: accountId || undefined, direction: direction || undefined };
+  // FB12 (D34c): KiotViet-style quick periods and one tab per money account ("Tổng quỹ", "Tiền mặt", each bank).
+  const href = (next: Partial<Record<"from" | "to" | "account" | "direction", string | undefined>>) => {
+    const search = new URLSearchParams();
+    for (const [key, value] of Object.entries({ ...params, ...next })) if (value) search.set(key, value);
+    const text = search.toString();
+    return text ? `/admin/cashbook?${text}` : "/admin/cashbook";
+  };
+  const today = localNow().slice(0, 10);
+  const shiftDay = (day: string, delta: number) => new Date(Date.parse(`${day}T00:00:00Z`) + delta * 86_400_000).toISOString().slice(0, 10);
+  const weekday = new Date(`${today}T00:00:00Z`).getUTCDay() || 7;
+  const lastMonthEnd = shiftDay(`${today.slice(0, 8)}01`, -1);
+  const presets = [
+    { label: "Hôm nay", from: today, to: today },
+    { label: "Tuần này", from: shiftDay(today, 1 - weekday), to: today },
+    { label: "Tháng này", from: `${today.slice(0, 8)}01`, to: today },
+    { label: "Tháng trước", from: `${lastMonthEnd.slice(0, 8)}01`, to: lastMonthEnd },
+  ];
+  const exportRows = ((exportResult.data ?? []) as Array<{ payment_number: string; direction: string; counterparty_name: string; account_code: string; amount_vnd: string; effective_at: string; posting_state: string; reconciliation_state: string }>);
+  const csv = toCsv(exportRows.map((item) => ({
+    number: item.payment_number, date: formatBusinessDate(item.effective_at), kind: item.direction === "RECEIPT" ? "Thu" : "Chi", party: item.counterparty_name,
+    account: item.account_code, amount: `${item.direction === "RECEIPT" ? "" : "-"}${item.amount_vnd}`, state: financeStateLabel(item.reconciliation_state),
+  })), [["number", "Mã phiếu"], ["date", "Ngày"], ["kind", "Loại"], ["party", "Người nộp / nhận"], ["account", "Tài khoản"], ["amount", "Số tiền (đ)"], ["state", "Đối soát"]]);
 
   return <div className="page-stack"><header className="page-heading"><div><p className="eyebrow">Tiền mặt và ngân hàng</p><h1>Sổ quỹ</h1><p className="lede">Thu chi đã ghi sổ theo kỳ và tài khoản, đối soát ngân hàng và giao dịch đảo.</p></div>
       <div className="action-cluster">
@@ -102,15 +132,22 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
       <article className="card metric-card"><span className="metric-label">Tồn quỹ cuối kỳ</span><strong className="metric-value"><MetricNumber value={money(totals.closing_vnd)} /></strong><small className="table-subline">Đến hết {formatBusinessDate(`${range.to}T12:00:00+07:00`)}</small></article>
     </section>
     <section className="metric-grid metric-grid-compact"><article className="card metric-card"><span className="metric-label">Dòng tiền ròng</span><strong className="metric-value"><MetricNumber value={money(String(summary.net_cash_vnd))} /></strong><small className="table-subline">Toàn bộ tài khoản đến nay</small></article><article className="card metric-card"><span className="metric-label">Chưa đối soát</span><strong className="metric-value">{summary.unmatched_count}</strong></article><article className="card metric-card"><span className="metric-label">Tài khoản</span><strong className="metric-value">{accounts.length}</strong></article><article className="card metric-card"><span className="metric-label">Vị thế ứng trước</span><strong className="metric-value">{(advances ?? []).length}</strong></article></section>
+    <nav className="detail-tabs cashbook-accounts" aria-label="Quỹ">
+      <Link href={href({ account: undefined })} aria-current={!accountId ? "page" : undefined} scroll={false}>Tổng quỹ</Link>
+      {accounts.filter((row) => row.active || row.id === accountId).map((row) => <Link key={row.id} href={href({ account: row.id })} aria-current={row.id === accountId ? "page" : undefined} scroll={false}>
+        {row.account_kind === "CASH" ? "Tiền mặt" : "Ngân hàng"} · {row.name}</Link>)}
+    </nav>
     <div className="list-layout">
       <AutoFilterForm className="card card-pad list-filters" aria-label="Bộ lọc sổ quỹ">
+        <div className="period-presets" role="group" aria-label="Chọn nhanh kỳ">{presets.map((preset) => <Link key={preset.label}
+          className={`chip-link${range.from === preset.from && range.to === preset.to ? " active" : ""}`} href={href({ from: preset.from, to: preset.to })}>{preset.label}</Link>)}</div>
         <label>Từ ngày<input type="date" name="from" defaultValue={range.from} /></label>
         <label>Đến ngày<input type="date" name="to" defaultValue={range.to} /></label>
         <label>Tài khoản<select name="account" defaultValue={accountId}><option value="">Tất cả tài khoản</option>{accounts.map((row) => <option key={row.id} value={row.id}>{row.code} · {row.name}{row.active ? "" : " (ngừng)"}</option>)}</select></label>
         <label>Loại<select name="direction" defaultValue={direction}><option value="">Thu và chi</option><option value="RECEIPT">Phiếu thu</option><option value="DISBURSEMENT">Phiếu chi</option></select></label>
         {filtered && <Link className="code-link" href="/admin/cashbook">Xóa lọc</Link>}
       </AutoFilterForm>
-      <section className="card list-main"><div className="section-head"><h2>Giao dịch đã ghi sổ</h2><span className="scope-chip">{totals.payment_count} giao dịch trong kỳ</span></div><div className="table-wrap" role="region" aria-label="Giao dịch thu chi đã ghi sổ" tabIndex={0}><table className="cashbook-table"><thead><tr><th>Phiếu</th><th>Đối tác</th><th>Tài khoản</th><th>Loại</th><th className="numeric">Số tiền</th><th>Đối soát</th><th>Thao tác</th></tr></thead><tbody>{rows.map((item) => {
+      <section className="card list-main"><div className="section-head"><h2>Giao dịch đã ghi sổ</h2><div className="action-cluster"><span className="scope-chip">{totals.payment_count} giao dịch trong kỳ</span>{exportRows.length > 0 && <CsvDownloadButton csv={csv} filename={`so-quy-${range.from}-${range.to}.csv`} label="Xuất file" />}</div></div><div className="table-wrap" role="region" aria-label="Giao dịch thu chi đã ghi sổ" tabIndex={0}><table className="cashbook-table"><thead><tr><th>Phiếu</th><th>Đối tác</th><th>Tài khoản</th><th>Loại</th><th className="numeric">Số tiền</th><th>Đối soát</th><th>Thao tác</th></tr></thead><tbody>{rows.map((item) => {
         const canHandle = item.posting_state === "POSTED" && !item.reversal_of_payment_id && ((can.reconcile && item.reconciliation_state !== "MATCHED") || can.reverse);
         return <tr key={item.id}><td><span className="mono">{item.payment_number}</span><small className="table-subline">{formatBusinessDate(item.effective_at)}</small></td><td className="cashbook-party">{item.counterparty_name}</td><td>{item.account_code}</td>
           <td><StatusBadge tone={item.posting_state === "REVERSED" ? "danger" : "info"}>{item.reversal_of_payment_id ? "Đảo giao dịch" : item.direction === "RECEIPT" ? "Thu" : "Chi"}</StatusBadge></td>

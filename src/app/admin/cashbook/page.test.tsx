@@ -90,3 +90,15 @@ it("lists stock-count losses as non-cash expenses beside the cash, and links oth
   expect(m.calls).toEqual(expect.arrayContaining([{ table: "expense_read", method: "eq", args: ["settlement", "NON_CASH"] }]));
   expect(screen.getByRole("link", { name: "Chi phí khác" })).toHaveAttribute("href", "/admin/expenses?new=1");
 });
+
+it("switches money accounts by tab, picks quick periods and exports the period (FB12)", async () => {
+  await page({ from: "2026-10-01", to: "2026-10-31" });
+  const tabs = screen.getByRole("navigation", { name: "Quỹ" });
+  expect(within(tabs).getByRole("link", { name: "Tổng quỹ" })).toHaveAttribute("aria-current", "page");
+  expect(within(tabs).getByRole("link", { name: "Tiền mặt · Tiền mặt" })).toHaveAttribute("href",
+    "/admin/cashbook?from=2026-10-01&to=2026-10-31&account=11111111-1111-4111-8111-111111111111");
+  const presets = screen.getByRole("group", { name: "Chọn nhanh kỳ" });
+  expect(within(presets).getAllByRole("link").map((link) => link.textContent)).toEqual(["Hôm nay", "Tuần này", "Tháng này", "Tháng trước"]);
+  expect(screen.getByRole("button", { name: "Xuất file" })).toBeInTheDocument();
+  expect(m.calls).toEqual(expect.arrayContaining([{ table: "payment_read", method: "limit", args: [2000] }]));
+});

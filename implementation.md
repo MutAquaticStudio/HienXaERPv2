@@ -3307,3 +3307,35 @@ Thay đổi (migration `20261024090000`–`20261024090900`, native 285, 290, 295
 - Production `nbwynrwkdbtfsitafsxa`: áp 9 migration (trừ 090600), md5 khớp từng file. 090700 thêm 3 quy đổi chuẩn. 090000 trả phần dư cho phiếu VERIFIED còn hàng trên xe. Còn chờ: Owner chạy `20261024090600` (tự chia việc).
 - Vercel deploy production `dpl_5swppcWJWVj6Bcxo3PVVsgk73Qxb` READY: `/api/health` buildSha `3a088de`, không có lỗi runtime.
 - Owner chạy `20261024090600` trên Production bằng SQL Editor. Đã kiểm: thân 4 hàm (chuẩn hóa khoảng trắng) trùng md5 với file và với QA; trigger `vehicle_default_capacity_note` có; không xe nào thiếu ghi chú sức chở; migration đã ghi sổ. FB10 hoàn tất.
+
+## 2026-10-29 — FB11: "NCC đã giao" đồng bộ đơn mua và đơn bán
+
+- Owner báo: đơn bán thiếu hàng, phân nguồn "NCC giao thẳng"; bấm "NCC đã giao" xong thì đơn mua và đơn bán vẫn "chưa giao".
+- Nguyên nhân (tái hiện bằng test native):
+  - `submit_supplier_delivery_done` chỉ ghi kết quả, phiếu dừng ở "Chờ xác minh".
+  - Ngay cả khi văn phòng xác minh, `verify_delivery` cũng không ghi NCC đã giao vào đơn mua: không có công nợ NCC, đơn mua không đóng.
+- Migration `20261029090000` (native 304; cập nhật 190):
+  - "NCC đã giao" tự xác minh như thợ báo "Đã giao" (FB7).
+  - Ghi nhận phần NCC đã giao vào đơn mua: công nợ NCC, chi phí trực tiếp của đơn, đóng đơn mua khi giao đủ.
+  - Vướng kế toán (vd. hạn mức tín dụng) thì phiếu để văn phòng xác minh tay; lúc đó `verify_delivery` cũng ghi nhận vào đơn mua.
+  - Đơn mua đã ghi "NCC đã giao" bằng tay trên trang đơn mua thì giữ nguyên, không ghi chồng.
+  - Sửa dữ liệu: chỉ áp cho phiếu đã xác minh mà đơn mua chưa có ghi nhận NCC giao nào.
+- QA: đã áp. Lần áp đầu (bản chưa có điều kiện "đã ghi tay") ghi thêm 2 dòng cho PO-2026-000019 và PO-2026-000045, là dữ liệu thử cũ đã có ghi tay. Sổ chỉ cho ghi thêm nên giữ nguyên làm dấu vết. File đã sửa trước khi lên Production.
+- Xem ảnh bằng chứng (Owner 29/10):
+  - Trang phiếu giao hiện thêm ảnh tải lên ở văn phòng ("Tải bằng chứng lên", "NCC đã giao"), bên cạnh ảnh thợ chụp.
+  - Trang đơn bán có mục "Ảnh giao hàng", gom theo từng phiếu giao.
+  - Trang đơn mua hiện ảnh nhỏ của phiếu nhập và NCC giao thẳng, thay cho link "Xem tệp đã gắn".
+  - Route mới `/api/evidence/internal/[id]`: cần quyền `evidence.manage`, kiểm kích thước và sha256 rồi mới trả tệp; tệp lạ chỉ cho tải về.
+  - Phiếu NCC giao thẳng hiển thị các bước "Giao cho NCC → NCC đang giao → NCC đã giao".
+  - Đã kiểm bố cục trên QA (1440px và 390px): không tràn ngang, phóng to ảnh hoạt động.
+
+## 2026-10-29 — FB12 (D34): chấm công, bảng lương, sổ quỹ, trợ lý AI, xóa nhân viên
+
+- Owner chốt (29/10): chấm công "thợ tự bấm + văn phòng duyệt"; bảng lương "đầy đủ kiểu KiotViet"; AI "tự làm việc nhẹ, ghi sổ cần duyệt", dùng Sonnet, ngân sách theo tháng; xóa nhân viên "xóa nếu chưa phát sinh, còn lại Ngừng"; phát hành chung với FB11. Mặc định đã duyệt: 26 ngày công chuẩn, muộn 10 phút, vào sớm 60 phút, làm thêm 150/200/300%, vị trí ghi nhưng không bắt buộc.
+- FB12-E — `remove_employee` / `restore_employee` (migration `20261029100000`, native 305): kiểm lịch sử qua mọi khóa ngoại trỏ tới nhân viên hoặc tài khoản đăng nhập, nên bảng mới tự được tính; xóa hẳn thì app xóa luôn tài khoản đăng nhập (chỗ đã dùng khóa bí mật sẵn có).
+- FB12-A — chấm công (migration `20261029110000`, `…110100`, native 306): bảng `attendance_settings`, `work_shifts`, `shift_assignments` (bỏ ca = đánh dấu hủy), `attendance_records`, `attendance_periods`; lệnh có `operation_id`; phút muộn / sớm / làm thêm tính trong DB theo giờ Việt Nam, ca qua đêm. Trang `/work/attendance`, `/admin/attendance`.
+  - Kiểm trên QA: nút Vào ca treo ở "Đang lấy vị trí…" khi người dùng không trả lời hộp hỏi quyền (trình duyệt không chạy hẹn giờ của `getCurrentPosition` khi chưa trả lời) → thêm giới hạn 10 giây rồi chấm không kèm vị trí.
+- FB12-B — bảng lương (migration `20261029120000`, `…120100`, `…120200`, native 307): tính từ chấm công + thiết lập lương + thu nhập khác; chốt cần mọi ngày của kỳ đã chốt công, tính lại lần cuối rồi ghi mỗi phiếu lương dương thành khoản thu nhập đã duyệt + phải trả (nguồn `PAYROLL:<kỳ>`, quy tắc hệ thống `BANG-LUONG` mỗi chi nhánh), nên "Chi trả" và Sổ quỹ dùng lại luồng cũ. Tiền chuyến / việc / hoa hồng chỉ hiển thị trên phiếu lương. Chính sách đọc của kỳ lương và dòng lương dùng hàm `private.my_closed_payslip` để hai chính sách không gọi vòng nhau. Lệnh tách hai file cho dưới 20.000 ký tự (giới hạn khi áp qua MCP).
+- FB12-C — Sổ quỹ: tab quỹ, chip kỳ, xuất CSV (tối đa 2.000 dòng của kỳ đang lọc); không đổi nghiệp vụ.
+- FB12-D — trợ lý AI (migration `20261029130000`, native 308; `@anthropic-ai/sdk` 1.3.0): `claude-sonnet-5-5`, effort medium, bật dự phòng phía máy chủ khi bị từ chối (`fallbacks: "default"`), system prompt cache. Hai công cụ: `doc_du_lieu` (chỉ nguồn / cột trong danh sách theo mảng, chạy bằng phiên của người hỏi nên RLS quyết định) và `tao_de_xuat` (ghi `ai_proposals`, không đổi sổ). Lỗi 402 `billing_error` → "hết hạn mức"; mỗi lượt ghi `ai_usage_log`. Không làm tác vụ AI chạy nền theo lịch: cần khóa bí mật Supabase ngoài các chỗ đã cho phép.
+- Kiểm chứng: native 304–308 PASS; Vitest toàn bộ; kiểm giao diện chấm công, bảng lương trên QA (1366 px và 390 px, không tràn ngang).

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   BriefcaseBusiness,
   CircleDollarSign,
+  Clock3,
   ClipboardList,
   Compass,
   House,
@@ -21,6 +22,7 @@ import { QUOTATIONS_ENABLED } from "@/lib/features";
 
 const workerLinks = [
   { href: "/work", label: "Công việc", icon: House },
+  { href: "/work/attendance", label: "Chấm công", icon: Clock3 },
   { href: "/work/pool", label: "Nhận việc", icon: Compass },
   { href: "/work/tracking", label: "Vị trí", icon: MapPin },
   { href: "/work/earnings", label: "Thu nhập", icon: CircleDollarSign },

@@ -9,6 +9,7 @@ vi.mock("@/components/access/activation-link", () => ({ ActivationLinkForm: () =
 vi.mock("@/components/access/manage-access-form", () => ({
   ManageAccessForm: () => <form>Đổi vai trò</form>, ExplicitPermissionForm: () => <form>Quyền riêng</form>,
   RevokeAccessForm: () => <form>Thu hồi</form>, ReactivateAccessForm: () => <form>Kích hoạt</form>,
+  RemoveEmployeeForm: () => <form>Xóa</form>, RestoreEmployeeForm: () => <form>Dùng lại</form>,
 }));
 vi.mock("@/lib/access/role-actions", () => ({ saveCustomRoleAction: vi.fn() }));
 vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({
@@ -47,6 +48,7 @@ it("lists employees with their actions in popups, tagged for scripted checks", a
   const nam = screen.getByText("Anh Nam").closest("tr")!;
   expect(within(nam).getByRole("button", { name: "Thu hồi" })).toHaveAttribute("data-access-id", "a1");
   expect(within(nam).getByRole("button", { name: "Quyền riêng" })).toHaveAttribute("data-action", "explicit");
+  expect(within(nam).getByRole("button", { name: "Xóa" })).toHaveAttribute("data-action", "remove");
   const lan = screen.getByText("Chị Lan").closest("tr")!;
   expect(within(lan).getByRole("button", { name: "Kích hoạt lại" })).toHaveAttribute("data-access-id", "a2");
   expect(within(lan).getByRole("button", { name: "Cấp vai trò" })).toBeInTheDocument();

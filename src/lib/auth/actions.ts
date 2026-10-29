@@ -274,6 +274,42 @@ export async function reactivateAccessAction(_: AuthFormState, form: FormData): 
   return { success: true, message: "Đã kích hoạt lại quyền tại chi nhánh và ghi nhật ký." };
 }
 
+/**
+ * FB12 (D34e) "Xóa nhân viên": a person with no history is deleted together with the sign-in account; anyone with history is
+ * set to "Ngừng làm việc" (sign-in blocked, every branch access revoked, name kept on old documents).
+ */
+export async function removeEmployeeAction(_: AuthFormState, form: FormData): Promise<AuthFormState> {
+  const parsed = z.object({ employeeId: z.guid(), confirmed: z.literal("on") }).safeParse(Object.fromEntries(form));
+  if (!parsed.success) return { message: "Đánh dấu xác nhận để xóa nhân viên." };
+  await requireInternalPermission("roles.manage");
+  let outcome: { result?: string; auth_user_id?: string } | null;
+  try {
+    outcome = await portalRpc(await createServerSupabase(), "remove_employee", { target_employee_id: parsed.data.employeeId, operation_id: randomUUID() });
+  } catch {
+    return { message: "Không thể xóa. Không xóa được chính mình hoặc người quản lý vai trò, hoặc nhân viên ngoài chi nhánh bạn quản lý." };
+  }
+  revalidatePath("/admin/access");
+  if (outcome?.result !== "DELETED") {
+    return { success: true, message: "Nhân viên đã có chứng từ nên không xóa hẳn: đã chuyển sang Ngừng làm việc (khóa đăng nhập, ẩn khỏi danh sách chọn). Bấm “Dùng lại” khi cần." };
+  }
+  const admin = authAdminClient();
+  if (admin && outcome.auth_user_id) await admin.deleteUser(outcome.auth_user_id).catch(() => null);
+  return { success: true, message: "Đã xóa nhân viên và tài khoản đăng nhập." };
+}
+
+export async function restoreEmployeeAction(_: AuthFormState, form: FormData): Promise<AuthFormState> {
+  const parsed = z.object({ employeeId: z.guid() }).safeParse(Object.fromEntries(form));
+  if (!parsed.success) return { message: "Không xác định được nhân viên." };
+  await requireInternalPermission("roles.manage");
+  try {
+    await portalRpc(await createServerSupabase(), "restore_employee", { target_employee_id: parsed.data.employeeId, operation_id: randomUUID() });
+  } catch {
+    return { message: "Không thể dùng lại nhân viên này. Kiểm tra chi nhánh bạn quản lý." };
+  }
+  revalidatePath("/admin/access");
+  return { success: true, message: "Nhân viên đã làm việc lại với quyền trước đó." };
+}
+
 export async function setExplicitPermissionsAction(_: AuthFormState, form: FormData): Promise<AuthFormState> {
   const parsed = z.object({
     employeeId: z.guid(),

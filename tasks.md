@@ -25,7 +25,7 @@ QA_SCHEMA_MUTATION: PO_PATCH_ALREADY_APPLIED_NEW_PATCHES_NOT_AUTHORIZED
 QA_APPROVED_PATCH_SHA256: 9e74a7976728bb33b4401d642b79329e5d5ece9ac016e8509c06bbf238bf2f7d
 QA_SCHEMA_APPLY: APPLIED
 PRODUCTION_MUTATION: FORBIDDEN_WITHOUT_OWNER
-ACTIVE_FEEDBACK_BATCH: UI_R1_20261023  # Claude Code, branch nox/elegant-volta-kr29iz; D29 trên Production (main 6a4ff60); D30 + D31 + HOTFIX-EVIDENCE trên Production (main 45a5e1c, PR #61); FB9 (D32) trên Production (main f5ae600, PR #62); FB10 (D33) code + kiểm chứng xong trên nhánh, chờ phát hành, see UI-R1/UI-R2/HOTFIX-EVIDENCE/D31-TRIP-PAY rows
+ACTIVE_FEEDBACK_BATCH: UI_R1_20261023  # Claude Code, branch nox/elegant-volta-kr29iz; D29 trên Production (main 6a4ff60); D30 + D31 + HOTFIX-EVIDENCE trên Production (main 45a5e1c, PR #61); FB9 (D32) trên Production (main f5ae600, PR #62); FB10 (D33) trên Production; FB11 + FB12 (D34) code + kiểm chứng trên nhánh, chờ phát hành, see UI-R1/UI-R2/HOTFIX-EVIDENCE/D31-TRIP-PAY rows
 ```
 
 Historical R0–R9 tasks are not repeated here. Their source/evidence lives in implementation.md.
@@ -826,3 +826,10 @@ Quyết định D25 ở đầu Spec.md; giao diện UX-FB5-001. Migration `20261
 | FB10-F | Thu nhập tự áp quy tắc, "Tính lương tháng" (`post_monthly_salaries`), sửa `calculate_earning_event` (migration `20261024090800`, native 302; test 275 cập nhật) | DONE (code) |
 | FB10-G | Trung tâm báo cáo kiểu KiotViet (`report_center`, migration `20261024090900`, native 303; `/api/reports/center` CSV) | DONE (code) |
 | FB10-REL | `pnpm check`, native, PR → CI → merge → migration QA + Production → deploy → kịch bản QA | DONE — merge `3a088de`, 10/10 migration QA + Production, deploy Production |
+| FB11 | "NCC đã giao" tự xác minh + ghi nhận vào đơn mua (migration `20261029090000`, native 304); xem ảnh bằng chứng ở đơn bán / phiếu giao / đơn mua | DONE (code; QA đã áp migration) |
+| FB12-E | Xóa / Ngừng làm việc / Dùng lại nhân viên (migration `20261029100000`, native 305; có lệnh `delete` → Owner chạy trong SQL Editor) | DONE (code) |
+| FB12-A | Chấm công: ca, xếp lịch, Vào / Ra ca ở cổng nhân sự, bảng chấm công, chốt kỳ (migration `20261029110000`, `…110100`, native 306) | DONE (code; QA đã áp) |
+| FB12-B | Bảng lương: thiết lập lương, thu nhập khác, ngày lễ, Tạm tính → Chốt, phiếu lương cổng nhân sự (migration `20261029120000`, `…120100`, `…120200`, native 307) | DONE (code; QA đã áp) |
+| FB12-C | Sổ quỹ: tab theo quỹ, chọn nhanh kỳ, xuất file | DONE (code) |
+| FB12-D | Trợ lý AI Claude theo mảng: chỉ đọc theo quyền, đề xuất chờ duyệt, nhật ký token (migration `20261029130000`, native 308; cần `ANTHROPIC_API_KEY` trên Vercel) | DONE (code; QA đã áp) |
+| FB12-REL | `pnpm check`, native, PR → CI → merge → migration QA + Production → deploy → kịch bản QA | IN PROGRESS |
