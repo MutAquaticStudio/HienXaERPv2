@@ -11,7 +11,11 @@ import { matchRecord, type Match } from "./order-match";
 
 type Supabase = Awaited<ReturnType<typeof createServerSupabase>>;
 
-export type ImportOrderInput = { key: string; customerId: string; siteId: string; deliveryDate: string | null; terms: string; lines: CommercialLineInput[] };
+export type ImportOrderInput = { key: string; customerId: string; siteId: string; deliveryDate: string | null; terms: string; lines: CommercialLineInput[];
+  /** FB16 (D38): the seller the owner named in the file (null = the site's / customer's salesperson). */
+  sellerId?: string | null };
+/** Who is importing: only the owner may name a seller (D38). */
+export type ImportActor = { canChooseSeller: boolean; employeeId: string };
 export type ImportPreviewOrder = {
   key: string; rows: string; customerName: string; siteName: string; deliveryDate: string | null; totalVnd: string; problems: string[];
   /** How names / phone numbers typed in the file were read ("xi mang ha tien" → XM01), for the person to check. */
@@ -28,17 +32,21 @@ export type ImportFix =
   | { kind: "customer"; key: string; text: string; options: FixOption[] }
   | { kind: "site"; key: string; text: string; customerId: string; options: FixOption[] }
   | { kind: "material"; key: string; text: string; row: number; options: FixOption[] }
-  | { kind: "unit"; key: string; text: string; row: number; options: FixOption[] };
-export type ImportOverrides = { customers: Record<string, string>; sites: Record<string, string>; materials: Record<string, string>; units: Record<string, string> };
-export const NO_OVERRIDES: ImportOverrides = { customers: {}, sites: {}, materials: {}, units: {} };
+  | { kind: "unit"; key: string; text: string; row: number; options: FixOption[] }
+  | { kind: "seller"; key: string; text: string; options: FixOption[] };
+export type ImportOverrides = { customers: Record<string, string>; sites: Record<string, string>; materials: Record<string, string>; units: Record<string, string>;
+  sellers?: Record<string, string> };
+export const NO_OVERRIDES: ImportOverrides = { customers: {}, sites: {}, materials: {}, units: {}, sellers: {} };
+export const sellerKey = (text: string) => normalizeRef(text);
 export const customerKey = (text: string) => normalizeRef(text);
 export const siteKey = (customerId: string, text: string) => `${customerId}|${normalizeRef(text)}`;
 export const materialKey = (text: string) => normalizeRef(text);
 export const unitKey = (materialId: string, text: string) => `${materialId}|${normalizeRef(text)}`;
 
 export async function loadTemplateReference(supabase: Supabase, branchId: string): Promise<TemplateReference> {
-  const [customers, materials, conversions, units] = await Promise.all([
+  const [customers, sellerResult, materials, conversions, units] = await Promise.all([
     supabase.from("customers").select("id, code, display_name, phone, customer_sites(code, name, active)").eq("branch_id", branchId).eq("active", true).order("code").limit(2000),
+    supabase.rpc("sales_seller_options", { target_branch_id: branchId }),
     supabase.from("materials").select("id, code, name, base_uom_id").eq("active", true).eq("sale_enabled", true).order("code").limit(3000),
     supabase.from("material_uom_conversions").select("material_id, from_uom_id").eq("active", true).eq("settlement_allowed", true).limit(10000),
     supabase.from("units_of_measure").select("id, symbol").eq("active", true),
@@ -50,6 +58,7 @@ export async function loadTemplateReference(supabase: Supabase, branchId: string
   return {
     customers: (customers.data ?? []).map((row) => ({ code: row.code, name: row.display_name, phone: row.phone ?? null,
       sites: ((row.customer_sites ?? []) as Array<{ code: string; name: string; active: boolean }>).filter((site) => site.active).map((site) => ({ code: site.code, name: site.name })) })),
+    sellers: ((sellerResult.data ?? []) as Array<{ name: string; assignable: boolean }>).filter((row) => row.assignable).map((row) => row.name),
     materials: (materials.data ?? []).map((row) => ({ code: row.code, name: row.name,
       units: [...new Set([symbol.get(row.base_uom_id) ?? "", ...(extra.get(row.id) ?? [])].filter(Boolean))] })),
   };
@@ -67,7 +76,7 @@ const choices = <T,>(match: Match<T>, label: (row: T) => string) => match.found 
 
 /** Every order of the file with its customer, site, priced lines and total — or the problems that stop it. */
 export async function resolveImport(supabase: Supabase, branchId: string, groups: ImportGroup[], canManagePrice: boolean,
-  overrides: ImportOverrides = NO_OVERRIDES): Promise<ImportPreviewOrder[]> {
+  overrides: ImportOverrides = NO_OVERRIDES, actor?: ImportActor): Promise<ImportPreviewOrder[]> {
   // The whole active list of the branch is read once, so codes, names and phone numbers are matched the same way
   // whatever their case or accents.
   const [customers, materials, units, conversions] = await Promise.all([
@@ -100,6 +109,11 @@ export async function resolveImport(supabase: Supabase, branchId: string, groups
     if (!materialCache.has(key)) materialCache.set(key, chosen(materialRows, overrides.materials[key]) ?? matchRecord(materialRows, ref, { code: (row) => row.code, name: (row) => row.name }));
     return materialCache.get(key)!;
   };
+  // FB16 (D38): the "NV bán" column — read only when someone filled it.
+  const sellerRows = groups.some((group) => group.rows.some((row) => row.seller))
+    ? (((await supabase.rpc("sales_seller_options", { target_branch_id: branchId })).data ?? []) as Array<{ id: string; name: string; assignable: boolean }>)
+      .filter((row) => row.assignable).map((row) => ({ id: row.id, name: row.name.replace(/ \(ngừng\)$/, "") }))
+    : [];
   const candidates = <T,>(match: Match<T>) => (match.found === null && "candidates" in match ? match.candidates : []);
 
   const result: ImportPreviewOrder[] = [];
@@ -122,6 +136,18 @@ export async function resolveImport(supabase: Supabase, branchId: string, groups
     const site = siteMatch ? siteMatch.found ?? undefined : sites[0];
     if (customer && !site) fixes.push({ kind: "site", key: siteKey(customer.id, first.siteCode), text: first.siteCode, customerId: customer.id, options: sites.map(siteOption) });
     if (customer && !site) problems.push(first.siteCode ? `Khách ${customer.code} không có công trình "${first.siteCode}".${siteMatch ? choices(siteMatch, (row) => `${row.code} ${row.name}`) : ""}` : `Khách ${customer.code} chưa có công trình nào.`);
+    let sellerId: string | null = null;
+    if (first.seller) {
+      const sellerMatch = chosen(sellerRows, overrides.sellers?.[sellerKey(first.seller)]) ?? matchRecord(sellerRows, first.seller, { code: (row) => row.name, name: (row) => row.name });
+      if (!sellerMatch.found) {
+        problems.push(`Không nhận ra NV bán "${first.seller}".`);
+        if (actor?.canChooseSeller) fixes.push({ kind: "seller", key: sellerKey(first.seller), text: first.seller, options: sellerRows.map((row) => ({ id: row.id, label: row.name })) });
+      } else if (actor && !actor.canChooseSeller && sellerMatch.found.id !== actor.employeeId) {
+        problems.push("Chỉ chủ doanh nghiệp được chỉ định NV bán; đơn bạn tạo là của bạn — để trống cột NV bán.");
+      } else {
+        sellerId = sellerMatch.found.id;
+      }
+    }
     const lines: CommercialLineInput[] = [];
     const lineRows: number[] = [];
     const shown: ImportPreviewOrder["lines"] = [];
@@ -168,7 +194,7 @@ export async function resolveImport(supabase: Supabase, branchId: string, groups
       customerName: customer?.display_name ?? first.customerCode, siteName: site?.name ?? "—", deliveryDate: formatDate(first.deliveryDate),
       totalVnd: total.toString(), problems, notes, fixes, lines: shown,
       input: problems.length || !customer || !site ? null : { key: group.key, customerId: customer.id, siteId: site.id, deliveryDate: first.deliveryDate,
-        terms: group.rows.map((row) => row.note).filter(Boolean).join("; ").slice(0, 1000), lines },
+        terms: group.rows.map((row) => row.note).filter(Boolean).join("; ").slice(0, 1000), lines, sellerId },
     });
   }
   return result;

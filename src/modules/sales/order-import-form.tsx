@@ -17,8 +17,8 @@ import { createImportedOrdersAction, previewOrderImportAction, reviewOrderImport
 import type { ImportFix, ImportOverrides } from "./order-import-data";
 
 type Overrides = ImportOverrides;
-const EMPTY: Overrides = { customers: {}, sites: {}, materials: {}, units: {} };
-const FIELD: Record<ImportFix["kind"], keyof Overrides> = { customer: "customers", site: "sites", material: "materials", unit: "units" };
+const EMPTY: Overrides = { customers: {}, sites: {}, materials: {}, units: {}, sellers: {} };
+const FIELD: Record<ImportFix["kind"], keyof Overrides> = { customer: "customers", site: "sites", material: "materials", unit: "units", seller: "sellers" };
 const looksLikePhone = (text: string) => /^\+?[\d\s.()-]{9,}$/.test(text.trim());
 type Quick = { mode: "customer"; fix: Extract<ImportFix, { kind: "customer" }> } | { mode: "site"; fix: Extract<ImportFix, { kind: "site" }> };
 
@@ -50,7 +50,7 @@ export function OrderImportForm({ canConfirm = false, canManageCustomers = false
   /** Re-checks the file with one more choice; `then` runs on the new preview (to ask for the new customer's site). */
   function choose(fix: ImportFix, id: string, then?: (next: ImportPreview) => void) {
     if (!uploaded?.fileId || !uploaded.groups) return;
-    const next: Overrides = { ...overrides, [FIELD[fix.kind]]: { ...overrides[FIELD[fix.kind]], [fix.key]: id } };
+    const next: Overrides = { ...overrides, [FIELD[fix.kind]]: { ...(overrides[FIELD[fix.kind]] ?? {}), [fix.key]: id } };
     const base = uploaded;
     startReview(async () => {
       const reviewed = await reviewOrderImportAction({ fileId: base.fileId, groups: base.groups, problems: base.problems, overrides: next });
@@ -63,7 +63,8 @@ export function OrderImportForm({ canConfirm = false, canManageCustomers = false
   function fixBox(fix: ImportFix) {
     const pick = (option: EntityOption | null) => { if (option) choose(fix, option.id); };
     const title = fix.kind === "customer" ? `Chọn khách cho "${fix.text}"` : fix.kind === "site" ? (fix.text ? `Chọn công trình cho "${fix.text}"` : "Chọn công trình")
-      : fix.kind === "material" ? `Dòng ${fix.row}: chọn hàng cho "${fix.text}"` : `Dòng ${fix.row}: chọn đơn vị thay "${fix.text}"`;
+      : fix.kind === "material" ? `Dòng ${fix.row}: chọn hàng cho "${fix.text}"` : fix.kind === "unit" ? `Dòng ${fix.row}: chọn đơn vị thay "${fix.text}"`
+      : `Chọn NV bán cho "${fix.text}"`;
     const search = fix.kind === "customer" ? searchImportCustomersAction : fix.kind === "material" ? searchImportMaterialsAction
       : fix.kind === "site" ? async (term: string) => (await searchSalesSitesAction("order", fix.customerId, term)).map((site) => ({ id: site.id, label: site.name, detail: site.address ?? undefined }))
       : undefined;
@@ -111,7 +112,7 @@ export function OrderImportForm({ canConfirm = false, canManageCustomers = false
             <td><strong>{order.key}</strong><small className="table-subline">{order.rows}</small></td>
             <td>{order.customerName}<small className="table-subline">{order.siteName}</small>
               {order.notes.length > 0 && <ul className="import-notes" aria-label="Nhận theo tên">{order.notes.map((note) => <li key={note}>{note}</li>)}</ul>}
-              {!result?.orderId && order.fixes.filter((fix) => fix.kind === "customer" || fix.kind === "site").map(fixBox)}</td>
+              {!result?.orderId && order.fixes.filter((fix) => fix.kind === "customer" || fix.kind === "site" || fix.kind === "seller").map(fixBox)}</td>
             <td>{order.deliveryDate ?? "Giao ngay"}</td>
             <td><details><summary>{order.lines.length} dòng hàng</summary><ul className="clean-list import-lines">{order.lines.map((line, index) =>
               <li key={index}>{line.materialName} · {line.quantity} {line.unit}{order.input ? ` × ${formatVnd(vnd(line.unitPriceVnd))}${line.manualPrice ? " (giá riêng)" : ""}` : ""}</li>)}</ul></details>

@@ -12,6 +12,7 @@ import { AppError } from "@/lib/core/errors";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { autoSourceConfirmedOrder, derivedOperationId, sourcingSummary } from "./auto-sourcing";
 import { commandError, creditBlockOf } from "./command-messages";
+import { assignSellerAfterCreate, canChooseSeller } from "./seller";
 import { createCommercialLines } from "./commercial-lines";
 import { ilikePattern, parseCoreListQuery } from "@/lib/core-list";
 import { MAX_IMPORT_ORDERS, MAX_ORDER_LINES, parseOrderWorkbook, type ImportGroup } from "./order-import";
@@ -37,9 +38,10 @@ export async function previewOrderImportAction(_: ImportPreview | undefined, for
   return review(access, fileId, parsed.groups, parsed.problems);
 }
 
-async function review(access: { branchId: string; permissions: ReadonlySet<string> }, fileId: string, groups: ImportGroup[], problems: string[], overrides?: ImportOverrides): Promise<ImportPreview> {
+async function review(access: { branchId: string; employeeId: string; permissions: ReadonlySet<string> }, fileId: string, groups: ImportGroup[], problems: string[], overrides?: ImportOverrides): Promise<ImportPreview> {
   try {
-    const orders = await resolveImport(await createServerSupabase(), access.branchId, groups, access.permissions.has("pricing.manage"), overrides);
+    const orders = await resolveImport(await createServerSupabase(), access.branchId, groups, access.permissions.has("pricing.manage"), overrides,
+      { canChooseSeller: canChooseSeller(access.permissions), employeeId: access.employeeId });
     const ready = orders.filter((order) => order.input).length;
     return { ok: true, fileId, orders, problems, groups,
       message: ready === orders.length ? `${orders.length} đơn sẵn sàng tạo.` : `${ready}/${orders.length} đơn sẵn sàng; chọn lại khách / hàng ở các ô bên dưới (hoặc sửa file rồi tải lên lại).` };
@@ -50,12 +52,12 @@ async function review(access: { branchId: string; permissions: ReadonlySet<strin
 
 const text = (max: number) => z.string().max(max);
 const rowSchema = z.object({ row: z.number().int().min(2).max(100000), group: text(60), customerCode: text(200), siteCode: text(200), deliveryDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
-  materialCode: text(200), unit: text(40), quantity: text(40), unitPrice: text(40), note: text(500) });
+  materialCode: text(200), unit: text(40), quantity: text(40), unitPrice: text(40), note: text(500), seller: text(160).optional() });
 const reviewSchema = z.object({
   fileId: z.guid(),
   groups: z.array(z.object({ key: text(400), rows: z.array(rowSchema).min(1).max(MAX_ORDER_LINES + 50), problems: z.array(text(400)).max(200) })).min(1).max(MAX_IMPORT_ORDERS),
   problems: z.array(text(400)).max(20),
-  overrides: z.object({ customers: z.record(text(400), z.guid()), sites: z.record(text(500), z.guid()), materials: z.record(text(400), z.guid()), units: z.record(text(500), z.guid()) }),
+  overrides: z.object({ customers: z.record(text(400), z.guid()), sites: z.record(text(500), z.guid()), materials: z.record(text(400), z.guid()), units: z.record(text(500), z.guid()), sellers: z.record(text(400), z.guid()).optional() }),
 });
 
 /** The same file again with what the person picked for unrecognised customers, sites, goods and units. */
@@ -93,7 +95,7 @@ const createSchema = z.object({
   fileId: z.guid(),
   confirm: z.boolean().default(false),
   orders: z.array(z.object({ key: z.string().min(1).max(200), customerId: z.guid(), siteId: z.guid(), deliveryDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
-    terms: z.string().max(1000), lines: z.array(lineSchema).min(1).max(50) })).min(1).max(100),
+    terms: z.string().max(1000), lines: z.array(lineSchema).min(1).max(50), sellerId: z.guid().nullish() })).min(1).max(100),
 });
 
 export async function createImportedOrdersAction(input: unknown): Promise<ImportResult[]> {
@@ -113,9 +115,15 @@ export async function createImportedOrdersAction(input: unknown): Promise<Import
       });
       if (error || !data) { results.push({ key: order.key, error: "Chưa tạo được đơn (dữ liệu đã thay đổi hoặc không đủ quyền)." }); continue; }
       const orderId = String(data);
+      // FB16 (D38): the owner's order goes to the named seller, or the site's / customer's salesperson.
+      const sellerProblem = await assignSellerAfterCreate(supabase, { permissions: access.permissions, employeeId: access.employeeId, orderId,
+        customerId: order.customerId, siteId: order.siteId, chosen: order.sellerId, operationId: derivedOperationId(parsed.data.fileId, `import:${order.key}`) });
       const { data: created } = await supabase.from("sales_orders").select("order_number").eq("id", orderId).maybeSingle();
-      const result: ImportResult = { key: order.key, orderId, orderNumber: created?.order_number ?? undefined };
-      if (confirm) Object.assign(result, await confirmImported(supabase, access.branchId, orderId, derivedOperationId(parsed.data.fileId, `confirm:${order.key}`)));
+      const result: ImportResult = { key: order.key, orderId, orderNumber: created?.order_number ?? undefined, ...(sellerProblem ? { confirmation: sellerProblem } : {}) };
+      if (confirm) {
+        const confirmed = await confirmImported(supabase, access.branchId, orderId, derivedOperationId(parsed.data.fileId, `confirm:${order.key}`));
+        Object.assign(result, confirmed, { confirmation: [confirmed.confirmation, sellerProblem].filter(Boolean).join(" ") });
+      }
       results.push(result);
     } catch (error) {
       results.push({ key: order.key, error: error instanceof AppError ? error.message : "Chưa tạo được đơn." });

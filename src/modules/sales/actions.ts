@@ -2,6 +2,7 @@
 
 import { creditBlockOf } from "./credit-block";
 import { commandError } from "./command-messages";
+import { assignSellerAfterCreate } from "./seller";
 import Decimal from "decimal.js";
 import { applySalesDiscounts, readDiscountInputs } from "./discounts";
 import { isPositiveSalesQuantity } from "./quantity-input";
@@ -253,8 +254,13 @@ async function saveDocument(kind: "order" | "quote", mode: "create" | "edit", fo
       : await supabase.rpc("create_quote_draft", { target_branch_id: access.branchId, target_customer_id: parsed.data.customerId, target_site_id: parsed.data.siteId, expires_at: effectiveAt, commercial_terms: parsed.data.terms || null, quote_lines: lines, operation_id: parsed.data.operationId });
   if (result.error || !result.data) return { message: commandError(result.error?.message ?? "unknown") };
   revalidatePath(kind === "order" ? "/admin/orders" : "/admin/quotations");
-  const prepaymentProblem = kind === "order" && mode === "create"
+  // FB16 (D38): the owner names the seller (default: the site's / customer's salesperson); anyone else's order is theirs.
+  const sellerProblem = kind === "order" && mode === "create"
+    ? await assignSellerAfterCreate(supabase, { permissions: access.permissions, employeeId: access.employeeId, orderId: result.data,
+      customerId: parsed.data.customerId, siteId: parsed.data.siteId, chosen: z.guid().safeParse(formData.get("sellerEmployeeId")).data, operationId: parsed.data.operationId }) : null;
+  const paymentProblem = kind === "order" && mode === "create"
     ? await recordPrepayment(supabase, access.permissions, access.branchId, formData, result.data, parsed.data.customerId, parsed.data.operationId) : null;
+  const prepaymentProblem = [sellerProblem, paymentProblem].filter(Boolean).join(" ") || null;
   const prepaymentQuery = prepaymentProblem ? `&error=${encodeURIComponent(prepaymentProblem)}` : "";
   if (confirmOperationId) {
     const confirmed = await supabase.rpc("confirm_sales_order", { target_order_id: result.data, operation_id: confirmOperationId });

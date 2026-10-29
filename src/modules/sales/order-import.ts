@@ -5,18 +5,20 @@
 import ExcelJS from "exceljs";
 
 export const ORDER_SHEET = "Đơn hàng";
-export const ORDER_COLUMNS = ["Nhóm đơn", "Mã khách hàng", "Mã công trình", "Ngày giao (dd/mm/yyyy)", "Mã hàng", "Đơn vị", "Số lượng", "Đơn giá (trống = bảng giá)", "Ghi chú đơn"] as const;
+export const ORDER_COLUMNS = ["Nhóm đơn", "Mã khách hàng", "Mã công trình", "Ngày giao (dd/mm/yyyy)", "Mã hàng", "Đơn vị", "Số lượng", "Đơn giá (trống = bảng giá)", "Ghi chú đơn", "NV bán (chủ DN chỉ định)"] as const;
 export const MAX_IMPORT_ROWS = 2000;
 export const MAX_IMPORT_ORDERS = 100;
 export const MAX_ORDER_LINES = 50;
 
 export type TemplateReference = {
   customers: Array<{ code: string; name: string; phone?: string | null; sites: Array<{ code: string; name: string }> }>;
+  /** FB16 (D38): names for the "NV bán" pick list (only the owner may fill it). */
+  sellers?: string[];
   materials: Array<{ code: string; name: string; units: string[] }>;
 };
 
 export type ImportRow = { row: number; group: string; customerCode: string; siteCode: string; deliveryDate: string | null; materialCode: string;
-  unit: string; quantity: string; unitPrice: string; note: string };
+  unit: string; quantity: string; unitPrice: string; note: string; seller?: string };
 export type ImportGroup = { key: string; rows: ImportRow[]; problems: string[] };
 /** Rows of the template sheet that carry the pick lists and the name formulas. */
 export const TEMPLATE_ROWS = 500;
@@ -39,7 +41,7 @@ export async function buildOrderTemplate(reference: TemplateReference): Promise<
   const book = new ExcelJS.Workbook();
   book.creator = "Hiền Xa ERP";
   const orders = book.addWorksheet(ORDER_SHEET);
-  header(orders, ORDER_COLUMNS, [11, 16, 16, 20, 16, 10, 11, 22, 30]);
+  header(orders, ORDER_COLUMNS, [11, 16, 16, 20, 16, 10, 11, 22, 30, 24]);
   const customer = reference.customers[0];
   const [first, second] = reference.materials;
   if (customer && first) {
@@ -56,9 +58,11 @@ export async function buildOrderTemplate(reference: TemplateReference): Promise<
   const materialCodes = reference.materials.map((item) => item.code);
   lists.getColumn(1).values = ["Mã khách hàng", ...customerCodes];
   lists.getColumn(2).values = ["Mã hàng", ...materialCodes];
-  orders.getCell(1, 10).value = "Tên khách (tự hiện)";
-  orders.getCell(1, 11).value = "Tên hàng (tự hiện)";
-  for (const column of [10, 11]) {
+  const sellerNames = reference.sellers ?? [];
+  lists.getColumn(3).values = ["NV bán", ...sellerNames];
+  orders.getCell(1, 11).value = "Tên khách (tự hiện)";
+  orders.getCell(1, 12).value = "Tên hàng (tự hiện)";
+  for (const column of [11, 12]) {
     orders.getColumn(column).width = 32;
     Object.assign(orders.getCell(1, column), { font: { bold: true, color: { argb: "FF475569" } }, fill: { type: "pattern", pattern: "solid", fgColor: { argb: "FFE2E8F0" } } });
   }
@@ -66,8 +70,9 @@ export async function buildOrderTemplate(reference: TemplateReference): Promise<
   for (let row = 2; row <= TEMPLATE_ROWS + 1; row += 1) {
     if (customerCodes.length) orders.getCell(row, 2).dataValidation = list("A", customerCodes.length);
     if (materialCodes.length) orders.getCell(row, 5).dataValidation = list("B", materialCodes.length);
-    orders.getCell(row, 10).value = { formula: `IF(B${row}="","",IFERROR(VLOOKUP(B${row},'Khách hàng'!$A:$B,2,FALSE),"(nhận theo tên / SĐT khi tải lên)"))` };
-    orders.getCell(row, 11).value = { formula: `IF(E${row}="","",IFERROR(VLOOKUP(E${row},'Hàng hóa'!$A:$B,2,FALSE),"(nhận theo tên khi tải lên)"))` };
+    if (sellerNames.length) orders.getCell(row, 10).dataValidation = list("C", sellerNames.length);
+    orders.getCell(row, 11).value = { formula: `IF(B${row}="","",IFERROR(VLOOKUP(B${row},'Khách hàng'!$A:$B,2,FALSE),"(nhận theo tên / SĐT khi tải lên)"))` };
+    orders.getCell(row, 12).value = { formula: `IF(E${row}="","",IFERROR(VLOOKUP(E${row},'Hàng hóa'!$A:$B,2,FALSE),"(nhận theo tên khi tải lên)"))` };
   }
   const guide = book.addWorksheet("Hướng dẫn");
   for (const line of [
@@ -78,6 +83,7 @@ export async function buildOrderTemplate(reference: TemplateReference): Promise<
     "Đơn vị: ký hiệu đơn vị bán (ví dụ bao, tấn); để trống là đơn vị gốc của hàng.",
     "Đơn giá: để trống thì lấy theo bảng giá của khách; nhập giá riêng cần quyền quản lý giá.",
     "Khi tải lên có thể chọn \"Xác nhận luôn\": đơn được xác nhận như bấm Xác nhận ở màn đơn bán — lấy hàng trong kho trước, phần thiếu tự tạo đơn mua từ nhà cung cấp. Không chọn thì đơn ở trạng thái nháp.",
+    "NV bán: chỉ chủ doanh nghiệp được chọn người bán cho đơn; để trống thì tính cho NV phụ trách công trình / khách. Nhân viên tự nhập file thì đơn là của chính họ, để trống cột này.",
     "Tối đa 100 đơn, mỗi đơn 50 dòng.",
   ]) guide.addRow([line]);
   guide.getColumn(1).width = 110;
@@ -127,14 +133,14 @@ export async function parseOrderWorkbook(data: ArrayBuffer): Promise<{ groups: I
   let count = 0;
   sheet.eachRow((row, number) => {
     if (number === 1) return;
-    const cells = Array.from({ length: 9 }, (_, index) => row.getCell(index + 1).value);
+    const cells = Array.from({ length: 10 }, (_, index) => row.getCell(index + 1).value);
     if (cells.every((cell) => text(cell) === "")) return;
     count += 1;
     if (count > MAX_IMPORT_ROWS) return;
     const date = importDate(cells[3]);
     const item: ImportRow = { row: number, group: text(cells[0]), customerCode: text(cells[1]), siteCode: text(cells[2]),
       deliveryDate: date === "invalid" ? null : date, materialCode: text(cells[4]), unit: text(cells[5]),
-      quantity: text(cells[6]).replace(",", "."), unitPrice: text(cells[7]).replace(/[.\s₫đ]/g, ""), note: text(cells[8]) };
+      quantity: text(cells[6]).replace(",", "."), unitPrice: text(cells[7]).replace(/[.\s₫đ]/g, ""), note: text(cells[8]), seller: text(cells[9]) };
     const key = item.group || `${normalizeRef(item.customerCode)}|${normalizeRef(item.siteCode)}|${item.deliveryDate ?? ""}`;
     const group = groups.get(key) ?? { key, rows: [], problems: [] };
     if (!item.customerCode) group.problems.push(`Dòng ${number}: thiếu mã khách hàng.`);
@@ -143,8 +149,8 @@ export async function parseOrderWorkbook(data: ArrayBuffer): Promise<{ groups: I
     if (item.unitPrice && !/^[1-9]\d{0,14}$/.test(item.unitPrice)) group.problems.push(`Dòng ${number}: đơn giá phải là số tiền nguyên.`);
     if (date === "invalid") group.problems.push(`Dòng ${number}: ngày giao không đúng dạng dd/mm/yyyy.`);
     const head = group.rows[0];
-    if (head && (normalizeRef(head.customerCode) !== normalizeRef(item.customerCode) || normalizeRef(head.siteCode) !== normalizeRef(item.siteCode) || head.deliveryDate !== item.deliveryDate)) {
-      group.problems.push(`Dòng ${number}: cùng nhóm đơn "${item.group}" nhưng khác khách hàng, công trình hoặc ngày giao.`);
+    if (head && (normalizeRef(head.customerCode) !== normalizeRef(item.customerCode) || normalizeRef(head.siteCode) !== normalizeRef(item.siteCode) || head.deliveryDate !== item.deliveryDate || normalizeRef(head.seller ?? "") !== normalizeRef(item.seller ?? ""))) {
+      group.problems.push(`Dòng ${number}: cùng nhóm đơn "${item.group}" nhưng khác khách hàng, công trình, ngày giao hoặc NV bán.`);
     }
     group.rows.push(item);
     groups.set(key, group);

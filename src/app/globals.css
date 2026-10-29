@@ -1837,3 +1837,6 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .import-fix { margin-top: 8px; min-width: 240px; max-width: 340px; padding: 8px; border: 1px dashed var(--warning); border-radius: var(--radius); background: var(--warning-soft); }
 .import-fix .field { margin: 0; }
 .import-reviewing { margin: 8px 16px; }
+.seller-change { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
+.seller-change select { min-width: 180px; flex: 1; }
+.seller-subline { font-family: var(--font-sans, inherit); }

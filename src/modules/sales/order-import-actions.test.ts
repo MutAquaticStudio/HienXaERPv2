@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ rpc: vi.fn(), source: vi.fn(), permissions: new Set(["orders.create", "orders.confirm"]) }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
-vi.mock("@/lib/access/context", () => ({ requireInternalPermission: async () => ({ branchId: "b1", permissions: mocks.permissions }) }));
+vi.mock("@/lib/access/context", () => ({ requireInternalPermission: async () => ({ branchId: "b1", employeeId: "e-owner", permissions: mocks.permissions }) }));
 vi.mock("./commercial-lines", () => ({ createCommercialLines: async () => [{ material_id: "m1", quantity: "10" }] }));
 vi.mock("./auto-sourcing", async (original) => ({ ...(await original<typeof import("./auto-sourcing")>()), autoSourceConfirmedOrder: mocks.source }));
 const query = { select: () => query, eq: () => query, maybeSingle: async () => ({ data: { order_number: "DB-2026-000101" }, error: null }) };
@@ -56,5 +56,11 @@ describe("Xác nhận luôn khi nhập Excel (D37)", () => {
     const groups = [{ key: "1", problems: [], rows: [{ row: 2, group: "1", customerCode: "x", siteCode: "", deliveryDate: null, materialCode: "y", unit: "", quantity: "1", unitPrice: "", note: "" }] }];
     expect(await reviewOrderImportAction({ fileId: FILE, groups, problems: [], overrides: { customers: { x: "not-an-id" }, sites: {}, materials: {}, units: {} } }))
       .toMatchObject({ ok: false });
+  });
+
+  it("gives the owner's imported order to the named seller (D38)", async () => {
+    mocks.permissions = new Set(["orders.create", "roles.manage"]);
+    await createImportedOrdersAction({ fileId: FILE, orders: [{ ...ORDER, sellerId: "66666666-6666-4666-8666-666666666666" }] });
+    expect(mocks.rpc).toHaveBeenCalledWith("set_sales_order_seller", expect.objectContaining({ target_order_id: "order-1", target_employee_id: "66666666-6666-4666-8666-666666666666" }));
   });
 });

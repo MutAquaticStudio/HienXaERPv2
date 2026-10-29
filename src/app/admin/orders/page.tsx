@@ -14,10 +14,11 @@ import { CORE_LIST_PAGE_SIZE, parseCoreListQuery, ilikePattern } from "@/lib/cor
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { salesStateLabel, salesStateTone } from "@/modules/sales/presentation";
+import { loadSellers } from "@/modules/sales/seller";
 
-type OrderRow = { id: string; order_number: string; customer_name_snapshot: string; site_name_snapshot: string; commercial_state: string; fulfillment_state: string; payment_state: string; total_vnd: string; requested_delivery_at: string | null; created_at: string };
+type OrderRow = { id: string; order_number: string; sales_owner_employee_id: string | null; customer_name_snapshot: string; site_name_snapshot: string; commercial_state: string; fulfillment_state: string; payment_state: string; total_vnd: string; requested_delivery_at: string | null; created_at: string };
 type LineRow = { sales_order_id: string; line_number: number; material_name_snapshot: string; quantity: string; line_total_vnd: string; units_of_measure: { symbol: string } | { symbol: string }[] | null };
-type Query = { notice?: string; error?: string; q?: string; state?: string; page?: string };
+type Query = { notice?: string; error?: string; q?: string; state?: string; page?: string; seller?: string };
 
 const STATES = [
   { value: "", label: "Đang làm việc" },
@@ -34,8 +35,13 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   const query = await searchParams;
   const list = parseCoreListQuery(query);
   const supabase = await createServerSupabase();
+  // FB16 (D38): "NV bán hàng" filter — "Đơn của tôi" or one seller.
+  const sellers = await loadSellers(supabase, access.branchId);
+  const seller = query.seller === "me" ? access.employeeId : sellers.some((item) => item.id === query.seller) ? query.seller! : "";
+  const sellerParam = seller ? query.seller : undefined;
   const scoped = (state: string) => {
     let request = supabase.from("sales_orders").select("id").eq("branch_id", access.branchId);
+    if (seller) request = request.eq("sales_owner_employee_id", seller);
     if (list.q) request = request.or(`order_number.ilike.${ilikePattern(list.q)},customer_name_snapshot.ilike.${ilikePattern(list.q)},site_name_snapshot.ilike.${ilikePattern(list.q)}`);
     // D15: "Khách đặt · chờ duyệt" = portal orders still in draft.
     return state === "PORTAL_WAITING" ? request.eq("order_channel", "CUSTOMER_PORTAL").eq("commercial_state", "DRAFT")
@@ -54,7 +60,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   if (visibleIds.length) {
     const [{ data: orderData, error: orderError }, lineResult] = await Promise.all([
       supabase.from("sales_order_read")
-        .select("id, order_number, customer_name_snapshot, site_name_snapshot, commercial_state, fulfillment_state, payment_state, total_vnd::text, requested_delivery_at, created_at")
+        .select("id, order_number, sales_owner_employee_id, customer_name_snapshot, site_name_snapshot, commercial_state, fulfillment_state, payment_state, total_vnd::text, requested_delivery_at, created_at")
         .eq("branch_id", access.branchId).in("id", visibleIds),
       supabase.from("sales_order_lines").select("sales_order_id, line_number, material_name_snapshot, quantity, line_total_vnd::text, units_of_measure:ordered_uom_id(symbol)")
         .in("sales_order_id", visibleIds).order("line_number").limit(500),
@@ -65,7 +71,8 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
     if (rows.length !== visibleIds.length) throw new Error("Danh sách đơn bán không nhất quán.");
     lines = (lineResult.data ?? []) as unknown as LineRow[];
   }
-  const isFiltered = Boolean(list.q || list.state);
+  const isFiltered = Boolean(list.q || list.state || seller);
+  const sellerName = (id: string | null) => sellers.find((item) => item.id === id)?.name;
   const canCreate = access.permissions.has("orders.create");
   const currentLabel = STATES.find((state) => state.value === list.state)?.label ?? "Đang làm việc";
   return <div className="page-stack">
@@ -77,6 +84,10 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
     <div className="list-layout">
       <AutoFilterForm className="card card-pad list-filters" aria-label="Bộ lọc đơn bán">
         <label className="list-filters-search">Tìm kiếm<input type="search" name="q" defaultValue={list.q} placeholder="Mã đơn, tên khách hoặc công trình" /></label>
+        <label className="list-filters-search">NV bán hàng<select name="seller" defaultValue={sellerParam ?? ""}>
+          <option value="">Tất cả</option><option value="me">Đơn của tôi</option>
+          {sellers.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+        </select></label>
         <ListFilterGroup key={list.state} legend="Trạng thái đơn" name="state" value={list.state}
           options={STATES.map((state, index) => ({ ...state, count: countText(counts[index].data) }))} />
         {isFiltered && <Link className="code-link" href="/admin/orders">Xóa lọc</Link>}
@@ -90,7 +101,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
             const orderLines = lines.filter((line) => line.sales_order_id === order.id);
             return { id: order.id, label: order.order_number, className: order.commercial_state === "CANCELLED" ? "row-muted" : undefined,
               cells: <>
-                <td className="mono" data-label="Mã đơn"><Link className="code-link" href={href} tabIndex={-1}>{order.order_number}</Link></td>
+                <td className="mono" data-label="Mã đơn"><Link className="code-link" href={href} tabIndex={-1}>{order.order_number}</Link>{sellerName(order.sales_owner_employee_id) && <small className="table-subline seller-subline">NV: {sellerName(order.sales_owner_employee_id)}</small>}</td>
                 <td className="row-title" data-label="Khách hàng"><Link className="code-link row-link" href={href}>{order.customer_name_snapshot}</Link><small className="table-subline">{order.site_name_snapshot}</small></td>
                 <td className="numeric mono" data-label="Giá trị">{formatVnd(vnd(order.total_vnd))}</td>
                 <td data-label="Trạng thái"><StatusBadge tone={salesStateTone(order.commercial_state)}>{salesStateLabel(order.commercial_state)}</StatusBadge></td>
@@ -114,7 +125,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
           <p>{isFiltered ? "Không có đơn bán phù hợp. Thử tên khác hoặc xóa bộ lọc." : "Chưa có đơn bán trong chi nhánh này."}</p>
           {isFiltered ? <Link className="button button-secondary" href="/admin/orders">Xóa bộ lọc</Link> : canCreate && <ButtonLink href="/admin/orders/new" variant="commerce">Tạo đơn bán đầu tiên</ButtonLink>}
         </div>}
-        <ListPager page={list.page} hasNext={hasNext} params={{ q: list.q, state: list.state }} />
+        <ListPager page={list.page} hasNext={hasNext} params={{ q: list.q, state: list.state, seller: sellerParam }} />
       </section>
     </div>
   </div>;

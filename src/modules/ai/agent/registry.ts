@@ -7,6 +7,8 @@ import { z } from "zod";
 
 import { derivedOperationId, autoSourceConfirmedOrder } from "@/modules/sales/auto-sourcing";
 import { createCommercialLines } from "@/modules/sales/commercial-lines";
+import { matchRecord } from "@/modules/sales/order-match";
+import { assignSellerAfterCreate, canChooseSeller, loadSellers } from "@/modules/sales/seller";
 import { buildWarehouseLines } from "@/modules/purchasing/warehouse-lines";
 import { vietnamInstant } from "@/modules/attendance/presentation";
 import { formatVnd, vnd } from "@/lib/core/money";
@@ -92,9 +94,20 @@ const createSalesOrder: AgentAction = {
   kind: "soan_don_ban", area: "Bán hàng", permissions: ["orders.create"],
   description: "Soạn đơn bán (giá theo bảng giá của khách). xac_nhan=true để xác nhận đơn và tự phân nguồn luôn (cần quyền xác nhận đơn).",
   properties: { khach_hang: str("Mã hoặc tên khách."), cong_trinh: str("Mã hoặc tên công trình; trống = công trình đầu tiên."), ngay_giao: str("yyyy-mm-dd; trống = giao ngay."),
-    dong_hang: lineProperty("hàng bán"), xac_nhan: { type: "boolean" }, ghi_chu: str("Ghi chú đơn; có thể trống.") },
+    dong_hang: lineProperty("hàng bán"), xac_nhan: { type: "boolean" }, ghi_chu: str("Ghi chú đơn; có thể trống."),
+    nv_ban: str("Tên NV bán hàng khi chủ doanh nghiệp tạo đơn cho một nhân viên; trống = NV phụ trách khách / công trình. Nhân viên tự tạo thì để trống (đơn là của họ).") },
   async prepare(context, input) {
-    const value = z.object({ khach_hang: z.string(), cong_trinh: z.string(), ngay_giao: dateText, dong_hang: lineList, xac_nhan: z.boolean(), ghi_chu: z.string().max(1000) }).parse(input);
+    const value = z.object({ khach_hang: z.string(), cong_trinh: z.string(), ngay_giao: dateText, dong_hang: lineList, xac_nhan: z.boolean(), ghi_chu: z.string().max(1000),
+      nv_ban: z.string().max(160).default("") }).parse(input);
+    // FB16 (D38): only the owner names the seller.
+    let seller: { id: string; name: string } | null = null;
+    if (value.nv_ban.trim()) {
+      if (!canChooseSeller(context.permissions)) throw new ResolveError("Chỉ chủ doanh nghiệp được chỉ định NV bán; đơn người dùng tạo là của chính họ. Để trống nv_ban.");
+      const options = (await loadSellers(context.supabase, context.branchId)).filter((item) => item.assignable);
+      const match = matchRecord(options, value.nv_ban, { code: (item) => item.name, name: (item) => item.name });
+      if (!match.found) throw new ResolveError(`Không nhận ra NV bán "${value.nv_ban}". Các NV bán: ${options.map((item) => item.name).join("; ")}.`);
+      seller = match.found;
+    }
     if (value.xac_nhan && !context.permissions.has("orders.confirm")) throw new ResolveError("Người dùng không có quyền xác nhận đơn bán; soạn đơn nháp (xac_nhan=false).");
     const customer = await findCustomer(context.supabase, context.branchId, value.khach_hang);
     const site = await findSite(context.supabase, customer.id, value.cong_trinh);
@@ -104,8 +117,8 @@ const createSalesOrder: AgentAction = {
     const totals = lines.map((line) => new Decimal(line.quantity).mul(String(line.unit_price_vnd)).toDecimalPlaces(0, Decimal.ROUND_HALF_UP));
     const total = totals.reduce((sum, item) => sum.plus(item), new Decimal(0));
     return { title: `${value.xac_nhan ? "Tạo và xác nhận" : "Tạo"} đơn bán cho ${customer.display_name}`,
-      payload: { customerId: customer.id, siteId: site.id, deliveryDate: value.ngay_giao || null, terms: value.ghi_chu, lines, confirm: value.xac_nhan },
-      summary: [{ label: "Công trình", value: site.name }, { label: "Giao", value: value.ngay_giao ? value.ngay_giao.split("-").reverse().join("/") : "Ngay" },
+      payload: { customerId: customer.id, siteId: site.id, deliveryDate: value.ngay_giao || null, terms: value.ghi_chu, lines, confirm: value.xac_nhan, sellerId: seller?.id ?? null },
+      summary: [{ label: "Công trình", value: site.name }, ...(seller ? [{ label: "NV bán hàng", value: seller.name }] : []), { label: "Giao", value: value.ngay_giao ? value.ngay_giao.split("-").reverse().join("/") : "Ngay" },
         ...goods.map((line, index) => ({ label: `${line.material.code} · ${line.material.name}`, value: `${line.quantity} ${line.unit.symbol} × ${money(String(lines[index].unit_price_vnd))}` })),
         { label: "Tổng tiền", value: money(total.toFixed(0)) }] };
   },
@@ -113,6 +126,8 @@ const createSalesOrder: AgentAction = {
     const orderId = String(await rpc(context, "create_sales_order_draft", { target_branch_id: context.branchId, target_customer_id: payload.customerId, target_site_id: payload.siteId,
       requested_delivery_at: payload.deliveryDate ? new Date(`${payload.deliveryDate}T08:00:00+07:00`).toISOString() : new Date().toISOString(),
       commercial_terms: payload.terms || null, order_lines: payload.lines, operation_id: actionId }));
+    await assignSellerAfterCreate(context.supabase, { permissions: context.permissions, employeeId: "", orderId, customerId: String(payload.customerId),
+      siteId: String(payload.siteId), chosen: (payload.sellerId as string | null) ?? null, operationId: actionId });
     if (!payload.confirm) return { link: `/admin/orders/${orderId}`, message: "Đã tạo đơn bán nháp." };
     const confirmId = derivedOperationId(actionId, "confirm");
     const { error } = await context.supabase.rpc("confirm_sales_order", { target_order_id: orderId, operation_id: confirmId });

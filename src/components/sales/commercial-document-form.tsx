@@ -124,9 +124,11 @@ function OrderReview({ formId, customer, site, siteAddress, lines, totalVnd, gro
   </Dialog>;
 }
 
-export function CommercialDocumentForm({ kind, options, operationId, confirmOperationId, canConfirm = false, canManagePrice, canManageCustomers, existing, initialCustomerId, initialSiteId, initialMaterialId, prepayment }: {
+export function CommercialDocumentForm({ kind, options, operationId, confirmOperationId, canConfirm = false, canManagePrice, canManageCustomers, existing, initialCustomerId, initialSiteId, initialMaterialId, prepayment, sellers }: {
   kind: "order" | "quote"; options: SalesFormOptions; operationId: string; confirmOperationId?: string; canConfirm?: boolean;
   canManagePrice: boolean; canManageCustomers: boolean; existing?: ExistingCommercialDraft;
+  /** FB16 (D38): only for the owner creating an order — who the order is for. A salesperson's own order is theirs. */
+  sellers?: { id: string; name: string }[];
   initialCustomerId?: string; initialSiteId?: string; initialMaterialId?: string;
   /** New orders, with the right to record receipts: "Khách trả trước" goes into the cash book when the order is saved. */
   prepayment?: PrepaymentOptions | null;
@@ -303,6 +305,11 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
         onSearch={customerId ? async (term) => (await loadSites(customerId, term)).map(siteOption) : undefined}
         onSelect={(option) => { setSite(option); invalidate(); if (option) searchRef.current?.focus(); }}
         action={!existing && canManageCustomers ? <button type="button" className="quick-create-trigger" onClick={() => setQuickMode("site")} disabled={!customerId}>+ Thêm công trình</button> : undefined} />
+      {sellers && !existing && kind === "order" && <div className="field"><label htmlFor={`${formId}-seller`}>NV bán hàng</label>
+        <select id={`${formId}-seller`} name="sellerEmployeeId" defaultValue="">
+          <option value="">Theo NV phụ trách khách / công trình</option>
+          {sellers.map((seller) => <option key={seller.id} value={seller.id}>{seller.name}</option>)}
+        </select><small className="muted">Đơn tính doanh số cho người này. Nhân viên tự tạo đơn thì đơn là của họ.</small></div>}
       {lookupMessage && <p className="form-message" role="status">{lookupMessage}</p>}
     </aside>
 

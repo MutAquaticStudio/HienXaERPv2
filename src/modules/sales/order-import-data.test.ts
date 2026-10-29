@@ -17,7 +17,8 @@ const tables: Record<string, unknown[]> = {
   material_uom_conversions: [{ material_id: "m1", from_uom_id: "u-bao" }],
   units_of_measure: [{ id: "u-kg", code: "kg", symbol: "kg", name: "Kilôgam" }, { id: "u-bao", code: "bao", symbol: "bao", name: "Bao" }],
 };
-const supabase = { from: (table: string) => { const query: Record<string, unknown> = {}; for (const method of ["select", "eq", "in", "limit"]) query[method] = () => query;
+const supabase = { rpc: async () => ({ data: [{ id: "e1", name: "Chị Lan", assignable: true }, { id: "e2", name: "Anh Hùng", assignable: true }], error: null }),
+  from: (table: string) => { const query: Record<string, unknown> = {}; for (const method of ["select", "eq", "in", "limit"]) query[method] = () => query;
   const result = Promise.resolve({ data: tables[table], error: null }); query.then = result.then.bind(result); return query; } };
 const row = (extra: Partial<ImportGroup["rows"][number]> = {}) => ({ row: 2, group: "1", customerCode: "KH01", siteCode: "", deliveryDate: "2026-11-05", materialCode: "XM01", unit: "bao", quantity: "10", unitPrice: "", note: "", ...extra });
 
@@ -89,5 +90,20 @@ describe("resolveImport (D37)", () => {
     const [order] = await resolveImport(supabase as never, "b1", groups, false, { customers: {}, sites: { [siteKey("c8", "")]: "s1" }, materials: {}, units: {} });
     expect(order.fixes).toEqual([{ kind: "site", key: siteKey("c8", ""), text: "", customerId: "c8", options: [] }]);
     expect(order.input).toBeNull();
+  });
+
+  it("takes the seller column from the owner only; a salesperson's order stays theirs (D38)", async () => {
+    mocks.price.mockReset();
+    mocks.price.mockResolvedValue([{ quantity: "10", unit_price_vnd: "95000" }]);
+    const groups = (seller: string) => [{ key: "1", problems: [], rows: [row({ seller })] }];
+    const [owner] = await resolveImport(supabase as never, "b1", groups("chi lan"), false, undefined, { canChooseSeller: true, employeeId: "e9" });
+    expect(owner.input).toMatchObject({ sellerId: "e1" });
+    const [sale] = await resolveImport(supabase as never, "b1", groups("Anh Hùng"), false, undefined, { canChooseSeller: false, employeeId: "e1" });
+    expect(sale.problems).toEqual(["Chỉ chủ doanh nghiệp được chỉ định NV bán; đơn bạn tạo là của bạn — để trống cột NV bán."]);
+    expect(sale.input).toBeNull();
+    const [self] = await resolveImport(supabase as never, "b1", groups("Chị Lan"), false, undefined, { canChooseSeller: false, employeeId: "e1" });
+    expect(self.problems).toEqual([]);
+    const [unknown] = await resolveImport(supabase as never, "b1", groups("Bé Ba"), false, undefined, { canChooseSeller: true, employeeId: "e9" });
+    expect(unknown.fixes).toEqual([{ kind: "seller", key: "beba", text: "Bé Ba", options: [{ id: "e1", label: "Chị Lan" }, { id: "e2", label: "Anh Hùng" }] }]);
   });
 });
