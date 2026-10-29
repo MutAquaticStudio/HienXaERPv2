@@ -1681,3 +1681,6 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .payslip dt { color: var(--muted); }
 .payslip dd { margin: 0; font-variant-numeric: tabular-nums; }
 .payroll-tiers { display: grid; gap: 4px; }
+/* FB12 (D34c): Sổ quỹ — one tab per money account and quick periods. */
+.cashbook-accounts { margin-bottom: 14px; }
+.period-presets { display: flex; flex-wrap: wrap; gap: 6px; }
