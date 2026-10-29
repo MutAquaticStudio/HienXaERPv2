@@ -120,7 +120,7 @@ export default async function PayrollDetailPage({ params }: { params: Promise<{ 
         </tr>)}</tbody>
         {lines.length > 0 && <tfoot><tr>
           <th>Tổng</th><td></td><td className="mono">{money(sum(lines, "base_amount_vnd"))}</td><td className="mono">{money(sum(lines, "overtime_amount_vnd"))}</td>
-          <td className="mono">{money(sum(lines, "allowance_vnd"))}</td><td className="mono">{money(sum(lines, "bonus_vnd"))}</td><td className="mono">−{money(sum(lines, "deduction_vnd"))}</td>
+          <td className="mono">{money(sum(lines, "allowance_vnd"))}</td><td className="mono">{money(sum(lines, "bonus_vnd"))}</td><td className="mono">{sum(lines, "deduction_vnd") ? `−${money(sum(lines, "deduction_vnd"))}` : money("0")}</td>
           <td></td><td className="mono"><strong>{money(sum(lines, "net_pay_vnd"))}</strong></td>{!draft && <td></td>}<td></td>
         </tr></tfoot>}
       </table>{!lines.length && <p className="empty-inline">Chưa có phiếu lương: thiết lập lương cho nhân viên ở trang Bảng lương rồi bấm “Tính lại”.</p>}</div>

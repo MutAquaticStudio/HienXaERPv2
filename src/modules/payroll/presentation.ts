@@ -1,4 +1,5 @@
 // FB12 (D34b): labels and helpers of "Bảng lương".
+import { toCsv } from "@/lib/core/csv";
 
 export const PAY_BASES = ["MONTHLY_WORKDAYS", "PER_SHIFT", "PER_HOUR", "FIXED"] as const;
 export const COMPONENT_KINDS = ["ALLOWANCE", "BONUS", "DEDUCTION"] as const;
@@ -55,11 +56,8 @@ export function describeTiers(tiers: SalesTier[] | null | undefined) {
     .map((tier) => `từ ${BigInt(tier.from_vnd).toLocaleString("vi-VN")} đ: ${bpsToPercent(tier.rate_bps)}%`).join(" · ");
 }
 
-/** CSV of a payroll for spreadsheets (comma-separated, quoted, UTF-8 with BOM for Excel). */
-export function payrollCsv(rows: Array<Record<string, string | number>>, headers: Array<[string, string]>) {
-  const quote = (value: string | number) => `"${String(value).replaceAll('"', '""')}"`;
-  return "﻿" + [headers.map(([, label]) => quote(label)).join(","), ...rows.map((row) => headers.map(([key]) => quote(row[key] ?? "")).join(","))].join("\r\n");
-}
+/** CSV of a payroll for spreadsheets. */
+export const payrollCsv = toCsv;
 
 /** Vietnamese message of a payroll command error; never a technical code. */
 export function payrollError(message: string | null | undefined) {
