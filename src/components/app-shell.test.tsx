@@ -118,7 +118,7 @@ describe("blue menu bar (D29)", () => {
     openDrawer();
     expect(screen.getByRole("button", { name: "Tài chính" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Công nợ" })).toHaveAttribute("aria-current", "page");
-    expect(screen.getByRole("link", { name: "Hóa đơn" })).toHaveAttribute("href", "/admin/invoices");
+    expect(screen.getByRole("link", { name: "Hóa đơn điện tử (tạm ngừng)" })).toHaveAttribute("href", "/admin/invoices");
     expect(screen.queryByRole("link", { name: "Sổ quỹ" })).not.toBeInTheDocument();
   });
 
@@ -137,7 +137,7 @@ describe("blue menu bar (D29)", () => {
     location.pathname = "/admin/invoices/purchases/matching";
     const { container } = render(shell());
     openDrawer();
-    expect(screen.getByRole("link", { name: "Hóa đơn" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "Hóa đơn điện tử (tạm ngừng)" })).toHaveAttribute("aria-current", "page");
     expect(container.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
     cleanup();
     location.pathname = "/admin/receivables/abc";

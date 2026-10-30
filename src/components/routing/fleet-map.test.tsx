@@ -1,10 +1,10 @@
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 
 vi.mock("leaflet/dist/leaflet.css", () => ({}));
 // Each base-map layer keeps its event handlers so a test can make its tiles fail.
 const tileLayers = vi.hoisted(() => [] as Array<{ url: string; options: Record<string, unknown>; handlers: Record<string, () => void> }>);
-vi.mock("leaflet", () => {
+const leafletMock = vi.hoisted(() => {
   const chain = () => { const value: Record<string, unknown> = {}; for (const name of ["addTo", "addLayer", "removeLayer", "hasLayer", "bindTooltip", "bindPopup", "on", "setView", "clearLayers", "remove", "fitBounds", "invalidateSize"]) value[name] = () => value; return value; };
   const tileLayer = (url: string, options: Record<string, unknown>) => {
     const value = chain(); const entry = { url, options, handlers: {} as Record<string, () => void> }; tileLayers.push(entry);
@@ -13,11 +13,13 @@ vi.mock("leaflet", () => {
   };
   return { map: () => chain(), tileLayer, layerGroup: () => chain(), circleMarker: () => chain(), polyline: () => chain(), latLngBounds: () => ({}) };
 });
+// The map loads Leaflet through this seam; the fake is handed over directly, so the real library never loads in tests.
+vi.mock("./load-leaflet", () => ({ loadLeaflet: async () => leafletMock }));
 import { FleetMap, type FleetPosition } from "./fleet-map";
 
 const worker: FleetPosition = { employee_id: "e1", employee_name: "Thợ A", delivery_number: "PG-0001", plate_number: "99C-123.45",
   latitude: "21.0", longitude: "105.8", captured_at: "2026-10-24T03:00:00Z", is_stale: false };
-afterEach(() => { vi.unstubAllGlobals(); tileLayers.length = 0; });
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); tileLayers.length = 0; });
 
 it("lists the workers on shift and refreshes from the fleet API (FB18 D40)", async () => {
   const fetchMock = vi.fn(async () => new Response(JSON.stringify({ fleet: [worker,

@@ -1,6 +1,8 @@
 import { beforeEach, expect, it, vi } from "vitest";
 
 const m = vi.hoisted(() => ({ rpc: vi.fn() }));
+// These cover the commands themselves, as they behave once the module is switched back on (D41 pauses it).
+vi.mock("@/lib/features", async (original) => ({ ...(await original<typeof import("@/lib/features")>()), E_INVOICES_ENABLED: true }));
 vi.mock("@/lib/access/context", () => ({ requireInternalPermission: vi.fn(async () => ({ branchId: "branch-a" })) }));
 vi.mock("@/lib/core/command-outcome-actions", () => ({ checkSavedCommandFieldsAction: vi.fn(async () => null) }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));

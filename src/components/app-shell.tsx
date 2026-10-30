@@ -11,6 +11,7 @@ import { ChatDock } from "@/components/messaging/chat-dock";
 import { AppearanceButton } from "@/components/settings/appearance-button";
 import { UatBrowserTiming } from "@/components/uat-browser-timing";
 import { PAYMENT_NOTICES_ENABLED, QUOTATIONS_ENABLED } from "@/lib/features";
+import { E_INVOICES_ENABLED } from "@/lib/features";
 
 type Surface = "admin" | "work" | "customer";
 
@@ -48,7 +49,7 @@ const navigation: Record<Surface, readonly NavigationItem[]> = {
     { href: "/admin/cashbook", label: "Sổ quỹ", icon: WalletCards, permission: "finance.ar.read", group: "finance" },
     { href: "/admin/expenses", label: "Chi phí", icon: FileText, permission: "finance.expense.read", group: "finance" },
     ...(PAYMENT_NOTICES_ENABLED ? [{ href: "/admin/payment-notices", label: "Báo chuyển khoản", icon: WalletCards, permission: "finance.payment_notice.review", group: "finance" }] : []),
-    { href: "/admin/invoices", label: "Hóa đơn", icon: FileText, permissionsAny: ["finance.ar.read", "finance.ap.read"], group: "finance" },
+    { href: "/admin/invoices", label: E_INVOICES_ENABLED ? "Hóa đơn" : "Hóa đơn điện tử (tạm ngừng)", icon: FileText, permissionsAny: ["finance.ar.read", "finance.ap.read"], group: "finance" },
     { href: "/admin/workforce", label: "Nhân sự & công việc", icon: UsersRound, permission: "workforce.read", group: "workforce" },
     { href: "/admin/attendance", label: "Chấm công", icon: Clock3, permission: "attendance.read", group: "workforce" },
     { href: "/admin/payroll", label: "Bảng lương", icon: WalletCards, permission: "compensation.read", group: "workforce" },

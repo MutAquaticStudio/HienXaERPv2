@@ -1,4 +1,5 @@
 "use server";
+import { E_INVOICES_ENABLED, E_INVOICES_PAUSED_MESSAGE } from "@/lib/features";
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -14,6 +15,7 @@ function failed(message?: string, code?: string): CommandOutcome {
 function refresh(id?: string) { revalidatePath("/admin/invoices"); revalidatePath("/admin/invoices/purchases"); revalidatePath("/admin/invoices/purchases/matching"); if (id) revalidatePath(`/admin/invoices/purchases/matching/${id}`); }
 const line = z.object({ source_kind: z.enum(["RECEIPT_LINE", "FULFILLMENT_LINE", "RETURN_CREDIT"]), source_id: z.guid(), document_quantity: z.string().regex(/^\d{1,14}(?:\.\d{1,6})?$/), document_unit_cost: z.string().regex(/^\d{1,26}(?:\.\d{1,6})?$/), document_value_vnd: z.string().regex(/^\d+$/) });
 export async function registerSupplierDocumentAction(form: FormData): Promise<CommandOutcome> {
+ if (!E_INVOICES_ENABLED) return { status: "FAILED", message: E_INVOICES_PAUSED_MESSAGE };
  const parsed = z.object({ supplierId: z.guid(), kind: z.enum(["INVOICE", "CREDIT_NOTE"]), number: z.string().trim().min(2).max(100), date: z.iso.date(), total: z.string().regex(/^\d+$/), lines: z.string().max(20000), operationId: z.guid() }).safeParse(Object.fromEntries(form));
  if (!parsed.success) return { status: "FAILED", message: "Nhập tham chiếu, ngày và các dòng chứng từ hợp lệ." };
  let entries: z.infer<typeof line>[]; try { entries = z.array(line).min(1).max(50).parse(JSON.parse(parsed.data.lines)); } catch { return { status: "FAILED", message: "Chọn tối đa 50 nguồn; lượng và giá có tối đa 6 chữ số thập phân." }; }
@@ -23,6 +25,7 @@ export async function registerSupplierDocumentAction(form: FormData): Promise<Co
  if (error || !data) return failed(error?.message, error?.code); refresh(); return { status: "SUCCESS", resultId: String(data), message: "Đã ghi đối chiếu theo nguồn. Không tạo phải trả hoặc giảm phải trả lần nữa; chứng từ pháp lý chưa được xác minh." };
 }
 export async function reviewSupplierDocumentAction(form: FormData): Promise<CommandOutcome> {
+ if (!E_INVOICES_ENABLED) return { status: "FAILED", message: E_INVOICES_PAUSED_MESSAGE };
  const parsed = z.object({ documentId: z.guid(), decision: z.enum(["APPROVE_MATCH", "CANCEL"]), reason: z.string().trim().max(500).optional(), version: z.coerce.number().int().positive(), operationId: z.guid() }).safeParse(Object.fromEntries(form));
  if (!parsed.success) return { status: "FAILED", message: "Chứng từ đã thay đổi hoặc ghi chú quá 500 ký tự. Tải lại trước khi rà soát." };
  const access = await requireInternalPermission(parsed.data.decision === "CANCEL" ? "finance.ap.adjust" : "finance.reconcile"), changed = await checkSavedCommandFieldsAction(form, "review_supplier_document"); if (changed) return changed;
@@ -32,6 +35,7 @@ export async function reviewSupplierDocumentAction(form: FormData): Promise<Comm
 }
 
 export async function invoiceCommandWithOutcomeAction(form: FormData): Promise<CommandOutcome> {
+ if (!E_INVOICES_ENABLED) return { status: "FAILED", message: E_INVOICES_PAUSED_MESSAGE };
  const kind = z.enum(["draft", "approve", "cancel", "adjustment", "purchase"]).safeParse(form.get("kind")), op = z.guid().safeParse(form.get("operationId"));
  if (!kind.success || !op.success) return { status: "FAILED", message: "Thông tin thao tác hóa đơn không hợp lệ." };
  const config = { draft: ["create_invoice_draft", "finance.ar.adjust"], approve: ["approve_invoice_business", "finance.reconcile"], cancel: ["cancel_invoice_draft", "finance.ar.adjust"], adjustment: ["create_invoice_adjustment_draft", "finance.ar.adjust"], purchase: ["register_purchase_invoice_source", "finance.ap.adjust"] } as const;

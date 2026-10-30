@@ -6,6 +6,7 @@ import type { CircleMarker, LayerGroup, Map as LeafletMap, Polyline } from "leaf
 import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { GPS_PING_INTERVAL_MS } from "@/modules/routing/device-availability";
 import { baseMaps } from "@/modules/routing/base-maps";
+import { loadLeaflet } from "@/components/routing/load-leaflet";
 
 /** FB18 (D40): one worker on shift — the latest position their phone sent, and the delivery they are on (if any). */
 export type FleetPosition = { employee_id: string; employee_name: string; latitude: number | string; longitude: number | string;
@@ -38,7 +39,7 @@ export function FleetMap({ initial }: { initial: FleetPosition[] }) {
   useEffect(() => {
     let cancelled = false;
     let resize: ResizeObserver | undefined;
-    void import("leaflet").then((L) => {
+    void loadLeaflet().then((L) => {
       if (cancelled || !holder.current || map.current) return;
       const created = L.map(holder.current, { zoomControl: true }).setView(VIETNAM, 6);
       map.current = created;
@@ -82,7 +83,7 @@ export function FleetMap({ initial }: { initial: FleetPosition[] }) {
   }, [selected]);
 
   useEffect(() => {
-    void import("leaflet").then((L) => {
+    void loadLeaflet().then((L) => {
       if (!map.current || !layer.current) return;
       layer.current.clearLayers();
       const points: [number, number][] = [];
