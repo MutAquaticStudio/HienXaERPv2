@@ -55,7 +55,7 @@ it("opens the camera, uploads the photo and reports every line as loaded", async
 it("reports a short delivery in the sold unit; nothing delivered needs no note (FB7)", async () => {
   fetcher.mockResolvedValueOnce({ ok: false, json: async () => ({ error: "Công việc vừa được cập nhật. Tải lại công việc rồi báo lại." }) });
   render(<DeliveryDoneForm workItemId={workItemId} version={2} delivery={delivery} savedPhotoIds={["66666666-6666-4666-8666-666666666666"]} />);
-  fireEvent.click(screen.getByRole("button", { name: "Giao thiếu / Không giao được" }));
+  fireEvent.click(screen.getByRole("radio", { name: "Giao thiếu / không giao được" }));
   const quantity = screen.getByLabelText(/Xi măng · đã lấy 60 bao \(3\.000 kg\)/);
   expect(quantity).toHaveValue("60");
   expect(screen.getByLabelText("Ghi chú (không bắt buộc)")).not.toBeRequired();
@@ -70,7 +70,7 @@ it("reports a short delivery in the sold unit; nothing delivered needs no note (
 it("sends a failed delivery without a note", async () => {
   fetcher.mockResolvedValueOnce({ ok: true, json: async () => ({ resultId: "r2" }) });
   render(<DeliveryDoneForm workItemId={workItemId} version={2} delivery={delivery} />);
-  fireEvent.click(screen.getByRole("button", { name: "Giao thiếu / Không giao được" }));
+  fireEvent.click(screen.getByRole("radio", { name: "Giao thiếu / không giao được" }));
   fireEvent.change(screen.getByLabelText(/Xi măng · đã lấy/), { target: { value: "0" } });
   fireEvent.click(screen.getByRole("button", { name: "Gửi báo cáo giao" }));
   await waitFor(() => expect(navigation.push).toHaveBeenCalledWith("/work?notice=delivery-reported"));

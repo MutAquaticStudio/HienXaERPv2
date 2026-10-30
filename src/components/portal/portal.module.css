@@ -1114,3 +1114,107 @@ button.link {
 .slipList summary > span { display: grid; gap: 2px; }
 .slipList summary small { font-size: 12px; color: #8a4b05; }
 .slipList summary small[data-paid] { color: #0e7a45; }
+
+/* Concept cổng thợ "Chi tiết việc giao" and "Báo đã giao". */
+.pageHead { display: flex; align-items: center; gap: 10px; padding: 2px 0; }
+.pageHead > div { flex: 1; min-width: 0; }
+.pageHead p { margin: 0; font-size: 12px; color: var(--portal-muted, #5a6b82); }
+.pageHead h1 { margin: 2px 0 0; font-size: 17px; line-height: 1.3; overflow-wrap: anywhere; }
+.backButton { width: 44px; height: 44px; flex-shrink: 0; display: grid; place-items: center; border-radius: 14px; color: inherit; background: var(--portal-paper, #fff); text-decoration: none; }
+.stateChip { flex-shrink: 0; padding: 6px 10px; border-radius: 99px; color: #0b63c6; background: #e3eefb; font-size: 12px; font-weight: 700; }
+.stepsCircles { text-align: center; gap: 4px; }
+.stepsCircles li { justify-items: center; }
+.stepCircle { width: 26px; height: 26px; box-sizing: border-box; display: grid; place-items: center; border-radius: 99px; border: 2px solid #c9d2de; font-size: 12px; font-weight: 700; color: var(--portal-muted, #5a6b82); }
+.stepsCircles li[data-state="done"] .stepCircle { border-color: #0e7a45; background: #0e7a45; color: #fff; }
+.stepsCircles li[data-state="current"] .stepCircle { border-color: #0b63c6; background: #0b63c6; color: #fff; box-shadow: 0 0 0 5px #dbe8f8; }
+.placeCard { display: grid; gap: 12px; }
+.placeCard > div:first-child { display: grid; gap: 4px; }
+.placeCard strong { font-size: 14px; font-weight: 600; }
+.placeCard small { font-size: 12px; color: var(--portal-muted, #5a6b82); }
+.goodsList { list-style: none; margin: 4px 0 0; padding: 0; }
+.goodsList > li { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid var(--portal-line, #edf1f6); font-size: 14px; }
+.goodsList > li > span { display: grid; gap: 2px; min-width: 0; }
+.goodsList small { font-size: 12px; color: #8a4b05; }
+.goodsList strong { font-size: 15px; white-space: nowrap; }
+.segmented { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; padding: 4px; border-radius: 14px; background: #f2f5f9; }
+.segmented button { min-height: 42px; border: 0; border-radius: 11px; background: transparent; font: inherit; font-size: 0.85rem; font-weight: 600; color: var(--portal-muted, #5a6b82); cursor: pointer; }
+.segmented button[aria-checked="true"] { background: #fff; color: #0e7a45; font-weight: 800; box-shadow: 0 1px 4px rgb(16 34 58 / 12%); }
+.doneLines { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.doneLines > li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; background: #f7f9fc; font-size: 14px; }
+.doneLines strong { color: #0e7a45; white-space: nowrap; }
+
+/* Concept "Khách · Công nợ": white summary with the in-time / soon / overdue bar and legend; due status per debt. */
+.debtSummary { display: grid; gap: 12px; padding: 16px; border-radius: 20px; background: var(--portal-paper, #fff); }
+.debtSummary p { margin: 0; font-size: 12px; color: var(--portal-muted, #5a6b82); }
+.debtSummary > div:first-child strong { display: block; margin-top: 4px; font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.debtSummary .payAllButton { color: #fff; background: var(--portal-primary, #0b63c6); }
+.debtBar { display: flex; gap: 2px; height: 10px; border-radius: 99px; overflow: hidden; }
+.debtBar span[data-tone="later"], .debtLegend dt[data-tone="later"]::before { background: #0b63c6; }
+.debtBar span[data-tone="soon"], .debtLegend dt[data-tone="soon"]::before { background: #f2a93b; }
+.debtBar span[data-tone="overdue"], .debtLegend dt[data-tone="overdue"]::before { background: #d92d20; }
+.debtLegend { margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.debtLegend dt { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--portal-muted, #5a6b82); }
+.debtLegend dt::before { content: ""; width: 8px; height: 8px; border-radius: 99px; flex-shrink: 0; }
+.debtLegend dd { margin: 3px 0 0; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.debtLegend dd[data-tone="overdue"] { color: #b42318; }
+.billRow small[data-tone="overdue"] { color: #b42318; font-weight: 600; }
+.billRow small[data-tone="soon"] { color: #8a4b05; font-weight: 600; }
+
+/* Concept "Khách · Theo dõi đơn": delivery card, vertical journey with times, outline "Đặt lại đơn này". */
+.etaCard { display: flex; align-items: center; gap: 12px; }
+.etaCard > div { display: grid; gap: 2px; }
+.etaCard strong { font-size: 15px; }
+.etaCard small { font-size: 12px; color: var(--portal-muted, #5a6b82); }
+.etaIcon { width: 46px; height: 46px; flex-shrink: 0; display: grid; place-items: center; border-radius: 14px; color: #0b63c6; background: #dbe8f8; }
+.journey { list-style: none; margin: 12px 0 0; padding: 0; display: grid; }
+.journey > li { position: relative; display: grid; grid-template-columns: 24px 1fr auto; gap: 12px; align-items: start; padding-bottom: 16px; font-size: 14px; font-weight: 600; }
+.journey > li:last-child { padding-bottom: 0; }
+.journey > li:not(:last-child)::after { content: ""; position: absolute; left: 10px; top: 24px; bottom: 2px; width: 2px; background: var(--portal-line, #edf1f6); }
+.journey > li > span:first-child { width: 22px; height: 22px; box-sizing: border-box; display: grid; place-items: center; border-radius: 99px; border: 2px solid #c9d2de; color: #fff; }
+.journey > li[data-state="done"] > span:first-child { border-color: #0e7a45; background: #0e7a45; }
+.journey > li[data-state="done"]:not(:last-child)::after { background: #0e7a45; }
+.journey > li[data-state="current"] > span:first-child { border-color: #0b63c6; background: #0b63c6; box-shadow: 0 0 0 5px #dbe8f8; }
+.journey > li[data-state="current"] { color: #0b63c6; font-weight: 800; }
+.journey > li[data-state="todo"] { color: var(--portal-muted, #5a6b82); font-weight: 500; }
+.journey small { font-size: 12px; color: var(--portal-muted, #5a6b82); font-weight: 500; white-space: nowrap; }
+.journey > li[data-state="current"] small { color: #0b63c6; font-weight: 700; }
+.reorderOutline { min-height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 14px; border: 1px solid #0e7a45; color: #0e7a45; background: var(--portal-paper, #fff); font-weight: 800; text-decoration: none; }
+
+/* Concept "Khách · Đặt hàng": where to deliver, search, group chips, product cards with − / +, total pinned at the bottom. */
+.shop { display: grid; gap: 12px; padding-bottom: 96px; }
+.shopPlace { display: grid; gap: 12px; padding: 14px; border-radius: 16px; background: var(--portal-paper, #fff); }
+.shopNewSite { display: grid; gap: 10px; }
+.shopSearch { display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 12px; border-radius: 14px; background: #f2f5f9; color: var(--portal-muted, #5a6b82); }
+.shopSearch input { flex: 1; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 15px; color: inherit; outline: none; }
+.shopSearch:focus-within { box-shadow: 0 0 0 2px var(--portal-primary, #0b63c6); }
+.shopChips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+.shopChips button { flex-shrink: 0; min-height: 34px; padding: 0 12px; border: 0; border-radius: 99px; background: #f2f5f9; font: inherit; font-size: 13px; font-weight: 600; color: inherit; cursor: pointer; white-space: nowrap; }
+.shopChips button[aria-pressed="true"] { background: #10223a; color: #fff; font-weight: 700; }
+.shopList { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.shopCard { display: grid; gap: 10px; padding: 12px; border-radius: 16px; background: var(--portal-paper, #fff); }
+.shopName { display: grid; gap: 2px; min-width: 0; }
+.shopName strong { font-size: 14px; }
+.shopName span { font-size: 13px; font-weight: 700; color: #0e7a45; }
+.shopName small { font-size: 12px; color: var(--portal-muted, #5a6b82); }
+.shopControls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.shopUnits { display: flex; padding: 3px; border-radius: 10px; background: #f2f5f9; }
+.shopUnits button { min-height: 30px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; font: inherit; font-size: 12px; font-weight: 600; color: var(--portal-muted, #5a6b82); cursor: pointer; }
+.shopUnits button[aria-checked="true"] { background: #fff; color: #10223a; font-weight: 700; }
+.stepper { margin-left: auto; display: flex; align-items: center; border: 1px solid #0e7a45; border-radius: 12px; overflow: hidden; }
+.stepper button { width: 40px; height: 40px; display: grid; place-items: center; border: 0; background: #fff; color: #0e7a45; cursor: pointer; }
+.stepper button:last-child { background: #0e7a45; color: #fff; }
+.stepper input { width: 56px; height: 40px; border: 0; text-align: center; font: inherit; font-size: 15px; font-weight: 800; color: inherit; background: #fff; }
+.stepper input[aria-invalid="true"] { color: var(--danger, #b42318); }
+.shopAdd { margin-left: auto; min-height: 40px; padding: 0 16px; border: 1px solid #0e7a45; border-radius: 12px; background: #fff; color: #0e7a45; font: inherit; font-size: 13px; font-weight: 800; cursor: pointer; }
+.shopAdd:disabled { opacity: 0.5; cursor: not-allowed; }
+.shopExtra { display: grid; gap: 10px; padding: 14px; border-radius: 16px; background: var(--portal-paper, #fff); }
+.shopFooter { position: sticky; bottom: calc(var(--portal-bottom-nav, 78px) + 8px); z-index: 5; display: grid; gap: 6px; }
+.shopFooter > p { margin: 0; padding: 8px 12px; border-radius: 12px; background: var(--portal-paper, #fff); }
+.shopSubmit { min-height: 58px; display: flex; align-items: center; gap: 12px; padding: 0 16px; border: 0; border-radius: 16px; color: #fff; background: #0e7a45; font: inherit; text-align: left; cursor: pointer; box-shadow: 0 8px 24px rgb(16 34 58 / 18%); }
+.shopSubmit:disabled { background: #7aa892; cursor: not-allowed; }
+.shopSubmit > span:nth-child(2) { flex: 1; display: grid; }
+.shopSubmit small { font-size: 12px; opacity: 0.85; }
+.shopSubmit strong { font-size: 17px; font-weight: 800; }
+.shopSubmit > span:last-child { font-size: 14px; font-weight: 800; }
+.shopCount { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px; background: rgb(255 255 255 / 18%); font-weight: 800; }
+@media (min-width: 800px) { .shopFooter { bottom: 16px; } .shopList { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

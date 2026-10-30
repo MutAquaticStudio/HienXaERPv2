@@ -101,7 +101,15 @@ export function DeliveryDoneForm({ workItemId, version, delivery, receiverName, 
     }
   }
 
+  const choose = (next: "DONE" | "OTHER") => { if (next === mode) return; setMode(next); setMessage(null); setOperationId(crypto.randomUUID()); };
   return <div className={styles.form}>
+    {/* Concept "Báo đã giao": Giao đủ / Giao thiếu, then the lines (x / y in DONE), photos, receiver, one big button. */}
+    <div className={styles.segmented} role="radiogroup" aria-label="Kết quả giao">
+      <button type="button" role="radio" aria-checked={mode === "DONE"} disabled={sending} onClick={() => choose("DONE")}>Giao đủ</button>
+      <button type="button" role="radio" aria-checked={mode === "OTHER"} disabled={sending} onClick={() => choose("OTHER")}>Giao thiếu / không giao được</button>
+    </div>
+    {mode === "DONE" && <ul className={styles.doneLines}>{delivery.lines.map((line) => <li key={line.id}>
+      <span>{line.material_name}</span><strong>{soldQuantityLabel(line.reportable_base_quantity, line, formatQuantity)}</strong></li>)}</ul>}
     {mode === "OTHER" && <div className={styles.form}>
       {delivery.lines.map((line) => <div className={styles.field} key={line.id}>
         <label htmlFor={`done-${line.id}`}>{line.material_name} · đã lấy {soldQuantityLabel(line.reportable_base_quantity, line, formatQuantity)}</label>
@@ -118,7 +126,5 @@ export function DeliveryDoneForm({ workItemId, version, delivery, receiverName, 
     {message && <p className={message.error ? styles.error : styles.status} role={message.error ? "alert" : "status"}>{message.text}</p>}
     <button type="button" className={`${styles.button} ${styles.buttonCommerce} ${styles.stickyAction}`} disabled={sending || uploading} onClick={() => { void send(); }}>
       {sending ? "Đang gửi..." : mode === "OTHER" ? "Gửi báo cáo giao" : ready.length ? `Xác nhận đã giao (${ready.length} ảnh)` : "Đã giao · chụp ảnh"}</button>
-    <button type="button" className={styles.link} disabled={sending} onClick={() => { setMode(mode === "DONE" ? "OTHER" : "DONE"); setMessage(null); setOperationId(crypto.randomUUID()); }}>
-      {mode === "DONE" ? "Giao thiếu / Không giao được" : "Giao đủ như đã lấy lên xe"}</button>
   </div>;
 }

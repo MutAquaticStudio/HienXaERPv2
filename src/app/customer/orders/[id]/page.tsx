@@ -1,12 +1,12 @@
 import Link from "next/link";
+import { Check, ChevronLeft, Truck } from "lucide-react";
+import { orderJourney } from "@/modules/portal/journey";
 import { formatPortalMoney as money } from "@/modules/portal/money";
 import { customerDocumentKindLabel, customerDocumentStateLabel } from "@/modules/portal/presentation";
 import { financeSourceLabel, financeStateLabel } from "@/modules/finance/presentation";
 import { formatBusinessDate, formatBusinessDateTime } from "@/lib/core/business-time";
-import { OrderProgress } from "@/components/portal/order-progress";
 import styles from "@/components/portal/portal.module.css";
 import { getCustomerPortalOrder } from "@/modules/portal/actions";
-import { salesDeliveryStateLabel, salesStateLabel } from "@/modules/sales/presentation";
 import { deliveryStateLabel } from "@/modules/delivery/presentation";
 import { QUOTATIONS_ENABLED } from "@/lib/features";
 import { randomUUID } from "node:crypto";
@@ -29,23 +29,37 @@ export default async function CustomerOrderPage({ params, searchParams }: { para
   const lines = order.lines ?? [];
   const payments = order.payments ?? [];
   const documents = (order.documents ?? []).filter((document) => QUOTATIONS_ENABLED || document.kind !== "QUOTATION");
+  const journey = orderJourney(order);
+  const time = (value?: string) => value ? new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit", hourCycle: "h23" }).format(new Date(value)) : "";
+  const onTheWay = order.deliveries.find((delivery) => delivery.state === "DISPATCHED" || delivery.state === "ARRIVED")
+    ?? order.deliveries.find((delivery) => delivery.state === "PLANNED" || delivery.state === "ASSIGNED");
+  // Concept "Khách · Theo dõi đơn": back + order, the delivery on its way, the journey with times, the goods, "Đặt lại".
   return (
     <div className={styles.page}>
       {notice && <p className={styles.status} role="status">{notice}</p>}
-      <header className={styles.hero}>
-        <p className={styles.heroEyebrow}>{order.channel === "CUSTOMER_PORTAL" ? "Đơn bạn đặt" : "Đơn hàng"} · {portalOrderStateLabel(order)}</p>
-        <h1>{order.number ?? "Chi tiết đơn hàng"}</h1>
-        <p>Thương mại: {salesStateLabel(order.state ?? "NOT_STARTED")} · Thực hiện: {salesDeliveryStateLabel(order.fulfillment_state ?? "NOT_STARTED")}</p>
-        {order.cancel_reason && <p>Lý do hủy: {order.cancel_reason}</p>}
-        {order.can_view_finance ? <p>Thanh toán: {salesStateLabel(order.payment_state ?? "NOT_DUE")} · Giá trị: {money(order.total_amount_vnd ?? 0)}</p> : <p>Thông tin công nợ và thanh toán chỉ dành cho chủ tài khoản hoặc người phụ trách thanh toán.</p>}
+      <header className={styles.pageHead}>
+        <Link className={styles.backButton} href="/customer/orders" aria-label="Quay lại"><ChevronLeft aria-hidden size={20} /></Link>
+        <div><p>{[order.ordered_at ? `Đặt ${formatBusinessDate(order.ordered_at).slice(0, 5)}` : null, order.site_name].filter(Boolean).join(" · ")}</p><h1>{order.number ?? "Chi tiết đơn hàng"}</h1></div>
+        <span className={styles.stateChip}>{portalOrderStateLabel(order)}</span>
       </header>
-      {order.state !== "CANCELLED" && order.state !== "DRAFT" && <Link className={`${styles.buttonSecondary} ${styles.buttonBlock}`} href={`/customer/orders/new?from=${order.id}`}>Đặt lại đơn này</Link>}
-      {order.state !== "CANCELLED" && <section className={styles.card} aria-label="Tiến trình đơn"><OrderProgress order={order} /></section>}
+      {order.cancel_reason && <p className={styles.status}>Lý do hủy: {order.cancel_reason}</p>}
+      {onTheWay && <section className={`${styles.card} ${styles.etaCard}`} aria-label="Lượt giao">
+        <span className={styles.etaIcon}><Truck aria-hidden size={22} /></span>
+        <div><strong>{customerDeliveryStateLabel(onTheWay.state ?? "PLANNED")}</strong>
+          <small>{[onTheWay.number, onTheWay.scheduled_at ? `dự kiến ${time(onTheWay.scheduled_at)}` : null].filter(Boolean).join(" · ")}</small></div>
+      </section>}
+      {journey && <section className={styles.card} aria-labelledby="journey-title">
+        <h2 id="journey-title">Hành trình đơn</h2>
+        <ol className={styles.journey}>{journey.map((step) => <li key={step.key} data-state={step.state} aria-current={step.state === "current" ? "step" : undefined}>
+          <span aria-hidden="true">{step.state === "done" ? <Check size={12} strokeWidth={3.2} /> : null}</span>
+          <span>{step.label}</span><small>{step.at ? `${step.approx ? "~" : ""}${time(step.at)}` : ""}</small>
+        </li>)}</ol>
+      </section>}
       {lines.length > 0 && <section className={styles.card}>
-        <h2>Hàng đặt</h2>
-        <ul className={styles.orderLines}>{lines.map((line) => <li key={line.id}>
-          <span>{line.material_name}<br /><small className={styles.hint}>{formatQuantity(line.quantity)} {line.uom_symbol}{line.unit_price_vnd ? ` × ${money(line.unit_price_vnd)}` : ""}</small></span>
-          {line.line_total_vnd && <strong>{money(line.line_total_vnd)}</strong>}</li>)}</ul>
+        <div className={styles.cardHead}><h2>Hàng hóa</h2>{order.can_view_finance && order.total_amount_vnd && <strong>{money(order.total_amount_vnd)}</strong>}</div>
+        <ul className={styles.goodsList}>{lines.map((line) => <li key={line.id}>
+          <span>{line.material_name}{line.unit_price_vnd && <small className={styles.hint}>{money(line.unit_price_vnd)} / {line.uom_symbol}</small>}</span>
+          <strong>{formatQuantity(line.quantity)} {line.uom_symbol}</strong></li>)}</ul>
         <div className={styles.kv}><span>Giao tới</span><strong>{order.site_name}{order.delivery_address ? ` — ${order.delivery_address}` : ""}</strong></div>
         {order.requested_delivery_date && <div className={styles.kv}><span>Muốn nhận</span><strong>{formatBusinessDateTime(order.requested_delivery_date)}</strong></div>}
         {order.portal_note && <div className={styles.kv}><span>Ghi chú</span><strong>{order.portal_note}</strong></div>}
@@ -59,8 +73,9 @@ export default async function CustomerOrderPage({ params, searchParams }: { para
           </form>
         </details>}
       </section>}
+      {order.state !== "CANCELLED" && order.state !== "DRAFT" && <Link className={styles.reorderOutline} href={`/customer/orders/new?from=${order.id}`}>Đặt lại đơn này</Link>}
       <section className={styles.card}>
-        <h2>Tiến trình giao nhận</h2>
+        <h2>Các lượt giao</h2>
         <div className={styles.timeline}>
           {order.deliveries.length ? order.deliveries.map((delivery) => (
             <article className={styles.timelineItem} id={"delivery-" + delivery.id} key={delivery.id}>
