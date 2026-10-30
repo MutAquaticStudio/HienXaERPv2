@@ -3416,3 +3416,8 @@ Thay đổi (migration `20261024090000`–`20261024090900`, native 285, 290, 295
 - App: `src/modules/finance/sepay.ts` (schema, chọn khoản, link VietQR), `src/components/portal/debt-payment.tsx` + `src/app/api/portal/debt-payment/route.ts` (lấy số tiền lúc bấm, hỏi trạng thái 5 s/lần trong 15 phút), `src/app/customer/debts/page.tsx`, Sổ quỹ (công tắc, Giao dịch chờ xử lý, 3 server action).
 - Kiểm chứng: native `315` (chữ ký khớp công thức SePay tính bằng Node crypto; khách / anon không gọi được webhook; sai chữ ký / quá hạn không lưu gì; mã đơn trả thiếu; gửi lại không ghi đôi; mã khách trả dư → ứng trước; tiền ra / tài khoản lạ bỏ qua; không mã → chờ, kế toán ghi / bỏ qua; mã lệch; người bật nghỉ việc → chờ, không rò danh tính; tắt công tắc → cổng không hiện QR). Vitest: route webhook, cửa sổ thanh toán, helper, server action.
 
+## 2026-10-30 — Cổng thợ: Thu nhập theo concept
+
+- Owner: "giao diện thu nhập cổng thợ không giống concept". So với artboard "Thợ · Thu nhập & chấm công" (canvas concept cổng): thiếu thẻ tháng chia khoản, dải chấm công tuần, trạng thái chi trả phiếu lương; trang cũ cộng mọi khoản từ trước tới nay.
+- `src/modules/portal/earnings.ts` (`monthEarnings` theo tháng giờ Việt Nam, `attendanceWeek`), `src/app/work/earnings/page.tsx` dựng lại theo concept (đọc `attendance_records`, `shift_assignments`, `earning_event_read.outstanding_amount_vnd` của chính người dùng — không thêm quyền / bảng), CSS trong `portal.module.css`. Test `earnings.test.ts`, `page.test.tsx`.
+

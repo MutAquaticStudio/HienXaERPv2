@@ -1085,3 +1085,32 @@ button.link {
 .payWaiting { margin: 0; padding: 10px 14px; border-radius: 12px; color: #8a4b05; background: #fff3dc; font-weight: 600; }
 .payDone { display: grid; gap: 6px; padding: 16px; border-radius: 16px; color: var(--success); background: var(--success-soft); text-align: center; }
 .payDone p { margin: 0; color: inherit; }
+
+/* Concept cổng thợ "Thu nhập & chấm công": month header, dark estimate card with 3 tiles, week strip, payslips. */
+.earningHead { padding: 4px 4px 0; }
+.earningHead p { margin: 0; font-size: 12px; color: var(--portal-muted, #5a6b82); }
+.earningHead h1 { margin: 4px 0 0; font-size: 22px; }
+.earningCard { display: grid; gap: 14px; padding: 18px 16px; border-radius: 20px; color: #fff; background: #10223a; }
+.earningCard p { margin: 0; font-size: 12px; color: rgb(255 255 255 / 75%); }
+.earningCard strong { display: block; margin-top: 4px; font-size: 32px; font-weight: 800; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.earningTiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.earningTiles > span { display: grid; gap: 4px; padding: 10px; border-radius: 12px; background: rgb(255 255 255 / 8%); min-width: 0; }
+.earningTiles small { font-size: 11px; color: rgb(255 255 255 / 75%); }
+.earningTiles b { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.weekStrip { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; text-align: center; }
+.weekStrip li { display: grid; gap: 6px; font-size: 11px; color: var(--portal-muted, #5a6b82); }
+.weekStrip li > span { height: 34px; box-sizing: border-box; display: grid; place-items: center; border-radius: 10px; font-size: 12px; font-weight: 700; background: #f2f5f9; color: #9aa6b6; }
+.weekStrip li[data-tone="done"] > span { background: #e3f4ea; color: #0e7a45; }
+.weekStrip li[data-tone="late"] > span { background: #fff3dc; color: #8a4b05; }
+.weekStrip li[data-tone="leave"] > span { background: #eef3f9; color: #0b63c6; }
+.weekStrip li[data-tone="absent"] > span { background: #fde8e8; color: #b42318; }
+.weekStrip li[data-tone="today"], .weekStrip li[data-tone="open"] { color: #0b63c6; font-weight: 700; }
+.weekStrip li[data-tone="today"] > span, .weekStrip li[data-tone="open"] > span { background: #0b63c6; color: #fff; font-weight: 800; }
+.weekStrip li[data-tone="planned"] > span { background: transparent; border: 1px dashed #c9d2de; color: var(--portal-muted, #5a6b82); font-weight: 500; }
+.weekNote { margin: 10px 0 0; font-size: 12px; color: var(--portal-muted, #5a6b82); }
+.weekNote b { color: #8a4b05; }
+.slipList { list-style: none; margin: 8px 0 0; padding: 0; }
+.slipList > li { padding: 12px 0; border-top: 1px solid var(--portal-line, #edf1f6); }
+.slipList summary > span { display: grid; gap: 2px; }
+.slipList summary small { font-size: 12px; color: #8a4b05; }
+.slipList summary small[data-paid] { color: #0e7a45; }
