@@ -2245,6 +2245,13 @@ Forward candidate: 20261009224842_supplier_purchase_price_commands.sql. SHA256 0
 - **Thu nhập**: nút "Tính lương tháng" (chọn tháng), "Hoa hồng tự động"; không còn "Phê duyệt ghi nhận tự động theo sự kiện".
 - **Báo cáo**: cột trái nhóm báo cáo (Cuối ngày, Bán hàng, Hàng hóa, Khách hàng, Nhà cung cấp, Giao hàng, Tài chính, Tài chính chi tiết); thanh kỳ chọn nhanh (Hôm nay, Hôm qua, 7 ngày, Tháng này, Tháng trước) + từ / đến ngày (+ kho với Xuất nhập tồn); thẻ số liệu chính, biểu đồ thanh, bảng, "Xuất CSV".
 
+# UX-D42-001 — Thanh toán công nợ bằng QR (SePay)
+
+- **Cổng khách → Công nợ** (khi cửa hàng bật tự ghi tiền về): dưới số tổng nợ ở thẻ đầu trang có nút trắng **"Thanh toán tất cả"**; mỗi dòng "Khoản cần thanh toán" là **một đơn** (mã đơn / mã dịch vụ, hoặc "Số dư đầu kỳ") với hạn trả, số còn nợ và nút viền **"Thanh toán"**. Khung tối "Chuyển khoản cho cửa hàng" (D39) không hiện nữa vì đã có trong cửa sổ.
+- **Cửa sổ Thanh toán** (popup chung, điện thoại toàn màn hình): tiêu đề "Thanh toán SO-…" / "Tất cả công nợ"; lúc mở hiện "Đang lấy số tiền cần thanh toán…" rồi **ảnh QR** (tối đa 300 px, khung bo tròn) kèm hướng dẫn "quét mã, không sửa nội dung"; bảng Số tiền (chữ đậm) · Nội dung (+ Sao chép) · Ngân hàng & số TK (+ Sao chép số TK) · Chủ tài khoản; dải vàng **"Đang chờ tiền về…"**. Khi ngân hàng xác nhận: khung xanh **"Đã nhận thanh toán 2.500.000 ₫"** + mã phiếu thu; đóng cửa sổ thì trang công nợ tải lại. Khoản vừa được trả ở nơi khác → "Khoản này đã được thanh toán".
+- **Sổ quỹ → quỹ Ngân hàng**: chip **"Tự ghi tiền về (SePay)"** cạnh "Hiện cho khách"; nút **"Tự ghi tiền về (SePay)"** mở popup: ô bật/tắt, ô "Tiền tố nội dung (không bắt buộc)" với ghi chú SEVQR / TKP.
+- **Sổ quỹ → "Giao dịch ngân hàng chờ xử lý"** (chỉ hiện khi có, người có quyền lập phiếu): bảng Thời gian (+ ngân hàng · mã tham chiếu) · Nội dung chuyển khoản · Số tiền xanh · Lý do chờ (tiếng Việt) · nút **"Xử lý"** → popup hai phần: chọn khách + **"Ghi phiếu thu"**; **"Bỏ qua, không ghi sổ"**.
+
 # UX-FB18-001 — Cổng thợ & khách, chuyển khoản, biểu đồ tổng quan (D39)
 
 - **Sổ quỹ** (quỹ Ngân hàng đang chọn): khung "Thông tin chuyển khoản" (ngân hàng, số TK, chủ TK, chip "Đang hiện cho khách") + nút **"Sửa thông tin chuyển khoản"** mở hộp thoại (Ngân hàng, Số tài khoản, Chủ tài khoản — tự viết hoa, ô "Hiện cho khách ở cổng khách hàng").

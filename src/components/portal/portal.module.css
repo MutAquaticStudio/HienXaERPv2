@@ -1069,3 +1069,19 @@ button.link {
   .topIcon { color: var(--primary-text); background: #fff; border: 1px solid var(--portal-line); }
   .topIcon:hover { background: var(--portal-soft); }
 }
+
+/* D42: pay a debt by QR — a button on each order, "Thanh toán tất cả" under the total, and the QR window. */
+.payButton { min-height: 36px; padding: 0 12px; border: 1px solid var(--portal-primary, #0b63c6); border-radius: 10px; color: var(--portal-primary, #0b63c6); background: transparent; font: inherit; font-size: 0.8rem; font-weight: 800; cursor: pointer; white-space: nowrap; }
+.payAllButton { justify-self: start; min-height: 44px; padding: 0 18px; border: 0; border-radius: 12px; color: var(--portal-primary-dark, #0a3f80); background: #fff; font: inherit; font-weight: 800; cursor: pointer; }
+.payButton:active, .payAllButton:active { transform: scale(0.97); }
+.billRow > .billActions { display: flex; align-items: center; gap: 12px; }
+.payDialog { display: grid; gap: 12px; justify-items: center; text-align: center; }
+.payQr { width: min(300px, 100%); height: auto; aspect-ratio: 1; border-radius: 16px; background: #fff; border: 1px solid var(--portal-line, #edf1f6); }
+.payFacts { width: 100%; display: grid; gap: 8px; margin: 0; text-align: left; }
+.payFacts > div { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid var(--portal-line, #edf1f6); }
+.payFacts dt { color: var(--portal-muted); font-size: 0.85rem; }
+.payFacts dd { margin: 0; display: flex; align-items: center; gap: 8px; text-align: right; overflow-wrap: anywhere; }
+.payFacts .copyButton { min-height: 34px; padding: 0 10px; color: var(--portal-primary-dark, #0a3f80); background: var(--surface-soft, #eef3f9); }
+.payWaiting { margin: 0; padding: 10px 14px; border-radius: 12px; color: #8a4b05; background: #fff3dc; font-weight: 600; }
+.payDone { display: grid; gap: 6px; padding: 16px; border-radius: 16px; color: var(--success); background: var(--success-soft); text-align: center; }
+.payDone p { margin: 0; color: inherit; }
