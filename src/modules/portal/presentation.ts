@@ -94,3 +94,21 @@ export function portalOrderProgress(order: { channel?: string; state?: string; f
   const current = done.indexOf(false);
   return labels.map((label, index) => ({ label, state: done[index] ? "done" : index === current ? "current" : "todo" }));
 }
+
+/** FB18: the four steps of a job on the worker portal and how many are done (the next one is the current step). */
+export function jobSteps(job: { state: string; delivery?: { state: string } | null }): { labels: string[]; done: number } {
+  if (job.delivery) {
+    const labels = ["Nhận việc", "Lấy hàng", "Đang giao", "Đã giao"];
+    if (job.state === "AVAILABLE") return { labels, done: 0 };
+    if (job.state === "VERIFIED" || ["RESULT_SUBMITTED", "VERIFIED"].includes(job.delivery.state)) return { labels, done: 4 };
+    if (["DISPATCHED", "ARRIVED"].includes(job.delivery.state)) return { labels, done: 2 };
+    return { labels, done: 1 };
+  }
+  const labels = ["Nhận việc", "Bắt đầu", "Đang làm", "Hoàn tất"];
+  const done = job.state === "AVAILABLE" ? 0 : job.state === "CLAIMED" ? 1 : ["IN_PROGRESS", "BLOCKED"].includes(job.state) ? 2 : ["DONE", "RESULT_SUBMITTED"].includes(job.state) ? 3 : job.state === "VERIFIED" ? 4 : 1;
+  return { labels, done };
+}
+
+/** Directions to an address in the phone's maps app (Google Maps opens the navigation app when installed). */
+export const directionsHref = (address: string) => `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
+export const telHref = (phone: string) => `tel:${phone.replace(/[^\d+]/g, "")}`;

@@ -1,4 +1,6 @@
-import { jobStateLabel, soldQuantityLabel, workKindLabel } from "@/modules/portal/presentation";
+import { directionsHref, jobStateLabel, soldQuantityLabel, telHref, workKindLabel } from "@/modules/portal/presentation";
+import { JobSteps } from "@/components/portal/job-steps";
+import { Navigation, Phone } from "lucide-react";
 import { ClaimJobButton } from "@/components/portal/claim-job-button";
 import styles from "@/components/portal/portal.module.css";
 import { StartJobButton } from "@/components/portal/start-job-button";
@@ -55,6 +57,13 @@ export default async function WorkJobPage({ params }: { params: Promise<{ id: st
         <h1>{job.title ?? "Chi tiết công việc"}</h1>
         <p>{job.site_name ?? job.address ?? "Địa điểm đang cập nhật"}</p>
       </header>
+      <section className={styles.card} aria-label="Tiến trình và liên hệ">
+        <JobSteps job={job} />
+        {(job.receiver_phone || job.address) && <div className={styles.contactRow}>
+          {job.receiver_phone && <a className={styles.contactCall} href={telHref(job.receiver_phone)}><Phone aria-hidden size={17} />Gọi {job.receiver_name ?? "người nhận"}</a>}
+          {job.address && <a className={styles.contactWay} href={directionsHref(job.address)} target="_blank" rel="noreferrer"><Navigation aria-hidden size={17} />Chỉ đường</a>}
+        </div>}
+      </section>
       <div className={styles.split}>
         <section className={styles.card}>
           <span className={styles.badge}>{jobStateLabel(job)}</span>

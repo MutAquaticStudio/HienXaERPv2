@@ -13,7 +13,7 @@ import { requireInternalPermission } from "@/lib/access/context";
 import { CORE_LIST_PAGE_SIZE, parseCoreListQuery } from "@/lib/core-list";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { createFinanceAccountAction, reconcilePaymentAction, reversePaymentAction } from "@/modules/finance/actions";
+import { createFinanceAccountAction, reconcilePaymentAction, reversePaymentAction, setBankDetailsAction } from "@/modules/finance/actions";
 import { MoneyInput } from "@/components/ui/money-input";
 import { CsvDownloadButton } from "@/components/ui/csv-download-button";
 import { toCsv } from "@/lib/core/csv";
@@ -64,7 +64,7 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
     paymentRequest.order("effective_at", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1),
     supabase.rpc("cashbook_summary", { target_branch_id: access.branchId }).select("net_cash_vnd::text,unmatched_count").single(),
     supabase.rpc("cashbook_period_summary", { target_branch_id: access.branchId, from_at: range.fromAt, to_at: range.toAt, target_account_id: accountId || null }),
-    supabase.from("finance_accounts").select("id, code, name, account_kind, active").eq("branch_id", access.branchId).order("code"),
+    supabase.from("finance_accounts").select("id, code, name, account_kind, active, bank_name, bank_account_number, bank_account_holder, shown_to_customers").eq("branch_id", access.branchId).order("code"),
     supabase.from("advance_position_read").select("advance_side, counterparty_name, balance_vnd::text").eq("branch_id", access.branchId),
     can.post ? supabase.from("customers").select("id, code, display_name").eq("branch_id", access.branchId).eq("active", true).order("display_name").limit(1000) : none,
     can.post && can.payables ? supabase.from("suppliers").select("id, code, name").eq("branch_id", access.branchId).eq("active", true).order("name").limit(1000) : none,
@@ -80,6 +80,8 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
   const summary = summaryResult.data as { net_cash_vnd: string | number; unmatched_count: number };
   const totals = periodResult.data as Period;
   const accounts = accountsResult.data ?? [];
+  // FB18: the bank details of the bank fund on screen (what customers transfer to when it is the one shown).
+  const selectedBank = accounts.find((row) => row.id === accountId && row.account_kind === "BANK") ?? null;
   const advances = advancesResult.data;
   const customers = ((customerResult.data ?? []) as { id: string; code: string; display_name: string }[]).map((row) => ({ id: row.id, code: row.code, name: row.display_name }));
   const suppliers = (supplierResult.data ?? []) as { id: string; code: string; name: string }[];
@@ -137,6 +139,19 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
       {accounts.filter((row) => row.active || row.id === accountId).map((row) => <Link key={row.id} href={href({ account: row.id })} aria-current={row.id === accountId ? "page" : undefined} scroll={false}>
         {row.account_kind === "CASH" ? "Tiền mặt" : "Ngân hàng"} · {row.name}</Link>)}
     </nav>
+    {selectedBank && <section className="card card-pad bank-details" aria-label="Thông tin chuyển khoản">
+      <div><span className="metric-label">Thông tin chuyển khoản</span>
+        <p>{selectedBank.bank_account_number ? <><strong>{selectedBank.bank_name}</strong> · <span className="mono">{selectedBank.bank_account_number}</span> · {selectedBank.bank_account_holder}</> : <span className="muted">Chưa nhập số tài khoản.</span>}
+          {selectedBank.shown_to_customers && <span className="status status-success bank-shown">Hiện cho khách</span>}</p></div>
+      {access.permissions.has("finance.account.manage") && <FormDialog label="Sửa thông tin chuyển khoản" title={`Thông tin chuyển khoản · ${selectedBank.name}`}>
+        <form className="form-grid" action={setBankDetailsAction}><input type="hidden" name="operationId" value={randomUUID()} /><input type="hidden" name="accountId" value={selectedBank.id} />
+          <label className="field">Ngân hàng<input name="bank" defaultValue={selectedBank.bank_name ?? ""} placeholder="Vietcombank" maxLength={120} /></label>
+          <label className="field">Số tài khoản<input name="number" defaultValue={selectedBank.bank_account_number ?? ""} inputMode="numeric" maxLength={40} /></label>
+          <label className="field field-full">Chủ tài khoản<input name="holder" defaultValue={selectedBank.bank_account_holder ?? ""} maxLength={120} /></label>
+          <label className="check-inline field-full"><input type="checkbox" name="show" defaultChecked={selectedBank.shown_to_customers} />Hiện cho khách ở mục Công nợ của cổng khách (chỉ một tài khoản)</label>
+          <div className="form-actions"><button className="button button-primary" type="submit">Lưu</button></div></form>
+      </FormDialog>}
+    </section>}
     <div className="list-layout">
       <AutoFilterForm className="card card-pad list-filters" aria-label="Bộ lọc sổ quỹ">
         <div className="period-presets" role="group" aria-label="Chọn nhanh kỳ">{presets.map((preset) => <Link key={preset.label}

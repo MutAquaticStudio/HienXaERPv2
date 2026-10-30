@@ -2245,6 +2245,16 @@ Forward candidate: 20261009224842_supplier_purchase_price_commands.sql. SHA256 0
 - **Thu nhập**: nút "Tính lương tháng" (chọn tháng), "Hoa hồng tự động"; không còn "Phê duyệt ghi nhận tự động theo sự kiện".
 - **Báo cáo**: cột trái nhóm báo cáo (Cuối ngày, Bán hàng, Hàng hóa, Khách hàng, Nhà cung cấp, Giao hàng, Tài chính, Tài chính chi tiết); thanh kỳ chọn nhanh (Hôm nay, Hôm qua, 7 ngày, Tháng này, Tháng trước) + từ / đến ngày (+ kho với Xuất nhập tồn); thẻ số liệu chính, biểu đồ thanh, bảng, "Xuất CSV".
 
+# UX-FB18-001 — Cổng thợ & khách, chuyển khoản, biểu đồ tổng quan (D39)
+
+- **Sổ quỹ** (quỹ Ngân hàng đang chọn): khung "Thông tin chuyển khoản" (ngân hàng, số TK, chủ TK, chip "Đang hiện cho khách") + nút **"Sửa thông tin chuyển khoản"** mở hộp thoại (Ngân hàng, Số tài khoản, Chủ tài khoản — tự viết hoa, ô "Hiện cho khách ở cổng khách hàng").
+- **Cổng khách → Công nợ**: thẻ tổng nợ; khung tối "Chuyển khoản cho cửa hàng" (số TK chữ lớn, nút trắng "Sao chép số TK"; nội dung chuyển khoản + "Sao chép", đổi thành "Đã chép" 2 giây); danh sách "Khoản cần thanh toán" số tiền căn phải, khoản quá hạn chữ đỏ "Quá hạn · Hạn dd/mm/yyyy".
+- **Cổng khách → Trang chủ**: mã khách + tên; thẻ xanh đơn đang giao (trạng thái, công trình, thanh tiến độ, bấm mở đơn); "Đặt lại nhanh" 2 thẻ (ngày · công trình, mã đơn, nút "Đặt lại"); dòng công nợ (còn lại + chip đỏ quá hạn); "Đơn gần đây". Chi tiết đơn có link **"Đặt lại đơn này"**.
+- **Cổng thợ → Hôm nay**: lời chào + ngày; thẻ ca (giờ vào ca, ca, nút Vào ca / Ra ca gọn); thẻ xanh việc đang làm (mã, giờ hẹn, khách, địa chỉ, 4 bước, Gọi / Chỉ đường / Mở việc); "Tiếp theo hôm nay" và "Sắp tới" dạng dòng thời gian; gợi ý "Có N việc mới có thể nhận". Chi tiết việc có 4 bước + Gọi / Chỉ đường. "Tôi": Chấm công, Chia sẻ vị trí, Tin nhắn, Đổi mật khẩu.
+- Thanh trên cùng hai cổng: biểu tượng Tin nhắn và Đăng xuất (nút 44 px, có nhãn đọc màn hình).
+- **Tổng quan → Thu / Chi / Lợi nhuận**: biểu đồ tự theo bề rộng khung, cao 200 px (240 px màn rộng), nhãn ngày dd/mm không đè nhau; "Xem bảng số liệu · N ngày có phát sinh" chỉ liệt kê kỳ có số liệu trong bộ lọc, dòng cuối "Cả kỳ".
+- **Menu nhóm** (thanh xanh): mở bằng mờ dần + phóng nhẹ từ 96 %, các mục hiện lần lượt, có cầu nối hover không bị đóng khi rê chuột xuống.
+
 # UX-FB17-001 — Màn chờ khi chuyển trang
 
 - **Thanh tiến trình mảnh** (3 px, màu chính, ánh xanh) trên cùng mọi cổng: chạy ngay khi bấm link / menu sang màn khác, nhanh lúc đầu rồi chậm dần tới ~86 %, "vút" tới cuối và mờ đi khi màn mới hiện; không chạy với tải file, mở tab mới, link ngoài hệ thống.

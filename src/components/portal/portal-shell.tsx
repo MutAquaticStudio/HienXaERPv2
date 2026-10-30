@@ -14,31 +14,32 @@ import {
   LogOut,
   MessageSquare,
   MapPin,
-  ShoppingCart,
+  Plus,
   UserRound,
 } from "lucide-react";
 
 import styles from "@/components/portal/portal.module.css";
 import { QUOTATIONS_ENABLED } from "@/lib/features";
 
+// FB18: the phone menu keeps four (worker) or five (customer) places; the rest sit one tap away ("Tôi", the chat icon).
 const workerLinks = [
-  { href: "/work", label: "Công việc", icon: House },
-  { href: "/work/attendance", label: "Chấm công", icon: Clock3 },
-  { href: "/work/pool", label: "Nhận việc", icon: Compass },
-  { href: "/work/tracking", label: "Vị trí", icon: MapPin },
-  { href: "/work/earnings", label: "Thu nhập", icon: CircleDollarSign },
-  { href: "/work/messages", label: "Tin nhắn", icon: MessageSquare },
-  { href: "/work/profile", label: "Hồ sơ", icon: UserRound },
+  { href: "/work", label: "Hôm nay", icon: House, bottom: true },
+  { href: "/work/pool", label: "Nhận việc", icon: Compass, bottom: true },
+  { href: "/work/earnings", label: "Thu nhập", icon: CircleDollarSign, bottom: true },
+  { href: "/work/attendance", label: "Chấm công", icon: Clock3, bottom: false },
+  { href: "/work/tracking", label: "Vị trí", icon: MapPin, bottom: false },
+  { href: "/work/messages", label: "Tin nhắn", icon: MessageSquare, bottom: false },
+  { href: "/work/profile", label: "Tôi", icon: UserRound, bottom: true },
 ];
 
 const customerLinks = [
-  { href: "/customer", label: "Tổng quan", icon: House },
-  { href: "/customer/orders/new", label: "Đặt hàng", icon: ShoppingCart },
-  ...(QUOTATIONS_ENABLED ? [{ href: "/customer/quotations", label: "Báo giá", icon: ClipboardList }] : []),
-  { href: "/customer/orders", label: "Đơn hàng", icon: BriefcaseBusiness },
-  { href: "/customer/debts", label: "Công nợ", icon: CircleDollarSign },
-  { href: "/customer/messages", label: "Tin nhắn", icon: MessageSquare },
-  { href: "/customer/profile", label: "Tài khoản", icon: UserRound },
+  { href: "/customer", label: "Trang chủ", icon: House, bottom: true },
+  { href: "/customer/orders", label: "Đơn hàng", icon: BriefcaseBusiness, bottom: true },
+  { href: "/customer/orders/new", label: "Đặt hàng", icon: Plus, bottom: true, raised: true },
+  ...(QUOTATIONS_ENABLED ? [{ href: "/customer/quotations", label: "Báo giá", icon: ClipboardList, bottom: false }] : []),
+  { href: "/customer/debts", label: "Công nợ", icon: CircleDollarSign, bottom: true },
+  { href: "/customer/messages", label: "Tin nhắn", icon: MessageSquare, bottom: false },
+  { href: "/customer/profile", label: "Tôi", icon: UserRound, bottom: true },
 ];
 
 export function PortalShell({
@@ -60,13 +61,13 @@ export function PortalShell({
   const root = audience === "worker" ? "/work" : "/customer";
   const scope = audience === "worker" ? "Cổng nhân sự" : "Cổng khách hàng";
 
-  const nav = (compact = false) => links.map(({ href, label, icon: Icon }) => {
+  const nav = (compact = false) => links.filter((link) => !compact || link.bottom).map(({ href, label, icon: Icon, ...link }) => {
     const within = (target: string) => pathname === target || (target !== root && pathname.startsWith(target + "/"));
     // The deepest matching link wins ("Đặt hàng" on /customer/orders/new, not "Đơn hàng" as well).
     const active = within(href) && !links.some((other) => other.href.length > href.length && within(other.href));
     return (
-      <Link className={styles.navLink + " " + (active ? styles.navLinkActive : "")} href={href} key={href} aria-current={active ? "page" : undefined}>
-        <Icon aria-hidden size={compact ? 20 : 19} strokeWidth={2.2} />
+      <Link className={`${styles.navLink} ${active ? styles.navLinkActive : ""} ${compact && "raised" in link && link.raised ? styles.navRaised : ""}`} href={href} key={href} aria-current={active ? "page" : undefined}>
+        {compact && "raised" in link && link.raised ? <span className={styles.navRaisedIcon}><Icon aria-hidden size={24} strokeWidth={2.6} /></span> : <Icon aria-hidden size={compact ? 22 : 19} strokeWidth={2.2} />}
         <span>{label}</span>
       </Link>
     );
@@ -93,13 +94,15 @@ export function PortalShell({
               <span className={styles.brandScope}>{scope}</span>
             </span>
           </div>
-          <form action="/auth/logout" method="post">
-            <input type="hidden" name="surface" value={audience === "worker" ? "work" : "customer"} />
-            <button className={styles.logout} type="submit">
-              <LogOut aria-hidden size={18} />
-              &nbsp;Đăng xuất
-            </button>
-          </form>
+          <div className={styles.topActions}>
+            <Link className={styles.topIcon} href={`${root}/messages`} aria-label="Tin nhắn"><MessageSquare aria-hidden size={20} /></Link>
+            <form action="/auth/logout" method="post">
+              <input type="hidden" name="surface" value={audience === "worker" ? "work" : "customer"} />
+              <button className={styles.topIcon} type="submit" aria-label="Đăng xuất" title="Đăng xuất">
+                <LogOut aria-hidden size={19} />
+              </button>
+            </form>
+          </div>
         </header>
         {children}
       </main>

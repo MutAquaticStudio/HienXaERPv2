@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { formatPortalMoney as money } from "@/modules/portal/money";
 import { customerDocumentKindLabel, customerDocumentStateLabel } from "@/modules/portal/presentation";
 import { financeSourceLabel, financeStateLabel } from "@/modules/finance/presentation";
@@ -38,6 +39,7 @@ export default async function CustomerOrderPage({ params, searchParams }: { para
         {order.cancel_reason && <p>Lý do hủy: {order.cancel_reason}</p>}
         {order.can_view_finance ? <p>Thanh toán: {salesStateLabel(order.payment_state ?? "NOT_DUE")} · Giá trị: {money(order.total_amount_vnd ?? 0)}</p> : <p>Thông tin công nợ và thanh toán chỉ dành cho chủ tài khoản hoặc người phụ trách thanh toán.</p>}
       </header>
+      {order.state !== "CANCELLED" && order.state !== "DRAFT" && <Link className={`${styles.buttonSecondary} ${styles.buttonBlock}`} href={`/customer/orders/new?from=${order.id}`}>Đặt lại đơn này</Link>}
       {order.state !== "CANCELLED" && <section className={styles.card} aria-label="Tiến trình đơn"><OrderProgress order={order} /></section>}
       {lines.length > 0 && <section className={styles.card}>
         <h2>Hàng đặt</h2>

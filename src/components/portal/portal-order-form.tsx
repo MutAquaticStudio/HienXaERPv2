@@ -59,23 +59,26 @@ export function switchVariant(line: EditorLine, materials: EditorMaterial[], tar
  * place, when to receive, the total pinned at the bottom and a review before sending. The order waits for the store to
  * approve; nothing is reserved until then, and prices are always taken again on the server.
  */
-export function PortalOrderForm({ catalog, operationId: initialOperationId }: { catalog: PortalCatalog; operationId: string }) {
+/** `initial`: an earlier order's goods and site ("Đặt lại", FB18). */
+export function PortalOrderForm({ catalog, operationId: initialOperationId, initial }: { catalog: PortalCatalog; operationId: string;
+  initial?: { lines: Array<{ materialId: string; uomId: string; quantity: string }>; siteId?: string; missing?: string[] } }) {
   const router = useRouter();
   const searchRef = useRef<MaterialSearchHandle>(null);
-  const nextKey = useRef(1);
+  const nextKey = useRef((initial?.lines.length ?? 0) + 1);
   const materials = useMemo(() => portalMaterials(catalog.items), [catalog.items]);
   const prices = useMemo(() => new Map(catalog.items.map((item) => [priceKey(item.material_id, item.uom_id), item.unit_price_vnd])), [catalog.items]);
   const inStock = useMemo(() => new Map(catalog.items.map((item) => [item.material_id, item.in_stock])), [catalog.items]);
-  const [lines, setLines] = useState<EditorLine[]>([]);
+  const [lines, setLines] = useState<EditorLine[]>(() => (initial?.lines ?? []).map((line, index) => ({ key: index + 1, sourceLineId: "", materialId: line.materialId,
+    uomId: line.uomId, quantity: line.quantity, manualPriceVnd: "", manualReason: "" })));
   const [focusKey, setFocusKey] = useState<number | null>(null);
   const [focusSeq, setFocusSeq] = useState(0);
-  const [site, setSite] = useState<string>(catalog.sites[0]?.id ?? NEW_SITE);
+  const [site, setSite] = useState<string>(initial?.siteId ?? catalog.sites[0]?.id ?? NEW_SITE);
   const [newSite, setNewSite] = useState({ name: "", address: "", receiverName: "", receiverPhone: "" });
   const [requestedAt, setRequestedAt] = useState("");
   const [note, setNote] = useState("");
   const [reviewing, setReviewing] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(initial?.missing?.length ? `Không còn bán theo bảng giá hiện tại: ${initial.missing.join("; ")}.` : null);
   const [operationId, setOperationId] = useState(initialOperationId);
 
   const materialOf = (id: string) => materials.find((material) => material.id === id);

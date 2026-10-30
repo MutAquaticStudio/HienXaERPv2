@@ -12,7 +12,8 @@ import { ATTENDANCE_STATUSES, attendanceStatusLabel } from "@/modules/attendance
 import styles from "@/components/portal/portal.module.css";
 
 /** The worker's big "Vào ca" / "Ra ca" button; the phone's position is sent when the person allows it (never required unless the branch asks). */
-export function ClockPanel({ clockedIn, requireLocation }: { clockedIn: boolean; requireLocation: boolean }) {
+/** `compact`: the small Vào ca / Ra ca button on the worker's home card (FB18). */
+export function ClockPanel({ clockedIn, requireLocation, compact = false }: { clockedIn: boolean; requireLocation: boolean; compact?: boolean }) {
   const { state, run, pending, operationId } = useCommand(clockAttendanceAction);
   const [locating, setLocating] = useState(false);
   const form = useRef<HTMLFormElement>(null);
@@ -40,15 +41,15 @@ export function ClockPanel({ clockedIn, requireLocation }: { clockedIn: boolean;
     navigator.geolocation.getCurrentPosition(send, () => send(), { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 });
   }
 
-  return <form action={run} ref={form} className={styles.form}>
+  return <form action={run} ref={form} className={compact ? styles.clockCompactForm : styles.form}>
     <input type="hidden" name="operationId" value={operationId} />
     <input type="hidden" name="kind" value={kind} />
     <input type="hidden" name="lat" ref={lat} defaultValue="" />
     <input type="hidden" name="lng" ref={lng} defaultValue="" />
-    <button type="button" className={`${styles.button} ${styles.clockButton} ${clockedIn ? styles.clockOut : ""}`} disabled={pending || locating} onClick={submitWithPosition}>
+    <button type="button" className={compact ? `${styles.buttonSecondary} ${styles.clockCompact}` : `${styles.button} ${styles.clockButton} ${clockedIn ? styles.clockOut : ""}`} disabled={pending || locating} onClick={submitWithPosition}>
       {locating ? "Đang lấy vị trí…" : pending ? "Đang chấm công…" : clockedIn ? "Ra ca" : "Vào ca"}
     </button>
-    <p className={styles.hint}>{requireLocation ? "Chi nhánh yêu cầu bật định vị khi chấm công." : "Vị trí được ghi kèm nếu bạn cho phép; không bắt buộc."}</p>
+    {!compact && <p className={styles.hint}>{requireLocation ? "Chi nhánh yêu cầu bật định vị khi chấm công." : "Vị trí được ghi kèm nếu bạn cho phép; không bắt buộc."}</p>}
     {state?.message && <p className={styles.status} role="status">{state.message}</p>}
   </form>;
 }

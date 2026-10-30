@@ -1920,3 +1920,5 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
   .skeleton { animation: none !important; background-image: none; }
 }
 .skeleton-auth { width: min(420px, 100%); margin: 12vh auto 0; padding: 0 16px; }
+.bank-details { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.bank-details p { margin: 4px 0 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }

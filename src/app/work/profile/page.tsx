@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ChevronRight, Clock3, KeyRound, MapPin, MessageSquare } from "lucide-react";
 import styles from "@/components/portal/portal.module.css";
 import { PushToggle } from "@/components/notifications/push-toggle";
 import { getWorkerPortalSnapshot } from "@/modules/portal/actions";
@@ -7,8 +9,14 @@ export default async function WorkProfilePage() {
   return (
     <div className={styles.page}>
       <header className={styles.sectionHead}>
-        <div><h1>Hồ sơ làm việc</h1><p>Thông tin từ hồ sơ nhân sự đang hoạt động.</p></div>
+        <div><h1>Tôi</h1><p>Hồ sơ, chấm công và các mục khác.</p></div>
       </header>
+      <nav className={`${styles.card} ${styles.menuList}`} aria-label="Mục khác">
+        <Link href="/work/attendance"><Clock3 aria-hidden size={19} /><span>Chấm công</span><ChevronRight aria-hidden size={18} /></Link>
+        <Link href="/work/tracking"><MapPin aria-hidden size={19} /><span>Chia sẻ vị trí</span><ChevronRight aria-hidden size={18} /></Link>
+        <Link href="/work/messages"><MessageSquare aria-hidden size={19} /><span>Tin nhắn</span><ChevronRight aria-hidden size={18} /></Link>
+        <Link href="/work/change-password"><KeyRound aria-hidden size={19} /><span>Đổi mật khẩu</span><ChevronRight aria-hidden size={18} /></Link>
+      </nav>
       <section className={styles.card}>
         <div className={styles.kv}><span>Họ tên</span><strong>{employee.display_name}</strong></div>
         <div className={styles.kv}><span>Mã nhân sự</span><strong>{employee.code}</strong></div>
