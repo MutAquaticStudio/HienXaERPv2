@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import type { CircleMarker, LayerGroup, Map as LeafletMap, Polyline } from "leaflet";
 import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { GPS_PING_INTERVAL_MS } from "@/modules/routing/device-availability";
+import { baseMaps } from "@/modules/routing/base-maps";
 
 /** FB18 (D40): one worker on shift — the latest position their phone sent, and the delivery they are on (if any). */
 export type FleetPosition = { employee_id: string; employee_name: string; latitude: number | string; longitude: number | string;
@@ -14,11 +15,7 @@ type TrailPoint = { latitude: number; longitude: number; capturedAt: string };
 const onTrip = (worker: FleetPosition) => worker.delivery_number ? `Đang giao ${worker.delivery_number}${worker.plate_number ? ` · ${worker.plate_number}` : ""}` : "Không có chuyến giao";
 const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]!);
 
-/** Base maps in order (Owner: CARTO first): CARTO Voyager, then OpenStreetMap's own tiles when CARTO sends none. */
-const BASE_MAPS = [
-  { url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png", attribution: "© OpenStreetMap © CARTO" },
-  { url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png", attribution: "© OpenStreetMap" },
-];
+const BASE_MAPS = baseMaps();
 const TILE_ERRORS_BEFORE_SWITCH = 3;
 
 /** Default view (Việt Nam) until a worker shares their position. */
