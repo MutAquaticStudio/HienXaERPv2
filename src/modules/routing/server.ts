@@ -100,24 +100,24 @@ export async function loadRoutingWorkspace(selectedPlanId?: string) {
   };
 }
 
+/** FB18 (D40): the latest position of every worker on shift in the branch (the Điều phối / Lộ trình map). */
 export async function loadFleetSnapshot() {
   const access = await requireInternalPermission("delivery.read");
   const supabase = await createServerSupabase();
-  const { data, error } = await supabase.rpc("gps_fleet_snapshot", { target_branch_id: access.branchId });
+  const { data, error } = await supabase.rpc("worker_positions_snapshot", { target_branch_id: access.branchId });
   if (error) throw error;
   return (data ?? []) as Array<{
-    session_id: string;
-    delivery_id: string;
-    delivery_number: string;
-    vehicle_id: string;
-    plate_number: string;
     employee_id: string;
     employee_name: string;
     latitude: number;
     longitude: number;
+    accuracy_meters: number | null;
     captured_at: string;
     received_at: string;
     is_stale: boolean;
+    clock_in_at: string;
+    delivery_number: string | null;
+    plate_number: string | null;
   }>;
 }
 

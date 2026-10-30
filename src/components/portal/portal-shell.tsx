@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { ChatDock } from "@/components/messaging/chat-dock";
+import { ShiftLocationTracker } from "@/components/routing/shift-location-tracker";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -95,6 +96,7 @@ export function PortalShell({
             </span>
           </div>
           <div className={styles.topActions}>
+            {audience === "worker" && <ShiftLocationTracker />}
             <Link className={styles.topIcon} href={`${root}/messages`} aria-label="Tin nhắn"><MessageSquare aria-hidden size={20} /></Link>
             <form action="/auth/logout" method="post">
               <input type="hidden" name="surface" value={audience === "worker" ? "work" : "customer"} />

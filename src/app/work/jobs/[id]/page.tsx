@@ -8,13 +8,10 @@ import { WorkResultDraftForm } from "@/components/portal/work-result-draft-form"
 import { DeliveryDoneForm } from "@/components/portal/delivery-done-form";
 import { DeliveryLoadForm } from "@/components/portal/delivery-load-form";
 import { DeclineJobButton } from "@/components/portal/decline-job-button";
-import { ForegroundGpsControl } from "@/components/routing/foreground-gps-control";
-import { createServerSupabase } from "@/lib/supabase/server";
 import { getWorkerPortalJob } from "@/modules/portal/actions";
 import type { WorkerJob } from "@/modules/portal/types";
 import { formatQuantity } from "@/lib/core/quantity";
 import { formatBusinessDateTime } from "@/lib/core/business-time";
-import { GPS_DEVICE_AVAILABLE, GPS_DEVICE_UNAVAILABLE_MESSAGE } from "@/modules/routing/device-availability";
 
 function showDate(value?: string) {
   return value
@@ -40,10 +37,6 @@ function deliveryStatusText(job: WorkerJob, notMine: boolean, available: boolean
 export default async function WorkJobPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const job = await getWorkerPortalJob(id);
-  const supabase = await createServerSupabase();
-  const { data: gpsAssignments, error: gpsError } = await supabase.rpc("my_active_gps_assignment", { target_work_item_id: id });
-  if (gpsError) throw gpsError;
-  const gpsAssignment = gpsAssignments?.[0];
   const available = job.state === "AVAILABLE";
   const claimed = job.state === "CLAIMED";
   const delivery = job.delivery;
@@ -109,9 +102,6 @@ export default async function WorkJobPage({ params }: { params: Promise<{ id: st
           </section>
         )}
       </div>
-      {gpsAssignment && (GPS_DEVICE_AVAILABLE
-        ? <ForegroundGpsControl deliveryId={gpsAssignment.delivery_id} assignmentVersion={gpsAssignment.assignment_version} />
-        : <p className={styles.status}>{GPS_DEVICE_UNAVAILABLE_MESSAGE}</p>)}
     </div>
   );
 }

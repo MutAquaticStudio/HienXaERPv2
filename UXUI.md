@@ -2254,6 +2254,7 @@ Forward candidate: 20261009224842_supplier_purchase_price_commands.sql. SHA256 0
 - Thanh trên cùng hai cổng: biểu tượng Tin nhắn và Đăng xuất (nút 44 px, có nhãn đọc màn hình).
 - **Tổng quan → Thu / Chi / Lợi nhuận**: biểu đồ tự theo bề rộng khung, cao 200 px (240 px màn rộng), nhãn ngày dd/mm không đè nhau; "Xem bảng số liệu · N ngày có phát sinh" chỉ liệt kê kỳ có số liệu trong bộ lọc, dòng cuối "Cả kỳ".
 - **Menu nhóm** (thanh xanh): mở bằng mờ dần + phóng nhẹ từ 96 %, các mục hiện lần lượt, có cầu nối hover không bị đóng khi rê chuột xuống.
+- **Vị trí thợ (D40)**: thanh trên cùng cổng thợ có biểu tượng ghim kèm chấm xanh nhấp nháy khi đang gửi vị trí trong ca (chấm cam + link sang trang Vị trí khi trình duyệt chặn quyền vị trí); trang **Vị trí** chỉ hiện trạng thái (Chưa vào ca / Đang chia sẻ / Chưa cho phép vị trí + cách bật / Máy không hỗ trợ). **Điều phối**: dưới lịch giao theo tài xế là khung "Vị trí thợ trong ca" — bản đồ bên trái, danh sách bên phải (tên, "Đang giao PG-… · biển số" hoặc "Không có chuyến giao", giờ cập nhật, "Mất tín hiệu"); bấm tên để xem đường đi trong ca.
 
 # UX-FB17-001 — Màn chờ khi chuyển trang
 

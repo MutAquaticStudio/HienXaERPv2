@@ -1050,3 +1050,10 @@ button.link {
 .billRow small { color: var(--portal-muted); font-size: 12px; font-weight: 500; }
 .billRow small[data-overdue] { color: var(--danger); font-weight: 600; }
 .billRow strong { white-space: nowrap; }
+
+/* FB18 (D40): shift location indicator in the worker top bar — a green dot while sharing, amber when permission is off. */
+.topIcon[data-sharing], .topIcon[data-warning] { position: relative; }
+.topIcon[data-sharing]::after, .topIcon[data-warning]::after { content: ""; position: absolute; top: 9px; right: 9px; width: 8px; height: 8px; border-radius: 99px; background: #3ddc84; box-shadow: 0 0 0 2px var(--portal-primary, #0b63c6); }
+.topIcon[data-warning]::after { background: #f2a93b; }
+@media (prefers-reduced-motion: no-preference) { .topIcon[data-sharing]::after { animation: location-pulse 2s ease-out infinite; } }
+@keyframes location-pulse { 0% { box-shadow: 0 0 0 2px var(--portal-primary, #0b63c6), 0 0 0 2px rgb(61 220 132 / 60%); } 100% { box-shadow: 0 0 0 2px var(--portal-primary, #0b63c6), 0 0 0 9px rgb(61 220 132 / 0%); } }
