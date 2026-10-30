@@ -100,8 +100,8 @@ export function PortalShell({
             <Link className={styles.topIcon} href={`${root}/messages`} aria-label="Tin nhắn"><MessageSquare aria-hidden size={20} /></Link>
             <form action="/auth/logout" method="post">
               <input type="hidden" name="surface" value={audience === "worker" ? "work" : "customer"} />
-              <button className={styles.topIcon} type="submit" aria-label="Đăng xuất" title="Đăng xuất">
-                <LogOut aria-hidden size={19} />
+              <button className={styles.logout} type="submit">
+                <LogOut aria-hidden size={18} /><span>Đăng xuất</span>
               </button>
             </form>
           </div>

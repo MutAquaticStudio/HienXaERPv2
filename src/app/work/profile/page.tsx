@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight, Clock3, KeyRound, MapPin, MessageSquare } from "lucide-react";
+import { ChevronRight, Clock3, KeyRound, LogOut, MapPin, MessageSquare } from "lucide-react";
 import styles from "@/components/portal/portal.module.css";
 import { PushToggle } from "@/components/notifications/push-toggle";
 import { getWorkerPortalSnapshot } from "@/modules/portal/actions";
@@ -26,6 +26,10 @@ export default async function WorkProfilePage() {
         <h2>Báo việc mới về điện thoại</h2>
         <PushToggle />
       </section>
+      <form action="/auth/logout" method="post">
+        <input type="hidden" name="surface" value="work" />
+        <button className={styles.buttonSecondary} type="submit"><LogOut aria-hidden size={18} />Đăng xuất</button>
+      </form>
     </div>
   );
 }

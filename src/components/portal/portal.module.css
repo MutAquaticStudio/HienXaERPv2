@@ -753,13 +753,15 @@ button.link {
     box-shadow: none;
   }
 
-  .logout {
+  .logout,
+  .topIcon {
     color: var(--primary-text);
     background: #fff;
     border: 1px solid var(--portal-line);
   }
 
-  .logout:hover {
+  .logout:hover,
+  .topIcon:hover {
     background: var(--portal-soft);
   }
 
@@ -1057,3 +1059,9 @@ button.link {
 .topIcon[data-warning]::after { background: #f2a93b; }
 @media (prefers-reduced-motion: no-preference) { .topIcon[data-sharing]::after { animation: location-pulse 2s ease-out infinite; } }
 @keyframes location-pulse { 0% { box-shadow: 0 0 0 2px var(--portal-primary, #0b63c6), 0 0 0 2px rgb(61 220 132 / 60%); } 100% { box-shadow: 0 0 0 2px var(--portal-primary, #0b63c6), 0 0 0 9px rgb(61 220 132 / 0%); } }
+
+/* Very narrow phones: the sign-out button keeps its icon, the word moves to the screen reader only. */
+@media (max-width: 380px) {
+  .logout { padding: 0.45rem 0.6rem; }
+  .logout span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
