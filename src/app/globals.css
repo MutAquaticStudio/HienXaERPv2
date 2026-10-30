@@ -297,7 +297,7 @@ tbody tr:hover { background: var(--row-hover); }
 .button-compact { min-height: 32px; padding: 4px 10px; font-size: var(--font-size-caption); }
 .table-actions { text-align: right; white-space: nowrap; }
 /* Several links in one actions cell ("Tạo đơn", "Tạo dịch vụ", "Sửa") need air between them. */
-.table-actions > .code-link + .code-link { margin-left: 14px; }
+.table-actions > .code-link + :is(.code-link, .button, button, form) { margin-left: 14px; }
 .catalog-saved { margin: 0 22px 12px; }
 .card-pad-x { margin: 0; padding: 0 22px 12px; }
 .catalog-dialog-form { display: grid; gap: 14px; }
