@@ -54,7 +54,7 @@ DB cục bộ đầy đủ cần Docker + Supabase CLI: `pnpm db:start`, `pnpm d
 
 - **Database là authority**: RLS + RPC quyết định quyền và tính hợp lệ; UI chỉ trình bày. Gọi DB bằng client
   `createServerSupabase()` (publishable key + cookie người dùng). `SUPABASE_SECRET_KEY` chỉ dùng ở chỗ đã có
-  (`src/lib/auth/actions.ts`, `src/modules/portal/evidence-storage.ts`); không thêm chỗ dùng mới, không đưa vào `NEXT_PUBLIC_*`.
+  (`src/lib/auth/actions.ts`, `src/modules/portal/evidence-storage.ts`, webhook SePay `src/app/api/payments/sepay/route.ts` — D42); không thêm chỗ dùng mới, không đưa vào `NEXT_PUBLIC_*`.
 - Lệnh ghi có `operationId` (idempotency) và `expectedVersion` (optimistic lock) khi chứng từ có version.
 - Lỗi từ DB → map sang tiếng Việt rõ ràng (xem `commandError` trong `src/modules/sales/actions.ts`, `userFacingError`).
   Không hiển thị mã lỗi kỹ thuật cho người dùng. Lỗi transport/không rõ = `UNKNOWN`, không phải thất bại.

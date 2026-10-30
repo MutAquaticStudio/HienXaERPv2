@@ -13,14 +13,24 @@ import { requireInternalPermission } from "@/lib/access/context";
 import { CORE_LIST_PAGE_SIZE, parseCoreListQuery } from "@/lib/core-list";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { createFinanceAccountAction, reconcilePaymentAction, reversePaymentAction, setBankDetailsAction } from "@/modules/finance/actions";
+import { createFinanceAccountAction, dismissBankTransactionAction, reconcilePaymentAction, resolveBankTransactionAction, reversePaymentAction, setBankDetailsAction, setBankFeedAction } from "@/modules/finance/actions";
 import { MoneyInput } from "@/components/ui/money-input";
 import { CsvDownloadButton } from "@/components/ui/csv-download-button";
 import { toCsv } from "@/lib/core/csv";
 
 type Payment = { id: string; payment_number: string; direction: string; counterparty_name: string; account_code: string; amount_vnd: string; allocated_amount_vnd: string; advance_amount_vnd: string; unallocated_amount_vnd: string; effective_at: string; posting_state: string; reconciliation_state: string; reconciliation_difference_vnd: string; reversal_of_payment_id: string | null };
 type Period = { opening_vnd: string; receipts_vnd: string; disbursements_vnd: string; closing_vnd: string; payment_count: number };
-type Query = { notice?: string; error?: string; page?: string; from?: string; to?: string; account?: string; direction?: string };
+type Query = { notice?: string; error?: string; page?: string; from?: string; to?: string; account?: string; direction?: string; view?: string };
+type BankLine = { id: string; amount_vnd: string; content: string | null; gateway: string | null; reference_code: string | null; transaction_at: string; reason: string; customer_id: string | null };
+
+/** D42: why a bank movement from SePay waits for the accountant. */
+const BANK_REASON: Record<string, string> = {
+  no_match: "Nội dung không có mã đơn hoặc mã khách",
+  customer_mismatch: "Mã đơn và mã khách không khớp nhau",
+  ambiguous_customer: "Mã khách trùng nhiều khách hàng",
+  customer_inactive: "Khách hàng đã ngừng",
+  post_failed: "Người bật tự ghi sổ không còn quyền — bật lại ở tài khoản ngân hàng",
+};
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -64,7 +74,7 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
     paymentRequest.order("effective_at", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1),
     supabase.rpc("cashbook_summary", { target_branch_id: access.branchId }).select("net_cash_vnd::text,unmatched_count").single(),
     supabase.rpc("cashbook_period_summary", { target_branch_id: access.branchId, from_at: range.fromAt, to_at: range.toAt, target_account_id: accountId || null }),
-    supabase.from("finance_accounts").select("id, code, name, account_kind, active, bank_name, bank_account_number, bank_account_holder, shown_to_customers").eq("branch_id", access.branchId).order("code"),
+    supabase.from("finance_accounts").select("id, code, name, account_kind, active, bank_name, bank_account_number, bank_account_holder, shown_to_customers, bank_feed_enabled, bank_qr_note_prefix").eq("branch_id", access.branchId).order("code"),
     supabase.from("advance_position_read").select("advance_side, counterparty_name, balance_vnd::text").eq("branch_id", access.branchId),
     can.post ? supabase.from("customers").select("id, code, display_name").eq("branch_id", access.branchId).eq("active", true).order("display_name").limit(1000) : none,
     can.post && can.payables ? supabase.from("suppliers").select("id, code, name").eq("branch_id", access.branchId).eq("active", true).order("name").limit(1000) : none,
@@ -73,6 +83,9 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
       .eq("branch_id", access.branchId).eq("settlement", "NON_CASH").gte("effective_at", range.fromAt).lt("effective_at", range.toAt).order("effective_at", { ascending: false }).limit(50) : none,
     exportRequest.order("effective_at", { ascending: true }).limit(2000),
   ]);
+  // D42: SePay bank movements that could not be matched to a customer.
+  const bankLines = can.post ? ((await supabase.from("bank_transactions").select("id, amount_vnd::text, content, gateway, reference_code, transaction_at, reason, customer_id")
+    .eq("branch_id", access.branchId).eq("state", "NEEDS_REVIEW").order("received_at", { ascending: false }).limit(50)).data ?? []) as BankLine[] : [];
   if (paymentsResult.error || summaryResult.error || periodResult.error || accountsResult.error || advancesResult.error) throw new Error("Không thể tải sổ quỹ đầy đủ.");
   const fetched = (paymentsResult.data ?? []) as Payment[];
   const rows = fetched.slice(0, CORE_LIST_PAGE_SIZE);
@@ -142,7 +155,8 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
     {selectedBank && <section className="card card-pad bank-details" aria-label="Thông tin chuyển khoản">
       <div><span className="metric-label">Thông tin chuyển khoản</span>
         <p>{selectedBank.bank_account_number ? <><strong>{selectedBank.bank_name}</strong> · <span className="mono">{selectedBank.bank_account_number}</span> · {selectedBank.bank_account_holder}</> : <span className="muted">Chưa nhập số tài khoản.</span>}
-          {selectedBank.shown_to_customers && <span className="status status-success bank-shown">Hiện cho khách</span>}</p></div>
+          {selectedBank.shown_to_customers && <span className="status status-success bank-shown">Hiện cho khách</span>}
+          {selectedBank.bank_feed_enabled && <span className="status status-info bank-shown">Tự ghi tiền về (SePay)</span>}</p></div>
       {access.permissions.has("finance.account.manage") && <FormDialog label="Sửa thông tin chuyển khoản" title={`Thông tin chuyển khoản · ${selectedBank.name}`}>
         <form className="form-grid" action={setBankDetailsAction}><input type="hidden" name="operationId" value={randomUUID()} /><input type="hidden" name="accountId" value={selectedBank.id} />
           <label className="field">Ngân hàng<input name="bank" defaultValue={selectedBank.bank_name ?? ""} placeholder="Vietcombank" maxLength={120} /></label>
@@ -151,7 +165,27 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
           <label className="check-inline field-full"><input type="checkbox" name="show" defaultChecked={selectedBank.shown_to_customers} />Hiện cho khách ở mục Công nợ của cổng khách (chỉ một tài khoản)</label>
           <div className="form-actions"><button className="button button-primary" type="submit">Lưu</button></div></form>
       </FormDialog>}
+      {access.permissions.has("finance.account.manage") && can.post && <FormDialog label="Tự ghi tiền về (SePay)" title={`Tự ghi tiền về qua SePay · ${selectedBank.name}`}
+        description="Khi SePay báo tiền vào tài khoản này, hệ thống tự lập phiếu thu, trừ công nợ theo mã đơn / mã khách trong nội dung và đối soát. Phiếu ghi tên người bật.">
+        <form className="form-grid" action={setBankFeedAction}><input type="hidden" name="operationId" value={randomUUID()} /><input type="hidden" name="accountId" value={selectedBank.id} />
+          <label className="check-inline field-full"><input type="checkbox" name="enabled" defaultChecked={selectedBank.bank_feed_enabled} />Bật tự ghi tiền về và nút Thanh toán bằng QR ở cổng khách</label>
+          <label className="field field-full">Tiền tố nội dung (không bắt buộc)<input name="prefix" defaultValue={selectedBank.bank_qr_note_prefix ?? ""} maxLength={20} placeholder="SEVQR" />
+            <small className="muted">Chỉ điền khi ngân hàng yêu cầu, ví dụ VietinBank cá nhân cần SEVQR, tài khoản ảo theo nội dung cần TKP + mã.</small></label>
+          <div className="form-actions"><button className="button button-primary" type="submit">Lưu</button></div></form>
+      </FormDialog>}
     </section>}
+    {bankLines.length > 0 && <section className="card" id="bank" aria-label="Giao dịch ngân hàng chờ xử lý"><div className="section-head"><h2>Giao dịch ngân hàng chờ xử lý</h2><span className="scope-chip">{bankLines.length} khoản</span></div>
+      <p className="muted card-pad-x">Tiền đã vào tài khoản nhưng chưa nhận ra khách. Chọn khách để ghi phiếu thu (trừ nợ cũ nhất trước), hoặc bỏ qua nếu không phải tiền khách trả.</p>
+      <div className="table-wrap"><table><thead><tr><th>Thời gian</th><th>Nội dung chuyển khoản</th><th className="numeric">Số tiền</th><th>Lý do chờ</th><th>Thao tác</th></tr></thead><tbody>{bankLines.map((line) => <tr key={line.id}>
+        <td>{formatBusinessDate(line.transaction_at)}<small className="table-subline">{line.gateway ?? "Ngân hàng"}{line.reference_code ? ` · ${line.reference_code}` : ""}</small></td>
+        <td className="cashbook-party">{line.content || "—"}</td><td className="numeric mono text-success">+{money(line.amount_vnd)}</td><td>{BANK_REASON[line.reason] ?? "Cần kiểm tra"}</td>
+        <td className="table-actions"><FormDialog label="Xử lý" title="Ghi khoản tiền về" buttonClassName="button button-secondary button-compact" description={<>{money(line.amount_vnd)} · {line.content || "Không có nội dung"}</>}>
+          <form className="mini-command" action={resolveBankTransactionAction}><h3>Ghi phiếu thu cho khách</h3><input type="hidden" name="transactionId" value={line.id} /><input type="hidden" name="operationId" value={randomUUID()} />
+            <label className="field">Khách hàng<select name="customerId" required defaultValue={line.customer_id ?? ""}><option value="" disabled>Chọn khách hàng</option>{customers.map((customer) => <option key={customer.id} value={customer.id}>{customer.code} · {customer.name}</option>)}</select></label>
+            <button className="button button-primary" type="submit">Ghi phiếu thu</button></form>
+          <form className="mini-command" action={dismissBankTransactionAction}><h3>Không phải tiền khách trả</h3><input type="hidden" name="transactionId" value={line.id} /><input type="hidden" name="operationId" value={randomUUID()} />
+            <button className="button button-secondary" type="submit">Bỏ qua, không ghi sổ</button></form>
+        </FormDialog></td></tr>)}</tbody></table></div></section>}
     <div className="list-layout">
       <AutoFilterForm className="card card-pad list-filters" aria-label="Bộ lọc sổ quỹ">
         <div className="period-presets" role="group" aria-label="Chọn nhanh kỳ">{presets.map((preset) => <Link key={preset.label}

@@ -89,6 +89,51 @@ export async function setBankDetailsAction(formData: FormData) {
   redirect(`${back}&notice=bank-details-saved`);
 }
 
+/** D42: switch automatic posting of SePay bank movements on/off for a bank fund (optional note prefix for SEVQR / TKP banks). */
+export async function setBankFeedAction(formData: FormData) {
+  const parsed = z.object({
+    accountId: z.guid(), enabled: z.literal("on").optional(), prefix: z.string().trim().max(20).regex(/^[A-Za-z0-9 ]*$/), operationId: z.guid(),
+  }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) redirect("/admin/cashbook?error=" + encodeURIComponent("Tiền tố nội dung chỉ gồm chữ và số (tối đa 20 ký tự)."));
+  await requireInternalPermission("finance.account.manage");
+  const { error } = await (await createServerSupabase()).rpc("set_finance_account_bank_feed", {
+    target_account_id: parsed.data.accountId, enabled: parsed.data.enabled === "on", note_prefix: parsed.data.prefix || null, operation_id: parsed.data.operationId,
+  });
+  const back = `/admin/cashbook?account=${parsed.data.accountId}`;
+  if (error) redirect(`${back}&error=${encodeURIComponent(error.message.includes("bank_feed_needs_account_number")
+    ? "Nhập số tài khoản ngân hàng trước khi bật tự ghi tiền về."
+    : error.message.includes("forbidden") ? "Cần quyền quản lý tài khoản tiền và lập phiếu thu chi để bật tự ghi tiền về." : message(error.message))}`);
+  revalidatePath("/admin/cashbook");
+  redirect(`${back}&notice=bank-feed-saved`);
+}
+
+/** D42: post a bank movement that waits in "Giao dịch chờ xử lý" to the customer the accountant chose (oldest debts first). */
+export async function resolveBankTransactionAction(formData: FormData) {
+  const parsed = z.object({ transactionId: z.guid(), customerId: z.guid(), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) redirect("/admin/cashbook?view=bank&error=" + encodeURIComponent("Chọn khách hàng cho khoản tiền về."));
+  await requireInternalPermission("finance.payment.post");
+  const { error } = await (await createServerSupabase()).rpc("resolve_bank_transaction", {
+    target_transaction_id: parsed.data.transactionId, target_customer_id: parsed.data.customerId, target_sales_order_id: null, operation_id: parsed.data.operationId,
+  });
+  if (error) redirect(`/admin/cashbook?view=bank&error=${encodeURIComponent(error.message.includes("bank_transaction_not_waiting")
+    ? "Khoản tiền này đã được xử lý." : error.message.includes("bank_receipt_party_invalid") ? "Khách hàng không thuộc chi nhánh của tài khoản hoặc đã ngừng." : message(error.message))}`);
+  revalidatePath("/admin/cashbook");
+  redirect("/admin/cashbook?view=bank&notice=bank-transaction-posted");
+}
+
+/** D42: leave a waiting bank movement out of the books (not a customer payment). */
+export async function dismissBankTransactionAction(formData: FormData) {
+  const parsed = z.object({ transactionId: z.guid(), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) redirect("/admin/cashbook?view=bank");
+  await requireInternalPermission("finance.payment.post");
+  const { error } = await (await createServerSupabase()).rpc("dismiss_bank_transaction", {
+    target_transaction_id: parsed.data.transactionId, operation_id: parsed.data.operationId,
+  });
+  if (error) redirect(`/admin/cashbook?view=bank&error=${encodeURIComponent(error.message.includes("bank_transaction_not_waiting") ? "Khoản tiền này đã được xử lý." : message(error.message))}`);
+  revalidatePath("/admin/cashbook");
+  redirect("/admin/cashbook?view=bank&notice=bank-transaction-dismissed");
+}
+
 export async function submitPaymentWithOutcomeAction(formData: FormData): Promise<CommandOutcome> {
   const parsed = z.object({
     direction: z.enum(["RECEIPT", "DISBURSEMENT"]),

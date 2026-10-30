@@ -7,6 +7,8 @@ import { PAYMENT_NOTICES_ENABLED } from "@/lib/features";
 import { getCustomerPortalSnapshot } from "@/modules/portal/actions";
 import { authenticatedPortalClient } from "@/modules/portal/server";
 import { CopyButton } from "@/components/portal/copy-button";
+import { DebtPayButton } from "@/components/portal/debt-payment";
+import { ALL_DEBTS, debtPaymentOptionsSchema } from "@/modules/finance/sepay";
 
 /** FB18: the bank account the owner marked "Hiện cho khách" in the cash book, or null. */
 async function paymentAccount(customerId: string) {
@@ -22,6 +24,19 @@ async function paymentAccount(customerId: string) {
   }
 }
 
+/** D42: per-order amounts to pay by QR, or null when the shop has not switched on bank-confirmed payment. */
+async function paymentOptions(customerId: string) {
+  try {
+    const context = await authenticatedPortalClient();
+    if (!context) return null;
+    const { data, error } = await context.supabase.rpc("portal_debt_payment_options", { target_customer_id: customerId });
+    if (error || data === null) return null;
+    const parsed = debtPaymentOptionsSchema.safeParse(data);
+    return parsed.success ? parsed.data : null;
+  } catch {
+    return null;
+  }
+}
 
 export default async function CustomerDebtsPage() {
   const snapshot = await getCustomerPortalSnapshot();
@@ -35,7 +50,7 @@ export default async function CustomerDebtsPage() {
       </div>
     );
   }
-  const bank = await paymentAccount(snapshot.customer.id);
+  const [bank, pay] = await Promise.all([paymentAccount(snapshot.customer.id), paymentOptions(snapshot.customer.id)]);
   const transferNote = `${snapshot.customer.code} thanh toan`;
   const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ho_Chi_Minh" }).format(new Date());
   return (
@@ -44,8 +59,9 @@ export default async function CustomerDebtsPage() {
         <p className={styles.heroEyebrow}>Công nợ hiện tại</p>
         <h1>{money(snapshot.debt.outstanding_amount_vnd)}</h1>
         <p>Quá hạn: {money(snapshot.debt.overdue_amount_vnd)}</p>
+        {pay && pay.outstanding_amount_vnd !== "0" && <DebtPayButton customerId={snapshot.customer.id} targetKey={ALL_DEBTS} label="Thanh toán tất cả" primary />}
       </header>
-      {bank && <section className={styles.bankCard} aria-labelledby="bank-title">
+      {bank && !pay && <section className={styles.bankCard} aria-labelledby="bank-title">
         <h2 id="bank-title">Chuyển khoản cho cửa hàng</h2>
         <div className={styles.bankRow}><span><small>{bank.bank_name}</small><strong>{bank.account_number}</strong><small>{bank.account_holder}</small></span><CopyButton value={bank.account_number} label="Sao chép số TK" /></div>
         <div className={styles.bankRow}><span><small>Nội dung chuyển khoản</small><strong>{transferNote}</strong></span><CopyButton value={transferNote} /></div>
@@ -53,7 +69,13 @@ export default async function CustomerDebtsPage() {
       <div className={styles.split}>
         <section className={styles.card}>
           <h2>Khoản cần thanh toán</h2>
-          {snapshot.debt.items.length ? snapshot.debt.items.map((item) => (
+          {pay ? (pay.orders.length ? pay.orders.map((order) => (
+            <article className={styles.billRow} key={order.key}>
+              <span>{order.label}<small data-overdue={order.due_date && order.due_date < today ? "true" : undefined}>{order.due_date && order.due_date < today ? "Quá hạn · " : ""}Hạn {order.due_date ? formatBusinessDate(order.due_date) : "chưa chốt"}</small></span>
+              <span className={styles.billActions}><strong>{money(order.outstanding_amount_vnd)}</strong>
+                <DebtPayButton customerId={snapshot.customer.id} targetKey={order.key} label="Thanh toán" /></span>
+            </article>
+          )) : <p className={styles.empty}>Không có dư nợ.</p>) : snapshot.debt.items.length ? snapshot.debt.items.map((item) => (
             <article className={styles.billRow} key={item.id}>
               <span>{item.source_number ?? financeSourceLabel(item.source_type)}<small data-overdue={item.due_date && item.due_date < today ? "true" : undefined}>{item.due_date && item.due_date < today ? "Quá hạn · " : ""}Hạn {item.due_date ? formatBusinessDate(item.due_date) : "chưa chốt"}</small></span>
               <strong>{money(item.outstanding_amount_vnd ?? 0)}</strong>
