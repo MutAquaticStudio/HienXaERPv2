@@ -844,3 +844,4 @@ Quyết định D25 ở đầu Spec.md; giao diện UX-FB5-001. Migration `20261
 | FB18-B | Biểu đồ Thu / Chi / Lợi nhuận: bảng số liệu chỉ kỳ có phát sinh theo bộ lọc + dòng Cả kỳ, biểu đồ theo bề rộng khung | DONE — đã phát hành Production 30/10/2026 (#67) |
 | FB18-C | Chuyển động menu nhóm gọn hơn (mờ + phóng nhẹ + lần lượt, cầu nối hover) | DONE — đã phát hành Production 30/10/2026 (#67) |
 | FB18-D | D39(a)(b): STK chuyển khoản từ quỹ Ngân hàng ở Sổ quỹ (migration `20261030130000`, native 312); cổng thợ & khách theo concept (Hôm nay, bước việc, Gọi / Chỉ đường, Đặt lại nhanh, khung chuyển khoản) | DONE — đã phát hành Production 30/10/2026 (#67) |
+| FB18-E | D41: tạm ngừng module Hóa đơn — menu "Hóa đơn điện tử (tạm ngừng)", màn hình thông báo, lệnh bị từ chối (cờ `E_INVOICES_ENABLED`) | DONE — phát hành Production 30/10/2026 |

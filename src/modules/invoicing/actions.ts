@@ -1,4 +1,5 @@
 "use server";
+import { E_INVOICES_ENABLED, E_INVOICES_PAUSED_MESSAGE } from "@/lib/features";
 import { operationalPostingError } from "@/lib/core/errors";
 import { reasonOrDefault } from "@/lib/core/reason";
 
@@ -22,6 +23,7 @@ function safeError(message: string) {
 }
 
 export async function createInvoiceDraftAction(_state: InvoiceActionState, formData: FormData): Promise<InvoiceActionState> {
+  if (!E_INVOICES_ENABLED) return failure(E_INVOICES_PAUSED_MESSAGE);
   await requireInternalPermission("finance.ar.adjust");
   const source = input(formData, "source_id"), operation = input(formData, "operation_id");
   if (!validId(source) || !validId(operation)) return failure("Nguồn hoặc mã thao tác không hợp lệ.");
@@ -33,6 +35,7 @@ export async function createInvoiceDraftAction(_state: InvoiceActionState, formD
 }
 
 export async function approveInvoiceBusinessAction(_state: InvoiceActionState, formData: FormData): Promise<InvoiceActionState> {
+  if (!E_INVOICES_ENABLED) return failure(E_INVOICES_PAUSED_MESSAGE);
   await requireInternalPermission("finance.reconcile");
   const id = input(formData, "invoice_id"), operation = input(formData, "operation_id");
   const reason = reasonOrDefault(input(formData, "reason"), "Duyệt nguồn nghiệp vụ"), version = Number(input(formData, "version"));
@@ -46,6 +49,7 @@ export async function approveInvoiceBusinessAction(_state: InvoiceActionState, f
 }
 
 export async function cancelInvoiceDraftAction(_state: InvoiceActionState, formData: FormData): Promise<InvoiceActionState> {
+  if (!E_INVOICES_ENABLED) return failure(E_INVOICES_PAUSED_MESSAGE);
   await requireInternalPermission("finance.ar.adjust");
   const id = input(formData, "invoice_id"), operation = input(formData, "operation_id");
   const reason = reasonOrDefault(input(formData, "reason"), "Hủy nháp hóa đơn"), version = Number(input(formData, "version"));
@@ -59,6 +63,7 @@ export async function cancelInvoiceDraftAction(_state: InvoiceActionState, formD
 }
 
 export async function createInvoiceAdjustmentAction(_state: InvoiceActionState, formData: FormData): Promise<InvoiceActionState> {
+  if (!E_INVOICES_ENABLED) return failure(E_INVOICES_PAUSED_MESSAGE);
   await requireInternalPermission("finance.ar.adjust");
   const id = input(formData, "invoice_id"), adjustment = input(formData, "adjustment_id"), operation = input(formData, "operation_id");
   if (![id, adjustment, operation].every(validId)) return failure("Nguồn điều chỉnh không hợp lệ.");
@@ -70,6 +75,7 @@ export async function createInvoiceAdjustmentAction(_state: InvoiceActionState, 
 }
 
 export async function registerPurchaseSourceAction(_state: InvoiceActionState, formData: FormData): Promise<InvoiceActionState> {
+  if (!E_INVOICES_ENABLED) return failure(E_INVOICES_PAUSED_MESSAGE);
   await requireInternalPermission("finance.ap.adjust");
   const source = input(formData, "source_id"), operation = input(formData, "operation_id");
   const number = input(formData, "document_number"), date = input(formData, "document_date");
