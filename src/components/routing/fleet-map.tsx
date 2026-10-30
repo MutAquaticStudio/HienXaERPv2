@@ -14,10 +14,10 @@ type TrailPoint = { latitude: number; longitude: number; capturedAt: string };
 const onTrip = (worker: FleetPosition) => worker.delivery_number ? `Đang giao ${worker.delivery_number}${worker.plate_number ? ` · ${worker.plate_number}` : ""}` : "Không có chuyến giao";
 const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]!);
 
-/** Base maps in order: OpenStreetMap, then CARTO (same OpenStreetMap data, other servers) when OSM sends no tiles. */
+/** Base maps in order (Owner: CARTO first): CARTO Voyager, then OpenStreetMap's own tiles when CARTO sends none. */
 const BASE_MAPS = [
-  { url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png", attribution: "© OpenStreetMap" },
   { url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png", attribution: "© OpenStreetMap © CARTO" },
+  { url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png", attribution: "© OpenStreetMap" },
 ];
 const TILE_ERRORS_BEFORE_SWITCH = 3;
 

@@ -38,13 +38,13 @@ it("explains that sharing starts with the shift when nobody is on the map", asyn
   expect(screen.getByText(/tự bật khi thợ Vào ca/)).toBeInTheDocument();
 });
 
-it("switches to the second base map when OpenStreetMap sends no tiles, then says so if that fails too (FB18)", async () => {
+it("starts on CARTO, switches to OpenStreetMap when CARTO sends no tiles, then says so if that fails too (FB18)", async () => {
   vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ fleet: [], trail: [] }))));
   render(<FleetMap initial={[]} />);
   await waitFor(() => expect(tileLayers).toHaveLength(1));
-  expect(tileLayers[0]).toMatchObject({ url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png", options: { referrerPolicy: "strict-origin-when-cross-origin" } });
+  expect(tileLayers[0]).toMatchObject({ url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png", options: { referrerPolicy: "strict-origin-when-cross-origin" } });
   act(() => { for (let i = 0; i < 3; i += 1) tileLayers[0].handlers.tileerror(); });
-  expect(tileLayers[1].url).toContain("basemaps.cartocdn.com");
+  expect(tileLayers[1].url).toBe("https://tile.openstreetmap.org/{z}/{x}/{y}.png");
   expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   act(() => { for (let i = 0; i < 3; i += 1) tileLayers[1].handlers.tileerror(); });
   expect(screen.getByRole("alert")).toHaveTextContent("Không tải được nền bản đồ");
