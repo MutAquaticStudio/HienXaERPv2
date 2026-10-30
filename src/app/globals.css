@@ -1628,7 +1628,9 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .matching-table tr.selected { background: var(--primary-soft); }
 /* FB10 (6.10): OpenStreetMap fleet map on Lộ trình. */
 .fleet-map-layout { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 12px; padding: 0 16px 16px; }
+.fleet-map-frame { position: relative; min-width: 0; }
 .fleet-map { height: 440px; border-radius: var(--radius-sm); overflow: hidden; z-index: 0; }
+.fleet-map-warning { position: absolute; left: 12px; right: 12px; bottom: 28px; z-index: 500; margin: 0; padding: 10px 12px; border-radius: var(--radius-sm); background: var(--surface); color: var(--danger); box-shadow: var(--shadow-md, 0 4px 14px rgb(16 34 58 / 14%)); font-size: 13px; }
 .fleet-map-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; align-content: start; max-height: 440px; overflow: auto; }
 .fleet-map-list button { width: 100%; display: grid; gap: 2px; text-align: left; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); cursor: pointer; }
 .fleet-map-list button.active { border-color: var(--primary); background: var(--primary-soft); }

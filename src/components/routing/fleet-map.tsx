@@ -14,6 +14,13 @@ type TrailPoint = { latitude: number; longitude: number; capturedAt: string };
 const onTrip = (worker: FleetPosition) => worker.delivery_number ? `Đang giao ${worker.delivery_number}${worker.plate_number ? ` · ${worker.plate_number}` : ""}` : "Không có chuyến giao";
 const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]!);
 
+/** Base maps in order: OpenStreetMap, then CARTO (same OpenStreetMap data, other servers) when OSM sends no tiles. */
+const BASE_MAPS = [
+  { url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png", attribution: "© OpenStreetMap" },
+  { url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png", attribution: "© OpenStreetMap © CARTO" },
+];
+const TILE_ERRORS_BEFORE_SWITCH = 3;
+
 /** Default view (Việt Nam) until a worker shares their position. */
 const VIETNAM: [number, number] = [16.0, 106.0];
 
@@ -29,17 +36,36 @@ export function FleetMap({ initial }: { initial: FleetPosition[] }) {
   const [trail, setTrail] = useState<TrailPoint[]>([]);
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
   const [failed, setFailed] = useState(false);
+  const [baseFailed, setBaseFailed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
+    let resize: ResizeObserver | undefined;
     void import("leaflet").then((L) => {
       if (cancelled || !holder.current || map.current) return;
-      map.current = L.map(holder.current, { zoomControl: true }).setView(VIETNAM, 6);
-      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(map.current);
-      layer.current = L.layerGroup().addTo(map.current);
+      const created = L.map(holder.current, { zoomControl: true }).setView(VIETNAM, 6);
+      map.current = created;
+      // FB18: when a base-map server sends no tiles the map stays grey without a word; try the next one, then say so.
+      const showBaseMap = (index: number) => {
+        const base = BASE_MAPS[index];
+        if (!base) { setBaseFailed(true); return; }
+        let loaded = false;
+        let errors = 0;
+        const tiles = L.tileLayer(base.url, { maxZoom: 19, attribution: base.attribution, subdomains: "abcd", referrerPolicy: "strict-origin-when-cross-origin" })
+          .on("tileload", () => { loaded = true; setBaseFailed(false); })
+          .on("tileerror", () => { errors += 1; if (!loaded && errors >= TILE_ERRORS_BEFORE_SWITCH) { tiles.remove(); showBaseMap(index + 1); } })
+          .addTo(created);
+      };
+      showBaseMap(0);
+      layer.current = L.layerGroup().addTo(created);
+      // The card animates in and the page can reflow after the map is built; keep Leaflet's size in step or tiles stay missing.
+      if (typeof ResizeObserver !== "undefined") {
+        resize = new ResizeObserver(() => created.invalidateSize());
+        resize.observe(holder.current);
+      }
       setUpdatedAt(new Date());
     });
-    return () => { cancelled = true; map.current?.remove(); map.current = null; };
+    return () => { cancelled = true; resize?.disconnect(); map.current?.remove(); map.current = null; };
   }, []);
 
   useEffect(() => {
@@ -84,7 +110,10 @@ export function FleetMap({ initial }: { initial: FleetPosition[] }) {
     <div className="section-head"><h2>Vị trí thợ trong ca</h2>
       <span className="scope-chip" role="status">{failed ? "Mất kết nối, đang thử lại…" : updatedAt ? `Cập nhật ${updatedAt.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" })} · tự làm mới 15 giây` : "Đang tải bản đồ…"}</span></div>
     <div className="fleet-map-layout">
-      <div ref={holder} className="fleet-map" />
+      <div className="fleet-map-frame">
+        <div ref={holder} className="fleet-map" />
+        {baseFailed && <p className="fleet-map-warning" role="alert">Không tải được nền bản đồ (mạng hoặc trình duyệt đang chặn máy chủ bản đồ). Vị trí thợ vẫn có trong danh sách bên cạnh.</p>}
+      </div>
       <ul className="fleet-map-list">
         {fleet.map((worker) => <li key={worker.employee_id}><button type="button" className={worker.employee_id === selected ? "active" : undefined} onClick={() => setSelected(worker.employee_id === selected ? null : worker.employee_id)}>
           <strong>{worker.employee_name}</strong><span>{onTrip(worker)}</span>
