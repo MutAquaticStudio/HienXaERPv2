@@ -753,15 +753,13 @@ button.link {
     box-shadow: none;
   }
 
-  .logout,
-  .topIcon {
+  .logout {
     color: var(--primary-text);
     background: #fff;
     border: 1px solid var(--portal-line);
   }
 
-  .logout:hover,
-  .topIcon:hover {
+  .logout:hover {
     background: var(--portal-soft);
   }
 
@@ -1064,4 +1062,10 @@ button.link {
 @media (max-width: 380px) {
   .logout { padding: 0.45rem 0.6rem; }
   .logout span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+
+/* Desktop: the top bar sits on the light page, so its icon buttons need a light face (declared after .topIcon to win). */
+@media (min-width: 800px) {
+  .topIcon { color: var(--primary-text); background: #fff; border: 1px solid var(--portal-line); }
+  .topIcon:hover { background: var(--portal-soft); }
 }
