@@ -120,3 +120,28 @@ it("takes the selling units as 1 base unit = N units (Owner 18/10: base tấn, 1
     { uomId: "kg", numerator: "1", denominator: "1000", type: "PACKAGING", sourceNote: "" },
   ]);
 });
+
+it("keeps each new variant's price box separate while attributes are unnamed or share a name", async () => {
+  m.load.mockResolvedValue(fresh);
+  render(<VariantGroupEditor groupId={null} onSaved={vi.fn()} />);
+  fireEvent.change(await screen.findByLabelText("Tên hàng chung *"), { target: { value: "Thép Hòa Phát" } });
+  fireEvent.change(screen.getByLabelText("Nhóm vật tư *"), { target: { value: "mg-xm" } });
+  fireEvent.change(screen.getByLabelText("Đơn vị cơ sở (tồn kho) *"), { target: { value: "kg" } });
+  fireEvent.change(screen.getByLabelText("Giá trị"), { target: { value: "D10, D12" } });
+  fireEvent.click(screen.getByRole("button", { name: "+ Thêm thuộc tính" }));
+  fireEvent.change(screen.getAllByLabelText("Giá trị")[1], { target: { value: "CB300, CB400" } });
+
+  const first = screen.getByLabelText("Giá bán loại D10 CB300");
+  first.focus();
+  for (const value of ["1", "15", "150.000"]) fireEvent.change(document.activeElement!, { target: { value } });
+  expect(document.activeElement).toBe(first);
+  expect(first).toHaveValue("150.000");
+  for (const other of ["D10 CB400", "D12 CB300", "D12 CB400"]) expect(screen.getByLabelText(`Giá bán loại ${other}`)).toHaveValue("");
+
+  // Same with two attributes given the same name.
+  fireEvent.change(screen.getByLabelText("Tên thuộc tính 1"), { target: { value: "Loại" } });
+  fireEvent.change(screen.getByLabelText("Tên thuộc tính 2"), { target: { value: "Loại" } });
+  fireEvent.change(screen.getByLabelText("Giá bán loại D12 CB400"), { target: { value: "160.000" } });
+  expect(screen.getByLabelText("Giá bán loại D10 CB300")).toHaveValue("150.000");
+  expect(screen.getByLabelText("Giá bán loại D10 CB400")).toHaveValue("");
+});

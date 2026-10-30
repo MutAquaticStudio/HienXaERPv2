@@ -65,6 +65,13 @@ export function selectInternalContext(input: {
   };
 }
 
+/** D43: Sổ quỹ is for whoever posts receipts and payments, and managers; salespeople keep Công nợ but not the cash book. */
+export const CASHBOOK_PERMISSIONS = ["finance.payment.post", "finance.profit.read"] as const;
+
+export function requireAnyPermission(context: InternalAccessContext, permissions: readonly string[]): void {
+  if (!permissions.some((permission) => context.permissions.has(permission))) throw forbidden("Bạn không có quyền thực hiện thao tác này.");
+}
+
 export function requirePermission(context: InternalAccessContext, permission: string): void {
   if (!context.permissions.has(permission)) throw forbidden("Bạn không có quyền thực hiện thao tác này.");
 }

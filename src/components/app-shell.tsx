@@ -12,6 +12,7 @@ import { AppearanceButton } from "@/components/settings/appearance-button";
 import { UatBrowserTiming } from "@/components/uat-browser-timing";
 import { PAYMENT_NOTICES_ENABLED, QUOTATIONS_ENABLED } from "@/lib/features";
 import { E_INVOICES_ENABLED } from "@/lib/features";
+import { CASHBOOK_PERMISSIONS } from "@/lib/access/policy";
 
 type Surface = "admin" | "work" | "customer";
 
@@ -37,7 +38,8 @@ const navigation: Record<Surface, readonly NavigationItem[]> = {
     { href: "/admin/customers", label: "Khách hàng", icon: UsersRound, permission: "customers.read", managementPermission: "customers.manage", managementHref: "/admin/customers/manage", group: "sales" },
     { href: "/admin/service-jobs", label: "Dịch vụ", icon: Truck, permission: "service.read", group: "sales" },
     { href: "/admin/purchase-orders", label: "Đơn mua", icon: PackageSearch, permission: "purchasing.read", group: "purchasing" },
-    { href: "/admin/suppliers", label: "Nhà cung cấp", icon: Factory, permission: "suppliers.read", managementPermission: "suppliers.manage", managementHref: "/admin/suppliers/manage", group: "purchasing" },
+    // D43: the supplier list belongs with purchasing; finance roles read supplier names on Công nợ / Sổ quỹ without the menu.
+    { href: "/admin/suppliers", label: "Nhà cung cấp", icon: Factory, permission: "purchasing.read", managementPermission: "suppliers.manage", managementHref: "/admin/suppliers/manage", group: "purchasing" },
     { href: "/admin/products", label: "Vật tư", icon: Boxes, permission: "catalog.read", managementPermission: "catalog.manage", managementHref: "/admin/products/manage", group: "inventory" },
     { href: "/admin/products/pricing", label: "Giá bán", icon: WalletCards, permission: "pricing.read", group: "inventory" },
     { href: "/admin/inventory", label: "Tồn kho", icon: Warehouse, permission: "inventory.read", managementPermission: "roles.manage", managementHref: "/admin/inventory/warehouses", group: "inventory" },
@@ -46,7 +48,7 @@ const navigation: Record<Surface, readonly NavigationItem[]> = {
     { href: "/admin/deliveries", label: "Phiếu giao", icon: Truck, permission: "delivery.read", group: "delivery" },
     { href: "/admin/routes", label: "Lộ trình", icon: Route, permission: "delivery.read", group: "delivery" },
     { href: "/admin/debts", label: "Công nợ", icon: WalletCards, permissionsAny: ["finance.ar.read", "finance.ap.read"], activePrefixes: ["/admin/receivables", "/admin/payables"], group: "finance" },
-    { href: "/admin/cashbook", label: "Sổ quỹ", icon: WalletCards, permission: "finance.ar.read", group: "finance" },
+    { href: "/admin/cashbook", label: "Sổ quỹ", icon: WalletCards, permissionsAny: [...CASHBOOK_PERMISSIONS], group: "finance" },
     { href: "/admin/expenses", label: "Chi phí", icon: FileText, permission: "finance.expense.read", group: "finance" },
     ...(PAYMENT_NOTICES_ENABLED ? [{ href: "/admin/payment-notices", label: "Báo chuyển khoản", icon: WalletCards, permission: "finance.payment_notice.review", group: "finance" }] : []),
     { href: "/admin/invoices", label: E_INVOICES_ENABLED ? "Hóa đơn" : "Hóa đơn điện tử (tạm ngừng)", icon: FileText, permissionsAny: ["finance.ar.read", "finance.ap.read"], group: "finance" },
@@ -54,7 +56,7 @@ const navigation: Record<Surface, readonly NavigationItem[]> = {
     { href: "/admin/attendance", label: "Chấm công", icon: Clock3, permission: "attendance.read", group: "workforce" },
     { href: "/admin/payroll", label: "Bảng lương", icon: WalletCards, permission: "compensation.read", group: "workforce" },
     { href: "/admin/access", label: "Nhân viên & quyền", icon: ShieldCheck, permission: "roles.manage", group: "administration" },
-    { href: "/admin/reports", label: "Báo cáo", icon: BarChart3, permissionsAny: ["finance.ar.read", "finance.ap.read", "finance.expense.read"] },
+    { href: "/admin/reports", label: "Báo cáo", icon: BarChart3, permission: "dashboard.read" },
     { href: "/admin/audit", label: "Nhật ký", icon: ScrollText, permission: "roles.manage", group: "administration" },
     { href: "/admin/messages", label: "Tin nhắn", icon: MessageSquare },
     { href: "/admin/settings", label: "Cài đặt", icon: Settings2, permission: "roles.manage", group: "administration" },

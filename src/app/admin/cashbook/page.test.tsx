@@ -66,7 +66,11 @@ it("offers receipts, payments and row handling in popups by permission", async (
   expect(screen.queryByLabelText(/Lý do/)).not.toBeInTheDocument();
   cleanup();
   m.calls = [];
+  // D43: a salesperson (Công nợ only) has no cash book; a manager reads it without posting.
   m.permissions = new Set(["finance.ar.read"]);
+  await expect(page()).rejects.toThrow("Bạn không có quyền");
+  cleanup();
+  m.permissions = new Set(["finance.ar.read", "finance.profit.read"]);
   await page();
   expect(screen.queryByRole("button", { name: /Lập phiếu|Xử lý|Tạo tài khoản/ })).not.toBeInTheDocument();
   expect(m.calls.some((call) => call.table === "customers")).toBe(false);

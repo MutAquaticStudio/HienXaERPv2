@@ -9,7 +9,7 @@ vi.mock("@/components/notifications/notification-bell", () => ({ NotificationBel
 vi.mock("@/modules/ai/ai-bubble", () => ({ AiBubble: () => <div data-testid="ai-bubble" /> }));
 vi.mock("@/components/messaging/chat-dock", () => ({ ChatDock: () => null }));
 
-const ownerPermissions = ["dashboard.read", "quotation.read", "orders.read", "purchasing.read", "inventory.read", "delivery.read", "service.read", "workforce.read", "compensation.read", "finance.ar.read", "finance.payment_notice.review", "finance.ap.read", "finance.expense.read", "customers.read", "suppliers.read", "catalog.read", "roles.manage", "customers.manage", "suppliers.manage", "catalog.manage", "pricing.read"];
+const ownerPermissions = ["dashboard.read", "quotation.read", "orders.read", "purchasing.read", "inventory.read", "delivery.read", "service.read", "workforce.read", "compensation.read", "finance.ar.read", "finance.payment.post", "finance.payment_notice.review", "finance.ap.read", "finance.expense.read", "customers.read", "suppliers.read", "catalog.read", "roles.manage", "customers.manage", "suppliers.manage", "catalog.manage", "pricing.read"];
 const shell = (permissions: readonly string[] = ownerPermissions) => <AppShell surface="admin" permissions={permissions} actorName="Chủ QA" branchName="Chi nhánh QA"><p>Nội dung</p></AppShell>;
 
 beforeEach(() => { location.pathname = "/admin/orders/new"; });
@@ -110,6 +110,22 @@ describe("blue menu bar (D29)", () => {
     expect(screen.getByRole("link", { name: label })).toHaveAttribute("href", href);
     expect(screen.queryByRole("link", { name: "Cài đặt" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Quản lý danh mục" })).not.toBeInTheDocument();
+  });
+
+  it("D43: sales and accountant presets do not see the cash book, reports, deliveries or purchasing", () => {
+    const hrefs = (permissions: string[]) => {
+      const { container, unmount } = render(shell(permissions));
+      const found = [...container.querySelectorAll("nav a")].map((link) => link.getAttribute("href"));
+      unmount();
+      return found;
+    };
+    const sales = hrefs(["catalog.read", "customers.read", "orders.read", "orders.create", "delivery.read", "inventory.read", "finance.ar.read"]);
+    expect(sales).toContain("/admin/debts");
+    for (const href of ["/admin/cashbook", "/admin/reports"]) expect(sales).not.toContain(href);
+    const accountant = hrefs(["catalog.read", "customers.read", "suppliers.read", "orders.read", "inventory.read", "finance.ar.read", "finance.ap.read",
+      "finance.payment.post", "finance.expense.read", "finance.profit.read"]);
+    for (const href of ["/admin/debts", "/admin/cashbook", "/admin/expenses"]) expect(accountant).toContain(href);
+    for (const href of ["/admin/reports", "/admin/deliveries", "/admin/dispatch", "/admin/routes", "/admin/purchase-orders", "/admin/suppliers"]) expect(accountant).not.toContain(href);
   });
 
   it("renders a single permitted destination without an extra expansion step", () => {
