@@ -9,6 +9,8 @@ it("does not introduce role administration or payment posting into ordinary oper
  for (const role of presets) {
   expect(role.permissions).not.toContain("roles.manage");
   if(role.code!=="builtin_accountant") expect(role.permissions).not.toContain("finance.payment.post");
+  // D43: the accountant works on money only; deliveries and purchase orders are not part of the role.
+  if(role.code==="builtin_accountant") for(const code of ["delivery.read","purchasing.read","purchasing.price.read"]) expect(role.permissions).not.toContain(code);
   if(!["builtin_manager","builtin_accountant"].includes(role.code)) expect(role.permissions).not.toContain("inventory.cost.read");
  }
 });

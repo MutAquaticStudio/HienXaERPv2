@@ -11,7 +11,7 @@ import { catalogChoiceLabel } from "@/modules/catalog/presentation";
 import { loadVariantGroupAction, saveVariantGroupAction, type VariantGroupData, type VariantGroupResult, type VariantUnit } from "@/modules/catalog/variant-actions";
 import {
   inferVariantCodePrefix, MATERIAL_CODE_PATTERN, MAX_VARIANT_ATTRIBUTES, MAX_VARIANTS, parseVariantValues, validVariantValue, variantCode, variantCodePrefix, variantCombos,
-  variantKey, variantName, type VariantAttributes,
+  variantName, type VariantAttributes,
 } from "@/modules/catalog/variants";
 import { ROUNDING_STEPS, type RoundingStep } from "@/modules/pricing/bulk-adjust";
 import { conversionSentences, ratioFromDirection, splitPriceByUnits, type RatioDirection, type UnitRatio } from "@/modules/pricing/unit-split";
@@ -24,6 +24,11 @@ const UNIT_TYPES = ["PACKAGING", "EXACT", "ESTIMATED", "MEASURED"] as const;
 
 /** 1 unit = numerator/denominator base units: as loaded, or from what was typed ("1 tấn = 20 bao" or "1 bao = 50 kg"). */
 const rowRatio = (unit: UnitRow) => { if (unit.fixed) return unit.fixed; const typed = normalizeDecimalInput(unit.ratio); return typed ? ratioFromDirection(typed, unit.direction) : null; };
+/**
+ * Identifies a row by its values in attribute order, not by attribute name: while two attributes are still unnamed or share a
+ * name, keying by name made different rows collide, so one price box filled the others and focus jumped between rows.
+ */
+const valuesKey = (values: string[]) => JSON.stringify(values.map((value) => (value ?? "").trim().toLocaleLowerCase("vi")));
 const toObject = (names: string[], values: string[]): VariantAttributes => Object.fromEntries(names.map((name, index) => [name.trim(), (values[index] ?? "").trim()]));
 
 /**
@@ -79,9 +84,9 @@ function VariantGroupForm({ data, onSaved }: { data: VariantGroupData; onSaved: 
   const codePrefix = prefix ?? (data.group ? inferVariantCodePrefix(name, data.group.attributeNames, data.members) : variantCodePrefix(name));
   const typedLists = useMemo(() => typedValues.map(parseVariantValues), [typedValues]);
   const memberKeys = useMemo(() => new Set([
-    ...data.members.filter((member) => !members[member.id]?.detach).map((member) => variantKey(names, toObject(names, members[member.id]?.values ?? []))),
-    ...attached.map((item) => variantKey(names, toObject(names, item.values))),
-  ]), [data.members, members, attached, names]);
+    ...data.members.filter((member) => !members[member.id]?.detach).map((member) => valuesKey(members[member.id]?.values ?? [])),
+    ...attached.map((item) => valuesKey(item.values)),
+  ]), [data.members, members, attached]);
   const newRows = useMemo(() => {
     const existing = names.map((_, index) => data.members.map((member) => members[member.id]?.values[index] ?? "").filter(Boolean));
     const lists = names.map((_, index) => [...new Map([...existing[index], ...typedLists[index]].map((value) => [value.toLocaleLowerCase("vi"), value])).values()]);
@@ -89,7 +94,7 @@ function VariantGroupForm({ data, onSaved }: { data: VariantGroupData; onSaved: 
       .map((combo) => names.map((_, index) => combo[String(index)]))
       // When editing, only combinations with a newly typed value are proposed.
       .filter((values) => !editing || values.some((value, index) => typedLists[index].some((typed) => typed.toLocaleLowerCase("vi") === value.toLocaleLowerCase("vi"))))
-      .map((values) => ({ key: variantKey(names, toObject(names, values)), values }))
+      .map((values) => ({ key: valuesKey(values), values }))
       .filter((row) => !memberKeys.has(row.key));
   }, [names, typedLists, data.members, members, memberKeys, editing]);
 

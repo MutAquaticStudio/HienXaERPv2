@@ -10,6 +10,7 @@ import { ListPager } from "@/components/ui/list-pager";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { MetricNumber } from "@/components/ui/metric-number";
 import { requireInternalPermission } from "@/lib/access/context";
+import { CASHBOOK_PERMISSIONS, requireAnyPermission } from "@/lib/access/policy";
 import { CORE_LIST_PAGE_SIZE, parseCoreListQuery } from "@/lib/core-list";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { createServerSupabase } from "@/lib/supabase/server";
@@ -53,6 +54,7 @@ function period(query: Query) {
  */
 export default async function CashbookPage({ searchParams }: { searchParams: Promise<Query> }) {
   const access = await requireInternalPermission("finance.ar.read");
+  requireAnyPermission(access, CASHBOOK_PERMISSIONS);
   const query = await searchParams;
   const list = parseCoreListQuery({ page: query.page });
   const range = period(query);

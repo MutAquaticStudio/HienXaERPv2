@@ -11,6 +11,7 @@ import { dashboardSnapshotCutoff } from "@/modules/reports/dashboard-snapshot-cu
 import { totalCostMetric, type ProfitSeries } from "@/modules/reports/profit-series";
 import { recordingScopeText } from "@/modules/operations/state";
 import { AutoFilterForm } from "@/components/ui/auto-filter-form";
+import { CASHBOOK_PERMISSIONS } from "@/lib/access/policy";
 
 type Quality = "READY" | "INCOMPLETE" | "NOT_APPLICABLE" | "FORBIDDEN" | "UNAVAILABLE";
 type Metric = { value_vnd?: string | number | null; value?: string | number | null; quality: Quality };
@@ -152,7 +153,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
   };
   const snapshot = (snapshotResult.data ?? fallback) as Snapshot;
 
-  return <><header className="page-heading" data-uat-dashboard-request={typeof query.uatTimingNonce === "string" && /^[a-zA-Z0-9-]{1,80}$/.test(query.uatTimingNonce) ? query.uatTimingNonce : ""}><div><p className="eyebrow">Tổng quan kinh doanh</p><h1>Tổng quan</h1><p className="lede">Doanh thu theo kỳ và công nợ tại thời điểm đã chọn. Thu tiền không làm tăng doanh thu lần nữa.</p></div>{access.permissions.has("finance.ar.read") && <Link className="button button-secondary" href="/admin/cashbook">Mở sổ tiền</Link>}</header>
+  return <><header className="page-heading" data-uat-dashboard-request={typeof query.uatTimingNonce === "string" && /^[a-zA-Z0-9-]{1,80}$/.test(query.uatTimingNonce) ? query.uatTimingNonce : ""}><div><p className="eyebrow">Tổng quan kinh doanh</p><h1>Tổng quan</h1><p className="lede">Doanh thu theo kỳ và công nợ tại thời điểm đã chọn. Thu tiền không làm tăng doanh thu lần nữa.</p></div>{access.permissions.has("finance.ar.read") && CASHBOOK_PERMISSIONS.some((permission) => access.permissions.has(permission)) && <Link className="button button-secondary" href="/admin/cashbook">Mở sổ tiền</Link>}</header>
     <Suspense fallback={null}><PortalOrdersAlert access={access} /></Suspense>
     <Suspense fallback={null}><LowStockAlert access={access} /></Suspense>
     <Suspense fallback={<section className="card card-pad"><p className="muted">Đang tải bộ lọc...</p></section>}><DashboardFilters access={access} query={query} from={from} to={to} /></Suspense>

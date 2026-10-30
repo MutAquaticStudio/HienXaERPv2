@@ -2245,6 +2245,12 @@ Forward candidate: 20261009224842_supplier_purchase_price_commands.sql. SHA256 0
 - **Thu nhập**: nút "Tính lương tháng" (chọn tháng), "Hoa hồng tự động"; không còn "Phê duyệt ghi nhận tự động theo sự kiện".
 - **Báo cáo**: cột trái nhóm báo cáo (Cuối ngày, Bán hàng, Hàng hóa, Khách hàng, Nhà cung cấp, Giao hàng, Tài chính, Tài chính chi tiết); thanh kỳ chọn nhanh (Hôm nay, Hôm qua, 7 ngày, Tháng này, Tháng trước) + từ / đến ngày (+ kho với Xuất nhập tồn); thẻ số liệu chính, biểu đồ thanh, bảng, "Xuất CSV".
 
+# UX-D43-001 — Menu theo vai trò Bán hàng / Kế toán
+
+- **Bán hàng**: nhóm Tài chính chỉ còn **Công nợ**; không có **Sổ quỹ**, không có **Báo cáo**; ở Tổng quan (nếu được cấp) không có nút "Mở sổ tiền".
+- **Kế toán**: không còn nhóm **Giao hàng** (Điều phối, Phiếu giao, Lộ trình) và **Mua hàng** (Đơn mua, Nhà cung cấp), không có **Báo cáo**; giữ Công nợ, Sổ quỹ, Chi phí.
+- Mở thẳng đường dẫn trang đã ẩn → báo "Bạn không có quyền thực hiện thao tác này." như các trang khác.
+
 # UX-D42-001 — Thanh toán công nợ bằng QR (SePay)
 
 - **Cổng khách → Công nợ** (khi cửa hàng bật tự ghi tiền về): dưới số tổng nợ ở thẻ đầu trang có nút trắng **"Thanh toán tất cả"**; mỗi dòng "Khoản cần thanh toán" là **một đơn** (mã đơn / mã dịch vụ, hoặc "Số dư đầu kỳ") với hạn trả, số còn nợ và nút viền **"Thanh toán"**. Khung tối "Chuyển khoản cho cửa hàng" (D39) không hiện nữa vì đã có trong cửa sổ.
