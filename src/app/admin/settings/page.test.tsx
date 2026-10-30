@@ -77,7 +77,7 @@ it("uploads a logo once the company name is saved and shows it in the document h
   fireEvent.click(screen.getByRole("button", { name: "Lưu logo" }));
   await waitFor(() => expect(m.refresh).toHaveBeenCalled());
   expect(m.saveLogo).toHaveBeenCalledWith(expect.objectContaining({ expectedSha256: null, mime: "image/png", base64: PNG_LOGO_BASE64 }));
-  expect(screen.getByRole("button", { name: "Xóa logo" })).toBeInTheDocument();
+  expect(await screen.findByRole("button", { name: "Xóa logo" })).toBeInTheDocument();
 });
 
 it("prints the saved logo in the preview and removes it against its fingerprint", async () => {

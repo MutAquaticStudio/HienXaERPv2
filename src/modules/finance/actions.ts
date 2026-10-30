@@ -69,6 +69,26 @@ export async function createFinanceAccountAction(formData: FormData) {
   redirect("/admin/cashbook?notice=account-created");
 }
 
+/** FB18: the bank details of a bank fund, and whether customers see them on the portal (one fund per branch). */
+export async function setBankDetailsAction(formData: FormData) {
+  const parsed = z.object({
+    accountId: z.guid(), bank: z.string().trim().max(120), number: z.string().trim().max(40), holder: z.string().trim().max(120),
+    show: z.literal("on").optional(), operationId: z.guid(),
+  }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) redirect("/admin/cashbook?error=invalid-account");
+  await requireInternalPermission("finance.account.manage");
+  const { error } = await (await createServerSupabase()).rpc("set_finance_account_bank_details", {
+    target_account_id: parsed.data.accountId, bank: parsed.data.bank, account_number: parsed.data.number, account_holder: parsed.data.holder,
+    show_to_customers: parsed.data.show === "on", operation_id: parsed.data.operationId,
+  });
+  const back = `/admin/cashbook?account=${parsed.data.accountId}`;
+  if (error) redirect(`${back}&error=${encodeURIComponent(error.message.includes("bank_details_incomplete")
+    ? "Hiện cho khách cần đủ ngân hàng, số tài khoản và chủ tài khoản."
+    : error.message.includes("check constraint") ? "Số tài khoản chỉ gồm chữ số (4–32 ký tự)." : message(error.message))}`);
+  revalidatePath("/admin/cashbook");
+  redirect(`${back}&notice=bank-details-saved`);
+}
+
 export async function submitPaymentWithOutcomeAction(formData: FormData): Promise<CommandOutcome> {
   const parsed = z.object({
     direction: z.enum(["RECEIPT", "DISBURSEMENT"]),

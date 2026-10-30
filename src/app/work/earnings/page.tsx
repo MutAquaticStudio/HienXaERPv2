@@ -26,7 +26,7 @@ export default async function WorkEarningsPage() {
   const payslips = ((data ?? []) as unknown as Payslip[]).sort((a, b) => (b.payroll_periods?.period_start ?? "").localeCompare(a.payroll_periods?.period_start ?? ""));
   return (
     <div className={styles.page}>
-      <header className={styles.hero}>
+      <header className={`${styles.hero} ${styles.heroDark}`}>
         <p className={styles.heroEyebrow}>Thu nhập đã ghi nhận</p>
         <h1>{money(total)}</h1>
         <p>Chỉ các khoản thu nhập của chính bạn; thanh toán thực tế được theo dõi riêng.</p>
@@ -48,16 +48,13 @@ export default async function WorkEarningsPage() {
           </details>
         </li>)}</ul>
       </section>}
-      <div className={styles.grid}>
-        {snapshot.earnings.length ? snapshot.earnings.map((item) => (
-          <article className={styles.card} key={item.id}>
-            <span className={styles.badge}>{earningStateLabel(item.state)}</span>
-            <h2>{earningKindLabel(item.type)}</h2>
-            <p className={styles.amount}>{money(item.amount_vnd)}</p>
-            <p className={styles.hint}>{item.occurred_at ? formatBusinessDate(item.occurred_at) : ""}</p>
-          </article>
-        )) : <p className={styles.empty}>Chưa có khoản thu nhập được ghi nhận.</p>}
-      </div>
+      <section className={styles.card} aria-labelledby="earning-list">
+        <h2 id="earning-list">Các khoản thu nhập</h2>
+        {snapshot.earnings.length ? <ul className={styles.timeline}>{snapshot.earnings.map((item) => <li key={item.id} className={styles.earningRow}>
+          <span><strong>{earningKindLabel(item.type)}</strong><small>{item.occurred_at ? formatBusinessDate(item.occurred_at) : ""} · {earningStateLabel(item.state)}</small></span>
+          <strong>{money(item.amount_vnd)}</strong>
+        </li>)}</ul> : <p className={styles.empty}>Chưa có khoản thu nhập được ghi nhận.</p>}
+      </section>
     </div>
   );
 }

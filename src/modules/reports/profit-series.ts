@@ -83,7 +83,9 @@ export function bucketLabel(point: SeriesPoint, granularity: SeriesGranularity):
   const options: Intl.DateTimeFormatOptions = granularity === "MONTH"
     ? { timeZone: BUSINESS_TIME_ZONE, month: "2-digit", year: "numeric" }
     : { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit" };
-  return new Intl.DateTimeFormat("vi-VN", options).format(new Date(point.start));
+  // Built from the parts: vi-VN formats day/month as "01-10" in some browsers; the app writes dates as "01/10".
+  const parts = Object.fromEntries(new Intl.DateTimeFormat("vi-VN", options).formatToParts(new Date(point.start)).map((part) => [part.type, part.value]));
+  return granularity === "MONTH" ? `${parts.month}/${parts.year}` : `${parts.day}/${parts.month}`;
 }
 
 export function bucketTitle(point: SeriesPoint, granularity: SeriesGranularity): string {

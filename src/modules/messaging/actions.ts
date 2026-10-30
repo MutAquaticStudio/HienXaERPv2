@@ -1,64 +1,54 @@
 "use server";
-import { userFacingError } from "@/lib/core/errors";
 
-
+// FB14 (D36): sending in "Tin nhắn". A first message to a contact opens the direct conversation (the database checks the
+// person may write to that contact) and then sends; later messages go to the conversation.
 import { revalidatePath } from "next/cache";
-import { requireInternalAccess } from "@/lib/access/context";
+import { redirect } from "next/navigation";
+
+import { userFacingError } from "@/lib/core/errors";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { messengerScope, type MessageSurface } from "@/modules/messaging/server";
 
-export type MessageActionState = { status: "idle" | "success" | "error"; message: string; conversationId?: string; messageId?: string };
+export type MessageActionState = { status: "idle" | "success" | "error"; message: string; messageId?: string };
 
-export async function createConversationAction(_state: MessageActionState, formData: FormData): Promise<MessageActionState> {
-  const access = await requireInternalAccess();
-  const audience = String(formData.get("audience") ?? "");
-  const participantId = String(formData.get("participant_id") ?? "");
-  const customerId = audience === "CUSTOMER" ? String(formData.get("customer_id") ?? "") : null;
-  const subject = String(formData.get("subject") ?? "").trim();
-  const operationId = String(formData.get("operation_id") ?? "");
-  if (!participantId || !["INTERNAL", "CUSTOMER"].includes(audience) || subject.length < 3 || subject.length > 160 || (audience === "CUSTOMER" && !customerId) || !/^[0-9a-f-]{36}$/i.test(operationId)) {
-    return { status: "error", message: "Kiểm tra người nhận và tiêu đề hội thoại." };
-  }
-  const supabase = await createServerSupabase();
-  const { data, error } = await supabase.rpc("create_conversation", {
-    target_branch_id: access.branchId,
-    target_audience: audience,
-    target_customer_id: customerId,
-    target_subject: subject,
-    target_entity_type: audience === "CUSTOMER" ? "customer" : "branch",
-    target_entity_id: customerId ?? access.branchId,
-    target_participant_auth_user_ids: [participantId],
-    operation_id: operationId,
-  });
-  if (error) return { status: "error", message: userFacingError(error.message, "Không thể gửi hoặc tạo hội thoại. Vui lòng thử lại.") };
-  revalidatePath("/admin/messages");
-  return { status: "success", message: "Đã tạo hội thoại.", conversationId: String(data) };
-}
+const UUID = /^[0-9a-f-]{36}$/i;
+const SURFACES = ["admin", "work", "customer"] as const;
+const surfaceOf = (value: FormDataEntryValue | null) => (SURFACES as readonly string[]).includes(String(value)) ? String(value) as MessageSurface : null;
+const failed = (message?: string): MessageActionState => ({ status: "error", message: /conversation_participant_forbidden|forbidden/.test(message ?? "")
+  ? "Bạn không nhắn được cho người này." : userFacingError(message, "Chưa gửi được tin nhắn. Kiểm tra kết nối rồi thử lại.") });
 
 export async function sendMessageAction(_state: MessageActionState, formData: FormData): Promise<MessageActionState> {
   const conversationId = String(formData.get("conversation_id") ?? "");
   const body = String(formData.get("body") ?? "").trim();
-  const surface = String(formData.get("surface") ?? "");
+  const surface = surfaceOf(formData.get("surface"));
   const operationId = String(formData.get("operation_id") ?? "");
-  if (!conversationId || !body || body.length > 4000 || !["admin", "work", "customer"].includes(surface) || !/^[0-9a-f-]{36}$/i.test(operationId)) {
-    return { status: "error", message: "Nội dung tin nhắn không hợp lệ." };
+  if (!UUID.test(conversationId) || !body || body.length > 4000 || !surface || !UUID.test(operationId)) {
+    return { status: "error", message: "Nhập nội dung tin nhắn (tối đa 4.000 ký tự)." };
   }
   const supabase = await createServerSupabase();
-  const { data, error } = await supabase.rpc("send_message", {
-    target_conversation_id: conversationId,
-    target_body: body,
-    operation_id: operationId,
-  });
-  if (error) return { status: "error", message: userFacingError(error.message, "Không thể gửi hoặc tạo hội thoại. Vui lòng thử lại.") };
+  const { data, error } = await supabase.rpc("send_message", { target_conversation_id: conversationId, target_body: body, operation_id: operationId });
+  if (error) return failed(error.message);
   revalidatePath(`/${surface}/messages`);
-  return { status: "success", message: "Đã gửi tin nhắn.", messageId: String(data) };
+  return { status: "success", message: "", messageId: String(data) };
 }
 
-export async function markConversationReadAction(formData: FormData) {
-  const conversationId = String(formData.get("conversation_id") ?? "");
-  const surface = String(formData.get("surface") ?? "");
-  if (!conversationId || !["admin", "work", "customer"].includes(surface)) return;
+export async function sendDirectMessageAction(_state: MessageActionState, formData: FormData): Promise<MessageActionState> {
+  const contactId = String(formData.get("contact_auth_user_id") ?? "");
+  const contactCustomer = String(formData.get("contact_customer_id") ?? "");
+  const body = String(formData.get("body") ?? "").trim();
+  const surface = surfaceOf(formData.get("surface"));
+  const operationId = String(formData.get("operation_id") ?? "");
+  if (!UUID.test(contactId) || (contactCustomer && !UUID.test(contactCustomer)) || !body || body.length > 4000 || !surface || !UUID.test(operationId)) {
+    return { status: "error", message: "Nhập nội dung tin nhắn (tối đa 4.000 ký tự)." };
+  }
+  const scope = await messengerScope(surface);
   const supabase = await createServerSupabase();
-  const { error } = await supabase.rpc("mark_conversation_read", { target_conversation_id: conversationId });
-  if (error) throw error;
+  const { data: conversationId, error } = await supabase.rpc("open_direct_conversation", {
+    target_branch_id: scope.branchId, target_customer_id: scope.customerId, contact_auth_user_id: contactId, contact_customer_id: contactCustomer || null,
+  });
+  if (error || !conversationId) return failed(error?.message);
+  const { error: sendError } = await supabase.rpc("send_message", { target_conversation_id: conversationId, target_body: body, operation_id: operationId });
+  if (sendError) return failed(sendError.message);
   revalidatePath(`/${surface}/messages`);
+  redirect(`/${surface}/messages?conversation=${conversationId}`);
 }

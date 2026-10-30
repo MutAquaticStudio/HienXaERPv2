@@ -1,0 +1,109 @@
+// @vitest-environment node
+import { describe, expect, it, vi } from "vitest";
+
+const mocks = vi.hoisted(() => ({ price: vi.fn() }));
+vi.mock("./commercial-lines", () => ({ createCommercialLines: mocks.price }));
+
+import { customerKey, materialKey, resolveImport, siteKey, unitKey } from "./order-import-data";
+import type { ImportGroup } from "./order-import";
+
+const tables: Record<string, unknown[]> = {
+  customers: [{ id: "c9", code: "KH09", display_name: "Anh Minh Thủ Đức", phone: "0909 111 222", customer_sites: [{ id: "s9", code: "CT1", name: "Nhà phố", active: true, created_at: "2026-01-01" }] },
+    { id: "c8", code: "KH08", display_name: "Anh Minh Quận 7", phone: null, customer_sites: [] },
+    { id: "c1", code: "KH01", display_name: "Công ty An Phát", phone: "0901234567", customer_sites: [
+    { id: "s2", code: "CT2", name: "Kho Q.9", active: true, created_at: "2026-02-01" }, { id: "s1", code: "CT1", name: "Nhà xưởng Q.7", active: true, created_at: "2026-01-01" }] }],
+  materials: [{ id: "m1", code: "XM01", name: "Xi măng Hà Tiên", base_uom_id: "u-kg" }, { id: "m2", code: "CAT01", name: "Cát vàng", base_uom_id: "u-kg" },
+    { id: "m3", code: "CAT02", name: "Cát đen", base_uom_id: "u-kg" }],
+  material_uom_conversions: [{ material_id: "m1", from_uom_id: "u-bao" }],
+  units_of_measure: [{ id: "u-kg", code: "kg", symbol: "kg", name: "Kilôgam" }, { id: "u-bao", code: "bao", symbol: "bao", name: "Bao" }],
+};
+const supabase = { rpc: async () => ({ data: [{ id: "e1", name: "Chị Lan", assignable: true }, { id: "e2", name: "Anh Hùng", assignable: true }], error: null }),
+  from: (table: string) => { const query: Record<string, unknown> = {}; for (const method of ["select", "eq", "in", "limit"]) query[method] = () => query;
+  const result = Promise.resolve({ data: tables[table], error: null }); query.then = result.then.bind(result); return query; } };
+const row = (extra: Partial<ImportGroup["rows"][number]> = {}) => ({ row: 2, group: "1", customerCode: "KH01", siteCode: "", deliveryDate: "2026-11-05", materialCode: "XM01", unit: "bao", quantity: "10", unitPrice: "", note: "", ...extra });
+
+describe("resolveImport (D37)", () => {
+  it("turns codes into the customer's first site, the goods and the unit, and prices the lines like the order screen", async () => {
+    mocks.price.mockResolvedValue([{ quantity: "10", unit_price_vnd: "95000" }]);
+    const [order] = await resolveImport(supabase as never, "b1", [{ key: "1", rows: [row()], problems: [] }], false);
+    expect(mocks.price).toHaveBeenCalledWith({ customerId: "c1", siteId: "s1", lines: [{ materialId: "m1", orderedUomId: "u-bao", quantity: "10" }] }, "b1", false);
+    expect(order).toMatchObject({ customerName: "Công ty An Phát", siteName: "Nhà xưởng Q.7", deliveryDate: "05/11/2026", totalVnd: "950000", problems: [] });
+    expect(order.input).toMatchObject({ customerId: "c1", siteId: "s1", deliveryDate: "2026-11-05" });
+  });
+
+  it("explains unknown codes, a missing unit and a price the person may not set", async () => {
+    mocks.price.mockReset();
+    const [order] = await resolveImport(supabase as never, "b1", [{ key: "1", problems: [],
+      rows: [row({ siteCode: "CT9" }), row({ row: 3, materialCode: "XX99" }), row({ row: 4, unit: "thùng" }), row({ row: 5, unitPrice: "90000" })] }], false);
+    expect(order.problems).toEqual(["Khách KH01 không có công trình \"CT9\".", "Dòng 3: không nhận ra hàng \"XX99\" (hoặc hàng ngừng bán).",
+      "Dòng 4: không có đơn vị \"thùng\".", "Dòng 5: bạn không có quyền nhập giá riêng; để trống ô đơn giá để lấy theo bảng giá."]);
+    expect(order.input).toBeNull();
+    expect(mocks.price).not.toHaveBeenCalled();
+  });
+
+  it("recognises names without accents, phone numbers and lower-case codes, and says how it read them", async () => {
+    mocks.price.mockReset();
+    mocks.price.mockResolvedValue([{ quantity: "10", unit_price_vnd: "95000" }, { quantity: "10", unit_price_vnd: "300000" }]);
+    const [byPhone] = await resolveImport(supabase as never, "b1", [{ key: "1", problems: [],
+      rows: [row({ customerCode: "901234567", materialCode: "xi mang ha tien" }), row({ row: 3, customerCode: "901234567", materialCode: "cat01", unit: "" })] }], false);
+    expect(byPhone.problems).toEqual([]);
+    expect(byPhone.input).toMatchObject({ customerId: "c1", lines: [{ materialId: "m1" }, { materialId: "m2", orderedUomId: "u-kg" }] });
+    expect(byPhone.notes).toEqual(["\"901234567\" → khách KH01 Công ty An Phát", "Dòng 2: \"xi mang ha tien\" → XM01 Xi măng Hà Tiên"]);
+    const [byName] = await resolveImport(supabase as never, "b1", [{ key: "2", problems: [], rows: [row({ customerCode: "cong ty an phat", siteCode: "nha xuong", materialCode: "XM01" })] }], false);
+    expect(byName.input).toMatchObject({ customerId: "c1", siteId: "s1" });
+  });
+
+  it("asks to choose when a name fits several records, and points errors to the Excel row", async () => {
+    mocks.price.mockReset();
+    const [order] = await resolveImport(supabase as never, "b1", [{ key: "1", problems: [], rows: [row({ customerCode: "anh minh" }), row({ row: 3, materialCode: "cat" })] }], false);
+    expect(order.problems).toEqual(["Không nhận ra khách hàng \"anh minh\". Có thể là: KH09 Anh Minh Thủ Đức; KH08 Anh Minh Quận 7. Ghi rõ mã.",
+      "Dòng 3: không nhận ra hàng \"cat\" (hoặc hàng ngừng bán). Có thể là: CAT01 Cát vàng; CAT02 Cát đen. Ghi rõ mã."]);
+    const { AppError } = await import("@/lib/core/errors");
+    mocks.price.mockRejectedValue(new AppError({ code: "VALIDATION_FAILED", message: "Dòng 2: không có quy đổi quyết toán hợp lệ.", status: 422 }));
+    const [priced] = await resolveImport(supabase as never, "b1", [{ key: "1", problems: [], rows: [row({ row: 7 }), row({ row: 9, unit: "kg" })] }], false);
+    expect(priced.problems).toEqual(["Dòng 9: không có quy đổi quyết toán hợp lệ."]);
+  });
+
+  it("offers what to pick for each unrecognised value, and one choice fixes every row typed the same way", async () => {
+    mocks.price.mockReset();
+    mocks.price.mockResolvedValue([{ quantity: "10", unit_price_vnd: "95000" }, { quantity: "10", unit_price_vnd: "95000" }]);
+    const groups = [{ key: "1", problems: [], rows: [row({ customerCode: "anh minh", materialCode: "cat", unit: "" }), row({ row: 3, customerCode: "anh minh", materialCode: "cat", unit: "Bao" })] }];
+    const [before] = await resolveImport(supabase as never, "b1", groups, false);
+    expect(before.fixes).toEqual([
+      { kind: "customer", key: customerKey("anh minh"), text: "anh minh", options: [{ id: "c9", label: "KH09 · Anh Minh Thủ Đức", detail: "0909 111 222" }, { id: "c8", label: "KH08 · Anh Minh Quận 7", detail: undefined }] },
+      { kind: "material", key: materialKey("cat"), text: "cat", row: 2, options: [{ id: "m2", label: "CAT01 · Cát vàng" }, { id: "m3", label: "CAT02 · Cát đen" }] },
+      { kind: "material", key: materialKey("cat"), text: "cat", row: 3, options: [{ id: "m2", label: "CAT01 · Cát vàng" }, { id: "m3", label: "CAT02 · Cát đen" }] },
+    ]);
+    // Picking KH09 and Cát vàng once fixes both rows; "Bao" is then a unit Cát vàng is not sold in, so that is asked next.
+    const overrides = { customers: { [customerKey("anh minh")]: "c9" }, sites: {}, materials: { [materialKey("cat")]: "m2" }, units: {} };
+    const [middle] = await resolveImport(supabase as never, "b1", groups, false, overrides);
+    expect(middle.problems).toEqual(["Dòng 3: CAT01 không bán theo đơn vị \"Bao\"."]);
+    expect(middle.fixes).toEqual([{ kind: "unit", key: unitKey("m2", "bao"), text: "Bao", row: 3, options: [{ id: "u-kg", label: "kg", detail: "Kilôgam" }] }]);
+    const [after] = await resolveImport(supabase as never, "b1", groups, false, { ...overrides, units: { [unitKey("m2", "Bao")]: "u-kg" } });
+    expect(after.problems).toEqual([]);
+    expect(after.input).toMatchObject({ customerId: "c9", siteId: "s9", lines: [{ materialId: "m2" }, { materialId: "m2", orderedUomId: "u-kg" }] });
+  });
+
+  it("asks for a site when the customer has none, and ignores a choice that is not the customer's", async () => {
+    mocks.price.mockReset();
+    const groups = [{ key: "1", problems: [], rows: [row({ customerCode: "KH08" })] }];
+    const [order] = await resolveImport(supabase as never, "b1", groups, false, { customers: {}, sites: { [siteKey("c8", "")]: "s1" }, materials: {}, units: {} });
+    expect(order.fixes).toEqual([{ kind: "site", key: siteKey("c8", ""), text: "", customerId: "c8", options: [] }]);
+    expect(order.input).toBeNull();
+  });
+
+  it("takes the seller column from the owner only; a salesperson's order stays theirs (D38)", async () => {
+    mocks.price.mockReset();
+    mocks.price.mockResolvedValue([{ quantity: "10", unit_price_vnd: "95000" }]);
+    const groups = (seller: string) => [{ key: "1", problems: [], rows: [row({ seller })] }];
+    const [owner] = await resolveImport(supabase as never, "b1", groups("chi lan"), false, undefined, { canChooseSeller: true, employeeId: "e9" });
+    expect(owner.input).toMatchObject({ sellerId: "e1" });
+    const [sale] = await resolveImport(supabase as never, "b1", groups("Anh Hùng"), false, undefined, { canChooseSeller: false, employeeId: "e1" });
+    expect(sale.problems).toEqual(["Chỉ chủ doanh nghiệp được chỉ định NV bán; đơn bạn tạo là của bạn — để trống cột NV bán."]);
+    expect(sale.input).toBeNull();
+    const [self] = await resolveImport(supabase as never, "b1", groups("Chị Lan"), false, undefined, { canChooseSeller: false, employeeId: "e1" });
+    expect(self.problems).toEqual([]);
+    const [unknown] = await resolveImport(supabase as never, "b1", groups("Bé Ba"), false, undefined, { canChooseSeller: true, employeeId: "e9" });
+    expect(unknown.fixes).toEqual([{ kind: "seller", key: "beba", text: "Bé Ba", options: [{ id: "e1", label: "Chị Lan" }, { id: "e2", label: "Anh Hùng" }] }]);
+  });
+});

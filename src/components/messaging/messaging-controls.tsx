@@ -1,24 +1,29 @@
 "use client";
 
 import { createBrowserClient } from "@supabase/ssr";
-import { useActionState, useEffect, useRef } from "react";
+import { Sparkles } from "lucide-react";
+import Link from "next/link";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createConversationAction, sendMessageAction, type MessageActionState } from "@/modules/messaging/actions";
+import { sendDirectMessageAction, sendMessageAction, type MessageActionState } from "@/modules/messaging/actions";
 
 const initialState: MessageActionState = { status: "idle", message: "" };
 
-export function MessageRefreshSignal({ conversationId }: { conversationId: string }) {
-  const router = useRouter();
+/** Calls `onMessage` when a message arrives: in one conversation, or in any conversation of the person (no id). */
+export function useMessageInserts(conversationId: string | undefined, onMessage: () => void, enabled = true) {
+  const callback = useRef(onMessage);
+  useEffect(() => { callback.current = onMessage; });
   useEffect(() => {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-    if (!url || !key) return;
+    if (!enabled || !url || !key) return;
     let active = true;
-    const refresh = () => { if (active) router.refresh(); };
+    const refresh = () => { if (active) callback.current(); };
     const supabase = createBrowserClient(url, key);
     const createChannel = () => supabase
-      .channel(`message-refresh-${conversationId}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${conversationId}` }, refresh)
+      .channel(`message-refresh-${conversationId ?? "all"}-${Math.random().toString(36).slice(2)}`)
+      // Without a filter, RLS still limits the events to the person's own conversations.
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", ...(conversationId ? { filter: `conversation_id=eq.${conversationId}` } : {}) }, refresh)
       .on("system", {}, (payload) => {
         // SUBSCRIBED precedes the database listener. Requery at readiness and
         // reconnect to recover messages committed while no listener was active.
@@ -46,47 +51,66 @@ export function MessageRefreshSignal({ conversationId }: { conversationId: strin
     };
     window.addEventListener("online", reconnect);
     return () => { active = false; window.removeEventListener("online", reconnect); void supabase.removeChannel(channel); };
-  }, [conversationId, router]);
+  }, [conversationId, enabled]);
+}
+
+/** Refreshes the page when a message arrives (see useMessageInserts). */
+export function MessageRefreshSignal({ conversationId }: { conversationId?: string }) {
+  const router = useRouter();
+  useMessageInserts(conversationId, () => router.refresh());
   return null;
 }
 
-export function NewConversationForm({ options }: { options: Array<{ auth_user_id: string; participant_kind: string; display_name: string; customer_id: string | null }> }) {
-  const [state, action, pending] = useActionState(createConversationAction, initialState);
-  const operationId = useRef<string | null>(null);
-  return (
-    <form action={action} className="form-stack" onSubmit={(event) => {
-      operationId.current ??= crypto.randomUUID();
-      (event.currentTarget.elements.namedItem("operation_id") as HTMLInputElement).value = operationId.current;
-    }}>
-      <input type="hidden" name="operation_id" defaultValue="" />
-      <label className="field"><span>Tiêu đề</span><input name="subject" minLength={3} maxLength={160} required placeholder="Ví dụ: Trao đổi lịch giao" /></label>
-      <label className="field"><span>Người nhận</span>
-        <select name="participant_id" required onChange={(event) => {
-          const selected = event.currentTarget.selectedOptions[0];
-          const form = event.currentTarget.form;
-          if (form) {
-            (form.elements.namedItem("audience") as HTMLInputElement).value = selected?.dataset.kind === "CUSTOMER" ? "CUSTOMER" : "INTERNAL";
-            (form.elements.namedItem("customer_id") as HTMLInputElement).value = selected?.dataset.customerId ?? "";
-          }
-        }}>
-          <option value="">Chọn người nhận</option>
-          {options.map((option) => <option key={`${option.participant_kind}-${option.auth_user_id}-${option.customer_id ?? ""}`} value={option.auth_user_id} data-kind={option.participant_kind} data-customer-id={option.customer_id ?? ""}>{option.display_name} · {option.participant_kind === "CUSTOMER" ? "Khách hàng" : "Nội bộ"}</option>)}
-        </select>
-      </label>
-      <input type="hidden" name="audience" defaultValue="INTERNAL" />
-      <input type="hidden" name="customer_id" defaultValue="" />
-      <button className="button button-primary" type="submit" disabled={pending || state.status === "success"}>{pending ? "Đang tạo..." : "Tạo hội thoại"}</button>
-      {state.message && <p role="status" className={state.status === "error" ? "error-message" : "muted"}>{state.message}{state.conversationId ? <a className="code-link" href={`/admin/messages?conversation=${state.conversationId}`}> Mở hội thoại</a> : null}</p>}
-    </form>
-  );
+/** Keeps a chat scrolled to its newest message (placed last inside the scrolling box). */
+export function ScrollToEnd({ signal }: { signal: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  useEffect(() => { const box = ref.current?.parentElement; if (box) box.scrollTop = box.scrollHeight; }, [signal]);
+  return <span ref={ref} aria-hidden="true" />;
 }
 
-export function SendMessageForm({ conversationId, surface }: { conversationId: string; surface: "admin" | "work" | "customer" }) {
-  const [state, action, pending] = useActionState(sendMessageAction, initialState);
+export type MessengerListItem = { key: string; href: string; name: string; preview: string; time: string | null; unread: number; active: boolean; ai?: true };
+
+const initialsOf = (name: string) => name.split(/\s+/).filter(Boolean).slice(-2).map((word) => word[0]).join("").toLocaleUpperCase("vi-VN") || "?";
+
+export function ChatAvatar({ name, ai }: { name: string; ai?: boolean }) {
+  return ai ? <span className="chat-avatar chat-avatar-ai" aria-hidden="true"><Sparkles size={18} /></span>
+    : <span className="chat-avatar" aria-hidden="true">{initialsOf(name)}</span>;
+}
+
+/** The contact list with a search box, like Messenger. */
+export function MessengerList({ items, others }: { items: MessengerListItem[]; others: MessengerListItem[] }) {
+  const [query, setQuery] = useState("");
+  const match = (item: MessengerListItem) => !query.trim() || item.name.toLocaleLowerCase("vi-VN").includes(query.trim().toLocaleLowerCase("vi-VN"));
+  const row = (item: MessengerListItem) => <li key={item.key}>
+    <Link className={`messenger-item${item.active ? " active" : ""}${item.unread ? " unread" : ""}`} href={item.href} aria-current={item.active ? "page" : undefined}>
+      <ChatAvatar name={item.name} ai={item.ai} />
+      <span className="messenger-item-text"><strong>{item.name}</strong><span>{item.preview}</span></span>
+      <span className="messenger-item-meta">{item.time && <time>{item.time}</time>}{item.unread > 0 && <span className="messenger-unread" aria-label={`${item.unread} tin chưa đọc`}>{item.unread}</span>}</span>
+    </Link>
+  </li>;
+  const shown = items.filter(match);
+  const shownOthers = others.filter(match);
+  // The search box sits under the list, like Facebook (Owner 30/10).
+  return <>
+    <div className="messenger-list-scroll">
+      <ul className="messenger-items" aria-label="Danh bạ">{shown.map(row)}</ul>
+      {!shown.length && <p className="empty-inline">Không có ai phù hợp.</p>}
+      {shownOthers.length > 0 && <><h2 className="messenger-section">Hội thoại khác</h2><ul className="messenger-items" aria-label="Hội thoại khác">{shownOthers.map(row)}</ul></>}
+    </div>
+    <label className="sr-only" htmlFor="messenger-search">Tìm người</label>
+    <input id="messenger-search" className="messenger-search" type="search" placeholder="Tìm người…" value={query} onChange={(event) => setQuery(event.target.value)} />
+  </>;
+}
+
+/** The message box at the bottom of a chat; Enter sends, Shift+Enter starts a new line. A first message opens the chat. */
+export function ChatComposer({ surface, conversationId, contact, placeholder }: {
+  surface: "admin" | "work" | "customer"; conversationId?: string; contact?: { authUserId: string; customerId: string | null }; placeholder: string;
+}) {
+  const [state, action, pending] = useActionState(conversationId ? sendMessageAction : sendDirectMessageAction, initialState);
   const operationId = useRef<string | null>(null);
   const lastMessageId = useRef<string | undefined>(undefined);
   return (
-    <form action={action} className="form-stack" key={state.messageId ?? "draft"} onSubmit={(event) => {
+    <form action={action} className="chat-composer" key={state.messageId ?? "draft"} onSubmit={(event) => {
       if (state.messageId && state.messageId !== lastMessageId.current) {
         operationId.current = null;
         lastMessageId.current = state.messageId;
@@ -94,12 +118,15 @@ export function SendMessageForm({ conversationId, surface }: { conversationId: s
       operationId.current ??= crypto.randomUUID();
       (event.currentTarget.elements.namedItem("operation_id") as HTMLInputElement).value = operationId.current;
     }}>
-      <input type="hidden" name="conversation_id" value={conversationId} />
+      {conversationId && <input type="hidden" name="conversation_id" value={conversationId} />}
+      {contact && <><input type="hidden" name="contact_auth_user_id" value={contact.authUserId} /><input type="hidden" name="contact_customer_id" value={contact.customerId ?? ""} /></>}
       <input type="hidden" name="surface" value={surface} />
       <input type="hidden" name="operation_id" defaultValue="" />
-      <label className="field"><span>Nội dung</span><textarea name="body" maxLength={4000} rows={3} required placeholder="Nhập tin nhắn. Tin nhắn không tự thay đổi đơn hàng hoặc thanh toán." /></label>
-      <button className="button button-primary" type="submit" disabled={pending}>{pending ? "Đang gửi..." : "Gửi tin nhắn"}</button>
-      {state.message && <p role="status" className={state.status === "error" ? "error-message" : "muted"}>{state.message}</p>}
+      <label className="sr-only" htmlFor="chat-body">Nội dung tin nhắn</label>
+      <textarea id="chat-body" name="body" maxLength={4000} rows={1} required placeholder={placeholder}
+        onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} />
+      <button className="button button-primary" type="submit" disabled={pending}>{pending ? "Đang gửi…" : "Gửi"}</button>
+      {state.status === "error" && <p role="alert" className="error-message chat-composer-error">{state.message}</p>}
     </form>
   );
 }

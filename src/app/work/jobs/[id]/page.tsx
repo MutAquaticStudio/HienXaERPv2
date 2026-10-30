@@ -1,4 +1,6 @@
-import { jobStateLabel, soldQuantityLabel, workKindLabel } from "@/modules/portal/presentation";
+import { directionsHref, jobStateLabel, soldQuantityLabel, telHref, workKindLabel } from "@/modules/portal/presentation";
+import { JobSteps } from "@/components/portal/job-steps";
+import { Navigation, Phone } from "lucide-react";
 import { ClaimJobButton } from "@/components/portal/claim-job-button";
 import styles from "@/components/portal/portal.module.css";
 import { StartJobButton } from "@/components/portal/start-job-button";
@@ -6,13 +8,10 @@ import { WorkResultDraftForm } from "@/components/portal/work-result-draft-form"
 import { DeliveryDoneForm } from "@/components/portal/delivery-done-form";
 import { DeliveryLoadForm } from "@/components/portal/delivery-load-form";
 import { DeclineJobButton } from "@/components/portal/decline-job-button";
-import { ForegroundGpsControl } from "@/components/routing/foreground-gps-control";
-import { createServerSupabase } from "@/lib/supabase/server";
 import { getWorkerPortalJob } from "@/modules/portal/actions";
 import type { WorkerJob } from "@/modules/portal/types";
 import { formatQuantity } from "@/lib/core/quantity";
 import { formatBusinessDateTime } from "@/lib/core/business-time";
-import { GPS_DEVICE_AVAILABLE, GPS_DEVICE_UNAVAILABLE_MESSAGE } from "@/modules/routing/device-availability";
 
 function showDate(value?: string) {
   return value
@@ -38,10 +37,6 @@ function deliveryStatusText(job: WorkerJob, notMine: boolean, available: boolean
 export default async function WorkJobPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const job = await getWorkerPortalJob(id);
-  const supabase = await createServerSupabase();
-  const { data: gpsAssignments, error: gpsError } = await supabase.rpc("my_active_gps_assignment", { target_work_item_id: id });
-  if (gpsError) throw gpsError;
-  const gpsAssignment = gpsAssignments?.[0];
   const available = job.state === "AVAILABLE";
   const claimed = job.state === "CLAIMED";
   const delivery = job.delivery;
@@ -55,6 +50,13 @@ export default async function WorkJobPage({ params }: { params: Promise<{ id: st
         <h1>{job.title ?? "Chi tiết công việc"}</h1>
         <p>{job.site_name ?? job.address ?? "Địa điểm đang cập nhật"}</p>
       </header>
+      <section className={styles.card} aria-label="Tiến trình và liên hệ">
+        <JobSteps job={job} />
+        {(job.receiver_phone || job.address) && <div className={styles.contactRow}>
+          {job.receiver_phone && <a className={styles.contactCall} href={telHref(job.receiver_phone)}><Phone aria-hidden size={17} />Gọi {job.receiver_name ?? "người nhận"}</a>}
+          {job.address && <a className={styles.contactWay} href={directionsHref(job.address)} target="_blank" rel="noreferrer"><Navigation aria-hidden size={17} />Chỉ đường</a>}
+        </div>}
+      </section>
       <div className={styles.split}>
         <section className={styles.card}>
           <span className={styles.badge}>{jobStateLabel(job)}</span>
@@ -100,9 +102,6 @@ export default async function WorkJobPage({ params }: { params: Promise<{ id: st
           </section>
         )}
       </div>
-      {gpsAssignment && (GPS_DEVICE_AVAILABLE
-        ? <ForegroundGpsControl deliveryId={gpsAssignment.delivery_id} assignmentVersion={gpsAssignment.assignment_version} />
-        : <p className={styles.status}>{GPS_DEVICE_UNAVAILABLE_MESSAGE}</p>)}
     </div>
   );
 }

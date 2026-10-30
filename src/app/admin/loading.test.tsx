@@ -4,6 +4,6 @@ import AdminLoading from "./loading";
 
 it("keeps a labelled placeholder in the office frame while a screen loads", () => {
   render(<AdminLoading />);
-  expect(screen.getByRole("status", { name: "Đang tải dữ liệu" })).toBeInTheDocument();
+  expect(screen.getByRole("status", { name: "Đang tổng hợp số liệu" })).toBeInTheDocument();
   expect(document.querySelectorAll(".skeleton").length).toBeGreaterThan(10);
 });

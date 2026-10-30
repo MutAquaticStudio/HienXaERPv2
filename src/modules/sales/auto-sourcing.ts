@@ -36,3 +36,13 @@ export async function autoSourceConfirmedOrder(supabase: Supabase, branchId: str
 export function confirmedNotice(result: { status: "SOURCED" | "SKIPPED" | "FAILED" }) {
   return result.status === "SOURCED" ? "confirmed-sourced" : result.status === "FAILED" ? "confirmed-unsourced" : "confirmed";
 }
+
+/** One line on what sourcing did with a confirmed order (Excel import results). */
+export function sourcingSummary(status: "SOURCED" | "SKIPPED" | "FAILED", outcome?: SourcingOutcome): string {
+  if (status === "SKIPPED") return "Đã xác nhận (chi nhánh tắt tự phân nguồn).";
+  if (status === "FAILED" || !outcome) return "Đã xác nhận; chưa tự phân nguồn được — mở đơn bấm \"Tự phân nguồn\".";
+  const parts = [outcome.warehouse_lines ? `lấy từ kho ${outcome.warehouse_lines} dòng` : "",
+    outcome.purchase_orders.length ? `thiếu hàng → đơn mua ${outcome.purchase_orders.map((item) => item.number).join(", ")}` : "",
+    outcome.short_lines.length ? `còn thiếu ${outcome.short_lines.map((line) => `${line.short} ${line.symbol} ${line.material_name}`).join("; ")} (chưa có nhà cung cấp)` : ""].filter(Boolean);
+  return `Đã xác nhận${parts.length ? ` · ${parts.join(" · ")}` : ""}.`;
+}

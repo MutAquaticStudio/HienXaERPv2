@@ -24,14 +24,18 @@ function manualFallback(stops: ProviderStop[], safeError: string): RouteRecommen
   };
 }
 
+export const PUBLIC_OSRM = "https://router.project-osrm.org";
+
 export async function recommendRoute(stops: ProviderStop[]): Promise<RouteRecommendation> {
   if (stops.length < 2) return manualFallback(stops, "Cần ít nhất hai điểm để nhà cung cấp đề xuất thứ tự.");
   if (stops.some((stop) => stop.latitude === null || stop.longitude === null)) {
     return manualFallback(stops, "Một hoặc nhiều công trình chưa có tọa độ; giữ thứ tự thủ công.");
   }
 
-  const configuredBase = process.env.HX_OSRM_BASE_URL?.trim();
-  if (!configuredBase) return manualFallback(stops, "Nhà cung cấp lộ trình chưa được cấu hình; giữ thứ tự thủ công.");
+  // FB18: without its own server the app uses the public OpenStreetMap routing server (light use, a few plans a day);
+  // HX_OSRM_BASE_URL points it elsewhere, and "off" keeps every plan in the manual order.
+  const configuredBase = process.env.HX_OSRM_BASE_URL?.trim() || PUBLIC_OSRM;
+  if (configuredBase === "off") return manualFallback(stops, "Nhà cung cấp lộ trình đang tắt; giữ thứ tự thủ công.");
 
   try {
     const base = new URL(configuredBase);

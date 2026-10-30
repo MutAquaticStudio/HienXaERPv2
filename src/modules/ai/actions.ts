@@ -1,32 +1,51 @@
 "use server";
 
-// FB12 (D34d): "Hỏi AI" and the approval of the assistant's proposals.
+// FB12 (D34d) → FB14 (D36): the chatbot conversation (kept per person) and the approval of the assistant's proposals.
+import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { askAssistant, type AiAnswer } from "@/modules/ai/assistant";
-import { AI_MODULES } from "@/modules/ai/sources";
+import { listAiActionsAction, type AiActionCard } from "@/modules/ai/agent/actions";
+import { loadAiChat, type AiChatTurn } from "@/modules/ai/chat-history";
 
-const askSchema = z.object({
-  module: z.enum(AI_MODULES),
-  question: z.string().trim().min(2).max(2000),
-  history: z.array(z.object({ role: z.enum(["user", "assistant"]), text: z.string().max(8000) })).max(20),
-});
+const askSchema = z.object({ question: z.string().trim().min(2).max(2000) });
 
-export async function askAiAction(input: unknown): Promise<AiAnswer> {
+export async function loadAiChatAction(): Promise<AiChatTurn[]> {
+  const access = await requireInternalPermission("ai.use");
+  return loadAiChat(await createServerSupabase(), access.branchId);
+}
+
+/** The answer, with the cards of the actions the assistant prepared in this turn (FB15, D37). */
+export type AiChatAnswer = AiAnswer & { actions: AiActionCard[] };
+
+export async function askAiAction(input: unknown): Promise<AiChatAnswer> {
   const parsed = askSchema.safeParse(input);
-  if (!parsed.success) return { outcome: "ERROR", text: "Câu hỏi cần từ 2 đến 2.000 ký tự.", proposals: 0 };
+  if (!parsed.success) return { outcome: "ERROR", text: "Câu hỏi cần từ 2 đến 2.000 ký tự.", proposals: 0, actions: [] };
   const access = await requireInternalPermission("ai.use");
   const supabase = await createServerSupabase();
   const today = new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", dateStyle: "full" }).format(new Date());
-  // The API needs alternating turns that start with the person: drop a leading assistant greeting, keep the last 20.
-  const firstQuestion = parsed.data.history.findIndex((turn) => turn.role === "user");
-  const history = firstQuestion < 0 ? [] : parsed.data.history.slice(firstQuestion);
-  const answer = await askAssistant({ supabase, branchId: access.branchId, module: parsed.data.module, history, question: parsed.data.question, today });
+  // The API needs alternating turns that start with the person: keep the last 20 stored turns from a question on.
+  const stored = (await loadAiChat(supabase, access.branchId, 20)).map(({ role, text }) => ({ role, text }));
+  const firstQuestion = stored.findIndex((turn) => turn.role === "user");
+  const history = firstQuestion < 0 ? [] : stored.slice(firstQuestion);
+  const answer = await askAssistant({ supabase, branchId: access.branchId, permissions: new Set(access.permissions), history, question: parsed.data.question, today });
+  // Only answered turns are kept: a failure (no key, quota, error) is shown once and not sent to the assistant again.
+  if (answer.outcome === "OK") {
+    await supabase.rpc("save_ai_chat_turn", { target_branch_id: access.branchId, question: parsed.data.question, answer: answer.text.slice(0, 20000), operation_id: randomUUID() });
+  }
   if (answer.proposals) revalidatePath("/admin/ai");
-  return answer;
+  const actions = answer.actionIds?.length ? await listAiActionsAction({ ids: answer.actionIds }) : [];
+  return { ...answer, actions };
+}
+
+/** "Cuộc trò chuyện mới": earlier turns are archived and no longer sent to the assistant. */
+export async function newAiChatAction(): Promise<{ success: boolean }> {
+  const access = await requireInternalPermission("ai.use");
+  const { error } = await (await createServerSupabase()).rpc("start_new_ai_chat", { target_branch_id: access.branchId });
+  return { success: !error };
 }
 
 export type ProposalState = { success?: boolean; message?: string } | undefined;
