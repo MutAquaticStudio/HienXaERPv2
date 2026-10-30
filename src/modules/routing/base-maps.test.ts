@@ -1,9 +1,9 @@
 import { expect, it } from "vitest";
 import { baseMaps, DEFAULT_BASE_MAPS } from "./base-maps";
 
-it("uses CARTO then OpenStreetMap when nothing is configured", () => {
+it("uses OpenStreetMap, which needs no key, when nothing is configured", () => {
   expect(baseMaps("", "")).toEqual(DEFAULT_BASE_MAPS);
-  expect(baseMaps(undefined, undefined)[0].url).toContain("basemaps.cartocdn.com");
+  expect(baseMaps(undefined, undefined).map((base) => base.url)).toEqual(["https://tile.openstreetmap.org/{z}/{x}/{y}.png"]);
 });
 
 it("puts the configured tile address first and keeps the free ones as fallbacks (FB18)", () => {

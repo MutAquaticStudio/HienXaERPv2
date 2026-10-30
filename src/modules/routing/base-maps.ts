@@ -1,8 +1,10 @@
 export type BaseMap = { url: string; attribution: string };
 
-/** CARTO Voyager (Owner's choice) and OpenStreetMap's own tiles, tried in this order. */
+/**
+ * Without configuration: OpenStreetMap's own tiles, which need no key. CARTO's public tiles were dropped: they now answer
+ * every request with an "API KEY REQUIRED" picture (HTTP 200, so no tile error and no switch to a fallback).
+ */
 export const DEFAULT_BASE_MAPS: BaseMap[] = [
-  { url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png", attribution: "© OpenStreetMap © CARTO" },
   { url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png", attribution: "© OpenStreetMap" },
 ];
 
