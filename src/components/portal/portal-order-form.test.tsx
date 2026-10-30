@@ -26,12 +26,8 @@ const operation = "33333333-3333-4333-8333-333333333333";
 beforeEach(() => vi.clearAllMocks());
 afterEach(cleanup);
 
-function pick(name: RegExp) {
-  const box = screen.getByRole("combobox", { name: "Tìm hàng" });
-  fireEvent.focus(box);
-  fireEvent.mouseDown(within(screen.getByRole("listbox")).getByRole("option", { name }));
-}
-const review = () => screen.getByRole("button", { name: "Xem lại đơn" });
+const review = () => screen.getByRole("button", { name: /Xem & gửi đơn/ });
+const footer = () => screen.getByRole("group", { name: "Tổng tiền và gửi đơn" });
 
 it("rounds line totals like the stored order", () => {
   expect(lineTotalVnd("2.5", "85000")).toBe(212500n);
@@ -51,46 +47,44 @@ it("turns the catalog into the shared editor's materials: priced units, base uni
   expect(switchVariant({ ...line, uomId: "tan" }, materials, "x40")).toMatchObject({ materialId: "x40", uomId: "bao" });
 });
 
-it("lists the goods like the internal order form, variants together, with this customer's price and a stock flag only", () => {
+it("shows a card per product with this customer's price, group chips, search and a stock flag", () => {
   render(<PortalOrderForm catalog={catalog} operationId={operation} />);
-  fireEvent.focus(screen.getByRole("combobox", { name: "Tìm hàng" }));
-  const list = screen.getByRole("listbox", { name: "Danh sách vật tư" });
-  expect(list).toHaveTextContent("Xi măng Bút Sơn");
-  expect(within(list).getByRole("option", { name: /PCB30/ })).toHaveTextContent(/Mác: PCB30.*80\.000.*\/ bao · Còn hàng/);
-  expect(within(list).getByRole("option", { name: /PCB40/ })).toHaveTextContent(/Đặt trước/);
+  const list = screen.getByRole("list", { name: "Hàng của bạn" });
+  expect(within(list).getAllByRole("listitem")).toHaveLength(3);
+  expect(within(list).getByText("Xi măng Bút Sơn PCB30").closest("li")).toHaveTextContent(/Mác: PCB30.*80\.000.*\/ bao/);
+  expect(within(list).getByText("Xi măng Bút Sơn PCB40").closest("li")).toHaveTextContent(/Đặt trước/);
+  fireEvent.click(screen.getByRole("button", { name: "Gạch" }));
+  expect(within(list).getAllByRole("listitem")).toHaveLength(1);
+  fireEvent.click(screen.getByRole("button", { name: "Tất cả" }));
+  fireEvent.change(screen.getByPlaceholderText(/Tìm xi măng/), { target: { value: "pcb40" } });
+  expect(within(list).getAllByRole("listitem")).toHaveLength(1);
   expect(review()).toBeDisabled();
 });
 
-it("adds lines, changes unit, quantity and variant, and totals at this customer's prices", () => {
+it("adds with Thêm, steps − / +, switches unit and totals at this customer's prices", () => {
   render(<PortalOrderForm catalog={catalog} operationId={operation} />);
-  pick(/PCB30/);
-  pick(/PCB30/);
-  expect(screen.getByLabelText("Số lượng dòng 1")).toHaveValue("2");
-  expect(screen.getByLabelText("Đơn vị dòng 1")).toHaveValue("bao");
-  expect(within(screen.getByRole("group", { name: "Tổng tiền và gửi đơn" })).getByText(/160\.000/)).toBeInTheDocument();
-  fireEvent.change(screen.getByLabelText("Đơn vị dòng 1"), { target: { value: "tan" } });
-  expect(within(screen.getByRole("group", { name: "Tổng tiền và gửi đơn" })).getByText(/3\.200\.000/)).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Thêm Xi măng Bút Sơn PCB30" }));
+  fireEvent.click(screen.getByRole("button", { name: "Thêm 1 Xi măng Bút Sơn PCB30" }));
+  expect(screen.getByLabelText("Số lượng Xi măng Bút Sơn PCB30")).toHaveValue("2");
+  expect(within(footer()).getByText(/160\.000/)).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("radio", { name: "tấn" }));
+  expect(within(footer()).getByText(/3\.200\.000/)).toBeInTheDocument();
   expect(screen.getByText("1 tấn = 20 bao")).toBeInTheDocument();
-  // Another variant of the same product, on the same line.
-  fireEvent.change(screen.getByLabelText("Loại hàng dòng 1"), { target: { value: "x40" } });
-  expect(screen.getByText("Xi măng Bút Sơn PCB40")).toBeInTheDocument();
-  expect(screen.getByLabelText("Đơn vị dòng 1")).toHaveValue("bao");
-  expect(screen.getByText("Đặt trước")).toBeInTheDocument();
-  fireEvent.click(screen.getByRole("button", { name: "Tăng số lượng dòng 1" }));
-  expect(within(screen.getByRole("group", { name: "Tổng tiền và gửi đơn" })).getByText(/270\.000/)).toBeInTheDocument();
-  fireEvent.change(screen.getByLabelText("Số lượng dòng 1"), { target: { value: "1,5" } });
-  expect(within(screen.getByRole("group", { name: "Tổng tiền và gửi đơn" })).getByText(/135\.000/)).toBeInTheDocument();
-  fireEvent.change(screen.getByLabelText("Số lượng dòng 1"), { target: { value: "abc" } });
+  fireEvent.change(screen.getByLabelText("Số lượng Xi măng Bút Sơn PCB30"), { target: { value: "1,5" } });
+  expect(within(footer()).getByText(/2\.400\.000/)).toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText("Số lượng Xi măng Bút Sơn PCB30"), { target: { value: "abc" } });
   expect(review()).toBeDisabled();
-  fireEvent.click(screen.getByRole("button", { name: "Xóa dòng 1" }));
-  expect(screen.getByText(/Chưa có hàng trong đơn/)).toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText("Số lượng Xi măng Bút Sơn PCB30"), { target: { value: "1" } });
+  fireEvent.click(screen.getByRole("button", { name: "Bớt 1 Xi măng Bút Sơn PCB30" }));
+  expect(screen.queryByLabelText("Số lượng Xi măng Bút Sơn PCB30")).toBeNull();
+  expect(screen.getByRole("button", { name: "Thêm Xi măng Bút Sơn PCB30" })).toBeInTheDocument();
 });
 
 it("sends the order once reviewed and keeps the operation for an unknown result", async () => {
   m.submit.mockResolvedValueOnce({ status: "UNKNOWN", message: "Chưa rõ" }).mockResolvedValueOnce({ status: "SUCCESS", message: "ok", resultId: "o1" });
   render(<PortalOrderForm catalog={catalog} operationId={operation} />);
-  pick(/Gạch đỏ/);
-  fireEvent.change(screen.getByLabelText("Số lượng dòng 1"), { target: { value: "500" } });
+  fireEvent.click(screen.getByRole("button", { name: "Thêm Gạch đỏ" }));
+  fireEvent.change(screen.getByLabelText("Số lượng Gạch đỏ"), { target: { value: "500" } });
   fireEvent.change(screen.getByLabelText("Ghi chú cho cửa hàng"), { target: { value: "Giao sáng" } });
   expect(screen.getByText(/1 Lê Lợi · Người nhận: Anh Ba · 0901/)).toBeInTheDocument();
   fireEvent.click(review());
@@ -109,7 +103,7 @@ it("sends the order once reviewed and keeps the operation for an unknown result"
 
 it("asks for a new address when there is no site and tells the customer when nothing is offered", () => {
   render(<PortalOrderForm catalog={{ ...catalog, sites: [] }} operationId={operation} />);
-  pick(/Gạch đỏ/);
+  fireEvent.click(screen.getByRole("button", { name: "Thêm Gạch đỏ" }));
   expect(screen.getByLabelText("Công trình / điểm giao")).toHaveValue("new");
   expect(review()).toBeDisabled();
   fireEvent.change(screen.getByLabelText("Tên công trình / nơi nhận"), { target: { value: "Nhà mới" } });

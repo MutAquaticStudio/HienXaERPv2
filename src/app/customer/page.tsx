@@ -5,6 +5,7 @@ import { randomUUID } from "node:crypto";
 import Link from "next/link";
 import { ChevronRight, CreditCard, Plus, Truck } from "lucide-react";
 import { formatBusinessDate } from "@/lib/core/business-time";
+import { formatQuantity } from "@/lib/core/quantity";
 import { QUOTATIONS_ENABLED } from "@/lib/features";
 
 import styles from "@/components/portal/portal.module.css";
@@ -30,17 +31,22 @@ export default async function CustomerHomePage({ searchParams }: { searchParams:
   const progressPercent = progress.length ? Math.round((progress.filter((step) => step.state === "done").length / progress.length) * 100) : 0;
   // FB18: "Đặt lại nhanh" — the latest orders that went through, one tap to the order form with their goods.
   const reorderable = snapshot.orders.filter((order) => order.state !== "CANCELLED" && order.state !== "DRAFT").slice(0, 2);
+  // Concept "Khách · Trang chủ": the truck's expected time when a delivery is on its way, the goods of each reorder card.
+  const onTheWay = tracked?.deliveries.find((delivery) => delivery.state === "DISPATCHED" || delivery.state === "ARRIVED");
+  const clock = (value?: string) => value ? new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(value)) : "";
+  const goods = (order: (typeof snapshot.orders)[number]) => (order.lines ?? []).slice(0, 2).map((line) => `${formatQuantity(line.quantity)} ${line.uom_symbol} ${line.material_name}`).join(" · ");
   return (
     <div className={styles.page}>
       {notice && <p className={styles.status} role="status">{notice}</p>}
       <header className={styles.greeting}>
-        <div><p>{snapshot.customer.code} · Hiền Xa</p><h1>{snapshot.customer.display_name}</h1></div>
+        <div><p>Hiền Xa · Vật liệu xây dựng</p><h1>{snapshot.customer.display_name}</h1></div>
       </header>
 
       {tracked ? <Link className={styles.trackCard} href={"/customer/orders/" + tracked.id} aria-label={`Đơn ${tracked.number ?? ""} ${portalOrderStateLabel(tracked)}`}>
         <span className={styles.currentTop}><span>{portalOrderStateLabel(tracked).toLocaleUpperCase("vi-VN")} · {tracked.number ?? "Đơn hàng"}</span><ChevronRight aria-hidden size={18} /></span>
         <span className={styles.trackMain}><span className={styles.trackIcon}><Truck aria-hidden size={24} /></span>
-          <span><strong>{progress.find((step) => step.state === "current")?.label ?? "Đang xử lý"}</strong><small>{tracked.site_name ?? "Công trình"}</small></span></span>
+          <span><strong>{onTheWay?.scheduled_at ? `Xe tới khoảng ${clock(onTheWay.scheduled_at)}` : progress.find((step) => step.state === "current")?.label ?? "Đang xử lý"}</strong>
+            <small>{[onTheWay?.number, tracked.site_name ?? "Công trình"].filter(Boolean).join(" · ")}</small></span></span>
         <span className={styles.trackBar}><span style={{ width: `${progressPercent}%` }} /></span>
       </Link> : canOrder && <Link className={`${styles.button} ${styles.buttonCommerce} ${styles.buttonBlock}`} href="/customer/orders/new"><Plus aria-hidden size={20} strokeWidth={2.4} />Đặt hàng mới</Link>}
       {waiting > 0 && <p className={styles.status} role="status">{waiting} đơn đang chờ cửa hàng duyệt. <Link className={styles.link} href="/customer/orders">Xem đơn</Link></p>}
@@ -69,7 +75,7 @@ export default async function CustomerHomePage({ searchParams }: { searchParams:
         <div className={styles.cardHead}><h2 id="reorder">Đặt lại nhanh</h2><Link className={styles.link} href="/customer/orders">Tất cả đơn</Link></div>
         <div className={styles.reorderGrid}>{reorderable.map((order) => <article key={order.id} className={styles.reorderCard}>
           <small>{order.ordered_at ? formatBusinessDate(order.ordered_at) : "Đơn trước"}{order.site_name ? ` · ${order.site_name}` : ""}</small>
-          <strong>{order.number ?? "Đơn hàng"}</strong>
+          <strong>{goods(order) || order.number || "Đơn hàng"}</strong>
           <Link className={styles.reorderButton} href={`/customer/orders/new?from=${order.id}`}>Đặt lại</Link>
         </article>)}</div>
       </section>}
@@ -83,7 +89,7 @@ export default async function CustomerHomePage({ searchParams }: { searchParams:
       <section className={styles.card} aria-labelledby="recent-orders">
         <div className={styles.cardHead}><h2 id="recent-orders">Đơn gần đây</h2><span className={styles.hint}>{snapshot.orders.length} đơn</span></div>
         {snapshot.orders.length ? <ul className={styles.orderList}>{snapshot.orders.slice(0, 4).map((order) => <li key={order.id}>
-          <Link href={"/customer/orders/" + order.id}><span><strong>{order.number ?? "Đơn hàng"}</strong>{order.site_name && <small className={styles.hint}>{order.site_name}</small>}</span>
+          <Link href={"/customer/orders/" + order.id}><span><strong>{order.number ?? "Đơn mới gửi"}</strong><small className={styles.hint}>{[order.site_name, order.ordered_at ? formatBusinessDate(order.ordered_at).slice(0, 5) : null].filter(Boolean).join(" · ")}</small></span>
             <span className={`${styles.badge} ${order.channel === "CUSTOMER_PORTAL" && order.state === "DRAFT" ? styles.badgeWarm : ""}`}>{portalOrderStateLabel(order)}</span></Link>
         </li>)}</ul> : <p className={styles.empty}>Chưa có đơn hàng.</p>}
         <Link className={styles.link} href="/customer/orders">Xem tiến trình giao nhận</Link>
