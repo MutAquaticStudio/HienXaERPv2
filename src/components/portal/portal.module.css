@@ -1085,6 +1085,20 @@ button.link {
 .payWaiting { margin: 0; padding: 10px 14px; border-radius: 12px; color: #8a4b05; background: #fff3dc; font-weight: 600; }
 .payDone { display: grid; gap: 6px; padding: 16px; border-radius: 16px; color: var(--success); background: var(--success-soft); text-align: center; }
 .payDone p { margin: 0; color: inherit; }
+/* D44: tick several debts, pay them with one QR. */
+.selectTools { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 4px 0 2px; }
+.linkButton { min-height: 32px; padding: 0; border: 0; color: var(--portal-primary, #0b63c6); background: none; font: inherit; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
+.billPick { display: flex; align-items: center; gap: 10px; min-width: 0; cursor: pointer; }
+.billPick input { flex: none; width: 20px; height: 20px; accent-color: var(--portal-primary, #0b63c6); }
+.billPick > span { display: grid; gap: 2px; min-width: 0; font-weight: 600; }
+.selectBar { position: sticky; bottom: calc(76px + env(safe-area-inset-bottom, 0px)); z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; padding: 12px 14px; border-radius: 16px; color: #fff; background: var(--portal-primary-dark, #0a3f80); box-shadow: 0 10px 28px rgba(10, 63, 128, 0.28); }
+.selectBar > span { display: grid; gap: 2px; font-size: 0.85rem; }
+.selectBar strong { font-size: 1.05rem; }
+.selectBar .payAllButton { flex: none; }
+@media (min-width: 900px) { .selectBar { bottom: 16px; } }
+.requestLines { width: 100%; display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; text-align: left; }
+.requestLines li { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-top: 1px dashed var(--portal-line, #edf1f6); font-size: 0.9rem; }
+
 
 /* Concept cổng thợ "Thu nhập & chấm công": month header, dark estimate card with 3 tiles, week strip, payslips. */
 .earningHead { padding: 4px 4px 0; }

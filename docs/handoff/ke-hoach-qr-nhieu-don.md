@@ -1,6 +1,6 @@
 # Kế hoạch: Thanh toán nhiều đơn bằng một QR (mục 4)
 
-> Bản kế hoạch ngày 01/11/2026, **chờ Owner duyệt**. Khi duyệt, ghi thành quyết định **D44** trong `Spec.md` (mở rộng D42) rồi mới làm.
+> Kế hoạch ngày 01/11/2026 — **Owner đã duyệt cùng ngày** (D44 trong `Spec.md`, mở rộng D42). Lựa chọn của Owner ở §7.
 > Mục tiêu số 1: **sổ sách không nhầm**. Mỗi đồng tiền về phải biết rõ trả cho khoản nợ nào, ai ghi, vì sao, và kiểm tra lại được.
 
 ## 1. Hiện trạng (D42, đang chạy)
@@ -135,11 +135,13 @@ Khách chọn **101, 102, 103** → yêu cầu `YC7K2MQ`, QR **10.000.000 ₫**.
 - **QA**: gọi webhook có chữ ký thật lên QA (giống test D42) cho từng tình huống, rồi đối chiếu Sổ quỹ và công nợ trên màn hình.
 - **Đối soát sau phát hành**: chạy truy vấn kiểm tra `sum(phân bổ) + sum(ứng trước) = sum(tiền về)` cho mọi giao dịch có mã yêu cầu.
 
-## 7. Owner cần chốt
-1. **Trả dư**: giống D42 (trả nợ cũ khác, rồi ứng trước)? *(Đề xuất: có, để nhất quán.)*
-2. **Chuyển trùng cùng mã (ví dụ E)**: tự ghi như trả dư và báo kế toán, **hay** giữ lần 2 ở "chờ xử lý" cho kế toán quyết? *(Đề xuất: giữ chờ xử lý, vì an toàn hơn cho sổ sách và để kế toán gọi khách hoàn tiền nếu khách chuyển nhầm.)*
-3. **Trả thiếu**: trả các khoản **hạn sớm nhất trước** trong số đã chọn? *(Đề xuất: có. Chia theo tỷ lệ phức tạp và khó đối chiếu.)*
-4. **Nhân viên tạo yêu cầu thay khách** (để gửi QR qua Zalo/tin nhắn): làm luôn đợt này hay để đợt Zalo? *(Đề xuất: để đợt Zalo.)*
+## 7. Owner đã chốt (01/11/2026)
+1. **Trả dư**: như D42 (trả nợ cũ khác → ứng trước).
+2. **Chuyển trùng cùng mã (E)**: **giữ chờ kế toán** (`request_already_paid`), không tự ghi. Áp dụng cả khi các khoản của yêu cầu đã hết nợ bằng cách khác.
+3. **Trả thiếu**: **hạn sớm nhất trước** trong các khoản đã chọn.
+4. **Nhân viên tạo QR thay khách**: **làm luôn đợt này** — mục "Thu nợ bằng QR" ở tab Công nợ & thanh toán của hồ sơ khách (quyền `finance.ar.read`), có "Sao chép tin nhắn gửi khách" để gửi qua Zalo/tin nhắn.
+
+Thay đổi so với bản nháp: danh sách yêu cầu nằm ngay trong tab **Công nợ & thanh toán** (không tách tab riêng); kế toán xử lý giao dịch chờ bằng cách chọn khách/đơn như D42 (không chọn lại yêu cầu — mã yêu cầu vẫn hiện để đối chiếu).
 
 ## 8. Lưu ý vận hành
 - Tính năng chỉ chạy khi **SePay đã cấu hình trên Production**: webhook, khóa trong Vault, quỹ ngân hàng bật "Tự ghi tiền về" và "Hiện cho khách". Đây là việc số 4 trong HANDOFF và **hiện chưa làm**. Trước đó, cổng khách sẽ không hiện nút thanh toán.

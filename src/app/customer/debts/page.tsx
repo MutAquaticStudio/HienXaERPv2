@@ -7,7 +7,7 @@ import { PAYMENT_NOTICES_ENABLED } from "@/lib/features";
 import { getCustomerPortalSnapshot } from "@/modules/portal/actions";
 import { authenticatedPortalClient } from "@/modules/portal/server";
 import { CopyButton } from "@/components/portal/copy-button";
-import { DebtPayButton } from "@/components/portal/debt-payment";
+import { DebtPayButton, DebtSelectList } from "@/components/portal/debt-payment";
 import { ALL_DEBTS, debtPaymentOptionsSchema } from "@/modules/finance/sepay";
 import { debtBuckets, dueStatus } from "@/modules/portal/debt";
 
@@ -83,13 +83,16 @@ export default async function CustomerDebtsPage() {
       <div className={styles.split}>
         <section className={styles.card}>
           <h2>Các khoản cần trả</h2>
-          {rows.length ? rows.map((row) => { const due = dueStatus(row.due, today); return (
+          {pay && rows.length > 0 && <DebtSelectList customerId={snapshot.customer.id} rows={rows.map((row) => { const due = dueStatus(row.due, today);
+            return { key: row.key, label: row.label, dueLabel: due.label, dueTone: due.tone, amountVnd: row.amount }; })} />}
+          {!pay && (rows.length ? rows.map((row) => { const due = dueStatus(row.due, today); return (
             <article className={styles.billRow} key={row.key}>
               <span>{row.label}<small data-tone={due.tone}>{due.label}</small></span>
               <span className={styles.billActions}><strong>{money(row.amount)}</strong>
                 {row.payKey && <DebtPayButton customerId={snapshot.customer.id} targetKey={row.payKey} label="Thanh toán" />}</span>
             </article>
-          ); }) : <p className={styles.empty}>Không có dư nợ.</p>}
+          ); }) : <p className={styles.empty}>Không có dư nợ.</p>)}
+          {pay && rows.length === 0 && <p className={styles.empty}>Không có dư nợ.</p>}
           {PAYMENT_NOTICES_ENABLED && <h2>Thông báo đã gửi</h2>}
           {PAYMENT_NOTICES_ENABLED && snapshot.payment_notices.map((notice) => (
             <article className={styles.card} key={notice.id}>

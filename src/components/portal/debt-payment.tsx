@@ -6,7 +6,8 @@ import { useEffect, useState } from "react";
 import { Dialog } from "@/components/ui/dialog";
 import styles from "@/components/portal/portal.module.css";
 import { CopyButton } from "@/components/portal/copy-button";
-import { debtPaymentOptionsSchema, paymentTarget, vietQrImageUrl, type DebtPaymentOptions } from "@/modules/finance/sepay";
+import { debtPaymentOptionsSchema, paymentTarget, vietQrImageUrl, type DebtPaymentOptions, type PaymentRequest } from "@/modules/finance/sepay";
+import { createPaymentRequestAction } from "@/modules/finance/payment-request-actions";
 import { formatPortalMoney as money } from "@/modules/portal/money";
 
 const POLL_MS = 5_000;
@@ -96,4 +97,113 @@ function PaymentDialog({ customerId, targetKey, onClose }: { customerId: string;
       <p>Phiếu thu {view.paymentNumber} đã ghi vào sổ, công nợ đã được trừ. Cảm ơn quý khách!</p>
     </div>}
   </Dialog>;
+}
+
+export type SelectableDebt = { key: string; label: string; dueLabel: string; dueTone: string; amountVnd: string };
+
+/**
+ * D44: the debts as a list the customer can tick; "Thanh toán N khoản đã chọn" makes one payment request (one QR, one
+ * transfer note with its code) for exactly those debts. Each row keeps its own "Thanh toán" (D42).
+ */
+export function DebtSelectList({ customerId, rows }: { customerId: string; rows: readonly SelectableDebt[] }) {
+  const [chosen, setChosen] = useState<string[]>([]);
+  const [paying, setPaying] = useState<{ keys: string[]; operationId: string } | null>(null);
+  const router = useRouter();
+  const total = rows.filter((row) => chosen.includes(row.key)).reduce((sum, row) => sum + BigInt(row.amountVnd), 0n).toString();
+  const toggle = (key: string) => setChosen((current) => current.includes(key) ? current.filter((item) => item !== key) : [...current, key]);
+  return <>
+    {rows.length > 1 && <div className={styles.selectTools}>
+      <button type="button" className={styles.linkButton} onClick={() => setChosen(chosen.length === rows.length ? [] : rows.map((row) => row.key))}>
+        {chosen.length === rows.length ? "Bỏ chọn tất cả" : "Chọn tất cả"}</button>
+      {rows.some((row) => row.dueTone === "overdue") && <button type="button" className={styles.linkButton}
+        onClick={() => setChosen(rows.filter((row) => row.dueTone === "overdue").map((row) => row.key))}>Chọn các khoản quá hạn</button>}
+    </div>}
+    {rows.map((row) => <article className={styles.billRow} key={row.key}>
+      <label className={styles.billPick}>
+        <input type="checkbox" checked={chosen.includes(row.key)} onChange={() => toggle(row.key)} aria-label={`Chọn ${row.label}`} />
+        <span>{row.label}<small data-tone={row.dueTone}>{row.dueLabel}</small></span>
+      </label>
+      <span className={styles.billActions}><strong>{money(row.amountVnd)}</strong>
+        <DebtPayButton customerId={customerId} targetKey={row.key} label="Thanh toán" /></span>
+    </article>)}
+    {chosen.length > 0 && <div className={styles.selectBar} role="region" aria-label="Các khoản đã chọn">
+      <span>Đã chọn {chosen.length} khoản<strong>{money(total)}</strong></span>
+      <button type="button" className={styles.payAllButton} onClick={() => setPaying({ keys: chosen, operationId: crypto.randomUUID() })}>
+        Thanh toán {chosen.length} khoản đã chọn</button>
+    </div>}
+    {paying && <RequestPaymentDialog customerId={customerId} keys={paying.keys} operationId={paying.operationId}
+      onClose={() => { setPaying(null); setChosen([]); router.refresh(); }} />}
+  </>;
+}
+
+type RequestView =
+  | { kind: "loading" }
+  | { kind: "error"; message: string; retry: boolean }
+  | { kind: "ready"; request: PaymentRequest }
+  | { kind: "paid"; paymentNumber: string; amountVnd: string };
+
+function RequestPaymentDialog({ customerId, keys, operationId, onClose }: { customerId: string; keys: string[]; operationId: string; onClose: () => void }) {
+  const [view, setView] = useState<RequestView>({ kind: "loading" });
+  const [attempt, setAttempt] = useState(0);
+  const [since] = useState(() => new Date(Date.now() - 60_000).toISOString());
+
+  useEffect(() => {
+    let cancelled = false;
+    void createPaymentRequestAction({ customerId, keys, operationId }).then((result) => {
+      if (cancelled) return;
+      setView(result.status === "SUCCESS" ? { kind: "ready", request: result.request } : { kind: "error", message: result.message, retry: result.status === "UNKNOWN" });
+    }).catch(() => { if (!cancelled) setView({ kind: "error", message: "Chưa tạo được mã thanh toán. Kiểm tra kết nối rồi thử lại.", retry: true }); });
+    return () => { cancelled = true; };
+  }, [customerId, keys, operationId, attempt]);
+
+  const waiting = view.kind === "ready";
+  useEffect(() => {
+    if (!waiting) return;
+    const started = Date.now();
+    const timer = window.setInterval(async () => {
+      if (Date.now() - started > POLL_LIMIT_MS) { window.clearInterval(timer); return; }
+      try {
+        const response = await fetch(`/api/portal/debt-payment?customer=${encodeURIComponent(customerId)}&since=${encodeURIComponent(since)}`, { cache: "no-store" });
+        if (!response.ok) return;
+        const status = await response.json() as { paid?: boolean; payment_number?: string; amount_vnd?: string };
+        if (status.paid) { window.clearInterval(timer); setView({ kind: "paid", paymentNumber: status.payment_number ?? "", amountVnd: status.amount_vnd ?? "0" }); }
+      } catch {
+        // Weak signal: ask again on the next tick.
+      }
+    }, POLL_MS);
+    return () => window.clearInterval(timer);
+  }, [waiting, customerId, since]);
+
+  return <Dialog title={view.kind === "ready" ? `Thanh toán ${view.request.lines.length} khoản` : "Thanh toán các khoản đã chọn"} eyebrow="Chuyển khoản bằng mã QR" onClose={onClose}>
+    {view.kind === "loading" && <p className={styles.hint} role="status">Đang tạo mã thanh toán…</p>}
+    {view.kind === "error" && <div className={styles.payDialog}><p className={styles.hint} role="alert">{view.message}</p>
+      {view.retry && <button type="button" className={styles.payButton} onClick={() => { setView({ kind: "loading" }); setAttempt((value) => value + 1); }}>Thử lại</button>}</div>}
+    {view.kind === "ready" && <RequestQr request={view.request} />}
+    {view.kind === "paid" && <div className={styles.payDone} role="status">
+      <strong>Đã nhận thanh toán {money(view.amountVnd)}</strong>
+      <p>Phiếu thu {view.paymentNumber} đã ghi vào sổ, công nợ các khoản đã chọn đã được trừ. Cảm ơn quý khách!</p>
+    </div>}
+  </Dialog>;
+}
+
+/** The QR, the exact amount and note of a payment request, and the debts it pays (shared by the portal and staff). */
+export function RequestQr({ request, waiting = true }: { request: PaymentRequest; waiting?: boolean }) {
+  const bank = request.bank_name ?? "";
+  const account = request.account_number ?? "";
+  return <div className={styles.payDialog}>
+    {/* eslint-disable-next-line @next/next/no-img-element -- the QR image is generated per payment by vietqr.app */}
+    <img className={styles.payQr} src={vietQrImageUrl({ bank, accountNumber: account, amountVnd: request.amount_vnd, note: request.note, holder: request.account_holder ?? undefined })}
+      alt={`Mã QR chuyển ${money(request.amount_vnd)} vào ${bank}`} width={300} height={300} />
+    <p className={styles.hint}>Mở ứng dụng ngân hàng, quét mã. Số tiền và nội dung đã điền sẵn — vui lòng không sửa nội dung để hệ thống tự xác nhận.</p>
+    <dl className={styles.payFacts}>
+      <div><dt>Số tiền</dt><dd><strong>{money(request.amount_vnd)}</strong></dd></div>
+      <div><dt>Nội dung</dt><dd><strong className="mono">{request.note}</strong> <CopyButton value={request.note} /></dd></div>
+      <div><dt>{bank}</dt><dd><span className="mono">{account}</span> <CopyButton value={account} label="Sao chép số TK" /></dd></div>
+      <div><dt>Chủ tài khoản</dt><dd>{request.account_holder}</dd></div>
+    </dl>
+    <ul className={styles.requestLines} aria-label="Các khoản trong lần thanh toán này">
+      {request.lines.map((line) => <li key={`${line.label}-${line.due_date ?? ""}-${line.amount_vnd}`}><span>{line.label}</span><strong>{money(line.amount_vnd)}</strong></li>)}
+    </ul>
+    {waiting && <p className={styles.payWaiting} role="status">Đang chờ tiền về… Cửa sổ tự cập nhật khi ngân hàng xác nhận.</p>}
+  </div>;
 }
