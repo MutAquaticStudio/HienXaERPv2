@@ -6,6 +6,7 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { formatQuantity } from "@/lib/core/quantity";
+import { BulkRowCheckbox } from "@/components/lists/bulk-selection";
 
 export type MaterialListRow = {
   id: string; code: string; name: string; specification: string | null; group: string; uom: string;
@@ -18,15 +19,19 @@ export type MaterialListRow = {
   conversions: string[];
 };
 
-/** Rows open the material; the arrow expands stock per warehouse and unit conversions in place. */
-export function MaterialListRows({ rows, showPrice, showCost, showStock }: { rows: MaterialListRow[]; showPrice: boolean; showCost: boolean; showStock: boolean }) {
+/**
+ * Rows open the material; the arrow expands stock per warehouse and unit conversions in place. `selectable` adds the
+ * bulk-change checkbox (inside a BulkSelection).
+ */
+export function MaterialListRows({ rows, showPrice, showCost, showStock, selectable = false }: { rows: MaterialListRow[]; showPrice: boolean; showCost: boolean; showStock: boolean; selectable?: boolean }) {
   const [open, setOpen] = useState<string | null>(null);
-  const columns = 6 + Number(showPrice) + Number(showCost) + Number(showStock);
+  const columns = 6 + Number(showPrice) + Number(showCost) + Number(showStock) + Number(selectable);
   return <tbody>{rows.map((row) => {
     const expanded = open === row.id;
     const href = `/admin/products/${row.id}`;
     return <Fragment key={row.id}>
       <tr className={row.active ? undefined : "row-muted"}>
+        {selectable && <td className="row-select"><BulkRowCheckbox id={row.id} label={`${row.code} ${row.name}`} /></td>}
         <td className="row-toggle"><button type="button" className="icon-button" aria-expanded={expanded} aria-controls={`material-${row.id}`} aria-label={`${expanded ? "Thu gọn" : "Mở rộng"} ${row.name}`} onClick={() => setOpen(expanded ? null : row.id)}>{expanded ? <ChevronDown size={16} aria-hidden="true" /> : <ChevronRight size={16} aria-hidden="true" />}</button></td>
         <td className="mono" data-label="Mã"><Link className="code-link" href={href} tabIndex={-1}>{row.code}</Link></td>
         <td className="row-title" data-label="Tên vật tư"><Link className="code-link row-link" href={href}>{row.name}</Link>{row.specification && <small className="table-subline">{row.specification}</small>}

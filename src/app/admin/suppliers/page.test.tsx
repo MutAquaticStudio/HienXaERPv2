@@ -1,4 +1,4 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
 const m = vi.hoisted(() => ({ access: vi.fn(), calls: [] as { table: string; method: string; args: unknown[] }[], tables: {} as Record<string, unknown[]> }));
@@ -14,6 +14,7 @@ vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({
     return query;
   },
 }) }));
+vi.mock("@/modules/catalog/bulk-actions", () => ({ bulkCatalogAction: vi.fn(), exportCatalogCsvAction: vi.fn() }));
 import Page from "./page";
 
 beforeEach(() => {
@@ -44,4 +45,18 @@ it("sums amounts owed per supplier and offers creating one in place", async () =
   expect(row.querySelector('td[data-label="Còn phải trả"]')).toHaveTextContent("12.500.000");
   expect(m.calls).toContainEqual({ table: "payable_read", method: "in", args: ["supplier_id", ["s1"]] });
   expect(screen.getByRole("button", { name: "+ Nhà cung cấp" })).toBeInTheDocument();
+});
+
+it("lets a supplier manager choose suppliers for a bulk change, and a reader only browse", async () => {
+  m.access.mockResolvedValue({ branchId: "b", branchName: "CN", authUserId: "u", permissions: new Set(["suppliers.read", "suppliers.manage"]) });
+  render(await Page({ searchParams: Promise.resolve({}) }));
+  fireEvent.click(screen.getByRole("checkbox", { name: "Chọn NCC01 Xi măng Bút Sơn" }));
+  const bar = screen.getByRole("region", { name: "Thao tác với các dòng đã chọn" });
+  expect(within(bar).getByText("Đã chọn 1 nhà cung cấp")).toBeInTheDocument();
+  expect([...within(bar).getByLabelText("Thao tác").querySelectorAll("option")].map((option) => option.textContent))
+    .toEqual(["Chọn thao tác…", "Đổi hạn thanh toán (ngày)", "Ngừng giao dịch", "Giao dịch lại", "Xóa hẳn"]);
+  cleanup();
+  m.access.mockResolvedValue({ branchId: "b", branchName: "CN", permissions: new Set(["suppliers.read"]) });
+  render(await Page({ searchParams: Promise.resolve({}) }));
+  expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
 });
