@@ -1458,6 +1458,32 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .dispatch-timeline > li { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; align-items: center; padding: 6px 0; border-top: 1px solid var(--border); }
 .dispatch-timeline > li > span:nth-of-type(2), .dispatch-timeline > li > .status { grid-column: 2; }
 @media (max-width: 760px) { .dispatch-drivers { grid-template-columns: 1fr; } }
+/* Waiting deliveries beside the drivers on a wide screen; the waiting table scrolls inside its box instead of growing the page. */
+.dispatch-day-columns { display: grid; gap: 12px; align-items: start; }
+@media (min-width: 1200px) { .dispatch-day-columns { grid-template-columns: minmax(420px, 5fr) 7fr; } }
+.dispatch-waiting { align-content: start; min-width: 0; }
+.dispatch-waiting-body { display: grid; gap: 8px; min-width: 0; }
+.dispatch-waiting-search input { width: 100%; min-height: 36px; }
+.dispatch-waiting-scroll { max-height: 420px; overflow: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); }
+.dispatch-waiting-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-table); }
+.dispatch-waiting-table thead th { position: sticky; top: 0; z-index: 1; background: var(--surface); text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.dispatch-waiting-table td { padding: 8px 10px; border-top: 1px solid var(--border); vertical-align: top; }
+.dispatch-waiting-table tbody tr:first-child td { border-top: 0; }
+.dispatch-waiting-actions { white-space: nowrap; text-align: right; }
+.dispatch-waiting-actions form { display: inline; }
+.dispatch-waiting-actions > * + * { margin-left: 6px; }
+.dispatch-assign-row > td { background: var(--surface-soft); }
+.dispatch-assign-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; }
+.dispatch-assign-form label { display: grid; gap: 4px; font-size: var(--font-size-caption); }
+.dispatch-assign-form select, .dispatch-assign-form input { min-height: 32px; }
+@media (max-width: 760px) {
+  .dispatch-waiting-table thead { display: none; }
+  .dispatch-waiting-table tr { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 8px 10px; border-top: 1px solid var(--border); }
+  .dispatch-waiting-table td { display: block; padding: 0; border: 0; }
+  .dispatch-waiting-table td:nth-child(2) { grid-column: 1 / -1; }
+  .dispatch-assign-row { display: block !important; }
+  .dispatch-assign-row > td { padding: 8px 10px; }
+}
 .send-supplier-text { margin: 6px 0 0; padding: 8px; overflow-x: auto; border-radius: 8px; background: var(--surface-soft); font: inherit; font-size: var(--font-size-caption); white-space: pre-wrap; }
 
 /* D14 customer portal accounts and the auth pages around them. */
