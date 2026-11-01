@@ -31,7 +31,7 @@ Tài liệu bàn giao cho phiên làm việc tiếp theo (Claude Code hoặc ng�
 | 3 | Supabase Auth → URL Configuration (Production + QA): Site URL và Redirect URLs tên miền mới (`/**`) | Owner tự làm trong dashboard |
 | 4 | SePay webhook `https://app.hienxavlxd.com/api/payments/sepay` (HMAC) + Vault secret `hx_sepay_webhook_secret` (Production) + Sổ quỹ: quỹ ngân hàng "Hiện cho khách" + "Tự ghi tiền về (SePay)" | D42 đã phát hành, chờ cấu hình |
 | 5 | `ANTHROPIC_API_KEY` (Sensitive, Production) trên Vercel cho trợ lý AI → redeploy | |
-| 6 | **Dữ liệu Production chưa đủ**: 59 vật tư đang bán **chưa có giá bán chung** (cổng khách vì vậy trống "Cửa hàng chưa mở bán mặt hàng nào") và **chưa có giá mua NCC**. Tồn đầu + giá vốn đã nhập bằng phiếu kiểm kho 29/10 (do tác nhân AI của khách). | Owner nhập ở Kho → Giá bán và Nhà cung cấp → Giá mua, hoặc gửi bảng giá để agent nhập (ghi Production cần Owner đồng ý) |
+| 6 | **Dữ liệu Production chưa đủ**: 59 vật tư đang bán **chưa có giá bán chung** (cổng khách vì vậy trống "Cửa hàng chưa mở bán mặt hàng nào") và **chưa có giá mua NCC**. **01/11: đã dọn sạch đơn/giao/kho/thu chi** (xem `implementation.md` mục 2026-11-01) → tồn = 0, cần nhập tồn đầu thật bằng phiếu kiểm kho mới. Sao lưu ở schema `hx_cleanup_backup_20261101` (xóa khi Owner đồng ý). | Owner nhập ở Kho → Giá bán và Nhà cung cấp → Giá mua, hoặc gửi bảng giá để agent nhập (ghi Production cần Owner đồng ý) |
 | 7 | Quyết định thay đổi "Giá vốn bình quân" trên trang chi tiết vật tư | Xem §5 |
 
 ## 4. QA cho khách nghiệm thu
