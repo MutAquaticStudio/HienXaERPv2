@@ -12,8 +12,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { QUOTATIONS_ENABLED } from "@/lib/features";
 import { CatalogCreateButton, CatalogEditButton } from "@/modules/catalog/catalog-dialog";
-import { catalogCreateProps, catalogRecordProps } from "@/modules/catalog/editor-data";
-import { catalogHref } from "@/modules/catalog/ownership";
+import { catalogChildRecordsProps, catalogCreateProps, catalogRecordProps } from "@/modules/catalog/editor-data";
 import { PortalAccountsCard, type PortalAccount } from "@/components/customers/portal-accounts-card";
 
 type CustomerProfile = { id: string; code: string; display_name: string; customer_type: string; phone: string | null; email: string | null; address_text: string | null; tax_code: string | null; tier_code: string | null; payment_terms_days: number; active: boolean; source?: string };
@@ -87,7 +86,8 @@ export default async function CustomerDetailPage({ params, searchParams }: PageP
     ? await Promise.all([catalogRecordProps("customers", id, access, supabase), catalogCreateProps("sites", access, supabase)]) : [null, null];
 
   // Only the open tab is read; awaited here so the page streams as one piece.
-  const body = tab === "info" ? await InfoTab({ customer, note: can.manage ? privateRow?.internal_note ?? null : undefined, can, supabase })
+  const body = tab === "info" ? await InfoTab({ customer, note: can.manage ? privateRow?.internal_note ?? null : undefined, can, supabase,
+      siteEdit: can.manage ? await catalogChildRecordsProps("sites", "customer_id", id, access, supabase) : null })
     : tab === "orders" ? await OrdersTab({ customerId: id, branchId: access.branchId, supabase })
     : tab === "deliveries" ? await DeliveriesTab({ customerId: id, branchId: access.branchId, supabase })
     : tab === "debts" ? await DebtsTab({ customerId: id, branchId: access.branchId, supabase, canPostPayment })
@@ -123,7 +123,9 @@ export default async function CustomerDetailPage({ params, searchParams }: PageP
 
 type Supabase = Awaited<ReturnType<typeof createServerSupabase>>;
 
-async function InfoTab({ customer, note, can, supabase }: { customer: CustomerProfile; note: string | null | undefined; can: { createOrder: boolean; service: boolean; manage: boolean }; supabase: Supabase }) {
+type SiteEdit = Awaited<ReturnType<typeof catalogChildRecordsProps>>;
+
+async function InfoTab({ customer, note, can, supabase, siteEdit }: { customer: CustomerProfile; note: string | null | undefined; can: { createOrder: boolean; service: boolean; manage: boolean }; supabase: Supabase; siteEdit: SiteEdit | null }) {
   const [{ data }, accountsResult] = await Promise.all([
     supabase.from("customer_sites").select("id, code, name, address_text, receiver_name, receiver_phone, access_note, active").eq("customer_id", customer.id).order("active", { ascending: false }).order("name").limit(100),
     supabase.rpc("customer_portal_accounts", { target_customer_id: customer.id }),
@@ -139,7 +141,7 @@ async function InfoTab({ customer, note, can, supabase }: { customer: CustomerPr
           <td data-label="Người nhận">{site.receiver_name ?? "Chưa chỉ định"}{site.receiver_phone && <small className="table-subline">{site.receiver_phone}</small>}</td>
           <td className="table-actions">{site.active && can.createOrder && <Link className="code-link" href={`/admin/orders/new?customer=${customer.id}&site=${site.id}`}>Tạo đơn</Link>}
             {site.active && can.service && <Link className="code-link" href={`/admin/service-jobs?customerId=${customer.id}&siteId=${site.id}`}>Tạo dịch vụ</Link>}
-            {can.manage && <Link className="code-link" href={catalogHref("sites", { id: site.id })}>Sửa</Link>}</td>
+            {siteEdit?.records.has(site.id) && <CatalogEditButton kind={siteEdit.kind} options={siteEdit.options} permissions={siteEdit.permissions} {...siteEdit.records.get(site.id)!} label="Sửa" className="button button-secondary button-compact" />}</td>
         </tr>)}</tbody>
       </table></div> : <p className="empty-inline">Chưa có công trình. Bấm “+ Công trình” để thêm.</p>}
     </section>

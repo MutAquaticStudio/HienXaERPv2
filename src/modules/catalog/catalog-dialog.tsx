@@ -124,14 +124,14 @@ export function CatalogCreateButton({ label, scope, className = "button button-p
 const LIST_AFTER_DELETE: Record<string, string> = { customers: "/admin/customers", suppliers: "/admin/suppliers", materials: "/admin/products" };
 
 /** "Sửa" button that edits one catalog record in a popup on its own detail page, then shows the saved state. */
-export function CatalogEditButton({ label, record, scope, className = "button button-secondary", ...editor }: EditorProps & { label: string; record: Row; scope: string; className?: string }) {
+export function CatalogEditButton({ label, record, scope, className = "button button-secondary", initialTab, ...editor }: EditorProps & { label: string; record: Row; scope: string; className?: string; initialTab?: DialogTab }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [saved, setSaved] = useState("");
   return <>
     <button type="button" className={className} onClick={() => { setSaved(""); setOpen(true); }}>{label}</button>
     {saved && <p className="form-message success catalog-saved" role="status">{saved}</p>}
-    {open && <CatalogDialog {...editor} record={record} scope={scope} onClose={() => setOpen(false)} onSaved={(result) => {
+    {open && <CatalogDialog {...editor} record={record} scope={scope} initialTab={initialTab} onClose={() => setOpen(false)} onSaved={(result) => {
       // A deleted record's own page no longer exists: go back to its list.
       if (result.deleted) { router.push(LIST_AFTER_DELETE[editor.kind] ?? "/admin"); return; }
       setSaved(result.message); setOpen(false); router.refresh();
