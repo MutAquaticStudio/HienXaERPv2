@@ -47,3 +47,32 @@ export function vietQrImageUrl(input: { bank: string; accountNumber: string; amo
   }
   return url.toString();
 }
+
+/** D44: a payment request (several chosen debts, one QR) as returned by create_payment_request / payment_request_view. */
+export const paymentRequestSchema = z.object({
+  id: z.guid(),
+  code: z.string().regex(/^YC[A-Z0-9]{5}$/),
+  state: z.enum(["OPEN", "PARTIAL", "PAID", "CANCELLED"]),
+  amount_vnd: z.string().regex(/^\d+$/),
+  received_amount_vnd: z.string().regex(/^\d+$/),
+  remaining_amount_vnd: z.string().regex(/^\d+$/),
+  note: z.string(),
+  created_via: z.enum(["PORTAL", "STAFF"]),
+  created_at: z.string(),
+  expires_at: z.string(),
+  bank_name: z.string().nullable(),
+  account_number: z.string().nullable(),
+  account_holder: z.string().nullable(),
+  lines: z.array(z.object({ label: z.string(), due_date: z.string().nullable(), amount_vnd: z.string().regex(/^\d+$/), outstanding_amount_vnd: z.string().regex(/^\d+$/) })),
+});
+export type PaymentRequest = z.infer<typeof paymentRequestSchema>;
+
+/** Total still owed for the chosen debts (exact VND, as text), from the options the database gave. */
+export function selectedTotal(options: Pick<DebtPaymentOptions, "orders">, keys: readonly string[]): string {
+  const chosen = new Set(keys);
+  return options.orders.filter((order) => chosen.has(order.key)).reduce((sum, order) => sum + BigInt(order.outstanding_amount_vnd), 0n).toString();
+}
+
+export const PAYMENT_REQUEST_STATE_LABEL: Record<PaymentRequest["state"], string> = {
+  OPEN: "Chờ thanh toán", PARTIAL: "Đã trả một phần", PAID: "Đã thanh toán", CANCELLED: "Đã hủy",
+};

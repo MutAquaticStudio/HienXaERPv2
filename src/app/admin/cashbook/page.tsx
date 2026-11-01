@@ -22,12 +22,14 @@ import { toCsv } from "@/lib/core/csv";
 type Payment = { id: string; payment_number: string; direction: string; counterparty_name: string; account_code: string; amount_vnd: string; allocated_amount_vnd: string; advance_amount_vnd: string; unallocated_amount_vnd: string; effective_at: string; posting_state: string; reconciliation_state: string; reconciliation_difference_vnd: string; reversal_of_payment_id: string | null };
 type Period = { opening_vnd: string; receipts_vnd: string; disbursements_vnd: string; closing_vnd: string; payment_count: number };
 type Query = { notice?: string; error?: string; page?: string; from?: string; to?: string; account?: string; direction?: string; view?: string };
-type BankLine = { id: string; amount_vnd: string; content: string | null; gateway: string | null; reference_code: string | null; transaction_at: string; reason: string; customer_id: string | null };
+type BankLine = { id: string; amount_vnd: string; content: string | null; gateway: string | null; reference_code: string | null; transaction_at: string; reason: string; customer_id: string | null;
+  payment_request: { code: string } | null };
 
 /** D42: why a bank movement from SePay waits for the accountant. */
 const BANK_REASON: Record<string, string> = {
   no_match: "Nội dung không có mã đơn hoặc mã khách",
-  customer_mismatch: "Mã đơn và mã khách không khớp nhau",
+  customer_mismatch: "Mã đơn / mã yêu cầu và mã khách không khớp nhau",
+  request_already_paid: "Khách chuyển lại cho yêu cầu thanh toán đã trả đủ — gọi khách xác nhận trước khi ghi",
   ambiguous_customer: "Mã khách trùng nhiều khách hàng",
   customer_inactive: "Khách hàng đã ngừng",
   post_failed: "Người bật tự ghi sổ không còn quyền — bật lại ở tài khoản ngân hàng",
@@ -86,8 +88,8 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
     exportRequest.order("effective_at", { ascending: true }).limit(2000),
   ]);
   // D42: SePay bank movements that could not be matched to a customer.
-  const bankLines = can.post ? ((await supabase.from("bank_transactions").select("id, amount_vnd::text, content, gateway, reference_code, transaction_at, reason, customer_id")
-    .eq("branch_id", access.branchId).eq("state", "NEEDS_REVIEW").order("received_at", { ascending: false }).limit(50)).data ?? []) as BankLine[] : [];
+  const bankLines = can.post ? ((await supabase.from("bank_transactions").select("id, amount_vnd::text, content, gateway, reference_code, transaction_at, reason, customer_id, payment_request:payment_requests(code)")
+    .eq("branch_id", access.branchId).eq("state", "NEEDS_REVIEW").order("received_at", { ascending: false }).limit(50)).data ?? []) as unknown as BankLine[] : [];
   if (paymentsResult.error || summaryResult.error || periodResult.error || accountsResult.error || advancesResult.error) throw new Error("Không thể tải sổ quỹ đầy đủ.");
   const fetched = (paymentsResult.data ?? []) as Payment[];
   const rows = fetched.slice(0, CORE_LIST_PAGE_SIZE);
@@ -181,7 +183,7 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
       <p className="muted card-pad-x">Tiền đã vào tài khoản nhưng chưa nhận ra khách. Chọn khách để ghi phiếu thu (trừ nợ cũ nhất trước), hoặc bỏ qua nếu không phải tiền khách trả.</p>
       <div className="table-wrap"><table><thead><tr><th>Thời gian</th><th>Nội dung chuyển khoản</th><th className="numeric">Số tiền</th><th>Lý do chờ</th><th>Thao tác</th></tr></thead><tbody>{bankLines.map((line) => <tr key={line.id}>
         <td>{formatBusinessDate(line.transaction_at)}<small className="table-subline">{line.gateway ?? "Ngân hàng"}{line.reference_code ? ` · ${line.reference_code}` : ""}</small></td>
-        <td className="cashbook-party">{line.content || "—"}</td><td className="numeric mono text-success">+{money(line.amount_vnd)}</td><td>{BANK_REASON[line.reason] ?? "Cần kiểm tra"}</td>
+        <td className="cashbook-party">{line.content || "—"}{line.payment_request && <small className="table-subline">Yêu cầu thanh toán {line.payment_request.code}</small>}</td><td className="numeric mono text-success">+{money(line.amount_vnd)}</td><td>{BANK_REASON[line.reason] ?? "Cần kiểm tra"}</td>
         <td className="table-actions"><FormDialog label="Xử lý" title="Ghi khoản tiền về" buttonClassName="button button-secondary button-compact" description={<>{money(line.amount_vnd)} · {line.content || "Không có nội dung"}</>}>
           <form className="mini-command" action={resolveBankTransactionAction}><h3>Ghi phiếu thu cho khách</h3><input type="hidden" name="transactionId" value={line.id} /><input type="hidden" name="operationId" value={randomUUID()} />
             <label className="field">Khách hàng<select name="customerId" required defaultValue={line.customer_id ?? ""}><option value="" disabled>Chọn khách hàng</option>{customers.map((customer) => <option key={customer.id} value={customer.id}>{customer.code} · {customer.name}</option>)}</select></label>
