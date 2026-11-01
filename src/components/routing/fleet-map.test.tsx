@@ -4,6 +4,7 @@ import { afterEach, expect, it, vi } from "vitest";
 vi.mock("leaflet/dist/leaflet.css", () => ({}));
 // Each base-map layer keeps its event handlers so a test can make its tiles fail.
 const tileLayers = vi.hoisted(() => [] as Array<{ url: string; options: Record<string, unknown>; handlers: Record<string, () => void> }>);
+const views = vi.hoisted(() => [] as unknown[][]);
 const leafletMock = vi.hoisted(() => {
   const chain = () => { const value: Record<string, unknown> = {}; for (const name of ["addTo", "addLayer", "removeLayer", "hasLayer", "bindTooltip", "bindPopup", "on", "setView", "clearLayers", "remove", "fitBounds", "invalidateSize"]) value[name] = () => value; return value; };
   const tileLayer = (url: string, options: Record<string, unknown>) => {
@@ -11,11 +12,12 @@ const leafletMock = vi.hoisted(() => {
     value.on = (name: string, handler: () => void) => { entry.handlers[name] = handler; return value; };
     return value;
   };
-  return { map: () => chain(), tileLayer, layerGroup: () => chain(), circleMarker: () => chain(), polyline: () => chain(), latLngBounds: () => ({}) };
+  const map = () => { const value = chain(); value.setView = (...args: unknown[]) => { views.push(args); return value; }; return value; };
+  return { map, tileLayer, layerGroup: () => chain(), circleMarker: () => chain(), polyline: () => chain(), latLngBounds: () => ({}) };
 });
 // The map loads Leaflet through this seam; the fake is handed over directly, so the real library never loads in tests.
 vi.mock("./load-leaflet", () => ({ loadLeaflet: async () => leafletMock }));
-import { FleetMap, type FleetPosition } from "./fleet-map";
+import { FleetMap, HOME_VIEW, type FleetPosition } from "./fleet-map";
 
 const worker: FleetPosition = { employee_id: "e1", employee_name: "Thợ A", delivery_number: "PG-0001", plate_number: "99C-123.45",
   latitude: "21.0", longitude: "105.8", captured_at: "2026-10-24T03:00:00Z", is_stale: false };
@@ -48,4 +50,14 @@ it("says so when OpenStreetMap sends no tiles and nothing else is configured (FB
   expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   act(() => { for (let i = 0; i < 3; i += 1) tileLayers[0].handlers.tileerror(); });
   expect(screen.getByRole("alert")).toHaveTextContent("Không tải được nền bản đồ");
+});
+
+it("opens on the shop's area in phường Đại Mỗ, Hà Nội, not the whole country", async () => {
+  vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ fleet: [], trail: [] }))));
+  render(<FleetMap initial={[]} />);
+  await waitFor(() => expect(views).toContainEqual([HOME_VIEW.center, HOME_VIEW.zoom]));
+  const [lat, lng] = HOME_VIEW.center;
+  expect(lat).toBeGreaterThan(20.95); expect(lat).toBeLessThan(21.05);
+  expect(lng).toBeGreaterThan(105.7); expect(lng).toBeLessThan(105.8);
+  expect(HOME_VIEW.zoom).toBeGreaterThanOrEqual(13);
 });

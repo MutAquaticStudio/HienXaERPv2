@@ -4,7 +4,9 @@ import { requireInternalPermission } from "@/lib/access/context";
 import { CORE_LIST_PAGE_SIZE, parseCoreListQuery } from "@/lib/core-list";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { deliveryStateLabel, deliveryStateTone } from "@/modules/delivery/presentation";
-import { DispatchDayBoard, type DispatchDay } from "@/components/delivery/dispatch-day-board";
+import { DispatchDayBoard, type DispatchAssignOptions, type DispatchDay } from "@/components/delivery/dispatch-day-board";
+import { listAssignmentEmployees } from "@/modules/delivery/assignment-options";
+import { vehicleStatusLabel } from "@/modules/delivery/presentation";
 import { businessInputValue } from "@/lib/core/business-time";
 import { FleetMap, type FleetPosition } from "@/components/routing/fleet-map";
 import { loadFleetSnapshot } from "@/modules/routing/server";
@@ -73,9 +75,27 @@ export default async function DispatchPage({ searchParams }: { searchParams: Pro
     // FB18 (D40): where the workers on shift are, refreshed by the map itself every 15 s.
     loadFleetSnapshot().catch(() => []),
   ]);
+  // "Gán" on a waiting delivery: who may take delivery work, the trucks, each delivery's version and the stop length.
+  const waitingIds = ((dayData as DispatchDay | null)?.waiting ?? []).map((item) => item.id);
+  let assign: DispatchAssignOptions | undefined;
+  if (access.permissions.has("delivery.assign") && waitingIds.length) {
+    const [employees, vehicleResult, versionResult, settingsResult] = await Promise.all([
+      listAssignmentEmployees(supabase, access.branchId).catch(() => ({ data: [] as { id: string; display_name: string }[] })),
+      supabase.from("vehicle_status_read").select("vehicle_id, plate_number, capacity_quantity, capacity_symbol, busy_delivery_number, busy_state, busy_until").eq("branch_id", access.branchId).order("plate_number"),
+      supabase.from("deliveries").select("id, version").eq("branch_id", access.branchId).in("id", waitingIds),
+      supabase.from("branch_operation_settings").select("stop_minutes").eq("branch_id", access.branchId).maybeSingle(),
+    ]);
+    assign = {
+      drivers: employees.data.map((employee) => ({ id: employee.id, label: employee.display_name })),
+      vehicles: ((vehicleResult.data ?? []) as (NonNullable<Parameters<typeof vehicleStatusLabel>[0]> & { vehicle_id: string; plate_number: string })[])
+        .map((vehicle) => ({ id: vehicle.vehicle_id, label: `${vehicle.plate_number}${vehicleStatusLabel(vehicle)}` })),
+      versions: Object.fromEntries(((versionResult.data ?? []) as { id: string; version: number }[]).map((row) => [row.id, row.version])),
+      stopMinutes: Number((settingsResult.data as { stop_minutes?: number } | null)?.stop_minutes ?? 60) || 60,
+    };
+  }
   return <div className="page-stack">
     <header className="page-heading"><div><p className="eyebrow">Điều phối</p><h1>Bảng phân giao</h1><p className="lede">Phân công và theo dõi tiến độ giao hàng.</p></div>{access.permissions.has("roles.manage") && <div className="action-cluster"><Link className="button button-secondary" href="/admin/dispatch/resources?kind=vehicles">Xe</Link><Link className="button button-secondary" href="/admin/dispatch/resources?kind=machines">Máy / thiết bị</Link></div>}</header>
-    {dayData ? <DispatchDayBoard day={day} board={dayData as DispatchDay} canAssign={access.permissions.has("delivery.assign")}
+    {dayData ? <DispatchDayBoard day={day} board={dayData as DispatchDay} canAssign={access.permissions.has("delivery.assign")} assign={assign}
       notice={firstValue(query.dispatched) || undefined} error={firstValue(query.error) || undefined} />
       : <p className="form-message" role="alert">Chưa tải được lịch giao theo tài xế. Hãy tải lại trang.</p>}
     <FleetMap initial={fleet as FleetPosition[]} />
