@@ -62,7 +62,7 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
   const direction = query.direction === "RECEIPT" || query.direction === "DISBURSEMENT" ? query.direction : "";
   const can = { post: access.permissions.has("finance.payment.post"), payables: access.permissions.has("finance.ap.read"), reconcile: access.permissions.has("finance.reconcile"), reverse: access.permissions.has("finance.payment.reverse"), expense: access.permissions.has("finance.expense.manage") };
   const supabase = await createServerSupabase();
-  let paymentRequest = supabase.from("payment_read").select("id, payment_number, direction, counterparty_name, account_code, amount_vnd::text, allocated_amount_vnd::text, advance_amount_vnd::text, unallocated_amount_vnd::text, effective_at, posting_state, reconciliation_state, reconciliation_difference_vnd::text, reversal_of_payment_id")
+  let paymentRequest = supabase.from("payment_read").select("id, payment_number, direction, counterparty_name, account_code, amount_vnd::text, allocated_amount_vnd::text, advance_amount_vnd::text, unallocated_amount_vnd::text, effective_at, posting_state, reconciliation_state, reconciliation_difference_vnd::text, reversal_of_payment_id", { count: "exact" })
     .eq("branch_id", access.branchId).gte("effective_at", range.fromAt).lt("effective_at", range.toAt);
   if (accountId) paymentRequest = paymentRequest.eq("account_id", accountId);
   if (direction) paymentRequest = paymentRequest.eq("direction", direction);
@@ -92,6 +92,7 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
   const fetched = (paymentsResult.data ?? []) as Payment[];
   const rows = fetched.slice(0, CORE_LIST_PAGE_SIZE);
   const hasNext = fetched.length > CORE_LIST_PAGE_SIZE;
+  const total = paymentsResult.count ?? undefined;
   const summary = summaryResult.data as { net_cash_vnd: string | number; unmatched_count: number };
   const totals = periodResult.data as Period;
   const accounts = accountsResult.data ?? [];
@@ -211,7 +212,7 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
               {can.reverse && <form className="mini-command" action={reversePaymentAction}><h3>Đảo giao dịch</h3><p className="muted">Ghi một giao dịch ngược chiều cùng số tiền; giao dịch gốc giữ nguyên trong sổ.</p><input type="hidden" name="paymentId" value={item.id} /><input type="hidden" name="operationId" value={randomUUID()} /><label className="field" htmlFor={`reverse-reason-${item.id}`}>Ghi chú (không bắt buộc)<input id={`reverse-reason-${item.id}`} name="reason" maxLength={500} placeholder="Ví dụ: Ghi nhầm số tiền" /></label><button className="button button-danger" type="submit">Đảo giao dịch</button></form>}
             </FormDialog>}</td></tr>;
       })}</tbody></table>{!rows.length && <p className="empty-inline">{filtered ? "Không có giao dịch phù hợp bộ lọc." : "Chưa có giao dịch tiền trong kỳ này."}</p>}</div>
-      <ListPager page={list.page} hasNext={hasNext} params={params} /></section>
+      <ListPager page={list.page} total={total} hasNext={hasNext} params={params} /></section>
       {nonCash.length > 0 && <section className="card" aria-label="Chi phí không dùng tiền"><div className="section-head"><h2>Chi phí không dùng tiền trong kỳ (hao hụt kho)</h2><span className="scope-chip">Tổng {money(String(nonCashTotal))}</span></div>
         <p className="muted">Ghi vào chi phí và trừ lợi nhuận; không tính vào số dư quỹ.</p>
         <div className="table-wrap"><table><thead><tr><th>Mã</th><th>Loại chi / ghi chú</th><th className="numeric">Số tiền</th></tr></thead><tbody>{nonCash.map((item) => <tr key={item.id}>

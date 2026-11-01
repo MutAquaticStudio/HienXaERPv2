@@ -80,6 +80,15 @@ it("edits a record from its own page and refreshes it after saving", () => {
   expect(refresh).toHaveBeenCalled();
 });
 
+it("opens a material's units tab in place from its own page, without leaving for the catalog list", () => {
+  render(<CatalogEditButton kind="materials" record={rows[0]} options={options} permissions={["catalog.manage"]} scope="s:materials:m1" label="Đơn vị tính & giá" initialTab="units" />);
+  fireEvent.click(screen.getByRole("button", { name: "Đơn vị tính & giá" }));
+  const dialog = screen.getByRole("dialog", { name: /Xi măng Bút Sơn PCB30/ });
+  expect(within(dialog).getByRole("tab", { name: "Đơn vị tính & giá" })).toHaveAttribute("aria-selected", "true");
+  expect(within(dialog).getByText("Đơn vị của m1")).toBeVisible();
+  expect(push).not.toHaveBeenCalled();
+});
+
 it("stops a record in one click and keeps the operation when the result is unclear", async () => {
   actions.setCatalogActiveAction.mockResolvedValueOnce({ status: "UNKNOWN", message: "Chưa xác định được kết quả." })
     .mockResolvedValueOnce({ status: "SUCCESS", resultId: "m1", message: "Đã ngừng sử dụng." });

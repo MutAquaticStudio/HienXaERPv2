@@ -70,6 +70,23 @@ export async function loadCatalogOptions(kind: string, access: Access, supabase:
   return options;
 }
 
+/**
+ * Records of one catalog that share a parent (e.g. a customer's sites), each editable in a popup on the parent's page.
+ * Choices are loaded once for all rows; each record keeps its own recovery scope.
+ */
+export async function catalogChildRecordsProps(kind: string, parentColumn: string, parentId: string, access: Access, supabase: Supabase) {
+  const fields = visibleCatalogFields(kind, access.permissions).map((field) => field.key);
+  let request = supabase.from(catalogs[kind].table as "materials").select(["id", ...fields].join(",")).eq(parentColumn as "id", parentId);
+  if (branchScopedCatalogs.includes(kind)) request = request.eq("branch_id", access.branchId);
+  const { data, error } = await request.limit(100);
+  if (error) throw new Error("Không tải được bản ghi danh mục.");
+  const rows = (data ?? []) as unknown as Record<string, unknown>[];
+  return {
+    kind, options: await loadCatalogOptions(kind, access, supabase, rows), permissions: [...access.permissions],
+    records: new Map(rows.map((record) => [String(record.id), { record, scope: catalogEditorScope(access, kind, String(record.id)) }])),
+  };
+}
+
 /** Everything a page needs to open a catalog create popup in place. */
 export async function catalogCreateProps(kind: string, access: Access, supabase: Supabase) {
   return { kind, options: await loadCatalogOptions(kind, access, supabase), permissions: [...access.permissions], scope: catalogEditorScope(access, kind) };

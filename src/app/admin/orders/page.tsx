@@ -39,8 +39,8 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   const sellers = await loadSellers(supabase, access.branchId);
   const seller = query.seller === "me" ? access.employeeId : sellers.some((item) => item.id === query.seller) ? query.seller! : "";
   const sellerParam = seller ? query.seller : undefined;
-  const scoped = (state: string) => {
-    let request = supabase.from("sales_orders").select("id").eq("branch_id", access.branchId);
+  const scoped = (state: string, counted = false) => {
+    let request = supabase.from("sales_orders").select("id", counted ? { count: "exact" } : undefined).eq("branch_id", access.branchId);
     if (seller) request = request.eq("sales_owner_employee_id", seller);
     if (list.q) request = request.or(`order_number.ilike.${ilikePattern(list.q)},customer_name_snapshot.ilike.${ilikePattern(list.q)},site_name_snapshot.ilike.${ilikePattern(list.q)}`);
     // D15: "Khách đặt · chờ duyệt" = portal orders still in draft.
@@ -48,8 +48,9 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
       : applyDocumentListScope(request, "commercial_state", state);
   };
   // Counts beside each filter stop at 99: an exact count over a long history is not worth the wait on every visit.
-  const [{ data, error }, ...counts] = await Promise.all([
-    scoped(list.state).order("created_at", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1),
+  // The open filter alone is counted exactly, for "Trang x / y" and "Đến trang".
+  const [{ data, error, count: total }, ...counts] = await Promise.all([
+    scoped(list.state, true).order("created_at", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1),
     ...STATES.map((state) => scoped(state.value).limit(100)),
   ]);
   if (error) throw new Error("Không thể tải đơn bán.");
@@ -125,7 +126,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
           <p>{isFiltered ? "Không có đơn bán phù hợp. Thử tên khác hoặc xóa bộ lọc." : "Chưa có đơn bán trong chi nhánh này."}</p>
           {isFiltered ? <Link className="button button-secondary" href="/admin/orders">Xóa bộ lọc</Link> : canCreate && <ButtonLink href="/admin/orders/new" variant="commerce">Tạo đơn bán đầu tiên</ButtonLink>}
         </div>}
-        <ListPager page={list.page} hasNext={hasNext} params={{ q: list.q, state: list.state, seller: sellerParam }} />
+        <ListPager page={list.page} total={total ?? undefined} hasNext={hasNext} params={{ q: list.q, state: list.state, seller: sellerParam }} />
       </section>
     </div>
   </div>;

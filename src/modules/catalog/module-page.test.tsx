@@ -43,14 +43,19 @@ describe("module catalog authorization and query scope", () => {
     expect(screen.queryByRole("link", { name: "Xe" })).not.toBeInTheDocument();
   });
 
-  it("keeps all four material editors inside Products without foreign-module kinds", async () => {
+  it("keeps the material sub-catalogs inside Products and sends old material and foreign links to their own pages", async () => {
     boundary.access.mockResolvedValue({ branchId: "branch-a", branchName: "QA", permissions: new Set(["catalog.manage", "suppliers.manage"]) });
     const request = query(); const from = vi.fn().mockReturnValue(request);
     boundary.client.mockResolvedValue({ from });
-    render(await ModuleCatalogPage({ searchParams: Promise.resolve({ kind: "suppliers" }), kinds: catalogModules.products }));
-    expect(from).not.toHaveBeenCalledWith("suppliers");
-    expect(screen.getByText("Editor materials")).toBeInTheDocument();
+    render(await ModuleCatalogPage({ searchParams: Promise.resolve({}), kinds: catalogModules.products }));
+    expect(screen.getByText("Editor groups")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Vật tư" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Quy đổi đơn vị" })).toHaveAttribute("href", "/admin/products/manage?kind=conversions");
+    from.mockClear();
+    await expect(ModuleCatalogPage({ searchParams: Promise.resolve({ kind: "materials", id: "material-a" }), kinds: catalogModules.products })).rejects.toThrow("REDIRECT:/admin/products/material-a");
+    await expect(ModuleCatalogPage({ searchParams: Promise.resolve({ kind: "suppliers" }), kinds: catalogModules.products })).rejects.toThrow("REDIRECT:/admin/suppliers");
+    await expect(ModuleCatalogPage({ searchParams: Promise.resolve({ kind: "customers", q: "An" }), kinds: catalogModules.customers })).rejects.toThrow("REDIRECT:/admin/customers?q=An");
+    expect(from).not.toHaveBeenCalled();
   });
 
   it("preserves customer-site quick-create context and authenticated branch filtering", async () => {
@@ -65,8 +70,8 @@ describe("module catalog authorization and query scope", () => {
 
   it("redirects the legacy catalog with record/search context and no database query", async () => {
     boundary.access.mockResolvedValue({ permissions: new Set(["suppliers.manage"]) });
-    await expect(LegacyCatalogPage({ searchParams: Promise.resolve({ kind: "suppliers", id: "record-a", q: "A & B" }) })).rejects.toThrow("REDIRECT:/admin/suppliers/manage?");
-    expect(boundary.redirect).toHaveBeenCalledWith("/admin/suppliers/manage?kind=suppliers&q=A+%26+B&id=record-a");
+    await expect(LegacyCatalogPage({ searchParams: Promise.resolve({ kind: "suppliers", id: "record-a", q: "A & B" }) })).rejects.toThrow("REDIRECT:/admin/suppliers/record-a");
+    expect(boundary.redirect).toHaveBeenCalledWith("/admin/suppliers/record-a");
     expect(boundary.client).not.toHaveBeenCalled();
   });
 });

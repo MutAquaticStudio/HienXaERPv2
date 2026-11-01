@@ -9,6 +9,8 @@ import { formatQuantity } from "@/lib/core/quantity";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { CatalogCreateButton } from "@/modules/catalog/catalog-dialog";
 import { catalogCreateProps } from "@/modules/catalog/editor-data";
+import { BulkActionBar, BulkPageCheckbox, BulkSelection } from "@/components/lists/bulk-selection";
+import { BULK_LIMIT, type BulkFieldChoice } from "@/modules/catalog/bulk";
 import { currentDefaultPrice, stockSummary, type ListPosition, type ListPriceRule } from "@/modules/catalog/material-list";
 import { variantLabel } from "@/modules/catalog/variants";
 import { readPricingClock } from "@/modules/pricing/request-clock";
@@ -32,22 +34,25 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
     cost: access.permissions.has("inventory.read") && access.permissions.has("inventory.cost.read"),
   };
   const supabase = await createServerSupabase();
-  let request = supabase.from("materials").select("id, code, name, specification, group_id, base_uom_id, sale_enabled, purchase_enabled, active, variant_group_id, variant_attributes", { count: "exact" });
-  if (list.q) request = request.or(`code.ilike.${ilikePattern(list.q)},name.ilike.${ilikePattern(list.q)}`);
-  if (list.state === "ACTIVE") request = request.eq("active", true);
-  if (list.state === "INACTIVE") request = request.eq("active", false);
-  if (group) request = request.eq("group_id", group);
-  if (use === "SALE") request = request.eq("sale_enabled", true);
-  if (use === "PURCHASE") request = request.eq("purchase_enabled", true);
-  if (variant) request = request.eq("variant_group_id", variant);
+  const filteredMaterials = (columns: string, counted = false) => {
+    let request = supabase.from("materials").select(columns, counted ? { count: "exact" } : undefined);
+    if (list.q) request = request.or(`code.ilike.${ilikePattern(list.q)},name.ilike.${ilikePattern(list.q)}`);
+    if (list.state === "ACTIVE") request = request.eq("active", true);
+    if (list.state === "INACTIVE") request = request.eq("active", false);
+    if (group) request = request.eq("group_id", group);
+    if (use === "SALE") request = request.eq("sale_enabled", true);
+    if (use === "PURCHASE") request = request.eq("purchase_enabled", true);
+    if (variant) request = request.eq("variant_group_id", variant);
+    return request;
+  };
   const [materialResult, groupResult, unitResult, variantResult] = await Promise.all([
-    request.order("name").order("id").range(list.from, list.to),
-    supabase.from("material_groups").select("id, name").order("name").limit(500),
+    filteredMaterials("id, code, name, specification, group_id, base_uom_id, sale_enabled, purchase_enabled, active, variant_group_id, variant_attributes", true).order("name").order("id").range(list.from, list.to),
+    supabase.from("material_groups").select("id, name, active").order("name").limit(500),
     supabase.from("units_of_measure").select("id, symbol").limit(1000),
     supabase.from("material_variant_groups").select("id, name, attribute_names, active").order("name").limit(500),
   ]);
   if (materialResult.error || groupResult.error || unitResult.error || variantResult.error) throw new Error("Không thể tải danh mục vật tư.");
-  const materials = (materialResult.data ?? []) as MaterialRow[];
+  const materials = (materialResult.data ?? []) as unknown as MaterialRow[];
   const ids = materials.map((row) => row.id);
   const groups = new Map((groupResult.data ?? []).map((row) => [row.id, row.name]));
   const units = new Map((unitResult.data ?? []).map((row) => [row.id, row.symbol]));
@@ -88,6 +93,15 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   });
   const filtered = Boolean(list.q || list.state || group || use || variant);
   const create = can.manage ? await catalogCreateProps("materials", access, supabase) : null;
+  // Bulk changes: every material matching the filter can be chosen at once when there are at most 200 of them.
+  const total = materialResult.count ?? 0;
+  const matchingResult = can.manage && total > ids.length && total <= BULK_LIMIT ? await filteredMaterials("id").order("name").order("id").limit(BULK_LIMIT) : null;
+  const matchingIds = total <= ids.length ? ids : matchingResult?.data ? (matchingResult.data as unknown as { id: string }[]).map((row) => row.id) : undefined;
+  const bulkFields: BulkFieldChoice[] = [
+    { field: "group_id", label: "Nhóm vật tư", control: "option", options: ((groupResult.data ?? []) as { id: string; name: string; active: boolean }[]).filter((row) => row.active).map((row) => ({ value: row.id, label: row.name })) },
+    { field: "sale_enabled", label: "Cho phép bán", control: "boolean" },
+    { field: "purchase_enabled", label: "Cho phép mua", control: "boolean" },
+  ];
 
   return <div className="page-stack">
     <header className="page-heading"><div><p className="eyebrow">Kho hàng</p><h1>Vật tư</h1><p className="lede">Danh mục vật tư, giá bán và tồn kho. Bấm vào một dòng để xem chi tiết.</p></div>
@@ -107,16 +121,17 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         <label>Cho phép<select name="use" defaultValue={use}><option value="">Tất cả</option><option value="SALE">Được bán</option><option value="PURCHASE">Được mua</option></select></label>
         {filtered && <Link className="code-link" href="/admin/products">Xóa lọc</Link>}
       </AutoFilterForm>
-      <section className="card list-main">
+      <BulkSelection key={JSON.stringify([list.q, list.state, group, use, variant, list.page])}><section className="card list-main">
         <div className="section-head"><h2>{materialResult.count ?? 0} vật tư</h2><span className="scope-chip">{CORE_LIST_PAGE_SIZE} / trang</span></div>
+        {can.manage && <BulkActionBar kind="materials" pageIds={ids} matchingIds={matchingIds} total={total} fields={bulkFields} activeLabels={{ stop: "Ngừng dùng", restart: "Dùng lại" }} />}
         {currentVariant && <div className="variant-callout card-pad-x"><p>Hàng cùng loại <strong>{currentVariant.name}</strong> · thuộc tính {currentVariant.attribute_names.join(", ")}{currentVariant.active ? "" : " · đã ngừng"}</p>
           {can.manage && <VariantGroupButton label="Sửa hàng cùng loại" groupId={currentVariant.id} className="button button-secondary button-compact" />}</div>}
         <div className="table-wrap"><table className="row-link-table material-list-table">
-          <thead><tr><th><span className="sr-only">Mở rộng</span></th><th>Mã</th><th>Tên vật tư</th><th>Nhóm</th><th>ĐVT</th>{can.price && <th className="numeric">Giá bán</th>}{can.cost && <th className="numeric">Giá vốn</th>}{can.stock && <th className="numeric">Tồn kho</th>}<th>Trạng thái</th></tr></thead>
-          <MaterialListRows rows={rows} showPrice={can.price} showCost={can.cost} showStock={can.stock} />
+          <thead><tr>{can.manage && <th className="row-select"><BulkPageCheckbox ids={ids} /></th>}<th><span className="sr-only">Mở rộng</span></th><th>Mã</th><th>Tên vật tư</th><th>Nhóm</th><th>ĐVT</th>{can.price && <th className="numeric">Giá bán</th>}{can.cost && <th className="numeric">Giá vốn</th>}{can.stock && <th className="numeric">Tồn kho</th>}<th>Trạng thái</th></tr></thead>
+          <MaterialListRows rows={rows} showPrice={can.price} showCost={can.cost} showStock={can.stock} selectable={can.manage} />
         </table>{!rows.length && <p className="empty-inline">Không có vật tư phù hợp.</p>}</div>
         <ListPager page={list.page} total={materialResult.count ?? 0} params={{ q: list.q, state: list.state, group: group || undefined, use: use || undefined, variant: variant || undefined }} />
-      </section>
+      </section></BulkSelection>
     </div>
   </div>;
 }

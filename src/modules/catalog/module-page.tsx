@@ -1,12 +1,15 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { requireInternalAccess } from '@/lib/access/context';
 import { createServerSupabase } from '@/lib/supabase/server';
 import { branchScopedCatalogs, catalogs } from '@/modules/catalog/fields';
 import { CatalogTable } from './catalog-dialog';
 import { loadCatalogOptions, visibleCatalogFields } from './editor-data';
-import { catalogHref, manageableCatalogs, type CatalogQuery } from './ownership';
+import { catalogHref, listOwnedCatalogs, manageableCatalogs, type CatalogQuery } from './ownership';
 export default async function ModuleCatalogPage({searchParams,kinds}:{searchParams:Promise<CatalogQuery>;kinds:readonly string[]}) {
  const access=await requireInternalAccess(); const params=await searchParams;
+ // Materials, customers and suppliers are edited on their own list/detail pages; old links lead there.
+ if(params.kind&&Object.hasOwn(listOwnedCatalogs,params.kind)) redirect(catalogHref(params.kind,{id:params.id,q:params.q}));
  const available=manageableCatalogs(kinds,access.permissions);
  const kind=available.some(([k])=>k===params.kind)?params.kind!:available[0]?.[0];
  if(!kind) return <p>Không có quyền quản lý danh mục.</p>;

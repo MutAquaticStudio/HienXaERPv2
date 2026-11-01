@@ -34,7 +34,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
   const canPay = canManage && access.permissions.has("finance.payment.post");
   const supabase = await createServerSupabase();
   const fields = "id, expense_number, category_name, supplier_name, payee_display, settlement, counts_in_profit, amount_vnd::text, effective_at, due_date, description, activity_kind, approval_state, version";
-  let request = supabase.from("expense_read").select(fields).eq("branch_id", access.branchId);
+  let request = supabase.from("expense_read").select(fields, { count: "exact" }).eq("branch_id", access.branchId);
   if (list.q) request = request.or(`expense_number.ilike.${ilikePattern(list.q)},category_name.ilike.${ilikePattern(list.q)},payee_display.ilike.${ilikePattern(list.q)},description.ilike.${ilikePattern(list.q)}`);
   if (state) request = request.eq("approval_state", state);
   // Tab counts stop at 99: an exact count over a large expense history is too slow to wait for on every visit.
@@ -55,6 +55,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
   if (pageResult.error) throw new Error("Không thể tải chi phí.");
   const pageRows = (pageResult.data ?? []) as Expense[];
   const hasNext = pageRows.length > CORE_LIST_PAGE_SIZE;
+  const total = pageResult.count ?? undefined;
   const visibleRows = pageRows.slice(0, CORE_LIST_PAGE_SIZE);
   const focused = focusedResult.data as Expense | null;
   const pinned = focused && !visibleRows.some((item) => item.id === focused.id) ? focused : null;
@@ -89,6 +90,6 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
     <AutoFilterForm>{state && <input type="hidden" name="state" value={state} />}<label>Tìm kiếm<input name="q" defaultValue={list.q} placeholder="Mã, loại chi, người nhận, ghi chú" /></label>{(list.q || state) && <Link className="code-link" href="/admin/expenses">Xóa lọc</Link>}</AutoFilterForm>
     <section className="card"><div className="section-head"><h2>{visibleRows.length} khoản chi phí trên trang này{pinned ? " + 1 khoản được ghim" : ""}</h2><span className="scope-chip">Chỉ tính chi phí đã duyệt</span></div><div className="table-wrap"><table><thead><tr><th>Mã</th><th>Ngày</th><th>Loại chi / ghi chú</th><th>Người nhận</th><th>Phạm vi</th><th>Số tiền</th><th>Trạng thái</th><th></th></tr></thead><tbody>{rows.map((item) => <tr className={focusId === item.id ? "row-focus" : undefined} key={item.id}><td className="mono">{item.expense_number}{focusId === item.id && <small className="table-subline">Được ghim</small>}</td><td>{formatBusinessDate(item.effective_at)}</td><td>{item.category_name}<small className="table-subline">{item.description}</small></td><td>{item.payee_display ?? item.supplier_name}<small className="table-subline">{expenseSettlementLabel(item.settlement)}{item.counts_in_profit === false ? " · không tính lợi nhuận" : ""}</small></td><td>{activityKindLabel(item.activity_kind)}{sources.get(item.id) && <small className="table-subline">{sources.get(item.id)?.cost_scope === "DIRECT_DELIVERY" ? "Trực tiếp" : "Chi phí chung"} · {assignmentLabels.get(sources.get(item.id)!.assignment_id) || sources.get(item.id)?.assignment_id} · {sources.get(item.id)?.supplier_reference}</small>}</td><td className="mono">{formatVnd(vnd(String(item.amount_vnd)))}</td><td><StatusBadge tone={item.approval_state === "APPROVED" ? "success" : "warning"}>{item.approval_state === "APPROVED" ? "Đã duyệt" : "Chờ duyệt"}</StatusBadge></td><td className="table-actions">{item.approval_state === "DRAFT" && canManage && <FormDialog label="Duyệt" title={`Duyệt chi phí ${item.expense_number}`} buttonClassName="button button-secondary button-compact" defaultOpen={focusId === item.id}
             description={<>{item.category_name} · {item.payee_display ?? item.supplier_name} · <strong>{formatVnd(vnd(String(item.amount_vnd)))}</strong>. Sau khi duyệt, chi phí vào sổ và thành khoản phải trả nhà cung cấp; không sửa lại được.</>}>
-            <ExpenseApprovalForm expenseId={item.id} version={item.version} operationId={randomUUID()} scope={`${access.authUserId}:${access.branchId}:expense:${item.id}`} /></FormDialog>}</td></tr>)}</tbody></table>{!rows.length && <p className="empty-inline">Chưa có chi phí.</p>}</div><ListPager page={list.page} hasNext={hasNext} params={{ q: list.q, state }} /></section>
+            <ExpenseApprovalForm expenseId={item.id} version={item.version} operationId={randomUUID()} scope={`${access.authUserId}:${access.branchId}:expense:${item.id}`} /></FormDialog>}</td></tr>)}</tbody></table>{!rows.length && <p className="empty-inline">Chưa có chi phí.</p>}</div><ListPager page={list.page} total={total} hasNext={hasNext} params={{ q: list.q, state }} /></section>
   </div>;
 }

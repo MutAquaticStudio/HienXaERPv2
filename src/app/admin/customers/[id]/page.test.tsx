@@ -10,6 +10,7 @@ vi.mock("@/modules/purchasing/dispatch-actions", () => ({ recordPurchaseOrderSen
 vi.mock("@/modules/catalog/editor-data", () => ({
   catalogRecordProps: async () => ({ kind: "customers", record: { id: "c1" }, options: {}, permissions: [], scope: "s" }),
   catalogCreateProps: async () => ({ kind: "sites", options: {}, permissions: [], scope: "s" }),
+  catalogChildRecordsProps: async () => ({ kind: "sites", options: {}, permissions: [], records: new Map([["s1", { record: { id: "s1" }, scope: "s:sites:s1" }]]) }),
 }));
 vi.mock("@/modules/catalog/catalog-dialog", () => ({
   CatalogEditButton: ({ label }: { label: string }) => <button type="button">{label}</button>,
@@ -69,6 +70,10 @@ it("shows debt, sales and credit at a glance and opens on the profile and sites 
   expect(screen.getByText("Nhà xưởng Bắc Ninh")).toBeInTheDocument();
   expect(screen.getByText("Gọi trước khi giao")).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "+ Công trình" })).toHaveAttribute("data-customer", "c1");
+  // Editing a site opens the popup on this page instead of leaving for the catalog list.
+  const siteRow = screen.getByText("Nhà xưởng Bắc Ninh").closest("tr")!;
+  expect(within(siteRow).getByRole("button", { name: "Sửa" })).toBeInTheDocument();
+  expect(within(siteRow).queryByRole("link", { name: "Sửa" })).not.toBeInTheDocument();
   expect(screen.getByRole("link", { name: "Ghi thu" })).toHaveAttribute("href", "/admin/receivables?customer=c1");
   expect(m.calls.some((call) => call.table === "receivable_read")).toBe(false);
 });

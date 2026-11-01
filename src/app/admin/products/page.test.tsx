@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen, within } from "@testing-library/rea
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
 const m = vi.hoisted(() => ({ access: vi.fn(), calls: [] as { table: string; method: string; args: unknown[] }[], tables: {} as Record<string, unknown[]> }));
-vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn() }), usePathname: () => "/admin/products" }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn(), refresh: vi.fn() }), usePathname: () => "/admin/products" }));
 vi.mock("@/lib/access/context", () => ({ requireInternalPermission: m.access }));
 vi.mock("server-only", () => ({}));
 vi.mock("@/modules/pricing/request-clock", () => ({ readPricingClock: async () => Date.parse("2026-10-16T05:00:00Z") }));
@@ -15,6 +15,7 @@ vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({
     return query;
   },
 }) }));
+vi.mock("@/modules/catalog/bulk-actions", () => ({ bulkCatalogAction: vi.fn(), exportCatalogCsvAction: vi.fn() }));
 import Page from "./page";
 
 const access = (permissions: string[]) => m.access.mockResolvedValue({ branchId: "b", permissions: new Set(["catalog.read", ...permissions]) });
@@ -80,4 +81,17 @@ it("applies group and sale/purchase filters on the server", async () => {
   expect(calls).toContainEqual({ table: "materials", method: "eq", args: ["group_id", "10000000-0000-4000-8000-000000000001"] });
   expect(calls).toContainEqual({ table: "materials", method: "eq", args: ["purchase_enabled", true] });
   expect(calls).toContainEqual({ table: "materials", method: "eq", args: ["active", false] });
+});
+
+it("lets a catalog manager choose materials and change their group, sale or purchase use in bulk", async () => {
+  m.tables.material_groups = [{ id: "g1", name: "Xi măng", active: true }, { id: "g2", name: "Cát", active: true }, { id: "g3", name: "Cũ", active: false }];
+  m.access.mockResolvedValue({ branchId: "b", authUserId: "u", permissions: new Set(["catalog.read", "catalog.manage"]) });
+  render(await Page({ searchParams: Promise.resolve({}) }));
+  fireEvent.click(screen.getByRole("checkbox", { name: "Chọn tất cả trên trang này" }));
+  const bar = screen.getByRole("region", { name: "Thao tác với các dòng đã chọn" });
+  expect(within(bar).getByText("Đã chọn 1 vật tư")).toBeInTheDocument();
+  fireEvent.change(within(bar).getByLabelText("Thao tác"), { target: { value: "set:group_id" } });
+  expect([...within(bar).getByLabelText("Nhóm vật tư").querySelectorAll("option")].map((option) => option.textContent)).toEqual(["Chọn…", "Xi măng", "Cát"]);
+  expect([...within(bar).getByLabelText("Thao tác").querySelectorAll("option")].map((option) => option.textContent))
+    .toEqual(["Chọn thao tác…", "Đổi nhóm vật tư", "Đổi cho phép bán", "Đổi cho phép mua", "Ngừng dùng", "Dùng lại", "Xóa hẳn"]);
 });

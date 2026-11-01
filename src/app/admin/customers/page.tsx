@@ -8,6 +8,8 @@ import { formatVnd, vnd } from "@/lib/core/money";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { CatalogCreateButton } from "@/modules/catalog/catalog-dialog";
 import { catalogCreateProps } from "@/modules/catalog/editor-data";
+import { BulkActionBar, BulkPageCheckbox, BulkRowCheckbox, BulkSelection } from "@/components/lists/bulk-selection";
+import { BULK_CLEAR, BULK_LIMIT, type BulkFieldChoice } from "@/modules/catalog/bulk";
 
 type CustomerRow = { id: string; code: string; display_name: string; phone: string | null; tier_code: string | null; customer_type: string; active: boolean };
 type Query = { q?: string; state?: string; page?: string; tier?: string; type?: string };
@@ -22,19 +24,22 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
   const canReadFinance = access.permissions.has("finance.ar.read");
   const canManage = access.permissions.has("customers.manage");
   const supabase = await createServerSupabase();
-  let request = supabase.from("customers").select("id, code, display_name, phone, tier_code, customer_type, active", { count: "exact" }).eq("branch_id", access.branchId);
-  if (list.q) request = request.or(`code.ilike.${ilikePattern(list.q)},display_name.ilike.${ilikePattern(list.q)},phone.ilike.${ilikePattern(list.q)}`);
-  if (list.state === "ACTIVE") request = request.eq("active", true);
-  if (list.state === "INACTIVE") request = request.eq("active", false);
-  if (tier) request = tier === "DEFAULT" ? request.is("tier_code", null) : request.eq("tier_code", tier);
-  if (type) request = request.eq("customer_type", type);
+  const filtered = (columns: string, counted = false) => {
+    let request = supabase.from("customers").select(columns, counted ? { count: "exact" } : undefined).eq("branch_id", access.branchId);
+    if (list.q) request = request.or(`code.ilike.${ilikePattern(list.q)},display_name.ilike.${ilikePattern(list.q)},phone.ilike.${ilikePattern(list.q)}`);
+    if (list.state === "ACTIVE") request = request.eq("active", true);
+    if (list.state === "INACTIVE") request = request.eq("active", false);
+    if (tier) request = tier === "DEFAULT" ? request.is("tier_code", null) : request.eq("tier_code", tier);
+    if (type) request = request.eq("customer_type", type);
+    return request;
+  };
   const [{ data, error, count }, tierResult] = await Promise.all([
-    request.order("display_name").order("id").range(list.from, list.to),
-    supabase.from("customer_price_groups").select("code,name").eq("branch_id", access.branchId).order("name").limit(200),
+    filtered("id, code, display_name, phone, tier_code, customer_type, active", true).order("display_name").order("id").range(list.from, list.to),
+    supabase.from("customer_price_groups").select("code,name,active").eq("branch_id", access.branchId).order("name").limit(200),
   ]);
   if (error) throw new Error("Không thể tải danh sách khách hàng.");
   const rows = (data ?? []) as unknown as CustomerRow[];
-  const tiers = (tierResult.data ?? []) as { code: string; name: string }[];
+  const tiers = (tierResult.data ?? []) as { code: string; name: string; active: boolean }[];
   const tierName = (code: string | null) => code === null ? "Giá chung" : tiers.find((item) => item.code === code)?.name ?? code;
   const ids = rows.map((row) => row.id);
 
@@ -50,8 +55,23 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
   const debtComplete = !debtResult.error && debtRows.length < RECEIVABLE_ROW_LIMIT;
   const debts = new Map<string, bigint>();
   for (const row of debtRows) debts.set(row.customer_id, (debts.get(row.customer_id) ?? 0n) + BigInt(row.outstanding_amount_vnd));
-  const filtered = Boolean(list.q || list.state || tier || type);
+  const isFiltered = Boolean(list.q || list.state || tier || type);
   const create = canManage ? await catalogCreateProps("customers", access, supabase) : null;
+  // Bulk changes: every customer matching the filter can be chosen at once when there are at most 200 of them.
+  const total = count ?? 0;
+  const [matchingResult, ownerResult] = canManage ? await Promise.all([
+    total > rows.length && total <= BULK_LIMIT ? filtered("id").order("display_name").order("id").limit(BULK_LIMIT) : Promise.resolve({ data: null, error: null }),
+    supabase.rpc("customer_site_sales_owner_options", { target_branch_id: access.branchId }),
+  ]) : [{ data: null, error: null }, { data: null, error: null }];
+  const matchingIds = total <= rows.length ? ids : matchingResult.data ? (matchingResult.data as unknown as { id: string }[]).map((row) => row.id) : undefined;
+  const owners = ((ownerResult.data ?? []) as { id: string; name: string; assignable: boolean }[]).filter((owner) => owner.assignable);
+  const bulkFields: BulkFieldChoice[] = [
+    ...(access.permissions.has("pricing.manage") ? [{ field: "tier_code", label: "Nhóm giá", control: "option" as const,
+      options: [{ value: BULK_CLEAR, label: "Giá chung" }, ...tiers.filter((item) => item.active).map((item) => ({ value: item.code, label: item.name }))] }] : []),
+    { field: "sales_owner_employee_id", label: "NV kinh doanh phụ trách", control: "option",
+      options: [{ value: BULK_CLEAR, label: "Chưa phân công" }, ...owners.map((owner) => ({ value: owner.id, label: owner.name }))] },
+    { field: "payment_terms_days", label: "Hạn thanh toán (ngày)", control: "days" },
+  ];
 
   return <div className="page-stack">
     <header className="page-heading"><div><p className="eyebrow">Bán hàng</p><h1>Khách hàng</h1><p className="lede">Hồ sơ khách hàng tại {access.branchName}. Bấm vào một dòng để xem chi tiết.</p></div>
@@ -63,17 +83,19 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
         <label>Trạng thái<select name="state" defaultValue={list.state}><option value="">Tất cả</option><option value="ACTIVE">Đang hoạt động</option><option value="INACTIVE">Ngừng giao dịch</option></select></label>
         <label>Loại khách<select name="type" defaultValue={type}><option value="">Tất cả</option><option value="BUSINESS">Doanh nghiệp</option><option value="INDIVIDUAL">Cá nhân</option></select></label>
         <label>Nhóm giá<select name="tier" defaultValue={tier}><option value="">Tất cả</option><option value="DEFAULT">Giá chung</option>{tiers.map((item) => <option key={item.code} value={item.code}>{item.name}</option>)}</select></label>
-        {filtered && <Link className="code-link" href="/admin/customers">Xóa lọc</Link>}
+        {isFiltered && <Link className="code-link" href="/admin/customers">Xóa lọc</Link>}
       </AutoFilterForm>
-      <section className="card list-main">
+      <BulkSelection key={JSON.stringify([list.q, list.state, tier, type, list.page])}><section className="card list-main">
         <div className="section-head"><h2>{count ?? 0} khách hàng</h2><span className="scope-chip">25 / trang</span></div>
+        {canManage && <BulkActionBar kind="customers" pageIds={ids} matchingIds={matchingIds} total={total} fields={bulkFields} activeLabels={{ stop: "Ngừng giao dịch", restart: "Giao dịch lại" }} />}
         <div className="table-wrap"><table className="row-link-table">
-          <thead><tr><th>Mã</th><th>Tên khách hàng</th><th>Điện thoại</th><th>Nhóm giá</th>{canReadFinance && <><th className="numeric">Nợ hiện tại</th><th className="numeric">Hạn mức</th></>}<th>Trạng thái</th></tr></thead>
+          <thead><tr>{canManage && <th className="row-select"><BulkPageCheckbox ids={ids} /></th>}<th>Mã</th><th>Tên khách hàng</th><th>Điện thoại</th><th>Nhóm giá</th>{canReadFinance && <><th className="numeric">Nợ hiện tại</th><th className="numeric">Hạn mức</th></>}<th>Trạng thái</th></tr></thead>
           <tbody>{rows.map((customer) => {
             const href = `/admin/customers/${customer.id}`;
             const limit = limits.get(customer.id);
             const debt = debts.get(customer.id) ?? 0n;
             return <tr key={customer.id}>
+              {canManage && <td className="row-select"><BulkRowCheckbox id={customer.id} label={`${customer.code} ${customer.display_name}`} /></td>}
               <td data-label="Mã"><Link className="mono code-link" href={href} tabIndex={-1}>{customer.code}</Link></td>
               <td className="row-title" data-label="Tên khách hàng"><Link className="code-link row-link" href={href}>{customer.display_name}</Link><small className="table-subline">{customer.customer_type === "INDIVIDUAL" ? "Cá nhân" : "Doanh nghiệp"}</small></td>
               <td data-label="Điện thoại">{customer.phone ?? "Chưa có"}</td>
@@ -88,7 +110,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
         </table>{!rows.length && <p className="empty-inline">Không có khách hàng phù hợp.</p>}</div>
         {canReadFinance && !debtComplete && <p className="metric-note card-pad">Chưa tải đủ công nợ để hiển thị cột “Nợ hiện tại”. Xem tại Công nợ phải thu.</p>}
         <ListPager page={list.page} total={count ?? 0} params={{ q: list.q, state: list.state, tier: tier || undefined, type: type || undefined }} />
-      </section>
+      </section></BulkSelection>
     </div>
   </div>;
 }

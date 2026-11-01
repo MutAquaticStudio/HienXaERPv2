@@ -15,6 +15,9 @@ vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({
   },
   rpc: (...args: unknown[]) => { m.rpc(...args); return { select: async () => ({ data: [{ customer_id: "c1", credit_limit_vnd: "50000000" }], error: null }) }; },
 }) }));
+vi.mock("@/modules/catalog/editor-data", () => ({ catalogCreateProps: async () => ({ kind: "customers", options: {}, permissions: [], scope: "s" }) }));
+vi.mock("@/modules/catalog/catalog-dialog", () => ({ CatalogCreateButton: ({ label }: { label: string }) => <button type="button">{label}</button> }));
+vi.mock("@/modules/catalog/bulk-actions", () => ({ bulkCatalogAction: vi.fn(), exportCatalogCsvAction: vi.fn() }));
 import Page from "./page";
 
 const customers = [
@@ -66,4 +69,16 @@ it("applies tier and type filters on the server", async () => {
   expect(customerCalls).toContainEqual({ table: "customers", method: "eq", args: ["customer_type", "INDIVIDUAL"] });
   expect(customerCalls).toContainEqual({ table: "customers", method: "eq", args: ["active", false] });
   expect(screen.getByRole("link", { name: "Xóa lọc" })).toHaveAttribute("href", "/admin/customers");
+});
+
+it("lets a customer manager choose rows for a bulk change, and a reader only browse", async () => {
+  m.access.mockResolvedValue({ branchId: "b", branchName: "CN", permissions: new Set(["customers.read", "customers.manage"]) });
+  render(await Page({ searchParams: Promise.resolve({}) }));
+  expect(screen.getByRole("checkbox", { name: "Chọn tất cả trên trang này" })).toBeInTheDocument();
+  const row = screen.getByRole("link", { name: "Công ty Minh Phát" }).closest("tr")!;
+  expect(within(row).getByRole("checkbox", { name: "Chọn KH001 Công ty Minh Phát" })).not.toBeChecked();
+  cleanup();
+  m.access.mockResolvedValue({ branchId: "b", branchName: "CN", permissions: new Set(["customers.read"]) });
+  render(await Page({ searchParams: Promise.resolve({}) }));
+  expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
 });
