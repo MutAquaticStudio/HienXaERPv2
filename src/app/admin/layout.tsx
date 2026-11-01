@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { NO_EMPLOYEE_MESSAGE, resolveInternalAccess, requireInternalAccess } from "@/lib/access/context";
 import { AppError } from "@/lib/core/errors";
+import { loadCompanyLogoUrl } from "@/lib/company/profile";
+import { createServerSupabase } from "@/lib/supabase/server";
 
 const WORKER_ONLY = new Set(["work.read", "work.claim"]);
 
@@ -14,5 +16,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
   const access = await requireInternalAccess();
   if (![...access.permissions].some((permission) => !WORKER_ONLY.has(permission))) redirect("/work");
-  return <AppShell surface="admin" permissions={[...access.permissions]} actorName={access.employeeName} branchName={access.branchName} branchId={access.branchId}>{children}</AppShell>;
+  const logoUrl = await loadCompanyLogoUrl(await createServerSupabase());
+  return <AppShell surface="admin" permissions={[...access.permissions]} actorName={access.employeeName} branchName={access.branchName} branchId={access.branchId}
+    branches={access.branches} logoUrl={logoUrl}>{children}</AppShell>;
 }

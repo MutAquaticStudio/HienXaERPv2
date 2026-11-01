@@ -37,6 +37,13 @@ export async function loadCompanyLogo(supabase: SupabaseClient): Promise<Company
   return { mime: row.logo_mime, base64: row.logo_base64, sha256: row.logo_sha256 };
 }
 
+/** Address of the logo for the top bar, changing whenever the logo changes (so browsers can keep it); null without a logo. */
+export async function loadCompanyLogoUrl(supabase: SupabaseClient): Promise<string | null> {
+  const { data, error } = await supabase.from("company_profile").select("logo_sha256").maybeSingle();
+  const sha = (data as { logo_sha256: string | null } | null)?.logo_sha256;
+  return error || !sha ? null : `/api/company/logo?v=${encodeURIComponent(sha)}`;
+}
+
 /** Heading for a PDF in one read: profile and logo. A missing or unreadable profile prints the fallback heading. */
 export async function loadCompanyDocumentHeading(supabase: SupabaseClient): Promise<CompanyHeading> {
   const { data, error } = await supabase.from("company_profile").select(`${COMPANY_FIELDS.join(", ")}, version, logo_mime, logo_base64, logo_sha256`).maybeSingle();

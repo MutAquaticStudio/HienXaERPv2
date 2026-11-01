@@ -15,7 +15,16 @@ describe("access policy", () => {
   it("resolves one active role for the requested branch", () => {
     const context = selectInternalContext({ authUserId: "auth-1", employeeId: "emp-1", employeeName: "An", employeeActive: true, assignments: [assignment], requestedBranchId: "branch-a" });
     expect(context.roleId).toBe("sales");
+    expect(context.branches).toEqual([{ id: "branch-a", name: "Chi nhánh A" }]);
     expect(() => requirePermission(context, "orders.read")).not.toThrow();
+  });
+
+  it("lists every active branch for the quick switch, but not a revoked one", () => {
+    const other = { ...assignment, branchId: "branch-b", branchName: "Chi nhánh B" };
+    const revoked = { ...assignment, branchId: "branch-c", branchName: "Chi nhánh C", active: false };
+    const context = selectInternalContext({ authUserId: "auth-1", employeeId: "emp-1", employeeName: "An", employeeActive: true, assignments: [other, assignment, revoked], requestedBranchId: "branch-b" });
+    expect(context.branchId).toBe("branch-b");
+    expect(context.branches).toEqual([{ id: "branch-a", name: "Chi nhánh A" }, { id: "branch-b", name: "Chi nhánh B" }]);
   });
 
   it("denies cross-branch access and missing permission", () => {
