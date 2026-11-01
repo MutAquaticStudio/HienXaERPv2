@@ -19,8 +19,8 @@ const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (char) => ({ "&"
 const BASE_MAPS = baseMaps();
 const TILE_ERRORS_BEFORE_SWITCH = 3;
 
-/** Default view (Việt Nam) until a worker shares their position. */
-const VIETNAM: [number, number] = [16.0, 106.0];
+/** Default view until a worker shares their position: the shop's area, phường Đại Mỗ (Nam Từ Liêm, Hà Nội). */
+export const HOME_VIEW = { center: [20.9935, 105.7575] as [number, number], zoom: 14 };
 
 /** FB10 / FB18 (D40): workers on shift on an OpenStreetMap map, refreshed every 15 s; pick one to see their path this shift. */
 export function FleetMap({ initial }: { initial: FleetPosition[] }) {
@@ -41,7 +41,7 @@ export function FleetMap({ initial }: { initial: FleetPosition[] }) {
     let resize: ResizeObserver | undefined;
     void loadLeaflet().then((L) => {
       if (cancelled || !holder.current || map.current) return;
-      const created = L.map(holder.current, { zoomControl: true }).setView(VIETNAM, 6);
+      const created = L.map(holder.current, { zoomControl: true }).setView(HOME_VIEW.center, HOME_VIEW.zoom);
       map.current = created;
       // FB18: when a base-map server sends no tiles the map stays grey without a word; try the next one, then say so.
       const showBaseMap = (index: number) => {
