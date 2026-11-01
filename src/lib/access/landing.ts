@@ -21,8 +21,8 @@ const destinations = [
   ["service.read", "/admin/service-jobs"],
   ["roles.manage", "/admin/access"],
   ["pricing.read", "/admin/products/pricing"],
+  // Management pages that still exist: material groups/units/conversions and customer sites.
   ["customers.manage", "/admin/customers/manage"],
-  ["suppliers.manage", "/admin/suppliers/manage"],
   ["catalog.manage", "/admin/products/manage"],
   ["work.read", "/work"],
 ] as const;

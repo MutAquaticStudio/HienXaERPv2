@@ -39,7 +39,7 @@ const navigation: Record<Surface, readonly NavigationItem[]> = {
     { href: "/admin/service-jobs", label: "Dịch vụ", icon: Truck, permission: "service.read", group: "sales" },
     { href: "/admin/purchase-orders", label: "Đơn mua", icon: PackageSearch, permission: "purchasing.read", group: "purchasing" },
     // D43: the supplier list belongs with purchasing; finance roles read supplier names on Công nợ / Sổ quỹ without the menu.
-    { href: "/admin/suppliers", label: "Nhà cung cấp", icon: Factory, permission: "purchasing.read", managementPermission: "suppliers.manage", managementHref: "/admin/suppliers/manage", group: "purchasing" },
+    { href: "/admin/suppliers", label: "Nhà cung cấp", icon: Factory, permission: "purchasing.read", group: "purchasing" },
     { href: "/admin/products", label: "Vật tư", icon: Boxes, permission: "catalog.read", managementPermission: "catalog.manage", managementHref: "/admin/products/manage", group: "inventory" },
     { href: "/admin/products/pricing", label: "Giá bán", icon: WalletCards, permission: "pricing.read", group: "inventory" },
     { href: "/admin/inventory", label: "Tồn kho", icon: Warehouse, permission: "inventory.read", managementPermission: "roles.manage", managementHref: "/admin/inventory/warehouses", group: "inventory" },

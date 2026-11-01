@@ -103,13 +103,17 @@ describe("blue menu bar (D29)", () => {
   it.each([
     ["catalog.manage", "Vật tư", "/admin/products/manage"],
     ["customers.manage", "Khách hàng", "/admin/customers/manage"],
-    ["suppliers.manage", "Nhà cung cấp", "/admin/suppliers/manage"],
     ["pricing.read", "Giá bán", "/admin/products/pricing"],
   ])("preserves the independently authorized %s module", (permission, label, href) => {
     render(shell([permission]));
     expect(screen.getByRole("link", { name: label })).toHaveAttribute("href", href);
     expect(screen.queryByRole("link", { name: "Cài đặt" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Quản lý danh mục" })).not.toBeInTheDocument();
+  });
+
+  it("no longer offers a supplier management page: suppliers are edited on the supplier list", () => {
+    const { container } = render(shell(["suppliers.manage"]));
+    expect(container.querySelector('a[href^="/admin/suppliers"]')).toBeNull();
   });
 
   it("D43: sales and accountant presets do not see the cash book, reports, deliveries or purchasing", () => {

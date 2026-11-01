@@ -6,7 +6,6 @@ describe("independently authorized workspace landing", () => {
     ["finance.expense.read", "/admin/expenses"],
     ["pricing.read", "/admin/products/pricing"],
     ["customers.manage", "/admin/customers/manage"],
-    ["suppliers.manage", "/admin/suppliers/manage"],
     ["catalog.manage", "/admin/products/manage"],
     ["roles.manage", "/admin/access"],
   ])("routes %s to its existing authorized workspace", (permission, path) => {
