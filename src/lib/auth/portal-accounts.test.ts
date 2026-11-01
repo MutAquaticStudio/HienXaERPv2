@@ -58,6 +58,8 @@ it.each([
   const result = await loginAction(undefined, form({ email: "nguoi@example.test", password: "matkhau123", surface }));
   expect(result?.message).toContain(tab);
   expect(m.signOut).toHaveBeenCalledOnce();
+  // Only this browser: a global sign-out would also end the same account on every other device.
+  expect(m.signOut).toHaveBeenCalledWith({ scope: "local" });
   expect(m.redirect).not.toHaveBeenCalled();
 });
 

@@ -49,7 +49,7 @@ export async function loginAction(_: AuthFormState, formData: FormData): Promise
     // FB9: each account signs in only on its own tab; a worker or a customer never enters the operations side.
     const wrongPortal = data.user ? wrongPortalMessage(parsed.data.surface, await accountPortals(supabase, data.user.id)) : null;
     if (wrongPortal) {
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({ scope: "local" });
       return { message: wrongPortal };
     }
   } catch {
