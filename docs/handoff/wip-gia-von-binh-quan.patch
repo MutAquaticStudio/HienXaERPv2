@@ -1,0 +1,114 @@
+diff --git a/implementation.md b/implementation.md
+index bc5a903..4f3e57e 100644
+--- a/implementation.md
++++ b/implementation.md
+@@ -3431,3 +3431,8 @@ Thay đổi (migration `20261024090000`–`20261024090900`, native 285, 290, 295
+ - Hàng cùng loại: dòng loại mới khóa theo tên thuộc tính (`variantKey`) → hai thuộc tính chưa đặt tên / trùng tên cho cùng khóa, React gộp dòng: gõ giá một loại thì các loại khác cùng giá và ô mất con trỏ. Nay khóa theo giá trị theo thứ tự thuộc tính (`valuesKey`).
+ - Kiểm chứng: Vitest app-shell, cashbook, access, catalog (test mới đỏ trước khi sửa); native 316 + toàn bộ 67 file PASS.
+ - Phát hành (31/10): PR #75 CI xanh → squash-merge `6b98500`; migration `20261101090000` áp QA rồi Production qua MCP (kèm `schema_migrations`, sha256 `df1744ba…01bc`); kiểm: `builtin_accountant` chỉ còn `suppliers.read` trong nhóm delivery/purchasing/suppliers (Production 20 quyền). Deploy `dpl_J685FwREtXV9m4TCW6zFtP1eJtAp` READY, `/api/health` buildSha `6b98500`.
++
++## 2026-11-01 — Trang chi tiết vật tư hiện giá vốn bình quân
++
++- Owner: "vật tư được tạo có phần giá vốn nhưng trang chi tiết không thấy". Production (chỉ đọc): 59 vật tư đang bán có tồn đầu từ phiếu kiểm kho 29/10 (`STOCK_ADJUSTMENT` kèm đơn giá vốn), 0 dòng `purchase_price_rules`. Danh sách vật tư có cột "Giá vốn" (bình quân từ `warehouse_inventory_read.inventory_value_vnd`), còn trang chi tiết chỉ có "Giá mua theo nhà cung cấp" (bảng giá mua NCC, trống) nên không thấy giá vốn.
++- `loadMaterialDetail` thêm quyền đọc `cost` (`inventory.read` + `inventory.cost.read`, như danh sách) và `averageCost` (giá trị tồn / số tồn, làm tròn đồng); trang chi tiết hiện "Giá vốn bình quân" ở Thông tin vật tư và chú thích ở phần giá mua NCC. Người không có quyền giá vốn vẫn không tải cột giá trị tồn.
+diff --git a/src/app/admin/products/[id]/page.tsx b/src/app/admin/products/[id]/page.tsx
+index 968c4d3..820e611 100644
+--- a/src/app/admin/products/[id]/page.tsx
++++ b/src/app/admin/products/[id]/page.tsx
+@@ -32,7 +32,7 @@ export default async function MaterialDetailPage({ params }: PageProps<"/admin/p
+   const now = detail.asOf;
+   return <>
+     <header className="page-heading"><div><p className="eyebrow">Vật tư · {material.code} · {access.branchName}</p><h1>{material.name}</h1><p className="lede">{material.specification ?? "Chưa có quy cách"}</p></div><div className="form-actions"><Link className="button button-secondary" href="/admin/products">Danh sách vật tư</Link>{access.permissions.has("catalog.manage") && <Link className="button button-secondary" href={catalogHref("materials", { id })}>Sửa vật tư</Link>}{(access.permissions.has("catalog.manage") || access.permissions.has("pricing.manage")) && <Link className="button button-secondary" href={catalogHref("materials", { id, tab: "units" })}>Đơn vị tính & giá</Link>}{material.active && material.sale_enabled && access.permissions.has("orders.create") && <Link className="button button-primary" href={`/admin/orders/new?material=${id}`}>Tạo nháp đơn bán</Link>}{material.active && material.purchase_enabled && access.permissions.has("purchasing.create") && <Link className="button button-secondary" href={`/admin/purchase-orders/new?material=${id}`}>Tạo nháp đơn mua</Link>}<StatusBadge tone={material.active ? "success" : "danger"}>{material.active ? "Đang dùng" : "Ngừng dùng"}</StatusBadge></div></header>
+-    <section className="card card-pad"><h2>Thông tin vật tư</h2><dl className="detail-grid"><div className="detail-item"><dt>Nhóm</dt><dd>{detail.groupName}</dd></div><div className="detail-item"><dt>Đơn vị cơ sở</dt><dd>{unit(material.base_uom_id)}</dd></div><div className="detail-item"><dt>Phạm vi sử dụng</dt><dd>{[material.sale_enabled && "Bán", material.purchase_enabled && "Mua"].filter(Boolean).join(" · ")}</dd></div>{detail.variant && <div className="detail-item"><dt>Thuộc tính</dt><dd>{variantLabel(detail.variant.attributeNames, material.variant_attributes)}</dd></div>}</dl></section>
++    <section className="card card-pad"><h2>Thông tin vật tư</h2><dl className="detail-grid"><div className="detail-item"><dt>Nhóm</dt><dd>{detail.groupName}</dd></div><div className="detail-item"><dt>Đơn vị cơ sở</dt><dd>{unit(material.base_uom_id)}</dd></div><div className="detail-item"><dt>Phạm vi sử dụng</dt><dd>{[material.sale_enabled && "Bán", material.purchase_enabled && "Mua"].filter(Boolean).join(" · ")}</dd></div>{capabilities.cost && <div className="detail-item"><dt>Giá vốn bình quân</dt><dd>{detail.averageCostVnd ? `${formatVnd(vnd(detail.averageCostVnd))} / ${unit(material.base_uom_id)}` : "Chưa có (chưa nhập kho)"}</dd></div>}{detail.variant && <div className="detail-item"><dt>Thuộc tính</dt><dd>{variantLabel(detail.variant.attributeNames, material.variant_attributes)}</dd></div>}</dl></section>
+     {detail.variant && <section className="card card-pad"><div className="section-head flush"><h2>Hàng cùng loại: {detail.variant.name}</h2><Link className="code-link" href={`/admin/products?variant=${detail.variant.groupId}`}>Xem trong danh sách</Link></div>
+       <p className="muted">Mỗi loại là một vật tư riêng với mã, tồn kho và giá riêng.</p>
+       <ul className="variant-siblings">{detail.variant.siblings.map((sibling) => <li key={sibling.id}>{sibling.id === material.id
+@@ -40,7 +40,7 @@ export default async function MaterialDetailPage({ params }: PageProps<"/admin/p
+         : <Link className="variant-chip" href={`/admin/products/${sibling.id}`}><strong>{variantLabel(detail.variant!.attributeNames, sibling.attributes)}</strong><small>{sibling.code}{sibling.active ? "" : " · ngừng"}</small></Link>}</li>)}</ul></section>}
+     <section className="card card-pad"><h2>Đơn vị & quy đổi</h2><div className="table-wrap"><table><thead><tr><th>Quy đổi</th><th>Loại / làm tròn</th><th>Thanh toán</th><th>Trạng thái</th></tr></thead><tbody>{detail.conversions.map(row => { const sentence = conversionSentences(unit(row.from_uom_id), unit(row.to_uom_id), row.numerator, row.denominator); return <tr key={row.id}><td><strong>{sentence.main}</strong><small className="table-subline">{sentence.other}</small></td><td>{catalogChoiceLabel(row.conversion_type)} · {catalogChoiceLabel(row.rounding_mode)}, {row.rounding_scale} số lẻ</td><td>{row.settlement_allowed ? "Được phép" : "Chỉ lập kế hoạch"}</td><td>{row.active ? "Đang dùng" : "Đã ngừng"}</td></tr>; })}</tbody></table></div>{!detail.conversions.length && <p className="empty-inline">Chưa có quy đổi liên quan. Không tự suy ra hệ số.</p>}</section>
+     <section className="card card-pad"><div className="section-head flush"><h2>Tham chiếu giá bán</h2>{capabilities.salesPrice && <Link className="code-link" href="/admin/products/pricing">Bảng giá</Link>}</div>{capabilities.salesPrice ? <><div className="table-wrap"><table><thead><tr><th>Phạm vi</th><th>Giá / đơn vị</th><th>Nguồn / phiên bản</th><th>Hiệu lực</th></tr></thead><tbody>{detail.salesPrices.map(row => <tr key={row.id}><td>{pricingScopeLabel(row.scope_type)}{row.customer_id ? ` · Khách hàng ${row.customer_id}` : row.customer_tier_code ? ` · Nhóm ${row.customer_tier_code}` : ""}</td><td>{formatVnd(vnd(row.unit_price_vnd))} / {unit(row.price_uom_id)}</td><td>{priceSourceLabel(row.source_type)} · Phiên bản {row.version}</td><td>{priceState(row.active, row.effective_from, row.effective_to, now)} · {date(row.effective_from)}{row.effective_to ? ` đến trước ${date(row.effective_to)}` : ""}</td></tr>)}</tbody></table></div>{!detail.salesPrices.length && <p className="empty-inline">Chưa có giá tham chiếu cho vật tư/nhóm này; không mặc định bằng 0.</p>}<p className="muted">Đây là tham chiếu. Hệ thống chọn giá theo khách hàng, đơn vị và thời điểm, rồi lưu trên chứng từ. Thay đổi giá tham chiếu không đổi chứng từ đã lưu.</p></> : <p className="muted">Không có quyền xem bảng giá.</p>}</section>
+-    <section className="card card-pad"><div className="section-head flush"><h2>Giá mua theo nhà cung cấp</h2>{access.permissions.has("purchasing.price.manage") && <Link className="code-link" href={`/admin/suppliers/pricing?material=${id}`}>Quản lý giá mua</Link>}</div>{capabilities.purchasePrice ? <div className="table-wrap"><table><thead><tr><th>Nhà cung cấp</th><th>Giá mua / đơn vị</th><th>Nguồn / phiên bản</th><th>Hiệu lực</th></tr></thead><tbody>{detail.purchasePrices.map(row => <tr key={row.id}><td>{suppliers.get(row.supplier_id) ?? row.supplier_id}</td><td>{formatVnd(vnd(row.unit_cost_vnd))} / {unit(row.purchase_uom_id)}</td><td>{priceSourceLabel(row.source_type)} · Phiên bản {row.version}</td><td>{priceState(row.active, row.effective_from, row.effective_to, now)}</td></tr>)}</tbody></table>{!detail.purchasePrices.length && <p className="empty-inline">Chưa có giá mua cho vật tư này trong chi nhánh.</p>}</div> : <p className="muted">Bạn không có quyền xem giá mua.</p>}</section>
++    <section className="card card-pad"><div className="section-head flush"><h2>Giá mua theo nhà cung cấp</h2>{access.permissions.has("purchasing.price.manage") && <Link className="code-link" href={`/admin/suppliers/pricing?material=${id}`}>Quản lý giá mua</Link>}</div>{capabilities.purchasePrice ? <div className="table-wrap"><table><thead><tr><th>Nhà cung cấp</th><th>Giá mua / đơn vị</th><th>Nguồn / phiên bản</th><th>Hiệu lực</th></tr></thead><tbody>{detail.purchasePrices.map(row => <tr key={row.id}><td>{suppliers.get(row.supplier_id) ?? row.supplier_id}</td><td>{formatVnd(vnd(row.unit_cost_vnd))} / {unit(row.purchase_uom_id)}</td><td>{priceSourceLabel(row.source_type)} · Phiên bản {row.version}</td><td>{priceState(row.active, row.effective_from, row.effective_to, now)}</td></tr>)}</tbody></table>{!detail.purchasePrices.length && <p className="empty-inline">Chưa có giá mua theo nhà cung cấp cho vật tư này trong chi nhánh.{capabilities.cost && detail.averageCostVnd ? " Giá vốn bình quân ở phần Thông tin vật tư lấy từ phiếu nhập / kiểm kho; giá mua theo NCC đặt ở Quản lý giá mua." : ""}</p>}</div> : <p className="muted">Bạn không có quyền xem giá mua.</p>}</section>
+     <section className="card card-pad"><h2>Tồn kho tại {access.branchName}</h2>{capabilities.inventory ? <><div className="table-wrap"><table><thead><tr><th>Kho</th><th>Thực tế</th><th>Đã giữ</th><th>Khả dụng</th><th>Chi tiết</th></tr></thead><tbody>{detail.positions.map(row => <tr key={row.warehouse_id}><td>{warehouses.get(row.warehouse_id) ?? row.warehouse_id}</td><td>{formatQuantity(row.on_hand_base_quantity)} {unit(row.base_uom_id)}</td><td>{formatQuantity(row.reserved_base_quantity)} {unit(row.base_uom_id)}</td><td>{formatQuantity(row.available_base_quantity)} {unit(row.base_uom_id)}</td><td><Link className="code-link" href={`/admin/inventory?warehouse=${row.warehouse_id}&material=${id}`}>Biến động / giữ chỗ</Link></td></tr>)}</tbody></table></div>{!detail.positions.length && <p className="empty-inline">Chưa có số dư kho được ghi nhận. Không coi đây là số dư đầu kỳ 0 đã được duyệt.</p>}<p className="muted">Số lượng theo ĐVT cơ sở từng vật tư. Giữ chỗ chỉ giảm khả dụng; xác nhận đơn bán không tự trừ kho.</p></> : <p className="muted">Không có quyền xem tồn kho.</p>}</section>
+     {capabilities.inventory && <section className="card card-pad"><h2>Biến động kho gần nhất</h2><p className="muted">Tối đa 20 dòng, theo ĐVT cơ sở; giá vốn được ẩn theo quyền.</p><div className="table-wrap"><table><thead><tr><th>Thời điểm</th><th>Loại</th><th>Vị trí</th><th>Số lượng</th><th>Nguồn</th></tr></thead><tbody>{detail.movements.map(row=><tr key={row.id}><td>{date(row.occurred_at)}</td><td>{inventoryMovementLabel(row.movement_type)}</td><td>{row.warehouse_id?warehouses.get(row.warehouse_id)??row.warehouse_id:"Đang giao"}</td><td>{formatQuantity(row.base_quantity_delta)} {unit(row.base_uom_id)}</td><td>{row.delivery_id?<Link className="code-link" href={"/admin/deliveries/"+row.delivery_id}>Phiếu giao</Link>:<Link className="code-link" href={"/admin/inventory?material="+id}>Chứng từ kho</Link>}</td></tr>)}</tbody></table></div>{!detail.movements.length&&<p className="empty-inline">Chưa có biến động trong phạm vi.</p>}</section>}
+   </>;
+diff --git a/src/modules/catalog/material-detail.test.ts b/src/modules/catalog/material-detail.test.ts
+index 278d11b..7bff6f7 100644
+--- a/src/modules/catalog/material-detail.test.ts
++++ b/src/modules/catalog/material-detail.test.ts
+@@ -68,6 +68,18 @@ describe("material read composition boundaries", () => {
+     expect(request.eq).toHaveBeenCalledWith("branch_id", "branch-a");
+     expect(request.select.mock.calls[0][0]).not.toMatch(/cost|value_vnd/);
+   });
++  it("shows the average cost (Giá vốn bình quân) only to actors who may read inventory cost", async () => {
++    const positions = [
++      { warehouse_id: "warehouse-a", base_uom_id: baseUom, on_hand_base_quantity: "300", reserved_base_quantity: "0", available_base_quantity: "300", inventory_value_vnd: "450000" },
++      { warehouse_id: "warehouse-b", base_uom_id: baseUom, on_hand_base_quantity: "100", reserved_base_quantity: "0", available_base_quantity: "100", inventory_value_vnd: "170000" },
++    ];
++    const { requests } = fixture(["inventory.read", "inventory.cost.read"], { warehouse_inventory_read: positions });
++    const result = await loadMaterialDetail(materialId);
++    expect(requests.find(x => x.table === "warehouse_inventory_read")!.select.mock.calls[0][0]).toContain("inventory_value_vnd");
++    expect(result?.averageCostVnd).toBe("1550");
++    fixture(["inventory.read"], { warehouse_inventory_read: positions.map(({ inventory_value_vnd: _, ...row }) => row) });
++    expect((await loadMaterialDetail(materialId))?.averageCostVnd).toBeNull();
++  });
+   it("keeps global conversions only when relevant to this material's base UOM", async () => {
+     fixture([], { material_uom_conversions: [
+       { id: "own", material_id: materialId, from_uom_id: "bag", to_uom_id: "kg" },
+diff --git a/src/modules/catalog/material-detail.ts b/src/modules/catalog/material-detail.ts
+index 75cab87..a32fac1 100644
+--- a/src/modules/catalog/material-detail.ts
++++ b/src/modules/catalog/material-detail.ts
+@@ -1,4 +1,5 @@
+ import "server-only";
++import Decimal from "decimal.js";
+ import { z } from "zod";
+ import { requireInternalPermission } from "@/lib/access/context";
+ import { createServerSupabase } from "@/lib/supabase/server";
+@@ -10,17 +11,27 @@ export type MaterialConversion = { id: string; material_id: string | null; from_
+ export type MaterialSalesPrice = { id: string; scope_type: string; customer_id: string | null; customer_tier_code: string | null; price_uom_id: string; unit_price_vnd: string; version: number; source_type: string; effective_from: string; effective_to: string | null; active: boolean };
+ export type MaterialPurchasePrice = { id: string; supplier_id: string; purchase_uom_id: string; unit_cost_vnd: string; version: number; source_type: string; effective_from: string; effective_to: string | null; active: boolean };
+ export type MaterialMovement = { id: string; warehouse_id: string | null; delivery_id: string | null; base_uom_id: string; movement_type: string; base_quantity_delta: string; occurred_at: string };
+-export type MaterialPosition = { warehouse_id: string; base_uom_id: string; on_hand_base_quantity: string; reserved_base_quantity: string; available_base_quantity: string };
++export type MaterialPosition = { warehouse_id: string; base_uom_id: string; on_hand_base_quantity: string; reserved_base_quantity: string; available_base_quantity: string; inventory_value_vnd?: string | null };
+ 
+ export function materialReadCapabilities(permissions: ReadonlySet<string>) {
+   return {
+     salesPrice: permissions.has("pricing.read"),
+     purchasePrice: permissions.has("purchasing.read") && permissions.has("purchasing.price.read"),
+     inventory: permissions.has("inventory.read"),
++    /** Giá vốn bình quân (stock value / on hand), like the "Giá vốn" column of the material list. */
++    cost: permissions.has("inventory.read") && permissions.has("inventory.cost.read"),
+     suppliers: permissions.has("suppliers.read"),
+   };
+ }
+ 
++/** Stock value / on hand across the branch's warehouses, whole đồng per base unit; null when nothing is on hand. */
++export function averageCost(positions: readonly MaterialPosition[]): string | null {
++  const onHand = positions.reduce((sum, row) => sum.plus(row.on_hand_base_quantity), new Decimal(0));
++  if (!onHand.gt(0) || positions.some((row) => row.inventory_value_vnd == null)) return null;
++  const value = positions.reduce((sum, row) => sum.plus(row.inventory_value_vnd!), new Decimal(0));
++  return value.div(onHand).toDecimalPlaces(0, Decimal.ROUND_HALF_UP).toFixed(0);
++}
++
+ export async function loadMaterialDetail(materialId: string) {
+   const access = await requireInternalPermission("catalog.read");
+   if (!z.guid().safeParse(materialId).success) return null;
+@@ -48,7 +59,7 @@ export async function loadMaterialDetail(materialId: string) {
+     supabase.from("material_uom_conversions").select("id,material_id,from_uom_id,to_uom_id,numerator::text,denominator::text,conversion_type,settlement_allowed,rounding_scale,rounding_mode,active,source_note").or(`material_id.eq.${materialId},material_id.is.null`).limit(200),
+     capabilities.salesPrice ? supabase.from("pricing_rule_read").select("id,scope_type,customer_id,customer_tier_code,price_uom_id,unit_price_vnd::text,version,source_type,effective_from,effective_to,active").eq("branch_id", access.branchId).or(`material_id.eq.${materialId},material_group_id.eq.${material.group_id}`).order("effective_from", { ascending: false }).limit(50) : noRows,
+     capabilities.purchasePrice ? supabase.from("purchase_price_rules").select("id,supplier_id,purchase_uom_id,unit_cost_vnd::text,version,source_type,effective_from,effective_to,active").eq("branch_id", access.branchId).eq("material_id", materialId).order("effective_from", { ascending: false }).limit(50) : noRows,
+-    capabilities.inventory ? supabase.from("warehouse_inventory_read").select("warehouse_id,base_uom_id,on_hand_base_quantity::text,reserved_base_quantity::text,available_base_quantity::text").eq("branch_id", access.branchId).eq("material_id", materialId).order("warehouse_id").limit(200) : noRows,
++    capabilities.inventory ? supabase.from("warehouse_inventory_read").select(`warehouse_id,base_uom_id,on_hand_base_quantity::text,reserved_base_quantity::text,available_base_quantity::text${capabilities.cost ? ",inventory_value_vnd::text" : ""}`).eq("branch_id", access.branchId).eq("material_id", materialId).order("warehouse_id").limit(200) : noRows,
+     capabilities.inventory ? supabase.from("warehouses").select("id,name,active").eq("branch_id", access.branchId).order("name").limit(200) : noRows,
+     capabilities.purchasePrice && capabilities.suppliers ? supabase.from("suppliers").select("id,name").eq("branch_id", access.branchId).order("name").limit(200) : noRows,
+     capabilities.inventory ? supabase.from("inventory_movement_read").select("id,warehouse_id,delivery_id,base_uom_id,movement_type,base_quantity_delta,occurred_at").eq("branch_id", access.branchId).eq("material_id", materialId).order("occurred_at", { ascending: false }).order("id").limit(20) : noRows,
+@@ -63,6 +74,7 @@ export async function loadMaterialDetail(materialId: string) {
+     purchasePrices: (purchaseResult.data ?? []) as unknown as MaterialPurchasePrice[],
+     movements: (movementResult.data ?? []) as unknown as MaterialMovement[],
+     positions: (stockResult.data ?? []) as unknown as MaterialPosition[],
++    averageCostVnd: capabilities.cost ? averageCost((stockResult.data ?? []) as unknown as MaterialPosition[]) : null,
+     warehouses: (warehouseResult.data ?? []) as { id: string; name: string; active: boolean }[],
+     suppliers: (supplierResult.data ?? []) as { id: string; name: string }[],
+   };
