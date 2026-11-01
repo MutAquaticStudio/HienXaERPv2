@@ -6,12 +6,12 @@ Tài liệu bàn giao cho phiên làm việc tiếp theo (Claude Code hoặc ng�
 
 | Môi trường | Địa chỉ | Supabase | Code |
 |---|---|---|---|
-| Production | https://hien-xa-erp-v2-nu.vercel.app (sắp: https://app.hienxavlxd.com) | `nbwynrwkdbtfsitafsxa` | `main` @ `567eeef` (#77 + #78, 01/11), deploy `dpl_BbFbhtqH8Umzc1oTizkJQVnfTpNC` |
-| QA (nghiệm thu) | Preview nhánh `nox/elegant-volta-kr29iz` → https://qa.hienxavlxd.com (chờ DNS) | `ffrwiglcrlumfvhubaxg` | preview từ `main` @ `567eeef`: `dpl_A7R8ENKPsc7TtdUgqzkJ1KDJCMtL` (https://hien-xa-erp-v2-dgjeapl7p-hienxa.vercel.app, cần đăng nhập Vercel) |
+| Production | https://hien-xa-erp-v2-nu.vercel.app (sắp: https://app.hienxavlxd.com) | `nbwynrwkdbtfsitafsxa` | `main` @ `be77319` (#77–#80, 01/11), deploy `dpl_3Mp8vAXA9DgpHj2gY2aR3wnAEhxv` |
+| QA (nghiệm thu) | Preview nhánh `nox/elegant-volta-kr29iz` → https://qa.hienxavlxd.com (chờ DNS) | `ffrwiglcrlumfvhubaxg` | preview từ `main` @ `be77319`: `dpl_DWFskr3GFDGerWQNRkJAftjhuFDx` (https://hien-xa-erp-v2-kzdwmk4wf-hienxa.vercel.app, cần đăng nhập Vercel) |
 
 - Vercel: team `team_9qd9uzBYBc6WtzJVu7wGP7uC`, project `prj_o6ya9YI1b3fTFC8nxiOtjHiwaS3W`. Auto-deploy tắt (`vercel.json`); deploy bằng `create_deployment` (gitSource org `MutAquaticStudio`, repo `HienXaERPv2`, ref `main`, target `production`).
 - Preview dùng env QA (`HX_QA_PROJECT_REF`). Preview bị Vercel SSO Protection chặn với người ngoài → dùng tên miền riêng `qa.hienxavlxd.com` (đã gắn vào nhánh `nox/elegant-volta-kr29iz`; mọi push lên nhánh này cập nhật bản QA).
-- Migration mới nhất trên cả QA và Production: `20261101090000_d43_accountant_scope` (ghi `schema_migrations` kèm sha256 file).
+- Migration mới nhất trên cả QA và Production: `20261101120000_revoke_rls_auto_enable` (ghi `schema_migrations` kèm sha256 file).
 
 ## 2. Quy trình phát hành đã dùng
 
