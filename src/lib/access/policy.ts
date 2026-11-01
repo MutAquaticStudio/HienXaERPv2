@@ -19,6 +19,8 @@ export type InternalAccessContext = Readonly<{
   roleId: string;
   roleName: string;
   permissions: ReadonlySet<string>;
+  /** Every branch this person may work in (for the quick switch in the top bar). */
+  branches?: readonly Readonly<{ id: string; name: string }>[];
 }>;
 
 export type CustomerMembership = Readonly<{
@@ -62,6 +64,8 @@ export function selectInternalContext(input: {
     roleId: selected.roleId,
     roleName: selected.roleName,
     permissions: new Set(selected.permissions),
+    branches: activeAssignments.map((assignment) => ({ id: assignment.branchId, name: assignment.branchName }))
+      .sort((left, right) => left.name.localeCompare(right.name, "vi")),
   };
 }
 

@@ -76,10 +76,12 @@ export async function recoveryAction(_: AuthFormState, formData: FormData): Prom
 const selectBranchSchema = z.object({
   branchId: z.guid(),
   surface: z.enum(["admin", "work"]),
+  /** Quick switch in the top bar: stay in the same section (a list, never a record of the old branch). */
+  returnTo: z.string().regex(/^\/(admin|work)(\/[a-z-]+)?$/).nullish(),
 });
 
 export async function selectBranchAction(formData: FormData) {
-  const parsed = selectBranchSchema.safeParse({ branchId: formData.get("branchId"), surface: formData.get("surface") });
+  const parsed = selectBranchSchema.safeParse({ branchId: formData.get("branchId"), surface: formData.get("surface"), returnTo: formData.get("returnTo") || null });
   if (!parsed.success) redirect("/select-branch");
   const supabase = await createServerSupabase();
   const { data: authData } = await supabase.auth.getUser();
@@ -89,7 +91,7 @@ export async function selectBranchAction(formData: FormData) {
   const { data: access } = await supabase.from("employee_branch_access").select("id").eq("employee_id", employee.id).eq("branch_id", parsed.data.branchId).eq("active", true).maybeSingle();
   if (!access) redirect("/select-branch");
   (await cookies()).set("hx_branch_id", parsed.data.branchId, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/" });
-  redirect("/");
+  redirect(parsed.data.returnTo ?? "/");
 }
 
 const assignRoleSchema = z.object({

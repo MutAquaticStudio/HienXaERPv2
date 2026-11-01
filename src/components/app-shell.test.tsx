@@ -8,6 +8,7 @@ vi.mock("next/navigation", () => ({ usePathname: () => location.pathname }));
 vi.mock("@/components/notifications/notification-bell", () => ({ NotificationBell: ({ branchId }: { branchId: string }) => <button type="button" data-branch={branchId}>Thông báo</button> }));
 vi.mock("@/modules/ai/ai-bubble", () => ({ AiBubble: () => <div data-testid="ai-bubble" /> }));
 vi.mock("@/components/messaging/chat-dock", () => ({ ChatDock: () => null }));
+vi.mock("@/lib/auth/actions", () => ({ selectBranchAction: vi.fn() }));
 
 const ownerPermissions = ["dashboard.read", "quotation.read", "orders.read", "purchasing.read", "inventory.read", "delivery.read", "service.read", "workforce.read", "compensation.read", "finance.ar.read", "finance.payment.post", "finance.payment_notice.review", "finance.ap.read", "finance.expense.read", "customers.read", "suppliers.read", "catalog.read", "roles.manage", "customers.manage", "suppliers.manage", "catalog.manage", "pricing.read"];
 const shell = (permissions: readonly string[] = ownerPermissions) => <AppShell surface="admin" permissions={permissions} actorName="Chủ QA" branchName="Chi nhánh QA"><p>Nội dung</p></AppShell>;
@@ -210,3 +211,26 @@ it("shows the notification bell in the office top bar of the active branch only"
   render(<AppShell surface="work" permissions={[]} actorName="Thợ" branchId="b1"><p>Nội dung</p></AppShell>);
   expect(screen.queryByRole("button", { name: "Thông báo" })).not.toBeInTheDocument();
 });
+
+describe("brand and branch in the top bar", () => {
+  it("shows the company logo when one is set, otherwise HX", () => {
+    const { container, rerender } = render(shell());
+    expect(container.querySelector(".brand-mark")).toHaveTextContent("HX");
+    rerender(<AppShell surface="admin" permissions={ownerPermissions} actorName="Chủ QA" branchName="Chi nhánh QA" logoUrl="/api/company/logo?v=abc"><p>Nội dung</p></AppShell>);
+    expect(container.querySelector("img.brand-logo")).toHaveAttribute("src", "/api/company/logo?v=abc");
+    expect(container.querySelector(".brand-mark")).not.toHaveTextContent("HX");
+  });
+
+  it("keeps one branch as a plain label and lets someone with several branches switch from the bar", () => {
+    const { rerender } = render(shell());
+    expect(screen.queryByRole("button", { name: /Đổi chi nhánh/ })).not.toBeInTheDocument();
+    rerender(<AppShell surface="admin" permissions={ownerPermissions} actorName="Chủ QA" branchName="Hiền Xa" branchId="b1"
+      branches={[{ id: "b1", name: "Hiền Xa" }, { id: "b2", name: "Hiền Xa 2" }]}><p>Nội dung</p></AppShell>);
+    const chip = screen.getByRole("button", { name: "Chi nhánh: Hiền Xa. Đổi chi nhánh" });
+    fireEvent.click(chip);
+    const panel = document.getElementById("branch-switch-panel")!;
+    expect(within(panel).getByRole("button", { name: "Hiền Xa" })).toBeDisabled();
+    expect(within(panel).getByRole("button", { name: "Hiền Xa 2" })).toBeEnabled();
+  });
+});
+

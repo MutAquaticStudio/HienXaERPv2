@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, Boxes, ChevronDown, ClipboardCheck, Clock3, Sparkles, Factory, FileText, LayoutDashboard, LogOut, MapPin, Menu, MessageSquare, PackageSearch, Plus, Route, ScrollText, Settings2, ShieldCheck, ShoppingCart, Truck, UserRound, UsersRound, WalletCards, Warehouse, X, type LucideIcon } from "lucide-react";
+import { BarChart3, Boxes, ChevronDown, ClipboardCheck, Clock3, Sparkles, Factory, FileText, LayoutDashboard, LogOut, Menu, MessageSquare, PackageSearch, Plus, Route, ScrollText, Settings2, ShieldCheck, ShoppingCart, Truck, UserRound, UsersRound, WalletCards, Warehouse, X, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
@@ -9,6 +9,7 @@ import { AiBubble } from "@/modules/ai/ai-bubble";
 import { OPEN_AI_EVENT } from "@/modules/ai/events";
 import { ChatDock } from "@/components/messaging/chat-dock";
 import { AppearanceButton } from "@/components/settings/appearance-button";
+import { BranchSwitcher, BranchSwitchList, type BranchChoice } from "@/components/branch-switcher";
 import { UatBrowserTiming } from "@/components/uat-browser-timing";
 import { PAYMENT_NOTICES_ENABLED, QUOTATIONS_ENABLED } from "@/lib/features";
 import { E_INVOICES_ENABLED } from "@/lib/features";
@@ -87,7 +88,11 @@ const compactNow = () => typeof window !== "undefined" && Boolean(window.matchMe
  * D29 office frame: a white bar (brand, branch, bell, the user's menu) over a blue menu bar whose groups open as
  * drop-downs; the current section reads as a tab joined to the page. On narrow screens the same menu is a drawer.
  */
-export function AppShell({ surface, children, permissions, actorName, branchName, branchId }: { surface: Surface; children: React.ReactNode; permissions?: readonly string[]; actorName?: string; branchName?: string; branchId?: string }) {
+export function AppShell({ surface, children, permissions, actorName, branchName, branchId, branches = [], logoUrl = null }: { surface: Surface; children: React.ReactNode; permissions?: readonly string[]; actorName?: string; branchName?: string; branchId?: string;
+  /** Branches this person may switch to from the top bar. */
+  branches?: readonly BranchChoice[];
+  /** The company logo (Cài đặt → Thông tin doanh nghiệp); "HX" when none is set. */
+  logoUrl?: string | null }) {
   const pathname = usePathname();
   const compact = useSyncExternalStore(subscribeCompact, compactNow, () => false);
   const [open, setOpen] = useState(false);
@@ -153,8 +158,11 @@ export function AppShell({ surface, children, permissions, actorName, branchName
       <header className="utility-bar" inert={open}>
         <div className="utility-inner">
           <button ref={menuButton} className="mobile-menu" type="button" aria-label="Mở menu" aria-expanded={open} aria-controls="app-menu" onClick={() => setOpen(true)}><Menu size={22} /></button>
-          <Link className="brand" href={surface === "admin" ? "/admin" : `/${surface}`}><span className="brand-mark" aria-hidden="true">HX</span><strong>Hiền Xa ERP</strong></Link>
-          {branchName && <span className="utility-branch"><MapPin aria-hidden="true" size={15} />{branchName}</span>}
+          <Link className="brand" href={surface === "admin" ? "/admin" : `/${surface}`}>{logoUrl
+            // eslint-disable-next-line @next/next/no-img-element -- the uploaded company logo, served by the app behind sign-in
+            ? <img className="brand-mark brand-logo" src={logoUrl} alt="" aria-hidden="true" width={34} height={34} />
+            : <span className="brand-mark" aria-hidden="true">HX</span>}<strong>Hiền Xa ERP</strong></Link>
+          {branchName && surface !== "customer" && <BranchSwitcher branches={branches} currentId={branchId} currentName={branchName} surface={surface} pathname={pathname} />}
           <div className="utility-actions">
             {surface === "admin" && permissions?.includes("ai.use") && <button type="button" className="utility-ai" onClick={() => window.dispatchEvent(new Event(OPEN_AI_EVENT))}
               aria-label="Mở trợ lý AI"><Sparkles aria-hidden="true" size={17} /><span>Trợ lý AI</span></button>}
@@ -165,6 +173,8 @@ export function AppShell({ surface, children, permissions, actorName, branchName
               </button>
               <div id="user-menu-panel" className="user-menu-panel" hidden={!userMenu}>
                 <p className="user-menu-head"><strong>{actorName}</strong>{branchName && <span>{branchName}</span>}</p>
+                {surface !== "customer" && branches.length > 1 && <div className="user-menu-branches"><p className="branch-switch-head">Đổi chi nhánh</p>
+                  <BranchSwitchList branches={branches} currentId={branchId} surface={surface} pathname={pathname} /></div>}
                 <AppearanceButton />
                 <form action="/auth/logout" method="post"><input type="hidden" name="surface" value={surface} /><button className="logout-button" type="submit"><LogOut size={17} />Đăng xuất</button></form>
               </div>
