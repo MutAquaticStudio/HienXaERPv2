@@ -255,6 +255,13 @@ h3 { font-size: var(--font-size-body); }
 .metric-note { color: var(--success); font-size: var(--font-size-caption); font-weight: 700; }
 .section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px 10px; }
 .section-head h2 { margin-bottom: 0; }
+.list-pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; padding: 14px 18px; }
+.list-pager-pages { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.list-pager-pages .button[aria-current="page"] { cursor: default; }
+.list-pager-gap { padding: 0 4px; color: var(--muted, inherit); }
+.list-pager-jump { display: flex; align-items: center; gap: 6px; }
+.list-pager-jump label { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.list-pager-jump input { width: 84px; min-height: 32px; }
 /* Positioned so screen-reader-only header text cannot escape the scroller and widen a phone page. */
 .table-wrap { position: relative; overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: var(--font-size-table); }

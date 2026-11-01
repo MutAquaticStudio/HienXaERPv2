@@ -42,26 +42,27 @@ export default async function ServiceJobsPage({ searchParams }: { searchParams: 
   const list = parseCoreListQuery(query);
   const supabase = await createServerSupabase();
   const canManage = access.permissions.has("service.manage");
-  async function loadJobs(): Promise<{ jobs: Job[]; hasNext: boolean }> {
+  async function loadJobs(): Promise<{ jobs: Job[]; hasNext: boolean; total?: number }> {
     if (list.q) {
-      let request = supabase.from("service_job_read").select("id, job_number, customer_name, site_name, service_type, scheduled_start, scheduled_end, description, planned_quantity, unit_label, operator_name, execution_state")
+      let request = supabase.from("service_job_read").select("id, job_number, customer_name, site_name, service_type, scheduled_start, scheduled_end, description, planned_quantity, unit_label, operator_name, execution_state", { count: "exact" })
         .eq("branch_id", branchId)
         .or(`job_number.ilike.${ilikePattern(list.q)},customer_name.ilike.${ilikePattern(list.q)},site_name.ilike.${ilikePattern(list.q)},service_type.ilike.${ilikePattern(list.q)},operator_name.ilike.${ilikePattern(list.q)}`);
       if (list.state) request = request.eq("execution_state", list.state);
-      const { data, error } = await request.order("scheduled_start", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1);
+      const { data, error, count } = await request.order("scheduled_start", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1);
       if (error) throw new Error("Không thể tải công việc dịch vụ.");
       const rows = (data ?? []) as Job[];
-      return { jobs: rows.slice(0, CORE_LIST_PAGE_SIZE), hasNext: rows.length > CORE_LIST_PAGE_SIZE };
+      return { jobs: rows.slice(0, CORE_LIST_PAGE_SIZE), hasNext: rows.length > CORE_LIST_PAGE_SIZE, total: count ?? undefined };
     }
 
-    let request = supabase.from("service_jobs").select("id, job_number, service_type, scheduled_start, scheduled_end, description, planned_quantity, unit_label, execution_state")
+    let request = supabase.from("service_jobs").select("id, job_number, service_type, scheduled_start, scheduled_end, description, planned_quantity, unit_label, execution_state", { count: "exact" })
       .eq("branch_id", branchId);
     if (list.state) request = request.eq("execution_state", list.state);
-    const { data, error } = await request.order("scheduled_start", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1);
+    const { data, error, count } = await request.order("scheduled_start", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1);
     if (error) throw new Error("Không thể tải công việc dịch vụ.");
     const pageRows = data ?? [];
+    const total = count ?? undefined;
     const visibleRows = pageRows.slice(0, CORE_LIST_PAGE_SIZE);
-    if (!visibleRows.length) return { jobs: [], hasNext: false };
+    if (!visibleRows.length) return { jobs: [], hasNext: false, total };
     const detailResult = await supabase.from("service_job_read").select("id, customer_name, site_name, operator_name")
       .eq("branch_id", branchId).in("id", visibleRows.map((row) => row.id));
     if (detailResult.error) throw new Error("Không thể tải thông tin công việc dịch vụ.");
@@ -74,7 +75,7 @@ export default async function ServiceJobsPage({ searchParams }: { searchParams: 
       if (!detail) throw new Error("Thiếu thông tin công việc dịch vụ.");
       return { ...row, ...detail } as Job;
     });
-    return { jobs, hasNext: pageRows.length > CORE_LIST_PAGE_SIZE };
+    return { jobs, hasNext: pageRows.length > CORE_LIST_PAGE_SIZE, total };
   }
   // Tab counts stop at 99: an exact count over a long history is not worth the wait on every visit.
   const countOf = (state: string) => supabase.from("service_jobs").select("id").eq("branch_id", branchId).eq("execution_state", state).limit(100);
@@ -148,7 +149,7 @@ export default async function ServiceJobsPage({ searchParams }: { searchParams: 
               </div> };
           })} />
         </table>{!jobs.length && <p className="empty-inline">{list.q || list.state ? "Không có đơn dịch vụ phù hợp bộ lọc." : "Chưa có đơn dịch vụ. Bấm “+ Tạo đơn dịch vụ”."}</p>}</div>
-        <ListPager page={list.page} hasNext={jobResult.hasNext} params={{ q: list.q, state: list.state }} /></section>
+        <ListPager page={list.page} total={jobResult.total} hasNext={jobResult.hasNext} params={{ q: list.q, state: list.state }} /></section>
     </div>
   </div>;
 }

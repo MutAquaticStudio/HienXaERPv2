@@ -22,13 +22,13 @@ export default async function DeliveriesPage({ searchParams }: { searchParams: P
   const query = await searchParams;
   const list = parseCoreListQuery(query);
   const supabase = await createServerSupabase();
-  const scoped = (state: string, select: string) => {
-    let request = supabase.from("delivery_read").select(select).eq("branch_id", access.branchId);
+  const scoped = (state: string, select: string, counted = false) => {
+    let request = supabase.from("delivery_read").select(select, counted ? { count: "exact" } : undefined).eq("branch_id", access.branchId);
     if (list.q) request = request.or(`delivery_number.ilike.${ilikePattern(list.q)},customer_name_snapshot.ilike.${ilikePattern(list.q)},site_name_snapshot.ilike.${ilikePattern(list.q)},external_carrier_name.ilike.${ilikePattern(list.q)}`);
     return state ? request.eq("execution_state", state) : request;
   };
-  const [{ data, error }, ...counts] = await Promise.all([
-    scoped(list.state, "id, sales_order_id, delivery_number, customer_name_snapshot, site_name_snapshot, execution_state, result_kind, scheduled_at, external_carrier_name, vehicle_id, created_at")
+  const [{ data, error, count: total }, ...counts] = await Promise.all([
+    scoped(list.state, "id, sales_order_id, delivery_number, customer_name_snapshot, site_name_snapshot, execution_state, result_kind, scheduled_at, external_carrier_name, vehicle_id, created_at", true)
       .order("created_at", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1),
     ...STATES.map((state) => scoped(state, "id").limit(100)),
   ]);
@@ -82,7 +82,7 @@ export default async function DeliveriesPage({ searchParams }: { searchParams: P
               </div> };
           })} />
         </table>{!deliveries.length && <p className="empty-inline">{isFiltered ? "Không có phiếu giao phù hợp." : "Chưa có phiếu giao."}</p>}</div>
-        <ListPager page={list.page} hasNext={hasNext} params={{ q: list.q, state: list.state }} />
+        <ListPager page={list.page} total={total ?? undefined} hasNext={hasNext} params={{ q: list.q, state: list.state }} />
       </section>
     </div>
   </div>;
