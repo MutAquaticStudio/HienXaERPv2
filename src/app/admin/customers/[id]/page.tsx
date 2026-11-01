@@ -14,7 +14,7 @@ import { QUOTATIONS_ENABLED } from "@/lib/features";
 import { CatalogCreateButton, CatalogEditButton } from "@/modules/catalog/catalog-dialog";
 import { catalogChildRecordsProps, catalogCreateProps, catalogRecordProps } from "@/modules/catalog/editor-data";
 import { PortalAccountsCard, type PortalAccount } from "@/components/customers/portal-accounts-card";
-import { StaffPaymentRequestPanel, type PaymentRequestRow } from "@/modules/finance/staff-payment-request";
+import { StaffPaymentRequestPanel, type CashAccount, type PaymentRequestRow } from "@/modules/finance/staff-payment-request";
 import { debtPaymentOptionsSchema } from "@/modules/finance/sepay";
 
 type CustomerProfile = { id: string; code: string; display_name: string; customer_type: string; phone: string | null; email: string | null; address_text: string | null; tax_code: string | null; tier_code: string | null; payment_terms_days: number; active: boolean; source?: string };
@@ -197,13 +197,16 @@ async function DeliveriesTab({ customerId, branchId, supabase }: { customerId: s
 }
 
 async function DebtsTab({ customerId, branchId, supabase, canPostPayment }: { customerId: string; branchId: string; supabase: Supabase; canPostPayment: boolean }) {
-  const [receivableResult, paymentResult, optionsResult, requestsResult] = await Promise.all([
+  const [receivableResult, paymentResult, optionsResult, requestsResult, cashResult] = await Promise.all([
     supabase.from("receivable_read").select("id, source_label, site_name, due_date, original_amount_vnd::text, outstanding_amount_vnd::text, state, recorded_at").eq("branch_id", branchId).eq("customer_id", customerId).order("recorded_at", { ascending: false }).limit(50),
     supabase.from("payment_read").select("id, payment_number, direction, amount_vnd::text, effective_at, posting_state, reconciliation_state").eq("branch_id", branchId).eq("customer_id", customerId).order("effective_at", { ascending: false }).limit(50),
     // D44: what can be paid by QR now, and the payment requests already made for this customer.
     supabase.rpc("portal_debt_payment_options", { target_customer_id: customerId }),
-    supabase.from("payment_requests").select("id, code, state, amount_vnd::text, received_amount_vnd::text, created_via, created_at").eq("customer_id", customerId).order("created_at", { ascending: false }).limit(10),
+    supabase.from("payment_requests").select("id, code, method, state, amount_vnd::text, received_amount_vnd::text, created_via, created_at").eq("customer_id", customerId).order("created_at", { ascending: false }).limit(10),
+    // D45: cash funds for "Thu tiền mặt" / "Xác nhận đã thu".
+    canPostPayment ? supabase.from("finance_accounts").select("id, name").eq("branch_id", branchId).eq("account_kind", "CASH").eq("active", true).order("name") : Promise.resolve({ data: [] }),
   ]);
+  const cashAccounts = (cashResult.data ?? []) as CashAccount[];
   const qrOptions = optionsResult.error || optionsResult.data === null ? null : debtPaymentOptionsSchema.safeParse(optionsResult.data);
   const requests = (requestsResult.data ?? []) as unknown as PaymentRequestRow[];
   const receivables = (receivableResult.data ?? []) as unknown as ReceivableRow[];
@@ -224,7 +227,8 @@ async function DebtsTab({ customerId, branchId, supabase, canPostPayment }: { cu
         </tr>)}</tbody>
       </table></div> : <p className="empty-inline">Chưa có khoản phải thu.</p>}
     </section>
-    <StaffPaymentRequestPanel customerId={customerId} options={qrOptions?.success ? qrOptions.data : null} requests={requests} />
+    <StaffPaymentRequestPanel customerId={customerId} options={qrOptions?.success ? qrOptions.data : null} requests={requests}
+      canPostPayment={canPostPayment} cashAccounts={cashAccounts} />
     <section className="card list-main"><div className="section-head"><h2>Thanh toán</h2><span className="scope-chip">50 gần nhất</span></div>
       {payments.length ? <div className="table-wrap"><table>
         <thead><tr><th scope="col">Phiếu</th><th scope="col">Loại</th><th scope="col" className="numeric">Số tiền</th><th scope="col">Ngày</th><th scope="col">Ghi sổ</th><th scope="col">Đối soát</th></tr></thead>

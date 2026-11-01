@@ -1096,6 +1096,10 @@ button.link {
 .selectBar strong { font-size: 1.05rem; }
 .selectBar .payAllButton { flex: none; }
 @media (min-width: 900px) { .selectBar { bottom: 16px; } }
+.selectActions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.cashButton { min-height: 44px; padding: 0 16px; border: 1px solid rgba(255, 255, 255, 0.7); border-radius: 12px; color: #fff; background: transparent; font: inherit; font-weight: 800; cursor: pointer; }
+.cashCode { display: grid; gap: 4px; margin: 0; padding: 14px 18px; border-radius: 16px; background: var(--surface-soft, #eef3f9); text-align: center; }
+.cashCode strong { font-size: 1.8rem; letter-spacing: 0.08em; color: var(--portal-primary-dark, #0a3f80); }
 .requestLines { width: 100%; display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; text-align: left; }
 .requestLines li { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-top: 1px dashed var(--portal-line, #edf1f6); font-size: 0.9rem; }
 

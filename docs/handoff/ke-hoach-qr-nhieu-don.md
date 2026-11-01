@@ -146,3 +146,10 @@ Thay đổi so với bản nháp: danh sách yêu cầu nằm ngay trong tab **C
 ## 8. Lưu ý vận hành
 - Tính năng chỉ chạy khi **SePay đã cấu hình trên Production**: webhook, khóa trong Vault, quỹ ngân hàng bật "Tự ghi tiền về" và "Hiện cho khách". Đây là việc số 4 trong HANDOFF và **hiện chưa làm**. Trước đó, cổng khách sẽ không hiện nút thanh toán.
 - Thứ tự phát hành: PR → CI → áp migration lên QA → test QA đủ các tình huống → Owner xem → áp Production → deploy.
+
+## 9. Mở rộng D45 (01/11/2026): trả tiền mặt, kế toán xác nhận bằng tay
+- Owner chọn: kế toán thu tại cửa hàng (chưa làm luồng tài xế/NV thu ngoài công trình); phần lẻ khách trả thiếu vẫn là nợ; kế toán xác nhận bằng tay.
+- Khách chọn khoản → "Trả tiền mặt tại cửa hàng" → phiếu yêu cầu `CASH` (mã YC, không cần SePay), **chưa ghi sổ**.
+- Kế toán: Sổ quỹ → "Chờ thu tiền mặt" hoặc hồ sơ khách → "Xác nhận đã thu" (số thực nhận + quỹ tiền mặt) → một phiếu thu CASH qua `post_payment`, chia tiền như §3.
+- Đảo phiếu thu → yêu cầu tự mở lại. Đã thu đủ tiền mặt mà khách vẫn chuyển khoản bằng mã → chờ kế toán.
+- Migration `20261101170000_d45_cash_payment_requests.sql`, test native `319_d45_cash_payment_requests.sql`.

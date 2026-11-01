@@ -25,7 +25,7 @@ async function paymentAccount(customerId: string) {
   }
 }
 
-/** D42: per-order amounts to pay by QR, or null when the shop has not switched on bank-confirmed payment. */
+/** D42/D45: the debts the customer can pay (QR only when the shop switched on bank-confirmed payment), or null when unreadable. */
 async function paymentOptions(customerId: string) {
   try {
     const context = await authenticatedPortalClient();
@@ -73,9 +73,9 @@ export default async function CustomerDebtsPage() {
           <div><dt data-tone="soon">Sắp tới hạn</dt><dd>{money(buckets.soon.amount)}</dd></div>
           <div><dt data-tone="overdue">Quá hạn</dt><dd data-tone="overdue">{money(snapshot.debt.overdue_amount_vnd)}</dd></div>
         </dl>
-        {pay && pay.outstanding_amount_vnd !== "0" && <DebtPayButton customerId={snapshot.customer.id} targetKey={ALL_DEBTS} label="Thanh toán tất cả" primary />}
+        {pay?.qr_enabled && pay.outstanding_amount_vnd !== "0" && <DebtPayButton customerId={snapshot.customer.id} targetKey={ALL_DEBTS} label="Thanh toán tất cả" primary />}
       </section>
-      {bank && !pay && <section className={styles.bankCard} aria-labelledby="bank-title">
+      {bank && !pay?.qr_enabled && <section className={styles.bankCard} aria-labelledby="bank-title">
         <h2 id="bank-title">Chuyển khoản cho cửa hàng</h2>
         <div className={styles.bankRow}><span><small>{bank.bank_name}</small><strong>{bank.account_number}</strong><small>{bank.account_holder}</small></span><CopyButton value={bank.account_number} label="Sao chép số TK" /></div>
         <div className={styles.bankRow}><span><small>Nội dung chuyển khoản</small><strong>{transferNote}</strong></span><CopyButton value={transferNote} /></div>
@@ -83,7 +83,7 @@ export default async function CustomerDebtsPage() {
       <div className={styles.split}>
         <section className={styles.card}>
           <h2>Các khoản cần trả</h2>
-          {pay && rows.length > 0 && <DebtSelectList customerId={snapshot.customer.id} rows={rows.map((row) => { const due = dueStatus(row.due, today);
+          {pay && rows.length > 0 && <DebtSelectList customerId={snapshot.customer.id} qrEnabled={pay.qr_enabled} rows={rows.map((row) => { const due = dueStatus(row.due, today);
             return { key: row.key, label: row.label, dueLabel: due.label, dueTone: due.tone, amountVnd: row.amount }; })} />}
           {!pay && (rows.length ? rows.map((row) => { const due = dueStatus(row.due, today); return (
             <article className={styles.billRow} key={row.key}>

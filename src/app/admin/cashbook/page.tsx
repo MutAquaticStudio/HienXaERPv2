@@ -18,10 +18,12 @@ import { createFinanceAccountAction, dismissBankTransactionAction, reconcilePaym
 import { MoneyInput } from "@/components/ui/money-input";
 import { CsvDownloadButton } from "@/components/ui/csv-download-button";
 import { toCsv } from "@/lib/core/csv";
+import { CashConfirmButton } from "@/modules/finance/staff-payment-request";
 
 type Payment = { id: string; payment_number: string; direction: string; counterparty_name: string; account_code: string; amount_vnd: string; allocated_amount_vnd: string; advance_amount_vnd: string; unallocated_amount_vnd: string; effective_at: string; posting_state: string; reconciliation_state: string; reconciliation_difference_vnd: string; reversal_of_payment_id: string | null };
 type Period = { opening_vnd: string; receipts_vnd: string; disbursements_vnd: string; closing_vnd: string; payment_count: number };
 type Query = { notice?: string; error?: string; page?: string; from?: string; to?: string; account?: string; direction?: string; view?: string };
+type CashWaiting = { id: string; code: string; amount_vnd: string; received_amount_vnd: string; created_at: string; customer_id: string; customer: { code: string; display_name: string } | null };
 type BankLine = { id: string; amount_vnd: string; content: string | null; gateway: string | null; reference_code: string | null; transaction_at: string; reason: string; customer_id: string | null;
   payment_request: { code: string } | null };
 
@@ -90,6 +92,10 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
   // D42: SePay bank movements that could not be matched to a customer.
   const bankLines = can.post ? ((await supabase.from("bank_transactions").select("id, amount_vnd::text, content, gateway, reference_code, transaction_at, reason, customer_id, payment_request:payment_requests(code)")
     .eq("branch_id", access.branchId).eq("state", "NEEDS_REVIEW").order("received_at", { ascending: false }).limit(50)).data ?? []) as unknown as BankLine[] : [];
+  // D45: cash payment requests waiting for "Xác nhận đã thu" (hidden after 7 days; nothing is booked before confirmation).
+  const cashWaiting = can.post ? ((await supabase.from("payment_requests").select("id, code, amount_vnd::text, received_amount_vnd::text, created_at, customer_id, customer:customers(code, display_name)")
+    .eq("branch_id", access.branchId).eq("method", "CASH").in("state", ["OPEN", "PARTIAL"]).gt("expires_at", new Date().toISOString())
+    .order("created_at", { ascending: false }).limit(50)).data ?? []) as unknown as CashWaiting[] : [];
   if (paymentsResult.error || summaryResult.error || periodResult.error || accountsResult.error || advancesResult.error) throw new Error("Không thể tải sổ quỹ đầy đủ.");
   const fetched = (paymentsResult.data ?? []) as Payment[];
   const rows = fetched.slice(0, CORE_LIST_PAGE_SIZE);
@@ -178,6 +184,18 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
             <small className="muted">Chỉ điền khi ngân hàng yêu cầu, ví dụ VietinBank cá nhân cần SEVQR, tài khoản ảo theo nội dung cần TKP + mã.</small></label>
           <div className="form-actions"><button className="button button-primary" type="submit">Lưu</button></div></form>
       </FormDialog>}
+    </section>}
+    {cashWaiting.length > 0 && <section className="card" id="cash-requests" aria-label="Chờ thu tiền mặt"><div className="section-head"><h2>Chờ thu tiền mặt</h2><span className="scope-chip">{cashWaiting.length} yêu cầu</span></div>
+      <p className="muted card-pad">Khách chọn trả tiền mặt tại cửa hàng. Đếm tiền, đối chiếu mã khách đưa, rồi bấm “Xác nhận đã thu” — lúc đó mới ghi phiếu thu và trừ công nợ.</p>
+      <div className="table-wrap"><table><thead><tr><th>Mã</th><th>Khách hàng</th><th>Tạo lúc</th><th className="numeric">Cần thu</th><th className="numeric">Đã nhận</th><th>Thao tác</th></tr></thead><tbody>{cashWaiting.map((row) => <tr key={row.id}>
+        <td className="mono">{row.code}</td>
+        <td><Link className="code-link" href={`/admin/customers/${row.customer_id}?tab=debts`}>{row.customer?.display_name ?? "—"}</Link><small className="table-subline">{row.customer?.code}</small></td>
+        <td>{formatBusinessDate(row.created_at)}</td>
+        <td className="numeric mono">{money(row.amount_vnd)}</td><td className="numeric mono">{money(row.received_amount_vnd)}</td>
+        <td className="table-actions"><CashConfirmButton request={row} customerId={row.customer_id}
+          accounts={accounts.filter((account) => account.account_kind === "CASH" && account.active).map((account) => ({ id: account.id, name: account.name }))}
+          defaultAmountVnd={(BigInt(row.amount_vnd) > BigInt(row.received_amount_vnd) ? BigInt(row.amount_vnd) - BigInt(row.received_amount_vnd) : BigInt(row.amount_vnd)).toString()} /></td>
+      </tr>)}</tbody></table></div>
     </section>}
     {bankLines.length > 0 && <section className="card" id="bank" aria-label="Giao dịch ngân hàng chờ xử lý"><div className="section-head"><h2>Giao dịch ngân hàng chờ xử lý</h2><span className="scope-chip">{bankLines.length} khoản</span></div>
       <p className="muted card-pad-x">Tiền đã vào tài khoản nhưng chưa nhận ra khách. Chọn khách để ghi phiếu thu (trừ nợ cũ nhất trước), hoặc bỏ qua nếu không phải tiền khách trả.</p>

@@ -2,9 +2,11 @@ import { z } from "zod";
 
 /** D42: what the customer portal gets from portal_debt_payment_options — computed by the database at the moment of asking. */
 export const debtPaymentOptionsSchema = z.object({
-  bank_name: z.string(),
-  account_number: z.string(),
-  account_holder: z.string(),
+  /** D45: the debts are listed even without SePay (cash at the shop); the QR / bank fields only when this is true. */
+  qr_enabled: z.boolean().default(true),
+  bank_name: z.string().nullable(),
+  account_number: z.string().nullable(),
+  account_holder: z.string().nullable(),
   customer_code: z.string(),
   outstanding_amount_vnd: z.string().regex(/^\d+$/),
   all_note: z.string(),
@@ -52,6 +54,7 @@ export function vietQrImageUrl(input: { bank: string; accountNumber: string; amo
 export const paymentRequestSchema = z.object({
   id: z.guid(),
   code: z.string().regex(/^YC[A-Z0-9]{5}$/),
+  method: z.enum(["BANK_QR", "CASH"]).default("BANK_QR"),
   state: z.enum(["OPEN", "PARTIAL", "PAID", "CANCELLED"]),
   amount_vnd: z.string().regex(/^\d+$/),
   received_amount_vnd: z.string().regex(/^\d+$/),
