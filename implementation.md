@@ -3461,3 +3461,9 @@ Thay đổi (migration `20261024090000`–`20261024090900`, native 285, 290, 295
 - Migration `20261101170000_d45_cash_payment_requests.sql`: `payment_requests.method` (BANK_QR | CASH, `account_id` chỉ bắt buộc cho QR), bảng `payment_request_payments` (RLS theo yêu cầu), `create_payment_request(customer, keys, method, op)` (bản 3 tham số giữ cho QR), `confirm_cash_payment_request` (qua `post_payment`, quỹ tiền mặt, chia tiền như D44), `private.refresh_payment_request` + trigger đảo phiếu thu mở lại yêu cầu, `portal_debt_payment_options` trả `qr_enabled` và liệt kê khoản nợ cả khi chưa bật SePay.
 - Test native `319` (không SePay vẫn tạo yêu cầu tiền mặt, không ghi sổ trước khi xác nhận, quyền khách/người xem/chi nhánh khác, quỹ ngân hàng bị từ chối, thu thiếu còn nợ, idempotent, đảo phiếu mở lại, thu dư → nợ khác → ứng trước, chuyển khoản sau khi đã thu đủ → chờ kế toán, yêu cầu hủy không xác nhận được); sửa `315` theo hành vi mới (không còn trả null khi tắt SePay).
 - App: cổng khách hai nút "Chuyển khoản N khoản" / "Trả tiền mặt tại cửa hàng" (`CashRequestCard`); hồ sơ khách "Thu nợ" → "Thu tiền mặt" + `CashConfirmDialog`; Sổ quỹ "Chờ thu tiền mặt".
+
+## 2026-11-02 — QA toàn hệ thống trên QA + sửa yêu cầu thanh toán theo kịp tiền
+- Kịch bản + kết quả: `docs/qa/kich-ban-qa-toan-he-thong.md`; bộ chạy Playwright `scripts/qa/system-qa` (smoke, layout, e2e).
+- Lớp 1: 65/68 màn đạt (3 màn 404 đúng thiết kế — cờ tắt); lớp 2: 23 bước, 21 đạt, 1 bị chặn (Preview thiếu `SUPABASE_SECRET_KEY` QA → không tải ảnh thợ), 1 lỗi sổ sách đã sửa.
+- Sửa: migration `20261102090000_d45_requests_follow_allocations.sql` + test native `320` — yêu cầu thanh toán tự tính lại khi tiền vào/đảo khỏi khoản nợ của nó (hết nợ = Đã thanh toán), không còn nằm ở "Chờ thu tiền mặt".
+- Còn mở: thanh menu chồng chữ 1280–1440 px khi khung Người liên hệ mở (chờ Owner chọn cách).
