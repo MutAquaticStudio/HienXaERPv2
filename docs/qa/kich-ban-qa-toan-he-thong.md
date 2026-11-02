@@ -64,3 +64,23 @@ Giao hàng hoàn tất và xác nhận giao (cần ảnh — bị chặn trên Q
 - 2 yêu cầu thanh toán, 2 phiếu thu, 1 giao dịch ngân hàng chờ xử lý.
 - Quỹ Vietcombank QA bật SePay, khóa webhook thử trong Vault QA.
 - Đổi mật khẩu 3 tài khoản thử QA (không ghi vào repo).
+
+## Chạy lại 02/11/2026 (sau D46 tách phiếu giao + số phiếu liền mạch)
+Bản build `main` @ `d4e8ade` (+ migration `20261102140000`) chạy `next start` nối QA.
+
+| Hạng mục | Kết quả |
+|---|---|
+| Lớp 1 — mọi màn hình | **65/68 đạt**; 3 màn 404 đúng thiết kế (Báo giá, Báo chuyển khoản tắt). |
+| Bố cục menu 1280–1920 px (khung liên hệ mở) | 1 dòng, không chồng, không cắt chữ ở mọi độ rộng đo. |
+| Lớp 2 — 10 bước (bán hàng, điều phối, thợ, D46, đăng xuất) | **10/10 đạt**. |
+
+Các bước D46 mới (đã thêm vào `e2e.mjs`, chạy bằng `node e2e.mjs "Tách phiếu"`):
+
+| Bước | Kết quả |
+|---|---|
+| Khách đặt 2 mặt hàng → chủ duyệt | ✅ SO-2026-000079 → DL-2026-000038, có nút "Tách phiếu giao" |
+| Chọn người/xe không hợp lệ cho phiếu 2 | ✅ "Phiếu 2: Người giao hoặc xe đã được phân trong khung giờ này… Chưa tách phiếu nào." — không đổi gì, **không tiêu số DL** |
+| Tách 3 phiếu (cát chia 0,5 + 0,5; thép 1 phiếu riêng) | ✅ DL-039, 040, 041 **liền nhau, nối tiếp ngay DL-038**; phiếu gốc ghi "đã hủy để tách thành…", đơn ghi "đã tách thành…" |
+| Sổ kho (database) | ✅ DL-038 đã hủy, giữ chỗ trả hết; 3 phiếu mới giữ chỗ đúng 0,5 / 1 / 0,5 |
+| Bảng Chờ điều phối 1280/1440 px | ✅ thấy đủ 3 phiếu mới, không tràn ngang, nút "Gán" hiện đủ |
+
