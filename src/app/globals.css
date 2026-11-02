@@ -2022,3 +2022,10 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .split-entry { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
 .split-result { display: grid; gap: 6px; margin: 0 0 12px; padding-left: 18px; }
 @media (max-width: 560px) { .split-form td input { width: 5.5rem; } }
+
+/* D47: Cài đặt → Zalo OA — one block per event template. */
+.zalo-notify { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.zalo-template-list { display: grid; gap: 12px; }
+.zalo-template { display: grid; gap: 6px; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius); }
+.zalo-template p { margin: 0; }
+.zalo-params code { margin-right: 6px; padding: 1px 6px; border-radius: 6px; background: var(--surface-sunken); font-size: var(--font-size-caption); }

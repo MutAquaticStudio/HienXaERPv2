@@ -1,6 +1,6 @@
 # Kế hoạch tích hợp Zalo OA — Hiền Xa ERP V2
 
-> Bản nháp kế hoạch, ngày 01/11/2026. Chưa phải quyết định của Owner: khi Owner chốt, ghi thành quyết định mới (D44) trong `Spec.md` rồi mới làm.
+> Kế hoạch ngày 01/11/2026. **Owner chốt 02/11/2026 thành D47** (xem `Spec.md`). Giai đoạn 1 đã có code (migration `20261102160000_d47_zalo_oa_notifications.sql`, Cài đặt → Zalo OA); chờ Owner làm Giai đoạn 0 rồi kết nối.
 > Nguồn: tài liệu chính thức developers.zalo.me (đọc ngày 01/11/2026). Các mục OAuth v4, Tin nhắn OA, Webhook và ZBS Template Message.
 
 ## 1. Những điều tài liệu Zalo nói (đã kiểm tra)
@@ -116,3 +116,21 @@ Nguyên tắc (khớp CLAUDE.md):
 3. **Gửi tới số nào**: SĐT chính của khách, hay SĐT người nhận hàng ở công trình (cho tin giao hàng)?
 4. Mặc định **bật** nhận Zalo cho mọi khách hiện có (có thể tắt từng khách)?
 5. Thứ tự: làm **mục 4 (QR nhiều đơn)** trước rồi mới Zalo (đề xuất, vì giai đoạn 2 dùng lại), hay Zalo giai đoạn 1 trước?
+
+
+## 6. Hướng dẫn Owner kết nối (sau khi giai đoạn 1 đã lên)
+
+1. **Zalo App** — developers.zalo.me → Tạo ứng dụng → liên kết với OA Hiền Xa. Trong *Cài đặt ứng dụng*:
+   - Ghi lại **App ID** (dãy số) — nhập trên trang Cài đặt → Zalo OA.
+   - **Secret Key**: KHÔNG gửi qua chat. Lưu vào Supabase (Production) → Project Settings → **Vault** → *Add new secret*, tên `hx_zalo_app_secret`.
+   - *Official Account → Callback URL*: `https://<tên miền ứng dụng>/api/zalo/oauth/callback` (cần `NEXT_PUBLIC_APP_URL` là tên miền https).
+2. **Tiện ích http** trong Supabase → Database → Extensions: bật `http` (database dùng để đổi/làm mới token).
+3. **ZBS Account** (zalo.cloud): liên kết App + OA, nạp tiền, xem bảng giá tin qua số điện thoại.
+4. **Đăng ký 4 mẫu tin** (ZBS Template Message), tham số kiểu chữ, **đúng tên** như trang Cài đặt → Zalo OA hiển thị:
+   - Đơn được xác nhận (Giao dịch): `order_code`, `order_date`, `total`, `site`
+   - Đã giao hàng (Giao dịch): `delivery_code`, `site`, `delivered_at`, `receiver`
+   - Đã nhận tiền (Giao dịch): `amount`, `customer`, `paid_at`, `balance`
+   - Nhắc công nợ (Chăm sóc khách hàng): `customer`, `balance`, `due_date`
+5. Vào **Cài đặt → Zalo OA**: nhập App ID → **Kết nối Zalo OA** → Cho phép trên Zalo → quay về "Đã kết nối".
+6. Nhập **mã mẫu tin** từng sự kiện khi Zalo duyệt → bật → **Gửi thử** tới số của quản trị OA (chế độ thử).
+7. Khi đã thử ổn: chuyển **Chế độ gửi → Khách thật**.

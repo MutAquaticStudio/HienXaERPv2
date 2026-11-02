@@ -3,6 +3,7 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
 const m = vi.hoisted(() => ({ client: vi.fn(), rpc: vi.fn() }));
 vi.mock("@/modules/portal/server", () => ({ authenticatedPortalClient: m.client, portalRpc: m.rpc }));
+vi.mock("@/modules/zalo/notify-actions", () => ({ setCustomerZaloNotifyAction: vi.fn() }));
 vi.mock("next/navigation", () => ({ redirect: (path: string) => { throw new Error(`redirect:${path}`); } }));
 import CustomerAccountPage from "./page";
 
@@ -14,14 +15,14 @@ const account = {
 };
 beforeEach(() => {
   vi.clearAllMocks();
-  m.client.mockResolvedValue({ supabase: {}, user: { email: "0900000000@sdt.hienxavlxd.com", last_sign_in_at: "2026-10-22T01:00:00Z" } });
+  m.client.mockResolvedValue({ supabase: { rpc: vi.fn(async () => ({ data: true, error: null })) }, user: { email: "0900000000@sdt.hienxavlxd.com", last_sign_in_at: "2026-10-22T01:00:00Z" } });
   m.rpc.mockResolvedValue(account);
 });
 afterEach(cleanup);
 
 it("shows how the customer signs in, their details and delivery addresses (FB7)", async () => {
   render(await CustomerAccountPage());
-  expect(m.rpc).toHaveBeenCalledWith({}, "customer_portal_account", { target_customer_id: null });
+  expect(m.rpc).toHaveBeenCalledWith(expect.anything(), "customer_portal_account", { target_customer_id: null });
   const login = screen.getByRole("region", { name: "Đăng nhập" });
   expect(within(login).getByText("Số điện thoại đăng nhập")).toBeInTheDocument();
   expect(within(login).getByText("0900000000")).toBeInTheDocument();
@@ -40,4 +41,9 @@ it("shows how the customer signs in, their details and delivery addresses (FB7)"
 it("sends a signed-out visitor to the customer sign-in", async () => {
   m.client.mockResolvedValueOnce(null);
   await expect(CustomerAccountPage()).rejects.toThrow("redirect:/customer/login");
+});
+
+it("D47: the customer's owner can switch Zalo notifications off", async () => {
+  render(await CustomerAccountPage());
+  expect(screen.getByRole("checkbox", { name: "Nhận thông báo qua Zalo" })).toBeChecked();
 });
