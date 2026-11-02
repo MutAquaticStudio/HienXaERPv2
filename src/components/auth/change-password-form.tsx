@@ -1,6 +1,6 @@
 "use client";
 
-import { KeyRound } from "lucide-react";
+import { KeyRound, LockKeyhole } from "lucide-react";
 import { useActionState } from "react";
 import { changeOwnPasswordAction } from "@/lib/auth/actions";
 
@@ -10,8 +10,8 @@ export function ChangePasswordForm({ surface }: { surface: "customer" | "work" |
   return (<>
     <form action={action} className="auth-form">
       <input type="hidden" name="surface" value={surface} />
-      <div className="field"><label htmlFor="new-password">Mật khẩu mới</label><input id="new-password" name="password" type="password" autoComplete="new-password" minLength={8} maxLength={72} required /></div>
-      <div className="field"><label htmlFor="confirm-password">Nhập lại mật khẩu mới</label><input id="confirm-password" name="confirm" type="password" autoComplete="new-password" minLength={8} maxLength={72} required /></div>
+      <div className="field"><label htmlFor="new-password">Mật khẩu mới</label><div className="input-with-icon"><LockKeyhole size={18} aria-hidden="true" /><input id="new-password" name="password" type="password" autoComplete="new-password" minLength={8} maxLength={72} required /></div></div>
+      <div className="field"><label htmlFor="confirm-password">Nhập lại mật khẩu mới</label><div className="input-with-icon"><LockKeyhole size={18} aria-hidden="true" /><input id="confirm-password" name="confirm" type="password" autoComplete="new-password" minLength={8} maxLength={72} required /></div></div>
       {state?.message && <p className="form-message" role="alert">{state.message}</p>}
       <button className="button button-primary auth-submit" type="submit" disabled={pending}><KeyRound size={19} />{pending ? "Đang lưu..." : "Đổi mật khẩu và tiếp tục"}</button>
     </form>

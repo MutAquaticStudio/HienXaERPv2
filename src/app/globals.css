@@ -490,11 +490,13 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .portal-hint + .auth-form { margin-top: 18px; }
 .auth-form { display: grid; gap: 17px; margin-top: 28px; }
 .auth-form .field input { min-height: 46px; border-radius: 10px; }
-.auth-form .field input:focus { border-color: var(--primary); box-shadow: var(--focus-ring); outline: none; }
+.auth-form .field textarea { min-height: 84px; border-radius: 10px; }
+.auth-form .field :is(input, textarea):focus { border-color: var(--primary); box-shadow: var(--focus-ring); outline: none; }
 .input-with-icon { position: relative; }
 .input-with-icon > svg { position: absolute; top: 50%; left: 14px; color: var(--subtle); transform: translateY(-50%); pointer-events: none; transition: color var(--dur-fast) var(--ease-out); }
 .input-with-icon:focus-within > svg { color: var(--primary); }
-.input-with-icon input { padding-left: 42px; }
+.input-with-icon :is(input, textarea) { padding-left: 42px; }
+.input-icon-top > svg { top: 13px; transform: none; }
 .password-field { position: relative; }
 .password-field input { padding-right: 48px; }
 .password-field button { position: absolute; inset: 0 4px 0 auto; display: grid; width: 42px; place-items: center; border: 0; color: var(--muted); background: transparent; cursor: pointer; }
