@@ -31,7 +31,7 @@ const steps = {
     await page.waitForURL(/\/admin\/orders\/[0-9a-f-]{36}/, { timeout: 45000 });
     await page.waitForLoadState('load');
     state.orderUrl = new URL(page.url()).pathname;
-    const text = await page.locator('main').innerText();
+    const text = await page.locator('h1').innerText();
     state.orderNumber = text.match(/SO-\d{4}-\d{6}/)?.[0];
     keep();
     await shot(page, 'e2e-order');
@@ -375,6 +375,85 @@ const steps = {
     const text = await page.locator('body').innerText();
     await shot(page, 'e2e-decline');
     return text.slice(0, 160).replace(/\n/g, ' ');
+  },
+
+  async 'Tách phiếu D46 — khách đặt 2 mặt hàng, chủ duyệt → có phiếu giao 2 dòng'() {
+    const c = await asMobile('customer');
+    await c.goto('/customer/orders/new', { waitUntil: 'load' });
+    await c.getByRole('button', { name: 'Thêm Thép Hòa Phát D10' }).click(); await c.waitForTimeout(500);
+    await c.getByRole('button', { name: 'Thêm Cát vàng xây tô' }).click(); await c.waitForTimeout(500);
+    await c.getByRole('button', { name: /Xem & gửi đơn/ }).click();
+    const dialog = c.getByRole('dialog'); await dialog.waitFor(); await dialog.getByRole('button', { name: 'Gửi đơn' }).click();
+    await c.waitForURL((url) => !url.pathname.endsWith('/new'), { timeout: 60000 });
+    state.splitOrderId = new URL(c.url()).pathname.split('/').pop();
+    const page = await as('owner');
+    await page.goto('/admin/orders/' + state.splitOrderId, { waitUntil: 'load' });
+    await page.getByRole('button', { name: 'Duyệt đơn (giữ hạn mức, tự phân nguồn)' }).click();
+    await page.waitForTimeout(4000); await page.reload({ waitUntil: 'load' });
+    state.splitDeliveryUrl = await page.locator('.order-next-steps a[href^="/admin/deliveries/"]').first().getAttribute('href');
+    state.splitOrderNumber = (await page.locator('h1').innerText()).trim(); keep();
+    await page.goto(state.splitDeliveryUrl, { waitUntil: 'load' }); await page.waitForSelector('h1');
+    state.splitSource = (await page.locator('h1').innerText()).trim(); keep();
+    if (!(await page.getByRole('link', { name: 'Tách phiếu giao' }).count())) throw new Error('Không thấy nút Tách phiếu giao');
+    return `${state.splitOrderNumber} → ${state.splitSource}; có nút Tách phiếu giao`;
+  },
+
+  async 'Tách phiếu D46 — chọn xe không chở được cho phiếu 2 → bị từ chối, báo rõ, không đổi gì'() {
+    const page = await as('owner');
+    await page.goto(state.splitDeliveryUrl + '/split', { waitUntil: 'load' }); await page.waitForSelector('.split-form');
+    await page.getByLabel(/Thép.*cho Phiếu 2/).fill('1');
+    await page.locator('#split-employee-2').selectOption({ label: 'Thợ 01' });
+    await page.locator('#split-vehicle-2').selectOption({ index: 1 });
+    await page.getByRole('button', { name: 'Tách thành 2 phiếu' }).click();
+    const alert = page.locator('.split-form .form-message'); await alert.waitFor({ timeout: 30000 });
+    const message = await alert.innerText();
+    await shot(page, 'e2e-split-refused');
+    if (!/^Phiếu 2: .*Chưa tách phiếu nào\.$/s.test(message)) throw new Error('Thông báo lạ: ' + message);
+    return message;
+  },
+
+  async 'Tách phiếu D46 — tách 3 phiếu (chia lẻ 1 dòng) → số phiếu liền nhau, liên kết qua lại'() {
+    const page = await as('owner');
+    await page.goto(state.splitDeliveryUrl + '/split', { waitUntil: 'load' }); await page.waitForSelector('.split-form');
+    await page.getByRole('button', { name: '3 phiếu' }).click();
+    await page.getByLabel(/Thép.*cho Phiếu 2/).fill('1');
+    await page.getByLabel(/Cát.*cho Phiếu 3/).fill('0,5');
+    const keepCell = await page.getByLabel(/Phiếu 1 giữ lại của Cát/).innerText();
+    if (!/0,5/.test(keepCell)) throw new Error('Phiếu 1 không tự giữ 0,5: ' + keepCell);
+    await page.getByRole('button', { name: 'Tách thành 3 phiếu' }).click();
+    await page.locator('.split-result').waitFor({ timeout: 30000 });
+    const numbers = (await page.locator('.split-result a.code-link').allInnerTexts()).map((x) => x.trim());
+    await shot(page, 'e2e-split-done');
+    const seq = numbers.map((n) => Number(n.slice(-6))).sort((a, b) => a - b);
+    if (numbers.length !== 3 || seq[1] !== seq[0] + 1 || seq[2] !== seq[1] + 1) throw new Error('Số phiếu không liền nhau: ' + numbers.join(', '));
+    state.splitNumbers = numbers; keep();
+    await page.goto(state.splitDeliveryUrl, { waitUntil: 'load' }); await page.waitForSelector('h1');
+    const original = await page.locator('.command-note').allInnerTexts();
+    if (!original.some((t) => numbers.every((n) => t.includes(n)))) throw new Error('Phiếu gốc không ghi đã tách thành: ' + original.join(' | '));
+    await page.goto('/admin/orders/' + state.splitOrderId, { waitUntil: 'load' }); await page.waitForSelector('.order-next-steps');
+    const progress = await page.locator('.order-next-steps').innerText();
+    if (!progress.includes('đã tách thành')) throw new Error('Tiến độ đơn không ghi đã tách');
+    return `${state.splitSource} → ${numbers.join(', ')} (liền nhau); phiếu gốc và đơn ghi "đã tách thành"`;
+  },
+
+  async 'Tách phiếu D46 — bảng Chờ điều phối có các phiếu mới, thấy giờ hẹn và nút Gán ở 1280/1440 px'() {
+    const page = await as('owner');
+    const seen = [];
+    for (const width of [1280, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/admin/dispatch', { waitUntil: 'load' }); await page.waitForSelector('.dispatch-waiting-scroll'); await page.waitForTimeout(500);
+      const r = await page.evaluate((numbers) => {
+        const box = document.querySelector('.dispatch-waiting-scroll'); const edge = box.getBoundingClientRect().right;
+        const text = box.innerText;
+        return { listed: numbers.filter((n) => text.includes(n)).length, overflow: box.scrollWidth > box.clientWidth + 1,
+          ganHidden: [...box.querySelectorAll('.dispatch-waiting-actions button')].some((b) => b.getBoundingClientRect().right > edge + 1) };
+      }, state.splitNumbers);
+      if (r.overflow || r.ganHidden) throw new Error(`${width}px: bảng tràn ngang hoặc nút Gán bị che`);
+      seen.push(`${width}px: ${r.listed}/3 phiếu mới trong bảng`);
+    }
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await shot(page, 'e2e-split-dispatch');
+    return seen.join('; ');
   },
 
   async 'Đăng nhập: đăng xuất máy A không đá máy B (cùng tài khoản)'() {
