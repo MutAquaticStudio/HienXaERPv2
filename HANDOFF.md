@@ -6,15 +6,15 @@ Tài liệu bàn giao cho phiên làm việc tiếp theo (Claude Code hoặc ng�
 
 | Môi trường | Địa chỉ | Supabase | Code | Migration mới nhất |
 |---|---|---|---|---|
-| Production | https://hien-xa-erp-v2-nu.vercel.app (sắp: https://app.hienxavlxd.com) | `nbwynrwkdbtfsitafsxa` | `main` @ `8d6d418`, deploy `dpl_J8xfzDhEyjF8tZL9NwfJdHEY9VCx` | `20261102160000_d47_zalo_oa_notifications` |
-| QA (nghiệm thu) | Preview từ `main` @ `8d6d418`: `dpl_47DhKHSSDF72e6VdEMNDrSwtM3Au` (https://hien-xa-erp-v2-5wtmcm533-hienxa.vercel.app, cần đăng nhập Vercel). Tên miền riêng https://qa.hienxavlxd.com gắn nhánh `nox/elegant-volta-kr29iz` (chờ DNS; nhánh này **không** còn được cập nhật — deploy QA bằng preview từ `main`) | `ffrwiglcrlumfvhubaxg` | `main` @ `8d6d418` | `20261102160000_d47_zalo_oa_notifications` |
+| Production | https://hien-xa-erp-v2-nu.vercel.app (sắp: https://app.hienxavlxd.com) | `nbwynrwkdbtfsitafsxa` | `main` @ `57b4bff`, deploy `dpl_FeVW6ctpUEZ7U5F8BoaqH4GEfhDN` | `20261102160000_d47_zalo_oa_notifications` |
+| QA (nghiệm thu) | Preview từ `main` @ `57b4bff`: `dpl_C6ddHam7vy5AYgtbgEZfuWmngzff` (https://hien-xa-erp-v2-p5su7q7iz-hienxa.vercel.app, cần đăng nhập Vercel). Tên miền riêng https://qa.hienxavlxd.com gắn nhánh `nox/elegant-volta-kr29iz` (chờ DNS; nhánh này **không** còn được cập nhật — deploy QA bằng preview từ `main`) | `ffrwiglcrlumfvhubaxg` | `main` @ `57b4bff` | `20261102160000_d47_zalo_oa_notifications` |
 
 - Kiểm phiên bản: `GET /api/health` → `buildSha` (dùng `web_fetch_vercel_url` cho bản preview có bảo vệ).
 - Vercel: team `team_9qd9uzBYBc6WtzJVu7wGP7uC`, project `prj_o6ya9YI1b3fTFC8nxiOtjHiwaS3W`. Auto-deploy tắt (`vercel.json`); deploy bằng `create_deployment` (gitSource `{type: github, org: MutAquaticStudio, repo: HienXaERPv2, ref: main, sha}`; `target: production` cho Production, bỏ `target` cho bản QA preview).
 - Preview dùng env QA (`HX_QA_PROJECT_REF`…). Preview **chưa có** `SUPABASE_SECRET_KEY` của QA → thợ không tải được ảnh trên QA (luồng giao hàng – xác nhận giao – công nợ chưa thử được trên QA). Preview cũng chưa có SMTP / `HX_AUTOMATION_SECRET`.
 - Lịch sử `schema_migrations`: 8 migration của 01–02/11 khớp repo (version + sha256) trên cả hai DB. Lệch **cũ** (tháng 9–10, đã ghi trong `implementation.md` 16/10): Production thiếu tên riêng của 9 version cũ vì đã áp gộp trong `pr44_reviewed_schema187_compact_forward_20261013`, `operational_role_presets` mang version `20261013121739`, có bản dọn `owner_authorized_uat_cleanup_20261013`; QA ghi `retire_opening_pending_rule` dưới `20261014074344` (repo `20261012155947`) và có bản vá riêng `20261002114730`. Chỉ lệch số hiệu/tên ghi lại, không thiếu nội dung. Muốn khớp từng dòng thì thêm bản ghi đối chiếu (ghi Production cần Owner đồng ý).
 
-## 2. Đã làm trong phiên 01–02/11 (PR #77–#88, tất cả đã lên QA + Production)
+## 2. Đã làm trong phiên 01–02/11 (PR #77–#90, tất cả đã lên QA + Production)
 
 | PR | Nội dung | Migration |
 |---|---|---|
@@ -29,6 +29,8 @@ Tài liệu bàn giao cho phiên làm việc tiếp theo (Claude Code hoặc ng�
 | #86 | Tách phiếu bị từ chối không làm nhảy số DL/WRK (chạy thử rồi mới cấp số) | `20261102140000` |
 | #87 | Kịch bản D46 trong bộ QA; kết quả QA lại | — |
 | #88 | **D47** Zalo OA giai đoạn 1 (code xong, **chưa kết nối**) | `20261102160000` |
+| #89 | Viết lại HANDOFF này | — |
+| #90 | Kiểm tra UX/UI tự động (Stageshow `auditLayout`, 33 trang máy tính + trang điện thoại/cổng): Sổ quỹ di động hết tràn ngang, chữ dài trong bảng xuống dòng (`td.cell-wrap`), chỉ số tài chính 4→2→1 cột, ô số liệu 2 cột trên điện thoại; cổng thợ/khách hiện logo công ty, nút đăng xuất chỉ biểu tượng ≤420 px; **chuyển động** theo UX-UI-R1-001 (khối trang hiện lần lượt ở cổng, vạch menu dưới trượt, nhấn co nhẹ, mũi tên mở dòng xoay; tắt khi giảm chuyển động) | — |
 
 Chi tiết quyết định: `Spec.md` D44–D47. Kế hoạch: `docs/handoff/ke-hoach-qr-nhieu-don.md` (D44/D45), `docs/handoff/ke-hoach-zalo-oa.md` (D47). Kết quả QA: `docs/qa/kich-ban-qa-toan-he-thong.md`.
 
@@ -69,6 +71,8 @@ Chi tiết quyết định: `Spec.md` D44–D47. Kế hoạch: `docs/handoff/ke-
 
 - **Giá vốn bình quân trên trang chi tiết vật tư** — chưa merge, chờ Owner. Patch `docs/handoff/wip-gia-von-binh-quan.patch` (`git apply …`); chưa chạy `pnpm check` toàn bộ.
 - **Zalo giai đoạn 2**: webhook (sau quyết định §4.10), chat hai chiều qua OA, gửi QR/yêu cầu thanh toán D44 qua Zalo.
+- Nhãn cổng khách: "Đã duyệt" và "Đã xác nhận" cùng xuất hiện ở danh sách đơn — đúng D15 hiện hành (có test); muốn gộp một nhãn thì Owner quyết định sửa D15.
+- Kiểm tra bố cục lần sau: skill Stageshow (`benjitaylor/skills`) chỉ cài trong phiên 02/11, không có trong repo; cài lại nếu cần `auditLayout`, hoặc dùng `scripts/qa/system-qa/layout.mjs`.
 - UX nhỏ: tự điều phối nên nói rõ "xe chưa xác nhận sức chở"; cửa sổ QR D44 nên gộp các dòng "Số dư đầu kỳ"; dòng "Đã gửi Zalo · đã nhận" trên chứng từ (cần webhook).
 - Để sau (cần đổi dữ liệu cổng / migration): tên tài xế + biển số trên thẻ đơn của khách; ngày chi trả trên phiếu lương thợ.
 
