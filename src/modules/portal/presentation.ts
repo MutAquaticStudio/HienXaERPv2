@@ -65,7 +65,7 @@ export function soldQuantityLabel(base: string, line: { unit: string; sold_unit?
   return `${format(sold)} ${line.sold_unit} (${format(base)} ${line.unit})`;
 }
 
-/** D15: how the customer sees an order — "Chờ duyệt" while a portal order waits, then approved / delivering / done (FB7: "Hoàn tất"). */
+/** D15: how the customer sees an order — "Chờ duyệt" while a portal order waits, then approved / delivering / done (FB7: "Hoàn tất"); D48: "Đã duyệt" for every channel. */
 export function portalOrderStateLabel(order: { channel?: string; state?: string; fulfillment_state?: string }) {
   if (order.state === "DRAFT") return order.channel === "CUSTOMER_PORTAL" ? "Chờ duyệt" : "Đang soạn";
   if (order.state === "CANCELLED") return "Đã hủy";
@@ -73,7 +73,8 @@ export function portalOrderStateLabel(order: { channel?: string; state?: string;
     if (order.fulfillment_state === "FULFILLED") return "Hoàn tất";
     if (order.fulfillment_state === "PARTIAL") return "Đang giao";
     if (order.fulfillment_state === "CLOSED_REMAINDER") return "Hoàn tất (chốt phần còn lại)";
-    return order.channel === "CUSTOMER_PORTAL" ? "Đã duyệt" : "Đã xác nhận";
+    // D48: one word for every confirmed order, whether the customer or the store placed it.
+    return "Đã duyệt";
   }
   return salesStateLabel(order.state);
 }

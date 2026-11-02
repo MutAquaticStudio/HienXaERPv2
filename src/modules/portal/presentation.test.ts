@@ -25,7 +25,7 @@ it("names service jobs and shows quantities in the unit the order was sold in", 
 it("shows a customer's own order as waiting, approved, delivering or delivered", () => {
   expect(portalOrderStateLabel({ channel: "CUSTOMER_PORTAL", state: "DRAFT" })).toBe("Chờ duyệt");
   expect(portalOrderStateLabel({ channel: "CUSTOMER_PORTAL", state: "CONFIRMED", fulfillment_state: "NOT_STARTED" })).toBe("Đã duyệt");
-  expect(portalOrderStateLabel({ channel: "INTERNAL", state: "CONFIRMED", fulfillment_state: "NOT_STARTED" })).toBe("Đã xác nhận");
+  expect(portalOrderStateLabel({ channel: "INTERNAL", state: "CONFIRMED", fulfillment_state: "NOT_STARTED" })).toBe("Đã duyệt");
   expect(portalOrderStateLabel({ state: "CONFIRMED", fulfillment_state: "PARTIAL" })).toBe("Đang giao");
   expect(portalOrderStateLabel({ state: "CLOSED", fulfillment_state: "FULFILLED" })).toBe("Hoàn tất");
   expect(portalOrderStateLabel({ channel: "CUSTOMER_PORTAL", state: "CANCELLED" })).toBe("Đã hủy");
