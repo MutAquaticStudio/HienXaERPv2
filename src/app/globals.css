@@ -1508,7 +1508,10 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .dispatch-assign-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; }
 .dispatch-assign-form label { display: grid; gap: 4px; font-size: var(--font-size-caption); }
 .dispatch-assign-form select, .dispatch-assign-form input { min-height: 32px; }
-@media (max-width: 760px) {
+/* The waiting list stacks each row when its own panel is narrow (phones, and 1280–1600 px desktops with the contacts panel
+   open), so the time and the "Gán" button never sit off to the right behind a horizontal scroll. */
+.dispatch-waiting-body { container: dispatch-waiting / inline-size; }
+@container dispatch-waiting (max-width: 680px) {
   .dispatch-waiting-table thead { display: none; }
   .dispatch-waiting-table tr { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 8px 10px; border-top: 1px solid var(--border); }
   .dispatch-waiting-table td { display: block; padding: 0; border: 0; }
@@ -2009,3 +2012,13 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .skeleton-auth { width: min(420px, 100%); margin: 12vh auto 0; padding: 0 16px; }
 .bank-details { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
 .bank-details p { margin: 4px 0 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+/* D46: splitting a delivery note — a quantity grid (lines × notes) and one driver/vehicle box per note. */
+.split-form { display: grid; gap: 14px; }
+.split-form td input { width: 7.5rem; min-height: 38px; padding: 6px 10px; border: 1px solid var(--input-border); border-radius: 9px; text-align: right; font: inherit; }
+.split-assign-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.split-assign { display: grid; gap: 8px; margin: 0; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); }
+.split-assign legend { padding: 0 4px; font-weight: 700; }
+.split-entry { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.split-result { display: grid; gap: 6px; margin: 0 0 12px; padding-left: 18px; }
+@media (max-width: 560px) { .split-form td input { width: 5.5rem; } }

@@ -40,7 +40,7 @@ export default async function DeliveryDetailPage({ params, searchParams }: { par
     access.permissions.has("delivery.assign") ? listAssignmentEmployees(supabase, access.branchId) : Promise.resolve({ data: [], error: null }),
     supabase.from("vehicle_status_read").select("vehicle_id, plate_number, capacity_quantity, capacity_symbol, busy_delivery_number, busy_state, busy_until").eq("branch_id", access.branchId).order("plate_number"),
     supabase.from("warehouses").select("id, name").eq("branch_id", access.branchId).eq("active", true).order("name"),
-    supabase.from("deliveries").select("scheduled_end_at").eq("id", id).eq("branch_id", access.branchId).maybeSingle(),
+    supabase.from("deliveries").select("scheduled_end_at, split_from_delivery_id").eq("id", id).eq("branch_id", access.branchId).maybeSingle(),
     supabase.from("branch_operation_settings").select("stop_minutes").eq("branch_id", access.branchId).maybeSingle(),
   ]);
   const stopMinutes = (settingsResult.data as { stop_minutes: number } | null)?.stop_minutes ?? 60;
@@ -80,11 +80,21 @@ export default async function DeliveryDetailPage({ params, searchParams }: { par
     return cases.filter((row) => ids.has(row.delivery_verification_line_id) && row.case_kind === "TRANSIT_REMAINDER" && row.state !== "OPEN")
       .reduce((total, row) => total.plus(row.base_quantity), new Decimal(0));
   };
+  // D46: where a split note came from, and what an original was split into.
+  const splitFromId = (scheduleResult.data as { split_from_delivery_id?: string | null } | null)?.split_from_delivery_id ?? null;
+  const [{ data: splitFrom }, { data: splitInto }] = await Promise.all([
+    splitFromId ? supabase.from("deliveries").select("id, delivery_number").eq("id", splitFromId).maybeSingle() : Promise.resolve({ data: null }),
+    delivery.execution_state === "CANCELLED" ? supabase.from("deliveries").select("id, delivery_number").eq("split_from_delivery_id", id).order("delivery_number") : Promise.resolve({ data: [] }),
+  ]);
+  const canSplit = ["PLANNED", "ASSIGNED"].includes(delivery.execution_state) && lines.length > 0
+    && access.permissions.has("delivery.assign") && access.permissions.has("delivery.create");
   const query = await searchParams;
   const driverName = (employeeResult.data ?? []).find((employee) => employee.id === delivery.employee_id)?.display_name ?? "thợ được giao";
   return <>
     <header className="page-heading"><div><p className="eyebrow">Phiếu giao</p><h1>{delivery.delivery_number}</h1><p className="lede">{delivery.customer_name_snapshot} · {delivery.site_name_snapshot}</p></div><div className="inline-actions"><ButtonLink href={`/api/deliveries/${delivery.id}/note/pdf`}>Tải phiếu giao</ButtonLink><ButtonLink href="/admin/deliveries" variant="secondary">Về danh sách</ButtonLink></div></header>
     <DeliveryWorkItemBridge deliveryId={id} /><ActionNotice notice={query.notice} error={query.error} />
+    {splitFrom && <p className="command-note" role="status">Tách từ phiếu <Link className="code-link" href={`/admin/deliveries/${splitFrom.id}`}>{splitFrom.delivery_number}</Link>.</p>}
+    {(splitInto ?? []).length > 0 && <p className="command-note" role="status">Phiếu đã hủy để tách thành {(splitInto ?? []).map((item, index) => <span key={item.id}>{index > 0 && ", "}<Link className="code-link" href={`/admin/deliveries/${item.id}`}>{item.delivery_number}</Link></span>)}.</p>}
     <DeliveryProgress state={delivery.execution_state} supplierDirect={isDirect} />
     <DeliveryPhotos deliveryId={delivery.id} canView={access.permissions.has("evidence.manage") || access.permissions.has("delivery.verify")} canViewInternal={access.permissions.has("evidence.manage")} />
     <section className="axis-grid"><article className="card axis-card"><span>Thực thi</span><StatusBadge tone={deliveryStateTone(delivery.execution_state)}>{deliveryStateLabel(delivery.execution_state)}</StatusBadge></article><article className="card axis-card"><span>Kết quả</span><strong>{delivery.result_kind ? deliveryStateLabel(delivery.result_kind) : "Chưa gửi"}</strong></article><article className="card axis-card"><span>Nguồn</span><strong>{sourceLabels.length ? sourceLabels.join(" + ") : "—"}</strong></article></section>
@@ -123,7 +133,8 @@ export default async function DeliveryDetailPage({ params, searchParams }: { par
       {cases.filter((item) => item.state === "OPEN").map((item) => <form className="exception-card" action={resolveReturnCaseAction} key={item.id}><strong>{lines.find((line) => line.id === verified.find((row) => row.id === item.delivery_verification_line_id)?.delivery_line_id)?.material_name_snapshot ?? "Dòng giao"} · {returnCaseKindLabel(item.case_kind)} · {formatQuantity(item.base_quantity)} đơn vị cơ sở</strong><p>{item.reason}</p><input type="hidden" name="deliveryId" value={delivery.id} /><input type="hidden" name="returnCaseId" value={item.id} /><input type="hidden" name="version" value={item.version} /><input type="hidden" name="resolution" value={item.case_kind === "TRANSIT_LOSS" ? "LOSS_APPROVED" : "RETURNED"} /><input type="hidden" name="operationId" value={randomUUID()} />{item.case_kind !== "TRANSIT_LOSS" && <div className="field"><label>Kho nhận lại</label><select name="warehouseId" required><option value="">Chọn kho</option>{(warehouseResult.data ?? []).map((warehouse) => <option key={warehouse.id} value={warehouse.id}>{warehouse.name}</option>)}</select></div>}<div className="field"><label>Ghi chú (không bắt buộc)</label><input name="reason" maxLength={500} /></div><button className="button button-danger action-full" type="submit">{item.case_kind === "TRANSIT_LOSS" ? "Duyệt hao hụt" : "Xác nhận về kho"}</button></form>)}
       <ReturnCaseHistory cases={cases} />
       {delivery.execution_state === "VERIFIED" && cases.length === 0 && <p className="muted command-note">Đã ghi nhận theo kết quả xác minh. Trả hàng, hàng còn xe và hao hụt phải mở hồ sơ riêng.</p>}
-    </aside></div>
+    {canSplit && <div className="command-panel split-entry"><p className="muted">Hàng cần đi nhiều xe hoặc nhiều người? Chia phiếu này thành 2–5 phiếu trước khi lấy hàng.</p>
+        <ButtonLink href={`/admin/deliveries/${delivery.id}/split`} variant="secondary">Tách phiếu giao</ButtonLink></div>}</aside></div>
   </>;
 }
 
