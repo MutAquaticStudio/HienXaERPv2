@@ -75,6 +75,12 @@
   background: #fff;
 }
 
+.brandLogo {
+  padding: 3px;
+  object-fit: contain;
+  background: #fff;
+}
+
 .topbar .brandScope {
   color: rgb(255 255 255 / 82%);
 }
@@ -1236,3 +1242,22 @@ button.link {
 .shopSubmit > span:last-child { font-size: 14px; font-weight: 800; }
 .shopCount { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px; background: rgb(255 255 255 / 18%); font-weight: 800; }
 @media (min-width: 800px) { .shopFooter { bottom: 16px; } .shopList { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Narrow phones: the logout button keeps its icon only, so the top bar stays on one line beside the location and
+   message buttons (its name stays for screen readers). */
+@media (max-width: 420px) {
+  .logout {
+    width: 44px;
+    justify-content: center;
+    padding-inline: 0;
+  }
+
+  .logout span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}

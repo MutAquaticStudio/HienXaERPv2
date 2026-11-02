@@ -754,8 +754,9 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
   font-size: var(--font-size-caption);
 }
 
+/* Four figures (doanh thu, chi phí, lợi nhuận, biên): 4 → 2 → 1 per row, never three plus an orphan. */
 .finance-metrics {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .obligations-grid {
@@ -1011,8 +1012,7 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
   .credit-summary dd { font-size: var(--font-size-table); }
   .credit-override .command-panel > .button { width: 100%; }
 }
-@container (max-width: 1160px) { .finance-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@container (max-width: 760px) { .finance-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@container (max-width: 860px) { .finance-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @container (max-width: 500px) { .finance-metrics { grid-template-columns: 1fr; } }
 
 
@@ -1161,6 +1161,10 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 
 /* List screens (KiotViet-style): filters on the left, table on the right, whole row opens the record. */
 .list-layout { display: grid; grid-template-columns: minmax(220px, 260px) minmax(0, 1fr); gap: 1rem; align-items: start; }
+/* A card that belongs under the list, not in the filter column. */
+.list-layout > .list-span { grid-column: 1 / -1; }
+/* Long free text in a table wraps instead of pushing the action column out of view. */
+td.cell-wrap { min-width: 11rem; max-width: 26rem; white-space: normal; }
 .list-filters { display: grid; gap: 0.85rem; position: sticky; top: 1rem; }
 .list-filters label { display: grid; gap: 0.35rem; font-size: var(--font-size-label); font-weight: 700; color: var(--text); }
 .list-filters input, .list-filters select { width: 100%; min-height: 38px; padding: 7px 10px; border: 1px solid var(--input-border); border-radius: var(--radius-sm); color: var(--text); background: var(--surface); font-weight: 400; }
@@ -1172,7 +1176,7 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .row-link-table .row-link:focus-visible { outline: none; }
 .row-link-table tbody tr:focus-within { outline: 2px solid var(--primary); outline-offset: -2px; }
 @media (max-width: 1080px) {
-  .list-layout { grid-template-columns: 1fr; }
+  .list-layout { grid-template-columns: minmax(0, 1fr); }
   .list-filters { position: static; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); align-items: end; }
   .list-filters-search { grid-column: 1 / -1; }
 }
