@@ -7,14 +7,14 @@ Tài liệu bàn giao cho phiên làm việc tiếp theo (Claude Code hoặc ng�
 | Môi trường | Địa chỉ | Supabase | Code | Migration mới nhất |
 |---|---|---|---|---|
 | Production | https://hien-xa-erp-v2-nu.vercel.app (sắp: https://app.hienxavlxd.com) | `nbwynrwkdbtfsitafsxa` | `main` @ `57b4bff`, deploy `dpl_FeVW6ctpUEZ7U5F8BoaqH4GEfhDN` | `20261102160000_d47_zalo_oa_notifications` |
-| QA (nghiệm thu) | Preview từ `main` @ `57b4bff`: `dpl_C6ddHam7vy5AYgtbgEZfuWmngzff` (https://hien-xa-erp-v2-p5su7q7iz-hienxa.vercel.app, cần đăng nhập Vercel). Tên miền riêng https://qa.hienxavlxd.com gắn nhánh `nox/elegant-volta-kr29iz` (chờ DNS; nhánh này **không** còn được cập nhật — deploy QA bằng preview từ `main`) | `ffrwiglcrlumfvhubaxg` | `main` @ `57b4bff` | `20261102160000_d47_zalo_oa_notifications` |
+| QA (nghiệm thu) | Preview từ `main` @ `57b4bff`: `dpl_C6ddHam7vy5AYgtbgEZfuWmngzff` (https://hien-xa-erp-v2-p5su7q7iz-hienxa.vercel.app, cần đăng nhập Vercel). Tên miền riêng https://qa.hienxavlxd.com gắn nhánh `nox/elegant-volta-kr29iz` (chờ DNS; nhánh này **không** còn được cập nhật — deploy QA bằng preview từ `main`) | `ffrwiglcrlumfvhubaxg` | `main` @ `57b4bff` | `20261102180000_d49_public_company_logo` |
 
 - Kiểm phiên bản: `GET /api/health` → `buildSha` (dùng `web_fetch_vercel_url` cho bản preview có bảo vệ).
 - Vercel: team `team_9qd9uzBYBc6WtzJVu7wGP7uC`, project `prj_o6ya9YI1b3fTFC8nxiOtjHiwaS3W`. Auto-deploy tắt (`vercel.json`); deploy bằng `create_deployment` (gitSource `{type: github, org: MutAquaticStudio, repo: HienXaERPv2, ref: main, sha}`; `target: production` cho Production, bỏ `target` cho bản QA preview).
 - Preview dùng env QA (`HX_QA_PROJECT_REF`…). Preview **chưa có** `SUPABASE_SECRET_KEY` của QA → thợ không tải được ảnh trên QA (luồng giao hàng – xác nhận giao – công nợ chưa thử được trên QA). Preview cũng chưa có SMTP / `HX_AUTOMATION_SECRET`.
 - Lịch sử `schema_migrations`: 8 migration của 01–02/11 khớp repo (version + sha256) trên cả hai DB. Lệch **cũ** (tháng 9–10, đã ghi trong `implementation.md` 16/10): Production thiếu tên riêng của 9 version cũ vì đã áp gộp trong `pr44_reviewed_schema187_compact_forward_20261013`, `operational_role_presets` mang version `20261013121739`, có bản dọn `owner_authorized_uat_cleanup_20261013`; QA ghi `retire_opening_pending_rule` dưới `20261014074344` (repo `20261012155947`) và có bản vá riêng `20261002114730`. Chỉ lệch số hiệu/tên ghi lại, không thiếu nội dung. Muốn khớp từng dòng thì thêm bản ghi đối chiếu (ghi Production cần Owner đồng ý).
 
-## 2. Đã làm trong phiên 01–02/11 (PR #77–#92, tất cả đã lên QA + Production)
+## 2. Đã làm trong phiên 01–02/11 (PR #77–#93, tất cả đã lên QA + Production)
 
 | PR | Nội dung | Migration |
 |---|---|---|
@@ -32,8 +32,9 @@ Tài liệu bàn giao cho phiên làm việc tiếp theo (Claude Code hoặc ng�
 | #89 | Viết lại HANDOFF này | — |
 | #90 | Kiểm tra UX/UI tự động (Stageshow `auditLayout`, 33 trang máy tính + trang điện thoại/cổng): Sổ quỹ di động hết tràn ngang, chữ dài trong bảng xuống dòng (`td.cell-wrap`), chỉ số tài chính 4→2→1 cột, ô số liệu 2 cột trên điện thoại; cổng thợ/khách hiện logo công ty, nút đăng xuất chỉ biểu tượng ≤420 px; **chuyển động** theo UX-UI-R1-001 (khối trang hiện lần lượt ở cổng, vạch menu dưới trượt, nhấn co nhẹ, mũi tên mở dòng xoay; tắt khi giảm chuyển động) | — |
 | #92 | **D48** cổng khách dùng một nhãn "Đã duyệt" cho mọi đơn đã xác nhận (bỏ "Đã xác nhận" của đơn doanh nghiệp lập) | — |
+| #93 | Trau chuốt màn đăng nhập / đăng ký / khôi phục (khung D30 giữ nguyên): nền gạch xếp so le, tab có nền trượt, ô nhập có biểu tượng, nút/thẻ có bóng; **D49** logo công ty trên màn đăng nhập (anon chỉ đọc 3 cột logo của `company_profile`) | `20261102180000` |
 
-Chi tiết quyết định: `Spec.md` D44–D48. Kế hoạch: `docs/handoff/ke-hoach-qr-nhieu-don.md` (D44/D45), `docs/handoff/ke-hoach-zalo-oa.md` (D47). Kết quả QA: `docs/qa/kich-ban-qa-toan-he-thong.md`.
+Chi tiết quyết định: `Spec.md` D44–D49. Kế hoạch: `docs/handoff/ke-hoach-qr-nhieu-don.md` (D44/D45), `docs/handoff/ke-hoach-zalo-oa.md` (D47). Kết quả QA: `docs/qa/kich-ban-qa-toan-he-thong.md`.
 
 ## 3. Quy trình phát hành đã dùng
 

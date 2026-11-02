@@ -6,6 +6,7 @@ vi.mock("next/navigation", () => ({ redirect: m.redirect }));
 vi.mock("@/lib/access/context", () => ({ resolveInternalAccess: m.access }));
 vi.mock("@/lib/access/landing", () => ({ internalLandingPath: () => "/admin" }));
 vi.mock("@/lib/auth/actions", () => ({ loginAction: vi.fn() }));
+vi.mock("@/lib/company/sign-in-logo", () => ({ loadSignInLogoUrl: async () => null }));
 import { AppError } from "@/lib/core/errors";
 import Home from "./page";
 
