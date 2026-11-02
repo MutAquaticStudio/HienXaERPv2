@@ -6,12 +6,12 @@ Tài liệu bàn giao cho phiên làm việc tiếp theo (Claude Code hoặc ng�
 
 | Môi trường | Địa chỉ | Supabase | Code |
 |---|---|---|---|
-| Production | https://hien-xa-erp-v2-nu.vercel.app (sắp: https://app.hienxavlxd.com) | `nbwynrwkdbtfsitafsxa` | `main` @ `bd436a6` (#81–#84: D44 QR nhiều đơn, D45 tiền mặt, sửa yêu cầu theo kịp tiền, menu; 02/11), deploy `dpl_2Ka4G8SydnEQa4KPgREgre835EzA` |
-| QA (nghiệm thu) | Preview nhánh `nox/elegant-volta-kr29iz` → https://qa.hienxavlxd.com (chờ DNS) | `ffrwiglcrlumfvhubaxg` | preview từ `main` @ `bd436a6`: `dpl_CNJSUrEa1JQdJcshid14fqAddXqz` (https://hien-xa-erp-v2-25wrw9uzx-hienxa.vercel.app, cần đăng nhập Vercel). Preview chưa có `SUPABASE_SECRET_KEY` (QA) → thợ chưa tải ảnh được trên QA |
+| Production | https://hien-xa-erp-v2-nu.vercel.app (sắp: https://app.hienxavlxd.com) | `nbwynrwkdbtfsitafsxa` | `main` @ `d4e8ade` (#81–#85: D44 QR nhiều đơn, D45 tiền mặt, sửa yêu cầu theo kịp tiền, menu, D46 tách phiếu giao; 02/11), deploy `dpl_DAaRceLVDAibjdBhm6GgS9J5p5xx` |
+| QA (nghiệm thu) | Preview nhánh `nox/elegant-volta-kr29iz` → https://qa.hienxavlxd.com (chờ DNS) | `ffrwiglcrlumfvhubaxg` | preview từ `main` @ `d4e8ade`: `dpl_Dq3viLYHCFymKDi5jWuUWBEnB4i1` (https://hien-xa-erp-v2-athmkstdb-hienxa.vercel.app, cần đăng nhập Vercel). Preview chưa có `SUPABASE_SECRET_KEY` (QA) → thợ chưa tải ảnh được trên QA |
 
 - Vercel: team `team_9qd9uzBYBc6WtzJVu7wGP7uC`, project `prj_o6ya9YI1b3fTFC8nxiOtjHiwaS3W`. Auto-deploy tắt (`vercel.json`); deploy bằng `create_deployment` (gitSource org `MutAquaticStudio`, repo `HienXaERPv2`, ref `main`, target `production`).
 - Preview dùng env QA (`HX_QA_PROJECT_REF`). Preview bị Vercel SSO Protection chặn với người ngoài → dùng tên miền riêng `qa.hienxavlxd.com` (đã gắn vào nhánh `nox/elegant-volta-kr29iz`; mọi push lên nhánh này cập nhật bản QA).
-- Migration mới nhất: QA và Production `20261102090000_d45_requests_follow_allocations` (Production áp D44 + D45 + bản sửa trong 1 transaction ngày 02/11, Owner duyệt) (ghi `schema_migrations` kèm sha256 file).
+- Migration mới nhất: QA và Production `20261102120000_d46_split_delivery` (02/11, Owner duyệt) (ghi `schema_migrations` kèm sha256 file).
 
 ## 2. Quy trình phát hành đã dùng
 

@@ -73,7 +73,7 @@ declare
   small_truck constant uuid := '7f46a000-0000-4000-8000-000000000051';
   result jsonb; source uuid; work uuid; cement_line uuid; sand_line uuid; failed text; parts jsonb; answer jsonb; again jsonb;
   start_at timestamptz := date_trunc('hour', now()) + interval '26 hours';
-  part1 uuid; part2 uuid; part3 uuid;
+  part1 uuid; part2 uuid; part3 uuid; numbers_before bigint; works_before bigint; numbers text[];
 begin
   perform pg_temp.act_as(owner_login);
   result := public.create_delivery_for_order(orders, w1, jsonb_build_array(
@@ -119,7 +119,10 @@ begin
   begin perform public.split_delivery(source, (select version from public.deliveries where id = source), parts, '7f46b000-0000-4000-8000-000000000005');
   exception when others then failed := sqlerrm; end;
   assert failed = 'forbidden', format('a reader cannot split, got %s', failed);
-  -- A chosen truck too small for its part: the whole split is refused, nothing changes.
+  -- A chosen truck too small for its part: the whole split is refused, nothing changes — not even a DL/WRK number is used.
+  perform pg_temp.act_as_admin();
+  select last_value into numbers_before from public.delivery_number_seq;
+  select last_value into works_before from public.work_item_number_seq;
   perform pg_temp.act_as(owner_login);
   failed := null;
   begin perform public.split_delivery(source, (select version from public.deliveries where id = source),
@@ -131,6 +134,8 @@ begin
   assert (select execution_state from public.deliveries where id = source) = 'ASSIGNED', 'still assigned after the refusals';
   assert not exists (select 1 from public.deliveries where split_from_delivery_id = source), 'no part left behind';
   assert pg_temp.reserved321(cement) = 200, 'reservations untouched by the refusals';
+  assert (select last_value from public.delivery_number_seq) = numbers_before, 'a refused split uses no delivery number';
+  assert (select last_value from public.work_item_number_seq) = works_before, 'a refused split uses no work number';
 
   -- 3 notes: 100 kg cement + all the sand (waiting), 60 kg cement on the big truck at a set time, 40 kg (waiting).
   parts := jsonb_set(parts, '{1}', (parts->1) || jsonb_build_object('employee_id', worker, 'vehicle_id', big_truck, 'scheduled_start', start_at + interval '3 hours'));
@@ -140,6 +145,12 @@ begin
   perform pg_temp.act_as_admin();
   assert answer = again, 'the same click again returns the same notes';
   assert jsonb_array_length(answer->'deliveries') = 3, format('three notes, got %s', answer);
+  select array_agg(x->>'number' order by x->>'number') into numbers from jsonb_array_elements(answer->'deliveries') x;
+  assert numbers = array['DL-' || to_char(current_date, 'YYYY') || '-' || lpad((numbers_before + 1)::text, 6, '0'),
+    'DL-' || to_char(current_date, 'YYYY') || '-' || lpad((numbers_before + 2)::text, 6, '0'),
+    'DL-' || to_char(current_date, 'YYYY') || '-' || lpad((numbers_before + 3)::text, 6, '0')], format('consecutive numbers after the refusal, got %s', numbers);
+  assert (select last_value from public.work_item_number_seq) = works_before + 1, 'only the real job of part 2 takes a WRK number';
+  assert not exists (select 1 from public.deliveries where delivery_number like 'TAM-%'), 'no temporary number left';
   assert (select execution_state from public.deliveries where id = source) = 'CANCELLED', 'the original is cancelled';
   assert (select execution_state from public.work_items where id = work) = 'CANCELLED', 'its job is withdrawn';
   assert not exists (select 1 from public.delivery_assignments where delivery_id = source and superseded_at is null), 'its assignment is withdrawn';
