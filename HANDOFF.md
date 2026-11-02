@@ -11,7 +11,7 @@ Tài liệu bàn giao cho phiên làm việc tiếp theo (Claude Code hoặc ng�
 
 - Vercel: team `team_9qd9uzBYBc6WtzJVu7wGP7uC`, project `prj_o6ya9YI1b3fTFC8nxiOtjHiwaS3W`. Auto-deploy tắt (`vercel.json`); deploy bằng `create_deployment` (gitSource org `MutAquaticStudio`, repo `HienXaERPv2`, ref `main`, target `production`).
 - Preview dùng env QA (`HX_QA_PROJECT_REF`). Preview bị Vercel SSO Protection chặn với người ngoài → dùng tên miền riêng `qa.hienxavlxd.com` (đã gắn vào nhánh `nox/elegant-volta-kr29iz`; mọi push lên nhánh này cập nhật bản QA).
-- Migration mới nhất: QA và Production `20261102140000_d46_split_numbering` (02/11, Owner duyệt; chỉ đổi database, app vẫn `d4e8ade`) (ghi `schema_migrations` kèm sha256 file).
+- Migration mới nhất: QA `20261102160000_d47_zalo_oa_notifications` (D47 Zalo OA giai đoạn 1, chờ Owner duyệt lên Production); Production `20261102140000_d46_split_numbering` (ghi `schema_migrations` kèm sha256 file).
 
 ## 2. Quy trình phát hành đã dùng
 
