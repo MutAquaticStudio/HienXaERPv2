@@ -4,6 +4,8 @@ import { deliveryStateLabel, deliveryStateTone } from "@/modules/delivery/presen
 import { financeStateLabel, financeSourceLabel } from "@/modules/finance/presentation";
 import { priceSourceLabel } from "@/modules/pricing/presentation";
 import Link from "next/link";
+import { ZaloNotifyToggle } from "@/components/zalo/zalo-notify-toggle";
+import { isZaloPhone } from "@/modules/zalo/phone";
 import { activeTab, DetailTabs, type DetailTab } from "@/components/ui/detail-tabs";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { requireInternalPermission } from "@/lib/access/context";
@@ -128,9 +130,10 @@ type Supabase = Awaited<ReturnType<typeof createServerSupabase>>;
 type SiteEdit = Awaited<ReturnType<typeof catalogChildRecordsProps>>;
 
 async function InfoTab({ customer, note, can, supabase, siteEdit }: { customer: CustomerProfile; note: string | null | undefined; can: { createOrder: boolean; service: boolean; manage: boolean }; supabase: Supabase; siteEdit: SiteEdit | null }) {
-  const [{ data }, accountsResult] = await Promise.all([
+  const [{ data }, accountsResult, zaloResult] = await Promise.all([
     supabase.from("customer_sites").select("id, code, name, address_text, receiver_name, receiver_phone, access_note, active").eq("customer_id", customer.id).order("active", { ascending: false }).order("name").limit(100),
     supabase.rpc("customer_portal_accounts", { target_customer_id: customer.id }),
+    supabase.rpc("customer_zalo_notify", { target_customer_id: customer.id }),
   ]);
   const sites = (data ?? []) as unknown as SiteRow[];
   const accounts = accountsResult.error ? null : ((accountsResult.data ?? []) as PortalAccount[]);
@@ -153,7 +156,9 @@ async function InfoTab({ customer, note, can, supabase, siteEdit }: { customer: 
       <div className="detail-item"><dt>Thư điện tử</dt><dd>{customer.email ?? "Chưa có"}</dd></div>
       <div className="detail-item"><dt>Mã số thuế</dt><dd>{customer.tax_code ?? "Chưa có"}</dd></div>
       {note !== undefined && <div className="detail-item field-full"><dt>Ghi chú nội bộ</dt><dd>{note ?? "Chưa có"}</dd></div>}
-    </dl></section>
+    </dl>
+      {typeof zaloResult?.data === "boolean" && <ZaloNotifyToggle className="zalo-notify" customerId={customer.id} enabled={zaloResult.data} canChange={can.manage} phoneUsable={isZaloPhone(customer.phone)} />}
+    </section>
     {accounts && <PortalAccountsCard customerId={customer.id} customerPhone={customer.phone} accounts={accounts} canManage={can.manage} />}</div>
   </div>;
 }

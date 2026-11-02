@@ -34,6 +34,7 @@ export default async function SettingsPage() {
       <article className="card card-pad"><h2>Chi nhánh</h2><Link className="button button-secondary" href="/admin/settings/branches">Quản lý chi nhánh</Link></article>
       <article className="card card-pad"><h2>Tài khoản & quyền</h2><Link className="button button-secondary" href="/admin/access">Nhân viên & phân quyền</Link></article>
       <article className="card card-pad"><h2>Tự động hóa</h2><Link className="button button-secondary" href="/admin/settings/automation">Quy tắc tự động</Link></article>
+      <article className="card card-pad"><h2>Zalo OA</h2><Link className="button button-secondary" href="/admin/settings/zalo">Tin Zalo cho khách</Link></article>
     </div>
   </div>;
 }
