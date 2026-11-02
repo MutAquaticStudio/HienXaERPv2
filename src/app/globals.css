@@ -2009,3 +2009,12 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .skeleton-auth { width: min(420px, 100%); margin: 12vh auto 0; padding: 0 16px; }
 .bank-details { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
 .bank-details p { margin: 4px 0 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+/* D46: splitting a delivery note — a quantity grid (lines × notes) and one driver/vehicle box per note. */
+.split-form { display: grid; gap: 14px; }
+.split-form td input { width: 7.5rem; min-height: 38px; padding: 6px 10px; border: 1px solid var(--input-border); border-radius: 9px; text-align: right; font: inherit; }
+.split-assign-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.split-assign { display: grid; gap: 8px; margin: 0; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); }
+.split-assign legend { padding: 0 4px; font-weight: 700; }
+.split-result { display: grid; gap: 6px; margin: 0 0 12px; padding-left: 18px; }
+@media (max-width: 560px) { .split-form td input { width: 5.5rem; } }
