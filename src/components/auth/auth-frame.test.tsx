@@ -12,3 +12,12 @@ it("keeps each part of the sign-in footnote whole, with the dot only between the
   expect(note.querySelectorAll(".auth-footnote-dot")).toHaveLength(1);
   expect(screen.getByText("Thẻ")).toBeInTheDocument();
 });
+
+it("shows the company logo in the brand bar when one is set, otherwise the HX mark (D49)", () => {
+  const { container, rerender } = render(<AuthFrame logoUrl="/api/company/logo?v=abc"><p>Thẻ</p></AuthFrame>);
+  expect(container.querySelector(".auth-topbar img")).toHaveAttribute("src", "/api/company/logo?v=abc");
+  expect(container.querySelector(".auth-topbar")).not.toHaveTextContent("HX");
+  rerender(<AuthFrame><p>Thẻ</p></AuthFrame>);
+  expect(container.querySelector(".auth-topbar img")).toBeNull();
+  expect(container.querySelector(".auth-topbar")).toHaveTextContent("HX");
+});

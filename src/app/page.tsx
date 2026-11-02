@@ -4,6 +4,7 @@ import { LOGIN_FOOTNOTE } from "@/components/auth/auth-screen";
 import { PortalLogin } from "@/components/auth/portal-login";
 import { resolveInternalAccess } from "@/lib/access/context";
 import { internalLandingPath } from "@/lib/access/landing";
+import { loadSignInLogoUrl } from "@/lib/company/sign-in-logo";
 import { AppError } from "@/lib/core/errors";
 
 export default async function Home({ searchParams }: PageProps<"/">) {
@@ -20,5 +21,5 @@ export default async function Home({ searchParams }: PageProps<"/">) {
     if (error instanceof AppError && error.code === "CONFLICT") redirect("/select-branch?surface=admin");
   }
   if (landing) redirect(landing);
-  return <AuthFrame footnote={LOGIN_FOOTNOTE}><PortalLogin initial={portal === "work" || portal === "customer" ? portal : "admin"} remember={portal !== "work" && portal !== "customer"} /></AuthFrame>;
+  return <AuthFrame footnote={LOGIN_FOOTNOTE} logoUrl={await loadSignInLogoUrl()}><PortalLogin initial={portal === "work" || portal === "customer" ? portal : "admin"} remember={portal !== "work" && portal !== "customer"} /></AuthFrame>;
 }

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { loadSignInLogoUrl } from "@/lib/company/sign-in-logo";
 import { AuthFrame } from "./auth-frame";
 import { PortalLogin } from "./portal-login";
 
@@ -14,12 +15,13 @@ export const LOGIN_FOOTNOTE = "Máy này nhớ cổng bạn dùng lần trước
  * A sign-in screen. Without `children` it is the portal's login (D30: the tabbed card, opened on this portal's tab);
  * with `children` (register, change password) it shows `title`/`detail` and the given form in the same compact card.
  */
-export function AuthScreen({ surface, title, detail, notice, children, switchLink }: {
+export async function AuthScreen({ surface, title, detail, notice, children, switchLink }: {
   surface: keyof typeof copy; title?: string; detail?: string; notice?: string; children?: ReactNode; switchLink?: { href: string; label: string } | null;
 }) {
-  if (!children) return <AuthFrame footnote={LOGIN_FOOTNOTE}><PortalLogin initial={surface} notice={notice} /></AuthFrame>;
+  const logoUrl = await loadSignInLogoUrl();
+  if (!children) return <AuthFrame footnote={LOGIN_FOOTNOTE} logoUrl={logoUrl}><PortalLogin initial={surface} notice={notice} /></AuthFrame>;
   const link = switchLink === undefined ? { href: "/", label: "← Về màn đăng nhập" } : switchLink;
-  return <AuthFrame><p className="eyebrow">{copy[surface].eyebrow}</p><h1>{title}</h1>{detail && <p className="muted">{detail}</p>}
+  return <AuthFrame logoUrl={logoUrl}><p className="eyebrow">{copy[surface].eyebrow}</p><h1>{title}</h1>{detail && <p className="muted">{detail}</p>}
     {notice && <p className="form-message" role="status">{notice}</p>}{children}
     {link && <a className="auth-switch" href={link.href}>{link.label}</a>}</AuthFrame>;
 }
