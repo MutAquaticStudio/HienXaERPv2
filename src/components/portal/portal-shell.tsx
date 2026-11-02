@@ -47,15 +47,21 @@ export function PortalShell({
   audience,
   canViewDebt,
   canOrder,
+  logoUrl = null,
   children,
 }: {
   audience: "worker" | "customer";
+  /** The company logo (Cài đặt → Thông tin doanh nghiệp), as in the office app; "HX" when none is set. */
+  logoUrl?: string | null;
   canViewDebt?: boolean;
   /** D15: owners and finance contacts order on the portal; receivers only follow deliveries. */
   canOrder?: boolean;
   children: ReactNode;
 }) {
   const pathname = usePathname();
+  // eslint-disable-next-line @next/next/no-img-element -- a small private image from /api/company/logo, not worth next/image
+  const mark = logoUrl ? <img className={`${styles.brandMark} ${styles.brandLogo}`} src={logoUrl} alt="" aria-hidden="true" width={40} height={40} />
+    : <span className={styles.brandMark}>HX</span>;
   // Sign-in, registration and the forced password change are full-screen auth pages without the portal menu.
   if (["/login", "/register", "/change-password"].some((page) => pathname.endsWith(page))) return children;
   const links = audience === "worker" ? workerLinks : customerLinks.filter((link) => (canViewDebt || link.href !== "/customer/debts") && (canOrder || link.href !== "/customer/orders/new"));
@@ -78,7 +84,7 @@ export function PortalShell({
     <div className={styles.shell}>
       <aside className={styles.side}>
         <div className={styles.sideBrand}>
-          <span className={styles.brandMark}>HX</span>
+          {mark}
           <span className={styles.brand}>
             <span className={styles.brandName}>HIỀN XA</span>
             <span className={styles.brandScope}>{scope}</span>
@@ -89,7 +95,7 @@ export function PortalShell({
       <main className={styles.main}>
         <header className={styles.topbar}>
           <div className={styles.topIdentity}>
-            <span className={styles.brandMark}>HX</span>
+            {mark}
             <span className={styles.brand}>
               <span className={styles.brandName}>HIỀN XA</span>
               <span className={styles.brandScope}>{scope}</span>
@@ -100,7 +106,7 @@ export function PortalShell({
             <Link className={styles.topIcon} href={`${root}/messages`} aria-label="Tin nhắn"><MessageSquare aria-hidden size={20} /></Link>
             <form action="/auth/logout" method="post">
               <input type="hidden" name="surface" value={audience === "worker" ? "work" : "customer"} />
-              <button className={styles.logout} type="submit">
+              <button className={styles.logout} type="submit" aria-label="Đăng xuất">
                 <LogOut aria-hidden size={18} /><span>Đăng xuất</span>
               </button>
             </form>

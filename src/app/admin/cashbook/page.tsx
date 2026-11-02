@@ -201,7 +201,7 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
       <p className="muted card-pad-x">Tiền đã vào tài khoản nhưng chưa nhận ra khách. Chọn khách để ghi phiếu thu (trừ nợ cũ nhất trước), hoặc bỏ qua nếu không phải tiền khách trả.</p>
       <div className="table-wrap"><table><thead><tr><th>Thời gian</th><th>Nội dung chuyển khoản</th><th className="numeric">Số tiền</th><th>Lý do chờ</th><th>Thao tác</th></tr></thead><tbody>{bankLines.map((line) => <tr key={line.id}>
         <td>{formatBusinessDate(line.transaction_at)}<small className="table-subline">{line.gateway ?? "Ngân hàng"}{line.reference_code ? ` · ${line.reference_code}` : ""}</small></td>
-        <td className="cashbook-party">{line.content || "—"}{line.payment_request && <small className="table-subline">Yêu cầu thanh toán {line.payment_request.code}</small>}</td><td className="numeric mono text-success">+{money(line.amount_vnd)}</td><td>{BANK_REASON[line.reason] ?? "Cần kiểm tra"}</td>
+        <td className="cell-wrap">{line.content || "—"}{line.payment_request && <small className="table-subline">Yêu cầu thanh toán {line.payment_request.code}</small>}</td><td className="numeric mono text-success">+{money(line.amount_vnd)}</td><td className="cell-wrap">{BANK_REASON[line.reason] ?? "Cần kiểm tra"}</td>
         <td className="table-actions"><FormDialog label="Xử lý" title="Ghi khoản tiền về" buttonClassName="button button-secondary button-compact" description={<>{money(line.amount_vnd)} · {line.content || "Không có nội dung"}</>}>
           <form className="mini-command" action={resolveBankTransactionAction}><h3>Ghi phiếu thu cho khách</h3><input type="hidden" name="transactionId" value={line.id} /><input type="hidden" name="operationId" value={randomUUID()} />
             <label className="field">Khách hàng<select name="customerId" required defaultValue={line.customer_id ?? ""}><option value="" disabled>Chọn khách hàng</option>{customers.map((customer) => <option key={customer.id} value={customer.id}>{customer.code} · {customer.name}</option>)}</select></label>
@@ -221,7 +221,7 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
       </AutoFilterForm>
       <section className="card list-main"><div className="section-head"><h2>Giao dịch đã ghi sổ</h2><div className="action-cluster"><span className="scope-chip">{totals.payment_count} giao dịch trong kỳ</span>{exportRows.length > 0 && <CsvDownloadButton csv={csv} filename={`so-quy-${range.from}-${range.to}.csv`} label="Xuất file" />}</div></div><div className="table-wrap" role="region" aria-label="Giao dịch thu chi đã ghi sổ" tabIndex={0}><table className="cashbook-table"><thead><tr><th>Phiếu</th><th>Đối tác</th><th>Tài khoản</th><th>Loại</th><th className="numeric">Số tiền</th><th>Đối soát</th><th>Thao tác</th></tr></thead><tbody>{rows.map((item) => {
         const canHandle = item.posting_state === "POSTED" && !item.reversal_of_payment_id && ((can.reconcile && item.reconciliation_state !== "MATCHED") || can.reverse);
-        return <tr key={item.id}><td><span className="mono">{item.payment_number}</span><small className="table-subline">{formatBusinessDate(item.effective_at)}</small></td><td className="cashbook-party">{item.counterparty_name}</td><td>{item.account_code}</td>
+        return <tr key={item.id}><td><span className="mono">{item.payment_number}</span><small className="table-subline">{formatBusinessDate(item.effective_at)}</small></td><td className="cell-wrap">{item.counterparty_name}</td><td>{item.account_code}</td>
           <td><StatusBadge tone={item.posting_state === "REVERSED" ? "danger" : "info"}>{item.reversal_of_payment_id ? "Đảo giao dịch" : item.direction === "RECEIPT" ? "Thu" : "Chi"}</StatusBadge></td>
           <td className={`numeric mono${item.direction === "RECEIPT" ? " text-success" : ""}`}>{item.direction === "RECEIPT" ? "+" : "−"}{money(String(item.amount_vnd))}</td>
           <td><strong>{financeStateLabel(item.reconciliation_state)}</strong><small className="table-subline">Lệch {money(String(item.reconciliation_difference_vnd))}</small></td>
@@ -233,11 +233,11 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
             </FormDialog>}</td></tr>;
       })}</tbody></table>{!rows.length && <p className="empty-inline">{filtered ? "Không có giao dịch phù hợp bộ lọc." : "Chưa có giao dịch tiền trong kỳ này."}</p>}</div>
       <ListPager page={list.page} total={total} hasNext={hasNext} params={params} /></section>
-      {nonCash.length > 0 && <section className="card" aria-label="Chi phí không dùng tiền"><div className="section-head"><h2>Chi phí không dùng tiền trong kỳ (hao hụt kho)</h2><span className="scope-chip">Tổng {money(String(nonCashTotal))}</span></div>
-        <p className="muted">Ghi vào chi phí và trừ lợi nhuận; không tính vào số dư quỹ.</p>
+      {nonCash.length > 0 && <section className="card list-span" aria-label="Chi phí không dùng tiền"><div className="section-head"><h2>Chi phí không dùng tiền trong kỳ (hao hụt kho)</h2><span className="scope-chip">Tổng {money(String(nonCashTotal))}</span></div>
+        <p className="muted card-pad-x">Ghi vào chi phí và trừ lợi nhuận; không tính vào số dư quỹ.</p>
         <div className="table-wrap"><table><thead><tr><th>Mã</th><th>Loại chi / ghi chú</th><th className="numeric">Số tiền</th></tr></thead><tbody>{nonCash.map((item) => <tr key={item.id}>
           <td><Link className="code-link mono" href={`/admin/expenses?focus=${item.id}`}>{item.expense_number}</Link><small className="table-subline">{formatBusinessDate(item.effective_at)}</small></td>
-          <td>{item.category_name}<small className="table-subline">{item.description}</small></td><td className="numeric mono">{money(item.amount_vnd)}</td></tr>)}</tbody></table></div></section>}
+          <td className="cell-wrap">{item.category_name}<small className="table-subline">{item.description}</small></td><td className="numeric mono">{money(item.amount_vnd)}</td></tr>)}</tbody></table></div></section>}
     </div>
   </div>;
 }
