@@ -1,7 +1,7 @@
 "use client";
 
 import { BriefcaseBusiness, Truck, UserRound } from "lucide-react";
-import { useRef, useState, useSyncExternalStore, type KeyboardEvent } from "react";
+import { useRef, useState, useSyncExternalStore, type CSSProperties, type KeyboardEvent } from "react";
 import { LoginForm } from "./login-form";
 
 export type PortalSurface = "admin" | "work" | "customer";
@@ -56,7 +56,9 @@ export function PortalLogin({ initial, remember = false, notice }: { initial: Po
     <h1>Đăng nhập</h1>
     <p className="muted">Chọn đúng nơi bạn làm việc rồi nhập tài khoản.</p>
     {notice && <p className="form-message" role="status">{notice}</p>}
-    <div className="portal-tabs" role="tablist" aria-label="Cổng đăng nhập" onKeyDown={move}>
+    <div className="portal-tabs" role="tablist" aria-label="Cổng đăng nhập" onKeyDown={move}
+      style={{ "--tab-index": PORTALS.findIndex((portal) => portal.id === surface) } as CSSProperties}>
+      <span className="portal-tab-marker" aria-hidden="true" />
       {PORTALS.map(({ id, label, icon: Icon }) => <button key={id} type="button" role="tab" id={`portal-tab-${id}`} className="portal-tab"
         aria-selected={id === surface} aria-controls="portal-panel" tabIndex={id === surface ? 0 : -1}
         ref={(element) => { if (element) tabs.current.set(id, element); else tabs.current.delete(id); }}

@@ -462,28 +462,44 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .phase-note { margin: 20px 0 0; font-size: var(--font-size-caption); }
 .auth-screen { position: relative; display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; background: var(--background); }
 /* D30: an internal ERP opens on the form — a slim brand bar on the app's blue band and one compact card. */
-.auth-screen::before { content: ""; position: absolute; inset: 0 0 auto; height: 300px; background: var(--navigation); }
+.auth-screen::before { content: ""; position: absolute; inset: 0 0 auto; height: clamp(300px, 44vh, 420px); background: linear-gradient(160deg, var(--navigation) 0%, var(--navigation-soft) 100%); }
+/* A faint construction grid on the band, fading out toward the card; decoration only, no words. */
+.auth-screen::after { content: ""; position: absolute; inset: 0 0 auto; height: clamp(300px, 44vh, 420px); pointer-events: none;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-size: 32px 32px; background-position: -1px -1px; -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 90%); mask-image: linear-gradient(180deg, #000 0%, transparent 90%); }
+.auth-topbar, .auth-panel { z-index: 1; }
 .auth-topbar { position: relative; display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 0 clamp(16px, 4vw, 40px); color: #fff; }
 .auth-topbar .brand-mark { flex: none; width: 36px; height: 36px; color: var(--primary); background: #fff; }
 .auth-brand { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
 .auth-brand strong { font-size: 16px; }
 .auth-brand span { color: rgba(255, 255, 255, 0.82); font-size: var(--font-size-caption); }
-.auth-panel { position: relative; display: flex; flex-direction: column; align-items: center; padding: 40px 16px 48px; }
-.auth-card { width: min(480px, 100%); padding: 32px 36px 28px; border-radius: var(--radius-lg); background: var(--surface); box-shadow: 0 20px 50px rgba(16, 34, 58, 0.16); animation: rise-in var(--dur-slow) var(--ease-out) both; }
+.auth-panel { position: relative; display: flex; flex-direction: column; align-items: center; padding: clamp(32px, 7vh, 80px) 16px 48px; }
+.auth-card { width: min(480px, 100%); padding: 34px 36px 30px; border: 1px solid rgba(16, 34, 58, 0.06); border-radius: 20px; background: var(--surface); box-shadow: 0 1px 2px rgba(16, 34, 58, 0.06), 0 12px 28px rgba(16, 34, 58, 0.10), 0 32px 64px rgba(9, 27, 51, 0.14); animation: rise-in var(--dur-slow) var(--ease-out) both; }
 .auth-card h1 { margin: 0 0 4px; font-size: 24px; }
-.auth-card > .muted { margin: 0; }
-.auth-footnote { max-width: 480px; margin: 18px 0 0; color: var(--muted); font-size: var(--font-size-caption); text-align: center; }
-.portal-tabs { display: flex; gap: 4px; margin-top: 18px; padding: 4px; border-radius: 10px; background: var(--surface-sunken); }
-.portal-tab { display: inline-flex; flex: 1 1 0; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 4px 6px; border: 0; border-radius: 8px; color: var(--muted); background: transparent; font: inherit; font-size: var(--font-size-table); font-weight: 500; white-space: nowrap; cursor: pointer; transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out); }
+.auth-card > .muted { margin: 0; text-wrap: pretty; }
+.auth-footnote { max-width: 480px; margin: 20px 0 0; color: var(--muted); font-size: var(--font-size-caption); text-align: center; text-wrap: balance; }
+.portal-tabs { position: relative; display: flex; gap: 4px; margin-top: 20px; padding: 4px; border: 1px solid var(--border); border-radius: 12px; background: var(--background); }
+/* The selected tab's surface slides between tabs instead of jumping. */
+.portal-tab-marker { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 16px) / 3); border-radius: 9px; background: var(--surface); box-shadow: 0 1px 2px rgba(16, 34, 58, 0.08), 0 2px 8px rgba(16, 34, 58, 0.08);
+  transform: translateX(calc(var(--tab-index, 0) * (100% + 4px))); transition: transform 300ms var(--ease-spring); }
+.portal-tab { position: relative; z-index: 1; display: inline-flex; flex: 1 1 0; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 4px 6px; border: 0; border-radius: 8px; color: var(--muted); background: transparent; font: inherit; font-size: var(--font-size-table); font-weight: 500; white-space: nowrap; cursor: pointer; transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out); }
 .portal-tab:hover { color: var(--text); }
-.portal-tab[aria-selected="true"] { color: var(--primary-text); background: var(--surface); font-weight: 600; box-shadow: 0 1px 3px rgba(16, 34, 58, 0.14); }
+.portal-tab[aria-selected="true"] { color: var(--primary-text); font-weight: 600; }
+.portal-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
 .portal-hint { margin: 10px 2px 0; color: var(--muted); font-size: var(--font-size-caption); animation: fade-in var(--dur) var(--ease-out) both; }
 .portal-hint + .auth-form { margin-top: 18px; }
 .auth-form { display: grid; gap: 17px; margin-top: 28px; }
+.auth-form .field input { min-height: 46px; border-radius: 10px; }
+.auth-form .field input:focus { border-color: var(--primary); box-shadow: var(--focus-ring); outline: none; }
+.input-with-icon { position: relative; }
+.input-with-icon > svg { position: absolute; top: 50%; left: 14px; color: var(--subtle); transform: translateY(-50%); pointer-events: none; transition: color var(--dur-fast) var(--ease-out); }
+.input-with-icon:focus-within > svg { color: var(--primary); }
+.input-with-icon input { padding-left: 42px; }
 .password-field { position: relative; }
 .password-field input { padding-right: 48px; }
 .password-field button { position: absolute; inset: 0 4px 0 auto; display: grid; width: 42px; place-items: center; border: 0; color: var(--muted); background: transparent; cursor: pointer; }
-.auth-submit { width: 100%; margin-top: 4px; }
+.auth-submit { width: 100%; min-height: 48px; margin-top: 6px; border-radius: 10px; box-shadow: 0 6px 16px rgba(11, 99, 198, 0.24); }
+.auth-submit:hover:not(:disabled) { box-shadow: 0 8px 20px rgba(11, 99, 198, 0.30); }
 .auth-link, .auth-switch { color: var(--primary); font-size: var(--font-size-caption); font-weight: 700; text-align: center; }
 .auth-switch { display: block; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border); }
 .empty-state { display: grid; min-height: 60vh; place-items: center; padding: 30px; text-align: center; }
@@ -513,12 +529,14 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
   .compact-grid { grid-template-columns: 1fr; }
   .field-full { grid-column: auto; }
   th, td { padding: 13px 14px; }
-  .auth-screen::before { height: 150px; }
+  .auth-screen::before, .auth-screen::after { height: 170px; }
   .auth-topbar { min-height: 0; padding: 18px 20px 26px; }
   .auth-brand { flex-direction: column; gap: 0; }
   .auth-panel { padding: 0 16px 32px; }
-  .auth-card { padding: 22px 18px 24px; }
+  .auth-card { padding: 24px 18px 24px; border-radius: 18px; }
   .auth-card h1 { font-size: 22px; }
+  .auth-footnote-part { display: block; }
+  .auth-footnote-dot { display: none; }
   .portal-tab { flex-direction: column; gap: 3px; min-height: 52px; font-size: var(--font-size-caption); }
 }
 .filter-bar {
