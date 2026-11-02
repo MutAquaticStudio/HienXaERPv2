@@ -13,6 +13,8 @@ export type PaymentRequestResult =
 const createInput = z.object({
   customerId: z.guid(),
   keys: z.array(z.string().min(1).max(64)).min(1).max(50),
+  /** D45: "CASH" = pay at the shop, confirmed by the accountant; default QR transfer (D44). */
+  method: z.enum(["BANK_QR", "CASH"]).default("BANK_QR"),
   operationId: z.guid(),
 });
 
@@ -24,7 +26,10 @@ function requestMessage(value?: string) {
   if (value?.includes("bank_feed_not_ready")) return "Cửa hàng chưa bật thanh toán tự xác nhận qua ngân hàng.";
   if (value?.includes("customer_inactive")) return "Khách hàng đã ngừng giao dịch.";
   if (value?.includes("payment_request_already_paid")) return "Yêu cầu này đã được thanh toán, không hủy được.";
-  if (value?.includes("forbidden")) return "Bạn không có quyền tạo thanh toán cho khách hàng này.";
+  if (value?.includes("payment_request_cancelled")) return "Yêu cầu này đã bị hủy. Tạo yêu cầu mới để thu tiền.";
+  if (value?.includes("cash_account_required")) return "Chọn một quỹ tiền mặt đang dùng của chi nhánh.";
+  if (value?.includes("invalid_payment")) return "Nhập số tiền thực nhận lớn hơn 0.";
+  if (value?.includes("forbidden")) return "Bạn không có quyền thực hiện thao tác này.";
   return "Không tạo được mã thanh toán. Không có thay đổi nào được ghi.";
 }
 
@@ -39,7 +44,7 @@ export async function createPaymentRequestAction(input: unknown): Promise<Paymen
   try {
     const supabase = await createServerSupabase();
     const { data, error } = await supabase.rpc("create_payment_request", {
-      target_customer_id: parsed.data.customerId, group_keys: [...new Set(parsed.data.keys)], operation_id: parsed.data.operationId,
+      target_customer_id: parsed.data.customerId, group_keys: [...new Set(parsed.data.keys)], payment_method: parsed.data.method, operation_id: parsed.data.operationId,
     });
     if (error) {
       return isAuthoritativeRejection(error.code) ? { status: "FAILED", message: requestMessage(error.message) }
@@ -70,5 +75,37 @@ export async function cancelPaymentRequestAction(input: unknown): Promise<{ stat
     return { status: "SUCCESS", message: "Đã hủy yêu cầu thanh toán." };
   } catch {
     return { status: "UNKNOWN", message: "Chưa xác định được kết quả. Tải lại trang để kiểm tra." };
+  }
+}
+
+const confirmInput = z.object({
+  requestId: z.guid(),
+  amountVnd: z.string().regex(/^[1-9]\d{0,14}$/),
+  accountId: z.guid(),
+  operationId: z.guid(),
+  customerId: z.guid().optional(),
+});
+
+/**
+ * D45 "Xác nhận đã thu": the accountant records the cash actually received for a request into a cash fund. The database
+ * books one cash receipt (chosen debts first, earliest due first; the rest to other debts, then an advance).
+ */
+export async function confirmCashPaymentAction(input: unknown): Promise<{ status: "SUCCESS" | "FAILED" | "UNKNOWN"; message: string }> {
+  const parsed = confirmInput.safeParse(input);
+  if (!parsed.success) return { status: "FAILED", message: "Nhập số tiền thực nhận (số nguyên, đồng) và chọn quỹ tiền mặt." };
+  try {
+    const supabase = await createServerSupabase();
+    const { error } = await supabase.rpc("confirm_cash_payment_request", {
+      target_request_id: parsed.data.requestId, amount_vnd: parsed.data.amountVnd, target_account_id: parsed.data.accountId, operation_id: parsed.data.operationId,
+    });
+    if (error) {
+      return isAuthoritativeRejection(error.code) ? { status: "FAILED", message: requestMessage(error.message) }
+        : { status: "UNKNOWN", message: "Chưa xác định được kết quả. Bấm lại đúng nút này để kiểm tra — hệ thống không ghi trùng." };
+    }
+    revalidatePath("/admin/cashbook");
+    if (parsed.data.customerId) revalidatePath(`/admin/customers/${parsed.data.customerId}`);
+    return { status: "SUCCESS", message: "Đã ghi phiếu thu tiền mặt và trừ công nợ các khoản đã chọn." };
+  } catch {
+    return { status: "UNKNOWN", message: "Chưa xác định được kết quả. Bấm lại đúng nút này để kiểm tra — hệ thống không ghi trùng." };
   }
 }

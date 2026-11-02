@@ -4,11 +4,12 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 const m = vi.hoisted(() => ({ permissions: new Set<string>(), rpc: vi.fn(), calls: [] as { table: string; method: string; args: unknown[] }[], tables: {} as Record<string, unknown[]> }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn(), push: vi.fn() }), usePathname: () => "/admin/cashbook" }));
 vi.mock("@/lib/access/context", () => ({ requireInternalPermission: async () => ({ branchId: "b", permissions: m.permissions }) }));
+vi.mock("@/modules/finance/staff-payment-request", () => ({ CashConfirmButton: ({ request }: { request: { code: string } }) => <button type="button">Xác nhận đã thu {request.code}</button> }));
 vi.mock("@/modules/finance/actions", () => ({ createFinanceAccountAction: vi.fn(), reconcilePaymentAction: vi.fn(), reversePaymentAction: vi.fn() }));
 vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({
   from(table: string) {
     const query: Record<string, unknown> = {};
-    for (const method of ["select", "eq", "gte", "lt", "order", "range", "limit"]) query[method] = (...args: unknown[]) => { m.calls.push({ table, method, args }); return query; };
+    for (const method of ["select", "eq", "gte", "lt", "gt", "in", "order", "range", "limit"]) query[method] = (...args: unknown[]) => { m.calls.push({ table, method, args }); return query; };
     const result = Promise.resolve({ data: m.tables[table] ?? [], error: null });
     query.then = result.then.bind(result);
     return query;
@@ -106,3 +107,15 @@ it("switches money accounts by tab, picks quick periods and exports the period (
   expect(screen.getByRole("button", { name: "Xuất file" })).toBeInTheDocument();
   expect(m.calls).toEqual(expect.arrayContaining([{ table: "payment_read", method: "limit", args: [2000] }]));
 });
+
+it("D45: lists cash payment requests waiting at the shop with “Xác nhận đã thu”, only for who posts payments", async () => {
+  m.tables.payment_requests = [{ id: "r1", code: "YC7K2MQ", amount_vnd: "8000000", received_amount_vnd: "0", created_at: "2026-11-01T03:00:00Z",
+    customer_id: "c1", customer: { code: "KH003", display_name: "Công ty An Phát" } }];
+  await page({});
+  const section = screen.getByRole("region", { name: "Chờ thu tiền mặt" });
+  expect(section.textContent).toContain("YC7K2MQ");
+  expect(section.textContent).toContain("8.000.000");
+  expect(screen.getByRole("button", { name: "Xác nhận đã thu YC7K2MQ" })).toBeTruthy();
+  expect(m.calls).toContainEqual({ table: "payment_requests", method: "eq", args: ["method", "CASH"] });
+});
+

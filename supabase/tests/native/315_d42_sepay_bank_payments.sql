@@ -179,6 +179,8 @@ begin
   -- Feed off: the portal falls back to the plain bank box (no options).
   perform public.set_finance_account_bank_feed(vcb, false, null, gen_random_uuid());
   perform pg_temp.act_as('7f315000-0000-4000-8000-0000000000a1');
-  assert public.portal_debt_payment_options(customer) is null, 'no QR without automatic confirmation';
+  -- D45: the debts are still listed (cash is always possible), but no QR without automatic confirmation.
+  assert not (public.portal_debt_payment_options(customer)->>'qr_enabled')::boolean
+    and public.portal_debt_payment_options(customer)->>'account_number' is null, 'no QR without automatic confirmation';
 end
 $test$;

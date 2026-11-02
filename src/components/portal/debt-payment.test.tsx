@@ -61,7 +61,7 @@ it("says so when the debt was already paid or the shop has not switched bank con
 });
 
 const request = {
-  id: "11111111-1111-4111-8111-111111111111", code: "YC7K2MQ", state: "OPEN", amount_vnd: "8000000", received_amount_vnd: "0", remaining_amount_vnd: "8000000",
+  id: "11111111-1111-4111-8111-111111111111", code: "YC7K2MQ", method: "BANK_QR", state: "OPEN", amount_vnd: "8000000", received_amount_vnd: "0", remaining_amount_vnd: "8000000",
   note: "SEVQR TT KH315 YC7K2MQ", created_via: "PORTAL", created_at: "2026-11-01T05:00:00Z", expires_at: "2026-11-08T05:00:00Z",
   bank_name: "Vietcombank", account_number: "0071000315", account_holder: "CÔNG TY HIỀN XA",
   lines: [{ label: "SO-2026-000101", due_date: "2026-11-05", amount_vnd: "3000000", outstanding_amount_vnd: "3000000" },
@@ -83,13 +83,13 @@ it("D44: ticks several debts, shows their total, and pays them with one QR whose
   const bar = screen.getByRole("region", { name: "Các khoản đã chọn" });
   expect(bar.textContent).toContain("Đã chọn 2 khoản");
   expect(bar.textContent).toContain("8.000.000");
-  fireEvent.click(screen.getByRole("button", { name: "Thanh toán 2 khoản đã chọn" }));
+  fireEvent.click(screen.getByRole("button", { name: "Chuyển khoản 2 khoản" }));
 
   const qr = await screen.findByRole("img", { name: /Mã QR chuyển 8\.000\.000/ });
   const src = new URL(qr.getAttribute("src")!);
   expect(src.searchParams.get("amount")).toBe("8000000");
   expect(src.searchParams.get("des")).toBe("SEVQR TT KH315 YC7K2MQ");
-  expect(createRequest).toHaveBeenCalledWith(expect.objectContaining({ customerId: "c1", keys: ["o101", "o102"] }));
+  expect(createRequest).toHaveBeenCalledWith(expect.objectContaining({ customerId: "c1", keys: ["o101", "o102"], method: "BANK_QR" }));
   expect(createRequest.mock.calls[0][0].operationId).toMatch(/^[0-9a-f-]{36}$/);
   expect(screen.getByRole("list", { name: "Các khoản trong lần thanh toán này" }).textContent).toContain("SO-2026-000102");
 });
@@ -102,6 +102,21 @@ it("D44: quick choices select the overdue debts or everything, and a refusal is 
   expect((screen.getByRole("checkbox", { name: "Chọn SO-2026-000102" }) as HTMLInputElement).checked).toBe(false);
   fireEvent.click(screen.getByRole("button", { name: "Chọn tất cả" }));
   expect(screen.getByRole("region", { name: "Các khoản đã chọn" }).textContent).toContain("10.000.000");
-  fireEvent.click(screen.getByRole("button", { name: "Thanh toán 3 khoản đã chọn" }));
+  fireEvent.click(screen.getByRole("button", { name: "Chuyển khoản 3 khoản" }));
   expect((await screen.findByRole("alert")).textContent).toContain("không còn nợ");
+});
+
+it("D45: without SePay the customer can still choose debts and pay cash at the shop with a code — no QR, nothing booked yet", async () => {
+  createRequest.mockResolvedValue({ status: "SUCCESS", request: { ...request, method: "CASH", note: "TT KH315 YC7K2MQ", bank_name: null, account_number: null, account_holder: null } });
+  render(<DebtSelectList customerId="c1" rows={rows} qrEnabled={false} />);
+  expect(screen.queryByRole("button", { name: "Thanh toán" })).toBeNull();
+  fireEvent.click(screen.getByRole("checkbox", { name: "Chọn SO-2026-000101" }));
+  fireEvent.click(screen.getByRole("checkbox", { name: "Chọn SO-2026-000102" }));
+  expect(screen.queryByRole("button", { name: /Chuyển khoản/ })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Trả tiền mặt tại cửa hàng" }));
+  expect(await screen.findByText(/Vui lòng mang/)).toBeTruthy();
+  expect(screen.getAllByText("YC7K2MQ").length).toBeGreaterThan(0);
+  expect(screen.queryByRole("img")).toBeNull();
+  expect(createRequest).toHaveBeenCalledWith(expect.objectContaining({ keys: ["o101", "o102"], method: "CASH" }));
+  expect(fetchMock).not.toHaveBeenCalled();
 });
