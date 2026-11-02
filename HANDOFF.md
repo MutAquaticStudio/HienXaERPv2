@@ -6,12 +6,12 @@ Tài liệu bàn giao cho phiên làm việc tiếp theo (Claude Code hoặc ng�
 
 | Môi trường | Địa chỉ | Supabase | Code |
 |---|---|---|---|
-| Production | https://hien-xa-erp-v2-nu.vercel.app (sắp: https://app.hienxavlxd.com) | `nbwynrwkdbtfsitafsxa` | `main` @ `d4e8ade` (#81–#85: D44 QR nhiều đơn, D45 tiền mặt, sửa yêu cầu theo kịp tiền, menu, D46 tách phiếu giao; 02/11), deploy `dpl_DAaRceLVDAibjdBhm6GgS9J5p5xx` |
+| Production | https://hien-xa-erp-v2-nu.vercel.app (sắp: https://app.hienxavlxd.com) | `nbwynrwkdbtfsitafsxa` | `main` @ `8d6d418` (#81–#88: D44, D45, D46 tách phiếu, D47 Zalo OA giai đoạn 1; 02/11), deploy `dpl_J8xfzDhEyjF8tZL9NwfJdHEY9VCx` |
 | QA (nghiệm thu) | Preview nhánh `nox/elegant-volta-kr29iz` → https://qa.hienxavlxd.com (chờ DNS) | `ffrwiglcrlumfvhubaxg` | preview từ `main` @ `d4e8ade`: `dpl_Dq3viLYHCFymKDi5jWuUWBEnB4i1` (https://hien-xa-erp-v2-athmkstdb-hienxa.vercel.app, cần đăng nhập Vercel). Preview chưa có `SUPABASE_SECRET_KEY` (QA) → thợ chưa tải ảnh được trên QA |
 
 - Vercel: team `team_9qd9uzBYBc6WtzJVu7wGP7uC`, project `prj_o6ya9YI1b3fTFC8nxiOtjHiwaS3W`. Auto-deploy tắt (`vercel.json`); deploy bằng `create_deployment` (gitSource org `MutAquaticStudio`, repo `HienXaERPv2`, ref `main`, target `production`).
 - Preview dùng env QA (`HX_QA_PROJECT_REF`). Preview bị Vercel SSO Protection chặn với người ngoài → dùng tên miền riêng `qa.hienxavlxd.com` (đã gắn vào nhánh `nox/elegant-volta-kr29iz`; mọi push lên nhánh này cập nhật bản QA).
-- Migration mới nhất: QA `20261102160000_d47_zalo_oa_notifications` (D47 Zalo OA giai đoạn 1, chờ Owner duyệt lên Production); Production `20261102140000_d46_split_numbering` (ghi `schema_migrations` kèm sha256 file).
+- Migration mới nhất: QA và Production `20261102160000_d47_zalo_oa_notifications` (D47 Zalo OA giai đoạn 1, 02/11, Owner duyệt). Zalo chưa kết nối: chờ Owner làm bước chuẩn bị (docs/handoff/ke-hoach-zalo-oa.md mục 6) (ghi `schema_migrations` kèm sha256 file).
 
 ## 2. Quy trình phát hành đã dùng
 
