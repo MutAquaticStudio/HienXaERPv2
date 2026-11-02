@@ -176,6 +176,22 @@ button, a, input, select, textarea { outline-offset: 3px; }
 .main-menu .nav-link-nested.active { color: var(--primary-text); background: var(--primary-soft); font-weight: 600; }
 .main-menu .nav-link-nested.active > svg { color: var(--primary-text); }
 .menu-cta { flex-shrink: 0; margin-bottom: 6px; white-space: nowrap; }
+/* Wide screens: menu buttons never shrink below their text (they overlapped at 1280–1600 px with the contacts panel
+   open). When the blue bar is narrow, group icons go first, then chevrons; as a last resort the items wrap to a second row. */
+@media (min-width: 1180px) {
+  .main-menu { container: main-menu / inline-size; }
+  .nav-list { flex-wrap: wrap; }
+  .nav-list > .nav-link, .nav-group { flex-shrink: 0; }
+  @container main-menu (max-width: 1500px) {
+    .main-menu-inner { gap: 8px; padding-inline: 10px; }
+    .nav-list > .nav-link, .nav-group-toggle { gap: 5px; padding: 0 9px; }
+    .nav-list > .nav-link > svg:first-child, .nav-group-toggle > svg:first-child { display: none; }
+  }
+  @container main-menu (max-width: 1200px) {
+    .nav-list > .nav-link, .nav-group-toggle { padding: 0 7px; }
+    .nav-group-toggle > .nav-chevron { display: none; }
+  }
+}
 @keyframes menu-in { from { opacity: 0; transform: translateY(-6px) scale(0.98); } to { opacity: 1; transform: none; } }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 .sidebar-backdrop { display: none; }

@@ -10,6 +10,7 @@ export HX_QA_OUT=/tmp/qa-out                              # ảnh chụp + kết
 export QA_PHOTO=/đường/dẫn/ảnh.jpg                        # ảnh thử cho bước thợ chụp ảnh
 node smoke.mjs     # lớp 1: mọi màn hình theo vai trò (chủ, thợ, khách; điện thoại + máy tính)
 node layout.mjs    # bố cục thanh menu ở 1280–1920 px
+node menuprobe.mjs # đo nút menu chồng nhau / xuống dòng ở nhiều độ rộng (WIDTHS=1280,1366,...), khung liên hệ mở
 node e2e.mjs       # lớp 2: luồng nghiệp vụ đầu-cuối; node e2e.mjs "<tiền tố tên bước>" để chạy riêng
 ```
 
