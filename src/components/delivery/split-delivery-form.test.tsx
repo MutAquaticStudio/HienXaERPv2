@@ -15,7 +15,8 @@ beforeEach(() => { m.split.mockResolvedValue({ status: "SUCCESS", deliveries: [
 afterEach(() => { cleanup(); vi.clearAllMocks(); });
 
 it("chia 5 dòng/3 người: chọn số phiếu, nhập số lượng, phiếu 1 tự giữ phần còn lại, phân xe cho phiếu 3", async () => {
-  render(<SplitDeliveryForm {...props} />);
+  render(<SplitDeliveryForm {...props} intro={<p>Phiếu gốc sẽ được hủy.</p>} />);
+  expect(screen.getByText("Phiếu gốc sẽ được hủy.")).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "3 phiếu" }));
   fireEvent.change(screen.getByLabelText("Xi măng PCB40 cho Phiếu 2 (kg)"), { target: { value: "60" } });
   fireEvent.change(screen.getByLabelText("Xi măng PCB40 cho Phiếu 3 (kg)"), { target: { value: "40" } });
@@ -26,6 +27,7 @@ it("chia 5 dòng/3 người: chọn số phiếu, nhập số lượng, phiếu 
   expect(document.getElementById("split-start-3")).toHaveValue("2026-11-03T08:00");
   fireEvent.click(screen.getByRole("button", { name: "Tách thành 3 phiếu" }));
   await waitFor(() => expect(screen.getByText("Đã tách thành 3 phiếu")).toBeInTheDocument());
+  expect(screen.queryByText("Phiếu gốc sẽ được hủy.")).not.toBeInTheDocument();
   expect(m.split).toHaveBeenCalledWith({ deliveryId: "d1", version: 2, operationId: expect.any(String), parts: [
     { lines: [{ delivery_line_id: "l1", base_quantity: "100" }] },
     { lines: [{ delivery_line_id: "l1", base_quantity: "60" }] },

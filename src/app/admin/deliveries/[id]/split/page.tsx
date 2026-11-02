@@ -35,12 +35,11 @@ export default async function SplitDeliveryPage({ params }: Props) {
     <header className="page-heading"><div><p className="eyebrow">Điều phối giao hàng</p><h1>Tách phiếu giao {delivery.delivery_number}</h1>
       <p className="lede">{delivery.customer_name_snapshot} · {delivery.site_name_snapshot}</p></div></header>
     {canSplit ? <>
-      <section className="card card-pad">
+      <SplitDeliveryForm intro={<section className="card card-pad">
         <p>Chia hàng của phiếu này cho 2–5 chuyến. Phiếu {delivery.delivery_number} sẽ được hủy, các phiếu mới ghi “Tách từ {delivery.delivery_number}”.</p>
         <p className="muted">Hàng giữ chỗ trong kho chuyển sang các phiếu mới trong cùng một lần ghi. Đơn bán, công nợ và mã thanh toán không đổi.
           {delivery.execution_state === "ASSIGNED" && " Phân công hiện tại sẽ được gỡ và người giao nhận thông báo."}</p>
-      </section>
-      <SplitDeliveryForm deliveryId={delivery.id} version={delivery.version} allowAssign={!isDirect}
+      </section>} deliveryId={delivery.id} version={delivery.version} allowAssign={!isDirect}
         defaultStart={delivery.scheduled_at ? businessInputValue(delivery.scheduled_at) : ""}
         lines={lines.map((line) => ({ id: line.id, name: line.material_name_snapshot, planned: String(line.planned_base_quantity), unit: line.base_uom_symbol }))}
         employees={(employeeResult.data ?? []).map((employee) => ({ id: employee.id, label: employee.display_name }))}

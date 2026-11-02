@@ -70,6 +70,14 @@ export default async function OrderDetailPage({ params, searchParams }: { params
   const supplies = new Map(((supplyResult.data ?? []) as Supply[]).map((row) => [row.sales_order_line_id, row]));
   const allocations = (allocationResult.data ?? []) as unknown as Allocation[];
   const deliveries = (deliveryResult.data ?? []) as Delivery[];
+  // D46: a cancelled note that was split says which notes replaced it.
+  const splitInto = new Map<string, string[]>();
+  if (deliveries.some((delivery) => delivery.execution_state === "CANCELLED")) {
+    const { data: children } = await supabase.from("deliveries").select("delivery_number, split_from_delivery_id").eq("sales_order_id", id).order("delivery_number");
+    for (const child of (children ?? []) as { delivery_number: string; split_from_delivery_id: string | null }[]) {
+      if (child.split_from_delivery_id) splitInto.set(child.split_from_delivery_id, [...(splitInto.get(child.split_from_delivery_id) ?? []), child.delivery_number]);
+    }
+  }
   const warehouses = warehouseResult.data ?? [];
   // A1: a delivery from stock takes its warehouse source itself, so delivery.create is enough (no purchasing.create).
   const [availability, deliveryPlan, query, prepaidResult, names] = await Promise.all([
@@ -98,7 +106,7 @@ export default async function OrderDetailPage({ params, searchParams }: { params
       justConfirmed={!!query.notice?.startsWith("confirmed")} delivered={["FULFILLED", "CLOSED_REMAINDER"].includes(order.fulfillment_state ?? "")}
       deliveries={deliveries.map((delivery) => ({ id: delivery.id, number: delivery.delivery_number, state: delivery.execution_state, scheduledAt: delivery.scheduled_at,
         vehicle: delivery.vehicle_id ? names.vehicles.get(delivery.vehicle_id) ?? null : null, driver: delivery.employee_id ? names.employees.get(delivery.employee_id) ?? null : null,
-        assigned: !!delivery.employee_id && delivery.execution_state !== "PLANNED" }))}
+        assigned: !!delivery.employee_id && delivery.execution_state !== "PLANNED", splitInto: splitInto.get(delivery.id) }))}
       purchases={[...new Map(allocations.flatMap((allocation) => { const purchase = relation(allocation.purchase_order_lines?.purchase_orders ?? null);
         return purchase ? [[purchase.id, { id: purchase.id, number: purchase.purchase_order_number, state: purchase.state }] as const] : []; })).values()]}
       remainingVnd={access.permissions.has("finance.ar.read") ? prepaid.remainingVnd.toString() : null}

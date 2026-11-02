@@ -43,3 +43,10 @@ it("stays on later visits and follows the worker: on the way, delivered (FB7)", 
   expect(screen.queryByRole("link", { name: "Thu tiền" })).not.toBeInTheDocument();
   expect(screen.getByRole("link", { name: "Tạo đơn mới cho khách này" })).toBeInTheDocument();
 });
+
+it("D46: phiếu đã tách ghi rõ các phiếu thay thế", async () => {
+  const { nextStepDeliveryText } = await import("./order-next-steps");
+  const base = { id: "d", number: "DL-2026-000032", state: "CANCELLED", scheduledAt: null, vehicle: null, driver: null, assigned: false };
+  expect(nextStepDeliveryText(base)).toBe("đã hủy");
+  expect(nextStepDeliveryText({ ...base, splitInto: ["DL-2026-000035", "DL-2026-000036"] })).toBe("đã tách thành DL-2026-000035, DL-2026-000036");
+});

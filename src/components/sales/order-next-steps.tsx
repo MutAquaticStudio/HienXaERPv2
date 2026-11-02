@@ -5,13 +5,13 @@ import { formatVnd, vnd } from "@/lib/core/money";
 import { deliveryStateLabel } from "@/modules/delivery/presentation";
 import { purchaseStateLabel } from "@/modules/purchasing/presentation";
 
-export type NextStepDelivery = { id: string; number: string; state: string; scheduledAt: string | null; vehicle: string | null; driver: string | null; assigned: boolean };
+export type NextStepDelivery = { id: string; number: string; state: string; scheduledAt: string | null; vehicle: string | null; driver: string | null; assigned: boolean; splitInto?: string[] };
 export type NextStepPurchase = { id: string; number: string; state: string };
 
 /** Where a delivery of the order stands, in the words of the FB7 flow (staff assign, the worker loads and delivers). */
 export function nextStepDeliveryText(delivery: NextStepDelivery) {
   if (delivery.state === "PLANNED") return "chờ phân xe, tài xế";
-  if (delivery.state === "CANCELLED") return "đã hủy";
+  if (delivery.state === "CANCELLED") return delivery.splitInto?.length ? `đã tách thành ${delivery.splitInto.join(", ")}` : "đã hủy";
   const who = [delivery.vehicle && `xe ${delivery.vehicle}`, delivery.driver && `tài xế ${delivery.driver}`, delivery.scheduledAt && formatBusinessDateTime(delivery.scheduledAt)].filter(Boolean).join(" · ");
   const where = delivery.state === "ASSIGNED" ? "đã giao việc qua cổng thợ, chờ thợ lấy hàng lên xe"
     : delivery.state === "DISPATCHED" || delivery.state === "ARRIVED" ? "thợ đang giao"

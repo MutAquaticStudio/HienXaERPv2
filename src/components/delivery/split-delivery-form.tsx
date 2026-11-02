@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { formatQuantity } from "@/lib/core/quantity";
 import { splitDeliveryAction } from "@/modules/delivery/split-actions";
 import { buildSplitPlan, remainderOf, SPLIT_MAX_PARTS, SPLIT_MIN_PARTS, type SplitAssignment, type SplitQuantities } from "@/modules/delivery/split";
@@ -13,10 +13,12 @@ export type SplitOption = { id: string; label: string };
  * D46 "Tách phiếu giao": one row per line, one column per new note. Part 1 keeps whatever the other parts do not take.
  * Each part may get a driver, vehicle and time now; left empty it waits for dispatch like a new note.
  */
-export function SplitDeliveryForm({ deliveryId, version, lines, employees, vehicles, allowAssign, defaultStart }: {
+export function SplitDeliveryForm({ deliveryId, version, lines, employees, vehicles, allowAssign, defaultStart, intro }: {
   deliveryId: string; version: number; lines: SplitFormLine[]; employees: SplitOption[]; vehicles: SplitOption[];
   /** False for supplier-direct notes: they are handed to the supplier's carrier on each new note afterwards. */
   allowAssign: boolean; defaultStart: string;
+  /** What will happen, shown above the form until the split is done. */
+  intro?: ReactNode;
 }) {
   const [partCount, setPartCount] = useState(SPLIT_MIN_PARTS);
   const [quantities, setQuantities] = useState<SplitQuantities>({});
@@ -63,7 +65,7 @@ export function SplitDeliveryForm({ deliveryId, version, lines, employees, vehic
     <p><Link className="button button-secondary" href="/admin/dispatch">Mở bảng điều phối</Link></p>
   </section>;
 
-  return <section className="card card-pad split-form">
+  return <>{intro}<section className="card card-pad split-form">
     <div className="field">
       <span className="field-label" id="split-count-label">Tách thành</span>
       <div className="segmented" role="group" aria-labelledby="split-count-label">
@@ -108,5 +110,5 @@ export function SplitDeliveryForm({ deliveryId, version, lines, employees, vehic
     {allowAssign && <p className="muted">Để trống người giao: phiếu vào “Chờ điều phối” và đi theo chế độ tự điều phối của chi nhánh. Giờ Việt Nam.</p>}
     {message && <p className="form-message" role="alert">{message}</p>}
     <button className="button button-primary" type="button" disabled={busy} onClick={submit}>{busy ? "Đang tách…" : `Tách thành ${partCount} phiếu`}</button>
-  </section>;
+  </section></>;
 }
