@@ -505,7 +505,11 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
   .page-heading { display: grid; }
   .action-cluster { justify-content: stretch; }
   .action-cluster .button { flex: 1; }
-  .metric-grid, .detail-grid, .form-grid { grid-template-columns: 1fr; }
+  .detail-grid, .form-grid { grid-template-columns: 1fr; }
+  /* Figures stay two per row on phones so a page of totals is not one long column. */
+  .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .metric-grid .metric-card { padding: 12px 14px; }
+  .metric-grid .metric-value { font-size: 18px; }
   .compact-grid { grid-template-columns: 1fr; }
   .field-full { grid-column: auto; }
   th, td { padding: 13px 14px; }
@@ -2033,3 +2037,12 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .zalo-template { display: grid; gap: 6px; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius); }
 .zalo-template p { margin: 0; }
 .zalo-params code { margin-right: 6px; padding: 1px 6px; border-radius: 6px; background: var(--surface-sunken); font-size: var(--font-size-caption); }
+
+/* Motion polish (UX-UI-R1-001 timings; all of it is switched off by prefers-reduced-motion). */
+/* The row arrow turns as the row opens or closes (the icon is swapped on open, so it turns in). */
+@keyframes chevron-open { from { transform: rotate(-90deg); } to { transform: none; } }
+.row-toggle .icon-button[aria-expanded="true"] svg { animation: chevron-open var(--dur) var(--ease-out); }
+/* Figures count in gently when a page opens. */
+.metric-card .metric-value { animation: rise-in var(--dur-slow) var(--ease-out) both; animation-delay: 60ms; }
+/* Status badges and filter counts settle in instead of popping. */
+.list-filter-option:has(input:checked) { transition: background-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out); }
