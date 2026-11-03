@@ -97,12 +97,9 @@ export async function createRoutePlanAction(_previous: RouteActionState, formDat
     const delivery = deliveryById.get(deliveryId)!;
     const site = siteById.get(String(delivery.site_id));
     let capacityWarning: string | null = null;
-    if (capacity === null || !capacityUomId) {
-      capacityWarning = "Xe chưa có tải trọng và đơn vị để đối chiếu.";
-    } else if (totalQuantity === null) {
-      capacityWarning = "Chưa quy đổi được hàng sang đơn vị tải của xe (thêm quy đổi trong Đơn vị tính của vật tư, vd 1 tấn = 20 bao); cần kiểm tra thủ công.";
-    } else if (totalQuantity > capacity) {
-      capacityWarning = "Tổng hàng toàn tuyến vượt tải trọng xe; kiểm tra lượng nhận và giao từng chặng trước khi áp dụng.";
+    // D53: a vehicle needs no capacity; when one is written down, a load above it is only pointed out.
+    if (capacity !== null && capacityUomId && totalQuantity !== null && totalQuantity > capacity) {
+      capacityWarning = "Tổng hàng toàn tuyến nhiều hơn sức chở ghi trong danh mục xe (chỉ để tham khảo).";
     }
     return {
       delivery_id: deliveryId,

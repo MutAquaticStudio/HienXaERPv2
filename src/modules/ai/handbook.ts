@@ -53,8 +53,8 @@ Dùng sổ tay này để hiểu hệ thống và hướng dẫn người dùng:
 ### Gán phiếu giao (phân người, xe, giờ)
 - Bảng điều phối /admin/dispatch "Bảng phân giao": cột Chờ phân giao / Đã phân giao / Đang thực hiện / Ngoại lệ. Nút "Gán" trên dòng chờ: chọn người giao + xe + giờ [delivery.assign]. Cần ít nhất một nhân viên vai trò "Thợ & tài xế" và một xe đang dùng.
 - Hoặc trên trang phiếu /admin/deliveries/[id]: "Phân người và xe", hoặc "Thuê ngoài" (đầu mối NCC / xe ngoài → "Xác nhận phân giao ngoài").
-- Quy tắc: chỉ gán khi phiếu "Chờ phân giao", hoặc đổi khi "Đã phân giao" mà thợ chưa bắt đầu. Hệ thống chặn khi người / xe trùng lịch (báo giờ trống gần nhất), xe quá sức chở, người giao không còn làm ở chi nhánh.
-- Tự điều phối (Cài đặt → Vận hành giao hàng): "Tắt", "Gợi ý" (Điều phối bấm "Áp dụng gợi ý"), "Tự động" (mặc định: tự chọn xe và tài xế rảnh, sửa được). Xe phải có "Tài xế mặc định" mới tự chia được; "chưa có xe…" thường do xe chưa xác nhận sức chở hoặc chưa có tài xế mặc định (danh mục xe /admin/dispatch/resources).
+- Quy tắc: chỉ gán khi phiếu "Chờ phân giao", hoặc đổi khi "Đã phân giao" mà thợ chưa bắt đầu. Hệ thống chặn khi người / xe trùng lịch (báo giờ trống gần nhất) hoặc người giao không còn làm ở chi nhánh. Xe không cần sức chở (sức chở ghi trong danh mục chỉ để tham khảo).
+- Tự điều phối (Cài đặt → Vận hành giao hàng): "Tắt", "Gợi ý" (Điều phối bấm "Áp dụng gợi ý"), "Tự động" (mặc định: tự chọn xe và tài xế rảnh, sửa được). Xe nên có "Tài xế mặc định" để tự chia; "chưa có xe…" thường do chưa có xe đang dùng, hoặc thợ chưa có tài khoản nhận việc (danh mục xe /admin/dispatch/resources).
 - Lộ trình /admin/routes: "Tạo lộ trình" (đề xuất) → "Áp dụng và phân giao".
 - Công cụ: soan_gan_phieu_giao (người + xe + khung giờ, hoặc đơn vị vận chuyển ngoài).
 

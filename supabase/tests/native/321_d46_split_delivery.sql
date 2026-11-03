@@ -119,17 +119,18 @@ begin
   begin perform public.split_delivery(source, (select version from public.deliveries where id = source), parts, '7f46b000-0000-4000-8000-000000000005');
   exception when others then failed := sqlerrm; end;
   assert failed = 'forbidden', format('a reader cannot split, got %s', failed);
-  -- A chosen truck too small for its part: the whole split is refused, nothing changes — not even a DL/WRK number is used.
+  -- A part given to someone who cannot take delivery work: the whole split is refused, nothing changes — not even a DL/WRK
+  -- number is used. (D53: a truck too small for its part is no longer a reason; capacity is for reference only.)
   perform pg_temp.act_as_admin();
   select last_value into numbers_before from public.delivery_number_seq;
   select last_value into works_before from public.work_item_number_seq;
   perform pg_temp.act_as(owner_login);
   failed := null;
   begin perform public.split_delivery(source, (select version from public.deliveries where id = source),
-    jsonb_set(parts, '{1}', (parts->1) || jsonb_build_object('employee_id', worker, 'vehicle_id', small_truck, 'scheduled_start', start_at + interval '3 hours')),
+    jsonb_set(parts, '{1}', (parts->1) || jsonb_build_object('employee_id', '30000000-0000-4000-8000-000000000003', 'vehicle_id', small_truck, 'scheduled_start', start_at + interval '3 hours')),
     '7f46b000-0000-4000-8000-000000000006');
   exception when others then failed := sqlerrm; end;
-  assert failed = 'delivery_split_assignment_refused', format('a part that does not fit its truck is refused, got %s', failed);
+  assert failed = 'delivery_split_assignment_refused', format('a part for someone who cannot take delivery work is refused, got %s', failed);
   perform pg_temp.act_as_admin();
   assert (select execution_state from public.deliveries where id = source) = 'ASSIGNED', 'still assigned after the refusals';
   assert not exists (select 1 from public.deliveries where split_from_delivery_id = source), 'no part left behind';

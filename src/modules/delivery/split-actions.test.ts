@@ -25,10 +25,10 @@ it("gửi một lệnh tách, giờ giao đổi sang giờ Việt Nam", async ()
 });
 
 it("báo rõ phiếu nào không phân được xe, bằng tiếng Việt", async () => {
-  m.rpc.mockResolvedValue({ data: null, error: { code: "23514", message: "delivery_split_assignment_refused", details: "2", hint: "vehicle_capacity_exceeded" } });
+  m.rpc.mockResolvedValue({ data: null, error: { code: "23514", message: "delivery_split_assignment_refused", details: "2", hint: "work_resource_schedule_collision" } });
   const result = await splitDeliveryAction({ deliveryId: ids.delivery, version: 3, parts, operationId: ids.op });
   expect(result.status).toBe("FAILED");
-  expect(result.status !== "SUCCESS" && result.message).toMatch(/^Phiếu 2: .*sức chứa.*Chưa tách phiếu nào\.$/);
+  expect(result.status !== "SUCCESS" && result.message).toMatch(/^Phiếu 2: .*(trùng|chồng lấn|đã được phân).*Chưa tách phiếu nào\.$/);
   expect(result.status !== "SUCCESS" && result.message).not.toMatch(/delivery_|vehicle_/);
 });
 
