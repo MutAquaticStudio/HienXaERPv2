@@ -1850,7 +1850,7 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .ai-attachment-name { min-width: 0; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ai-attachment small { color: var(--muted); }
 .ai-attachment .ai-attachment-remove { width: 24px; height: 24px; border-radius: 12px; }
-.ai-composer-meta { display: flex; justify-content: flex-start; }
+.ai-composer-meta { display: flex; flex-wrap: wrap; gap: 6px 14px; justify-content: flex-start; }
 .ai-model-picker { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; }
 .ai-model-picker select { max-width: 100%; min-height: 30px; border: 1px solid var(--input-border); border-radius: 8px; padding: 2px 8px; color: var(--text); background: var(--surface); font: inherit; font-size: 13px; }
 .ai-chat-compact .ai-attachment-name { max-width: 140px; }

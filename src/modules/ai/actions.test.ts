@@ -38,10 +38,12 @@ describe("chatbot conversation (D36)", () => {
     const form = new FormData();
     form.set("question", "Đọc giúp bảng này");
     form.set("model", "claude-opus-5-5");
+    form.set("effort", "high");
     form.append("files", new File(["ma,gia\nXM01,95000"], "gia.csv", { type: "text/csv" }));
     await askAiAction(form);
     const call = mocks.ask.mock.calls[0][0];
     expect(call.model).toBe("claude-opus-5-5");
+    expect(call.effort).toBe("high");
     expect(call.attachments).toEqual([{ type: "document", title: "gia.csv", source: { type: "text", media_type: "text/plain", data: "ma,gia\nXM01,95000" } }]);
     expect(mocks.rpc).toHaveBeenCalledWith("save_ai_chat_turn", expect.objectContaining({ question: "Đọc giúp bảng này\n📎 gia.csv" }));
   });

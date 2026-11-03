@@ -12,23 +12,31 @@ import { listAiActionsAction, type AiActionCard } from "@/modules/ai/agent/actio
 import { AiActionCardView } from "@/modules/ai/agent/action-card";
 import type { AiTurn } from "@/modules/ai/assistant";
 import { AI_ATTACHMENT_ACCEPT, AI_ATTACHMENT_MAX_FILES, attachmentProblem } from "@/modules/ai/attachment-limits";
-import { AI_MODELS, aiModel, DEFAULT_AI_MODEL, type AiModelId } from "@/modules/ai/models";
+import { AI_EFFORTS, AI_MODELS, aiEffort, aiModel, DEFAULT_AI_EFFORT, DEFAULT_AI_MODEL, type AiEffortId, type AiModelId } from "@/modules/ai/models";
 
-const MODEL_STORAGE_KEY = "hx.ai.model";
+const PICK_EVENT = "hx-ai-pick";
+/** The picks of this page load, so the pickers work even where the browser keeps no storage. */
+const picked = new Map<string, string>();
 
-const MODEL_EVENT = "hx-ai-model";
-/** The pick of this page load, so the picker works even where the browser keeps no storage. */
-let pickedModel: AiModelId | null = null;
-
-/** The model this person picked last on this device (D50), or the default. */
-function storedModel(): AiModelId {
-  if (pickedModel) return pickedModel;
-  try { return aiModel(window.localStorage.getItem(MODEL_STORAGE_KEY)).id; } catch { return DEFAULT_AI_MODEL; }
-}
-function subscribeModel(onChange: () => void) {
-  window.addEventListener("storage", onChange);
-  window.addEventListener(MODEL_EVENT, onChange);
-  return () => { window.removeEventListener("storage", onChange); window.removeEventListener(MODEL_EVENT, onChange); };
+/** D50: a choice of the chat remembered on this device (the model, the "mức suy nghĩ"), shared by every open chat. */
+function useRememberedPick<T extends string>(storageKey: string, normalise: (value: string | null) => T, fallback: T): [T, (next: T) => void] {
+  const read = () => {
+    const current = picked.get(storageKey);
+    if (current) return normalise(current);
+    try { return normalise(window.localStorage.getItem(storageKey)); } catch { return fallback; }
+  };
+  const subscribe = (onChange: () => void) => {
+    window.addEventListener("storage", onChange);
+    window.addEventListener(PICK_EVENT, onChange);
+    return () => { window.removeEventListener("storage", onChange); window.removeEventListener(PICK_EVENT, onChange); };
+  };
+  const value = useSyncExternalStore(subscribe, read, () => fallback);
+  const pick = (next: T) => {
+    picked.set(storageKey, next);
+    try { window.localStorage.setItem(storageKey, next); } catch { /* not remembered after a reload */ }
+    window.dispatchEvent(new Event(PICK_EVENT));
+  };
+  return [value, pick];
 }
 
 function fileSize(bytes: number) {
@@ -48,17 +56,13 @@ export function AiChat({ initialTurns, compact = false }: { initialTurns: AiTurn
   const [question, setQuestion] = useState("");
   const [notice, setNotice] = useState("");
   const [pending, start] = useTransition();
-  // D50: the model picked in the chat (remembered on this device) and the files attached to the next question.
-  // Every open chat (page, bubble, Tin nhắn) shows the same choice.
-  const model = useSyncExternalStore(subscribeModel, storedModel, () => DEFAULT_AI_MODEL);
+  // D50: the model and the "mức suy nghĩ" picked in the chat (remembered on this device; every open chat — page, bubble,
+  // Tin nhắn — shows the same choice) and the files attached to the next question.
+  const [model, pickModel] = useRememberedPick<AiModelId>("hx.ai.model", (value) => aiModel(value).id, DEFAULT_AI_MODEL);
+  const [effort, pickEffort] = useRememberedPick<AiEffortId>("hx.ai.effort", (value) => aiEffort(value).id, DEFAULT_AI_EFFORT);
   const [files, setFiles] = useState<File[]>([]);
   const [fileProblem, setFileProblem] = useState("");
   const picker = useRef<HTMLInputElement>(null);
-  const pickModel = (next: AiModelId) => {
-    pickedModel = next;
-    try { window.localStorage.setItem(MODEL_STORAGE_KEY, next); } catch { /* not remembered after a reload */ }
-    window.dispatchEvent(new Event(MODEL_EVENT));
-  };
   const addFiles = (picked: FileList | null) => {
     if (!picked?.length) return;
     const next = [...files, ...Array.from(picked)];
@@ -91,6 +95,7 @@ export function AiChat({ initialTurns, compact = false }: { initialTurns: AiTurn
       const form = new FormData();
       form.set("question", asked);
       form.set("model", model);
+      form.set("effort", effort);
       for (const file of sent) form.append("files", file);
       try {
         answer = await askAiAction(form);
@@ -153,6 +158,12 @@ export function AiChat({ initialTurns, compact = false }: { initialTurns: AiTurn
         <label className="ai-model-picker"><span>Mô hình</span>
           <select value={model} onChange={(event) => pickModel(event.target.value as AiModelId)} disabled={pending} aria-label="Chọn mô hình Claude">
             {AI_MODELS.map((item) => <option key={item.id} value={item.id}>{item.label} · {item.hint}</option>)}
+          </select>
+        </label>
+        <label className="ai-model-picker"><span>Mức suy nghĩ</span>
+          <select value={effort} onChange={(event) => pickEffort(event.target.value as AiEffortId)} disabled={pending} aria-label="Chọn mức suy nghĩ của trợ lý"
+            title="Mức càng cao trả lời càng kỹ nhưng chậm và tốn token hơn">
+            {AI_EFFORTS.map((item) => <option key={item.id} value={item.id}>{item.label} · {item.hint}</option>)}
           </select>
         </label>
       </div>

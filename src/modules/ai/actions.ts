@@ -9,11 +9,12 @@ import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { askAssistant, type AiAnswer } from "@/modules/ai/assistant";
 import { attachmentBlocks, type AiContentBlock } from "@/modules/ai/attachments";
-import { AI_MODEL_IDS, DEFAULT_AI_MODEL } from "@/modules/ai/models";
+import { AI_EFFORT_IDS, AI_MODEL_IDS, DEFAULT_AI_EFFORT, DEFAULT_AI_MODEL } from "@/modules/ai/models";
 import { listAiActionsAction, type AiActionCard } from "@/modules/ai/agent/actions";
 import { loadAiChat, type AiChatTurn } from "@/modules/ai/chat-history";
 
-const askSchema = z.object({ question: z.string().trim().min(2).max(2000), model: z.enum(AI_MODEL_IDS).default(DEFAULT_AI_MODEL) });
+const askSchema = z.object({ question: z.string().trim().min(2).max(2000), model: z.enum(AI_MODEL_IDS).default(DEFAULT_AI_MODEL),
+  effort: z.enum(AI_EFFORT_IDS).default(DEFAULT_AI_EFFORT) });
 
 export async function loadAiChatAction(): Promise<AiChatTurn[]> {
   const access = await requireInternalPermission("ai.use");
@@ -23,10 +24,10 @@ export async function loadAiChatAction(): Promise<AiChatTurn[]> {
 /** The answer, with the cards of the actions the assistant prepared in this turn (FB15, D37). */
 export type AiChatAnswer = AiAnswer & { actions: AiActionCard[] };
 
-/** A question from the chat: a FormData with `question`, `model` and the attached `files` (D50), or a plain object. */
+/** A question from the chat: a FormData with `question`, `model`, `effort` and the attached `files` (D50), or a plain object. */
 export async function askAiAction(input: unknown): Promise<AiChatAnswer> {
   const form = input instanceof FormData ? input : null;
-  const parsed = askSchema.safeParse(form ? { question: form.get("question"), model: form.get("model") || undefined } : input);
+  const parsed = askSchema.safeParse(form ? { question: form.get("question"), model: form.get("model") || undefined, effort: form.get("effort") || undefined } : input);
   if (!parsed.success) return { outcome: "ERROR", text: "Câu hỏi cần từ 2 đến 2.000 ký tự.", proposals: 0, actions: [] };
   const access = await requireInternalPermission("ai.use");
   const files = form ? form.getAll("files").filter((value): value is File => value instanceof File && value.name !== "") : [];
@@ -45,7 +46,7 @@ export async function askAiAction(input: unknown): Promise<AiChatAnswer> {
   const firstQuestion = stored.findIndex((turn) => turn.role === "user");
   const history = firstQuestion < 0 ? [] : stored.slice(firstQuestion);
   const answer = await askAssistant({ supabase, branchId: access.branchId, permissions: new Set(access.permissions), history,
-    question: parsed.data.question, today, model: parsed.data.model, attachments });
+    question: parsed.data.question, today, model: parsed.data.model, effort: parsed.data.effort, attachments });
   // Only answered turns are kept: a failure (no key, quota, error) is shown once and not sent to the assistant again.
   // Attached files are not stored: the kept question only names them.
   if (answer.outcome === "OK") {

@@ -93,6 +93,20 @@ describe("AI assistant", () => {
     expect(create.mock.calls[1][0].messages[0].content).toEqual([{ type: "text", text: expect.stringContaining("Tóm tắt") }]);
   });
 
+  it("thinks at the picked level, and says so when the answer ran out of room (D50)", async () => {
+    const db = fakeSupabase();
+    create.mockResolvedValueOnce({ stop_reason: "max_tokens", usage: usage(10, 16000), content: [{ type: "text", text: "Phần đầu" }] });
+    const cut = await askAssistant({ supabase: db.client as never, branchId: "branch-a", permissions: new Set<string>(), history: [], question: "Phân tích kỹ", today: "hôm nay", effort: "max" });
+    expect(create.mock.calls[0][0].output_config).toEqual({ effort: "max" });
+    expect(cut).toMatchObject({ outcome: "OK", text: expect.stringContaining("Phần đầu") });
+    expect(cut.text).toMatch(/giảm mức suy nghĩ/);
+    create.mockResolvedValueOnce({ stop_reason: "max_tokens", usage: usage(10, 16000), content: [{ type: "tool_use", id: "t1", name: "tao_de_xuat", input: {} }] });
+    const empty = await askAssistant({ supabase: db.client as never, branchId: "branch-a", permissions: new Set<string>(), history: [], question: "Phân tích kỹ", today: "hôm nay" });
+    expect(create.mock.calls[1][0].output_config).toEqual({ effort: "medium" });
+    expect(empty).toMatchObject({ outcome: "ERROR", text: expect.stringMatching(/mức suy nghĩ thấp hơn/) });
+    expect(db.rpc).not.toHaveBeenCalledWith("create_ai_proposal", expect.anything());
+  });
+
   it("asks for a key in Cài đặt when neither the app nor the environment has one", async () => {
     delete process.env.ANTHROPIC_API_KEY;
     const db = fakeSupabase();

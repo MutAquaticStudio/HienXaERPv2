@@ -22,3 +22,21 @@ export const AI_MODEL_IDS = AI_MODELS.map((model) => model.id) as [AiModelId, ..
 export function aiModel(id: string | null | undefined): (typeof AI_MODELS)[number] {
   return AI_MODELS.find((model) => model.id === id) ?? AI_MODELS[0];
 }
+
+// D50 (Owner 03/11/2026): how hard the model thinks before answering ("Mức suy nghĩ"), picked in the chat by everyone.
+// Higher levels answer more carefully but take longer and use more tokens. "medium" is what the assistant used before.
+export const AI_EFFORTS = [
+  { id: "low", label: "Thấp", hint: "nhanh nhất" },
+  { id: "medium", label: "Vừa", hint: "mặc định" },
+  { id: "high", label: "Cao", hint: "kỹ hơn" },
+  { id: "xhigh", label: "Rất cao", hint: "chậm, tốn hơn" },
+  { id: "max", label: "Tối đa", hint: "chậm nhất, tốn nhất" },
+] as const;
+
+export type AiEffortId = (typeof AI_EFFORTS)[number]["id"];
+export const DEFAULT_AI_EFFORT: AiEffortId = "medium";
+export const AI_EFFORT_IDS = AI_EFFORTS.map((effort) => effort.id) as [AiEffortId, ...AiEffortId[]];
+
+export function aiEffort(id: string | null | undefined): (typeof AI_EFFORTS)[number] {
+  return AI_EFFORTS.find((effort) => effort.id === id) ?? AI_EFFORTS[1];
+}
