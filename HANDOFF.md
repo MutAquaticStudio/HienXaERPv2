@@ -2,7 +2,7 @@
 
 Tài liệu bàn giao cho phiên làm việc tiếp theo (Claude Code hoặc người). Đọc kèm `CLAUDE.md` (quy tắc bắt buộc), `Spec.md` (D1–D53), `tasks.md`, `implementation.md` (nhật ký, rất dài — grep theo mã D/FB hoặc ngày).
 
-## 0. Phiên 03/11/2026 (PR #94–#97, tất cả đã lên Production)
+## 0. Phiên 03/11/2026 (PR #94–#99, tất cả đã lên Production)
 
 | PR | Nội dung | Migration |
 |---|---|---|
@@ -30,13 +30,13 @@ Ghi chú cho phiên sau:
 
 | Môi trường | Địa chỉ | Supabase | Code | Migration mới nhất |
 |---|---|---|---|---|
-| Production | https://app.hienxavlxd.com (đã xác minh; tên cũ https://hien-xa-erp-v2-nu.vercel.app vẫn chạy) | `nbwynrwkdbtfsitafsxa` | `main` @ `0cd3293`, deploy `dpl_4ytiQLGaAumnA7WFuZSktnsic5kT` | `20261103100000_d50_ai_api_key` |
-| QA (nghiệm thu) | Preview từ `main` @ `57b4bff` (**chưa** deploy lại bản 03/11): `dpl_C6ddHam7vy5AYgtbgEZfuWmngzff` (https://hien-xa-erp-v2-p5su7q7iz-hienxa.vercel.app, cần đăng nhập Vercel). Owner 03/11: **không cần** tên miền `qa.hienxavlxd.com` nữa | `ffrwiglcrlumfvhubaxg` | `main` @ `57b4bff` | `20261103100000_d50_ai_api_key` |
+| Production | https://app.hienxavlxd.com (đã xác minh; tên cũ https://hien-xa-erp-v2-nu.vercel.app vẫn chạy) | `nbwynrwkdbtfsitafsxa` | `main` @ `6be2f65` (PR #99: D51 + D52 + D53), deploy `dpl_4yZLxU55j7aGGp26kxvrm4jgWPn2` | `20261103120000_d53_vehicle_capacity_optional` |
+| QA (nghiệm thu) | Preview từ `main` @ `57b4bff` (**chưa** deploy lại bản 03/11): `dpl_C6ddHam7vy5AYgtbgEZfuWmngzff` (https://hien-xa-erp-v2-p5su7q7iz-hienxa.vercel.app, cần đăng nhập Vercel). Owner 03/11: **không cần** tên miền `qa.hienxavlxd.com` nữa | `ffrwiglcrlumfvhubaxg` | `main` @ `57b4bff` | `20261103120000_d53_vehicle_capacity_optional` |
 
 - Kiểm phiên bản: `GET /api/health` → `buildSha` (dùng `web_fetch_vercel_url` cho bản preview có bảo vệ).
 - Vercel: team `team_9qd9uzBYBc6WtzJVu7wGP7uC`, project `prj_o6ya9YI1b3fTFC8nxiOtjHiwaS3W`. Auto-deploy tắt (`vercel.json`); deploy bằng `create_deployment` (gitSource `{type: github, org: MutAquaticStudio, repo: HienXaERPv2, ref: main, sha}`; `target: production` cho Production, bỏ `target` cho bản QA preview).
 - Preview dùng env QA (`HX_QA_PROJECT_REF`…). Preview **chưa có** `SUPABASE_SECRET_KEY` của QA → thợ không tải được ảnh trên QA (luồng giao hàng – xác nhận giao – công nợ chưa thử được trên QA). Preview cũng chưa có SMTP / `HX_AUTOMATION_SECRET`.
-- Lịch sử `schema_migrations`: 9 migration của 01–03/11 khớp repo (version + sha256) trên cả hai DB. Lệch **cũ** (tháng 9–10, đã ghi trong `implementation.md` 16/10): Production thiếu tên riêng của 9 version cũ vì đã áp gộp trong `pr44_reviewed_schema187_compact_forward_20261013`, `operational_role_presets` mang version `20261013121739`, có bản dọn `owner_authorized_uat_cleanup_20261013`; QA ghi `retire_opening_pending_rule` dưới `20261014074344` (repo `20261012155947`) và có bản vá riêng `20261002114730`. Chỉ lệch số hiệu/tên ghi lại, không thiếu nội dung. Muốn khớp từng dòng thì thêm bản ghi đối chiếu (ghi Production cần Owner đồng ý).
+- Lịch sử `schema_migrations`: 10 migration của 01–03/11 khớp repo (version + sha256) trên cả hai DB. Lệch **cũ** (tháng 9–10, đã ghi trong `implementation.md` 16/10): Production thiếu tên riêng của 9 version cũ vì đã áp gộp trong `pr44_reviewed_schema187_compact_forward_20261013`, `operational_role_presets` mang version `20261013121739`, có bản dọn `owner_authorized_uat_cleanup_20261013`; QA ghi `retire_opening_pending_rule` dưới `20261014074344` (repo `20261012155947`) và có bản vá riêng `20261002114730`. Chỉ lệch số hiệu/tên ghi lại, không thiếu nội dung. Muốn khớp từng dòng thì thêm bản ghi đối chiếu (ghi Production cần Owner đồng ý).
 
 ## 2. Đã làm trong phiên 01–02/11 (PR #77–#93, tất cả đã lên QA + Production)
 
