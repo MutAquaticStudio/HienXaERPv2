@@ -3496,3 +3496,4 @@ Thay đổi (migration `20261024090000`–`20261024090900`, native 285, 290, 295
 - Quy đổi: xi măng 1 tấn = 20 bao, 1 bao = 50 kg (PACKAGING); sắt cây kg↔cây ESTIMATED (không dùng để quyết toán) theo khối lượng danh định 6,2 / 9,8 / 13,5 / 17,2 / 22,4 / 27,8 / 33,4 kg/cây (phi 10–22); cát/đá đơn vị gốc khối: 50 bao, 1 gầu = 0,4, xe điện = 0,35, xe cn nhỏ = 0,5, xe cn to = 1, ôtô = 4 khối (EXACT, theo bảng/Owner).
 - Kiểm sau: vật tư 54, quy đổi 73, giá 68, nhóm biến thể 8; đơn/phiếu giao/kiểm kho/chuyển động kho = 0; 0 trigger bị tắt.
 - Chưa có: giá mua NCC, tồn đầu (cần phiếu kiểm kho). Giá bán lẻ cao hơn (xi măng 80–100k, gạch lỗ 2.000, gầu cát đen 100k) và giá sắt biến động → báo lại khi lên đơn. Xi măng Xuân Thành bảng không ghi mác, tạm để PC30.
+- Owner 03/11: ký hiệu đơn vị `khoi` đổi từ "Khoi" thành "Khối" (Production, `units_of_measure.symbol`; mã `khoi` giữ nguyên). Các đơn vị khác đã có dấu đúng.
