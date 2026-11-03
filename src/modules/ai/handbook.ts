@@ -121,6 +121,7 @@ Dùng sổ tay này để hiểu hệ thống và hướng dẫn người dùng:
 - Báo khách qua Zalo (miễn phí, nhân viên tự gửi): nút "Gửi xác nhận đơn qua Zalo" trên đơn bán đã xác nhận, "Báo khách đã giao qua Zalo" trên phiếu giao đã xác minh, "Nhắc nợ qua Zalo" và "Gửi Zalo" (từng phiếu thu) ở hồ sơ khách → Công nợ & thanh toán. Hệ thống soạn sẵn nội dung, chép và mở Zalo tới số di động của khách (điện thoại: chia sẻ kèm PDF); nhân viên dán và bấm gửi. Khách cần có số di động trong hồ sơ.
 - Zalo OA /admin/settings/zalo [roles.manage]: tin mẫu ZBS tự động (tốn phí mỗi tin) — cửa hàng hiện không dùng; báo khách bằng nút "Gửi qua Zalo".
 - Cài đặt /admin/settings [roles.manage]: thông tin doanh nghiệp in trên chứng từ, logo, vận hành giao hàng (tự phân nguồn, kho ưu tiên, chi phí một chuyến, chế độ tự điều phối), chi nhánh, khóa API Claude (/admin/settings/ai). Nhật ký /admin/audit.
+- In giấy tờ: đơn bán "Tải PDF đơn bán" (A4) hoặc "In K80" (máy in nhiệt 80 mm), phiếu giao, đơn đặt hàng NCC và bảng đối chiếu công nợ khổ A4; phiếu thu / chi "In phiếu thu" (A5 ngang) hoặc "K80". Đơn bán in kèm nợ cũ, tổng nợ và mã QR chuyển khoản của tài khoản "Hiện cho khách" (nội dung chuyển khoản để hệ thống tự trừ nợ).
 - Tổng quan /admin [dashboard.read]: thu, chi, lợi nhuận, khách đang nợ, NCC đang phải trả theo kỳ / khách / nhân viên. Báo cáo /admin/reports: Cuối ngày, Bán hàng (theo thời gian / khách / nhân viên), Hàng bán ra, Xuất nhập tồn, Công nợ & tuổi nợ, Nhập hàng & công nợ, Chuyến theo thợ / xe, Lãi lỗ → "Chạy báo cáo" → xuất CSV.
 
 ## Khi người dùng hỏi "làm thế nào"

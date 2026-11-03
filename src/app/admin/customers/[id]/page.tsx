@@ -21,6 +21,7 @@ import { debtPaymentOptionsSchema } from "@/modules/finance/sepay";
 import { loadCompanyProfile } from "@/lib/company/profile";
 import { SendToCustomerZalo } from "@/components/zalo/send-to-customer";
 import { debtReminderMessage, paymentReceivedMessage, zaloChatLink } from "@/modules/zalo/customer-messages";
+import { bankTransferNote } from "@/modules/finance/transfer-note";
 
 type CustomerProfile = { id: string; code: string; display_name: string; customer_type: string; phone: string | null; email: string | null; address_text: string | null; tax_code: string | null; tier_code: string | null; payment_terms_days: number; active: boolean; source?: string };
 type SiteRow = { id: string; code: string; name: string; address_text: string; receiver_name: string | null; receiver_phone: string | null; access_note: string | null; active: boolean };
@@ -215,9 +216,9 @@ async function DebtsTab({ customerId, branchId, supabase, canPostPayment, custom
     canPostPayment ? supabase.from("finance_accounts").select("id, name").eq("branch_id", branchId).eq("account_kind", "CASH").eq("active", true).order("name") : Promise.resolve({ data: [] }),
     // D51: "Nhắc nợ qua Zalo" names the shop and the bank account shown to customers (with "TT <mã khách>", which SePay matches).
     loadCompanyProfile(supabase).catch(() => null),
-    supabase.from("finance_accounts").select("bank_name, bank_account_number, bank_account_holder").eq("branch_id", branchId).eq("shown_to_customers", true).eq("active", true).maybeSingle(),
+    supabase.from("finance_accounts").select("bank_name, bank_account_number, bank_account_holder, bank_qr_note_prefix").eq("branch_id", branchId).eq("shown_to_customers", true).eq("active", true).maybeSingle(),
   ]);
-  const bank = bankResult.data as { bank_name: string; bank_account_number: string; bank_account_holder: string } | null;
+  const bank = bankResult.data as { bank_name: string; bank_account_number: string; bank_account_holder: string; bank_qr_note_prefix: string | null } | null;
   const zaloUrl = zaloChatLink(customer.phone);
   const companyName = company?.legal_name ?? null;
   const cashAccounts = (cashResult.data ?? []) as CashAccount[];
@@ -244,7 +245,7 @@ async function DebtsTab({ customerId, branchId, supabase, canPostPayment, custom
       </table></div> : <p className="empty-inline">Chưa có khoản phải thu.</p>}
       {open.length > 0 && <div className="card-pad-x zalo-send-row"><SendToCustomerZalo label="Nhắc nợ qua Zalo" zaloUrl={zaloUrl}
         pdfUrl={`/api/customers/${customerId}/debt-statement/pdf`} pdfName={`doi-chieu-cong-no-${customer.code}.pdf`}
-        text={debtReminderMessage({ company: companyName, customerName: customer.display_name, transferNote: bank ? `TT ${customer.code}` : null,
+        text={debtReminderMessage({ company: companyName, customerName: customer.display_name, transferNote: bank ? bankTransferNote(bank.bank_qr_note_prefix, null, customer.code) : null,
           bank: bank ? { bankName: bank.bank_name, accountNumber: bank.bank_account_number, holder: bank.bank_account_holder } : null,
           items: open.map((row) => ({ label: `${financeSourceLabel(row.source_label)}${row.site_name ? ` · ${row.site_name}` : ""}`, dueDate: row.due_date,
             outstandingVnd: row.outstanding_amount_vnd, overdue: row.state === "OVERDUE" })) })} /></div>}

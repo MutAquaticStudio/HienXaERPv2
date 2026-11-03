@@ -1,20 +1,18 @@
-import { formatBusinessDate, formatBusinessDateTime } from "@/lib/core/business-time";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { createStandardPdf, pdfResponse } from "@/lib/pdf/standard-document";
+import { pdfResponse } from "@/lib/pdf/standard-document";
 import { loadCompanyDocumentHeading } from "@/lib/company/profile";
+import { createPrintDocument } from "@/lib/pdf/print-document";
+import { debtStatementPrint } from "@/lib/pdf/print-builders";
+import { debtSourceNames, loadShownBank, loadVietQr, type DebtRow } from "@/lib/pdf/print-data";
+import { bankTransferNote } from "@/modules/finance/transfer-note";
 
-type Obligation = { obligation_id: string; party_name: string; site_name: string | null; source_type: string; source_id: string; due_date: string; outstanding_amount_vnd: string };
-const money = (value: string) => `${new Intl.NumberFormat("vi-VN").format(BigInt(value))} VND`;
-const sourceLabel = (value: string) => ({
-  OPENING_BALANCE: "Số dư đầu kỳ",
-  DELIVERY_VERIFICATION: "Giao hàng",
-  SERVICE_VERIFICATION: "Dịch vụ",
-} as Record<string, string>)[value] ?? "Khoản công nợ";
+type Obligation = { obligation_id: string; site_name: string | null; due_date: string; outstanding_amount_vnd: string };
 
 function localDate() {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
 }
 
+/** D52: Bảng đối chiếu công nợ (A4) — balances as of the chosen day, each debt named by its document, the QR to pay the total. */
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createServerSupabase();
@@ -23,7 +21,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const requested = new URL(request.url).searchParams.get("asOf") ?? "";
   const asOf = /^\d{4}-\d{2}-\d{2}$/.test(requested) ? requested : localDate();
   const cutoff = new Date().toISOString();
-  const customerResult = await supabase.from("customers").select("id, branch_id, display_name").eq("id", id).maybeSingle();
+  const customerResult = await supabase.from("customers").select("id, branch_id, code, display_name, phone, address_text").eq("id", id).maybeSingle();
   if (!customerResult.data) return new Response("Không tìm thấy khách hàng.", { status: 404 });
   const obligations: Obligation[] = [];
   const pageSize = 500;
@@ -36,34 +34,26 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       target_customer_id: id,
       target_site_id: null,
       target_sales_employee_id: null,
-    }).select("obligation_id,party_name,site_name,source_type,source_id,due_date,outstanding_amount_vnd::text").gt("outstanding_amount_vnd", 0).order("due_date").order("obligation_id").range(offset, offset + pageSize - 1);
+    }).select("obligation_id,site_name,due_date,outstanding_amount_vnd::text").gt("outstanding_amount_vnd", 0).order("due_date").order("obligation_id").range(offset, offset + pageSize - 1);
     if (error) return new Response("Không thể tạo bảng đối chiếu.", { status: 403 });
     const page = (data ?? []) as Obligation[];
     obligations.push(...page);
     if (page.length < pageSize) break;
   }
   const total = obligations.reduce((sum, row) => sum + BigInt(row.outstanding_amount_vnd), 0n);
-  const bytes = await createStandardPdf({
-    company: await loadCompanyDocumentHeading(supabase),
-    title: "BẢNG ĐỐI CHIẾU CÔNG NỢ",
-    reference: `AR-${customerResult.data.id.slice(0, 8)}-${asOf.replaceAll("-", "")}`,
-    subtitle: `Số dư đến hết ${formatBusinessDate(`${asOf}T12:00:00+07:00`)}`,
-    fields: [
-      { label: "Khách hàng", value: customerResult.data.display_name },
-      { label: "Ngày đối chiếu", value: formatBusinessDate(`${asOf}T12:00:00+07:00`) },
-      { label: "Phạm vi", value: "Toàn bộ công trình của khách hàng" },
-      { label: "Dữ liệu ghi nhận đến", value: formatBusinessDateTime(cutoff) },
-    ],
-    columns: [
-      { label: "Công trình", key: "site", width: 130 },
-      { label: "Nguồn", key: "source", width: 178 },
-      { label: "Hạn", key: "due", width: 83 },
-      { label: "Còn nợ", key: "amount", width: 120, align: "right" },
-    ],
-    rows: obligations.map((row) => ({ site: row.site_name ?? "Chưa gắn công trình", source: `${sourceLabel(row.source_type)} ${row.source_id}`, due: formatBusinessDate(row.due_date), amount: money(row.outstanding_amount_vnd) })),
-    totals: [{ label: "Tổng còn phải thu", value: money(total.toString()) }],
-    trace: `Khách hàng: ${customerResult.data.id}; ngày chốt: ${formatBusinessDate(asOf)}; ghi nhận đến: ${formatBusinessDateTime(cutoff)}; số khoản công nợ: ${obligations.length}`,
-    disclaimer: "Bảng đối chiếu công nợ - không phải hóa đơn thuế.",
-  });
-  return pdfResponse(bytes, `debt-reconciliation-${customerResult.data.id.slice(0, 8)}-${asOf}.pdf`);
+  const branchId = customerResult.data.branch_id as string;
+  const [sources, bank, company] = await Promise.all([
+    obligations.length ? supabase.from("receivable_read").select("id, sales_order_id, delivery_id, service_job_id, source_label, recorded_at").in("id", obligations.map((row) => row.obligation_id).slice(0, 1000)) : Promise.resolve({ data: [] }),
+    loadShownBank(supabase, branchId),
+    loadCompanyDocumentHeading(supabase),
+  ]);
+  const sourceRows = (sources.data ?? []) as unknown as (Pick<DebtRow, "id" | "sales_order_id" | "delivery_id" | "service_job_id" | "source_label"> & { recorded_at: string })[];
+  const names = await debtSourceNames(supabase, sourceRows);
+  const recorded = new Map(sourceRows.map((row) => [row.id, row.recorded_at]));
+  const customer = customerResult.data as { code: string; display_name: string; phone: string | null; address_text: string | null };
+  const qrImage = bank && total > 0n ? await loadVietQr(bank, total.toString(), bankTransferNote(bank.prefix, null, customer.code)) : null;
+  const bytes = await createPrintDocument(debtStatementPrint({ paper: "A4", company, printedAt: cutoff, customer, asOf, bank, qrImage,
+    rows: obligations.map((row) => ({ label: names.get(row.obligation_id) ?? "Khoản công nợ", site_name: row.site_name, recorded_at: recorded.get(row.obligation_id) ?? null,
+      due_date: row.due_date, outstanding_amount_vnd: row.outstanding_amount_vnd, overdue: row.due_date < asOf })) }));
+  return pdfResponse(bytes, `doi-chieu-cong-no-${customer.code}-${asOf}.pdf`);
 }

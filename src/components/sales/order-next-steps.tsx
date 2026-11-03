@@ -49,6 +49,7 @@ export function OrderNextSteps({ orderId, orderNumber, customerId, siteId, deliv
     <div className="inline-actions">
       {can.collect && remainingVnd !== "0" && <ButtonLink href={`/admin/receivables?customer=${customerId}`}>Thu tiền</ButtonLink>}
       <ButtonLink href={`/api/orders/${orderId}/pdf`} variant="secondary">In đơn</ButtonLink>
+      <ButtonLink href={`/api/orders/${orderId}/pdf?kho=k80`} variant="secondary">In K80</ButtonLink>
       {can.createOrder && <ButtonLink href={`/admin/orders/new?customer=${customerId}&site=${siteId}`} variant="secondary">Tạo đơn mới cho khách này</ButtonLink>}
     </div>
   </section>;

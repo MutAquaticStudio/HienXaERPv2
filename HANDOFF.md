@@ -1,6 +1,6 @@
 # HANDOFF — Hiền Xa ERP V2 (cập nhật 03/11/2026)
 
-Tài liệu bàn giao cho phiên làm việc tiếp theo (Claude Code hoặc người). Đọc kèm `CLAUDE.md` (quy tắc bắt buộc), `Spec.md` (D1–D51), `tasks.md`, `implementation.md` (nhật ký, rất dài — grep theo mã D/FB hoặc ngày).
+Tài liệu bàn giao cho phiên làm việc tiếp theo (Claude Code hoặc người). Đọc kèm `CLAUDE.md` (quy tắc bắt buộc), `Spec.md` (D1–D52), `tasks.md`, `implementation.md` (nhật ký, rất dài — grep theo mã D/FB hoặc ngày).
 
 ## 0. Phiên 03/11/2026 (PR #94–#97, tất cả đã lên Production)
 
@@ -12,6 +12,8 @@ Tài liệu bàn giao cho phiên làm việc tiếp theo (Claude Code hoặc ng�
 | #97 | **Sổ tay nghiệp vụ** cho trợ lý (`src/modules/ai/handbook.ts` + `handbook-states.ts`: mọi quy trình — màn hình, nút, quyền, ghi gì vào sổ — và mã trạng thái kèm nhãn; khối system thứ hai, cache chung); thao tác soạn sẵn **"Gán phiếu giao"** (`soan_gan_phieu_giao`, chạy `assign_delivery_scheduled` như "Gán nhanh"); khung chat gọn (bỏ dải giới thiệu, viên chọn mô hình / mức suy nghĩ, nút "Cuộc trò chuyện mới" dạng biểu tượng, cửa sổ nhỏ nút Gửi dạng biểu tượng) | — |
 
 Sau #98 (cùng ngày): **D51** — báo khách qua Zalo bằng nút "Gửi qua Zalo" do nhân viên bấm gửi (miễn phí), thay tin mẫu ZBS tốn phí: `src/modules/zalo/customer-messages.ts` (4 mẫu tin: xác nhận đơn, đã giao, đã nhận tiền, nhắc nợ + `zaloChatLink`), `src/components/zalo/send-to-customer.tsx`; gắn ở đơn bán đã xác nhận, phiếu giao đã xác minh, hồ sơ khách → Công nợ & thanh toán. Không migration. Giá vốn bình quân: Owner 03/11 "tạm để sau".
+
+**D52** (cùng ngày, Owner chọn "giống KiotViet"): thiết kế lại mẫu in — khuôn chung `src/lib/pdf/print-document.ts` (A4 / A5 ngang / K80 cắt theo nội dung, font Noto Sans thường + đậm `public/fonts/NotoSans-Bold.ttf`), nội dung từng loại ở `print-builders.ts`, dữ liệu phụ (tài khoản "Hiện cho khách", QR VietQR qua vietqr.app, nợ mở, tên chứng từ) ở `print-data.ts`. Đơn bán A4 + `?kho=k80` (nợ cũ, tổng nợ, QR); phiếu giao, đơn đặt hàng, đối chiếu công nợ A4; phiếu thu/chi A5 + `?kho=k80`. Báo giá (tắt) và rà soát hóa đơn (tắt) vẫn dùng khuôn cũ (`business-document.ts`, `standard-document.ts`).
 
 Ghi chú cho phiên sau:
 - Thêm công cụ soạn thao tác mới thì **phải** nhắc tên công cụ trong sổ tay (test `src/modules/ai/handbook.test.ts` đỏ nếu quên) và tránh `strict: true` (giới hạn grammar của API).
