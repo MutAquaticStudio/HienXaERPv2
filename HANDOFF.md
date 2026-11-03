@@ -17,6 +17,8 @@ Sau #98 (cùng ngày): **D51** — báo khách qua Zalo bằng nút "Gửi qua Z
 
 **D53** (cùng ngày): xe giao hàng không cần sức chở — migration `20261103120000_d53_vehicle_capacity_optional` (bỏ kiểm sức chở ở `private.assert_delivery_resources`, `private.assert_vehicle_actual_load`, bộ lọc xe của `private.dispatch_pairs`, câu báo `private.auto_dispatch_delivery`); test native 225 / 321 sửa theo; sức chở trong danh mục Xe chỉ để tham khảo. Các script `scripts/qa/remediation/package3*.mjs` (bằng chứng lịch sử) vẫn kiểm từ chối sức chở — không chạy lại.
 
+**D54** (cùng ngày): xe không cần biển số — migration `20261103140000_d54_vehicle_plate_optional` (đã áp QA + Production); danh mục Xe chỉ còn "Tên xe"; mọi chỗ hiển thị dùng biển số nếu có, không thì tên xe (`src/modules/catalog/vehicle-label.ts`). Production: 4 xe mới "Xe điện", "Xe cn nhỏ", "Xe cn to", "Ô tô" thay XD/X4B/XE02/XE09 (sao lưu `hx_cleanup_backup_20261103.vehicles`); đơn vị "Ôtô" → "Ô tô", "Khoi" → "Khối". **Code D54 chưa merge/deploy** (nhánh `claude/epic-davinci-ankiqa`).
+
 Ghi chú cho phiên sau:
 - Thêm công cụ soạn thao tác mới thì **phải** nhắc tên công cụ trong sổ tay (test `src/modules/ai/handbook.test.ts` đỏ nếu quên) và tránh `strict: true` (giới hạn grammar của API).
 - Đổi sổ tay / hướng dẫn hệ thống làm mất cache lần đầu (khoảng 8 nghìn token), sau đó cache lại.

@@ -3497,3 +3497,12 @@ Thay đổi (migration `20261024090000`–`20261024090900`, native 285, 290, 295
 - Kiểm sau: vật tư 54, quy đổi 73, giá 68, nhóm biến thể 8; đơn/phiếu giao/kiểm kho/chuyển động kho = 0; 0 trigger bị tắt.
 - Chưa có: giá mua NCC, tồn đầu (cần phiếu kiểm kho). Giá bán lẻ cao hơn (xi măng 80–100k, gạch lỗ 2.000, gầu cát đen 100k) và giá sắt biến động → báo lại khi lên đơn. Xi măng Xuân Thành bảng không ghi mác, tạm để PC30.
 - Owner 03/11: ký hiệu đơn vị `khoi` đổi từ "Khoi" thành "Khối" (Production, `units_of_measure.symbol`; mã `khoi` giữ nguyên). Các đơn vị khác đã có dấu đúng.
+
+## 2026-11-03 — D54: xe giao hàng không cần biển số + thay danh sách xe Production
+
+- Owner 03/11: đổi tên đơn vị "Ôtô" → "Ô tô" (Production, `units_of_measure`); "Không cần biển số, loại bỏ ở phần xe"; xóa 4 xe cũ, thay bằng 4 loại xe trong bảng giá.
+- Migration `20261103140000_d54_vehicle_plate_optional.sql`: `vehicles.plate_number` bỏ NOT NULL + check không chuỗi trống; `vehicle_status_read`, `work_item_read`, `service_job_read`, `delivery_expense_assignment_read`, `private.dispatch_candidates`, `private.dispatch_pairs`, `dispatch_day`, `gps_fleet_snapshot`, `worker_positions_snapshot`, `report_center` (báo cáo chuyến) dùng `coalesce(plate_number, code)`. Test native `325_d54_vehicle_plate_optional.sql`.
+- App: danh mục Xe bỏ ô Biển số, ô mã đổi nhãn "Tên xe"; `vehicleName()` (`src/modules/catalog/vehicle-label.ts`) cho đơn bán, phiếu giao, dịch vụ, lộ trình, phiếu in, trợ lý AI; sổ tay AI cập nhật.
+- Kiểm: `pnpm check` xanh (285 file / 1.457 test, build); `db:test:isolated` 276 migration + toàn bộ test native PASS.
+- Áp QA rồi Production qua MCP (kèm `schema_migrations`, sha256 `8730f9c8…3788`). Production cùng transaction: sao lưu `vehicles` vào `hx_cleanup_backup_20261103`, xóa XD / X4B / XE02 / XE09 (không còn phân công/lộ trình/GPS), tạo "Xe điện", "Xe cn nhỏ", "Xe cn to", "Ô tô" (không biển số, không sức chở, chưa có tài xế mặc định).
+- Còn: merge + deploy code D54 (trước khi deploy, biểu mẫu Xe bản cũ vẫn đòi biển số khi sửa xe).
