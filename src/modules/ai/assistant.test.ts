@@ -11,7 +11,9 @@ vi.mock("@anthropic-ai/sdk", async (original) => {
 
 import { APIError } from "@anthropic-ai/sdk";
 import { aiFailure, askAssistant } from "./assistant";
-import { readData } from "./tools";
+import { AGENT_ACTIONS } from "./agent/registry";
+import { AI_SOURCES } from "./sources";
+import { AI_TOOLS, readData } from "./tools";
 import { aiUsageCostUsd } from "./usage";
 
 function fakeSupabase() {
@@ -69,6 +71,14 @@ describe("AI assistant", () => {
     expect(answer.outcome).toBe("QUOTA");
     expect(answer.text).toContain("hết hạn mức");
     expect(db.rpc).toHaveBeenLastCalledWith("log_ai_usage", expect.objectContaining({ call_outcome: "QUOTA" }));
+  });
+
+  it("keeps strict tools to the two small ones even for a person with every permission (API grammar limit)", () => {
+    const everything = new Set(["ai.use", "ai.manage", ...AI_SOURCES.map((source) => source.permission), ...AGENT_ACTIONS.flatMap((action) => action.permissions)]);
+    const context = { supabase: {} as never, branchId: "branch-a", permissions: everything };
+    const tools = AI_TOOLS.flatMap((tool) => { const definition = tool.define(context); return definition ? [definition] : []; });
+    expect(tools.length).toBeGreaterThan(10);
+    expect(tools.filter((tool) => (tool as { strict?: boolean }).strict).map((tool) => tool.name)).toEqual(["doc_du_lieu", "tao_de_xuat"]);
   });
 
   it("explains other failures without technical codes and estimates the month's cost", () => {
