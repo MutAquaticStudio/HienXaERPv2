@@ -4,6 +4,7 @@ import { requireInternalPermission } from "@/lib/access/context";
 import { ilikePattern } from "@/lib/core-list";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { loadSalesStaffOptions } from "./sales-staff";
+import { vehicleName } from "@/modules/catalog/vehicle-label";
 
 export type ServiceJobCustomerOption = { id: string; code: string; display_name: string };
 export type ServiceJobSiteOption = { id: string; customer_id: string; name: string };
@@ -56,7 +57,7 @@ export async function searchServiceJobResourcesAction(kind: ServiceJobResourceKi
     if (search) request = request.or(`code.ilike.${pattern},plate_number.ilike.${pattern}`);
     const { data, error } = await request.order("code").order("id").limit(25);
     if (error) throw new Error("Không thể tìm xe.");
-    return (data ?? []).map((item) => ({ id: item.id, label: `${item.code} · ${item.plate_number}` }));
+    return (data ?? []).map((item) => ({ id: item.id, label: vehicleName(item) }));
   }
   if (kind === "machine") {
     let request = supabase.from("machines").select("id, code, name")

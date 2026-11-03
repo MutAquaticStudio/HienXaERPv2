@@ -57,11 +57,11 @@ export async function exportBusinessDocument(kind: DocumentKind, id: string, pap
         supabase.from("sales_order_read").select("order_number, customer_id").eq("id", delivery.sales_order_id).maybeSingle(),
         supabase.from("sales_orders").select("customers(phone)").eq("id", delivery.sales_order_id).maybeSingle(),
         delivery.employee_id ? supabase.from("workforce_read").select("display_name").eq("id", delivery.employee_id).maybeSingle() : Promise.resolve({ data: null }),
-        delivery.vehicle_id ? supabase.from("vehicles").select("plate_number").eq("id", delivery.vehicle_id).maybeSingle() : Promise.resolve({ data: null }),
+        delivery.vehicle_id ? supabase.from("vehicles").select("code, plate_number").eq("id", delivery.vehicle_id).maybeSingle() : Promise.resolve({ data: null }),
       ]);
       const customers = (phoneResult.data as { customers?: { phone: string | null } | { phone: string | null }[] | null } | null)?.customers;
       const driver = delivery.external_carrier_name
-        ?? ([(employeeResult.data as { display_name: string } | null)?.display_name, (vehicleResult.data as { plate_number: string } | null)?.plate_number].filter(Boolean).join(" · ") || null);
+        ?? ([(employeeResult.data as { display_name: string } | null)?.display_name, (vehicleResult.data as { code: string; plate_number: string | null } | null)?.plate_number ?? (vehicleResult.data as { code: string } | null)?.code].filter(Boolean).join(" · ") || null);
       input = deliveryPrint({ paper: "A4", company, printedAt, delivery, orderNumber: (orderResult.data as { order_number: string } | null)?.order_number ?? null, driver,
         customerPhone: (Array.isArray(customers) ? customers[0] : customers)?.phone ?? null,
         lines: (rows as DeliveryDocumentLine[]).map((line) => ({ material_name_snapshot: line.material_name_snapshot, unit: line.base_uom_symbol,

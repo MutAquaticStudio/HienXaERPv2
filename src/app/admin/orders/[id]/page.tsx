@@ -35,6 +35,7 @@ import { prepaymentReference, prepaymentSummary, type PrepaymentReceipt } from "
 import { loadCompanyProfile } from "@/lib/company/profile";
 import { SendToCustomerZalo } from "@/components/zalo/send-to-customer";
 import { orderConfirmedMessage, zaloChatLink } from "@/modules/zalo/customer-messages";
+import { vehicleName } from "@/modules/catalog/vehicle-label";
 
 type Order = { id: string; customer_id: string; site_id: string; order_number: string; commercial_state: string; fulfillment_state: string; payment_state: string; customer_name_snapshot: string; site_name_snapshot: string; delivery_address_snapshot: string; total_vnd: string; requested_delivery_at: string | null; quotation_revision_id: string | null; created_at: string };
 type Line = { id: string; material_id: string; base_uom_id: string; line_number: number; material_name_snapshot: string; quantity: string; unit_price_vnd: string; line_total_vnd: string; list_unit_price_vnd: string | null; discount_mode: string | null; discount_value: string | null; price_source_type: string; units_of_measure: { symbol: string } | { symbol: string }[] | null; base_units: { symbol: string } | { symbol: string }[] | null };
@@ -196,8 +197,8 @@ async function loadDeliveryPlan(supabase: Awaited<ReturnType<typeof createServer
   const open = planLines.some((line) => new Decimal(line.requiredBase).gt(line.allocations.reduce((sum, item) => sum.plus(item.consumedBase), new Decimal(0))));
   const carried = capacityResult.error ? [] : (capacityResult.data ?? []) as { vehicle_id: string; sales_order_line_id: string; capacity_in_line_unit: string | number | null }[];
   const resources = canAssign && employees ? { employees: employees.data.map((row) => ({ id: row.id, name: row.display_name })),
-    vehicles: ((vehicleResult.data ?? []) as { id: string; code: string; plate_number: string; capacity_quantity: string | null; capacity_uom_id: string | null }[]).map((row) => ({
-      id: row.id, label: `${row.code} · ${row.plate_number}${vehicleStatusLabel(vehicleStatus.get(row.id))}`,
+    vehicles: ((vehicleResult.data ?? []) as { id: string; code: string; plate_number: string | null; capacity_quantity: string | null; capacity_uom_id: string | null }[]).map((row) => ({
+      id: row.id, label: `${vehicleName(row)}${vehicleStatusLabel(vehicleStatus.get(row.id))}`,
       capacity: row.capacity_quantity && row.capacity_uom_id && !capacityResult.error ? {
         quantity: row.capacity_quantity, unit: symbols.get(row.capacity_uom_id) ?? "",
         perLine: Object.fromEntries(planLines.map((line) => {
@@ -213,11 +214,11 @@ async function loadDeliveryPlan(supabase: Awaited<ReturnType<typeof createServer
 async function resourceNames(supabase: Awaited<ReturnType<typeof createServerSupabase>>, branchId: string, deliveries: Delivery[]) {
   const vehicleIds = [...new Set(deliveries.flatMap((delivery) => delivery.vehicle_id ? [delivery.vehicle_id] : []))];
   const [vehicleResult, employeeResult] = await Promise.all([
-    vehicleIds.length ? supabase.from("vehicles").select("id, plate_number").eq("branch_id", branchId).in("id", vehicleIds) : Promise.resolve({ data: [] }),
+    vehicleIds.length ? supabase.from("vehicles").select("id, code, plate_number").eq("branch_id", branchId).in("id", vehicleIds) : Promise.resolve({ data: [] }),
     deliveries.some((delivery) => delivery.employee_id) ? listAssignmentEmployees(supabase, branchId).catch(() => ({ data: [] })) : Promise.resolve({ data: [] }),
   ]);
   return {
-    vehicles: new Map(((vehicleResult.data ?? []) as { id: string; plate_number: string }[]).map((vehicle) => [vehicle.id, vehicle.plate_number])),
+    vehicles: new Map(((vehicleResult.data ?? []) as { id: string; code: string; plate_number: string | null }[]).map((vehicle) => [vehicle.id, vehicle.plate_number ?? vehicle.code])),
     employees: new Map((employeeResult.data ?? []).map((employee) => [employee.id, employee.display_name])),
   };
 }

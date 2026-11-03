@@ -49,7 +49,7 @@ export const findEmployee = (supabase: Supabase, branchId: string, ref: string) 
 
 /** A truck of the branch by its code or plate number (D50: "Gán phiếu giao"). */
 export const findVehicle = (supabase: Supabase, branchId: string, ref: string) =>
-  one<{ id: string; code: string; plate_number: string }>(supabase, "vehicles", "id, code, plate_number", ref, "xe",
+  one<{ id: string; code: string; plate_number: string | null }>(supabase, "vehicles", "id, code, plate_number", ref, "xe",
     (query) => query.eq("branch_id", branchId).eq("active", true), "code", "plate_number");
 
 /** A delivery of the branch by its number (DL-…). */
