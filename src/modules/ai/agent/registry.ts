@@ -14,6 +14,7 @@ import { vietnamInstant } from "@/modules/attendance/presentation";
 import { deliveryCommandMessage } from "@/modules/delivery/errors";
 import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { formatVnd, vnd } from "@/lib/core/money";
+import { vehicleName } from "@/modules/catalog/vehicle-label";
 import {
   findAccount, findCustomer, findDelivery, findDocument, findEmployee, findMaterial, findSite, findSupplier, findUnit, findVehicle, findWarehouse, ResolveError, type Supabase,
 } from "./resolve";
@@ -196,7 +197,7 @@ const assignDelivery: AgentAction = {
   properties: {
     ma_phieu: str("Mã phiếu giao, ví dụ DL-041."),
     nguoi_giao: str("Mã hoặc tên nhân viên giao; trống nếu thuê ngoài."),
-    xe: str("Biển số hoặc mã xe; trống nếu thuê ngoài."),
+    xe: str("Tên / mã xe (hoặc biển số nếu có); trống nếu thuê ngoài."),
     don_vi_ngoai: str("Tên đơn vị vận chuyển ngoài; trống nếu dùng người và xe của cửa hàng."),
     sdt_don_vi_ngoai: str("Số điện thoại đơn vị ngoài; có thể trống."),
     ngay: str("Ngày giao yyyy-mm-dd; trống = hôm nay."),
@@ -227,7 +228,7 @@ const assignDelivery: AgentAction = {
       summary: [
         { label: "Khách / công trình", value: `${delivery.customer_name_snapshot} · ${delivery.site_name_snapshot}` },
         ...(external ? [{ label: "Đơn vị vận chuyển ngoài", value: `${external}${value.sdt_don_vi_ngoai ? ` · ${value.sdt_don_vi_ngoai}` : ""}` }]
-          : [{ label: "Người giao", value: employee!.display_name }, { label: "Xe", value: vehicle!.plate_number }]),
+          : [{ label: "Người giao", value: employee!.display_name }, { label: "Xe", value: vehicleName(vehicle!) }]),
         { label: "Giờ giao", value: `${formatBusinessDateTime(start)} – ${formatBusinessDateTime(end)}` },
         ...(delivery.execution_state === "ASSIGNED" ? [{ label: "Lưu ý", value: "Phiếu đã được gán; xác nhận sẽ thay người / xe / giờ cũ." }] : []),
       ],

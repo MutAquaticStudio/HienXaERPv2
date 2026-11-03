@@ -3486,3 +3486,23 @@ Thay đổi (migration `20261024090000`–`20261024090900`, native 285, 290, 295
 - Test native `322_d47_zalo_oa.sql` (Vault và máy chủ token Zalo giả lập): chưa kết nối không gửi; OAuth PKCE S256 + state; app secret bắt buộc; token vào Vault; mẫu tin bật/tắt + version; đơn xác nhận → 1 tin tới 84912345678, không gửi lại; khách tắt → không gửi; phiếu thu → số dư sau phân bổ; nhắc nợ 1 lần/ngày; đọc mã lỗi 0/−118/−124/−131; làm mới token 1 lần, bị từ chối → cần kết nối lại + báo Owner; anon không gọi được hàm Zalo.
 - App: Cài đặt → Zalo OA (`/admin/settings/zalo`, `ZaloSettings`), route `/api/zalo/oauth/callback`, ô "Nhận thông báo qua Zalo" ở hồ sơ khách và cổng khách (Tài khoản). Hướng dẫn Owner: `docs/handoff/ke-hoach-zalo-oa.md` mục 6.
 
+
+## 2026-11-03 — Dựng lại danh mục vật tư Production theo bảng giá (Owner duyệt trong phiên)
+
+- Owner gửi 5 ảnh bảng giá (ĐVT = đơn vị tính) và chọn: xóa hết vật tư cũ (cả 10 vật tư không có trong bảng), xóa đơn + kiểm kho 03/11 (dữ liệu test), "Uốn đai" là vật tư bán theo kg, gom hàng cùng loại thành nhóm biến thể.
+- MCP `execute_sql`, 1 transaction, có kiểm số lượng cuối (sai thì rollback toàn bộ): sao lưu 18 bảng vào schema `hx_cleanup_backup_20261103` (revoke public/anon/authenticated/service_role); tạm `disable trigger user` (FK vẫn bật) rồi bật lại.
+- Đã xóa: SO-2026-002053/002054 (4 dòng, 2 cam kết tín dụng, 2 duyệt vượt hạn mức, 2 lượt tìm nguồn, 2 phân bổ), DL-2026-002021 (2 dòng, 1 phân công, 2 giữ chỗ), SC-2026-000007 (2 dòng, 2 quan sát, 2 chuyển động kho), 2 thông báo, 59 vật tư, 91 quy đổi riêng vật tư, 5 nhóm biến thể cũ. Không có giá bán/giá mua cũ (đã = 0 từ 01/11).
+- Đã tạo (chi nhánh HX, giá DEFAULT version 1, nguồn LIST): 8 nhóm biến thể — Xi măng [Hãng, Mác] 12, Gạch [Loại] 5, Sắt cây [Phi, Mác] 18, Sắt cuộn [Phi, Loại] 4, Đinh [Loại] 2, Kê bê tông [Cỡ] 5, Cát [Loại] 3, Đá [Loại] 2; riêng lẻ: Thép buộc, Công uốn đai (chỉ bán), Đinh bê tông (kg, 1 túi = 1 kg). Tổng 54 vật tư, 73 quy đổi, 68 giá bán.
+- Quy đổi: xi măng 1 tấn = 20 bao, 1 bao = 50 kg (PACKAGING); sắt cây kg↔cây ESTIMATED (không dùng để quyết toán) theo khối lượng danh định 6,2 / 9,8 / 13,5 / 17,2 / 22,4 / 27,8 / 33,4 kg/cây (phi 10–22); cát/đá đơn vị gốc khối: 50 bao, 1 gầu = 0,4, xe điện = 0,35, xe cn nhỏ = 0,5, xe cn to = 1, ôtô = 4 khối (EXACT, theo bảng/Owner).
+- Kiểm sau: vật tư 54, quy đổi 73, giá 68, nhóm biến thể 8; đơn/phiếu giao/kiểm kho/chuyển động kho = 0; 0 trigger bị tắt.
+- Chưa có: giá mua NCC, tồn đầu (cần phiếu kiểm kho). Giá bán lẻ cao hơn (xi măng 80–100k, gạch lỗ 2.000, gầu cát đen 100k) và giá sắt biến động → báo lại khi lên đơn. Xi măng Xuân Thành bảng không ghi mác, tạm để PC30.
+- Owner 03/11: ký hiệu đơn vị `khoi` đổi từ "Khoi" thành "Khối" (Production, `units_of_measure.symbol`; mã `khoi` giữ nguyên). Các đơn vị khác đã có dấu đúng.
+
+## 2026-11-03 — D54: xe giao hàng không cần biển số + thay danh sách xe Production
+
+- Owner 03/11: đổi tên đơn vị "Ôtô" → "Ô tô" (Production, `units_of_measure`); "Không cần biển số, loại bỏ ở phần xe"; xóa 4 xe cũ, thay bằng 4 loại xe trong bảng giá.
+- Migration `20261103140000_d54_vehicle_plate_optional.sql`: `vehicles.plate_number` bỏ NOT NULL + check không chuỗi trống; `vehicle_status_read`, `work_item_read`, `service_job_read`, `delivery_expense_assignment_read`, `private.dispatch_candidates`, `private.dispatch_pairs`, `dispatch_day`, `gps_fleet_snapshot`, `worker_positions_snapshot`, `report_center` (báo cáo chuyến) dùng `coalesce(plate_number, code)`. Test native `325_d54_vehicle_plate_optional.sql`.
+- App: danh mục Xe bỏ ô Biển số, ô mã đổi nhãn "Tên xe"; `vehicleName()` (`src/modules/catalog/vehicle-label.ts`) cho đơn bán, phiếu giao, dịch vụ, lộ trình, phiếu in, trợ lý AI; sổ tay AI cập nhật.
+- Kiểm: `pnpm check` xanh (285 file / 1.457 test, build); `db:test:isolated` 276 migration + toàn bộ test native PASS.
+- Áp QA rồi Production qua MCP (kèm `schema_migrations`, sha256 `8730f9c8…3788`). Production cùng transaction: sao lưu `vehicles` vào `hx_cleanup_backup_20261103`, xóa XD / X4B / XE02 / XE09 (không còn phân công/lộ trình/GPS), tạo "Xe điện", "Xe cn nhỏ", "Xe cn to", "Ô tô" (không biển số, không sức chở, chưa có tài xế mặc định).
+- Còn: merge + deploy code D54 (trước khi deploy, biểu mẫu Xe bản cũ vẫn đòi biển số khi sửa xe).

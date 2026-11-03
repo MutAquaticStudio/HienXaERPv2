@@ -10,6 +10,7 @@ import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { formatQuantity } from "@/lib/core/quantity";
 import { deliveryStateLabel, deliveryStateTone } from "@/modules/delivery/presentation";
 import { AutoFilterForm } from "@/components/ui/auto-filter-form";
+import { vehicleName } from "@/modules/catalog/vehicle-label";
 
 type Delivery = { id: string; sales_order_id: string; delivery_number: string; customer_name_snapshot: string; site_name_snapshot: string; execution_state: string; result_kind: string | null; scheduled_at: string | null; external_carrier_name: string | null; vehicle_id: string | null; created_at: string };
 type DeliveryLine = { id: string; delivery_id: string; material_name_snapshot: string; planned_base_quantity: string; actual_base_quantity: string | null; base_uom_symbol: string };
@@ -39,10 +40,10 @@ export default async function DeliveriesPage({ searchParams }: { searchParams: P
   const ids = deliveries.map((row) => row.id);
   const vehicleIds = [...new Set(deliveries.map((row) => row.vehicle_id).filter((id): id is string => Boolean(id)))];
   const [vehicleResult, lineResult] = await Promise.all([
-    vehicleIds.length ? supabase.from("vehicles").select("id, plate_number").eq("branch_id", access.branchId).in("id", vehicleIds) : Promise.resolve({ data: [] }),
+    vehicleIds.length ? supabase.from("vehicles").select("id, code, plate_number").eq("branch_id", access.branchId).in("id", vehicleIds) : Promise.resolve({ data: [] }),
     ids.length ? supabase.from("delivery_line_read").select("id, delivery_id, material_name_snapshot, planned_base_quantity, actual_base_quantity, base_uom_symbol").in("delivery_id", ids).order("id").limit(500) : Promise.resolve({ data: [] }),
   ]);
-  const vehicleMap = new Map(((vehicleResult.data ?? []) as { id: string; plate_number: string }[]).map((row) => [row.id, row.plate_number]));
+  const vehicleMap = new Map(((vehicleResult.data ?? []) as { id: string; code: string; plate_number: string | null }[]).map((row) => [row.id, row.plate_number ?? row.code]));
   const lines = (lineResult.data ?? []) as DeliveryLine[];
   const canCancel = access.permissions.has("delivery.exception");
   const canSplit = access.permissions.has("delivery.assign") && access.permissions.has("delivery.create");

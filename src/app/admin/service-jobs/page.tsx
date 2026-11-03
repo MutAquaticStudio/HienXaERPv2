@@ -21,6 +21,7 @@ import { ListFilterGroup } from "@/components/lists/list-filter-group";
 import { FormDialog } from "@/components/ui/form-dialog";
 import { ServiceJobTimeFields } from "@/components/workforce/service-job-time-fields";
 import { loadSalesStaffOptions } from "@/modules/workforce/sales-staff";
+import { vehicleName } from "@/modules/catalog/vehicle-label";
 
 type Job = { id: string; job_number: string; customer_name: string; site_name: string; service_type: string; scheduled_start: string; scheduled_end?: string | null; description?: string | null; planned_quantity: string | null; unit_label: string; operator_name: string | null; execution_state: string };
 const STATES = ["SCHEDULED", "IN_PROGRESS", "RESULT_SUBMITTED", "VERIFIED", "CANCELLED"] as const;
@@ -110,7 +111,7 @@ export default async function ServiceJobsPage({ searchParams }: { searchParams: 
               <ServiceJobLocationFields initialCustomers={customerResult.data ?? []} initialCustomer={startCustomer.data ?? undefined} initialSite={startSite.data ?? undefined} /></fieldset>
             <fieldset className="form-section"><legend>Dịch vụ</legend>
               <ServiceTypeFields types={serviceTypes} scope={catalogEditorScope(access, "service_types")}
-                vehicleField={<ServiceJobResourceField kind="vehicle" label="Xe" name="vehicleId" initialOptions={(vehicleResult.data ?? []).map((item) => ({ id: item.id, label: `${item.code} · ${item.plate_number}` }))} />}
+                vehicleField={<ServiceJobResourceField kind="vehicle" label="Xe" name="vehicleId" initialOptions={(vehicleResult.data ?? []).map((item) => ({ id: item.id, label: vehicleName(item) }))} />}
                 machineField={<ServiceJobResourceField kind="machine" label="Máy" name="machineId" initialOptions={(machineResult.data ?? []).map((item) => ({ id: item.id, label: `${item.code} · ${item.name}` }))} />} /></fieldset>
             <fieldset className="form-section"><legend>Thời gian</legend><ServiceJobTimeFields defaultStart={localNow()} /></fieldset>
             <fieldset className="form-section"><legend>Thêm (không bắt buộc)</legend>

@@ -1,5 +1,6 @@
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { vehicleName } from "@/modules/catalog/vehicle-label";
 
 type OpenDelivery = { id: string; delivery_number: string; site_name_snapshot: string; delivery_address_snapshot: string; scheduled_at: string | null; scheduled_end_at: string | null; execution_state: string; version: number };
 
@@ -38,7 +39,7 @@ export async function loadRoutingWorkspace(selectedPlanId?: string) {
       .select("id,code,plate_number,capacity_quantity,capacity_uom_id")
       .eq("branch_id", access.branchId)
       .eq("active", true)
-      .order("plate_number")
+      .order("code")
       .limit(100),
     supabase
       .from("employee_branch_access")
@@ -91,7 +92,7 @@ export async function loadRoutingWorkspace(selectedPlanId?: string) {
     access,
     plans: plansResult.data ?? [],
     deliveries: deliveriesResult.data ?? [],
-    vehicles: vehiclesResult.data ?? [],
+    vehicles: (vehiclesResult.data ?? []).map((vehicle) => ({ ...vehicle, plate_number: vehicleName(vehicle) })),
     employees: employees ?? [],
     selectedPlan,
     stops: stops ?? [],
