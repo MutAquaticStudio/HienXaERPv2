@@ -36,11 +36,12 @@ describe("assistant actions (D37)", () => {
     access.permissions = ["ai.use", "finance.expense.manage"];
   });
 
-  it("offers each action only to people with its permissions, as a strict tool", () => {
+  it("offers each action only to people with its permissions, as a non-strict tool (validated by prepare)", () => {
     expect(AGENT_ACTIONS).toHaveLength(12);
     expect(expenseTool.define(context(["ai.use"]))).toBeNull();
     const definition = expenseTool.define(context(["ai.use", "finance.expense.manage"]));
-    expect(definition).toMatchObject({ name: "soan_chi_phi", strict: true });
+    expect(definition).toMatchObject({ name: "soan_chi_phi" });
+    expect(definition).not.toHaveProperty("strict");
     const schema = definition!.input_schema as { required: string[]; properties: object };
     expect(schema.required.sort()).toEqual(Object.keys(schema.properties).sort());
   });

@@ -22,7 +22,8 @@ function agentTool(action: AgentAction): AiTool {
     define: (context) => canUseAction(action, context.permissions) ? {
       name: action.kind,
       description: `[${action.area}] ${action.description} Chỉ soạn sẵn; người dùng bấm Xác nhận trên thẻ mới thực hiện.`,
-      strict: true,
+      // Not `strict`: the API rejects the request ("compiled grammar is too large") once a person has every action's
+      // tool. `prepare` validates the input with zod and tells the model what to fix, so strict decoding adds nothing.
       input_schema: { type: "object", additionalProperties: false, required: Object.keys(action.properties), properties: action.properties },
     } : null,
     async run(context, input) {
