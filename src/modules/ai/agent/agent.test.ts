@@ -37,7 +37,7 @@ describe("assistant actions (D37)", () => {
   });
 
   it("offers each action only to people with its permissions, as a non-strict tool (validated by prepare)", () => {
-    expect(AGENT_ACTIONS).toHaveLength(12);
+    expect(AGENT_ACTIONS).toHaveLength(13);
     expect(expenseTool.define(context(["ai.use"]))).toBeNull();
     const definition = expenseTool.define(context(["ai.use", "finance.expense.manage"]));
     expect(definition).toMatchObject({ name: "soan_chi_phi" });
@@ -95,6 +95,36 @@ describe("assistant actions (D37)", () => {
     state.rpc.mockResolvedValue({ data: "x", error: null });
     expect(await dismissAiActionAction({ actionId: "11111111-1111-4111-8111-111111111111" })).toEqual({ ok: true, message: "Đã bỏ qua." });
     expect(state.rpc).toHaveBeenCalledWith("finish_ai_action", expect.objectContaining({ new_state: "CANCELLED" }));
+  });
+
+  it("prepares \"Gán phiếu giao\" and runs the same assignment command as Gán nhanh, with the delivery's version (D50)", async () => {
+    const assignTool = AGENT_TOOLS.find((tool) => tool.name === "soan_gan_phieu_giao")!;
+    expect(assignTool.define(context(["ai.use"]))).toBeNull();
+    state.tables.delivery_read = [{ id: "d1", delivery_number: "DL-041", execution_state: "PLANNED", version: 3, customer_name_snapshot: "An Phát", site_name_snapshot: "Đại Mỗ", scheduled_at: null }];
+    state.tables.workforce_read = [{ id: "e1", code: "TX01", display_name: "Thợ 01" }];
+    state.tables.vehicles = [{ id: "v1", code: "XE1", plate_number: "29C-12345" }];
+    state.rpc.mockResolvedValue({ data: "a1", error: null });
+    const input = { ma_phieu: "41", nguoi_giao: "TX01", xe: "XE1", don_vi_ngoai: "", sdt_don_vi_ngoai: "", ngay: "2026-11-04", gio_bat_dau: "08:00", gio_ket_thuc: "" };
+    const prepared = await assignTool.run(context(["ai.use", "delivery.assign"]), input);
+    expect(prepared.isError).toBe(false);
+    expect(state.rpc).toHaveBeenCalledWith("create_ai_action", expect.objectContaining({ action_kind: "soan_gan_phieu_giao", action_payload: {
+      deliveryId: "d1", version: 3, employeeId: "e1", vehicleId: "v1", externalName: "", externalPhone: "", start: "2026-11-04T08:00:00+07:00", end: "2026-11-04T03:00:00.000Z" } }));
+    // Both a truck and an outside carrier, or neither, is asked back; a delivery already on its way cannot be reassigned.
+    expect((await assignTool.run(context(["ai.use", "delivery.assign"]), { ...input, don_vi_ngoai: "Vận tải Bình An" })).text).toMatch(/Chọn một trong hai/);
+    expect((await assignTool.run(context(["ai.use", "delivery.assign"]), { ...input, xe: "" })).text).toMatch(/Cần cả người giao và xe/);
+    state.tables.delivery_read = [{ ...state.tables.delivery_read[0] as object, execution_state: "DISPATCHED" }];
+    expect((await assignTool.run(context(["ai.use", "delivery.assign"]), input)).text).toMatch(/không còn ở bước phân giao/);
+
+    access.permissions = ["ai.use", "delivery.assign"];
+    state.rpc.mockReset();
+    state.tables.ai_actions = [{ id: "11111111-1111-4111-8111-111111111111", title: "Gán phiếu giao DL-041", summary: [], state: "PENDING", result_link: null, result_message: null,
+      kind: "soan_gan_phieu_giao", payload: { deliveryId: "d1", version: 3, employeeId: "e1", vehicleId: "v1", externalName: "", externalPhone: "", start: "2026-11-04T08:00:00+07:00", end: "2026-11-04T03:00:00.000Z" } }];
+    state.rpc.mockResolvedValueOnce({ data: null, error: { message: "schedule_collision", hint: null } });
+    expect(await confirmAiActionAction({ actionId: "11111111-1111-4111-8111-111111111111" })).toMatchObject({ ok: false, message: expect.stringMatching(/đã được phân trong khung giờ này/) });
+    state.rpc.mockResolvedValue({ data: "ok", error: null });
+    expect(await confirmAiActionAction({ actionId: "11111111-1111-4111-8111-111111111111" })).toMatchObject({ ok: true, card: { link: "/admin/deliveries/d1" } });
+    expect(state.rpc).toHaveBeenCalledWith("assign_delivery_scheduled", { target_delivery_id: "d1", target_employee_id: "e1", target_vehicle_id: "v1", external_carrier_name: "",
+      external_carrier_phone: "", scheduled_start: "2026-11-04T08:00:00+07:00", scheduled_end: "2026-11-04T03:00:00.000Z", expected_version: 3, operation_id: "11111111-1111-4111-8111-111111111111" });
   });
 
   it("asks back when a name matches several records", async () => {
