@@ -6,7 +6,7 @@ const create = vi.hoisted(() => vi.fn());
 vi.mock("@anthropic-ai/sdk", async (original) => {
   const real = await original<typeof import("@anthropic-ai/sdk")>();
   class FakeAnthropic { beta = { messages: { create } }; }
-  return { APIError: real.APIError, default: Object.assign(FakeAnthropic, { APIError: real.APIError, RateLimitError: real.RateLimitError, AuthenticationError: real.AuthenticationError, PermissionDeniedError: real.PermissionDeniedError }) };
+  return { APIError: real.APIError, default: Object.assign(FakeAnthropic, { APIError: real.APIError, RateLimitError: real.RateLimitError, AuthenticationError: real.AuthenticationError, PermissionDeniedError: real.PermissionDeniedError, APIConnectionError: real.APIConnectionError }) };
 });
 
 import { APIError } from "@anthropic-ai/sdk";
@@ -73,6 +73,8 @@ describe("AI assistant", () => {
 
   it("explains other failures without technical codes and estimates the month's cost", () => {
     expect(aiFailure(new Error("boom")).text).toBe("Chưa hỏi được trợ lý AI. Kiểm tra kết nối rồi thử lại.");
+    expect(aiFailure(APIError.generate(400, { type: "error", error: { type: "invalid_request_error", message: "bad" } }, "bad", new Headers())).text).toMatch(/lỗi cấu hình yêu cầu/);
+    expect(aiFailure(APIError.generate(529, { type: "error", error: { type: "api_error", message: "down" } }, "down", new Headers())).text).toMatch(/gián đoạn/);
     expect(aiUsageCostUsd({ input: 1_000_000, output: 100_000, cacheRead: 0, cacheWrite: 0 })).toBeCloseTo(3);
   });
 });

@@ -40,8 +40,26 @@ export function aiFailure(error: unknown): { outcome: AiOutcome; text: string } 
     if (error instanceof Anthropic.AuthenticationError || error instanceof Anthropic.PermissionDeniedError) {
       return { outcome: "ERROR", text: "Khóa API Claude chưa đúng hoặc đã bị thu hồi. Báo quản trị viên kiểm tra cấu hình." };
     }
+    if (error instanceof Anthropic.APIConnectionError) {
+      return { outcome: "ERROR", text: "Máy chủ chưa kết nối được tới Claude. Vui lòng thử lại sau ít phút." };
+    }
+    if (error.status === 400 || error.status === 404) {
+      return { outcome: "ERROR", text: "Trợ lý AI gặp lỗi cấu hình yêu cầu. Báo quản trị viên kiểm tra nhật ký hệ thống." };
+    }
+    if (typeof error.status === "number" && error.status >= 500) {
+      return { outcome: "ERROR", text: "Dịch vụ Claude đang gián đoạn. Vui lòng thử lại sau ít phút." };
+    }
   }
   return { outcome: "ERROR", text: "Chưa hỏi được trợ lý AI. Kiểm tra kết nối rồi thử lại." };
+}
+
+/** Server log of the real cause (status, type, request id, message) — never the key; the person only sees the Vietnamese text. */
+export function logAiFailure(error: unknown) {
+  if (error instanceof Anthropic.APIError) {
+    console.error("[ai] Claude API error", { status: error.status, type: error.type, requestId: error.requestID, message: error.message });
+  } else {
+    console.error("[ai] assistant failure", error instanceof Error ? { name: error.name, message: error.message } : { error: String(error) });
+  }
 }
 
 export async function askAssistant({ supabase, branchId, permissions, history, question, today }: {
@@ -98,6 +116,7 @@ export async function askAssistant({ supabase, branchId, permissions, history, q
       messages.push({ role: "user", content: results });
     }
   } catch (error) {
+    logAiFailure(error);
     const failure = aiFailure(error);
     answer = { ...failure, proposals };
   }

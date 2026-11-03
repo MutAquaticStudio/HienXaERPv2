@@ -40,7 +40,14 @@ export function AiChat({ initialTurns, compact = false }: { initialTurns: AiTurn
     setQuestion("");
     setNotice("");
     start(async () => {
-      const answer = await askAiAction({ question: asked });
+      let answer: Awaited<ReturnType<typeof askAiAction>>;
+      try {
+        answer = await askAiAction({ question: asked });
+      } catch {
+        // The request itself failed (timeout, lost connection): the answer is unknown, not a refusal.
+        setTurns((current) => [...current, { role: "assistant", text: "Chưa nhận được trả lời của trợ lý AI (mất kết nối hoặc quá thời gian chờ). Vui lòng hỏi lại." }]);
+        return;
+      }
       setTurns((current) => [...current, { role: "assistant", text: answer.text }]);
       if (answer.actions.length) setCards((current) => [...current.filter((item) => !answer.actions.some((next) => next.id === item.id)), ...answer.actions]);
       if (answer.proposals) setNotice(`Đã ghi ${answer.proposals} đề xuất chờ duyệt.`);
