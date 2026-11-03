@@ -17,7 +17,7 @@ Sau #98 (cùng ngày): **D51** — báo khách qua Zalo bằng nút "Gửi qua Z
 
 **D53** (cùng ngày): xe giao hàng không cần sức chở — migration `20261103120000_d53_vehicle_capacity_optional` (bỏ kiểm sức chở ở `private.assert_delivery_resources`, `private.assert_vehicle_actual_load`, bộ lọc xe của `private.dispatch_pairs`, câu báo `private.auto_dispatch_delivery`); test native 225 / 321 sửa theo; sức chở trong danh mục Xe chỉ để tham khảo. Các script `scripts/qa/remediation/package3*.mjs` (bằng chứng lịch sử) vẫn kiểm từ chối sức chở — không chạy lại.
 
-**D54** (cùng ngày): xe không cần biển số — migration `20261103140000_d54_vehicle_plate_optional` (đã áp QA + Production); danh mục Xe chỉ còn "Tên xe"; mọi chỗ hiển thị dùng biển số nếu có, không thì tên xe (`src/modules/catalog/vehicle-label.ts`). Production: 4 xe mới "Xe điện", "Xe cn nhỏ", "Xe cn to", "Ô tô" thay XD/X4B/XE02/XE09 (sao lưu `hx_cleanup_backup_20261103.vehicles`); đơn vị "Ôtô" → "Ô tô", "Khoi" → "Khối". **Code D54 chưa merge/deploy** (nhánh `claude/epic-davinci-ankiqa`).
+**D54** (cùng ngày): xe không cần biển số — migration `20261103140000_d54_vehicle_plate_optional` (đã áp QA + Production); danh mục Xe chỉ còn "Tên xe"; mọi chỗ hiển thị dùng biển số nếu có, không thì tên xe (`src/modules/catalog/vehicle-label.ts`). Production: 4 xe mới "Xe điện", "Xe cn nhỏ", "Xe cn to", "Ô tô" thay XD/X4B/XE02/XE09 (sao lưu `hx_cleanup_backup_20261103.vehicles`); đơn vị "Ôtô" → "Ô tô", "Khoi" → "Khối". Code D54 đã merge (PR #101, `1feb925`) và deploy Production `dpl_3EDpgr6p5x6QaYB57AKQgLsiuysK` (buildSha `1feb925`). Owner tự gán tài xế mặc định cho 4 xe mới.
 
 Ghi chú cho phiên sau:
 - Thêm công cụ soạn thao tác mới thì **phải** nhắc tên công cụ trong sổ tay (test `src/modules/ai/handbook.test.ts` đỏ nếu quên) và tránh `strict: true` (giới hạn grammar của API).
@@ -32,8 +32,8 @@ Ghi chú cho phiên sau:
 
 | Môi trường | Địa chỉ | Supabase | Code | Migration mới nhất |
 |---|---|---|---|---|
-| Production | https://app.hienxavlxd.com (đã xác minh; tên cũ https://hien-xa-erp-v2-nu.vercel.app vẫn chạy) | `nbwynrwkdbtfsitafsxa` | `main` @ `6be2f65` (PR #99: D51 + D52 + D53), deploy `dpl_4yZLxU55j7aGGp26kxvrm4jgWPn2` | `20261103120000_d53_vehicle_capacity_optional` |
-| QA (nghiệm thu) | Preview từ `main` @ `57b4bff` (**chưa** deploy lại bản 03/11): `dpl_C6ddHam7vy5AYgtbgEZfuWmngzff` (https://hien-xa-erp-v2-p5su7q7iz-hienxa.vercel.app, cần đăng nhập Vercel). Owner 03/11: **không cần** tên miền `qa.hienxavlxd.com` nữa | `ffrwiglcrlumfvhubaxg` | `main` @ `57b4bff` | `20261103120000_d53_vehicle_capacity_optional` |
+| Production | https://app.hienxavlxd.com (đã xác minh; tên cũ https://hien-xa-erp-v2-nu.vercel.app vẫn chạy) | `nbwynrwkdbtfsitafsxa` | `main` @ `1feb925` (PR #101: D54), deploy `dpl_3EDpgr6p5x6QaYB57AKQgLsiuysK` | `20261103140000_d54_vehicle_plate_optional` |
+| QA (nghiệm thu) | Preview từ `main` @ `57b4bff` (**chưa** deploy lại bản 03/11): `dpl_C6ddHam7vy5AYgtbgEZfuWmngzff` (https://hien-xa-erp-v2-p5su7q7iz-hienxa.vercel.app, cần đăng nhập Vercel). Owner 03/11: **không cần** tên miền `qa.hienxavlxd.com` nữa | `ffrwiglcrlumfvhubaxg` | `main` @ `57b4bff` | `20261103140000_d54_vehicle_plate_optional` |
 
 - Kiểm phiên bản: `GET /api/health` → `buildSha` (dùng `web_fetch_vercel_url` cho bản preview có bảo vệ).
 - Vercel: team `team_9qd9uzBYBc6WtzJVu7wGP7uC`, project `prj_o6ya9YI1b3fTFC8nxiOtjHiwaS3W`. Auto-deploy tắt (`vercel.json`); deploy bằng `create_deployment` (gitSource `{type: github, org: MutAquaticStudio, repo: HienXaERPv2, ref: main, sha}`; `target: production` cho Production, bỏ `target` cho bản QA preview).
