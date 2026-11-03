@@ -21,6 +21,9 @@ import { assignDeliveryAction, handoffDeliveryAction, resolveReturnCaseAction, s
 import { deliveryStateLabel, deliveryStateTone, sourceModeLabel, vehicleStatusLabel } from "@/modules/delivery/presentation";
 import { updateDeliveryReceiverAction } from "@/modules/delivery/receiver-actions";
 import { listAssignmentEmployees } from "@/modules/delivery/assignment-options";
+import { loadCompanyProfile } from "@/lib/company/profile";
+import { SendToCustomerZalo } from "@/components/zalo/send-to-customer";
+import { deliveryDoneMessage, zaloChatLink } from "@/modules/zalo/customer-messages";
 
 type Delivery = { id: string; sales_order_id: string; delivery_number: string; execution_state: string; result_kind: string | null; customer_name_snapshot: string; site_name_snapshot: string; delivery_address_snapshot: string; receiver_name_snapshot: string | null; receiver_phone_snapshot: string | null; scheduled_at: string | null; scheduled_end_at: string | null; version: number; employee_id: string | null; vehicle_id: string | null; external_carrier_name: string | null };
 type DeliveryLine = { id: string; sales_order_line_id: string; material_name_snapshot: string; source_mode: string; warehouse_id: string | null; planned_base_quantity: string; loaded_base_quantity: string | null; actual_base_quantity: string; accepted_base_quantity: string; billable_base_quantity: string; base_uom_symbol: string };
@@ -82,10 +85,23 @@ export default async function DeliveryDetailPage({ params, searchParams }: { par
   };
   // D46: where a split note came from, and what an original was split into.
   const splitFromId = (scheduleResult.data as { split_from_delivery_id?: string | null } | null)?.split_from_delivery_id ?? null;
-  const [{ data: splitFrom }, { data: splitInto }] = await Promise.all([
+  const [{ data: splitFrom }, { data: splitInto }, { data: orderCustomer }, company] = await Promise.all([
     splitFromId ? supabase.from("deliveries").select("id, delivery_number").eq("id", splitFromId).maybeSingle() : Promise.resolve({ data: null }),
     delivery.execution_state === "CANCELLED" ? supabase.from("deliveries").select("id, delivery_number").eq("split_from_delivery_id", id).order("delivery_number") : Promise.resolve({ data: [] }),
+    // D51: "Báo đã giao qua Zalo" — the customer's phone and the company name for the prepared text.
+    delivery.execution_state === "VERIFIED" ? supabase.from("sales_orders").select("customers(phone)").eq("id", delivery.sales_order_id).maybeSingle() : Promise.resolve({ data: null }),
+    delivery.execution_state === "VERIFIED" ? loadCompanyProfile(supabase).catch(() => null) : Promise.resolve(null),
   ]);
+  const customerPhone = (() => {
+    const customers = (orderCustomer as { customers?: { phone: string | null } | { phone: string | null }[] | null } | null)?.customers;
+    return (Array.isArray(customers) ? customers[0] : customers)?.phone ?? null;
+  })();
+  /** A quantity in the unit the order was sold in when it differs (3 bao), else the base unit — as plain text. */
+  const soldText = (item: DeliveryLine, base: string) => {
+    const unit = soldUnits.get(item.sales_order_line_id);
+    if (!unit || !unit.symbol || unit.symbol === item.base_uom_symbol || unit.ratio.eq(1)) return { quantity: formatQuantity(base), unit: item.base_uom_symbol };
+    return { quantity: formatQuantity(new Decimal(base).div(unit.ratio).toDecimalPlaces(3, Decimal.ROUND_DOWN).toFixed()), unit: unit.symbol };
+  };
   const canSplit = ["PLANNED", "ASSIGNED"].includes(delivery.execution_state) && lines.length > 0
     && access.permissions.has("delivery.assign") && access.permissions.has("delivery.create");
   const query = await searchParams;
@@ -132,6 +148,12 @@ export default async function DeliveryDetailPage({ params, searchParams }: { par
       })} />}
       {cases.filter((item) => item.state === "OPEN").map((item) => <form className="exception-card" action={resolveReturnCaseAction} key={item.id}><strong>{lines.find((line) => line.id === verified.find((row) => row.id === item.delivery_verification_line_id)?.delivery_line_id)?.material_name_snapshot ?? "Dòng giao"} · {returnCaseKindLabel(item.case_kind)} · {formatQuantity(item.base_quantity)} đơn vị cơ sở</strong><p>{item.reason}</p><input type="hidden" name="deliveryId" value={delivery.id} /><input type="hidden" name="returnCaseId" value={item.id} /><input type="hidden" name="version" value={item.version} /><input type="hidden" name="resolution" value={item.case_kind === "TRANSIT_LOSS" ? "LOSS_APPROVED" : "RETURNED"} /><input type="hidden" name="operationId" value={randomUUID()} />{item.case_kind !== "TRANSIT_LOSS" && <div className="field"><label>Kho nhận lại</label><select name="warehouseId" required><option value="">Chọn kho</option>{(warehouseResult.data ?? []).map((warehouse) => <option key={warehouse.id} value={warehouse.id}>{warehouse.name}</option>)}</select></div>}<div className="field"><label>Ghi chú (không bắt buộc)</label><input name="reason" maxLength={500} /></div><button className="button button-danger action-full" type="submit">{item.case_kind === "TRANSIT_LOSS" ? "Duyệt hao hụt" : "Xác nhận về kho"}</button></form>)}
       <ReturnCaseHistory cases={cases} />
+      {delivery.execution_state === "VERIFIED" && <SendToCustomerZalo label="Báo khách đã giao qua Zalo" pdfUrl={`/api/deliveries/${delivery.id}/note/pdf`} pdfName={`${delivery.delivery_number}.pdf`}
+        zaloUrl={zaloChatLink(customerPhone)} text={deliveryDoneMessage({ company: company?.legal_name ?? null, deliveryNumber: delivery.delivery_number,
+          customerName: delivery.customer_name_snapshot, siteName: delivery.site_name_snapshot, deliveredAt: result?.submitted_at ?? null,
+          receiver: result?.receiver_name ?? delivery.receiver_name_snapshot, partial: delivery.result_kind === "PARTIAL",
+          lines: lines.filter((item) => new Decimal(String(item.accepted_base_quantity ?? 0)).gt(0))
+            .map((item) => ({ name: item.material_name_snapshot, ...soldText(item, String(item.accepted_base_quantity)) })) })} />}
       {delivery.execution_state === "VERIFIED" && cases.length === 0 && <p className="muted command-note">Đã ghi nhận theo kết quả xác minh. Trả hàng, hàng còn xe và hao hụt phải mở hồ sơ riêng.</p>}
     {canSplit && <div className="command-panel split-entry"><p className="muted">Hàng cần đi nhiều xe hoặc nhiều người? Chia phiếu này thành 2–5 phiếu trước khi lấy hàng.</p>
         <ButtonLink href={`/admin/deliveries/${delivery.id}/split`} variant="secondary">Tách phiếu giao</ButtonLink></div>}</aside></div>

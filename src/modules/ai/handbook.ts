@@ -118,7 +118,8 @@ Dùng sổ tay này để hiểu hệ thống và hướng dẫn người dùng:
 ## Khác
 - Tin nhắn /admin/messages (chat 1-1 với đồng nghiệp; chủ thấy thêm tài khoản khách). Công cụ: soan_nhan_tin.
 - Thông báo /admin/notifications; Quy tắc tự động /admin/settings/automation [roles.manage] (Nếu sự kiện… thì gửi thông báo điện thoại / Telegram / email / webhook; ví dụ đơn khách mới, đơn mua nháp cần duyệt, phiếu giao chờ điều phối, nợ quá hạn 07:00, tồn dưới ngưỡng 07:00).
-- Zalo OA /admin/settings/zalo [roles.manage]: tin tự động cho khách khi đơn được xác nhận, đã giao hàng, đã nhận tiền, nhắc công nợ 8:30.
+- Báo khách qua Zalo (miễn phí, nhân viên tự gửi): nút "Gửi xác nhận đơn qua Zalo" trên đơn bán đã xác nhận, "Báo khách đã giao qua Zalo" trên phiếu giao đã xác minh, "Nhắc nợ qua Zalo" và "Gửi Zalo" (từng phiếu thu) ở hồ sơ khách → Công nợ & thanh toán. Hệ thống soạn sẵn nội dung, chép và mở Zalo tới số di động của khách (điện thoại: chia sẻ kèm PDF); nhân viên dán và bấm gửi. Khách cần có số di động trong hồ sơ.
+- Zalo OA /admin/settings/zalo [roles.manage]: tin mẫu ZBS tự động (tốn phí mỗi tin) — cửa hàng hiện không dùng; báo khách bằng nút "Gửi qua Zalo".
 - Cài đặt /admin/settings [roles.manage]: thông tin doanh nghiệp in trên chứng từ, logo, vận hành giao hàng (tự phân nguồn, kho ưu tiên, chi phí một chuyến, chế độ tự điều phối), chi nhánh, khóa API Claude (/admin/settings/ai). Nhật ký /admin/audit.
 - Tổng quan /admin [dashboard.read]: thu, chi, lợi nhuận, khách đang nợ, NCC đang phải trả theo kỳ / khách / nhân viên. Báo cáo /admin/reports: Cuối ngày, Bán hàng (theo thời gian / khách / nhân viên), Hàng bán ra, Xuất nhập tồn, Công nợ & tuổi nợ, Nhập hàng & công nợ, Chuyến theo thợ / xe, Lãi lỗ → "Chạy báo cáo" → xuất CSV.
 
