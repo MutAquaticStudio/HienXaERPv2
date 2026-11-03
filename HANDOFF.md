@@ -1,8 +1,16 @@
-# HANDOFF — Hiền Xa ERP V2 (cập nhật 02/11/2026)
+# HANDOFF — Hiền Xa ERP V2 (cập nhật 03/11/2026)
 
-Tài liệu bàn giao cho phiên làm việc tiếp theo (Claude Code hoặc người). Đọc kèm `CLAUDE.md` (quy tắc bắt buộc), `Spec.md` (D1–D47), `tasks.md`, `implementation.md` (nhật ký, rất dài — grep theo mã D/FB hoặc ngày).
+Tài liệu bàn giao cho phiên làm việc tiếp theo (Claude Code hoặc người). Đọc kèm `CLAUDE.md` (quy tắc bắt buộc), `Spec.md` (D1–D50), `tasks.md`, `implementation.md` (nhật ký, rất dài — grep theo mã D/FB hoặc ngày).
 
-## 1. Trạng thái phát hành (02/11/2026)
+## 0. Phiên 03/11/2026 (PR #94–#97)
+
+- **Trợ lý AI báo lỗi trên Production** — nguyên nhân: Claude API trả 400 "The compiled grammar is too large… reduce the number of strict tools" (người có đủ quyền nhận 19 công cụ `strict`). #94 ghi lỗi gốc vào log Vercel (`[ai] Claude API error {status, type, requestId, message}`); #95 bỏ `strict` ở công cụ soạn thao tác D37 (zod trong `prepare` vẫn kiểm), có test chặn tái diễn. Đã chạy lại bình thường (`ai_usage_log` OK).
+- **D50** (#96, migration `20261103100000_d50_ai_api_key` đã áp QA + Production, sha256 `05fb2c14…963d`): trong khung chat chọn mô hình (Sonnet 5.5 / Opus 5.5 / Haiku 5.5) + "Mức suy nghĩ" (effort) + đính kèm tệp (ảnh / PDF / Excel / CSV / TXT, 5 tệp, 3,5 MB, không lưu); khóa API Claude nhập ở Cài đặt → Trợ lý AI (Vault `hx_anthropic_api_key`, máy chủ đọc bằng service role ở `src/modules/ai/api-key.ts` — Owner cho phép; chưa nhập thì dùng `ANTHROPIC_API_KEY`).
+- **#97**: sổ tay nghiệp vụ cho trợ lý (`src/modules/ai/handbook.ts` + `handbook-states.ts`, gắn vào system prompt, cache chung); thao tác soạn sẵn "Gán phiếu giao" (`soan_gan_phieu_giao`, chạy `assign_delivery_scheduled`); khung chat gọn (bỏ dải giới thiệu, viên chọn mô hình / mức suy nghĩ, nút Cuộc trò chuyện mới dạng biểu tượng). Thêm công cụ soạn mới thì **phải** nhắc tên công cụ trong sổ tay (test `handbook.test.ts`).
+- Gói Vercel Hobby chỉ giữ runtime log 1 giờ: muốn tra lỗi thì nhờ Owner thao tác rồi đọc ngay (`get_runtime_logs`, `since: "30m"`, `query: "[ai]"`).
+- Đổi env `NEXT_PUBLIC_*` phải deploy lại (giá trị gắn lúc build). Sau mỗi deploy nhắc người dùng F5 (tab cũ báo "Failed to find Server Action").
+
+## 1. Trạng thái phát hành (02/11/2026 — xem §0 cho 03/11)
 
 | Môi trường | Địa chỉ | Supabase | Code | Migration mới nhất |
 |---|---|---|---|---|
@@ -50,13 +58,13 @@ Chi tiết quyết định: `Spec.md` D44–D49. Kế hoạch: `docs/handoff/ke-
 
 | # | Việc | Ghi chú |
 |---|---|---|
-| 1 | **DNS trên Wix** (hienxavlxd.com): CNAME `app` → `cname.vercel-dns.com`; TXT `_vercel` = `vc-domain-verify=app.hienxavlxd.com,e2824af71a8c79cb3118`; CNAME `qa` → `cname.vercel-dns.com`; TXT `_vercel` = `vc-domain-verify=qa.hienxavlxd.com,49c900573f2976093e99` | Xong thì `verify_project_domain` cho cả 2 |
-| 2 | Sau DNS: Vercel env `NEXT_PUBLIC_APP_URL` Production → `https://app.hienxavlxd.com` (cần cho callback Zalo); redeploy | Agent làm |
-| 3 | Supabase Auth → URL Configuration (Production + QA): Site URL + Redirect URLs tên miền mới (`/**`) | Owner làm trong dashboard |
+| 1 | ✅ 03/11: `app.hienxavlxd.com` đã xác minh trên Vercel; **không cần** `qa.` nữa (Owner 03/11). Cũ: **DNS trên Wix** (hienxavlxd.com): CNAME `app` → `cname.vercel-dns.com`; TXT `_vercel` = `vc-domain-verify=app.hienxavlxd.com,e2824af71a8c79cb3118`; CNAME `qa` → `cname.vercel-dns.com`; TXT `_vercel` = `vc-domain-verify=qa.hienxavlxd.com,49c900573f2976093e99` | Xong thì `verify_project_domain` cho cả 2 |
+| 2 | ✅ 03/11 Owner đã đổi + deploy lại. Cũ: Sau DNS: Vercel env `NEXT_PUBLIC_APP_URL` Production → `https://app.hienxavlxd.com` (cần cho callback Zalo); redeploy | Agent làm |
+| 3 | ✅ 03/11 Owner báo đã xong. Cũ: Supabase Auth → URL Configuration (Production + QA): Site URL + Redirect URLs tên miền mới (`/**`) | Owner làm trong dashboard |
 | 4 | **SePay Production** (QR tự xác nhận, D42/D44): webhook `https://<tên miền>/api/payments/sepay` + Vault `hx_sepay_webhook_secret` + Sổ quỹ: quỹ ngân hàng "Hiện cho khách" + "Tự ghi tiền về (SePay)". Chưa cấu hình thì khách chỉ thấy "Trả tiền mặt tại cửa hàng" (D45 dùng được ngay) | Owner chọn để sau |
 | 5 | **Zalo OA giai đoạn 0** (D47): Zalo App (App ID; Secret Key → Vault `hx_zalo_app_secret`; Callback URL `https://<tên miền>/api/zalo/oauth/callback`), tiện ích `http` đã bật sẵn trên QA/Production, ví ZBS, đăng ký 4 mẫu tin đúng tên tham số → Cài đặt → Zalo OA → Kết nối → nhập mã mẫu → Gửi thử → chuyển "Khách thật" | Hướng dẫn: `docs/handoff/ke-hoach-zalo-oa.md` mục 6 |
 | 6 | Thêm `SUPABASE_SECRET_KEY` **của QA** vào Vercel env **Preview** (Sensitive) → redeploy QA | Để thử luồng thợ chụp ảnh – giao – xác nhận trên QA |
-| 7 | `ANTHROPIC_API_KEY` (Sensitive, Production) cho trợ lý AI → redeploy | |
+| 7 | ✅ 03/11 trợ lý chạy được. Từ D50 khóa đổi ở Cài đặt → Trợ lý AI (không cần Vercel) | |
 | 8 | **Dữ liệu Production chưa đủ**: 59 vật tư chưa có giá bán chung (cổng khách trống), chưa có giá mua NCC; 01/11 đã dọn sạch giao dịch thử (tồn = 0) → cần nhập tồn đầu thật bằng phiếu kiểm kho. Sao lưu ở schema `hx_cleanup_backup_20261101` (xóa khi Owner đồng ý) | Owner nhập hoặc gửi bảng giá để agent nhập (cần đồng ý) |
 | 9 | Quyết định "Giá vốn bình quân" trên trang chi tiết vật tư | Xem §6 |
 | 10 | Quyết định cách cho **webhook Zalo** (báo "khách đã nhận tin", khách nhắn lại) gọi vào hệ thống — bộ kiểm bảo mật cấm `anon` gọi hàm SECURITY DEFINER; SePay dùng khóa service (D42) | Giai đoạn 2 Zalo |
@@ -73,7 +81,8 @@ Chi tiết quyết định: `Spec.md` D44–D49. Kế hoạch: `docs/handoff/ke-
 
 - **Giá vốn bình quân trên trang chi tiết vật tư** — chưa merge, chờ Owner. Patch `docs/handoff/wip-gia-von-binh-quan.patch` (`git apply …`); chưa chạy `pnpm check` toàn bộ.
 - **Zalo giai đoạn 2**: webhook (sau quyết định §4.10), chat hai chiều qua OA, gửi QR/yêu cầu thanh toán D44 qua Zalo.
-- Kiểm tra bố cục lần sau: skill Stageshow (`benjitaylor/skills`) chỉ cài trong phiên 02/11, không có trong repo; cài lại nếu cần `auditLayout`, hoặc dùng `scripts/qa/system-qa/layout.mjs`.
+- Kiểm tra bố cục lần sau: skill Stageshow (`benjitaylor/skills`) chỉ cài trong phiên (02/11, 03/11), không có trong repo. Cài lại: `git clone --depth 1 https://github.com/benjitaylor/skills` → chép `skills/stageshow` vào `~/.claude/skills/`; chạy `auditLayout` cần `ln -s /opt/node-tools/node_modules/playwright-core <skill>/node_modules/playwright-core` và `CHROME_PATH=/opt/pw-browsers/chromium-1243/chrome-linux64/chrome node scripts/layout.mjs <url> --width 390`. Hoặc dùng `scripts/qa/system-qa/layout.mjs`.
+- Trợ lý AI: chưa có công cụ tổng hợp (đếm / cộng / nhóm) — `doc_du_lieu` tối đa 50 dòng nên câu "tổng doanh thu tháng" có thể thiếu; chưa có công cụ tìm chung theo tên / mã và bộ câu hỏi chấm điểm (Owner 03/11 chỉ chọn sổ tay nghiệp vụ trước).
 - UX nhỏ: tự điều phối nên nói rõ "xe chưa xác nhận sức chở"; cửa sổ QR D44 nên gộp các dòng "Số dư đầu kỳ"; dòng "Đã gửi Zalo · đã nhận" trên chứng từ (cần webhook).
 - Để sau (cần đổi dữ liệu cổng / migration): tên tài xế + biển số trên thẻ đơn của khách; ngày chi trả trên phiếu lương thợ.
 
