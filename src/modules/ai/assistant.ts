@@ -6,9 +6,13 @@ import "server-only";
 // token usage; when the Anthropic account runs out of credit the person is told so ("hết hạn mức").
 import Anthropic from "@anthropic-ai/sdk";
 import type { createServerSupabase } from "@/lib/supabase/server";
+import { resolveAiApiKey } from "@/modules/ai/api-key";
+import type { AiContentBlock } from "@/modules/ai/attachments";
+import { aiEffort, aiModel, DEFAULT_AI_MODEL, type AiEffortId, type AiModelId } from "@/modules/ai/models";
 import { AI_SCOPE, AI_TOOLS, type AiToolContext } from "@/modules/ai/tools";
 
-export const AI_MODEL = "claude-sonnet-5-5";
+/** The model when the person has not picked one (D50: everyone may pick Sonnet 5.5, Opus 5.5 or Haiku 5.5). */
+export const AI_MODEL = DEFAULT_AI_MODEL;
 const MAX_TOOL_ROUNDS = 8;
 
 type Supabase = Awaited<ReturnType<typeof createServerSupabase>>;
@@ -62,15 +66,24 @@ export function logAiFailure(error: unknown) {
   }
 }
 
-export async function askAssistant({ supabase, branchId, permissions, history, question, today }: {
+export async function askAssistant({ supabase, branchId, permissions, history, question, today, model: modelId, effort: effortId, attachments = [] }: {
   supabase: Supabase; branchId: string; permissions: ReadonlySet<string>; history: AiTurn[]; question: string; today: string;
+  model?: AiModelId; effort?: AiEffortId; attachments?: AiContentBlock[];
 }): Promise<AiAnswer> {
-  if (!process.env.ANTHROPIC_API_KEY) return { outcome: "ERROR", text: "Chưa cấu hình khóa API Claude (ANTHROPIC_API_KEY) cho hệ thống.", proposals: 0 };
-  const client = new Anthropic();
+  const apiKey = await resolveAiApiKey();
+  if (!apiKey) return { outcome: "ERROR", text: "Chưa có khóa API Claude. Người quản lý nhập khóa ở Cài đặt → Trợ lý AI.", proposals: 0 };
+  const model = aiModel(modelId);
+  const effort = aiEffort(effortId).id;
+  const client = new Anthropic({ apiKey: apiKey.key });
   const usage = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
+  const prompt: Anthropic.Beta.BetaTextBlockParam = { type: "text", text: `Hôm nay là ${today} (giờ Việt Nam).\n\n${question}` };
+  // Attached files go before the question; the last block is cached so the tool rounds of this turn reuse them.
+  const content: Anthropic.Beta.BetaContentBlockParam[] = attachments.length
+    ? [...attachments, { ...prompt, cache_control: { type: "ephemeral" } }]
+    : [prompt];
   const messages: Anthropic.Beta.BetaMessageParam[] = [
     ...history.map((turn): Anthropic.Beta.BetaMessageParam => ({ role: turn.role, content: turn.text })),
-    { role: "user", content: `Hôm nay là ${today} (giờ Việt Nam).\n\n${question}` },
+    { role: "user", content },
   ];
   const context: AiToolContext = { supabase, branchId, permissions };
   const tools = AI_TOOLS.flatMap((tool) => { const definition = tool.define(context); return definition ? [definition] : []; });
@@ -80,11 +93,11 @@ export async function askAssistant({ supabase, branchId, permissions, history, q
   try {
     for (let round = 0; round < MAX_TOOL_ROUNDS; round += 1) {
       const response = await client.beta.messages.create({
-        model: AI_MODEL,
+        model: model.id,
         max_tokens: 16000,
-        betas: ["server-side-fallback-2026-07-01"],
-        fallbacks: "default",
-        output_config: { effort: "medium" },
+        // Server-side refusal fallback exists for Sonnet 5.5 and Opus 5.5, not for Haiku 5.5.
+        ...(model.serverFallback ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const } : {}),
+        output_config: { effort },
         system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
         tools,
         messages,
@@ -99,6 +112,14 @@ export async function askAssistant({ supabase, branchId, permissions, history, q
       }
       messages.push({ role: "assistant", content: response.content });
       if (response.stop_reason === "pause_turn") continue;
+      if (response.stop_reason === "max_tokens") {
+        // Out of room (more likely at a high "mức suy nghĩ"): keep what was written, never run a cut-off tool call.
+        const written = response.content.filter((block): block is Anthropic.Beta.BetaTextBlock => block.type === "text").map((block) => block.text).join("\n").trim();
+        answer = written
+          ? { outcome: "OK", text: `${written}\n\n(Câu trả lời dài quá giới hạn nên bị cắt. Hãy hỏi hẹp hơn hoặc giảm mức suy nghĩ.)`, proposals }
+          : { outcome: "ERROR", text: "Trợ lý AI suy nghĩ quá giới hạn mà chưa kịp trả lời. Hãy hỏi hẹp hơn hoặc chọn mức suy nghĩ thấp hơn.", proposals };
+        break;
+      }
       const calls = response.content.filter((block): block is Anthropic.Beta.BetaToolUseBlock => block.type === "tool_use");
       if (response.stop_reason !== "tool_use" || !calls.length) {
         const text = response.content.filter((block): block is Anthropic.Beta.BetaTextBlock => block.type === "text").map((block) => block.text).join("\n").trim();
@@ -121,7 +142,7 @@ export async function askAssistant({ supabase, branchId, permissions, history, q
     answer = { ...failure, proposals };
   }
   await supabase.rpc("log_ai_usage", {
-    target_branch_id: branchId, ai_module: AI_SCOPE, ai_model: AI_MODEL, input_count: usage.input, output_count: usage.output,
+    target_branch_id: branchId, ai_module: AI_SCOPE, ai_model: model.id, input_count: usage.input, output_count: usage.output,
     cache_read_count: usage.cacheRead, cache_write_count: usage.cacheWrite, call_outcome: answer.outcome,
   });
   return { ...answer, proposals, actionIds };

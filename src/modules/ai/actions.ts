@@ -8,10 +8,13 @@ import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { askAssistant, type AiAnswer } from "@/modules/ai/assistant";
+import { attachmentBlocks, type AiContentBlock } from "@/modules/ai/attachments";
+import { AI_EFFORT_IDS, AI_MODEL_IDS, DEFAULT_AI_EFFORT, DEFAULT_AI_MODEL } from "@/modules/ai/models";
 import { listAiActionsAction, type AiActionCard } from "@/modules/ai/agent/actions";
 import { loadAiChat, type AiChatTurn } from "@/modules/ai/chat-history";
 
-const askSchema = z.object({ question: z.string().trim().min(2).max(2000) });
+const askSchema = z.object({ question: z.string().trim().min(2).max(2000), model: z.enum(AI_MODEL_IDS).default(DEFAULT_AI_MODEL),
+  effort: z.enum(AI_EFFORT_IDS).default(DEFAULT_AI_EFFORT) });
 
 export async function loadAiChatAction(): Promise<AiChatTurn[]> {
   const access = await requireInternalPermission("ai.use");
@@ -21,24 +24,44 @@ export async function loadAiChatAction(): Promise<AiChatTurn[]> {
 /** The answer, with the cards of the actions the assistant prepared in this turn (FB15, D37). */
 export type AiChatAnswer = AiAnswer & { actions: AiActionCard[] };
 
+/** A question from the chat: a FormData with `question`, `model`, `effort` and the attached `files` (D50), or a plain object. */
 export async function askAiAction(input: unknown): Promise<AiChatAnswer> {
-  const parsed = askSchema.safeParse(input);
+  const form = input instanceof FormData ? input : null;
+  const parsed = askSchema.safeParse(form ? { question: form.get("question"), model: form.get("model") || undefined, effort: form.get("effort") || undefined } : input);
   if (!parsed.success) return { outcome: "ERROR", text: "Câu hỏi cần từ 2 đến 2.000 ký tự.", proposals: 0, actions: [] };
   const access = await requireInternalPermission("ai.use");
+  const files = form ? form.getAll("files").filter((value): value is File => value instanceof File && value.name !== "") : [];
+  let attachments: AiContentBlock[] = [];
+  let attachedNames: string[] = [];
+  if (files.length) {
+    const read = await attachmentBlocks(files);
+    if ("problem" in read) return { outcome: "ERROR", text: read.problem, proposals: 0, actions: [] };
+    attachments = read.blocks;
+    attachedNames = read.names;
+  }
   const supabase = await createServerSupabase();
   const today = new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", dateStyle: "full" }).format(new Date());
   // The API needs alternating turns that start with the person: keep the last 20 stored turns from a question on.
   const stored = (await loadAiChat(supabase, access.branchId, 20)).map(({ role, text }) => ({ role, text }));
   const firstQuestion = stored.findIndex((turn) => turn.role === "user");
   const history = firstQuestion < 0 ? [] : stored.slice(firstQuestion);
-  const answer = await askAssistant({ supabase, branchId: access.branchId, permissions: new Set(access.permissions), history, question: parsed.data.question, today });
+  const answer = await askAssistant({ supabase, branchId: access.branchId, permissions: new Set(access.permissions), history,
+    question: parsed.data.question, today, model: parsed.data.model, effort: parsed.data.effort, attachments });
   // Only answered turns are kept: a failure (no key, quota, error) is shown once and not sent to the assistant again.
+  // Attached files are not stored: the kept question only names them.
   if (answer.outcome === "OK") {
-    await supabase.rpc("save_ai_chat_turn", { target_branch_id: access.branchId, question: parsed.data.question, answer: answer.text.slice(0, 20000), operation_id: randomUUID() });
+    await supabase.rpc("save_ai_chat_turn", { target_branch_id: access.branchId, question: withAttachmentNames(parsed.data.question, attachedNames),
+      answer: answer.text.slice(0, 20000), operation_id: randomUUID() });
   }
   if (answer.proposals) revalidatePath("/admin/ai");
   const actions = answer.actionIds?.length ? await listAiActionsAction({ ids: answer.actionIds }) : [];
   return { ...answer, actions };
+}
+
+/** The question as kept in the chat: the attached files' names follow it on one line ("📎 a.pdf, b.xlsx"). */
+function withAttachmentNames(question: string, names: readonly string[]): string {
+  if (!names.length) return question;
+  return `${question}\n📎 ${names.map((name) => name.slice(0, 120)).join(", ")}`.slice(0, 4000);
 }
 
 /** "Cuộc trò chuyện mới": earlier turns are archived and no longer sent to the assistant. */

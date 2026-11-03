@@ -80,6 +80,6 @@ Chi tiết quyết định: `Spec.md` D44–D49. Kế hoạch: `docs/handoff/ke-
 ## 7. Ràng buộc quan trọng (tóm từ CLAUDE.md)
 
 - Production `nbwynrwkdbtfsitafsxa`: không ghi/migrate/xóa khi chưa có lệnh rõ ràng của Owner trong phiên.
-- `SUPABASE_SECRET_KEY` chỉ ở `src/lib/auth/actions.ts`, `src/modules/portal/evidence-storage.ts`, `src/app/api/payments/sepay/route.ts`. Không giải mã env Vercel; không xin khóa trong chat; khóa/token Zalo, SePay nằm trong Supabase Vault.
+- `SUPABASE_SECRET_KEY` chỉ ở `src/lib/auth/actions.ts`, `src/modules/portal/evidence-storage.ts`, `src/app/api/payments/sepay/route.ts`, `src/modules/ai/api-key.ts` (D50, chỉ đọc khóa Claude trong Vault). Không giải mã env Vercel; không xin khóa trong chat; khóa/token Zalo, SePay nằm trong Supabase Vault.
 - Không commit `.env*`, khóa, mật khẩu. Migration forward-only + test native. Giao diện tiếng Việt.
 - Commit kèm footer `Co-Authored-By` / `Claude-Session` theo hướng dẫn phiên; không ghi tên model vào commit/PR.

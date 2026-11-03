@@ -2,6 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ rpc: vi.fn(), ask: vi.fn(), history: vi.fn() }));
+vi.mock("server-only", () => ({}));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/lib/access/context", () => ({ requireInternalPermission: async () => ({ branchId: "branch-a", permissions: new Set(["ai.use", "orders.read"]) }) }));
 vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({ rpc: mocks.rpc }) }));
@@ -29,6 +30,34 @@ describe("chatbot conversation (D36)", () => {
     mocks.ask.mockResolvedValue({ outcome: "OK", text: "Đã soạn đơn, chờ bạn xác nhận.", proposals: 0, actionIds: ["a1"] });
     const answer = await askAiAction({ question: "Tạo đơn bán" });
     expect(answer.actions.map((card) => card.id)).toEqual(["a1"]);
+  });
+
+  it("sends the picked model and the attached files, and keeps only the files' names (D50)", async () => {
+    mocks.history.mockResolvedValue([]);
+    mocks.ask.mockResolvedValue({ outcome: "OK", text: "Bảng giá có 1 mặt hàng.", proposals: 0 });
+    const form = new FormData();
+    form.set("question", "Đọc giúp bảng này");
+    form.set("model", "claude-opus-5-5");
+    form.set("effort", "high");
+    form.append("files", new File(["ma,gia\nXM01,95000"], "gia.csv", { type: "text/csv" }));
+    await askAiAction(form);
+    const call = mocks.ask.mock.calls[0][0];
+    expect(call.model).toBe("claude-opus-5-5");
+    expect(call.effort).toBe("high");
+    expect(call.attachments).toEqual([{ type: "document", title: "gia.csv", source: { type: "text", media_type: "text/plain", data: "ma,gia\nXM01,95000" } }]);
+    expect(mocks.rpc).toHaveBeenCalledWith("save_ai_chat_turn", expect.objectContaining({ question: "Đọc giúp bảng này\n📎 gia.csv" }));
+  });
+
+  it("refuses an unknown model or an unreadable file before asking", async () => {
+    const badModel = new FormData();
+    badModel.set("question", "Xin chào");
+    badModel.set("model", "gpt-9");
+    expect((await askAiAction(badModel)).outcome).toBe("ERROR");
+    const badFile = new FormData();
+    badFile.set("question", "Đọc tệp");
+    badFile.append("files", new File(["MZ"], "a.exe"));
+    expect((await askAiAction(badFile)).text).toMatch(/Chưa đọc được tệp "a.exe"/);
+    expect(mocks.ask).not.toHaveBeenCalled();
   });
 
   it("does not keep a failed turn, and starts a new chat", async () => {
