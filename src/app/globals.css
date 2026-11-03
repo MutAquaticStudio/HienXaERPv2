@@ -2088,3 +2088,11 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .metric-card .metric-value { animation: rise-in var(--dur-slow) var(--ease-out) both; animation-delay: 60ms; }
 /* Status badges and filter counts settle in instead of popping. */
 .list-filter-option:has(input:checked) { transition: background-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out); }
+
+/* D51: "Gửi qua Zalo" — the staff send the prepared text to the customer themselves. */
+.zalo-send { display: grid; gap: 6px; }
+.zalo-send details summary { color: var(--muted); font-size: var(--font-size-caption); cursor: pointer; }
+.zalo-send-row { padding-bottom: 16px; max-width: 420px; }
+.zalo-send-inline { min-width: 0; }
+.zalo-send-inline > summary { list-style: none; cursor: pointer; }
+.zalo-send-inline[open] { min-width: 260px; }

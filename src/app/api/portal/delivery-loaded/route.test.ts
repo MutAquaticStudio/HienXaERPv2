@@ -36,6 +36,6 @@ it("explains a refusal in Vietnamese", async () => {
   m.rpc.mockRejectedValueOnce(new m.PortalRpcError({ message: "insufficient_inventory_for_handoff", code: "23514" }));
   const response = await post(valid);
   expect((await response.json()).error).toBe("Kho không còn đủ hàng cho phiếu này. Báo kho hoặc điều phối.");
-  m.rpc.mockRejectedValueOnce(new m.PortalRpcError({ message: "vehicle_actual_cargo_capacity_exceeded", code: "23514" }));
-  expect((await (await post(valid)).json()).error).toContain("vượt sức chứa");
+  m.rpc.mockRejectedValueOnce(new m.PortalRpcError({ message: "delivery_loaded_quantity_exceeds_plan", code: "23514" }));
+  expect((await (await post(valid)).json()).error).toContain("vượt kế hoạch");
 });

@@ -89,18 +89,16 @@ it("keeps the dialog open with the reason when the database refuses", async () =
   expect(m.create.mock.calls[0][0]).toMatchObject({ assignment: null, scheduleMode: "NOW" });
 });
 
-it("shows what the chosen truck carries in the sold unit and stops a load over its capacity (Owner 18/10: 4 tấn ≈ 80 bao)", async () => {
+it("shows the truck's written capacity in the sold unit for reference, never blocking (FB5 → D53)", async () => {
   const truck = { id: "v1", label: "XE1 · 29C-123", capacity: { quantity: "4", unit: "tấn", perLine: { "line-xm": "6", "line-cat": null } } };
   render(<OrderDeliveryButton {...props} resources={{ employees: props.resources.employees, vehicles: [truck] }} />);
   fireEvent.click(screen.getByRole("button", { name: "Lập phiếu giao" }));
   const dialog = screen.getByRole("dialog", { name: "Lập phiếu giao" });
   expect(within(dialog).getByRole("option", { name: "XE1 · 29C-123 · chở 4 tấn" })).toBeInTheDocument();
-  expect(within(dialog).getByText("Xe chở tối đa 4 tấn ≈ 6 bao Xi măng PCB40")).toBeInTheDocument();
-  expect(within(dialog).getByText(/Chưa quy đổi được Cát vàng \(m³\) sang tấn/)).toBeInTheDocument();
-  // 8 bao on a truck that carries 6: refused before sending.
-  expect(within(dialog).getByRole("alert")).toHaveTextContent("vượt sức chở của xe (khoảng 134%)");
-  expect(within(dialog).getByRole("button", { name: /Lập phiếu giao \(1 dòng\)/ })).toBeDisabled();
-  fireEvent.change(within(dialog).getByLabelText("Số lượng giao Xi măng PCB40"), { target: { value: "6" } });
+  expect(within(dialog).getByText("Sức chở ghi trong danh mục: 4 tấn ≈ 6 bao Xi măng PCB40")).toBeInTheDocument();
+  expect(within(dialog).queryByText(/Chưa quy đổi được/)).not.toBeInTheDocument();
+  // D53: 8 bao on a truck written down for 6 is only pointed out; the delivery can still be made.
+  expect(within(dialog).getByRole("note")).toHaveTextContent("nhiều hơn sức chở ghi trong danh mục xe (khoảng 134%)");
   expect(within(dialog).queryByRole("alert")).not.toBeInTheDocument();
   expect(within(dialog).getByRole("button", { name: /Lập phiếu giao \(1 dòng\)/ })).toBeEnabled();
 });

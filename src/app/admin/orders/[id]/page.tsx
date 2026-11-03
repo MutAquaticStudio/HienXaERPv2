@@ -32,6 +32,9 @@ import { canChooseSeller, loadSellers } from "@/modules/sales/seller";
 import { formatQuantity } from "@/lib/core/quantity";
 import { salesGrossTotal } from "@/lib/pdf/document-data";
 import { prepaymentReference, prepaymentSummary, type PrepaymentReceipt } from "@/modules/sales/prepayment";
+import { loadCompanyProfile } from "@/lib/company/profile";
+import { SendToCustomerZalo } from "@/components/zalo/send-to-customer";
+import { orderConfirmedMessage, zaloChatLink } from "@/modules/zalo/customer-messages";
 
 type Order = { id: string; customer_id: string; site_id: string; order_number: string; commercial_state: string; fulfillment_state: string; payment_state: string; customer_name_snapshot: string; site_name_snapshot: string; delivery_address_snapshot: string; total_vnd: string; requested_delivery_at: string | null; quotation_revision_id: string | null; created_at: string };
 type Line = { id: string; material_id: string; base_uom_id: string; line_number: number; material_name_snapshot: string; quantity: string; unit_price_vnd: string; line_total_vnd: string; list_unit_price_vnd: string | null; discount_mode: string | null; discount_value: string | null; price_source_type: string; units_of_measure: { symbol: string } | { symbol: string }[] | null; base_units: { symbol: string } | { symbol: string }[] | null };
@@ -80,7 +83,7 @@ export default async function OrderDetailPage({ params, searchParams }: { params
   }
   const warehouses = warehouseResult.data ?? [];
   // A1: a delivery from stock takes its warehouse source itself, so delivery.create is enough (no purchasing.create).
-  const [availability, deliveryPlan, query, prepaidResult, names] = await Promise.all([
+  const [availability, deliveryPlan, query, prepaidResult, names, customerPhoneResult, company] = await Promise.all([
     access.permissions.has("inventory.read") ? loadWarehouseAvailability(access.branchId, lines.map(line => line.material_id)) : Promise.resolve(undefined),
     order.commercial_state === "CONFIRMED" && access.permissions.has("delivery.create") && warehouses.length
       ? loadDeliveryPlan(supabase, order.id, lines, access.branchId, access.permissions.has("delivery.assign")) : Promise.resolve(null),
@@ -91,6 +94,9 @@ export default async function OrderDetailPage({ params, searchParams }: { params
       : Promise.resolve({ data: [] }),
     // FB5/FB7: who and what took the deliveries, for "bước tiếp theo" — shown on every visit of a confirmed order.
     ["CONFIRMED", "CLOSED"].includes(order.commercial_state) ? resourceNames(supabase, access.branchId, deliveries) : Promise.resolve(null),
+    // D51: "Gửi xác nhận qua Zalo" opens the customer's Zalo chat with the prepared text.
+    order.commercial_state === "CONFIRMED" ? supabase.from("customers").select("phone").eq("id", order.customer_id).maybeSingle() : Promise.resolve({ data: null }),
+    order.commercial_state === "CONFIRMED" ? loadCompanyProfile(supabase).catch(() => null) : Promise.resolve(null),
   ]);
   const prepaid = prepaymentSummary((prepaidResult.data ?? []) as PrepaymentReceipt[], order.total_vnd ?? "0");
   const now = new Date();
@@ -98,7 +104,7 @@ export default async function OrderDetailPage({ params, searchParams }: { params
   // A4: "Lập phiếu giao" starts on the customer's requested time while it is still ahead.
   const requestedAt = order.requested_delivery_at && new Date(order.requested_delivery_at) > now ? businessInputValue(order.requested_delivery_at) : null;
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Đơn bán</p><h1>{order.order_number}</h1><p className="lede">Theo dõi đơn bán, phân nguồn hàng và giao hàng tại một nơi.</p></div><div className="inline-actions"><ButtonLink href={`/api/orders/${order.id}/pdf`} variant="secondary">Tải PDF đơn bán</ButtonLink><ButtonLink href="/admin/orders" variant="secondary">Về danh sách</ButtonLink></div></header>
+    <header className="page-heading"><div><p className="eyebrow">Đơn bán</p><h1>{order.order_number}</h1><p className="lede">Theo dõi đơn bán, phân nguồn hàng và giao hàng tại một nơi.</p></div><div className="inline-actions"><ButtonLink href={`/api/orders/${order.id}/pdf`} variant="secondary">Tải PDF đơn bán</ButtonLink><ButtonLink href={`/api/orders/${order.id}/pdf?kho=k80`} variant="secondary">In K80</ButtonLink><ButtonLink href="/admin/orders" variant="secondary">Về danh sách</ButtonLink></div></header>
     {fromPortal && <p className="form-message warning" role="note"><strong>Đơn khách tự đặt trên cổng khách{order.commercial_state === "DRAFT" ? " — chờ duyệt" : ""}.</strong>{order.commercial_state === "DRAFT" ? " Kiểm tra hàng, giá và ngày giao (sửa bản nháp nếu cần), rồi bấm “Duyệt đơn” để giữ hạn mức và tự phân nguồn; hoặc hủy đơn — khách thấy ghi chú hủy nếu có." : ""}{channel?.portal_note ? ` Ghi chú của khách: “${channel.portal_note}”.` : ""}</p>}
     <SalesOrderCreditOverride orderId={id} blocked={parseCreditBlock(query.credit)} />
     <ActionNotice notice={query.notice} error={query.error} />
@@ -148,6 +154,11 @@ export default async function OrderDetailPage({ params, searchParams }: { params
       </form>)}</details>}
       {["DRAFT", "CONFIRMED"].includes(order.commercial_state) && deliveries.length === 0 && access.permissions.has("orders.cancel") && <CancelDocumentForm entityId={order.id} operationId={randomUUID()} state={order.commercial_state} label="Hủy đơn" action={cancelSalesOrderAction} />}
       {order.commercial_state === "CONFIRMED" && allocations.length === 0 && <p className="muted">Chưa có nguồn hàng. Chọn nguồn hoặc đặt NCC từ dòng hàng.</p>}
+      {order.commercial_state === "CONFIRMED" && <SendToCustomerZalo label="Gửi xác nhận đơn qua Zalo" pdfUrl={`/api/orders/${order.id}/pdf`} pdfName={`${order.order_number}.pdf`}
+        zaloUrl={zaloChatLink((customerPhoneResult.data as { phone: string | null } | null)?.phone)}
+        text={orderConfirmedMessage({ company: company?.legal_name ?? null, orderNumber: order.order_number, customerName: order.customer_name_snapshot, siteName: order.site_name_snapshot,
+          address: order.delivery_address_snapshot, totalVnd: order.total_vnd ?? "0", prepaidVnd: prepaid.paidVnd.toString(), deliveryAt: order.requested_delivery_at,
+          lines: lines.map((line) => ({ name: line.material_name_snapshot, quantity: formatQuantity(line.quantity), unit: relation(line.units_of_measure)?.symbol ?? "" })) })} />}
       {["CANCELLED", "CLOSED"].includes(order.commercial_state) && <p className="muted">Phần thương mại đã đóng; theo dõi giao hàng, thanh toán và ngoại lệ theo nguồn ở trên.</p>}
     </aside></div>
     {deliveries.length > 0 && <OrderDeliveryPhotos orderId={order.id} canView={access.permissions.has("evidence.manage") || access.permissions.has("delivery.verify")}
