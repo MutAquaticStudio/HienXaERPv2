@@ -11,9 +11,11 @@ import { matchRecord } from "@/modules/sales/order-match";
 import { assignSellerAfterCreate, canChooseSeller, loadSellers } from "@/modules/sales/seller";
 import { buildWarehouseLines } from "@/modules/purchasing/warehouse-lines";
 import { vietnamInstant } from "@/modules/attendance/presentation";
+import { deliveryCommandMessage } from "@/modules/delivery/errors";
+import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { formatVnd, vnd } from "@/lib/core/money";
 import {
-  findAccount, findCustomer, findDocument, findEmployee, findMaterial, findSite, findSupplier, findUnit, findWarehouse, ResolveError, type Supabase,
+  findAccount, findCustomer, findDelivery, findDocument, findEmployee, findMaterial, findSite, findSupplier, findUnit, findVehicle, findWarehouse, ResolveError, type Supabase,
 } from "./resolve";
 
 export type AgentContext = { supabase: Supabase; branchId: string; permissions: ReadonlySet<string> };
@@ -183,6 +185,65 @@ const createDelivery: AgentAction = {
     const result = await rpc(context, "create_delivery_for_order", { target_sales_order_id: payload.orderId, target_warehouse_id: payload.warehouseId,
       delivery_lines: payload.lines, scheduled_at: new Date().toISOString(), assignment: null, operation_id: actionId }) as { delivery_id?: string } | null;
     return { link: result?.delivery_id ? `/admin/deliveries/${result.delivery_id}` : `/admin/orders/${payload.orderId}`, message: "Đã lập phiếu giao." };
+  },
+};
+
+// D50: "Gán phiếu giao" — the same command as "Gán nhanh" on the dispatch board and "Phân giao" on the delivery, with all its
+// checks (rights, truck capacity, clashes, the worker's account, the delivery's version).
+const assignDelivery: AgentAction = {
+  kind: "soan_gan_phieu_giao", area: "Bán hàng", permissions: ["delivery.assign"],
+  description: "Soạn gán người giao + xe + khung giờ cho một phiếu giao đang \"Chờ phân giao\" (hoặc đổi người / xe khi thợ chưa bắt đầu), hoặc giao cho đơn vị vận chuyển ngoài (khi đó để trống người và xe).",
+  properties: {
+    ma_phieu: str("Mã phiếu giao, ví dụ DL-041."),
+    nguoi_giao: str("Mã hoặc tên nhân viên giao; trống nếu thuê ngoài."),
+    xe: str("Biển số hoặc mã xe; trống nếu thuê ngoài."),
+    don_vi_ngoai: str("Tên đơn vị vận chuyển ngoài; trống nếu dùng người và xe của cửa hàng."),
+    sdt_don_vi_ngoai: str("Số điện thoại đơn vị ngoài; có thể trống."),
+    ngay: str("Ngày giao yyyy-mm-dd; trống = hôm nay."),
+    gio_bat_dau: str("Giờ bắt đầu HH:MM."),
+    gio_ket_thuc: str("Giờ kết thúc HH:MM; trống = sau giờ bắt đầu 2 tiếng."),
+  },
+  async prepare(context, input) {
+    const time = z.string().trim().refine((value) => !value || /^([01]\d|2[0-3]):[0-5]\d$/.test(value), "Giờ dạng HH:MM.");
+    const value = z.object({ ma_phieu: z.string().trim().min(1), nguoi_giao: z.string().trim(), xe: z.string().trim(), don_vi_ngoai: z.string().trim().max(160),
+      sdt_don_vi_ngoai: z.string().trim().max(30), ngay: dateText, gio_bat_dau: time.refine((text) => text.length > 0, "Cần giờ bắt đầu."), gio_ket_thuc: time }).parse(input);
+    const delivery = await findDelivery(context.supabase, context.branchId, value.ma_phieu);
+    if (!["PLANNED", "ASSIGNED"].includes(delivery.execution_state)) {
+      throw new ResolveError(`Phiếu ${delivery.delivery_number} không còn ở bước phân giao (đã giao, đang giao hoặc đã hủy).`);
+    }
+    const external = value.don_vi_ngoai;
+    if (external && (value.nguoi_giao || value.xe)) throw new ResolveError("Chọn một trong hai: người + xe của cửa hàng, hoặc đơn vị vận chuyển ngoài.");
+    if (!external && (!value.nguoi_giao || !value.xe)) throw new ResolveError("Cần cả người giao và xe (hoặc tên đơn vị vận chuyển ngoài).");
+    const employee = external ? null : await findEmployee(context.supabase, context.branchId, value.nguoi_giao);
+    const vehicle = external ? null : await findVehicle(context.supabase, context.branchId, value.xe);
+    const day = value.ngay || today();
+    const start = vietnamInstant(day, value.gio_bat_dau);
+    const end = value.gio_ket_thuc ? vietnamInstant(day, value.gio_ket_thuc) : new Date(Date.parse(start) + 2 * 3_600_000).toISOString();
+    if (Date.parse(end) <= Date.parse(start)) throw new ResolveError("Giờ kết thúc phải sau giờ bắt đầu.");
+    return {
+      title: `Gán phiếu giao ${delivery.delivery_number}`,
+      payload: { deliveryId: delivery.id, version: delivery.version, employeeId: employee?.id ?? null, vehicleId: vehicle?.id ?? null,
+        externalName: external, externalPhone: value.sdt_don_vi_ngoai, start, end },
+      summary: [
+        { label: "Khách / công trình", value: `${delivery.customer_name_snapshot} · ${delivery.site_name_snapshot}` },
+        ...(external ? [{ label: "Đơn vị vận chuyển ngoài", value: `${external}${value.sdt_don_vi_ngoai ? ` · ${value.sdt_don_vi_ngoai}` : ""}` }]
+          : [{ label: "Người giao", value: employee!.display_name }, { label: "Xe", value: vehicle!.plate_number }]),
+        { label: "Giờ giao", value: `${formatBusinessDateTime(start)} – ${formatBusinessDateTime(end)}` },
+        ...(delivery.execution_state === "ASSIGNED" ? [{ label: "Lưu ý", value: "Phiếu đã được gán; xác nhận sẽ thay người / xe / giờ cũ." }] : []),
+      ],
+    };
+  },
+  async execute(context, payload, actionId) {
+    const { error } = await context.supabase.rpc("assign_delivery_scheduled", {
+      target_delivery_id: payload.deliveryId, target_employee_id: payload.employeeId, target_vehicle_id: payload.vehicleId,
+      external_carrier_name: payload.externalName ?? "", external_carrier_phone: payload.externalPhone ?? "",
+      scheduled_start: payload.start, scheduled_end: payload.end, expected_version: payload.version, operation_id: actionId,
+    });
+    if (error) {
+      throw new ResolveError(error.message.includes("delivery_assignment_version_conflict")
+        ? "Phiếu giao vừa thay đổi (đã được gán hoặc đã chạy). Hỏi lại trợ lý để soạn thẻ mới." : deliveryCommandMessage(error.message, error.hint));
+    }
+    return { link: `/admin/deliveries/${payload.deliveryId}`, message: "Đã gán người, xe và giờ giao." };
   },
 };
 
@@ -387,7 +448,7 @@ const sendMessage: AgentAction = {
   },
 };
 
-export const AGENT_ACTIONS: readonly AgentAction[] = [createCustomer, createSalesOrder, confirmSalesOrder, createDelivery, createPurchaseOrder,
+export const AGENT_ACTIONS: readonly AgentAction[] = [createCustomer, createSalesOrder, confirmSalesOrder, createDelivery, assignDelivery, createPurchaseOrder,
   receivePurchaseOrder, transferStock, receivePayment, recordExpense, saveAttendance, adjustPayroll, sendMessage];
 
 export const agentActionOf = (kind: string) => AGENT_ACTIONS.find((action) => action.kind === kind);

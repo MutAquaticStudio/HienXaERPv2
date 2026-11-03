@@ -47,6 +47,22 @@ export const findEmployee = (supabase: Supabase, branchId: string, ref: string) 
   one<{ id: string; code: string; display_name: string }>(supabase, "workforce_read", "id, code, display_name", ref, "nhân viên",
     (query) => query.eq("branch_id", branchId).eq("active", true), "code", "display_name");
 
+/** A truck of the branch by its code or plate number (D50: "Gán phiếu giao"). */
+export const findVehicle = (supabase: Supabase, branchId: string, ref: string) =>
+  one<{ id: string; code: string; plate_number: string }>(supabase, "vehicles", "id, code, plate_number", ref, "xe",
+    (query) => query.eq("branch_id", branchId).eq("active", true), "code", "plate_number");
+
+/** A delivery of the branch by its number (DL-…). */
+export async function findDelivery(supabase: Supabase, branchId: string, ref: string) {
+  const text = clean(ref).toUpperCase();
+  if (!text) throw new ResolveError("Thiếu mã phiếu giao.");
+  const { data, error } = await supabase.from("delivery_read").select("id, delivery_number, execution_state, version, customer_name_snapshot, site_name_snapshot, scheduled_at")
+    .eq("branch_id", branchId).ilike("delivery_number", `%${text}`).limit(2);
+  if (error) throw new ResolveError("Không đọc được phiếu giao.");
+  if (data?.length !== 1) throw new ResolveError(data?.length ? `Có nhiều phiếu giao khớp "${ref}"; ghi đủ mã.` : `Không tìm thấy phiếu giao "${ref}".`);
+  return data[0] as { id: string; delivery_number: string; execution_state: string; version: number; customer_name_snapshot: string; site_name_snapshot: string; scheduled_at: string | null };
+}
+
 /** A site of the customer by code or name, or the first one when none is named. */
 export async function findSite(supabase: Supabase, customerId: string, ref: string) {
   const { data, error } = await supabase.from("customer_sites").select("id, code, name, created_at").eq("customer_id", customerId).eq("active", true).order("created_at");

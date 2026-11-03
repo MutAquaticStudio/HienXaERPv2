@@ -51,7 +51,10 @@ describe("AI assistant", () => {
     expect(answer).toEqual({ outcome: "OK", text: "KH01 nợ nhiều nhất; đã ghi đề xuất nhắc nợ.", proposals: 1, actionIds: [] });
     const request = create.mock.calls[0][0];
     expect(request).toMatchObject({ model: "claude-sonnet-5-5", fallbacks: "default", betas: ["server-side-fallback-2026-07-01"] });
-    expect(request.system[0].cache_control).toEqual({ type: "ephemeral" });
+    // D50: instructions + the business handbook, cached as one prefix.
+    expect(request.system).toHaveLength(2);
+    expect(request.system[1].text).toContain("Sổ tay nghiệp vụ");
+    expect(request.system[1].cache_control).toEqual({ type: "ephemeral" });
     expect(request.tools.map((tool: { name: string }) => tool.name)).toEqual(["doc_du_lieu", "tao_de_xuat", "soan_nhan_tin"]);
     // One chatbot: the read tool lists every source the person may see (here only receivables and the cashbook).
     expect(request.tools[0].input_schema.properties.source.enum).toEqual(["receivable_read", "payment_read"]);
