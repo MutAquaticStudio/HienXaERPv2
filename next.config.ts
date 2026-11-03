@@ -5,6 +5,9 @@ import { PAYMENT_NOTICES_ENABLED, QUOTATIONS_ENABLED } from "./src/lib/features"
 export const NOT_FOUND_SEGMENT = "__khong-tim-thay";
 
 const nextConfig: NextConfig = {
+  // D50: a question to the assistant may carry up to 3,5 MB of files (src/modules/ai/attachment-limits.ts); the default
+  // 1 MB Server Action body would refuse them. Kept under Vercel's 4,5 MB request limit.
+  experimental: { serverActions: { bodySizeLimit: "4mb" } },
   // Owner decisions D1 and D8: switched-off quotation and payment-notice screens must answer 404. The layout-level
   // notFound() alone renders the not-found page with HTTP 200, because the root loading boundary has already started streaming.
   async rewrites() {

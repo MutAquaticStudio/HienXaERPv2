@@ -8,7 +8,7 @@ import { loadAiChat } from "@/modules/ai/chat-history";
 import { aiUsageCostUsd } from "@/modules/ai/usage";
 
 type Proposal = { id: string; module: string; title: string; body: string; link_path: string | null; state: string; created_at: string };
-type Usage = { input_tokens: number; output_tokens: number; cache_read_tokens: number; cache_write_tokens: number; outcome: string };
+type Usage = { model: string; input_tokens: number; output_tokens: number; cache_read_tokens: number; cache_write_tokens: number; outcome: string };
 
 /** FB12 (D34d) → FB14 (D36): "Trợ lý AI" — one chatbot for the whole system, proposals waiting for approval, the month's API cost. */
 export default async function AiPage() {
@@ -19,13 +19,15 @@ export default async function AiPage() {
   const [turns, proposalsResult, usageResult] = await Promise.all([
     loadAiChat(supabase, access.branchId),
     supabase.from("ai_proposals").select("id, module, title, body, link_path, state, created_at").eq("branch_id", access.branchId).eq("state", "PENDING").order("created_at", { ascending: false }).limit(30),
-    canManage ? supabase.from("ai_usage_log").select("input_tokens, output_tokens, cache_read_tokens, cache_write_tokens, outcome").eq("branch_id", access.branchId).gte("created_at", monthStart).limit(10000)
+    canManage ? supabase.from("ai_usage_log").select("model, input_tokens, output_tokens, cache_read_tokens, cache_write_tokens, outcome").eq("branch_id", access.branchId).gte("created_at", monthStart).limit(10000)
       : Promise.resolve({ data: [] as Usage[], error: null }),
   ]);
   if (proposalsResult.error || usageResult.error) throw new Error("Không tải được trợ lý AI. Vui lòng thử lại.");
   const proposals = proposalsResult.data as Proposal[];
   const usage = usageResult.data as Usage[];
   const totals = usage.reduce((sum, row) => ({ input: sum.input + row.input_tokens, output: sum.output + row.output_tokens, cacheRead: sum.cacheRead + row.cache_read_tokens, cacheWrite: sum.cacheWrite + row.cache_write_tokens }), { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 });
+  // D50: each call is priced at the model it used.
+  const costUsd = usage.reduce((sum, row) => sum + aiUsageCostUsd({ input: row.input_tokens, output: row.output_tokens, cacheRead: row.cache_read_tokens, cacheWrite: row.cache_write_tokens }, row.model), 0);
   const quotaHit = usage.some((row) => row.outcome === "QUOTA");
 
   return <>
@@ -38,8 +40,9 @@ export default async function AiPage() {
       <aside className="page-stack">
         {canManage && <section className="card card-pad" aria-label="Chi phí AI tháng này">
           <h2>Chi phí AI tháng này</h2>
-          <p className="metric-value">≈ {aiUsageCostUsd(totals).toLocaleString("vi-VN", { style: "currency", currency: "USD", maximumFractionDigits: 2 })}</p>
-          <p className="muted">{usage.length} lượt hỏi · {(totals.input + totals.cacheRead + totals.cacheWrite).toLocaleString("vi-VN")} token đọc · {totals.output.toLocaleString("vi-VN")} token trả lời. Giá Claude Sonnet: 2 USD / 1 triệu token đọc, 10 USD / 1 triệu token trả lời.</p>
+          <p className="metric-value">≈ {costUsd.toLocaleString("vi-VN", { style: "currency", currency: "USD", maximumFractionDigits: 2 })}</p>
+          <p className="muted">{usage.length} lượt hỏi · {(totals.input + totals.cacheRead + totals.cacheWrite).toLocaleString("vi-VN")} token đọc · {totals.output.toLocaleString("vi-VN")} token trả lời. Tính theo giá niêm yết của mô hình từng lượt hỏi (Sonnet 5.5: 2 USD / 10 USD mỗi triệu token đọc / trả lời).</p>
+          <Link className="code-link" href="/admin/settings/ai">Khóa API Claude</Link>
           {quotaHit && <p className="form-message" role="status">Tháng này đã có lượt hỏi bị từ chối vì hết hạn mức API. Nạp thêm tín dụng tại tài khoản Anthropic.</p>}
         </section>}
         <section className="card card-pad" aria-label="Đề xuất chờ duyệt">
