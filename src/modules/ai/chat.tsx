@@ -2,7 +2,7 @@
 
 // FB14 (D36): the conversation with the chatbot. The same stored conversation shows in Tin nhắn ("Trợ lý AI"), in the
 // floating bubble and on the AI page; each question goes to the server, which adds the earlier turns itself.
-import { Paperclip, X } from "lucide-react";
+import { Paperclip, SendHorizontal, SquarePen, X } from "lucide-react";
 import { useEffect, useRef, useState, useSyncExternalStore, useTransition } from "react";
 
 import { ScrollToEnd } from "@/components/messaging/messaging-controls";
@@ -121,13 +121,10 @@ export function AiChat({ initialTurns, compact = false }: { initialTurns: AiTurn
   }
 
   return <section className={`ai-chat${compact ? " ai-chat-compact" : ""}`} aria-label="Trò chuyện với trợ lý AI">
-    <div className="ai-chat-tools">
-      <span className="muted">Trợ lý đọc dữ liệu bạn có quyền xem và soạn sẵn việc cần làm; chỉ thực hiện khi bạn bấm Xác nhận.</span>
-      {turns.length > 0 && <button type="button" className="button button-secondary button-compact" onClick={restart} disabled={pending}>Cuộc trò chuyện mới</button>}
-    </div>
     <div className="ai-turns chat-scroll" aria-live="polite">
       {!turns.length && <div className="ai-empty">
         <p>Hỏi bất cứ điều gì về bán hàng, kho, giao hàng, công nợ, sổ quỹ, chấm công, bảng lương…</p>
+        <p className="ai-empty-note">Trợ lý đọc dữ liệu bạn có quyền xem và soạn sẵn việc cần làm; chỉ thực hiện khi bạn bấm Xác nhận.</p>
         <div className="period-presets">{AI_SUGGESTIONS.map((item) => <button key={item} type="button" className="chip-link" onClick={() => ask(item)}>{item}</button>)}</div>
       </div>}
       {turns.map((turn, index) => <div key={index} className={`chat-bubble-row ${turn.role === "user" ? "mine" : "theirs"}`}>
@@ -152,20 +149,24 @@ export function AiChat({ initialTurns, compact = false }: { initialTurns: AiTurn
         <label className="sr-only" htmlFor={compact ? "ai-question-bubble" : "ai-question"}>Câu hỏi cho trợ lý</label>
         <textarea id={compact ? "ai-question-bubble" : "ai-question"} value={question} onChange={(event) => setQuestion(event.target.value)} rows={1} maxLength={2000}
           placeholder="Nhắn cho trợ lý AI…" onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); ask(question); } }} />
-        <button className="button button-primary" disabled={pending || question.trim().length < 2}>{pending ? "Đang hỏi…" : "Gửi"}</button>
+        {compact
+          ? <button className="button button-primary ai-send-icon" disabled={pending || question.trim().length < 2} aria-label={pending ? "Đang hỏi" : "Gửi"} title="Gửi (Enter)">
+            <SendHorizontal size={18} aria-hidden="true" /></button>
+          : <button className="button button-primary" disabled={pending || question.trim().length < 2}>{pending ? "Đang hỏi…" : "Gửi"}</button>}
       </div>
       <div className="ai-composer-meta">
-        <label className="ai-model-picker"><span>Mô hình</span>
-          <select value={model} onChange={(event) => pickModel(event.target.value as AiModelId)} disabled={pending} aria-label="Chọn mô hình Claude">
-            {AI_MODELS.map((item) => <option key={item.id} value={item.id}>{item.label} · {item.hint}</option>)}
-          </select>
-        </label>
-        <label className="ai-model-picker"><span>Mức suy nghĩ</span>
-          <select value={effort} onChange={(event) => pickEffort(event.target.value as AiEffortId)} disabled={pending} aria-label="Chọn mức suy nghĩ của trợ lý"
-            title="Mức càng cao trả lời càng kỹ nhưng chậm và tốn token hơn">
-            {AI_EFFORTS.map((item) => <option key={item.id} value={item.id}>{item.label} · {item.hint}</option>)}
-          </select>
-        </label>
+        <label className="sr-only" htmlFor={`${compact ? "ai-bubble" : "ai"}-model`}>Mô hình Claude</label>
+        <select id={`${compact ? "ai-bubble" : "ai"}-model`} className="ai-pill-select" value={model} onChange={(event) => pickModel(event.target.value as AiModelId)} disabled={pending}
+          title={`Mô hình: ${aiModel(model).label} — ${aiModel(model).hint}`}>
+          {AI_MODELS.map((item) => <option key={item.id} value={item.id} title={item.hint}>{item.label}</option>)}
+        </select>
+        <label className="sr-only" htmlFor={`${compact ? "ai-bubble" : "ai"}-effort`}>Mức suy nghĩ</label>
+        <select id={`${compact ? "ai-bubble" : "ai"}-effort`} className="ai-pill-select" value={effort} onChange={(event) => pickEffort(event.target.value as AiEffortId)} disabled={pending}
+          title={`Mức suy nghĩ: ${aiEffort(effort).label} — ${aiEffort(effort).hint}. Mức càng cao trả lời càng kỹ nhưng chậm và tốn token hơn.`}>
+          {AI_EFFORTS.map((item) => <option key={item.id} value={item.id} title={item.hint}>Suy nghĩ {item.label.toLocaleLowerCase("vi-VN")}</option>)}
+        </select>
+        {turns.length > 0 && <button type="button" className="icon-button ai-new-chat" onClick={restart} disabled={pending}
+          aria-label="Cuộc trò chuyện mới" title="Cuộc trò chuyện mới (lưu trữ cuộc hiện tại)"><SquarePen size={16} aria-hidden="true" /></button>}
       </div>
     </form>
   </section>;
