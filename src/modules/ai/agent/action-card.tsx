@@ -38,11 +38,12 @@ export function AiActionCardView({ card, onChange }: { card: AiActionCard; onCha
     <header><strong>{card.title}</strong><span className="ai-action-state">{STATE_LABELS[card.state]}</span></header>
     {card.summary.length > 0 && <dl>{card.summary.map((line, index) => <div key={index}><dt>{line.label}</dt><dd>{line.value}</dd></div>)}</dl>}
     {card.rows && card.rows.length > 0 && <div className="ai-action-rows"><table>
-      <thead><tr>{card.state === "PENDING" && <th scope="col"><span className="sr-only">Chọn</span></th>}<th scope="col">#</th><th scope="col">Khách hàng</th><th scope="col">Điện thoại</th><th scope="col">Địa chỉ</th><th scope="col">Trạng thái</th></tr></thead>
+      <thead><tr>{card.state === "PENDING" && <th scope="col"><span className="sr-only">Chọn</span></th>}<th scope="col">#</th><th scope="col">Khách hàng</th><th scope="col">Trạng thái</th><th scope="col">Điện thoại</th><th scope="col">Địa chỉ</th></tr></thead>
       <tbody>{card.rows.map((row) => <tr key={row.n} className={row.status === "SKIP" || excluded.has(row.n) ? "ai-action-row-off" : undefined}>
         {card.state === "PENDING" && <td>{row.status === "CREATE" && <input type="checkbox" checked={!excluded.has(row.n)} onChange={() => toggle(row.n)} disabled={busy} aria-label={`Tạo khách ${row.ten || `dòng ${row.n}`}`} />}</td>}
-        <td className="mono">{row.n}</td><td>{row.ten || "—"}</td><td className="mono">{row.dien_thoai || "—"}</td><td>{row.dia_chi_giao || "—"}</td>
-        <td>{row.status === "CREATE" ? (excluded.has(row.n) ? "Không tạo" : "Tạo") : <span className="ai-action-row-reason">Bỏ qua: {row.reason}</span>}</td>
+        <td className="mono">{row.n}</td><td>{row.ten || "—"}</td>
+        <td className="ai-action-row-status">{row.status === "CREATE" ? (excluded.has(row.n) ? "Không tạo" : "Tạo") : <span className="ai-action-row-reason">Bỏ qua: {row.reason}</span>}</td>
+        <td className="mono">{row.dien_thoai || "—"}</td><td>{row.dia_chi_giao || "—"}</td>
       </tr>)}</tbody>
     </table></div>}
     {card.state === "PENDING" && <div className="ai-action-buttons">
