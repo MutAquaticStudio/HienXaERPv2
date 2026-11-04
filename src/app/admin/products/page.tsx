@@ -32,6 +32,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
     price: access.permissions.has("pricing.read"),
     stock: access.permissions.has("inventory.read"),
     cost: access.permissions.has("inventory.read") && access.permissions.has("inventory.cost.read"),
+    assignSupplier: access.permissions.has("purchasing.price.manage"),
   };
   const supabase = await createServerSupabase();
   const filteredMaterials = (columns: string, counted = false) => {
@@ -45,11 +46,14 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
     if (variant) request = request.eq("variant_group_id", variant);
     return request;
   };
-  const [materialResult, groupResult, unitResult, variantResult] = await Promise.all([
+  const [materialResult, groupResult, unitResult, variantResult, supplierResult] = await Promise.all([
     filteredMaterials("id, code, name, specification, group_id, base_uom_id, sale_enabled, purchase_enabled, active, variant_group_id, variant_attributes", true).order("name").order("id").range(list.from, list.to),
     supabase.from("material_groups").select("id, name, active").order("name").limit(500),
     supabase.from("units_of_measure").select("id, symbol").limit(1000),
     supabase.from("material_variant_groups").select("id, name, attribute_names, active").order("name").limit(500),
+    // D61 "Gán nhà cung cấp" in the bulk bar.
+    can.manage && can.assignSupplier ? supabase.from("suppliers").select("id, name").eq("branch_id", access.branchId).eq("active", true).order("name").limit(500)
+      : Promise.resolve({ data: null, error: null }),
   ]);
   if (materialResult.error || groupResult.error || unitResult.error || variantResult.error) throw new Error("Không thể tải danh mục vật tư.");
   const materials = (materialResult.data ?? []) as unknown as MaterialRow[];
@@ -123,7 +127,8 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
       </AutoFilterForm>
       <BulkSelection key={JSON.stringify([list.q, list.state, group, use, variant, list.page])}><section className="card list-main">
         <div className="section-head"><h2>{materialResult.count ?? 0} vật tư</h2><span className="scope-chip">{CORE_LIST_PAGE_SIZE} / trang</span></div>
-        {can.manage && <BulkActionBar kind="materials" pageIds={ids} matchingIds={matchingIds} total={total} fields={bulkFields} activeLabels={{ stop: "Ngừng dùng", restart: "Dùng lại" }} />}
+        {can.manage && <BulkActionBar kind="materials" pageIds={ids} matchingIds={matchingIds} total={total} fields={bulkFields} activeLabels={{ stop: "Ngừng dùng", restart: "Dùng lại" }}
+          assignSuppliers={can.assignSupplier ? (supplierResult.data ?? []) as { id: string; name: string }[] : undefined} />}
         {currentVariant && <div className="variant-callout card-pad-x"><p>Hàng cùng loại <strong>{currentVariant.name}</strong> · thuộc tính {currentVariant.attribute_names.join(", ")}{currentVariant.active ? "" : " · đã ngừng"}</p>
           {can.manage && <VariantGroupButton label="Sửa hàng cùng loại" groupId={currentVariant.id} className="button button-secondary button-compact" />}</div>}
         <div className="table-wrap"><table className="row-link-table material-list-table">

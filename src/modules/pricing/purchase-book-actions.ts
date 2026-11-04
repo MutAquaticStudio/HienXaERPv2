@@ -98,3 +98,53 @@ export async function setSupplierMaterialsAction(input: unknown): Promise<Purcha
     return { success: false, outcomeUnknown: true, message: "Chưa xác định kết quả. Bấm lưu lại; hệ thống không ghi trùng." };
   }
 }
+
+const quickAssignInput = z.object({ operationId: z.guid(), supplierId: z.guid(), materialIds: z.array(z.guid()).min(1).max(200) });
+export type QuickAssignResult = { status: "SUCCESS" | "PARTIAL" | "FAILED"; message: string; changed: number; unchanged: number; failed: { code: string; reason: string }[]; outcomeUnknown?: boolean };
+
+/**
+ * D61 "Gán nhà cung cấp" on the material list: one supplier for every chosen material. Each is bought in the unit other
+ * suppliers of that material already use (else its base unit); one already assigned to this supplier keeps its unit; a
+ * material that is stopped or not bought is skipped and named. Prices are entered later in Giá mua.
+ */
+export async function assignSupplierToMaterialsAction(input: unknown): Promise<QuickAssignResult> {
+  const parsed = quickAssignInput.safeParse(input);
+  if (!parsed.success) return { status: "FAILED", message: "Chọn nhà cung cấp và tối đa 200 vật tư.", changed: 0, unchanged: 0, failed: [] };
+  const access = await requireInternalPermission("purchasing.price.manage");
+  const supabase = await createServerSupabase();
+  const ids = [...new Set(parsed.data.materialIds)];
+  const [materialResult, assignmentResult, supplierResult] = await Promise.all([
+    supabase.from("materials").select("id, code, active, purchase_enabled, base_uom_id").in("id", ids).limit(200),
+    supabase.from("supplier_materials").select("supplier_id, material_id, purchase_uom_id").eq("branch_id", access.branchId).eq("active", true).in("material_id", ids).limit(5000),
+    supabase.from("suppliers").select("id, name").eq("id", parsed.data.supplierId).eq("branch_id", access.branchId).eq("active", true).maybeSingle(),
+  ]);
+  if (materialResult.error || assignmentResult.error || supplierResult.error) return { status: "FAILED", outcomeUnknown: true, message: "Không tải được vật tư. Thử lại.", changed: 0, unchanged: 0, failed: [] };
+  const supplier = supplierResult.data as { id: string; name: string } | null;
+  if (!supplier) return { status: "FAILED", message: "Nhà cung cấp đã ngừng hoặc không thuộc chi nhánh này.", changed: 0, unchanged: 0, failed: [] };
+  const materials = (materialResult.data ?? []) as { id: string; code: string; active: boolean; purchase_enabled: boolean; base_uom_id: string }[];
+  const assignments = (assignmentResult.data ?? []) as { supplier_id: string; material_id: string; purchase_uom_id: string }[];
+  const failed = materials.filter((row) => !row.active || !row.purchase_enabled).map((row) => ({ code: row.code, reason: row.active ? "không cho phép mua" : "đã ngừng dùng" }));
+  const eligible = materials.filter((row) => row.active && row.purchase_enabled);
+  const already = eligible.filter((row) => assignments.some((item) => item.material_id === row.id && item.supplier_id === supplier.id));
+  const items = eligible.filter((row) => !already.includes(row)).map((row) => {
+    const counts = new Map<string, number>();
+    for (const item of assignments) if (item.material_id === row.id) counts.set(item.purchase_uom_id, (counts.get(item.purchase_uom_id) ?? 0) + 1);
+    const usual = [...counts].sort((left, right) => right[1] - left[1])[0]?.[0];
+    return { supplier_id: supplier.id, material_id: row.id, purchase_uom_id: usual ?? row.base_uom_id, active: true };
+  });
+  const summary = (changed: number) => [changed ? `Đã gán ${changed} vật tư cho ${supplier.name}.` : `Không có vật tư mới để gán cho ${supplier.name}.`,
+    already.length ? `${already.length} vật tư đã gán từ trước.` : "", failed.length ? `${failed.length} vật tư bỏ qua.` : ""].filter(Boolean).join(" ");
+  if (!items.length) return { status: failed.length ? "PARTIAL" : "SUCCESS", message: summary(0), changed: 0, unchanged: already.length, failed };
+  try {
+    const { error } = await supabase.rpc("set_supplier_material_assignments", { target_branch_id: access.branchId, items, operation_id: parsed.data.operationId });
+    if (error) {
+      if (!isAuthoritativeRejection(error.code)) return { status: "FAILED", outcomeUnknown: true, message: "Chưa xác định kết quả. Bấm Xác nhận lại; hệ thống không ghi trùng.", changed: 0, unchanged: 0, failed: [] };
+      const message = error.message.includes("material_or_uom_invalid") ? "Có vật tư vừa ngừng mua hoặc đổi đơn vị. Tải lại trang rồi gán lại; chưa có vật tư nào được gán." : bookError(error.message, error.code);
+      return { status: "FAILED", message, changed: 0, unchanged: 0, failed: [] };
+    }
+  } catch {
+    return { status: "FAILED", outcomeUnknown: true, message: "Chưa xác định kết quả. Bấm Xác nhận lại; hệ thống không ghi trùng.", changed: 0, unchanged: 0, failed: [] };
+  }
+  revalidateBooks();
+  return { status: failed.length ? "PARTIAL" : "SUCCESS", message: summary(items.length), changed: items.length, unchanged: already.length, failed };
+}
