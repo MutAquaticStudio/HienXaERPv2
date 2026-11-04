@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { PAYMENT_NOTICES_ENABLED } from "@/lib/features";
 import { authenticatedPortalClient, portalRpc } from "@/modules/portal/server";
+import { userFacingError } from "@/lib/core/errors";
 
 export async function POST(request: Request) {
   if (!PAYMENT_NOTICES_ENABLED) return NextResponse.json({ error: "Không tìm thấy." }, { status: 404 });
@@ -31,6 +32,6 @@ export async function POST(request: Request) {
     });
     return NextResponse.json({ noticeId });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Gửi thông báo thất bại" }, { status: 409 });
+    return NextResponse.json({ error: userFacingError(error instanceof Error ? error.message : null, "Gửi thông báo thất bại") }, { status: 409 });
   }
 }
