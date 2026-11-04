@@ -8,7 +8,12 @@ import ExcelJS from "exceljs";
 import { AI_ATTACHMENT_MAX_TEXT_CHARS, attachmentKind, attachmentProblem } from "@/modules/ai/attachment-limits";
 
 export type AiContentBlock = Anthropic.Beta.BetaContentBlockParam;
-export type AttachmentResult = { blocks: AiContentBlock[]; names: string[] } | { problem: string };
+/** D63: one file as it is kept (the bytes are uploaded after the answer; the type comes from the bytes for images and PDFs). */
+export type ReadAttachment = { name: string; mime: string; bytes: Uint8Array };
+export type AttachmentResult = { blocks: AiContentBlock[]; names: string[]; files: ReadAttachment[] } | { problem: string };
+
+const TEXT_TYPES: Record<string, string> = { csv: "text/csv", md: "text/markdown", txt: "text/plain" };
+export const XLSX_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
 type ImageType = "image/jpeg" | "image/png" | "image/webp" | "image/gif";
 
@@ -66,6 +71,7 @@ export async function attachmentBlocks(files: readonly File[]): Promise<Attachme
   const problem = attachmentProblem(files);
   if (problem) return { problem };
   const blocks: AiContentBlock[] = [];
+  const kept: ReadAttachment[] = [];
   for (const file of files) {
     const data = await file.arrayBuffer();
     const bytes = new Uint8Array(data);
@@ -75,27 +81,31 @@ export async function attachmentBlocks(files: readonly File[]): Promise<Attachme
         const mediaType = imageType(bytes);
         if (!mediaType) return unreadable;
         blocks.push({ type: "image", source: { type: "base64", media_type: mediaType, data: Buffer.from(bytes).toString("base64") } });
+        kept.push({ name: file.name, mime: mediaType, bytes });
         break;
       }
       case "pdf":
         if (!isPdf(bytes)) return unreadable;
         blocks.push({ type: "document", title: file.name, source: { type: "base64", media_type: "application/pdf", data: Buffer.from(bytes).toString("base64") } });
+        kept.push({ name: file.name, mime: "application/pdf", bytes });
         break;
       case "text": {
         const text = new TextDecoder("utf-8", { fatal: false }).decode(bytes).replace(/^﻿/, "");
         if (!text.trim()) return unreadable;
         blocks.push({ type: "document", title: file.name, source: { type: "text", media_type: "text/plain", data: clip(text) } });
+        kept.push({ name: file.name, mime: TEXT_TYPES[file.name.toLowerCase().split(".").pop() ?? ""] ?? "text/plain", bytes });
         break;
       }
       case "spreadsheet": {
         const text = await spreadsheetText(data);
         if (!text?.trim()) return unreadable;
         blocks.push({ type: "document", title: file.name, source: { type: "text", media_type: "text/plain", data: clip(text) } });
+        kept.push({ name: file.name, mime: XLSX_TYPE, bytes });
         break;
       }
       default:
         return unreadable;
     }
   }
-  return { blocks, names: files.map((file) => file.name) };
+  return { blocks, names: files.map((file) => file.name), files: kept };
 }

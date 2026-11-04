@@ -2,16 +2,17 @@
 
 // FB14 (D36): the conversation with the chatbot. The same stored conversation shows in Tin nhắn ("Trợ lý AI"), in the
 // floating bubble and on the AI page; each question goes to the server, which adds the earlier turns itself.
-import { Paperclip, SendHorizontal, SquarePen, X } from "lucide-react";
+import { FileSpreadsheet, FileText, Paperclip, SendHorizontal, SquarePen, X } from "lucide-react";
 import { useEffect, useRef, useState, useSyncExternalStore, useTransition } from "react";
 
 import { ScrollToEnd } from "@/components/messaging/messaging-controls";
+import { Dialog } from "@/components/ui/dialog";
 import { CommandForm } from "@/components/ui/command-form";
 import { askAiAction, decideAiProposalAction, newAiChatAction } from "@/modules/ai/actions";
 import { listAiActionsAction, type AiActionCard } from "@/modules/ai/agent/actions";
 import { AiActionCardView } from "@/modules/ai/agent/action-card";
 import type { AiTurn } from "@/modules/ai/assistant";
-import { AI_ATTACHMENT_ACCEPT, AI_ATTACHMENT_MAX_FILES, attachmentProblem } from "@/modules/ai/attachment-limits";
+import { AI_ATTACHMENT_ACCEPT, AI_ATTACHMENT_MAX_FILES, attachmentKind, attachmentProblem, type AiTurnAttachment } from "@/modules/ai/attachment-limits";
 import { AI_EFFORTS, AI_MODELS, aiEffort, aiModel, DEFAULT_AI_EFFORT, DEFAULT_AI_MODEL, type AiEffortId, type AiModelId } from "@/modules/ai/models";
 
 const PICK_EVENT = "hx-ai-pick";
@@ -43,6 +44,48 @@ function fileSize(bytes: number) {
   return bytes >= 1_000_000 ? `${(bytes / 1_000_000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} MB` : `${Math.max(1, Math.round(bytes / 1000))} KB`;
 }
 
+/** D63: a turn of the chat with the files of the question (kept files come with a one-hour link, new ones with a local preview). */
+export type AiChatViewTurn = AiTurn & { attachments?: AiTurnAttachment[] };
+
+/** The question's text as shown: the "📎 names" line is replaced by the files themselves when they are listed. */
+export function visibleTurnText(turn: AiChatViewTurn): string {
+  return turn.attachments?.length ? turn.text.replace(/\n📎 [^\n]*$/, "") : turn.text;
+}
+
+const MIME_BY_KIND: Record<string, string> = { pdf: "application/pdf", spreadsheet: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", text: "text/plain" };
+function localPreview(file: File): AiTurnAttachment {
+  const kind = attachmentKind(file.name);
+  const mime = file.type || (kind ? MIME_BY_KIND[kind] ?? "image/jpeg" : "application/octet-stream");
+  const viewable = kind === "image" || kind === "pdf";
+  return { name: file.name, mime, size: file.size, ...(viewable ? { url: URL.createObjectURL(file) } : {}) };
+}
+
+/** D63: pictures of a question as thumbnails (opened large in a popup), other files as chips; a broken link falls back to the name. */
+export function TurnAttachments({ items }: { items: readonly AiTurnAttachment[] }) {
+  const [open, setOpen] = useState<AiTurnAttachment | null>(null);
+  const [broken, setBroken] = useState<ReadonlySet<string>>(new Set());
+  const images = items.filter((item) => item.mime.startsWith("image/") && item.url && !broken.has(item.url));
+  const files = items.filter((item) => !images.includes(item));
+  return <div className="ai-turn-files">
+    {images.length > 0 && <div className="ai-turn-images">{images.map((item) => <button key={item.url} type="button" className="ai-turn-image" onClick={() => setOpen(item)} aria-label={`Xem ảnh ${item.name}`}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- a signed or local picture of the chat, not a page asset */}
+      <img src={item.url} alt={item.name} loading="lazy" onError={() => setBroken((current) => new Set(current).add(item.url!))} />
+    </button>)}</div>}
+    {files.length > 0 && <ul className="ai-turn-chips">{files.map((item, index) => <li key={`${item.name}-${index}`} className="ai-turn-chip">
+      {item.mime.includes("spreadsheet") || item.mime === "text/csv" ? <FileSpreadsheet size={14} aria-hidden="true" /> : <FileText size={14} aria-hidden="true" />}
+      <span className="ai-attachment-name">{item.name}</span><small>{fileSize(item.size)}</small>
+      {item.url && item.mime === "application/pdf" && <a href={item.url} target="_blank" rel="noopener noreferrer">Mở</a>}
+    </li>)}</ul>}
+    {open && <Dialog title={open.name} onClose={() => setOpen(null)} size="lg">
+      <div className="ai-image-viewer">
+        {/* eslint-disable-next-line @next/next/no-img-element -- a signed or local picture of the chat */}
+        <img src={open.url} alt={open.name} />
+        <a className="code-link" href={open.url} target="_blank" rel="noopener noreferrer">Mở ảnh gốc</a>
+      </div>
+    </Dialog>}
+  </div>;
+}
+
 export const AI_SUGGESTIONS = [
   "Tóm tắt tình hình hôm nay: đơn bán, giao hàng, thu chi.",
   "Khách nào nợ quá hạn nhiều nhất?",
@@ -51,8 +94,11 @@ export const AI_SUGGESTIONS = [
   "Soạn đơn bán 20 bao xi măng cho khách quen, giao ngày mai.",
 ] as const;
 
-export function AiChat({ initialTurns, compact = false }: { initialTurns: AiTurn[]; compact?: boolean }) {
-  const [turns, setTurns] = useState<AiTurn[]>(initialTurns);
+export function AiChat({ initialTurns, compact = false }: { initialTurns: AiChatViewTurn[]; compact?: boolean }) {
+  const [turns, setTurns] = useState<AiChatViewTurn[]>(initialTurns);
+  // Local previews of pictures sent in this visit, released when the chat closes.
+  const previews = useRef<string[]>([]);
+  useEffect(() => () => { for (const url of previews.current) URL.revokeObjectURL(url); }, []);
   const [question, setQuestion] = useState("");
   const [notice, setNotice] = useState("");
   const [pending, start] = useTransition();
@@ -86,7 +132,9 @@ export function AiChat({ initialTurns, compact = false }: { initialTurns: AiTurn
     if (asked.length < 2 || pending) return;
     const sent = files;
     const shown = sent.length ? `${asked}\n📎 ${sent.map((file) => file.name).join(", ")}` : asked;
-    setTurns((current) => [...current, { role: "user", text: shown }]);
+    const attachments = sent.map(localPreview);
+    previews.current.push(...attachments.flatMap((item) => item.url ? [item.url] : []));
+    setTurns((current) => [...current, { role: "user", text: shown, ...(attachments.length ? { attachments } : {}) }]);
     setQuestion("");
     setNotice("");
     setFileProblem("");
@@ -128,7 +176,7 @@ export function AiChat({ initialTurns, compact = false }: { initialTurns: AiTurn
         <div className="period-presets">{AI_SUGGESTIONS.map((item) => <button key={item} type="button" className="chip-link" onClick={() => ask(item)}>{item}</button>)}</div>
       </div>}
       {turns.map((turn, index) => <div key={index} className={`chat-bubble-row ${turn.role === "user" ? "mine" : "theirs"}`}>
-        <div className="chat-bubble">{turn.text}</div>
+        <div className="chat-bubble">{turn.attachments?.length ? <TurnAttachments items={turn.attachments} /> : null}{visibleTurnText(turn)}</div>
       </div>)}
       {cards.length > 0 && <div className="ai-action-list" aria-label="Việc trợ lý soạn sẵn">{cards.map((card) => <AiActionCardView key={card.id} card={card} onChange={replaceCard} />)}</div>}
       {pending && <div className="chat-bubble-row theirs"><div className="chat-bubble muted">Đang đọc dữ liệu và trả lời…</div></div>}

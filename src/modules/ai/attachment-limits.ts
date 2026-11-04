@@ -1,5 +1,5 @@
 // D50: what may be attached to a question for the assistant. Shared by the chat (file picker, early checks) and the
-// server (the real checks). Files go with that one question only and are not stored; the chat keeps their names.
+// server (the real checks). D63: once answered, the files are kept in the person's own folder (ai-attachments) and shown again.
 // The total stays under the Server Action body limit (next.config.ts) and Vercel's 4,5 MB request limit.
 
 export const AI_ATTACHMENT_MAX_FILES = 5;
@@ -8,6 +8,8 @@ export const AI_ATTACHMENT_MAX_TOTAL_BYTES = 3_500_000;
 export const AI_ATTACHMENT_MAX_TEXT_CHARS = 150_000;
 
 export type AiAttachmentKind = "image" | "pdf" | "text" | "spreadsheet";
+/** D63: a file of a chat turn as the chat shows it; `url` (signed, one hour, or a local preview) only for pictures and PDFs. */
+export type AiTurnAttachment = { name: string; mime: string; size: number; url?: string };
 
 const KINDS: Record<string, AiAttachmentKind> = {
   jpg: "image", jpeg: "image", png: "image", webp: "image", gif: "image",
