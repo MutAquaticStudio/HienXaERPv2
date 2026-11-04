@@ -5,7 +5,11 @@ const m = vi.hoisted(() => ({
   createUser: vi.fn(), deleteUser: vi.fn(), updateUserById: vi.fn(), signOut: vi.fn(), portals: vi.fn(), open: vi.fn(async () => true),
   list: vi.fn((): { data: { id: string }[]; error: null } => ({ data: [], error: null })),
   redirect: vi.fn((url: string) => { throw new Error(`REDIRECT:${url}`); }),
+  send: vi.fn(async () => ({ status: 200 })),
 }));
+// D62: the welcome email is sent after the response; here the callback runs at once so the test sees it.
+vi.mock("next/server", () => ({ after: (callback: () => unknown) => { void callback(); } }));
+vi.mock("@/lib/email/send", () => ({ sendEmail: m.send }));
 vi.mock("@/lib/access/context", () => ({ requireInternalPermission: m.access }));
 vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => {
   const query: Record<string, unknown> = { select: () => query, eq: () => query, limit: () => query, maybeSingle: m.customer,
@@ -74,10 +78,31 @@ it("FB9: lets staff with operations permissions in on Vận hành", async () => 
 });
 
 it("finishes a pending self-registration at the first customer sign-in with one operation id per login", async () => {
-  m.signIn.mockResolvedValue({ data: { user: { id: userId, user_metadata: { hx_registration: { name: "Anh Tư", phone: "0912345678", address: "12 Lê Lợi, Huế" } } } }, error: null });
+  m.signIn.mockResolvedValue({ data: { user: { id: userId, email: "tu@example.test", user_metadata: { hx_registration: { name: "Anh Tư", phone: "0912345678", address: "12 Lê Lợi, Huế" } } } }, error: null });
   await expect(loginAction(undefined, form({ email: "tu@example.test", password: "matkhau123", surface: "customer" }))).rejects.toThrow("REDIRECT:/customer?notice=registered");
   expect(m.rpc).toHaveBeenCalledWith("register_portal_customer", { display_name: "Anh Tư", phone: "0912345678", address_text: "12 Lê Lợi, Huế",
     operation_id: `uuid(register_portal_customer:${userId})` });
+  // D62: the welcome email goes out once, to the customer, with their name and the portal link.
+  expect(m.send).toHaveBeenCalledTimes(1);
+  expect(m.send).toHaveBeenCalledWith(expect.objectContaining({ to: "tu@example.test", subject: "Chào mừng bạn đến với Hiền Xa",
+    html: expect.stringContaining("Chào Anh Tư, tài khoản của bạn đã sẵn sàng"), text: expect.stringContaining("https://erp.example.test/customer") }));
+});
+
+it("D62: no welcome email unless the customer record was just made, and a mail failure never blocks signing in", async () => {
+  const registered = { data: { user: { id: userId, email: "tu@example.test", user_metadata: { hx_registration: { name: "Anh Tư", phone: "0912345678", address: "12 Lê Lợi, Huế" } } } }, error: null };
+  m.signIn.mockResolvedValue(registered);
+  m.list.mockReturnValueOnce({ data: [{ id: "membership" }], error: null });
+  await expect(loginAction(undefined, form({ email: "tu@example.test", password: "matkhau123", surface: "customer" }))).rejects.toThrow(/^REDIRECT:\/customer$/);
+  m.rpc.mockResolvedValueOnce({ data: null, error: { code: "P0001", message: "portal_already_registered" } });
+  await expect(loginAction(undefined, form({ email: "tu@example.test", password: "matkhau123", surface: "customer" }))).rejects.toThrow(/^REDIRECT:\/customer$/);
+  m.rpc.mockResolvedValueOnce({ data: null, error: { code: "23514", message: "portal_branch_not_configured" } });
+  await loginAction(undefined, form({ email: "tu@example.test", password: "matkhau123", surface: "customer" }));
+  expect(m.send).not.toHaveBeenCalled();
+  m.send.mockResolvedValueOnce({ status: 503, error: "smtp_not_configured" } as never);
+  const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+  await expect(loginAction(undefined, form({ email: "tu@example.test", password: "matkhau123", surface: "customer" }))).rejects.toThrow("REDIRECT:/customer?notice=registered");
+  await vi.waitFor(() => expect(warn).toHaveBeenCalledWith("welcome_email_not_sent", "smtp_not_configured"));
+  warn.mockRestore();
 });
 
 it("D58: tells a registered customer why the portal is not open yet instead of a bare refusal, and signs them out", async () => {
@@ -161,9 +186,11 @@ it("registers a customer: the record is made right away when signed in, or after
   expect(m.signUp).toHaveBeenCalledWith(expect.objectContaining({ email: "minh@example.test",
     options: { data: { hx_registration: { name: "Cửa hàng Minh", phone: "0912345678", address: "5 Trần Phú, Đà Nẵng" } }, emailRedirectTo: "https://erp.example.test/customer/login?confirmed=1" } }));
   expect(m.rpc).not.toHaveBeenCalled();
+  expect(m.send).not.toHaveBeenCalled();
 
-  m.signUp.mockResolvedValue({ data: { user: { id: userId }, session: { access_token: "t" } }, error: null });
+  m.signUp.mockResolvedValue({ data: { user: { id: userId, email: "minh@example.test", user_metadata: { hx_registration: { name: "Cửa hàng Minh", phone: "0912345678", address: "5 Trần Phú, Đà Nẵng" } } }, session: { access_token: "t" } }, error: null });
   await expect(registerCustomerAccountAction(undefined, form(values))).rejects.toThrow("REDIRECT:/customer?notice=registered");
+  expect(m.send).toHaveBeenCalledWith(expect.objectContaining({ to: "minh@example.test", html: expect.stringContaining("Chào Cửa hàng Minh") }));
   expect(m.rpc).toHaveBeenCalledWith("register_portal_customer", expect.objectContaining({ phone: "0912345678", operation_id: `uuid(register_portal_customer:${userId})` }));
 
   m.signUp.mockResolvedValue({ data: { user: null, session: null }, error: { message: "Signups not allowed for this instance" } });

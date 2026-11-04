@@ -242,16 +242,25 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
-# Uncomment to customize email template
-# [auth.email.template.invite]
-# subject = "You have been invited"
-# content_path = "./supabase/templates/invite.html"
+# D62: Hiền Xa email templates, generated from src/lib/email/auth-templates.ts (see its test). The hosted projects get
+# the same HTML pasted into Supabase → Authentication → Emails; this file only configures the local stack.
+[auth.email.template.confirmation]
+subject = "Xác nhận email để hoàn tất đăng ký Hiền Xa"
+content_path = "./supabase/templates/confirmation.html"
 
-# Uncomment to customize notification email template
-# [auth.email.notification.password_changed]
-# enabled = true
-# subject = "Your password has been changed"
-# content_path = "./supabase/templates/password_changed_notification.html"
+[auth.email.template.recovery]
+subject = "Đặt lại mật khẩu tài khoản Hiền Xa"
+content_path = "./supabase/templates/recovery.html"
+
+[auth.email.notification.password_changed]
+enabled = true
+subject = "Mật khẩu tài khoản Hiền Xa vừa được đổi"
+content_path = "./supabase/templates/password_changed_notification.html"
+
+[auth.email.notification.email_changed]
+enabled = true
+subject = "Email đăng nhập Hiền Xa vừa được đổi"
+content_path = "./supabase/templates/email_changed_notification.html"
 
 [auth.sms]
 # Allow/disallow new user signups via SMS to your project.
