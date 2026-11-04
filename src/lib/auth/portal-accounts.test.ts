@@ -2,12 +2,14 @@ import { beforeEach, expect, it, vi } from "vitest";
 
 const m = vi.hoisted(() => ({
   access: vi.fn(), rpc: vi.fn(), customer: vi.fn(), signIn: vi.fn(), signUp: vi.fn(), getUser: vi.fn(), updateUser: vi.fn(), refresh: vi.fn(),
-  createUser: vi.fn(), deleteUser: vi.fn(), updateUserById: vi.fn(), signOut: vi.fn(), portals: vi.fn(),
+  createUser: vi.fn(), deleteUser: vi.fn(), updateUserById: vi.fn(), signOut: vi.fn(), portals: vi.fn(), open: vi.fn(async () => true),
+  list: vi.fn((): { data: { id: string }[]; error: null } => ({ data: [], error: null })),
   redirect: vi.fn((url: string) => { throw new Error(`REDIRECT:${url}`); }),
 }));
 vi.mock("@/lib/access/context", () => ({ requireInternalPermission: m.access }));
 vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => {
-  const query = { select: () => query, eq: () => query, maybeSingle: m.customer };
+  const query: Record<string, unknown> = { select: () => query, eq: () => query, limit: () => query, maybeSingle: m.customer,
+    then: (resolve: (value: unknown) => unknown) => resolve(m.list()) };
   return { from: () => query, rpc: m.rpc,
     auth: { signInWithPassword: m.signIn, signOut: m.signOut, signUp: m.signUp, getUser: m.getUser, updateUser: m.updateUser, refreshSession: m.refresh } };
 } }));
@@ -18,6 +20,7 @@ vi.mock("next/headers", () => ({ cookies: vi.fn(), headers: vi.fn(async () => ne
 vi.mock("server-only", () => ({}));
 vi.mock("./account-portals", async (original) => ({ ...(await original<typeof import("./account-portals")>()), accountPortals: m.portals }));
 vi.mock("next/navigation", () => ({ redirect: m.redirect }));
+vi.mock("./portal-registration", () => ({ portalRegistrationOpen: m.open }));
 vi.mock("@/modules/portal/server", () => ({ portalRpc: vi.fn(), deterministicUuid: (seed: string) => `uuid(${seed})` }));
 import { changeOwnPasswordAction, createCustomerPortalAccountAction, loginAction, registerCustomerAccountAction, resetCustomerPortalPasswordAction } from "./actions";
 
@@ -72,9 +75,36 @@ it("FB9: lets staff with operations permissions in on Vận hành", async () => 
 
 it("finishes a pending self-registration at the first customer sign-in with one operation id per login", async () => {
   m.signIn.mockResolvedValue({ data: { user: { id: userId, user_metadata: { hx_registration: { name: "Anh Tư", phone: "0912345678", address: "12 Lê Lợi, Huế" } } } }, error: null });
-  await expect(loginAction(undefined, form({ email: "tu@example.test", password: "matkhau123", surface: "customer" }))).rejects.toThrow("REDIRECT:/customer");
+  await expect(loginAction(undefined, form({ email: "tu@example.test", password: "matkhau123", surface: "customer" }))).rejects.toThrow("REDIRECT:/customer?notice=registered");
   expect(m.rpc).toHaveBeenCalledWith("register_portal_customer", { display_name: "Anh Tư", phone: "0912345678", address_text: "12 Lê Lợi, Huế",
     operation_id: `uuid(register_portal_customer:${userId})` });
+});
+
+it("D58: tells a registered customer why the portal is not open yet instead of a bare refusal, and signs them out", async () => {
+  m.signIn.mockResolvedValue({ data: { user: { id: userId, user_metadata: { hx_registration: { name: "Anh Tư", phone: "0912345678", address: "12 Lê Lợi, Huế" } } } }, error: null });
+  m.rpc.mockResolvedValueOnce({ data: null, error: { code: "23514", message: "portal_branch_not_configured" } });
+  const closed = await loginAction(undefined, form({ email: "tu@example.test", password: "matkhau123", surface: "customer" }));
+  expect(closed?.message).toContain("cửa hàng chưa mở nhận khách tự đăng ký");
+  expect(m.signOut).toHaveBeenCalled();
+  // Already a customer: nothing to finish, straight in.
+  m.list.mockReturnValueOnce({ data: [{ id: "membership" }], error: null });
+  m.rpc.mockClear();
+  await expect(loginAction(undefined, form({ email: "tu@example.test", password: "matkhau123", surface: "customer" }))).rejects.toThrow(/^REDIRECT:\/customer$/);
+  expect(m.rpc).not.toHaveBeenCalled();
+});
+
+it("D58: a refused registration names the wrong box, keeps what was typed (not the passwords) and makes no login while closed", async () => {
+  const values = { name: "Cửa hàng Minh", phone: "12345", address: "5 Trần Phú, Đà Nẵng", email: "minh@example", password: "matkhau123", confirm: "khac12345" };
+  const refused = await registerCustomerAccountAction(undefined, form(values));
+  expect(refused?.fieldErrors).toEqual({ email: "Email chưa đúng (ví dụ ten@gmail.com).", confirm: "Nhập lại mật khẩu chưa giống." });
+  expect(refused?.fields).toEqual({ name: "Cửa hàng Minh", phone: "12345", address: "5 Trần Phú, Đà Nẵng", email: "minh@example" });
+  const badPhone = await registerCustomerAccountAction(undefined, form({ ...values, email: "minh@example.test", confirm: "matkhau123" }));
+  expect(badPhone?.fieldErrors).toEqual({ phone: "Số điện thoại chưa đúng (ví dụ 0912345678)." });
+  expect(m.signUp).not.toHaveBeenCalled();
+  m.open.mockResolvedValueOnce(false);
+  const closed = await registerCustomerAccountAction(undefined, form({ ...values, phone: "0912345678", email: "minh@example.test", confirm: "matkhau123" }));
+  expect(closed?.message).toContain("chưa mở tự đăng ký");
+  expect(m.signUp).not.toHaveBeenCalled();
 });
 
 it("creates a customer login with a temporary password, links it and returns the text to send over Zalo", async () => {

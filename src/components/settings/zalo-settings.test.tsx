@@ -26,7 +26,8 @@ it("guides the owner before connecting and lists each event with its template pa
   expect(screen.getByText("Chưa kết nối")).toBeInTheDocument();
   expect(screen.getByText("hx_zalo_app_secret")).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Kết nối Zalo OA" })).toBeDisabled();
-  expect(screen.getByText("Đơn được xác nhận")).toBeInTheDocument();
+  expect(screen.getByRole("group", { name: "Đơn được xác nhận", hidden: true })).toBeInTheDocument();
+  expect(screen.queryByText("24 giờ qua")).not.toBeInTheDocument();
   expect(screen.getByText("delivered_at")).toBeInTheDocument();
   expect(screen.getByText("Kết nối Zalo OA và nhập ít nhất một mã mẫu tin để gửi thử.")).toBeInTheDocument();
 });
@@ -37,9 +38,13 @@ it("shows Zalo's refusal when connecting fails and saves a template with its ver
   fireEvent.change(screen.getByLabelText("App ID (developers.zalo.me)"), { target: { value: "1234567" } });
   fireEvent.click(screen.getByRole("button", { name: "Kết nối Zalo OA" }));
   await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("Chưa lưu khóa bí mật"));
-  const inputs = screen.getAllByLabelText("Mã mẫu tin (template ID)");
-  fireEvent.change(inputs[0], { target: { value: "111" } });
-  fireEvent.click(screen.getAllByLabelText("Bật gửi")[0]);
-  fireEvent.click(screen.getAllByRole("button", { name: "Lưu" })[0]);
+  // D59: before connecting, the templates are folded; each row's controls carry the event's name; "Lưu" wakes on a change.
+  // (Folded rows are out of the accessibility tree in jsdom, so the button is found by its text.)
+  const save = screen.getAllByRole("button", { hidden: true }).find((button) => button.textContent === "Lưu mẫu Đơn được xác nhận")!;
+  expect(save).toBeDisabled();
+  fireEvent.change(screen.getByLabelText("Mã mẫu tin (template ID) — Đơn được xác nhận"), { target: { value: "111" } });
+  fireEvent.click(screen.getByLabelText("Bật gửi Đơn được xác nhận"));
+  expect(screen.getAllByText("Chưa lưu", { selector: ".settings-dirty" })).toHaveLength(1);
+  fireEvent.click(save);
   await waitFor(() => expect(m.save).toHaveBeenCalledWith({ event: "ORDER_CONFIRMED", templateId: "111", active: true, version: 1 }));
 });

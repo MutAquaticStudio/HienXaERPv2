@@ -11,6 +11,10 @@ import { PricingRuleList, type PriceRuleRow } from "@/modules/pricing/rule-list"
 import { loadPriceGroups } from "@/modules/pricing/price-groups";
 import { PriceGroupList } from "@/components/pricing/price-group-list";
 import { AutoFilterForm } from "@/components/ui/auto-filter-form";
+import type { Metadata } from "next";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
+
+export const metadata: Metadata = { title: "Chính sách giá · Cài đặt" };
 
 const emptyOptions: PriceOptions = { customers: [], materials: [], groups: [], units: [] };
 
@@ -50,6 +54,7 @@ export default async function PricingSettingsPage({ searchParams }: { searchPara
       scopeLabel: [pricingScopeLabel(rule.scope_type), label(options.customers, rule.customer_id) || groupName(rule.customer_tier_code), target, uom].filter(Boolean).join(" · ") };
   });
   return <div className="page-stack">
+    <Breadcrumb parent={{ href: "/admin/settings", label: "Cài đặt" }} current="Chính sách giá" />
     <header className="page-heading"><div><h1 tabIndex={-1}>Chính sách giá</h1><p className="lede">Giá có hiệu lực theo phạm vi và ngày. Đổi giá tạo phiên bản mới, không viết lại chứng từ cũ.</p></div></header>
     <AutoFilterForm><label>Trạng thái<select name="state" defaultValue={query.state ?? ""}><option value="">Tất cả / lịch sử</option>{Object.entries(effectivePriceLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label></AutoFilterForm>
     <PriceGroupList canManage={canManage} groups={priceGroups.map((group) => ({ ...group, customers: members.get(group.code) ?? 0 }))} />
