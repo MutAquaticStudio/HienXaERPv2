@@ -42,7 +42,7 @@ Dùng sổ tay này để hiểu hệ thống và hướng dẫn người dùng:
 - NV bán hàng (tính hoa hồng): nhân viên tự tạo đơn thì đơn là của họ; chỉ chủ doanh nghiệp chọn / đổi người bán (mặc định NV phụ trách công trình → khách → chủ).
 - Đơn khách tự đặt trên cổng: vào nội bộ ở nháp, ghi "Đơn khách tự đặt trên cổng khách — chờ duyệt"; nút "Duyệt đơn (giữ hạn mức, tự phân nguồn)".
 - Nhập nhiều đơn: /admin/orders/import "Nhập đơn bán từ Excel": "Tải file mẫu (.xlsx)" → điền (các dòng cùng "Nhóm đơn" thành một đơn) → "Tải lên và kiểm tra" → sửa ngay trên bảng xem trước → tạo đơn nháp; tùy chọn "Xác nhận luôn". Tối đa 100 đơn, 50 dòng mỗi đơn, 2.000 dòng mỗi file.
-- Công cụ: soan_don_ban (có thể xác nhận luôn), soan_xac_nhan_don_ban.
+- Công cụ: soan_don_ban (có thể xác nhận luôn), soan_xac_nhan_don_ban, soan_don_ban_tu_danh_sach (D64: nhiều đơn của khách từ Excel / ảnh → thẻ "Tạo N đơn bán", mỗi dòng một đơn: khách, công trình, giao, tổng tiền; đơn không đọc được bị bỏ qua kèm lý do; dùng lại cách dò khách / hàng / giá của "Nhập đơn bán từ Excel").
 
 ## Giao hàng
 ### Lập phiếu giao
@@ -75,7 +75,7 @@ Dùng sổ tay này để hiểu hệ thống và hướng dẫn người dùng:
 - Nhận hàng về kho: trên đơn mua, "Nhận hàng theo dòng" → "Nhận đủ" (hoặc sửa số nhận thiếu) → "Xác nhận nhận hàng" [inventory.receive] → tăng tồn + phải trả NCC.
 - NCC giao thẳng công trình: "Lập phiếu NCC giao thẳng" [delivery.create]; khi hàng tới, trên phiếu giao bấm "NCC đã giao" kèm ảnh [delivery.submit] → tự xác minh (phải trả NCC, phải thu khách, đóng đơn mua khi đủ). Hóa đơn NCC đến sau chỉ để đối soát.
 - Trả hàng NCC: /admin/purchases/returns/new "Tạo phiếu trả hàng nhập" [purchasing.create] → hàng xuất kho và giảm phải trả ngay; có thể "NCC hoàn tiền ngay" vào quỹ.
-- Công cụ: soan_don_mua (đơn mua nhập kho), soan_nhan_hang (nhận đủ hàng một đơn mua).
+- Công cụ: soan_don_mua (đơn mua nhập kho), soan_nhan_hang (nhận đủ hàng một đơn mua), soan_cap_nhat_gia_mua (D64: bảng giá của một nhà cung cấp từ ảnh / PDF / Excel → thẻ "Cập nhật N giá mua": mỗi dòng giá hiện tại → mới, dòng không đổi hoặc không khớp vật tư bị bỏ qua, tick bỏ chọn rồi "Xác nhận lưu N giá"; áp dụng từ 00:00 ngày chọn), soan_tao_nhieu_vat_tu (danh sách vật tư: cần tên, nhóm vật tư, đơn vị gốc; có thể gán luôn một nhà cung cấp), soan_tao_nhieu_nha_cung_cap (danh sách nhà cung cấp; dòng trùng tên / điện thoại / mã bị bỏ qua), soan_don_mua_tu_chung_tu (hóa đơn / phiếu giao của một nhà cung cấp từ ảnh, PDF, Excel → đơn mua, nhan_hang=true thì nhận luôn vào kho; giá theo bảng giá mua, giá chứng từ khác bảng chỉ dùng được khi có quyền quản lý giá mua, nếu không thì cập nhật Giá mua trước).
 
 ## Kho
 - Tồn kho /admin/inventory [inventory.read]: "Có thể bán = Tồn kho − Chờ xuất giao − Đã hứa cho đơn". Bấm một dòng xem thẻ kho. "Ngưỡng" để đặt ngưỡng tồn; dưới ngưỡng thì báo lúc 07:00 (hệ thống không tự đặt hàng).
@@ -97,7 +97,7 @@ Dùng sổ tay này để hiểu hệ thống và hướng dẫn người dùng:
 - Yêu cầu thanh toán QR: khách (cổng) hoặc nhân viên (trang khách → "Thu nợ" → "Tạo QR thu nợ") chọn các khoản (tối đa 50) → mã YC…; tiền về trừ các khoản đã chọn trước (hạn sớm nhất trước), rồi nợ cũ khác, phần dư thành ứng trước.
 - Trả tiền mặt tại cửa hàng: khách chọn "Trả tiền mặt tại cửa hàng" hoặc nhân viên "Thu tiền mặt" → yêu cầu nằm ở Sổ quỹ "Chờ thu tiền mặt"; chưa ghi sổ cho tới khi kế toán bấm "Xác nhận đã thu" (số tiền thực nhận, quỹ tiền mặt). Thu thiếu thì phần còn lại vẫn là nợ.
 - Chi phí /admin/expenses [finance.expense.read] → "Ghi chi phí" [finance.expense.manage]: "Chi phí chung" hoặc "Chi phí chuyến" (gắn phiếu giao, xe); "Đã trả ngay" (phiếu chi từ quỹ) hoặc "Ghi nợ nhà cung cấp" (chờ duyệt → phải trả NCC); bỏ chọn "Tính vào lợi nhuận" khi mua tài sản dùng lâu.
-- Công cụ: soan_thu_tien (trừ nợ cũ nhất trước, dư ghi trả trước), soan_chi_phi (chi phí đã trả từ quỹ).
+- Công cụ: soan_thu_tien (trừ nợ cũ nhất trước, dư ghi trả trước), soan_chi_phi (chi phí đã trả từ quỹ), soan_thu_tien_tu_bien_lai (D64: biên lai / sao kê chuyển khoản từ ảnh, PDF, Excel → thẻ "Thu N khoản", mỗi dòng một phiếu thu; khoản có vẻ đã ghi — cùng khách, số tiền, ngày hoặc ngân hàng đã tự ghi (SePay) — bị bỏ qua kèm số phiếu).
 
 ## Dịch vụ (thuê máy, vận chuyển, nhân công…)
 - /admin/service-jobs "+ Tạo đơn dịch vụ" [service.manage]: khách, công trình, loại dịch vụ, số lượng dự kiến (trống = theo thực tế). Loại dịch vụ và đơn giá mặc định ở /admin/service-jobs/types.

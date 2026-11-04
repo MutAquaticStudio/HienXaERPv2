@@ -19,11 +19,20 @@ import {
   findAccount, findCustomer, findDelivery, findDocument, findEmployee, findMaterial, findSite, findSupplier, findUnit, findVehicle, findWarehouse, ResolveError, type Supabase,
 } from "./resolve";
 import { createCustomers } from "./batch-customers";
+import { createMaterials, createSuppliers } from "./batch-catalog";
+import { updatePurchasePrices } from "./batch-prices";
+import { salesOrdersFromList } from "./batch-orders";
+import { purchaseFromDocument } from "./batch-purchase";
+import { receiptsFromTransfers } from "./batch-receipts";
 
 export type AgentContext = { supabase: Supabase; branchId: string; permissions: ReadonlySet<string> };
 export type SummaryLine = { label: string; value: string };
 export type Prepared = { title: string; summary: SummaryLine[]; payload: Record<string, unknown> };
 export type Executed = { link?: string; message: string };
+/** D63/D64: a list card shows every row of a batch, each "CREATE" (will be done) or "SKIP" with why; the person unticks rows. */
+export type ListRowView = { n: number; cells: string[]; status: "CREATE" | "SKIP"; reason?: string };
+/** `columns` follow the first (name) column; the card adds the tick box, "#" and "Trạng thái" itself. */
+export type ListView = { columns: string[]; verb: string; noun: string; okLabel: string; rows: ListRowView[] };
 export type AgentAction = {
   kind: string;
   area: "Bán hàng" | "Mua hàng & kho" | "Tài chính" | "Nhân sự";
@@ -31,6 +40,8 @@ export type AgentAction = {
   description: string;
   properties: Record<string, unknown>;
   prepare(context: AgentContext, input: unknown): Promise<Prepared>;
+  /** The rows of a list card, from the stored payload (D64); absent for ordinary one-record actions. */
+  view?(payload: Record<string, unknown>): ListView | null;
   /** `options.exclude`: rows of a list card (D63) the person unticked before confirming. */
   execute(context: AgentContext, payload: Record<string, unknown>, actionId: string, options?: { exclude?: readonly number[] }): Promise<Executed>;
 };
@@ -451,7 +462,7 @@ const sendMessage: AgentAction = {
   },
 };
 
-export const AGENT_ACTIONS: readonly AgentAction[] = [createCustomer, createCustomers, createSalesOrder, confirmSalesOrder, createDelivery, assignDelivery, createPurchaseOrder,
+export const AGENT_ACTIONS: readonly AgentAction[] = [createCustomer, createCustomers, createMaterials, createSuppliers, updatePurchasePrices, purchaseFromDocument, receiptsFromTransfers, salesOrdersFromList, createSalesOrder, confirmSalesOrder, createDelivery, assignDelivery, createPurchaseOrder,
   receivePurchaseOrder, transferStock, receivePayment, recordExpense, saveAttendance, adjustPayroll, sendMessage];
 
 export const agentActionOf = (kind: string) => AGENT_ACTIONS.find((action) => action.kind === kind);
