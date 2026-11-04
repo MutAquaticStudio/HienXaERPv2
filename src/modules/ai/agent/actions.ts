@@ -10,16 +10,21 @@ import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
 import { userFacingError } from "@/lib/core/errors";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { BATCH_CUSTOMERS_KIND, BATCH_CUSTOMERS_MAX, type BatchCustomerRow } from "./batch-customers";
 import { agentActionOf, canUseAction, type SummaryLine } from "./registry";
 import { ResolveError } from "./resolve";
 
-export type AiActionCard = { id: string; title: string; summary: SummaryLine[]; state: "PENDING" | "DONE" | "FAILED" | "CANCELLED"; link: string | null; message: string | null };
+/** D63: a list card ("Tạo N khách hàng") also shows its rows, each with "Tạo" or why it is skipped. */
+export type AiActionRow = Pick<BatchCustomerRow, "n" | "ten" | "dien_thoai" | "dia_chi_giao" | "status" | "reason">;
+export type AiActionCard = { id: string; title: string; summary: SummaryLine[]; state: "PENDING" | "DONE" | "FAILED" | "CANCELLED"; link: string | null; message: string | null; rows?: AiActionRow[] };
 export type AiActionOutcome = { ok: boolean; card?: AiActionCard; message: string };
 
 const COLUMNS = "id, title, summary, state, result_link, result_message, kind, payload";
 const idSchema = z.object({ actionId: z.guid() });
+const confirmSchema = idSchema.extend({ exclude: z.array(z.number().int().min(1).max(BATCH_CUSTOMERS_MAX)).max(BATCH_CUSTOMERS_MAX).optional() });
 type Row = { id: string; title: string; summary: SummaryLine[]; state: AiActionCard["state"]; result_link: string | null; result_message: string | null; kind: string; payload: Record<string, unknown> };
-const card = (row: Row): AiActionCard => ({ id: row.id, title: row.title, summary: row.summary ?? [], state: row.state, link: row.result_link, message: row.result_message });
+const card = (row: Row): AiActionCard => ({ id: row.id, title: row.title, summary: row.summary ?? [], state: row.state, link: row.result_link, message: row.result_message,
+  ...(row.kind === BATCH_CUSTOMERS_KIND ? { rows: ((row.payload?.rows ?? []) as BatchCustomerRow[]).map(({ n, ten, dien_thoai, dia_chi_giao, status, reason }) => ({ n, ten, dien_thoai, dia_chi_giao, status, ...(reason ? { reason } : {}) })) } : {}) });
 
 /** Messages of the commands' usual refusals; anything else stays generic (the action can be retried). */
 function runFailure(error: unknown): string {
@@ -44,7 +49,7 @@ export async function listAiActionsAction(input?: { ids?: string[] }): Promise<A
 }
 
 export async function confirmAiActionAction(input: unknown): Promise<AiActionOutcome> {
-  const parsed = idSchema.safeParse(input);
+  const parsed = confirmSchema.safeParse(input);
   if (!parsed.success) return { ok: false, message: "Không xác định được thao tác." };
   const access = await requireInternalPermission("ai.use");
   const supabase = await createServerSupabase();
@@ -57,7 +62,7 @@ export async function confirmAiActionAction(input: unknown): Promise<AiActionOut
   if (!action || !canUseAction(action, permissions)) return { ok: false, card: card(row), message: "Bạn không có quyền thực hiện thao tác này." };
   let result;
   try {
-    result = await action.execute({ supabase, branchId: access.branchId, permissions }, row.payload, row.id);
+    result = await action.execute({ supabase, branchId: access.branchId, permissions }, row.payload, row.id, { exclude: parsed.data.exclude ?? [] });
   } catch (failure) {
     return { ok: false, card: card(row), message: runFailure(failure) };
   }

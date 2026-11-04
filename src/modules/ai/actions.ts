@@ -8,7 +8,8 @@ import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { askAssistant, type AiAnswer } from "@/modules/ai/assistant";
-import { attachmentBlocks, type AiContentBlock } from "@/modules/ai/attachments";
+import { attachmentBlocks, type AiContentBlock, type ReadAttachment } from "@/modules/ai/attachments";
+import { storeAttachments } from "@/modules/ai/attachment-store";
 import { AI_EFFORT_IDS, AI_MODEL_IDS, DEFAULT_AI_EFFORT, DEFAULT_AI_MODEL } from "@/modules/ai/models";
 import { listAiActionsAction, type AiActionCard } from "@/modules/ai/agent/actions";
 import { loadAiChat, type AiChatTurn } from "@/modules/ai/chat-history";
@@ -33,25 +34,30 @@ export async function askAiAction(input: unknown): Promise<AiChatAnswer> {
   const files = form ? form.getAll("files").filter((value): value is File => value instanceof File && value.name !== "") : [];
   let attachments: AiContentBlock[] = [];
   let attachedNames: string[] = [];
+  let attachedFiles: ReadAttachment[] = [];
   if (files.length) {
     const read = await attachmentBlocks(files);
     if ("problem" in read) return { outcome: "ERROR", text: read.problem, proposals: 0, actions: [] };
     attachments = read.blocks;
     attachedNames = read.names;
+    attachedFiles = read.files;
   }
   const supabase = await createServerSupabase();
   const today = new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", dateStyle: "full" }).format(new Date());
   // The API needs alternating turns that start with the person: keep the last 20 stored turns from a question on.
-  const stored = (await loadAiChat(supabase, access.branchId, 20)).map(({ role, text }) => ({ role, text }));
+  const stored = (await loadAiChat(supabase, access.branchId, 20, false)).map(({ role, text }) => ({ role, text }));
   const firstQuestion = stored.findIndex((turn) => turn.role === "user");
   const history = firstQuestion < 0 ? [] : stored.slice(firstQuestion);
   const answer = await askAssistant({ supabase, branchId: access.branchId, permissions: new Set(access.permissions), history,
     question: parsed.data.question, today, model: parsed.data.model, effort: parsed.data.effort, attachments });
   // Only answered turns are kept: a failure (no key, quota, error) is shown once and not sent to the assistant again.
-  // Attached files are not stored: the kept question only names them.
+  // D63: the attached files are kept in the person's own folder so the chat shows them again; the question still names them,
+  // which is what the assistant reads back later. A file that could not be uploaded is only named.
   if (answer.outcome === "OK") {
+    const operationId = randomUUID();
+    const kept = attachedFiles.length ? await storeAttachments(supabase, access.authUserId, operationId, attachedFiles).catch(() => []) : [];
     await supabase.rpc("save_ai_chat_turn", { target_branch_id: access.branchId, question: withAttachmentNames(parsed.data.question, attachedNames),
-      answer: answer.text.slice(0, 20000), operation_id: randomUUID() });
+      answer: answer.text.slice(0, 20000), operation_id: operationId, attachments: kept });
   }
   if (answer.proposals) revalidatePath("/admin/ai");
   const actions = answer.actionIds?.length ? await listAiActionsAction({ ids: answer.actionIds }) : [];

@@ -1979,6 +1979,30 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .ai-composer .ai-send-icon { width: 42px; height: 42px; min-height: 42px; padding: 0; border-radius: 21px; display: inline-grid; place-items: center; }
 .ai-composer .ai-new-chat:hover, .ai-composer .ai-new-chat:focus-visible { background: var(--primary-soft); color: var(--primary); }
 .ai-chat-compact .ai-attachment-name { max-width: 140px; }
+/* D63: files of a question inside its bubble — pictures as thumbnails, other files as chips. */
+.ai-turn-files { display: grid; gap: 6px; margin-bottom: 6px; white-space: normal; }
+.ai-turn-images { display: flex; flex-wrap: wrap; gap: 6px; }
+.ai-turn-image { display: block; padding: 0; border: 0; border-radius: 10px; overflow: hidden; background: rgb(0 0 0 / .08); cursor: zoom-in; }
+.ai-turn-image img { display: block; width: auto; height: auto; max-width: min(220px, 100%); max-height: 180px; object-fit: cover; }
+.ai-turn-image:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.ai-chat-compact .ai-turn-image img { max-width: 150px; max-height: 130px; }
+.ai-turn-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.ai-turn-chip { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 3px 10px; border-radius: 999px; background: rgb(255 255 255 / .18); font-size: 13px; }
+.chat-bubble-row.theirs .ai-turn-chip { background: var(--surface); border: 1px solid var(--border); }
+.ai-turn-chip small { opacity: .8; }
+.ai-turn-chip a { color: inherit; font-weight: 600; }
+.ai-image-viewer { display: grid; gap: 10px; justify-items: center; }
+.ai-image-viewer img { max-width: 100%; max-height: 70vh; border-radius: 8px; object-fit: contain; }
+/* D63: the rows of a "Tạo N khách hàng" card; the table scrolls inside the card on a phone. */
+.ai-action-rows { max-height: 320px; overflow: auto; border: 1px solid var(--border); border-radius: 8px; }
+.ai-action-rows table { width: 100%; min-width: 440px; border-collapse: collapse; font-size: 13px; }
+.ai-action-rows th { position: sticky; top: 0; background: var(--surface-soft); text-align: left; font-weight: 600; color: var(--muted); }
+.ai-action-rows th, .ai-action-rows td { padding: 6px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.ai-action-rows td:first-child input { width: 16px; height: 16px; }
+.ai-action-row-off td { color: var(--muted); }
+.ai-action-rows td.ai-action-row-status { width: 190px; min-width: 130px; white-space: normal; overflow-wrap: anywhere; }
+.ai-action-card:has(.ai-action-rows) { max-width: min(680px, 100%); }
+.ai-action-row-reason { color: var(--warning); }
 .chat-avatar { display: inline-grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 50%; background: var(--primary-soft); color: var(--primary-text); font-weight: 700; font-size: 0.9rem; }
 .chat-avatar-ai { background: linear-gradient(135deg, #7c4dff, var(--primary)); color: #fff; }
 .messenger { display: grid; grid-template-columns: 1fr minmax(260px, 340px); gap: 16px; height: calc(100vh - 170px); min-height: 520px; }

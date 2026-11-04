@@ -18,6 +18,7 @@ import { vehicleName } from "@/modules/catalog/vehicle-label";
 import {
   findAccount, findCustomer, findDelivery, findDocument, findEmployee, findMaterial, findSite, findSupplier, findUnit, findVehicle, findWarehouse, ResolveError, type Supabase,
 } from "./resolve";
+import { createCustomers } from "./batch-customers";
 
 export type AgentContext = { supabase: Supabase; branchId: string; permissions: ReadonlySet<string> };
 export type SummaryLine = { label: string; value: string };
@@ -30,7 +31,8 @@ export type AgentAction = {
   description: string;
   properties: Record<string, unknown>;
   prepare(context: AgentContext, input: unknown): Promise<Prepared>;
-  execute(context: AgentContext, payload: Record<string, unknown>, actionId: string): Promise<Executed>;
+  /** `options.exclude`: rows of a list card (D63) the person unticked before confirming. */
+  execute(context: AgentContext, payload: Record<string, unknown>, actionId: string, options?: { exclude?: readonly number[] }): Promise<Executed>;
 };
 
 const money = (value: string | bigint) => formatVnd(vnd(String(value)));
@@ -449,7 +451,7 @@ const sendMessage: AgentAction = {
   },
 };
 
-export const AGENT_ACTIONS: readonly AgentAction[] = [createCustomer, createSalesOrder, confirmSalesOrder, createDelivery, assignDelivery, createPurchaseOrder,
+export const AGENT_ACTIONS: readonly AgentAction[] = [createCustomer, createCustomers, createSalesOrder, confirmSalesOrder, createDelivery, assignDelivery, createPurchaseOrder,
   receivePurchaseOrder, transferStock, receivePayment, recordExpense, saveAttendance, adjustPayroll, sendMessage];
 
 export const agentActionOf = (kind: string) => AGENT_ACTIONS.find((action) => action.kind === kind);
