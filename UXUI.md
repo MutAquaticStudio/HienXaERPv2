@@ -2243,7 +2243,7 @@ Forward candidate: 20261009224842_supplier_purchase_price_commands.sql. SHA256 0
 - **Lộ trình**: bản đồ OpenStreetMap cao 440 px + danh sách xe bên phải; chấm xanh = đang chia sẻ, xám = mất tín hiệu; bấm xe để xem vệt đường.
 - **Thu tiền**: ô số tiền tự điền vào các khoản (cũ nhất trước), "Tự phân bổ lại" khi đã sửa tay; phần dư phải tích "ghi là tiền ứng trước".
 - **Thu nhập**: nút "Tính lương tháng" (chọn tháng), "Hoa hồng tự động"; không còn "Phê duyệt ghi nhận tự động theo sự kiện".
-- **Báo cáo**: cột trái nhóm báo cáo (Cuối ngày, Bán hàng, Hàng hóa, Khách hàng, Nhà cung cấp, Giao hàng, Tài chính, Tài chính chi tiết); thanh kỳ chọn nhanh (Hôm nay, Hôm qua, 7 ngày, Tháng này, Tháng trước) + từ / đến ngày (+ kho với Xuất nhập tồn); thẻ số liệu chính, biểu đồ thanh, bảng, "Xuất CSV".
+- **Báo cáo** (D57): cột trái nhóm báo cáo (Cuối ngày, Bán hàng, Hàng hóa, Khách hàng, Nhà cung cấp, Giao hàng, Tài chính, Tài chính chi tiết — Phải thu / Phải trả / Chi phí vận hành cùng khung); trên điện thoại là ô "Đổi báo cáo"; thanh kỳ chọn nhanh (Hôm nay, Hôm qua, 7 ngày, Tháng này, Tháng trước) + từ / đến ngày gồm cả ngày cuối (+ kho với Xuất nhập tồn; số dư "đến hết ngày" một ô ngày); thẻ số liệu chính so với kỳ trước, biểu đồ khi có từ 3 dòng, bảng căn phải cột số có dòng Tổng cộng, "Xuất Excel" và "Xuất CSV".
 
 # UX-D43-001 — Menu theo vai trò Bán hàng / Kế toán
 
