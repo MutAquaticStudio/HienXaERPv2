@@ -7,7 +7,7 @@ import { z } from "zod";
 import { normalizePhone } from "@/lib/auth/login-identifier";
 import { derivedOperationId } from "@/modules/sales/auto-sourcing";
 import { phoneKey } from "@/modules/sales/order-match";
-import type { AgentAction, AgentContext } from "./registry";
+import type { AgentAction, AgentContext, ListView } from "./registry";
 import { ResolveError } from "./resolve";
 
 export const BATCH_CUSTOMERS_KIND = "soan_tao_nhieu_khach_hang";
@@ -109,6 +109,12 @@ export const createCustomers: AgentAction = {
       dia_chi_giao: { type: "string", description: "Địa chỉ giao hàng; trống nếu không có." }, ma: { type: "string", description: "Mã khách nếu danh sách có; trống = tự đặt." },
       email: { type: "string", description: "Email nếu có." }, ma_so_thue: { type: "string", description: "Mã số thuế nếu có." }, ghi_chu: { type: "string", description: "Ghi chú khác của dòng (người liên hệ…)." },
     } } },
+  },
+  view(payload): ListView | null {
+    const rows = payload.rows as BatchCustomerRow[] | undefined;
+    if (!rows) return null;
+    return { columns: ["Khách hàng", "Điện thoại", "Địa chỉ"], verb: "tạo", noun: "khách", okLabel: "Tạo",
+      rows: rows.map((row) => ({ n: row.n, cells: [row.ten || "—", row.dien_thoai || "—", row.dia_chi_giao || "—"], status: row.status, ...(row.reason ? { reason: row.reason } : {}) })) };
   },
   async prepare(context, input) {
     const { khach } = inputSchema.parse(input);

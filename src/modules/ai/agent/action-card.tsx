@@ -13,14 +13,15 @@ export function AiActionCardView({ card, onChange }: { card: AiActionCard; onCha
   const [busy, start] = useTransition();
   // D63: rows of a list card the person unticked; they are left out when confirming.
   const [excluded, setExcluded] = useState<ReadonlySet<number>>(new Set());
-  const creatable = card.rows?.filter((row) => row.status === "CREATE") ?? [];
+  const list = card.list;
+  const creatable = list?.rows.filter((row) => row.status === "CREATE") ?? [];
   const chosen = creatable.filter((row) => !excluded.has(row.n)).length;
   const toggle = (n: number) => setExcluded((current) => { const next = new Set(current); if (next.has(n)) next.delete(n); else next.add(n); return next; });
 
   function confirm() {
     start(async () => {
       setError("");
-      const outcome = await confirmAiActionAction({ actionId: card.id, ...(card.rows ? { exclude: [...excluded] } : {}) });
+      const outcome = await confirmAiActionAction({ actionId: card.id, ...(list ? { exclude: [...excluded] } : {}) });
       if (outcome.card) onChange(outcome.card);
       if (!outcome.ok) setError(outcome.message);
     });
@@ -37,18 +38,19 @@ export function AiActionCardView({ card, onChange }: { card: AiActionCard; onCha
   return <article className={`ai-action-card ai-action-${card.state.toLowerCase()}`} aria-label={card.title}>
     <header><strong>{card.title}</strong><span className="ai-action-state">{STATE_LABELS[card.state]}</span></header>
     {card.summary.length > 0 && <dl>{card.summary.map((line, index) => <div key={index}><dt>{line.label}</dt><dd>{line.value}</dd></div>)}</dl>}
-    {card.rows && card.rows.length > 0 && <div className="ai-action-rows"><table>
-      <thead><tr>{card.state === "PENDING" && <th scope="col"><span className="sr-only">Chọn</span></th>}<th scope="col">#</th><th scope="col">Khách hàng</th><th scope="col">Trạng thái</th><th scope="col">Điện thoại</th><th scope="col">Địa chỉ</th></tr></thead>
-      <tbody>{card.rows.map((row) => <tr key={row.n} className={row.status === "SKIP" || excluded.has(row.n) ? "ai-action-row-off" : undefined}>
-        {card.state === "PENDING" && <td>{row.status === "CREATE" && <input type="checkbox" checked={!excluded.has(row.n)} onChange={() => toggle(row.n)} disabled={busy} aria-label={`Tạo khách ${row.ten || `dòng ${row.n}`}`} />}</td>}
-        <td className="mono">{row.n}</td><td>{row.ten || "—"}</td>
-        <td className="ai-action-row-status">{row.status === "CREATE" ? (excluded.has(row.n) ? "Không tạo" : "Tạo") : <span className="ai-action-row-reason">Bỏ qua: {row.reason}</span>}</td>
-        <td className="mono">{row.dien_thoai || "—"}</td><td>{row.dia_chi_giao || "—"}</td>
+    {list && list.rows.length > 0 && <div className="ai-action-rows"><table>
+      <thead><tr>{card.state === "PENDING" && <th scope="col"><span className="sr-only">Chọn</span></th>}<th scope="col">#</th><th scope="col">{list.columns[0]}</th><th scope="col">Trạng thái</th>
+        {list.columns.slice(1).map((column) => <th key={column} scope="col">{column}</th>)}</tr></thead>
+      <tbody>{list.rows.map((row) => <tr key={row.n} className={row.status === "SKIP" || excluded.has(row.n) ? "ai-action-row-off" : undefined}>
+        {card.state === "PENDING" && <td>{row.status === "CREATE" && <input type="checkbox" checked={!excluded.has(row.n)} onChange={() => toggle(row.n)} disabled={busy} aria-label={`${list.okLabel} ${row.cells[0] || `dòng ${row.n}`}`} />}</td>}
+        <td className="mono">{row.n}</td><td>{row.cells[0]}</td>
+        <td className="ai-action-row-status">{row.status === "CREATE" ? (excluded.has(row.n) ? "Không làm" : list.okLabel) : <span className="ai-action-row-reason">Bỏ qua: {row.reason}</span>}</td>
+        {row.cells.slice(1).map((cell, index) => <td key={index}>{cell}</td>)}
       </tr>)}</tbody>
     </table></div>}
     {card.state === "PENDING" && <div className="ai-action-buttons">
-      <button type="button" className="button button-primary button-compact" onClick={confirm} disabled={busy || (card.rows !== undefined && chosen === 0)}>
-        {busy ? "Đang thực hiện…" : card.rows ? (chosen ? `Xác nhận tạo ${chosen} khách` : "Chọn khách để tạo") : "Xác nhận"}</button>
+      <button type="button" className="button button-primary button-compact" onClick={confirm} disabled={busy || (list !== undefined && chosen === 0)}>
+        {busy ? "Đang thực hiện…" : list ? (chosen ? `Xác nhận ${list.verb} ${chosen} ${list.noun}` : `Chọn ${list.noun} để ${list.verb}`) : "Xác nhận"}</button>
       <button type="button" className="button button-secondary button-compact" onClick={dismiss} disabled={busy}>Bỏ qua</button>
     </div>}
     {card.state === "DONE" && <p className="ai-action-result">{card.message}{card.link && <> <Link href={card.link}>Mở</Link></>}</p>}
