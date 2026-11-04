@@ -1,62 +1,110 @@
-import { readPricingClock } from "@/modules/pricing/request-clock";
-import { effectivePriceState, effectivePriceLabels, effectivePriceTones, matchesEffectivePriceState } from "@/modules/pricing/effective-state";
-import { formatBusinessDate } from "@/lib/core/business-time";
-import { priceSourceLabel } from "@/modules/pricing/presentation";
+import { randomUUID } from "node:crypto";
+import type { Metadata } from "next";
 import Link from "next/link";
-import { AppError } from "@/lib/core/errors";
-import { requireInternalAccess } from "@/lib/access/context";
-import { createServerSupabase } from "@/lib/supabase/server";
-import { portalRpc } from "@/modules/portal/server";
-import type { PriceOptions, PurchasePriceRule } from "@/modules/pricing/editor";
-import { PricingRuleList, type PriceRuleRow } from "@/modules/pricing/rule-list";
-import { formatVnd,vnd } from "@/lib/core/money";
+import { PurchasePriceBookEditor, type AssignCandidate } from "@/components/pricing/purchase-price-book-editor";
 import { AutoFilterForm } from "@/components/ui/auto-filter-form";
-/** Base unit and settlement conversions of each material, so "Đơn vị giá" only offers units the material is counted in. */
-async function materialUnits(db:Awaited<ReturnType<typeof createServerSupabase>>,ids:string[]):Promise<Record<string,string[]>|undefined>{
- const [materials,conversions]=await Promise.all([
-  db.from("materials").select("id,base_uom_id").in("id",ids).limit(1000),
-  db.from("material_uom_conversions").select("material_id,from_uom_id,to_uom_id").in("material_id",ids).eq("active",true).eq("settlement_allowed",true).limit(5000),
- ]);
- if(materials.error||conversions.error)return undefined;
- const units:Record<string,string[]>={};
- for(const m of (materials.data??[]) as {id:string;base_uom_id:string}[])units[m.id]=[m.base_uom_id];
- for(const c of (conversions.data??[]) as {material_id:string;from_uom_id:string;to_uom_id:string}[])if(units[c.material_id]?.[0]===c.to_uom_id&&!units[c.material_id].includes(c.from_uom_id))units[c.material_id].push(c.from_uom_id);
- return units;
+import { requireInternalAccess } from "@/lib/access/context";
+import { AppError } from "@/lib/core/errors";
+import { ilikePattern, parseCoreListQuery } from "@/lib/core-list";
+import { createServerSupabase } from "@/lib/supabase/server";
+import type { ListPriceRule } from "@/modules/catalog/material-list";
+import { purchaseBookRows, type BookAssignment, type BookMaterial, type BookPurchaseRule } from "@/modules/pricing/purchase-book";
+import { readPricingClock } from "@/modules/pricing/request-clock";
+
+export const metadata: Metadata = { title: "Giá mua" };
+
+const BOOK_LIMIT = 500;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+type Query = { supplier?: string; q?: string; group?: string; missing?: string };
+
+function businessToday() {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
 }
-export default async function PurchasePricingPage({searchParams}:{searchParams:Promise<{q?:string;supplier?:string;material?:string;state?:string}>}){
- const access=await requireInternalAccess(),query=await searchParams;
- const now=await readPricingClock(),instant=new Date(now).toISOString();
- const manage=access.permissions.has("purchasing.price.manage"),read=access.permissions.has("purchasing.price.read")&&access.permissions.has("purchasing.read");
- if(!manage&&!read)throw new AppError({code:"FORBIDDEN",message:"Không có quyền bảng giá mua.",status:403});
- const db=await createServerSupabase(),empty:PriceOptions={customers:[],groups:[],materials:[],units:[],suppliers:[]};
- const options=manage?await portalRpc<PriceOptions>(db,"purchase_pricing_config_options",{target_branch_id:access.branchId}):empty;
- if(manage&&options.materials.length)options.materialUnits=await materialUnits(db,options.materials.map(m=>m.id));
- let request=db.from("purchase_price_rules").select("id,supplier_id,material_id,purchase_uom_id,unit_cost_vnd::text,version,source_type,effective_from,effective_to,active").eq("branch_id",access.branchId).order("effective_from",{ascending:false}).order("id").limit(100);
- if(query.supplier)request=request.eq("supplier_id",query.supplier);
- if(query.material)request=request.eq("material_id",query.material);
- if(query.state==="ACTIVE")request=request.eq("active",true).lte("effective_from",instant).or("effective_to.is.null,effective_to.gt."+instant);
- if(query.state==="FUTURE")request=request.eq("active",true).gt("effective_from",instant);
- if(query.state==="EXPIRED")request=request.eq("active",true).lte("effective_to",instant);
- if(query.state==="INACTIVE")request=request.eq("active",false);
- const result=read?await request:{data:[],error:null};if(result.error)throw new Error("Không tải được bảng giá mua trong phạm vi.");
- const rows=(result.data??[]) as unknown as PurchasePriceRule[],q=query.q?.trim().toLocaleLowerCase()??"";
- const supplierIds=[...new Set(rows.map(r=>r.supplier_id))],materialIds=[...new Set(rows.map(r=>r.material_id))],unitIds=[...new Set(rows.map(r=>r.purchase_uom_id))];
- const noLabels=Promise.resolve({data:[],error:null});
- const [supplierLabels,materialLabels,unitLabels]=await Promise.all([
-  read&&access.permissions.has("suppliers.read")&&supplierIds.length?db.from("suppliers").select("id,name").eq("branch_id",access.branchId).in("id",supplierIds).limit(100):noLabels,
-  read&&access.permissions.has("catalog.read")&&materialIds.length?db.from("materials").select("id,name").in("id",materialIds).limit(100):noLabels,
-  read&&access.permissions.has("catalog.read")&&unitIds.length?db.from("units_of_measure").select("id,symbol").in("id",unitIds).limit(100):noLabels,
- ]);
- if([supplierLabels,materialLabels,unitLabels].some(r=>r.error))throw new Error("Không tải được tên NCC/vật tư trong phạm vi được phép.");
- const labels={suppliers:[...((supplierLabels.data??[]) as unknown as {id:string;name:string}[]),...(options.suppliers??[])],materials:[...((materialLabels.data??[]) as unknown as {id:string;name:string}[]),...options.materials],units:[...((unitLabels.data??[]) as unknown as {id:string;symbol:string}[]).map(u=>({id:u.id,name:u.symbol})),...options.units]};
- const label=(items:{id:string;name:string}[]|undefined,id:string)=>items?.find(x=>x.id===id)?.name??id;
- const shown=rows.filter(r=>matchesEffectivePriceState(r,query.state,now)&&(!q||[label(labels.suppliers,r.supplier_id),label(labels.materials,r.material_id)].some(v=>v.toLocaleLowerCase().includes(q))));
- const tableRows:PriceRuleRow[]=shown.map(rule=>{const state=effectivePriceState(rule,now);const party=label(labels.suppliers,rule.supplier_id),target=label(labels.materials,rule.material_id),uom=label(labels.units,rule.purchase_uom_id);
-  return {id:rule.id,party,target,uom,price:formatVnd(vnd(rule.unit_cost_vnd)),source:priceSourceLabel(rule.source_type),period:"Từ "+formatBusinessDate(rule.effective_from)+(rule.effective_to?" đến trước "+formatBusinessDate(rule.effective_to):""),
-   version:rule.version,state:effectivePriceLabels[state],stateTone:effectivePriceTones[state],editable:manage&&rule.active,purchaseRule:rule,scopeLabel:[party,target,uom].join(" · ")};});
- return <div className="page-stack"><header className="page-heading"><div><h1 tabIndex={-1}>Bảng giá mua</h1><p className="lede">Đổi giá bằng phiên bản mới. Thông tin trên đơn mua đã chốt được giữ nguyên.</p></div><Link href="/admin/suppliers" className="button button-secondary">Nhà cung cấp</Link></header>
- <AutoFilterForm><label>Tìm NCC / vật tư<input name="q" defaultValue={query.q}/></label><label>Trạng thái<select name="state" defaultValue={query.state??""}><option value="">Tất cả / lịch sử</option><option value="ACTIVE">Đang hiệu lực</option><option value="FUTURE">Chưa có hiệu lực</option><option value="EXPIRED">Hết hiệu lực</option><option value="INACTIVE">Đã ngừng</option></select></label>{query.supplier&&<input type="hidden" name="supplier" value={query.supplier}/>}</AutoFilterForm>
- {!read&&<p className="muted">Quyền quản lý không tự cấp quyền đọc chi phí. Chỉ tạo giá từ dữ liệu được cung cấp.</p>}
- <PricingRuleList purchase rows={tableRows} options={options} canManage={manage} partyLabel="Nhà cung cấp" createLabel="+ Tạo giá mua"/>
- <p className="muted">Tối đa 100 phiên bản mới nhất trong chi nhánh.</p></div>;
+
+/**
+ * D61 Bảng giá mua: like Giá bán, but the first filter is the supplier. One supplier shows the materials assigned to it;
+ * no supplier is the overview, one row per material × supplier. Every version stays in "Lịch sử giá mua".
+ */
+export default async function PurchasePriceBookPage({ searchParams }: { searchParams: Promise<Query> }) {
+  const access = await requireInternalAccess();
+  const query = await searchParams;
+  const canManage = access.permissions.has("purchasing.price.manage");
+  const canRead = access.permissions.has("purchasing.price.read") && access.permissions.has("purchasing.read");
+  if (!canManage && !canRead) throw new AppError({ code: "FORBIDDEN", message: "Không có quyền bảng giá mua.", status: 403 });
+  const showSale = access.permissions.has("pricing.read");
+  const supplierId = UUID.test(query.supplier ?? "") ? query.supplier! : "";
+  const group = UUID.test(query.group ?? "") ? query.group! : "";
+  const q = parseCoreListQuery({ q: query.q }).q;
+  const missingOnly = query.missing === "1";
+  const db = await createServerSupabase();
+
+  const header = <header className="page-heading"><div><h1>Giá mua</h1><p className="lede">Giá mua theo nhà cung cấp và đơn vị mua. Chọn nhà cung cấp để sửa nhanh giá hôm nay, hoặc xem tổng quan mọi nhà cung cấp; lưu một lần.</p></div>
+    <Link className="button button-secondary" href="/admin/suppliers/pricing/history">Lịch sử giá mua</Link></header>;
+  // Managing purchase prices does not grant reading them (existing rule): such a person enters prices in the history page.
+  if (!canRead) return <div className="page-stack">{header}<p className="quality-callout">Bạn nhập được giá mua nhưng chưa có quyền xem giá mua. Dùng “Lịch sử giá mua” để thêm giá, hoặc nhờ quản lý cấp quyền xem.</p></div>;
+
+  const [supplierResult, groupResult, unitResult, now] = await Promise.all([
+    db.from("suppliers").select("id, name").eq("branch_id", access.branchId).eq("active", true).order("name").limit(500),
+    db.from("material_groups").select("id, name").order("name").limit(500),
+    db.from("units_of_measure").select("id, symbol").limit(1000),
+    readPricingClock(),
+  ]);
+  if (supplierResult.error || groupResult.error || unitResult.error) throw new Error("Không thể tải bảng giá mua.");
+  const supplierList = (supplierResult.data ?? []) as { id: string; name: string }[];
+  const suppliers = new Map(supplierList.map((row) => [row.id, row.name]));
+  const groups = new Map(((groupResult.data ?? []) as { id: string; name: string }[]).map((row) => [row.id, row.name]));
+  const units = new Map(((unitResult.data ?? []) as { id: string; symbol: string }[]).map((row) => [row.id, row.symbol]));
+  const chosen = supplierId && suppliers.has(supplierId) ? supplierId : "";
+
+  const assignmentResult = await db.from("supplier_materials").select("supplier_id, material_id, purchase_uom_id").eq("branch_id", access.branchId).eq("active", true).limit(5000);
+  if (assignmentResult.error) throw new Error("Không thể tải vật tư đã gán cho nhà cung cấp.");
+  const branchAssignments = ((assignmentResult.data ?? []) as BookAssignment[]).filter((row) => suppliers.has(row.supplier_id));
+  const allAssignments = chosen ? branchAssignments.filter((row) => row.supplier_id === chosen) : branchAssignments;
+  const materialIds = [...new Set(allAssignments.map((row) => row.material_id))];
+
+  let materialRequest = materialIds.length ? db.from("materials").select("id, code, name, group_id").eq("active", true).in("id", materialIds).limit(5000) : null;
+  if (materialRequest && q) materialRequest = materialRequest.or(`code.ilike.${ilikePattern(q)},name.ilike.${ilikePattern(q)}`);
+  if (materialRequest && group) materialRequest = materialRequest.eq("group_id", group);
+  const none = Promise.resolve({ data: [] as never[], error: null });
+  const [materialResult, ruleResult, saleResult, candidateResult] = await Promise.all([
+    materialRequest ?? none,
+    materialIds.length ? (chosen ? db.from("purchase_price_rules").select("id, supplier_id, material_id, purchase_uom_id, unit_cost_vnd::text, version, active, effective_from, effective_to").eq("branch_id", access.branchId).eq("active", true).in("material_id", materialIds).eq("supplier_id", chosen).limit(10000)
+      : db.from("purchase_price_rules").select("id, supplier_id, material_id, purchase_uom_id, unit_cost_vnd::text, version, active, effective_from, effective_to").eq("branch_id", access.branchId).eq("active", true).in("material_id", materialIds).limit(10000)) : none,
+    showSale && materialIds.length ? db.from("pricing_rule_read").select("id, material_id, scope_type, price_uom_id, unit_price_vnd::text, version, active, effective_from, effective_to").eq("branch_id", access.branchId).eq("scope_type", "DEFAULT").eq("active", true).in("material_id", materialIds).limit(10000) : none,
+    // Materials this supplier does not sell yet, with the units they are bought in (base unit + settlement conversions).
+    canManage && chosen ? db.from("materials").select("id, code, name, base_uom_id").eq("active", true).eq("purchase_enabled", true).order("name").limit(1000) : none,
+  ]);
+  if (materialResult.error || ruleResult.error || saleResult.error || candidateResult.error) throw new Error("Không thể tải giá mua hiện tại.");
+  const assigned = new Set(allAssignments.map((row) => row.material_id));
+  const candidateMaterials = ((candidateResult.data ?? []) as { id: string; code: string; name: string; base_uom_id: string }[]).filter((row) => !assigned.has(row.id));
+  const conversionResult = candidateMaterials.length ? await db.from("material_uom_conversions").select("material_id, from_uom_id, to_uom_id").in("material_id", candidateMaterials.map((row) => row.id)).eq("active", true).eq("settlement_allowed", true).limit(5000) : { data: [], error: null };
+  const candidates: AssignCandidate[] = candidateMaterials.map((material) => {
+    const extra = ((conversionResult.data ?? []) as { material_id: string; from_uom_id: string; to_uom_id: string }[])
+      .filter((row) => row.material_id === material.id && row.to_uom_id === material.base_uom_id).map((row) => row.from_uom_id);
+    // The unit other suppliers already buy this material in comes first (a bag of cement, not its base kg).
+    const usage = (uom: string) => branchAssignments.filter((row) => row.material_id === material.id && row.purchase_uom_id === uom).length;
+    const ids = [...new Set([material.base_uom_id, ...extra])].sort((left, right) => usage(right) - usage(left));
+    return { materialId: material.id, code: material.code, name: material.name, units: ids.map((id) => ({ id, symbol: units.get(id) ?? "Đơn vị" })) };
+  });
+
+  const rows = purchaseBookRows({ assignments: allAssignments, materials: (materialResult.data ?? []) as BookMaterial[], rules: (ruleResult.data ?? []) as unknown as BookPurchaseRule[],
+    saleRules: showSale ? (saleResult.data ?? []) as unknown as ListPriceRule[] : null, suppliers, units, groups, now, missingOnly });
+  const shown = rows.slice(0, BOOK_LIMIT);
+  const supplierRows = chosen ? purchaseBookRows({ assignments: allAssignments, materials: (materialResult.data ?? []) as BookMaterial[], rules: (ruleResult.data ?? []) as unknown as BookPurchaseRule[], saleRules: null, suppliers, units, groups, now }) : [];
+
+  return <div className="page-stack">
+    {header}
+    <AutoFilterForm className="card card-pad price-book-filters" aria-label="Bộ lọc bảng giá mua">
+      <label>Nhà cung cấp<select name="supplier" defaultValue={chosen}><option value="">Tất cả nhà cung cấp (tổng quan)</option>
+        {supplierList.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
+      <label>Tìm vật tư<input type="search" name="q" defaultValue={q} placeholder="Mã hoặc tên" /></label>
+      <label>Nhóm vật tư<select name="group" defaultValue={group}><option value="">Tất cả</option>{[...groups].map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></label>
+      <label className="purchase-book-missing-filter"><input type="checkbox" name="missing" value="1" defaultChecked={missingOnly} /> Chỉ dòng chưa có giá</label>
+      {(chosen || q || group || missingOnly) && <Link className="code-link" href="/admin/suppliers/pricing">Xóa lọc</Link>}
+    </AutoFilterForm>
+    {rows.length > shown.length && <p className="quality-callout">Đang hiện {shown.length}/{rows.length} dòng. Chọn nhà cung cấp hoặc lọc theo nhóm để sửa phần còn lại (mỗi lần lưu tối đa {BOOK_LIMIT} dòng).</p>}
+    <PurchasePriceBookEditor key={chosen || "all"} rows={shown} operationId={randomUUID()} today={businessToday()} canManage={canManage} showSale={showSale}
+      supplier={chosen ? { id: chosen, name: suppliers.get(chosen)!, assigned: allAssignments.length, missing: supplierRows.filter((row) => row.currentVnd === null).length } : undefined}
+      candidates={candidates} />
+  </div>;
 }

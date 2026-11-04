@@ -15,7 +15,7 @@ export const ENTITY_NOUNS: Record<string, string> = {
   quotation: "báo giá", quotation_revision: "phiên bản báo giá", invoice_intent: "hồ sơ hóa đơn", route_plan: "lộ trình",
   conversation: "cuộc trò chuyện", delivery_handoff: "bàn giao hàng lên xe", supplier_fulfillment: "phiếu NCC giao thẳng",
   supplier_document: "chứng từ nhà cung cấp", supplier_return_credit: "trả hàng nhà cung cấp", return_case: "hàng trả về",
-  finance_account: "tài khoản tiền", company_profile: "thông tin doanh nghiệp",
+  finance_account: "tài khoản tiền", company_profile: "thông tin doanh nghiệp", purchase_price_book: "bảng giá mua",
   operational_opening_import: "số dư đầu kỳ", operational_reconciliation: "đối chiếu số dư đầu kỳ",
 };
 
@@ -31,7 +31,8 @@ const ACTIONS: Record<string, string> = {
   "purchase_order.confirm": "xác nhận đơn mua", "purchase_order.sent": "gửi đơn mua", "purchase_order.receive": "nhận hàng vào kho",
   "command.verify_supplier_fulfillment": "xác minh NCC giao thẳng",
   "catalog.save": "lưu", "catalog.save_units": "lưu đơn vị tính của", "catalog.delete": "xóa", "profile.save": "lưu hồ sơ —",
-  "branch.save": "lưu chi nhánh", "purchase_pricing.save": "lưu giá mua",
+  "branch.save": "lưu chi nhánh", "purchase_pricing.save": "lưu giá mua", "purchase_pricing.deactivate": "ngừng giá mua",
+  "purchase_pricing.save_book": "lưu bảng giá mua", "supplier_material.assigned": "gán nhà cung cấp cho", "supplier_material.unassigned": "bỏ gán nhà cung cấp của",
   "payment.posted": "ghi sổ phiếu thu/chi", "payment.reversed": "đảo phiếu thu/chi", "payment.bank_auto_posted": "tự ghi nhận chuyển khoản",
   "payment.bank_reconciled": "đối soát ngân hàng", "payment_request.created": "tạo yêu cầu thanh toán", "payment_request.cash_confirmed": "xác nhận đã nhận tiền mặt",
   "payment_notice.submitted": "gửi báo chuyển khoản", "payment_notice.match_reversed": "bỏ ghép báo chuyển khoản",
