@@ -2404,3 +2404,30 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 /* D60 Nhật ký: the object as people know it, under the sentence. */
 .audit-object { margin-top: 2px; font-size: var(--font-size-caption); }
 .audit-object > span { color: var(--muted); }
+
+/* D61 Bảng giá mua: the price book of a supplier (or the overview), shaped like Giá bán. */
+.purchase-book { display: grid; gap: 16px; }
+.purchase-book-supplier { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.purchase-book-supplier-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.purchase-book-supplier-head strong { font-size: 1.05rem; }
+.purchase-book-chip-warn { padding: 2px 10px; border-radius: 999px; background: var(--warning-soft); color: var(--warning); font-size: var(--font-size-caption); font-weight: 600; }
+.purchase-book-overview-note { margin: 0; padding: 12px 16px; border-radius: var(--radius-sm); background: var(--primary-soft); color: var(--primary-text, var(--primary)); font-size: var(--font-size-caption); }
+.purchase-book-cheapest { margin-left: 8px; padding: 1px 8px; border-radius: 999px; background: var(--success-soft); color: var(--success); font-size: var(--font-size-caption); font-weight: 700; white-space: nowrap; }
+.purchase-book-missing { color: var(--warning); font-weight: 600; }
+.purchase-book-thin { color: var(--danger); }
+.purchase-book-missing-filter { display: flex !important; align-items: center; gap: 8px; min-height: 40px; font-weight: 600 !important; }
+.purchase-book-missing-filter input { width: 18px !important; height: 18px; min-height: 0 !important; }
+/* A purchase price going up is a cost: shown as a warning, a drop as good news (the reverse of Giá bán). */
+.purchase-book .price-up { color: var(--danger); }
+.purchase-book .price-down { color: var(--success); }
+.price-new { color: var(--primary); font-weight: 600; }
+.purchase-assign-list { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; max-height: 52vh; overflow-y: auto; }
+.purchase-assign-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: 1px solid var(--border); }
+.purchase-assign-list .check-row { flex: 1 1 auto; min-height: 40px; }
+.purchase-assign-list select { min-height: 40px; padding: 6px 10px; border: 1px solid var(--input-border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); }
+/* Nhà cung cấp of a material. */
+.supplier-assignments table select { min-height: 38px; padding: 6px 10px; border: 1px solid var(--input-border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); }
+.supplier-assignments .form-actions { justify-content: flex-end; }
+.supplier-assignments-add { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
+.supplier-assignments-add select { min-height: 42px; }
+.supplier-assignment-new td { background: color-mix(in srgb, var(--warning-soft) 55%, transparent); }
