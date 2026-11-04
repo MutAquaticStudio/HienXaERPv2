@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { createPortalEvidenceStorage, finalizeVerifiedEvidence } from "@/modules/portal/evidence-storage";
 
+import { userFacingError } from "@/lib/core/errors";
 import {
   authenticatedPortalClient,
   detectEvidenceMime,
@@ -57,6 +58,6 @@ export async function POST(request: Request) {
     });
     return NextResponse.json({ evidenceId: evidence.id });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Tải minh chứng thất bại" }, { status: 400 });
+    return NextResponse.json({ error: userFacingError(error instanceof Error ? error.message : null, "Tải minh chứng thất bại") }, { status: 400 });
   }
 }

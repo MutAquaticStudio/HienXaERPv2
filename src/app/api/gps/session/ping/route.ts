@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { GPS_DEVICE_AVAILABLE, GPS_DEVICE_UNAVAILABLE_MESSAGE } from "@/modules/routing/device-availability";
+import { userFacingError } from "@/lib/core/errors";
 
 type PingBody = {
   sessionId?: string;
@@ -33,6 +34,6 @@ export async function POST(request: Request) {
     target_heading_degrees: body.headingDegrees ?? null,
     operation_id: body.operationId,
   });
-  if (error) return NextResponse.json({ error: error.message }, { status: error.code === "42501" ? 403 : 409 });
+  if (error) return NextResponse.json({ error: userFacingError(error.message, "Không thể đồng bộ vị trí.") }, { status: error.code === "42501" ? 403 : 409 });
   return NextResponse.json({ positionId: data });
 }

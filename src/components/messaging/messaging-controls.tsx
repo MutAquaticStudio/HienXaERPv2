@@ -5,6 +5,7 @@ import { Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AUTH_COOKIE_OPTIONS } from "@/lib/supabase/cookie-options";
 import { sendDirectMessageAction, sendMessageAction, type MessageActionState } from "@/modules/messaging/actions";
 
 const initialState: MessageActionState = { status: "idle", message: "" };
@@ -19,7 +20,7 @@ export function useMessageInserts(conversationId: string | undefined, onMessage:
     if (!enabled || !url || !key) return;
     let active = true;
     const refresh = () => { if (active) callback.current(); };
-    const supabase = createBrowserClient(url, key);
+    const supabase = createBrowserClient(url, key, { cookieOptions: AUTH_COOKIE_OPTIONS });
     const createChannel = () => supabase
       .channel(`message-refresh-${conversationId ?? "all"}-${Math.random().toString(36).slice(2)}`)
       // Without a filter, RLS still limits the events to the person's own conversations.

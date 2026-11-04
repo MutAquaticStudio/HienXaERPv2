@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { authenticatedPortalClient, portalRpc } from "@/modules/portal/server";
 import { workCommandHttpStatus } from "@/modules/portal/work-command-status";
+import { userFacingError } from "@/lib/core/errors";
 
 export async function POST(request: Request) {
   const context = await authenticatedPortalClient();
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ workItemId: startedId });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Không thể bắt đầu công việc" },
+      { error: userFacingError(error instanceof Error ? error.message : null, "Không thể bắt đầu công việc") },
       { status: workCommandHttpStatus(error) },
     );
   }

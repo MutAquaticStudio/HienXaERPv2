@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { userFacingError } from "@/lib/core/errors";
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null) as { sessionId?: string; operationId?: string } | null;
@@ -9,6 +10,6 @@ export async function POST(request: Request) {
     target_session_id: body.sessionId,
     operation_id: body.operationId,
   });
-  if (error) return NextResponse.json({ error: error.message }, { status: error.code === "42501" ? 403 : 409 });
+  if (error) return NextResponse.json({ error: userFacingError(error.message, "Không thể dừng chia sẻ vị trí.") }, { status: error.code === "42501" ? 403 : 409 });
   return NextResponse.json({ sessionId: data });
 }
