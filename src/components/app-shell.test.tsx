@@ -157,6 +157,26 @@ describe("blue menu bar (D29)", () => {
     expect(screen.getByRole("link", { name: "Khách hàng" })).toHaveAttribute("aria-current", "page");
   });
 
+  it("D61: Giá mua sits in Mua hàng beside Nhà cung cấp and is the one active entry on its pages", () => {
+    location.pathname = "/admin/suppliers/pricing/history";
+    const { container } = render(shell(["purchasing.read", "purchasing.price.read"]));
+    openDrawer();
+    const group = screen.getByRole("button", { name: "Mua hàng" }).closest("li, div, section")!;
+    expect(within(group as HTMLElement).getByRole("link", { name: "Giá mua" })).toHaveAttribute("href", "/admin/suppliers/pricing");
+    expect(screen.getByRole("link", { name: "Giá mua" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "Nhà cung cấp" })).not.toHaveAttribute("aria-current");
+    expect(container.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
+    cleanup();
+    location.pathname = "/admin/suppliers/abc";
+    render(shell(["purchasing.read", "purchasing.price.manage"]));
+    openDrawer();
+    expect(screen.getByRole("link", { name: "Nhà cung cấp" })).toHaveAttribute("aria-current", "page");
+    cleanup();
+    render(shell(["purchasing.read"]));
+    openDrawer();
+    expect(screen.queryByRole("link", { name: "Giá mua" })).not.toBeInTheDocument();
+  });
+
   it("keeps one finance entry active across its tabs (FB2 Đợt 6)", () => {
     location.pathname = "/admin/invoices/purchases/matching";
     const { container } = render(shell());
