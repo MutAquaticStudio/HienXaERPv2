@@ -1,9 +1,9 @@
 import "server-only";
 
 import { createHmac, timingSafeEqual } from "node:crypto";
-import nodemailer from "nodemailer";
 import webpush, { WebPushError } from "web-push";
 import { z } from "zod";
+import { sendEmail } from "@/lib/email/send";
 
 /**
  * F5: the database (pg_net) hands email and web-push jobs to the app, signed with the shared secret that is in Supabase
@@ -48,16 +48,7 @@ type Env = Record<string, string | undefined>;
 
 export async function deliverEmail(item: DeliveryMessage, env: Env = process.env): Promise<DeliveryResult> {
   if (!item.to) return { status: 422, error: "missing_recipient" };
-  if (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASSWORD) return { status: 503, error: "smtp_not_configured" };
-  const port = Number(env.SMTP_PORT ?? "465");
-  const transport = nodemailer.createTransport({ host: env.SMTP_HOST, port, secure: port === 465, auth: { user: env.SMTP_USER, pass: env.SMTP_PASSWORD } });
-  try {
-    await transport.sendMail({ from: env.SMTP_FROM || env.SMTP_USER, to: item.to, subject: item.title,
-      text: [item.body, item.link].filter(Boolean).join("\n\n") || item.title });
-    return { status: 200 };
-  } catch {
-    return { status: 502, error: "smtp_failed" };
-  }
+  return sendEmail({ to: item.to, subject: item.title, text: [item.body, item.link].filter(Boolean).join("\n\n") || item.title }, env);
 }
 
 export async function deliverPush(item: DeliveryMessage, env: Env = process.env): Promise<DeliveryResult> {

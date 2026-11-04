@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { accountPortals, wrongPortalMessage } from "./account-portals";
 import { deterministicUuid, portalRpc } from "@/modules/portal/server";
 import { randomUUID } from "node:crypto";
@@ -12,6 +13,8 @@ import { displayLogin, isPhoneLogin, loginEmail, normalizePhone } from "@/lib/au
 import { getSupabaseConfig } from "@/lib/supabase/config";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { portalRegistrationOpen } from "@/lib/auth/portal-registration";
+import { sendEmail } from "@/lib/email/send";
+import { welcomeEmail } from "@/modules/portal/welcome-email";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -49,6 +52,7 @@ export async function loginAction(_: AuthFormState, formData: FormData): Promise
   if (!parsed.success) return { message: "Nhập email hoặc số điện thoại và mật khẩu (ít nhất 8 ký tự)." };
 
   let registeredNow = false;
+  let welcome: WelcomeUser | null = null;
   try {
     const supabase = await createServerSupabase();
     const { data, error } = await supabase.auth.signInWithPassword({ email: parsed.data.email, password: parsed.data.password });
@@ -61,7 +65,7 @@ export async function loginAction(_: AuthFormState, formData: FormData): Promise
           ? "Tài khoản đã tạo nhưng cửa hàng chưa mở nhận khách tự đăng ký. Gọi cửa hàng giúp; thông tin bạn đã nhập vẫn được giữ, lần đăng nhập sau sẽ tự hoàn tất."
           : "Chưa lập được hồ sơ khách cho tài khoản này. Thử đăng nhập lại sau ít phút hoặc gọi cửa hàng." };
       }
-      if (completion === "CREATED") registeredNow = true;
+      if (completion === "CREATED") { registeredNow = true; welcome = data.user; }
     }
     // FB9: each account signs in only on its own tab; a worker or a customer never enters the operations side.
     const wrongPortal = data.user ? wrongPortalMessage(parsed.data.surface, await accountPortals(supabase, data.user.id)) : null;
@@ -69,6 +73,7 @@ export async function loginAction(_: AuthFormState, formData: FormData): Promise
       await supabase.auth.signOut({ scope: "local" });
       return { message: wrongPortal };
     }
+    if (welcome) await scheduleWelcomeEmail(welcome);
   } catch {
     return { message: "Dịch vụ đăng nhập chưa sẵn sàng. Vui lòng thử lại sau." };
   }
@@ -452,6 +457,23 @@ async function registerPortalCustomer(supabase: Awaited<ReturnType<typeof create
   return error;
 }
 
+type WelcomeUser = { email?: string | null; user_metadata?: Record<string, unknown> };
+
+/**
+ * D62 "Đăng ký thành công": once, when a self-registered customer's record has just been made (CREATED happens only at the
+ * first sign-in; later ones replay register_portal_customer and come back NONE). Sent after the response, so signing in never
+ * waits on the mail server; without SMTP settings or on a failure the customer notices nothing and only the server log says so.
+ */
+async function scheduleWelcomeEmail(user: WelcomeUser) {
+  if (!user.email || isPhoneLogin(user.email)) return;
+  const registration = pendingRegistrationSchema.safeParse(user.user_metadata?.hx_registration);
+  const message = welcomeEmail({ name: registration.success ? registration.data.name : "", email: user.email, origin: await appOrigin() });
+  after(async () => {
+    const result = await sendEmail(message).catch(() => ({ status: 502 as const, error: "smtp_failed" }));
+    if (result.status !== 200) console.warn("welcome_email_not_sent", result.error);
+  });
+}
+
 /**
  * A customer who registered and had to confirm the email first: the customer record is made at the first sign-in from the
  * details kept on the login. Already registered (replay, or already a customer), an employee login or no pending details
@@ -521,5 +543,6 @@ export async function registerCustomerAccountAction(_: AuthFormState, formData: 
   const registerError = await registerPortalCustomer(supabase, data.user.id, registration);
   if (registerError?.message.includes("portal_branch_not_configured")) return answer("Cửa hàng chưa mở tự đăng ký. Gọi cửa hàng để được tạo tài khoản.");
   if (registerError) return answer("Đã tạo tài khoản nhưng chưa lập được hồ sơ khách. Đăng nhập lại để hoàn tất, hoặc gọi cửa hàng.");
+  await scheduleWelcomeEmail(data.user);
   redirect("/customer?notice=registered");
 }
