@@ -121,7 +121,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
   const columns = 6 + (can.cost ? 1 : 0);
 
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Kho hàng</p><h1>Tồn kho</h1><p className="lede">Có thể bán = Tồn kho − Chờ xuất giao (đã lên phiếu giao, chưa lấy lên xe) − Đã hứa cho đơn (đơn đã xác nhận lấy từ kho, chưa lập phiếu giao). Bấm một dòng để xem thẻ kho.</p></div>
+    <header className="page-heading"><div><h1>Tồn kho</h1><p className="lede">Có thể bán = Tồn kho − Chờ xuất giao (đã lên phiếu giao, chưa lấy lên xe) − Đã hứa cho đơn (đơn đã xác nhận lấy từ kho, chưa lập phiếu giao). Bấm một dòng để xem thẻ kho.</p></div>
       <div className="action-cluster">
         <Link className="button button-secondary" href="/admin/inventory/transfers">Chuyển kho</Link>
         <Link className={`button ${can.count ? "button-primary" : "button-secondary"}`} href="/admin/stock-counts">Kiểm kho</Link>

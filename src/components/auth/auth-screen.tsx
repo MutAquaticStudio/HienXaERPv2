@@ -22,7 +22,7 @@ export async function AuthScreen({ surface, title, detail, notice, children, swi
   // The shared sign-in also serves customers, so it does not call itself internal; the customer screens name the portal.
   if (!children) return <AuthFrame footnote={LOGIN_FOOTNOTE} logoUrl={logoUrl} tagline="Đăng nhập nhân viên và khách hàng"><PortalLogin initial={surface} notice={notice} /></AuthFrame>;
   const link = switchLink === undefined ? { href: "/", label: "← Về màn đăng nhập" } : switchLink;
-  return <AuthFrame logoUrl={logoUrl} tagline={surface === "customer" ? "Cổng khách hàng" : undefined}><p className="eyebrow">{copy[surface].eyebrow}</p><h1>{title}</h1>{detail && <p className="muted">{detail}</p>}
+  return <AuthFrame logoUrl={logoUrl} tagline={copy[surface].eyebrow}><h1>{title}</h1>{detail && <p className="muted">{detail}</p>}
     {notice && <p className="form-message" role="status">{notice}</p>}{children}
     {link && <a className="auth-switch" href={link.href}>{link.label}</a>}</AuthFrame>;
 }

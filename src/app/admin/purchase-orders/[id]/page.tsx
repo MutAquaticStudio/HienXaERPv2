@@ -22,6 +22,7 @@ import { cancelPurchaseOrderAction, createSupplierDirectDeliveryAction } from "@
 import { SendToSupplier } from "@/components/purchasing/send-to-supplier";
 import { loadCompanyProfile } from "@/lib/company/profile";
 import { purchaseStateLabel, purchaseStateTone } from "@/modules/purchasing/presentation";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 type PurchaseOrder = { id: string; purchase_order_number: string; supplier_id: string; supplier_name_snapshot: string; destination_type: string; destination_name_snapshot: string; destination_address_snapshot: string; source_sales_order_id: string | null; state: string; expected_at: string | null; total_cost_vnd: string | null };
 type PurchaseLine = { id: string; linked_sales_order_line_id: string | null; material_name_snapshot: string; quantity: string; ordered_uom_id: string; unit_cost_vnd: string | null; line_total_cost_vnd: string | null; price_source_type: string | null };
@@ -98,7 +99,7 @@ export default async function PurchaseOrderDetailPage({ params, searchParams }: 
   const query = await searchParams;
   const payable = [...receipts, ...fulfillments].reduce((sum, row) => sum + BigInt(row.payable_amount_vnd ?? 0), 0n);
   return <>
-    <header className="page-heading"><div><p className="eyebrow">Đơn mua</p><h1>{order.purchase_order_number}</h1><p className="lede">{order.supplier_name_snapshot} · {purchaseStateLabel(order.destination_type)}</p></div><div className="inline-actions"><ButtonLink href={`/api/purchase-orders/${order.id}/pdf`} variant="secondary">Tải PDF đơn mua</ButtonLink><ButtonLink href="/admin/purchase-orders" variant="secondary">Về danh sách</ButtonLink></div></header>
+    <header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/purchase-orders", label: "Đơn mua" }} /><h1>{order.purchase_order_number}</h1><p className="lede">{order.supplier_name_snapshot} · {purchaseStateLabel(order.destination_type)}</p></div><div className="inline-actions"><ButtonLink href={`/api/purchase-orders/${order.id}/pdf`} variant="secondary">Tải PDF đơn mua</ButtonLink><ButtonLink href="/admin/purchase-orders" variant="secondary">Về danh sách</ButtonLink></div></header>
     <ActionNotice notice={query.notice} error={query.error} />
     {open && <PurchaseNextSteps number={order.purchase_order_number} supplierId={order.supplier_id} justConfirmed={query.notice === "confirmed"}
       toWarehouse={order.destination_type === "WAREHOUSE"} sent={!!sentResult.data} deliveryCreated={query.notice === "supplier-delivery-created"}

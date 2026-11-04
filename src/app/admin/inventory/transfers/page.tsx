@@ -23,7 +23,7 @@ export default async function WarehouseTransfersPage({ searchParams }: { searchP
  if (transfers.error) throw new Error("Không thể tải phiếu chuyển kho.");
  const symbol = new Map((units.data ?? []).map(unit => [unit.id, unit.symbol]));
  const rows = (transfers.data ?? []).slice(0, CORE_LIST_PAGE_SIZE);
- return <><header className="page-heading"><div><p className="eyebrow">Kho hàng</p><h1>Chuyển kho</h1><p className="lede">Chuyển hàng giữa các kho: tạo phiếu (xuất ngay), kho nhận bấm “Nhận đủ” khi hàng tới.</p></div>
+ return <><header className="page-heading"><div><h1>Chuyển kho</h1><p className="lede">Chuyển hàng giữa các kho: tạo phiếu (xuất ngay), kho nhận bấm “Nhận đủ” khi hàng tới.</p></div>
    <div className="action-cluster">{manage && <Link className="button button-primary" href="/admin/inventory/transfers/new">+ Chuyển hàng</Link>}<Link className="button button-secondary" href="/admin/inventory">Tồn kho</Link></div></header>
   {query.notice && NOTICE[query.notice] && <p className="form-message success" role="status">{NOTICE[query.notice]}</p>}
   <section className="card"><div className="table-wrap"><table><thead><tr><th>Mã chuyển hàng</th><th>Thời gian</th><th>Từ kho → Tới kho</th><th>Hàng hóa</th><th className="numeric">SL chuyển</th><th className="numeric">Đã nhận</th><th>Trạng thái</th><th /></tr></thead><tbody>{rows.map(item => {

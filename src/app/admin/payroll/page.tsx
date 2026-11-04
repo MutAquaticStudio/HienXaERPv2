@@ -59,7 +59,7 @@ export default async function PayrollPage({ searchParams }: { searchParams: Prom
 
   return <>
     <header className="page-heading">
-      <div><p className="eyebrow">Nhân công</p><h1>Bảng lương</h1>
+      <div><h1>Bảng lương</h1>
         <p className="lede">Lương tính từ chấm công đã chốt, thiết lập lương từng người và các khoản thu nhập khác (phụ cấp, tiền chuyến, tiền việc, hoa hồng, giảm trừ). Chốt bảng lương ghi phải trả nhân viên; chi trả ngay trên bảng lương đã chốt.</p></div>
       <div className="action-cluster">
         <Link className="button button-secondary" href="/admin/attendance">Chấm công</Link>

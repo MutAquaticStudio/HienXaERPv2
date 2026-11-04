@@ -7,6 +7,7 @@ vi.mock("next/navigation", () => ({ usePathname: () => location.pathname }));
 // The bell loads its feed through a server action; it has its own tests.
 vi.mock("@/components/notifications/notification-bell", () => ({ NotificationBell: ({ branchId }: { branchId: string }) => <button type="button" data-branch={branchId}>Thông báo</button> }));
 vi.mock("@/modules/ai/ai-bubble", () => ({ AiBubble: () => <div data-testid="ai-bubble" /> }));
+vi.mock("@/components/search/global-search", () => ({ GlobalSearch: () => <button type="button">Tìm chung</button> }));
 vi.mock("@/components/messaging/chat-dock", () => ({ ChatDock: () => null }));
 vi.mock("@/lib/auth/actions", () => ({ selectBranchAction: vi.fn() }));
 

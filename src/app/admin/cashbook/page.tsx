@@ -143,7 +143,7 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
     account: item.account_code, amount: `${item.direction === "RECEIPT" ? "" : "-"}${item.amount_vnd}`, state: financeStateLabel(item.reconciliation_state),
   })), [["number", "Mã phiếu"], ["date", "Ngày"], ["kind", "Loại"], ["party", "Người nộp / nhận"], ["account", "Tài khoản"], ["amount", "Số tiền (đ)"], ["state", "Đối soát"]]);
 
-  return <div className="page-stack"><header className="page-heading"><div><p className="eyebrow">Tiền mặt và ngân hàng</p><h1>Sổ quỹ</h1><p className="lede">Thu chi đã ghi sổ theo kỳ và tài khoản, đối soát ngân hàng và giao dịch đảo.</p></div>
+  return <div className="page-stack"><header className="page-heading"><div><h1>Sổ quỹ</h1><p className="lede">Thu chi đã ghi sổ theo kỳ và tài khoản, đối soát ngân hàng và giao dịch đảo.</p></div>
       <div className="action-cluster">
         {can.post && <PartyPaymentLauncher label="Lập phiếu thu" title="Lập phiếu thu · chọn khách hàng" partyLabel="khách hàng" parties={customers} hrefPrefix="/admin/receivables?customer=" className="button button-primary" />}
         {can.post && can.payables && <PartyPaymentLauncher label="Lập phiếu chi" title="Lập phiếu chi · chọn nhà cung cấp" partyLabel="nhà cung cấp" parties={suppliers} hrefPrefix="/admin/payables?supplier=" />}

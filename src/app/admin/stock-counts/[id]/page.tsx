@@ -8,6 +8,7 @@ import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { stockCountStateLabel, stockCountTone } from "@/modules/inventory/presentation";
 import type { SheetRow } from "@/modules/inventory/stock-count-sheet";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 type Count = { id: string; warehouse_id: string; count_number: string; state: string; cutoff_at: string; version: number; line_count: number; variance_count: number; approved_at: string | null };
 type CountLine = { material_id: string; expected_base_quantity: string; counted_base_quantity: string; reason: string | null; adjustment_unit_cost_vnd: string | null };
@@ -59,7 +60,7 @@ export default async function StockCountDetailPage({ params, searchParams }: { p
   const query = await searchParams;
 
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Phiếu kiểm kho</p><h1>{count.count_number}</h1>
+    <header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/stock-counts", label: "Kiểm kho" }} /><h1>{count.count_number}</h1>
       <p className="lede">{warehouseResult.data?.name ?? "Kho"} · chốt sổ lúc {formatBusinessDateTime(count.cutoff_at)}{count.approved_at && ` · cân bằng lúc ${formatBusinessDateTime(count.approved_at)}`}</p></div>
       <div className="action-cluster"><StatusBadge tone={stockCountTone(count.state)}>{stockCountStateLabel(count.state)}</StatusBadge><ButtonLink href="/admin/stock-counts" variant="secondary">Về danh sách</ButtonLink></div>
     </header>

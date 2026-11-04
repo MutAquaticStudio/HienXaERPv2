@@ -24,6 +24,7 @@ import { listAssignmentEmployees } from "@/modules/delivery/assignment-options";
 import { loadCompanyProfile } from "@/lib/company/profile";
 import { SendToCustomerZalo } from "@/components/zalo/send-to-customer";
 import { deliveryDoneMessage, zaloChatLink } from "@/modules/zalo/customer-messages";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 type Delivery = { id: string; sales_order_id: string; delivery_number: string; execution_state: string; result_kind: string | null; customer_name_snapshot: string; site_name_snapshot: string; delivery_address_snapshot: string; receiver_name_snapshot: string | null; receiver_phone_snapshot: string | null; scheduled_at: string | null; scheduled_end_at: string | null; version: number; employee_id: string | null; vehicle_id: string | null; external_carrier_name: string | null };
 type DeliveryLine = { id: string; sales_order_line_id: string; material_name_snapshot: string; source_mode: string; warehouse_id: string | null; planned_base_quantity: string; loaded_base_quantity: string | null; actual_base_quantity: string; accepted_base_quantity: string; billable_base_quantity: string; base_uom_symbol: string };
@@ -107,7 +108,7 @@ export default async function DeliveryDetailPage({ params, searchParams }: { par
   const query = await searchParams;
   const driverName = (employeeResult.data ?? []).find((employee) => employee.id === delivery.employee_id)?.display_name ?? "thợ được giao";
   return <>
-    <header className="page-heading"><div><p className="eyebrow">Phiếu giao</p><h1>{delivery.delivery_number}</h1><p className="lede">{delivery.customer_name_snapshot} · {delivery.site_name_snapshot}</p></div><div className="inline-actions"><ButtonLink href={`/api/deliveries/${delivery.id}/note/pdf`}>Tải phiếu giao</ButtonLink><ButtonLink href="/admin/deliveries" variant="secondary">Về danh sách</ButtonLink></div></header>
+    <header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/deliveries", label: "Phiếu giao" }} /><h1>{delivery.delivery_number}</h1><p className="lede">{delivery.customer_name_snapshot} · {delivery.site_name_snapshot}</p></div><div className="inline-actions"><ButtonLink href={`/api/deliveries/${delivery.id}/note/pdf`}>Tải phiếu giao</ButtonLink><ButtonLink href="/admin/deliveries" variant="secondary">Về danh sách</ButtonLink></div></header>
     <DeliveryWorkItemBridge deliveryId={id} /><ActionNotice notice={query.notice} error={query.error} />
     {splitFrom && <p className="command-note" role="status">Tách từ phiếu <Link className="code-link" href={`/admin/deliveries/${splitFrom.id}`}>{splitFrom.delivery_number}</Link>.</p>}
     {(splitInto ?? []).length > 0 && <p className="command-note" role="status">Phiếu đã hủy để tách thành {(splitInto ?? []).map((item, index) => <span key={item.id}>{index > 0 && ", "}<Link className="code-link" href={`/admin/deliveries/${item.id}`}>{item.delivery_number}</Link></span>)}.</p>}

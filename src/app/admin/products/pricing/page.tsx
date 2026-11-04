@@ -73,7 +73,7 @@ export default async function PriceBookPage({ searchParams }: { searchParams: Pr
   const total = materialResult.count ?? rows.length;
 
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Kho hàng</p><h1>Giá bán</h1><p className="lede">{book ? `Giá cho nhóm khách “${book.name}”: khách trong nhóm được giá này thay cho giá chung.` : "Giá bán chung (giá lẻ) theo đơn vị gốc."} Sửa trực tiếp hoặc tăng/giảm hàng loạt, rồi lưu một lần.</p></div>
+    <header className="page-heading"><div><h1>Giá bán</h1><p className="lede">{book ? `Giá cho nhóm khách “${book.name}”: khách trong nhóm được giá này thay cho giá chung.` : "Giá bán chung (giá lẻ) theo đơn vị gốc."} Sửa trực tiếp hoặc tăng/giảm hàng loạt, rồi lưu một lần.</p></div>
       <div className="action-cluster"><Link className="button button-secondary" href="/admin/settings/pricing">Giá theo khách & lịch sử</Link></div>
     </header>
     <AutoFilterForm className="card card-pad price-book-filters" aria-label="Bộ lọc bảng giá">

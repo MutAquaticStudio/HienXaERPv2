@@ -37,7 +37,7 @@ export default async function ServiceJobsPage({ searchParams }: { searchParams: 
     if (error instanceof AppError && error.code === "FORBIDDEN") return null;
     throw error;
   });
-  if (!access) return <section className="empty-state" role="alert"><div><p className="eyebrow">Không có quyền truy cập</p><h1>Không thể xem công việc dịch vụ</h1><p className="lede">Tài khoản của bạn chưa được cấp quyền xem công việc dịch vụ trong chi nhánh này.</p><Link className="button button-secondary" href="/">Về trang đầu</Link></div></section>;
+  if (!access) return <section className="empty-state" role="alert"><div><h1>Không thể xem công việc dịch vụ</h1><p className="lede">Tài khoản của bạn chưa được cấp quyền xem công việc dịch vụ trong chi nhánh này.</p><Link className="button button-secondary" href="/">Về trang đầu</Link></div></section>;
   const branchId = access.branchId;
   const query = await searchParams;
   const list = parseCoreListQuery(query);
@@ -101,7 +101,7 @@ export default async function ServiceJobsPage({ searchParams }: { searchParams: 
   const stateFilter = STATES.includes(list.state as typeof STATES[number]) ? list.state : "";
   const filterOptions = [{ value: "", label: "Tất cả" }, ...STATES.map((state, index) => ({ value: state, label: serviceStateLabel(state), count: shown(counts[index]) }))];
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Điều phối dịch vụ</p><h1>Đơn dịch vụ</h1>
+    <header className="page-heading"><div><h1>Đơn dịch vụ</h1>
       <p className="lede">Chở hàng theo chuyến, máy theo giờ, bốc xếp theo công. Chưa biết số lượng thì để trống: thợ bấm số thực tế khi hoàn tất, văn phòng xác minh và ghi công nợ.</p></div>
       {canManage && <div className="action-cluster">
         <FormDialog label="+ Tạo đơn dịch vụ" title="Tạo đơn dịch vụ" size="lg" buttonClassName="button button-primary" defaultOpen={!!startCustomer.data}

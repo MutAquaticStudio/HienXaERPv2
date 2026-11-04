@@ -73,7 +73,7 @@ export default async function AttendancePage({ searchParams }: { searchParams: P
 
   return <>
     <header className="page-heading">
-      <div><p className="eyebrow">Nhân công</p><h1>Chấm công</h1>
+      <div><h1>Chấm công</h1>
         <p className="lede">Nhân viên tự bấm Vào ca / Ra ca trên cổng nhân sự; văn phòng xem bảng chấm công, chấm hộ, sửa công và chốt kỳ để tính lương.</p></div>
       {canManage && <div className="action-cluster">
         {shifts.some((shift) => shift.active) && <FormDialog label="Xếp lịch" title="Xếp lịch làm việc" size="lg" buttonClassName="button button-secondary"

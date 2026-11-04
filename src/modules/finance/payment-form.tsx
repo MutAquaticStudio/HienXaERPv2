@@ -112,7 +112,7 @@ export function PaymentForm(props: Props) {
       }} onNew={() => { setAmount(""); setAsAdvance(false); setManual(false); setAllocations({}); }}
       onSuccess={(outcome) => { closeDialog?.(); router.replace(`${props.redirectTo}${props.redirectTo.includes("?") ? "&" : "?"}notice=payment-posted&payment=${outcome.resultId}`); }}>
       <div className="section-head flush">
-        <div><p className="eyebrow">{props.direction === "RECEIPT" ? "Phiếu thu" : "Phiếu chi"}</p><h2>{props.partyName}</h2></div>
+        <div><h2>{props.partyName}</h2><p className="dialog-context">{props.direction === "RECEIPT" ? "Phiếu thu" : "Phiếu chi"}</p></div>
         <span className="scope-chip">Số dư hiện tại</span>
       </div>
       {props.historicalContext && <p className="form-message">Bạn đang xem mốc lịch sử; phiếu này dùng số dư hiện tại đã kiểm lại.</p>}

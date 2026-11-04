@@ -22,6 +22,7 @@ import { loadCompanyProfile } from "@/lib/company/profile";
 import { SendToCustomerZalo } from "@/components/zalo/send-to-customer";
 import { debtReminderMessage, paymentReceivedMessage, zaloChatLink } from "@/modules/zalo/customer-messages";
 import { bankTransferNote } from "@/modules/finance/transfer-note";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 type CustomerProfile = { id: string; code: string; display_name: string; customer_type: string; phone: string | null; email: string | null; address_text: string | null; tax_code: string | null; tier_code: string | null; payment_terms_days: number; active: boolean; source?: string };
 type SiteRow = { id: string; code: string; name: string; address_text: string; receiver_name: string | null; receiver_phone: string | null; access_note: string | null; active: boolean };
@@ -103,7 +104,7 @@ export default async function CustomerDetailPage({ params, searchParams }: PageP
     : await DocumentsTab({ customerId: id, branchId: access.branchId, supabase, can: { quotes: QUOTATIONS_ENABLED && access.permissions.has("quotation.read"), deliveries: can.deliveries, finance: can.finance } });
 
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Khách hàng · {customer.code}{selfRegistered && <> · <span className="scope-chip">Tự đăng ký</span></>}</p><h1>{customer.display_name}</h1>
+    <header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/customers", label: "Khách hàng" }} current={customer.code} /><h1>{customer.display_name}{selfRegistered && <span className="scope-chip heading-chip">Tự đăng ký</span>}</h1>
       <p className="lede">{customer.phone ?? "Chưa có điện thoại"} · {customer.address_text ?? "Chưa có địa chỉ chính"} · {customer.tier_code ? `Nhóm giá ${(groupResult.data as { name: string } | null)?.name ?? customer.tier_code}` : "Giá chung"}</p></div>
       <div className="form-actions">
         {can.createOrder && customer.active && <Link className="button button-primary" href={`/admin/orders/new?customer=${customer.id}`}>Tạo đơn</Link>}

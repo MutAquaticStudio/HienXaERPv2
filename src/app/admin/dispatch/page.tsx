@@ -95,7 +95,7 @@ export default async function DispatchPage({ searchParams }: { searchParams: Pro
     };
   }
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Điều phối</p><h1>Điều phối giao hàng</h1><p className="lede">Phân công và theo dõi tiến độ giao hàng.</p></div>{access.permissions.has("roles.manage") && <div className="action-cluster"><Link className="button button-secondary" href="/admin/dispatch/resources?kind=vehicles">Xe</Link><Link className="button button-secondary" href="/admin/dispatch/resources?kind=machines">Máy / thiết bị</Link></div>}</header>
+    <header className="page-heading"><div><h1>Điều phối giao hàng</h1><p className="lede">Phân công và theo dõi tiến độ giao hàng.</p></div>{access.permissions.has("roles.manage") && <div className="action-cluster"><Link className="button button-secondary" href="/admin/dispatch/resources?kind=vehicles">Xe</Link><Link className="button button-secondary" href="/admin/dispatch/resources?kind=machines">Máy / thiết bị</Link></div>}</header>
     {dayData ? <DispatchDayBoard day={day} board={dayData as DispatchDay} canAssign={access.permissions.has("delivery.assign")} assign={assign}
       notice={firstValue(query.dispatched) || undefined} error={firstValue(query.error) || undefined} />
       : <p className="form-message" role="alert">Chưa tải được lịch giao theo tài xế. Hãy tải lại trang.</p>}

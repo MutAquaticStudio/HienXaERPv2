@@ -10,7 +10,6 @@ import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { formatQuantity } from "@/lib/core/quantity";
 import { deliveryStateLabel, deliveryStateTone } from "@/modules/delivery/presentation";
 import { AutoFilterForm } from "@/components/ui/auto-filter-form";
-import { vehicleName } from "@/modules/catalog/vehicle-label";
 
 type Delivery = { id: string; sales_order_id: string; delivery_number: string; customer_name_snapshot: string; site_name_snapshot: string; execution_state: string; result_kind: string | null; scheduled_at: string | null; external_carrier_name: string | null; vehicle_id: string | null; created_at: string };
 type DeliveryLine = { id: string; delivery_id: string; material_name_snapshot: string; planned_base_quantity: string; actual_base_quantity: string | null; base_uom_symbol: string };
@@ -50,7 +49,7 @@ export default async function DeliveriesPage({ searchParams }: { searchParams: P
   const who = (row: Delivery) => row.external_carrier_name ?? (row.vehicle_id ? vehicleMap.get(row.vehicle_id) ?? "Đã phân xe" : "Chưa phân");
   const isFiltered = Boolean(list.q || list.state);
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Giao hàng</p><h1>Phiếu giao</h1><p className="lede">Kế hoạch, thực giao và kết quả của từng phiếu. Mũi tên để xem nhanh hàng trên phiếu.</p></div></header>
+    <header className="page-heading"><div><h1>Phiếu giao</h1><p className="lede">Kế hoạch, thực giao và kết quả của từng phiếu. Mũi tên để xem nhanh hàng trên phiếu.</p></div></header>
     <div className="list-layout">
       <AutoFilterForm className="card card-pad list-filters" aria-label="Bộ lọc phiếu giao">
         <label className="list-filters-search">Tìm kiếm<input type="search" name="q" defaultValue={list.q} placeholder="Mã phiếu, khách, công trình, đầu mối" /></label>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { NotificationBell } from "@/components/notifications/notification-bell";
+import { GlobalSearch } from "@/components/search/global-search";
 import { AiBubble } from "@/modules/ai/ai-bubble";
 import { OPEN_AI_EVENT } from "@/modules/ai/events";
 import { ChatDock } from "@/components/messaging/chat-dock";
@@ -164,6 +165,7 @@ export function AppShell({ surface, children, permissions, actorName, branchName
             ? <img className="brand-mark brand-logo" src={logoUrl} alt="" aria-hidden="true" width={34} height={34} />
             : <span className="brand-mark" aria-hidden="true">HX</span>}<strong>Hiền Xa ERP</strong></Link>
           {branchName && surface !== "customer" && <BranchSwitcher branches={branches} currentId={branchId} currentName={branchName} surface={surface} pathname={pathname} />}
+          {surface === "admin" && <GlobalSearch />}
           <div className="utility-actions">
             {surface === "admin" && permissions?.includes("ai.use") && <button type="button" className="utility-ai" onClick={() => window.dispatchEvent(new Event(OPEN_AI_EVENT))}
               aria-label="Mở trợ lý AI"><Sparkles aria-hidden="true" size={17} /><span>Trợ lý AI</span></button>}
