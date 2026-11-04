@@ -37,7 +37,7 @@ describe("assistant actions (D37)", () => {
   });
 
   it("offers each action only to people with its permissions, as a non-strict tool (validated by prepare)", () => {
-    expect(AGENT_ACTIONS).toHaveLength(14);
+    expect(AGENT_ACTIONS).toHaveLength(20);
     expect(expenseTool.define(context(["ai.use"]))).toBeNull();
     const definition = expenseTool.define(context(["ai.use", "finance.expense.manage"]));
     expect(definition).toMatchObject({ name: "soan_chi_phi" });

@@ -19,6 +19,11 @@ import {
   findAccount, findCustomer, findDelivery, findDocument, findEmployee, findMaterial, findSite, findSupplier, findUnit, findVehicle, findWarehouse, ResolveError, type Supabase,
 } from "./resolve";
 import { createCustomers } from "./batch-customers";
+import { createMaterials, createSuppliers } from "./batch-catalog";
+import { updatePurchasePrices } from "./batch-prices";
+import { salesOrdersFromList } from "./batch-orders";
+import { purchaseFromDocument } from "./batch-purchase";
+import { receiptsFromTransfers } from "./batch-receipts";
 
 export type AgentContext = { supabase: Supabase; branchId: string; permissions: ReadonlySet<string> };
 export type SummaryLine = { label: string; value: string };
@@ -457,7 +462,7 @@ const sendMessage: AgentAction = {
   },
 };
 
-export const AGENT_ACTIONS: readonly AgentAction[] = [createCustomer, createCustomers, createSalesOrder, confirmSalesOrder, createDelivery, assignDelivery, createPurchaseOrder,
+export const AGENT_ACTIONS: readonly AgentAction[] = [createCustomer, createCustomers, createMaterials, createSuppliers, updatePurchasePrices, purchaseFromDocument, receiptsFromTransfers, salesOrdersFromList, createSalesOrder, confirmSalesOrder, createDelivery, assignDelivery, createPurchaseOrder,
   receivePurchaseOrder, transferStock, receivePayment, recordExpense, saveAttendance, adjustPayroll, sendMessage];
 
 export const agentActionOf = (kind: string) => AGENT_ACTIONS.find((action) => action.kind === kind);
