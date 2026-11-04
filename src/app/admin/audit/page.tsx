@@ -1,80 +1,12 @@
 import { formatBusinessDateTime } from "@/lib/core/business-time";
 import Link from "next/link";
-import { loadAuditPage, type AuditEvent, type AuditFilters } from "@/modules/audit/server";
+import { loadAuditPage, type AuditFilters } from "@/modules/audit/server";
+import { ACTION_FILTERS, auditSentence, ENTITY_FILTERS } from "@/modules/audit/presentation";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Nhật ký hoạt động" };
 
 type SearchValue = string | string[] | undefined;
-
-const entityLabels: Record<string, string> = {
-  branch: "chi nhánh",
-  operational_opening_import: "nhập số dư đầu kỳ",
-  operational_reconciliation: "đối chiếu số dư đầu kỳ",
-  compensation_rule: "quy tắc thu nhập",
-  earning_event: "khoản thu nhập",
-  invoice_intent: "hồ sơ lập hóa đơn",
-  route_plan: "lộ trình",
-  customers: "khách hàng",
-  customer_sites: "công trình",
-  materials: "vật tư",
-  material_groups: "nhóm vật tư",
-  units_of_measure: "đơn vị tính",
-  material_uom_conversions: "quy đổi đơn vị",
-  warehouses: "kho",
-  suppliers: "nhà cung cấp",
-  pricing_rules: "chính sách giá",
-  purchase_price_rules: "chính sách giá mua",
-  vehicles: "xe",
-  machines: "máy móc",
-  branches: "chi nhánh",
-  customer: "khách hàng",
-  customer_site: "công trình",
-  employee: "nhân sự",
-  role: "vai trò",
-  quotation: "báo giá",
-  quotation_revision: "phiên bản báo giá",
-  sales_order: "đơn bán",
-  purchase_order: "đơn mua",
-  delivery: "chuyến giao",
-  payment: "phiếu thu/chi",
-  payment_notice: "thông báo thanh toán",
-  service_job: "công việc dịch vụ",
-  work_item: "công việc thợ",
-  pricing_rule: "quy tắc giá",
-  inventory_count: "kiểm kê",
-};
-
-const actionLabels: Record<string, string> = {
-  reconciled: "đối soát",
-  activated: "kích hoạt vận hành",
-  remaining_closed: "đóng phần còn lại",
-  resolved: "hoàn tất xử lý",
-  recorded: "ghi nhận",
-  imported: "nhập dữ liệu",
-  calculated: "tính thu nhập",
-  recognition_configured: "cấu hình ghi nhận thu nhập",
-  save: "lưu",
-  create: "tạo",
-  update: "cập nhật",
-  deactivate: "ngừng sử dụng",
-  created: "tạo",
-  updated: "cập nhật",
-  changed: "thay đổi",
-  assigned: "gán",
-  revoked: "thu hồi",
-  reactivated: "kích hoạt lại",
-  confirmed: "xác nhận",
-  cancelled: "hủy",
-  submitted: "gửi duyệt",
-  send: "gửi",
-  accept: "chấp nhận",
-  accepted: "chấp nhận",
-  under_review: "đưa vào xem xét",
-  approved: "duyệt",
-  rejected: "từ chối",
-  posted: "ghi sổ",
-  reversed: "đảo giao dịch",
-  verified: "xác minh",
-  published: "công bố",
-};
 
 function first(value: SearchValue) {
   return Array.isArray(value) ? value[0] : value;
@@ -86,19 +18,6 @@ function clean(value: SearchValue, length: number) {
 
 function formatTime(value: string) {
   return formatBusinessDateTime(value);
-}
-
-function readableEntity(value: string) {
-  return entityLabels[value] ?? "đối tượng nghiệp vụ";
-}
-
-function readableAction(value: string) {
-  const suffix = value.split(".").at(-1) ?? value;
-  return actionLabels[suffix] ?? "thực hiện thao tác trên";
-}
-
-function summary(event: AuditEvent) {
-  return `${event.actorName} đã ${readableAction(event.action)} ${readableEntity(event.entityType)}`;
 }
 
 function pageHref(filters: AuditFilters, page: number) {
@@ -143,15 +62,17 @@ export default async function AuditPage({
         <form className="filter-grid" method="get">
           <label className="field">
             <span>Người thực hiện</span>
-            <input name="actor" defaultValue={filters.actor} placeholder="Tên hoặc mã người thực hiện" />
+            <input name="actor" defaultValue={filters.actor} placeholder="Tên nhân viên" />
           </label>
           <label className="field">
-            <span>Đối tượng</span>
-            <input name="entity" defaultValue={filters.entity} placeholder="Mã loại đối tượng cần tra cứu" />
+            <span>Loại đối tượng</span>
+            <select name="entity" defaultValue={filters.entity ?? ""}><option value="">Tất cả</option>
+              {ENTITY_FILTERS.map((noun) => <option key={noun} value={noun}>{noun.charAt(0).toUpperCase() + noun.slice(1)}</option>)}</select>
           </label>
           <label className="field">
-            <span>Hành động</span>
-            <input name="action" defaultValue={filters.action} placeholder="Mã hành động cần tra cứu" />
+            <span>Việc đã làm</span>
+            <select name="action" defaultValue={filters.action ?? ""}><option value="">Tất cả</option>
+              {ACTION_FILTERS.map(([code, label]) => <option key={code} value={code}>{label.charAt(0).toUpperCase() + label.slice(1)}</option>)}</select>
           </label>
           <label className="field">
             <span>Từ ngày</span>
@@ -185,8 +106,9 @@ export default async function AuditPage({
                   <tr key={event.id}>
                     <td><time dateTime={event.occurredAt}>{formatTime(event.occurredAt)}</time></td>
                     <td>
-                      <strong>{summary(event)}</strong>
-                      <div className="muted">Mã đối tượng: <span className="mono">{event.entityId}</span></div>
+                      <strong>{auditSentence(event.actorName, event.action, event.entityType)}</strong>
+                      {event.object && <div className="audit-object">{event.object.href
+                        ? <Link className="code-link" href={event.object.href}>{event.object.label}</Link> : <span>{event.object.label}</span>}</div>}
                     </td>
                     <td>{event.reason || <span className="muted">Không có ghi chú</span>}</td>
                     <td>
@@ -194,7 +116,7 @@ export default async function AuditPage({
                         <summary>Xem dữ liệu kỹ thuật</summary>
                         <dl className="detail-grid">
                           <div className="detail-item"><dt>Hành động</dt><dd className="mono">{event.action}</dd></div>
-                          <div className="detail-item"><dt>Đối tượng</dt><dd className="mono">{event.entityType}</dd></div>
+                          <div className="detail-item"><dt>Đối tượng</dt><dd className="mono">{event.entityType} · {event.entityId}</dd></div>
                           <div className="detail-item"><dt>Người thực hiện</dt><dd className="mono">{event.actorId}</dd></div>
                           <div className="detail-item"><dt>Mã truy vết</dt><dd className="mono">{event.traceId}</dd></div>
                           <div className="detail-item"><dt>Trường thay đổi</dt><dd className="mono">{event.changedFields.join(", ") || "—"}</dd></div>
