@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import { BULK_CLEAR, BULK_LIMIT, bulkConfirmText, bulkNouns, type BulkFieldChoice, type BulkKind, type BulkOperation, type BulkOutcome } from "@/modules/catalog/bulk";
 import { bulkCatalogAction, exportCatalogCsvAction } from "@/modules/catalog/bulk-actions";
+import { assignSupplierToMaterialsAction } from "@/modules/pricing/purchase-book-actions";
 
 type Selection = { selected: ReadonlySet<string>; toggle: (id: string) => void; setMany: (ids: readonly string[], on: boolean) => void; clear: () => void };
 const SelectionContext = createContext<Selection | null>(null);
@@ -51,13 +52,14 @@ function download(csv: string, filename: string) {
   window.setTimeout(() => URL.revokeObjectURL(url), 30000);
 }
 
-type Pending = { operation: BulkOperation; confirm: string };
+/** A catalog change, or (D61, materials) assigning one supplier to every chosen material. */
+type Pending = { operation: BulkOperation; confirm: string; assign?: undefined } | { operation?: undefined; confirm: string; assign: { supplierId: string; supplierName: string; operationId: string } };
 
 /**
  * The bar shown once a row is chosen: how many, "choose all matching the filter" (up to 200), then one change for all
  * of them (asked once more before it runs) or an export. Each record is saved through its own audited command.
  */
-export function BulkActionBar({ kind, pageIds, matchingIds, total, fields, activeLabels, canDelete = true }: {
+export function BulkActionBar({ kind, pageIds, matchingIds, total, fields, activeLabels, canDelete = true, assignSuppliers }: {
   kind: BulkKind;
   pageIds: readonly string[];
   /** Every record matching the filter, when there are at most 200 of them. */
@@ -66,6 +68,8 @@ export function BulkActionBar({ kind, pageIds, matchingIds, total, fields, activ
   fields: readonly BulkFieldChoice[];
   activeLabels: { stop: string; restart: string };
   canDelete?: boolean;
+  /** D61: suppliers offered by "Gán nhà cung cấp" (materials only, for those who manage purchase prices). */
+  assignSuppliers?: readonly { id: string; name: string }[];
 }) {
   const router = useRouter();
   const { selected, setMany, clear } = useSelection();
@@ -89,6 +93,13 @@ export function BulkActionBar({ kind, pageIds, matchingIds, total, fields, activ
     if (ids.length > BULK_LIMIT) { setMessage(`Mỗi lần tối đa ${BULK_LIMIT} ${noun}.`); return; }
     let operation: BulkOperation;
     let valueLabel: string | undefined;
+    if (action === "assign-supplier") {
+      const supplier = assignSuppliers?.find((item) => item.id === value);
+      if (!supplier) { setMessage("Chọn nhà cung cấp."); return; }
+      setPending({ confirm: `Gán ${ids.length} ${noun} cho ${supplier.name}? Vật tư sẽ hiện trong Giá mua của nhà cung cấp này (đơn vị mua theo NCC khác đang dùng, hoặc đơn vị cơ bản). Vật tư ngừng mua được bỏ qua; giá nhập sau ở Giá mua.`,
+        assign: { supplierId: supplier.id, supplierName: supplier.name, operationId: crypto.randomUUID() } });
+      return;
+    }
     if (action === "delete") operation = { type: "delete" };
     else if (action === "stop" || action === "restart") operation = { type: "active", active: action === "restart" };
     else if (field) {
@@ -106,6 +117,15 @@ export function BulkActionBar({ kind, pageIds, matchingIds, total, fields, activ
     if (!pending) return;
     setBusy(true);
     try {
+      if (pending.assign) {
+        const outcome = await assignSupplierToMaterialsAction({ operationId: pending.assign.operationId, supplierId: pending.assign.supplierId, materialIds: ids });
+        setResult(outcome);
+        // An unclear outcome keeps the same operation, so pressing Xác nhận again only checks; nothing is assigned twice.
+        if (outcome.outcomeUnknown) return;
+        setPending(null);
+        if (outcome.changed > 0) { clear(); setAction(""); setValue(""); router.refresh(); }
+        return;
+      }
       const outcome = await bulkCatalogAction({ kind, ids, operation: pending.operation });
       setResult(outcome);
       setPending(null);
@@ -140,11 +160,16 @@ export function BulkActionBar({ kind, pageIds, matchingIds, total, fields, activ
           {fields.map((item) => <option key={item.field} value={`set:${item.field}`}>Đổi {item.label.toLowerCase()}</option>)}
           <option value="stop">{activeLabels.stop}</option>
           <option value="restart">{activeLabels.restart}</option>
+          {assignSuppliers && <option value="assign-supplier">Gán nhà cung cấp</option>}
           {canDelete && <option value="delete">Xóa hẳn</option>}
         </select></label>
         {field?.control === "option" && <label>{field.label}<select value={value} onChange={(event) => { setValue(event.target.value); setPending(null); }} disabled={busy}>
           <option value="">Chọn…</option>
           {field.options?.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+        </select></label>}
+        {action === "assign-supplier" && <label>Nhà cung cấp<select value={value} onChange={(event) => { setValue(event.target.value); setPending(null); }} disabled={busy}>
+          <option value="">{assignSuppliers?.length ? "Chọn nhà cung cấp…" : "Chưa có nhà cung cấp đang dùng"}</option>
+          {assignSuppliers?.map((supplier) => <option key={supplier.id} value={supplier.id}>{supplier.name}</option>)}
         </select></label>}
         {field?.control === "days" && <label>{field.label}<input type="number" min={0} max={365} step={1} inputMode="numeric" value={value} onChange={(event) => { setValue(event.target.value); setPending(null); }} disabled={busy} /></label>}
         {field?.control === "boolean" && <label>{field.label}<select value={value} onChange={(event) => { setValue(event.target.value); setPending(null); }} disabled={busy}>
@@ -157,7 +182,7 @@ export function BulkActionBar({ kind, pageIds, matchingIds, total, fields, activ
       {pending && <div className="bulk-confirm" role="alertdialog" aria-label="Xác nhận thao tác hàng loạt">
         <p>{pending.confirm}</p>
         <div className="action-cluster">
-          <button type="button" className={`button ${pending.operation.type === "delete" ? "button-danger" : "button-primary"} button-compact`} onClick={run} disabled={busy}>{busy ? "Đang thực hiện…" : "Xác nhận"}</button>
+          <button type="button" className={`button ${pending.operation?.type === "delete" ? "button-danger" : "button-primary"} button-compact`} onClick={run} disabled={busy}>{busy ? "Đang thực hiện…" : "Xác nhận"}</button>
           <button type="button" className="button button-secondary button-compact" onClick={() => setPending(null)} disabled={busy}>Hủy</button>
         </div>
       </div>}
