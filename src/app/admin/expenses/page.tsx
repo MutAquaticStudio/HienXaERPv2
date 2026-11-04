@@ -73,7 +73,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
   const assignments = (assignmentResult.data ?? []).map(item => ({ id: item.assignment_id, version: item.delivery_version, label: `${item.delivery_number} · lần ${item.assignment_version} · ${item.plate_number || item.external_carrier_name} · ${item.execution_state}` }));
   const assignmentLabels = new Map(assignments.map(item => [item.id, item.label]));
   const tabs = [{ id: "all", label: "Tất cả" }, { id: "DRAFT", label: "Chờ duyệt", count: shown(draftCount) }, { id: "APPROVED", label: "Đã duyệt", count: shown(approvedCount) }];
-  return <div className="page-stack"><header className="page-heading"><div><p className="eyebrow">Chi phí vận hành</p><h1>Chi phí vận hành</h1><p className="lede">Ghi khoản chi như KiotViet: trả ngay từ quỹ (vào Sổ quỹ) hoặc ghi nợ nhà cung cấp.</p></div>
+  return <div className="page-stack"><header className="page-heading"><div><h1>Chi phí vận hành</h1><p className="lede">Ghi khoản chi như KiotViet: trả ngay từ quỹ (vào Sổ quỹ) hoặc ghi nợ nhà cung cấp.</p></div>
       {canManage && <div className="action-cluster">
         <FormDialog label="Ghi chi phí" title="Ghi chi phí" size="lg" buttonClassName="button button-primary" defaultOpen={query.new === "1"}
           description="Chi phí vào sổ ngay. Đã trả ngay thì thành phiếu chi trong Sổ quỹ; ghi nợ thì thành công nợ nhà cung cấp.">

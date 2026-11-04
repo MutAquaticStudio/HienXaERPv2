@@ -1,6 +1,5 @@
 import { Fragment } from "react";
 import { randomUUID } from "node:crypto";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { requireInternalPermission } from "@/lib/access/context";
@@ -16,6 +15,7 @@ import { formatVnd, vnd } from "@/lib/core/money";
 import { formatMinutes } from "@/modules/attendance/presentation";
 import { AdjustPayrollLineForm, PayrollCommandForm } from "@/modules/payroll/forms";
 import { componentKindLabel, payBasisLabel, payrollCsv, payrollStateLabel, payrollStateTone } from "@/modules/payroll/presentation";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 type Line = {
   id: string; employee_id: string; included: boolean; pay_basis: string; standard_work_days: string; work_days: string; worked_shifts: number;
@@ -75,7 +75,7 @@ export default async function PayrollDetailPage({ params, searchParams }: { para
 
   return <>
     <header className="page-heading">
-      <div><p className="eyebrow"><Link href="/admin/payroll">Bảng lương</Link> · {period.code}</p><h1>{period.name}</h1>
+      <div><Breadcrumb parent={{ href: "/admin/payroll", label: "Bảng lương" }} current={period.code} /><h1>{period.name}</h1>
         <p className="lede">Kỳ {formatBusinessDate(period.period_start)} – {formatBusinessDate(period.period_end)} · tính lúc {formatBusinessDateTime(period.calculated_at)}
           {period.closed_at ? ` · chốt lúc ${formatBusinessDateTime(period.closed_at)}` : ""}</p></div>
       <div className="action-cluster">

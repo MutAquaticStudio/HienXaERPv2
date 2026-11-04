@@ -51,7 +51,7 @@ export default async function SuppliersPage({ searchParams }: { searchParams: Pr
   const bulkFields: BulkFieldChoice[] = [{ field: "payment_terms_days", label: "Hạn thanh toán (ngày)", control: "days" }];
 
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Cung ứng</p><h1>Nhà cung cấp</h1><p className="lede">Danh bạ nguồn hàng tại {access.branchName}. Bấm tên nhà cung cấp để xem chi tiết.</p></div>
+    <header className="page-heading"><div><h1>Nhà cung cấp</h1><p className="lede">Danh bạ nguồn hàng tại {access.branchName}. Bấm tên nhà cung cấp để xem chi tiết.</p></div>
       <div className="action-cluster">
         {create && <CatalogCreateButton {...create} label="+ Nhà cung cấp" />}
         {(access.permissions.has("purchasing.price.read") || access.permissions.has("purchasing.price.manage")) && <Link className="button button-secondary" href="/admin/suppliers/pricing">Bảng giá mua</Link>}

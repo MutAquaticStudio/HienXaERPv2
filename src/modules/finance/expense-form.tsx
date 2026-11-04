@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { MoneyInput } from "@/components/ui/money-input";
 import type { CommandOutcome } from "@/lib/core/command-outcome";
-import { EXPENSE_TYPE_SUGGESTIONS } from "./operating-expense";
+import { EXPENSE_TYPE_SUGGESTIONS } from "./expense-type-suggestions";
 
 type Option = { id: string; label: string };
 type Account = Option & { kind: string };

@@ -50,7 +50,7 @@ export default async function PricingSettingsPage({ searchParams }: { searchPara
       scopeLabel: [pricingScopeLabel(rule.scope_type), label(options.customers, rule.customer_id) || groupName(rule.customer_tier_code), target, uom].filter(Boolean).join(" · ") };
   });
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Vật tư · {access.branchName}</p><h1 tabIndex={-1}>Chính sách giá</h1><p className="lede">Giá có hiệu lực theo phạm vi và ngày. Đổi giá tạo phiên bản mới, không viết lại chứng từ cũ.</p></div></header>
+    <header className="page-heading"><div><h1 tabIndex={-1}>Chính sách giá</h1><p className="lede">Giá có hiệu lực theo phạm vi và ngày. Đổi giá tạo phiên bản mới, không viết lại chứng từ cũ.</p></div></header>
     <AutoFilterForm><label>Trạng thái<select name="state" defaultValue={query.state ?? ""}><option value="">Tất cả / lịch sử</option>{Object.entries(effectivePriceLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label></AutoFilterForm>
     <PriceGroupList canManage={canManage} groups={priceGroups.map((group) => ({ ...group, customers: members.get(group.code) ?? 0 }))} />
     <PricingRuleList rows={rows} options={options} canManage={canManage} partyLabel="Áp dụng cho" createLabel="+ Tạo chính sách giá" />

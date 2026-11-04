@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { cancelPlannedDeliveryAction } from "@/modules/delivery/cancel-planned-action";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -20,7 +21,7 @@ export default async function CancelPlannedDeliveryPage({ params, searchParams }
   if (!delivery) notFound();
 
   return <>
-    <header className="page-heading"><div><p className="eyebrow">Thực hiện đơn</p><h1>Hủy kế hoạch giao hàng</h1><p className="lede">{delivery.delivery_number} · {delivery.customer_name_snapshot} · {delivery.site_name_snapshot}</p></div></header>
+    <header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/deliveries", label: "Phiếu giao" }} /><h1>Hủy kế hoạch giao hàng</h1><p className="lede">{delivery.delivery_number} · {delivery.customer_name_snapshot} · {delivery.site_name_snapshot}</p></div></header>
     <section className="card">
       {delivery.execution_state !== "PLANNED" ? <>
         <h2>{delivery.execution_state === "CANCELLED" ? "Phiếu đã hủy" : "Không thể hủy phiếu này"}</h2>

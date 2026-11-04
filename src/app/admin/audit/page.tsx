@@ -132,7 +132,7 @@ export default async function AuditPage({
     <div className="page-stack">
       <section className="section-head">
         <div>
-          <p className="eyebrow">Quản trị hệ thống</p>
+          
           <h1>Nhật ký hoạt động</h1>
           <p className="muted">Theo dõi ai đã làm gì, trên đối tượng nào và vào thời điểm nào.</p>
         </div>

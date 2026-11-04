@@ -3,7 +3,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import styles from "@/components/portal/portal.module.css";
 import { ClockPanel } from "@/modules/attendance/forms";
 import {
-  addDays, attendanceMark, attendanceStatusLabel, formatClock, formatMinutes, formatShiftTime, weekdayLabel, weekStart,
+  addDays, attendanceMark, attendanceStatusLabel, formatClock, formatMinutes, formatShiftTime, openShiftHeading, weekdayLabel, weekStart,
 } from "@/modules/attendance/presentation";
 
 type Shift = { id: string; name: string; start_time: string; end_time: string };
@@ -23,21 +23,24 @@ export default async function WorkAttendancePage() {
   const monday = weekStart(day);
   const monthStart = `${day.slice(0, 7)}-01`;
   const from = monthStart < monday ? monthStart : monday;
-  const [shiftsResult, assignmentsResult, recordsResult, settingsResult] = await Promise.all([
+  const [shiftsResult, assignmentsResult, recordsResult, settingsResult, openResult] = await Promise.all([
     supabase.from("work_shifts").select("id, name, start_time, end_time").eq("branch_id", access.branchId),
     supabase.from("shift_assignments").select("id, work_date, shift_id").eq("employee_id", access.employeeId).eq("branch_id", access.branchId)
       .is("cancelled_at", null).gte("work_date", monday).lte("work_date", addDays(monday, 6)).order("work_date"),
     supabase.from("attendance_records").select("id, work_date, shift_id, status, clock_in_at, clock_out_at, worked_minutes, late_minutes, early_minutes, overtime_minutes")
       .eq("employee_id", access.employeeId).gte("work_date", addDays(from, -1)).order("work_date", { ascending: false }),
     supabase.from("attendance_settings").select("require_location").eq("branch_id", access.branchId).maybeSingle(),
+    // Same lookup as "Hôm nay": the open shift on any day, so both screens agree.
+    supabase.from("attendance_records").select("work_date, clock_in_at").eq("employee_id", access.employeeId).not("clock_in_at", "is", null)
+      .is("clock_out_at", null).order("clock_in_at", { ascending: false }).limit(1),
   ]);
-  if (shiftsResult.error || assignmentsResult.error || recordsResult.error || settingsResult.error) {
+  if (shiftsResult.error || assignmentsResult.error || recordsResult.error || settingsResult.error || openResult.error) {
     throw new Error("Không tải được chấm công. Vui lòng thử lại.");
   }
   const shifts = new Map((shiftsResult.data as Shift[]).map((shift) => [shift.id, shift]));
   const assignments = assignmentsResult.data as Assignment[];
   const records = recordsResult.data as AttendanceRow[];
-  const open = records.find((record) => record.clock_in_at && !record.clock_out_at);
+  const open = (openResult.data ?? [])[0] as { work_date: string; clock_in_at: string } | undefined;
   const todayShifts = assignments.filter((item) => item.work_date === day);
   const monthRecords = records.filter((record) => record.work_date >= monthStart && record.work_date <= day);
   const workedDays = new Set(monthRecords.filter((record) => record.status === "WORKED" && record.clock_in_at).map((record) => record.work_date)).size;
@@ -53,8 +56,8 @@ export default async function WorkAttendancePage() {
     <div className={styles.page}>
       <header className={styles.hero}>
         <p className={styles.heroEyebrow}>Chấm công hôm nay</p>
-        <h1>{open ? `Đang trong ca từ ${formatClock(open.clock_in_at)}` : todayShifts.length ? shiftLabel(todayShifts[0].shift_id) : "Hôm nay chưa xếp ca"}</h1>
-        <p>{open ? "Bấm “Ra ca” khi kết thúc. Văn phòng duyệt và chốt ngày công cuối kỳ." : "Bấm “Vào ca” khi bắt đầu làm việc. Có thể vào sớm tối đa theo cài đặt của chi nhánh."}</p>
+        <h1>{open ? (open.work_date === day ? `Đang trong ca từ ${formatClock(open.clock_in_at)}` : openShiftHeading(open, day)) : todayShifts.length ? shiftLabel(todayShifts[0].shift_id) : "Hôm nay chưa xếp ca"}</h1>
+        <p>{open ? (open.work_date === day ? "Bấm “Ra ca” khi kết thúc. Văn phòng duyệt và chốt ngày công cuối kỳ." : "Bấm “Ra ca” để kết thúc ca cũ rồi mới vào ca mới. Giờ ra ca sai thì báo văn phòng sửa.") : "Bấm “Vào ca” khi bắt đầu làm việc. Có thể vào sớm tối đa theo cài đặt của chi nhánh."}</p>
       </header>
       <section className={styles.card}>
         <ClockPanel clockedIn={Boolean(open)} requireLocation={Boolean(settingsResult.data?.require_location)} />

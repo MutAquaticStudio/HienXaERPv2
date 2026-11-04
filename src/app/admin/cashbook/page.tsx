@@ -56,6 +56,12 @@ function period(query: Query) {
  * Sổ quỹ (FB2 Đợt 6, KiotViet style): opening, receipts, disbursements and closing for the period and account, the
  * posted receipts and payments of that period, and their reconciliation and reversal in popups.
  */
+/** "Tiền mặt · Quỹ cửa hàng", "Ngân hàng · VCB"; an account already named after its kind is not repeated ("Tiền mặt"). */
+function accountTabLabel(kind: string, name: string) {
+  const kindLabel = kind === "CASH" ? "Tiền mặt" : "Ngân hàng";
+  return name.toLocaleLowerCase("vi-VN").startsWith(kindLabel.toLocaleLowerCase("vi-VN")) ? name : `${kindLabel} · ${name}`;
+}
+
 export default async function CashbookPage({ searchParams }: { searchParams: Promise<Query> }) {
   const access = await requireInternalPermission("finance.ar.read");
   requireAnyPermission(access, CASHBOOK_PERMISSIONS);
@@ -137,7 +143,7 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
     account: item.account_code, amount: `${item.direction === "RECEIPT" ? "" : "-"}${item.amount_vnd}`, state: financeStateLabel(item.reconciliation_state),
   })), [["number", "Mã phiếu"], ["date", "Ngày"], ["kind", "Loại"], ["party", "Người nộp / nhận"], ["account", "Tài khoản"], ["amount", "Số tiền (đ)"], ["state", "Đối soát"]]);
 
-  return <div className="page-stack"><header className="page-heading"><div><p className="eyebrow">Tiền mặt và ngân hàng</p><h1>Sổ quỹ</h1><p className="lede">Thu chi đã ghi sổ theo kỳ và tài khoản, đối soát ngân hàng và giao dịch đảo.</p></div>
+  return <div className="page-stack"><header className="page-heading"><div><h1>Sổ quỹ</h1><p className="lede">Thu chi đã ghi sổ theo kỳ và tài khoản, đối soát ngân hàng và giao dịch đảo.</p></div>
       <div className="action-cluster">
         {can.post && <PartyPaymentLauncher label="Lập phiếu thu" title="Lập phiếu thu · chọn khách hàng" partyLabel="khách hàng" parties={customers} hrefPrefix="/admin/receivables?customer=" className="button button-primary" />}
         {can.post && can.payables && <PartyPaymentLauncher label="Lập phiếu chi" title="Lập phiếu chi · chọn nhà cung cấp" partyLabel="nhà cung cấp" parties={suppliers} hrefPrefix="/admin/payables?supplier=" />}
@@ -157,11 +163,11 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
       <article className="card metric-card"><span className="metric-label">Tổng chi</span><strong className="metric-value text-danger"><MetricNumber value={money(totals.disbursements_vnd)} /></strong></article>
       <article className="card metric-card"><span className="metric-label">Tồn quỹ cuối kỳ</span><strong className="metric-value"><MetricNumber value={money(totals.closing_vnd)} /></strong><small className="table-subline">Đến hết {formatBusinessDate(`${range.to}T12:00:00+07:00`)}</small></article>
     </section>
-    <section className="metric-grid metric-grid-compact"><article className="card metric-card"><span className="metric-label">Dòng tiền ròng</span><strong className="metric-value"><MetricNumber value={money(String(summary.net_cash_vnd))} /></strong><small className="table-subline">Toàn bộ tài khoản đến nay</small></article><article className="card metric-card"><span className="metric-label">Chưa đối soát</span><strong className="metric-value">{summary.unmatched_count}</strong></article><article className="card metric-card"><span className="metric-label">Tài khoản</span><strong className="metric-value">{accounts.length}</strong></article><article className="card metric-card"><span className="metric-label">Vị thế ứng trước</span><strong className="metric-value">{(advances ?? []).length}</strong></article></section>
+    <section className="metric-grid metric-grid-compact"><article className="card metric-card"><span className="metric-label">Dòng tiền ròng</span><strong className="metric-value"><MetricNumber value={money(String(summary.net_cash_vnd))} /></strong><small className="table-subline">Toàn bộ tài khoản đến nay</small></article><article className="card metric-card"><span className="metric-label">Chưa đối soát</span><strong className="metric-value">{summary.unmatched_count}</strong></article><article className="card metric-card"><span className="metric-label">Tài khoản</span><strong className="metric-value">{accounts.length}</strong></article><article className="card metric-card"><span className="metric-label">Khoản khách ứng trước</span><strong className="metric-value">{(advances ?? []).length}</strong></article></section>
     <nav className="detail-tabs cashbook-accounts" aria-label="Quỹ">
       <Link href={href({ account: undefined })} aria-current={!accountId ? "page" : undefined} scroll={false}>Tổng quỹ</Link>
       {accounts.filter((row) => row.active || row.id === accountId).map((row) => <Link key={row.id} href={href({ account: row.id })} aria-current={row.id === accountId ? "page" : undefined} scroll={false}>
-        {row.account_kind === "CASH" ? "Tiền mặt" : "Ngân hàng"} · {row.name}</Link>)}
+        {accountTabLabel(row.account_kind, row.name)}</Link>)}
     </nav>
     {selectedBank && <section className="card card-pad bank-details" aria-label="Thông tin chuyển khoản">
       <div><span className="metric-label">Thông tin chuyển khoản</span>
@@ -187,11 +193,11 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
     </section>}
     {cashWaiting.length > 0 && <section className="card" id="cash-requests" aria-label="Chờ thu tiền mặt"><div className="section-head"><h2>Chờ thu tiền mặt</h2><span className="scope-chip">{cashWaiting.length} yêu cầu</span></div>
       <p className="muted card-pad">Khách chọn trả tiền mặt tại cửa hàng. Đếm tiền, đối chiếu mã khách đưa, rồi bấm “Xác nhận đã thu” — lúc đó mới ghi phiếu thu và trừ công nợ.</p>
-      <div className="table-wrap"><table><thead><tr><th>Mã</th><th>Khách hàng</th><th>Tạo lúc</th><th className="numeric">Cần thu</th><th className="numeric">Đã nhận</th><th>Thao tác</th></tr></thead><tbody>{cashWaiting.map((row) => <tr key={row.id}>
+      <div className="table-wrap"><table className="card-table"><thead><tr><th>Mã</th><th>Khách hàng</th><th>Tạo lúc</th><th className="numeric">Cần thu</th><th className="numeric">Đã nhận</th><th>Thao tác</th></tr></thead><tbody>{cashWaiting.map((row) => <tr key={row.id}>
         <td className="mono">{row.code}</td>
-        <td><Link className="code-link" href={`/admin/customers/${row.customer_id}?tab=debts`}>{row.customer?.display_name ?? "—"}</Link><small className="table-subline">{row.customer?.code}</small></td>
-        <td>{formatBusinessDate(row.created_at)}</td>
-        <td className="numeric mono">{money(row.amount_vnd)}</td><td className="numeric mono">{money(row.received_amount_vnd)}</td>
+        <td data-label="Khách hàng"><Link className="code-link" href={`/admin/customers/${row.customer_id}?tab=debts`}>{row.customer?.display_name ?? "—"}</Link><small className="table-subline">{row.customer?.code}</small></td>
+        <td data-label="Tạo lúc">{formatBusinessDate(row.created_at)}</td>
+        <td className="numeric mono" data-label="Cần thu">{money(row.amount_vnd)}</td><td className="numeric mono" data-label="Đã nhận">{money(row.received_amount_vnd)}</td>
         <td className="table-actions"><CashConfirmButton request={row} customerId={row.customer_id}
           accounts={accounts.filter((account) => account.account_kind === "CASH" && account.active).map((account) => ({ id: account.id, name: account.name }))}
           defaultAmountVnd={(BigInt(row.amount_vnd) > BigInt(row.received_amount_vnd) ? BigInt(row.amount_vnd) - BigInt(row.received_amount_vnd) : BigInt(row.amount_vnd)).toString()} /></td>
@@ -199,9 +205,9 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
     </section>}
     {bankLines.length > 0 && <section className="card" id="bank" aria-label="Giao dịch ngân hàng chờ xử lý"><div className="section-head"><h2>Giao dịch ngân hàng chờ xử lý</h2><span className="scope-chip">{bankLines.length} khoản</span></div>
       <p className="muted card-pad-x">Tiền đã vào tài khoản nhưng chưa nhận ra khách. Chọn khách để ghi phiếu thu (trừ nợ cũ nhất trước), hoặc bỏ qua nếu không phải tiền khách trả.</p>
-      <div className="table-wrap"><table><thead><tr><th>Thời gian</th><th>Nội dung chuyển khoản</th><th className="numeric">Số tiền</th><th>Lý do chờ</th><th>Thao tác</th></tr></thead><tbody>{bankLines.map((line) => <tr key={line.id}>
+      <div className="table-wrap"><table className="card-table"><thead><tr><th>Thời gian</th><th>Nội dung chuyển khoản</th><th className="numeric">Số tiền</th><th>Lý do chờ</th><th>Thao tác</th></tr></thead><tbody>{bankLines.map((line) => <tr key={line.id}>
         <td>{formatBusinessDate(line.transaction_at)}<small className="table-subline">{line.gateway ?? "Ngân hàng"}{line.reference_code ? ` · ${line.reference_code}` : ""}</small></td>
-        <td className="cell-wrap">{line.content || "—"}{line.payment_request && <small className="table-subline">Yêu cầu thanh toán {line.payment_request.code}</small>}</td><td className="numeric mono text-success">+{money(line.amount_vnd)}</td><td className="cell-wrap">{BANK_REASON[line.reason] ?? "Cần kiểm tra"}</td>
+        <td className="cell-wrap" data-label="Nội dung chuyển khoản">{line.content || "—"}{line.payment_request && <small className="table-subline">Yêu cầu thanh toán {line.payment_request.code}</small>}</td><td className="numeric mono text-success" data-label="Số tiền">+{money(line.amount_vnd)}</td><td className="cell-wrap" data-label="Lý do chờ">{BANK_REASON[line.reason] ?? "Cần kiểm tra"}</td>
         <td className="table-actions"><FormDialog label="Xử lý" title="Ghi khoản tiền về" buttonClassName="button button-secondary button-compact" description={<>{money(line.amount_vnd)} · {line.content || "Không có nội dung"}</>}>
           <form className="mini-command" action={resolveBankTransactionAction}><h3>Ghi phiếu thu cho khách</h3><input type="hidden" name="transactionId" value={line.id} /><input type="hidden" name="operationId" value={randomUUID()} />
             <label className="field">Khách hàng<select name="customerId" required defaultValue={line.customer_id ?? ""}><option value="" disabled>Chọn khách hàng</option>{customers.map((customer) => <option key={customer.id} value={customer.id}>{customer.code} · {customer.name}</option>)}</select></label>
@@ -219,13 +225,13 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
         <label>Loại<select name="direction" defaultValue={direction}><option value="">Thu và chi</option><option value="RECEIPT">Phiếu thu</option><option value="DISBURSEMENT">Phiếu chi</option></select></label>
         {filtered && <Link className="code-link" href="/admin/cashbook">Xóa lọc</Link>}
       </AutoFilterForm>
-      <section className="card list-main"><div className="section-head"><h2>Giao dịch đã ghi sổ</h2><div className="action-cluster"><span className="scope-chip">{totals.payment_count} giao dịch trong kỳ</span>{exportRows.length > 0 && <CsvDownloadButton csv={csv} filename={`so-quy-${range.from}-${range.to}.csv`} label="Xuất file" />}</div></div><div className="table-wrap" role="region" aria-label="Giao dịch thu chi đã ghi sổ" tabIndex={0}><table className="cashbook-table"><thead><tr><th>Phiếu</th><th>Đối tác</th><th>Tài khoản</th><th>Loại</th><th className="numeric">Số tiền</th><th>Đối soát</th><th>Thao tác</th></tr></thead><tbody>{rows.map((item) => {
+      <section className="card list-main"><div className="section-head"><h2>Giao dịch đã ghi sổ</h2><div className="action-cluster"><span className="scope-chip">{totals.payment_count} giao dịch trong kỳ</span>{exportRows.length > 0 && <CsvDownloadButton csv={csv} filename={`so-quy-${range.from}-${range.to}.csv`} label="Xuất file" />}</div></div><div className="table-wrap" role="region" aria-label="Giao dịch thu chi đã ghi sổ" tabIndex={0}><table className="cashbook-table card-table"><thead><tr><th>Phiếu</th><th>Đối tác</th><th>Tài khoản</th><th>Loại</th><th className="numeric">Số tiền</th><th>Đối soát</th><th>Thao tác</th></tr></thead><tbody>{rows.map((item) => {
         const canHandle = item.posting_state === "POSTED" && !item.reversal_of_payment_id && ((can.reconcile && item.reconciliation_state !== "MATCHED") || can.reverse);
-        return <tr key={item.id}><td><span className="mono">{item.payment_number}</span><small className="table-subline">{formatBusinessDate(item.effective_at)}</small></td><td className="cell-wrap">{item.counterparty_name}</td><td>{item.account_code}</td>
-          <td><StatusBadge tone={item.posting_state === "REVERSED" ? "danger" : "info"}>{item.reversal_of_payment_id ? "Đảo giao dịch" : item.direction === "RECEIPT" ? "Thu" : "Chi"}</StatusBadge></td>
-          <td className={`numeric mono${item.direction === "RECEIPT" ? " text-success" : ""}`}>{item.direction === "RECEIPT" ? "+" : "−"}{money(String(item.amount_vnd))}</td>
-          <td><strong>{financeStateLabel(item.reconciliation_state)}</strong><small className="table-subline">Lệch {money(String(item.reconciliation_difference_vnd))}</small></td>
-          <td className="table-actions"><Link className="code-link" href={`/api/payments/${item.id}/voucher/pdf`}>In {item.direction === "RECEIPT" ? "phiếu thu" : "phiếu chi"}</Link><Link className="code-link" href={`/api/payments/${item.id}/voucher/pdf?kho=k80`}>K80</Link>
+        return <tr key={item.id}><td><span className="mono">{item.payment_number}</span><small className="table-subline">{formatBusinessDate(item.effective_at)}</small></td><td className="cell-wrap" data-label="Đối tác">{item.counterparty_name}</td><td data-label="Tài khoản">{item.account_code}</td>
+          <td data-label="Loại"><StatusBadge tone={item.posting_state === "REVERSED" ? "danger" : "info"}>{item.reversal_of_payment_id ? "Đảo giao dịch" : item.direction === "RECEIPT" ? "Thu" : "Chi"}</StatusBadge></td>
+          <td data-label="Số tiền" className={`numeric mono${item.direction === "RECEIPT" ? " text-success" : ""}`}>{item.direction === "RECEIPT" ? "+" : "−"}{money(String(item.amount_vnd))}</td>
+          <td data-label="Đối soát"><strong>{financeStateLabel(item.reconciliation_state)}</strong><small className="table-subline">Lệch {money(String(item.reconciliation_difference_vnd))}</small></td>
+          <td className="table-actions"><Link className="code-link" href={`/api/payments/${item.id}/voucher/pdf`}>In {item.direction === "RECEIPT" ? "phiếu thu" : "phiếu chi"}</Link><Link className="code-link" href={`/api/payments/${item.id}/voucher/pdf?kho=k80`} aria-label={`In ${item.direction === "RECEIPT" ? "phiếu thu" : "phiếu chi"} khổ K80`}>K80</Link>
             {canHandle && <FormDialog label="Xử lý" title={`Xử lý ${item.payment_number}`} buttonClassName="button button-secondary button-compact"
               description={<>{item.counterparty_name} · {money(String(item.amount_vnd))} · {formatBusinessDate(item.effective_at)}</>}>
               {can.reconcile && item.reconciliation_state !== "MATCHED" && <form className="mini-command" action={reconcilePaymentAction}><h3>Đối soát ngân hàng</h3><input type="hidden" name="paymentId" value={item.id} /><input type="hidden" name="operationId" value={randomUUID()} /><label className="field" htmlFor={`reconcile-amount-${item.id}`}>Số tiền đối soát (VND)<MoneyInput id={`reconcile-amount-${item.id}`} name="amount" placeholder="Số tiền đối soát" required /></label><label className="field" htmlFor={`reconcile-time-${item.id}`}>Thời điểm đối soát<input id={`reconcile-time-${item.id}`} type="datetime-local" name="effectiveAt" defaultValue={localNow()} required /></label><label className="field" htmlFor={`reconcile-reference-${item.id}`}>Mã dòng ngân hàng<input id={`reconcile-reference-${item.id}`} name="reference" placeholder="Mã dòng ngân hàng" required /></label><button className="button button-secondary" type="submit">Ghi đối soát</button></form>}
@@ -235,9 +241,9 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
       <ListPager page={list.page} total={total} hasNext={hasNext} params={params} /></section>
       {nonCash.length > 0 && <section className="card list-span" aria-label="Chi phí không dùng tiền"><div className="section-head"><h2>Chi phí không dùng tiền trong kỳ (hao hụt kho)</h2><span className="scope-chip">Tổng {money(String(nonCashTotal))}</span></div>
         <p className="muted card-pad-x">Ghi vào chi phí và trừ lợi nhuận; không tính vào số dư quỹ.</p>
-        <div className="table-wrap"><table><thead><tr><th>Mã</th><th>Loại chi / ghi chú</th><th className="numeric">Số tiền</th></tr></thead><tbody>{nonCash.map((item) => <tr key={item.id}>
+        <div className="table-wrap"><table className="card-table"><thead><tr><th>Mã</th><th>Loại chi / ghi chú</th><th className="numeric">Số tiền</th></tr></thead><tbody>{nonCash.map((item) => <tr key={item.id}>
           <td><Link className="code-link mono" href={`/admin/expenses?focus=${item.id}`}>{item.expense_number}</Link><small className="table-subline">{formatBusinessDate(item.effective_at)}</small></td>
-          <td className="cell-wrap">{item.category_name}<small className="table-subline">{item.description}</small></td><td className="numeric mono">{money(item.amount_vnd)}</td></tr>)}</tbody></table></div></section>}
+          <td className="cell-wrap" data-label="Loại chi / ghi chú">{item.category_name}<small className="table-subline">{item.description}</small></td><td className="numeric mono" data-label="Số tiền">{money(item.amount_vnd)}</td></tr>)}</tbody></table></div></section>}
     </div>
   </div>;
 }

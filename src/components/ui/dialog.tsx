@@ -55,7 +55,7 @@ export function Dialog({ title, eyebrow, description, onClose, children, size = 
     <section className={`dialog-panel dialog-${size} card`} role="dialog" aria-modal="true" aria-labelledby={titleId}>
       <QuickCreateFocusGuard />
       <header className="dialog-head">
-        <div>{eyebrow && <p className="eyebrow">{eyebrow}</p>}<h2 id={titleId}>{title}</h2></div>
+        <div><h2 id={titleId}>{title}</h2>{eyebrow && <p className="dialog-context">{eyebrow}</p>}</div>
         <button className="button button-secondary" type="button" onClick={requestClose}>Đóng</button>
       </header>
       {description && <p className="muted dialog-description">{description}</p>}

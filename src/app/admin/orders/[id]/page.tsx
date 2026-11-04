@@ -7,6 +7,7 @@ import { parseCreditBlock } from "@/modules/sales/credit-block";
 import { OrderSourcingPanel, sourcingRun } from "@/components/sales/order-sourcing-panel";
 import { OrderDeliveryPhotos } from "@/components/delivery/delivery-photos";
 import { OrderDeliveryButton, type OrderDeliveryLine } from "@/components/delivery/order-delivery-dialog";
+import { OrderPrintMenu } from "@/components/sales/order-print-menu";
 import { OrderNextSteps } from "@/components/sales/order-next-steps";
 import { listAssignmentEmployees } from "@/modules/delivery/assignment-options";
 import { randomUUID } from "node:crypto";
@@ -36,6 +37,7 @@ import { loadCompanyProfile } from "@/lib/company/profile";
 import { SendToCustomerZalo } from "@/components/zalo/send-to-customer";
 import { orderConfirmedMessage, zaloChatLink } from "@/modules/zalo/customer-messages";
 import { vehicleName } from "@/modules/catalog/vehicle-label";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 type Order = { id: string; customer_id: string; site_id: string; order_number: string; commercial_state: string; fulfillment_state: string; payment_state: string; customer_name_snapshot: string; site_name_snapshot: string; delivery_address_snapshot: string; total_vnd: string; requested_delivery_at: string | null; quotation_revision_id: string | null; created_at: string };
 type Line = { id: string; material_id: string; base_uom_id: string; line_number: number; material_name_snapshot: string; quantity: string; unit_price_vnd: string; line_total_vnd: string; list_unit_price_vnd: string | null; discount_mode: string | null; discount_value: string | null; price_source_type: string; units_of_measure: { symbol: string } | { symbol: string }[] | null; base_units: { symbol: string } | { symbol: string }[] | null };
@@ -105,7 +107,7 @@ export default async function OrderDetailPage({ params, searchParams }: { params
   // A4: "Lập phiếu giao" starts on the customer's requested time while it is still ahead.
   const requestedAt = order.requested_delivery_at && new Date(order.requested_delivery_at) > now ? businessInputValue(order.requested_delivery_at) : null;
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Đơn bán</p><h1>{order.order_number}</h1><p className="lede">Theo dõi đơn bán, phân nguồn hàng và giao hàng tại một nơi.</p></div><div className="inline-actions"><ButtonLink href={`/api/orders/${order.id}/pdf`} variant="secondary">Tải PDF đơn bán</ButtonLink><ButtonLink href={`/api/orders/${order.id}/pdf?kho=k80`} variant="secondary">In K80</ButtonLink><ButtonLink href="/admin/orders" variant="secondary">Về danh sách</ButtonLink></div></header>
+    <header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/orders", label: "Đơn bán" }} /><h1>{order.order_number}</h1><p className="lede">{order.customer_name_snapshot} · {order.site_name_snapshot}</p></div><div className="inline-actions">{!names && <OrderPrintMenu orderId={order.id} />}<ButtonLink href="/admin/orders" variant="secondary">Về danh sách</ButtonLink></div></header>
     {fromPortal && <p className="form-message warning" role="note"><strong>Đơn khách tự đặt trên cổng khách{order.commercial_state === "DRAFT" ? " — chờ duyệt" : ""}.</strong>{order.commercial_state === "DRAFT" ? " Kiểm tra hàng, giá và ngày giao (sửa bản nháp nếu cần), rồi bấm “Duyệt đơn” để giữ hạn mức và tự phân nguồn; hoặc hủy đơn — khách thấy ghi chú hủy nếu có." : ""}{channel?.portal_note ? ` Ghi chú của khách: “${channel.portal_note}”.` : ""}</p>}
     <SalesOrderCreditOverride orderId={id} blocked={parseCreditBlock(query.credit)} />
     <ActionNotice notice={query.notice} error={query.error} />

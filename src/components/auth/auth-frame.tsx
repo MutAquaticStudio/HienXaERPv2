@@ -9,13 +9,13 @@ function footnoteParts(text: string) {
  * D30: the frame of every sign-in screen — a slim brand bar (the company logo when one is set, D49) over the app's blue
  * band and one compact card. An internal ERP opens straight on the form; there is no promotional panel.
  */
-export function AuthFrame({ children, footnote, logoUrl }: { children: ReactNode; footnote?: ReactNode; logoUrl?: string | null }) {
+export function AuthFrame({ children, footnote, logoUrl, tagline = "Hệ thống nội bộ" }: { children: ReactNode; footnote?: ReactNode; logoUrl?: string | null; tagline?: string }) {
   return <main className="auth-screen">
     <header className="auth-topbar">{logoUrl
       // eslint-disable-next-line @next/next/no-img-element -- the uploaded company logo, served by the app (D49)
       ? <img className="brand-mark brand-logo" src={logoUrl} alt="" aria-hidden="true" width={36} height={36} />
       : <span className="brand-mark" aria-hidden="true">HX</span>}
-      <span className="auth-brand"><strong>Hiền Xa ERP</strong><span>Hệ thống nội bộ</span></span></header>
+      <span className="auth-brand"><strong>Hiền Xa ERP</strong><span>{tagline}</span></span></header>
     <section className="auth-panel"><div className="auth-card">{children}</div>
       {footnote && <p className="auth-footnote">{typeof footnote === "string" ? footnoteParts(footnote) : footnote}</p>}</section>
   </main>;

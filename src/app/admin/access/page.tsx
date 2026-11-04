@@ -63,7 +63,7 @@ export default async function AccessManagementPage({ searchParams }: { searchPar
   const tabs = [{ id: "employees", label: "Nhân viên", count: employees.count ?? undefined }, { id: "roles", label: "Vai trò", count: roleRows.length }];
 
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Quản trị truy cập</p><h1>Nhân viên & quyền</h1><p className="lede">Đang quản lý {actor.branchName}. Chuyển chi nhánh để quản lý phạm vi khác; không tự thay đổi quyền của chính mình.</p></div>
+    <header className="page-heading"><div><h1>Nhân viên & quyền</h1><p className="lede">Đang quản lý {actor.branchName}. Chuyển chi nhánh để quản lý phạm vi khác; không tự thay đổi quyền của chính mình.</p></div>
       <div className="action-cluster">
         <FormDialog label="Mời nhân viên" title="Mời nhân viên" buttonClassName={tab === "employees" ? "button button-primary" : "button button-secondary"}
           description="Tạo link kích hoạt (gửi qua Zalo) hoặc thư mời để nhân viên tự đặt mật khẩu; vai trò áp dụng tại chi nhánh đang chọn."><InviteEmployeeForm branches={branches.data} roles={roleOptions} /></FormDialog>

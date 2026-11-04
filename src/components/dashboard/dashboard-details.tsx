@@ -58,8 +58,8 @@ export function DashboardDetails({
     <div className="two-column dashboard-details">
       <section className="card card-pad stack">
         <div>
-          <p className="eyebrow">Chi phí vận hành</p>
-          <h2>Phân bổ theo nhóm</h2>
+          
+          <h2>Chi phí vận hành theo nhóm</h2>
         </div>
         {expenseReady ? (
           detail.expense_breakdown.items.length > 0 ? (
@@ -86,8 +86,8 @@ export function DashboardDetails({
 
       <section className="card card-pad stack">
         <div>
-          <p className="eyebrow">Hoa hồng phải trả</p>
-          <h2>Chi tiết theo nhân viên</h2>
+          
+          <h2>Hoa hồng phải trả theo nhân viên</h2>
         </div>
         {commissionReady ? (
           detail.commission_detail.items.length > 0 ? (

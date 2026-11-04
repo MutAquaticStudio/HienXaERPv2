@@ -82,7 +82,7 @@
 }
 
 .topbar .brandScope {
-  color: rgb(255 255 255 / 82%);
+  color: rgb(255 255 255 / 95%);
 }
 
 .topIdentity {
@@ -100,7 +100,7 @@
   border: 0;
   border-radius: 10px;
   color: #fff;
-  background: rgb(255 255 255 / 14%);
+  background: rgb(4 30 64 / 24%);
   font: inherit;
   font-weight: 600;
   text-decoration: none;
@@ -173,7 +173,7 @@
 
 .heroEyebrow {
   margin: 0;
-  color: rgb(255 255 255 / 80%);
+  color: #fff;
   font-size: var(--font-size-caption);
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -850,14 +850,15 @@ button.link {
   font-size: 1.25rem;
 }
 
+/* Ending a shift is routine, not destructive: the ink colour, not danger red. */
 .clockOut {
-  background: var(--danger);
-  box-shadow: 0 6px 16px rgb(190 30 45 / 22%);
+  background: var(--portal-ink);
+  box-shadow: 0 6px 16px rgb(16 34 58 / 22%);
 }
 
 .clockOut:hover:not(:disabled) {
-  background: var(--danger);
-  filter: brightness(0.92);
+  background: var(--portal-ink);
+  filter: brightness(1.25);
 }
 
 .statGrid {
@@ -956,7 +957,7 @@ button.link {
 
 /* FB18: the top bar's chat and sign-out icons, and the raised "Đặt hàng" in the customer's bottom menu. */
 .topActions { display: flex; align-items: center; gap: 0.4rem; }
-.topIcon { width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 12px; color: #fff; background: rgb(255 255 255 / 14%); cursor: pointer; text-decoration: none; transition: background-color var(--dur-fast) var(--ease-out); }
+.topIcon { width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 12px; color: #fff; background: rgb(4 30 64 / 24%); cursor: pointer; text-decoration: none; transition: background-color var(--dur-fast) var(--ease-out); }
 .topIcon:hover { background: rgb(255 255 255 / 24%); }
 .navRaised { color: var(--portal-commerce); font-weight: 700; }
 .navRaisedIcon { width: 52px; height: 52px; margin-top: -24px; display: grid; place-items: center; border-radius: 18px; color: #fff; background: var(--portal-commerce); box-shadow: 0 8px 20px rgb(14 122 69 / 32%); transition: transform var(--dur-fast) var(--ease-out); }
@@ -993,7 +994,7 @@ button.link {
 .currentTop { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; }
 .currentTop span:last-child { padding: 4px 10px; border-radius: 99px; background: rgb(255 255 255 / 16%); font-weight: 600; letter-spacing: 0; }
 .quickActions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.quickAction { min-height: 48px; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: 14px; color: #fff; background: rgb(255 255 255 / 14%); font-weight: 700; font-size: 0.85rem; text-decoration: none; transition: background-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
+.quickAction { min-height: 48px; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: 14px; color: #fff; background: rgb(4 30 64 / 24%); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 28%); font-weight: 700; font-size: 0.85rem; text-decoration: none; transition: background-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
 .quickAction:active { transform: scale(0.97); }
 .quickActionMain { color: var(--primary-text); background: #fff; }
 .timeline { list-style: none; margin: 0; padding: 0; }
@@ -1059,10 +1060,10 @@ button.link {
 
 /* FB18 (D40): shift location indicator in the worker top bar — a green dot while sharing, amber when permission is off. */
 .topIcon[data-sharing], .topIcon[data-warning] { position: relative; }
-.topIcon[data-sharing]::after, .topIcon[data-warning]::after { content: ""; position: absolute; top: 9px; right: 9px; width: 8px; height: 8px; border-radius: 99px; background: #3ddc84; box-shadow: 0 0 0 2px var(--portal-primary, #0b63c6); }
+.topIcon[data-sharing]::after, .topIcon[data-warning]::after { content: ""; position: absolute; top: 9px; right: 9px; width: 8px; height: 8px; border-radius: 99px; background: #3ddc84; box-shadow: 0 0 0 2px var(--portal-primary, var(--primary)); }
 .topIcon[data-warning]::after { background: #f2a93b; }
 @media (prefers-reduced-motion: no-preference) { .topIcon[data-sharing]::after { animation: location-pulse 2s ease-out infinite; } }
-@keyframes location-pulse { 0% { box-shadow: 0 0 0 2px var(--portal-primary, #0b63c6), 0 0 0 2px rgb(61 220 132 / 60%); } 100% { box-shadow: 0 0 0 2px var(--portal-primary, #0b63c6), 0 0 0 9px rgb(61 220 132 / 0%); } }
+@keyframes location-pulse { 0% { box-shadow: 0 0 0 2px var(--portal-primary, var(--primary)), 0 0 0 2px rgb(61 220 132 / 60%); } 100% { box-shadow: 0 0 0 2px var(--portal-primary, var(--primary)), 0 0 0 9px rgb(61 220 132 / 0%); } }
 
 /* Very narrow phones: the sign-out button keeps its icon, the word moves to the screen reader only. */
 @media (max-width: 380px) {
@@ -1077,7 +1078,7 @@ button.link {
 }
 
 /* D42: pay a debt by QR — a button on each order, "Thanh toán tất cả" under the total, and the QR window. */
-.payButton { min-height: 36px; padding: 0 12px; border: 1px solid var(--portal-primary, #0b63c6); border-radius: 10px; color: var(--portal-primary, #0b63c6); background: transparent; font: inherit; font-size: 0.8rem; font-weight: 800; cursor: pointer; white-space: nowrap; }
+.payButton { min-height: 36px; padding: 0 12px; border: 1px solid var(--portal-primary, var(--primary)); border-radius: 10px; color: var(--portal-primary, var(--primary)); background: transparent; font: inherit; font-size: 0.8rem; font-weight: 800; cursor: pointer; white-space: nowrap; }
 .payAllButton { justify-self: start; min-height: 44px; padding: 0 18px; border: 0; border-radius: 12px; color: var(--portal-primary-dark, #0a3f80); background: #fff; font: inherit; font-weight: 800; cursor: pointer; }
 .payButton:active, .payAllButton:active { transform: scale(0.97); }
 .billRow > .billActions { display: flex; align-items: center; gap: 12px; }
@@ -1093,9 +1094,9 @@ button.link {
 .payDone p { margin: 0; color: inherit; }
 /* D44: tick several debts, pay them with one QR. */
 .selectTools { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 4px 0 2px; }
-.linkButton { min-height: 32px; padding: 0; border: 0; color: var(--portal-primary, #0b63c6); background: none; font: inherit; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
+.linkButton { min-height: 32px; padding: 0; border: 0; color: var(--portal-primary, var(--primary)); background: none; font: inherit; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
 .billPick { display: flex; align-items: center; gap: 10px; min-width: 0; cursor: pointer; }
-.billPick input { flex: none; width: 20px; height: 20px; accent-color: var(--portal-primary, #0b63c6); }
+.billPick input { flex: none; width: 20px; height: 20px; accent-color: var(--portal-primary, var(--primary)); }
 .billPick > span { display: grid; gap: 2px; min-width: 0; font-weight: 600; }
 .selectBar { position: sticky; bottom: calc(76px + env(safe-area-inset-bottom, 0px)); z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; padding: 12px 14px; border-radius: 16px; color: #fff; background: var(--portal-primary-dark, #0a3f80); box-shadow: 0 10px 28px rgba(10, 63, 128, 0.28); }
 .selectBar > span { display: grid; gap: 2px; font-size: 0.85rem; }
@@ -1112,7 +1113,7 @@ button.link {
 
 /* Concept cổng thợ "Thu nhập & chấm công": month header, dark estimate card with 3 tiles, week strip, payslips. */
 .earningHead { padding: 4px 4px 0; }
-.earningHead p { margin: 0; font-size: 12px; color: var(--portal-muted, #5a6b82); }
+.earningHead p { margin: 0; font-size: 12px; color: var(--portal-muted, var(--muted)); }
 .earningHead h1 { margin: 4px 0 0; font-size: 22px; }
 .earningCard { display: grid; gap: 14px; padding: 18px 16px; border-radius: 20px; color: #fff; background: #10223a; }
 .earningCard p { margin: 0; font-size: 12px; color: rgb(255 255 255 / 75%); }
@@ -1122,16 +1123,16 @@ button.link {
 .earningTiles small { font-size: 11px; color: rgb(255 255 255 / 75%); }
 .earningTiles b { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .weekStrip { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; text-align: center; }
-.weekStrip li { display: grid; gap: 6px; font-size: 11px; color: var(--portal-muted, #5a6b82); }
+.weekStrip li { display: grid; gap: 6px; font-size: 11px; color: var(--portal-muted, var(--muted)); }
 .weekStrip li > span { height: 34px; box-sizing: border-box; display: grid; place-items: center; border-radius: 10px; font-size: 12px; font-weight: 700; background: #f2f5f9; color: #9aa6b6; }
 .weekStrip li[data-tone="done"] > span { background: #e3f4ea; color: #0e7a45; }
 .weekStrip li[data-tone="late"] > span { background: #fff3dc; color: #8a4b05; }
-.weekStrip li[data-tone="leave"] > span { background: #eef3f9; color: #0b63c6; }
+.weekStrip li[data-tone="leave"] > span { background: #eef3f9; color: var(--primary); }
 .weekStrip li[data-tone="absent"] > span { background: #fde8e8; color: #b42318; }
-.weekStrip li[data-tone="today"], .weekStrip li[data-tone="open"] { color: #0b63c6; font-weight: 700; }
-.weekStrip li[data-tone="today"] > span, .weekStrip li[data-tone="open"] > span { background: #0b63c6; color: #fff; font-weight: 800; }
-.weekStrip li[data-tone="planned"] > span { background: transparent; border: 1px dashed #c9d2de; color: var(--portal-muted, #5a6b82); font-weight: 500; }
-.weekNote { margin: 10px 0 0; font-size: 12px; color: var(--portal-muted, #5a6b82); }
+.weekStrip li[data-tone="today"], .weekStrip li[data-tone="open"] { color: var(--primary); font-weight: 700; }
+.weekStrip li[data-tone="today"] > span, .weekStrip li[data-tone="open"] > span { background: var(--primary); color: #fff; font-weight: 800; }
+.weekStrip li[data-tone="planned"] > span { background: transparent; border: 1px dashed #c9d2de; color: var(--portal-muted, var(--muted)); font-weight: 500; }
+.weekNote { margin: 10px 0 0; font-size: 12px; color: var(--portal-muted, var(--muted)); }
 .weekNote b { color: #8a4b05; }
 .slipList { list-style: none; margin: 8px 0 0; padding: 0; }
 .slipList > li { padding: 12px 0; border-top: 1px solid var(--portal-line, #edf1f6); }
@@ -1142,26 +1143,26 @@ button.link {
 /* Concept cổng thợ "Chi tiết việc giao" and "Báo đã giao". */
 .pageHead { display: flex; align-items: center; gap: 10px; padding: 2px 0; }
 .pageHead > div { flex: 1; min-width: 0; }
-.pageHead p { margin: 0; font-size: 12px; color: var(--portal-muted, #5a6b82); }
+.pageHead p { margin: 0; font-size: 12px; color: var(--portal-muted, var(--muted)); }
 .pageHead h1 { margin: 2px 0 0; font-size: 17px; line-height: 1.3; overflow-wrap: anywhere; }
 .backButton { width: 44px; height: 44px; flex-shrink: 0; display: grid; place-items: center; border-radius: 14px; color: inherit; background: var(--portal-paper, #fff); text-decoration: none; }
-.stateChip { flex-shrink: 0; padding: 6px 10px; border-radius: 99px; color: #0b63c6; background: #e3eefb; font-size: 12px; font-weight: 700; }
+.stateChip { flex-shrink: 0; padding: 6px 10px; border-radius: 99px; color: var(--primary); background: #e3eefb; font-size: 12px; font-weight: 700; }
 .stepsCircles { text-align: center; gap: 4px; }
 .stepsCircles li { justify-items: center; }
-.stepCircle { width: 26px; height: 26px; box-sizing: border-box; display: grid; place-items: center; border-radius: 99px; border: 2px solid #c9d2de; font-size: 12px; font-weight: 700; color: var(--portal-muted, #5a6b82); }
+.stepCircle { width: 26px; height: 26px; box-sizing: border-box; display: grid; place-items: center; border-radius: 99px; border: 2px solid #c9d2de; font-size: 12px; font-weight: 700; color: var(--portal-muted, var(--muted)); }
 .stepsCircles li[data-state="done"] .stepCircle { border-color: #0e7a45; background: #0e7a45; color: #fff; }
-.stepsCircles li[data-state="current"] .stepCircle { border-color: #0b63c6; background: #0b63c6; color: #fff; box-shadow: 0 0 0 5px #dbe8f8; }
+.stepsCircles li[data-state="current"] .stepCircle { border-color: var(--primary); background: var(--primary); color: #fff; box-shadow: 0 0 0 5px #dbe8f8; }
 .placeCard { display: grid; gap: 12px; }
 .placeCard > div:first-child { display: grid; gap: 4px; }
 .placeCard strong { font-size: 14px; font-weight: 600; }
-.placeCard small { font-size: 12px; color: var(--portal-muted, #5a6b82); }
+.placeCard small { font-size: 12px; color: var(--portal-muted, var(--muted)); }
 .goodsList { list-style: none; margin: 4px 0 0; padding: 0; }
 .goodsList > li { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid var(--portal-line, #edf1f6); font-size: 14px; }
 .goodsList > li > span { display: grid; gap: 2px; min-width: 0; }
 .goodsList small { font-size: 12px; color: #8a4b05; }
 .goodsList strong { font-size: 15px; white-space: nowrap; }
 .segmented { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; padding: 4px; border-radius: 14px; background: #f2f5f9; }
-.segmented button { min-height: 42px; border: 0; border-radius: 11px; background: transparent; font: inherit; font-size: 0.85rem; font-weight: 600; color: var(--portal-muted, #5a6b82); cursor: pointer; }
+.segmented button { min-height: 42px; border: 0; border-radius: 11px; background: transparent; font: inherit; font-size: 0.85rem; font-weight: 600; color: var(--portal-muted, var(--muted)); cursor: pointer; }
 .segmented button[aria-checked="true"] { background: #fff; color: #0e7a45; font-weight: 800; box-shadow: 0 1px 4px rgb(16 34 58 / 12%); }
 .doneLines { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .doneLines > li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; background: #f7f9fc; font-size: 14px; }
@@ -1169,15 +1170,15 @@ button.link {
 
 /* Concept "Khách · Công nợ": white summary with the in-time / soon / overdue bar and legend; due status per debt. */
 .debtSummary { display: grid; gap: 12px; padding: 16px; border-radius: 20px; background: var(--portal-paper, #fff); }
-.debtSummary p { margin: 0; font-size: 12px; color: var(--portal-muted, #5a6b82); }
+.debtSummary p { margin: 0; font-size: 12px; color: var(--portal-muted, var(--muted)); }
 .debtSummary > div:first-child strong { display: block; margin-top: 4px; font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; }
-.debtSummary .payAllButton { color: #fff; background: var(--portal-primary, #0b63c6); }
+.debtSummary .payAllButton { color: #fff; background: var(--portal-primary, var(--primary)); }
 .debtBar { display: flex; gap: 2px; height: 10px; border-radius: 99px; overflow: hidden; }
-.debtBar span[data-tone="later"], .debtLegend dt[data-tone="later"]::before { background: #0b63c6; }
+.debtBar span[data-tone="later"], .debtLegend dt[data-tone="later"]::before { background: var(--primary); }
 .debtBar span[data-tone="soon"], .debtLegend dt[data-tone="soon"]::before { background: #f2a93b; }
 .debtBar span[data-tone="overdue"], .debtLegend dt[data-tone="overdue"]::before { background: #d92d20; }
 .debtLegend { margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.debtLegend dt { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--portal-muted, #5a6b82); }
+.debtLegend dt { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--portal-muted, var(--muted)); }
 .debtLegend dt::before { content: ""; width: 8px; height: 8px; border-radius: 99px; flex-shrink: 0; }
 .debtLegend dd { margin: 3px 0 0; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .debtLegend dd[data-tone="overdue"] { color: #b42318; }
@@ -1188,8 +1189,8 @@ button.link {
 .etaCard { display: flex; align-items: center; gap: 12px; }
 .etaCard > div { display: grid; gap: 2px; }
 .etaCard strong { font-size: 15px; }
-.etaCard small { font-size: 12px; color: var(--portal-muted, #5a6b82); }
-.etaIcon { width: 46px; height: 46px; flex-shrink: 0; display: grid; place-items: center; border-radius: 14px; color: #0b63c6; background: #dbe8f8; }
+.etaCard small { font-size: 12px; color: var(--portal-muted, var(--muted)); }
+.etaIcon { width: 46px; height: 46px; flex-shrink: 0; display: grid; place-items: center; border-radius: 14px; color: var(--primary); background: #dbe8f8; }
 .journey { list-style: none; margin: 12px 0 0; padding: 0; display: grid; }
 .journey > li { position: relative; display: grid; grid-template-columns: 24px 1fr auto; gap: 12px; align-items: start; padding-bottom: 16px; font-size: 14px; font-weight: 600; }
 .journey > li:last-child { padding-bottom: 0; }
@@ -1197,20 +1198,20 @@ button.link {
 .journey > li > span:first-child { width: 22px; height: 22px; box-sizing: border-box; display: grid; place-items: center; border-radius: 99px; border: 2px solid #c9d2de; color: #fff; }
 .journey > li[data-state="done"] > span:first-child { border-color: #0e7a45; background: #0e7a45; }
 .journey > li[data-state="done"]:not(:last-child)::after { background: #0e7a45; }
-.journey > li[data-state="current"] > span:first-child { border-color: #0b63c6; background: #0b63c6; box-shadow: 0 0 0 5px #dbe8f8; }
-.journey > li[data-state="current"] { color: #0b63c6; font-weight: 800; }
-.journey > li[data-state="todo"] { color: var(--portal-muted, #5a6b82); font-weight: 500; }
-.journey small { font-size: 12px; color: var(--portal-muted, #5a6b82); font-weight: 500; white-space: nowrap; }
-.journey > li[data-state="current"] small { color: #0b63c6; font-weight: 700; }
+.journey > li[data-state="current"] > span:first-child { border-color: var(--primary); background: var(--primary); box-shadow: 0 0 0 5px #dbe8f8; }
+.journey > li[data-state="current"] { color: var(--primary); font-weight: 800; }
+.journey > li[data-state="todo"] { color: var(--portal-muted, var(--muted)); font-weight: 500; }
+.journey small { font-size: 12px; color: var(--portal-muted, var(--muted)); font-weight: 500; white-space: nowrap; }
+.journey > li[data-state="current"] small { color: var(--primary); font-weight: 700; }
 .reorderOutline { min-height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 14px; border: 1px solid #0e7a45; color: #0e7a45; background: var(--portal-paper, #fff); font-weight: 800; text-decoration: none; }
 
 /* Concept "Khách · Đặt hàng": where to deliver, search, group chips, product cards with − / +, total pinned at the bottom. */
 .shop { display: grid; gap: 12px; padding-bottom: 96px; }
 .shopPlace { display: grid; gap: 12px; padding: 14px; border-radius: 16px; background: var(--portal-paper, #fff); }
 .shopNewSite { display: grid; gap: 10px; }
-.shopSearch { display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 12px; border-radius: 14px; background: #f2f5f9; color: var(--portal-muted, #5a6b82); }
+.shopSearch { display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 12px; border-radius: 14px; background: #f2f5f9; color: var(--portal-muted, var(--muted)); }
 .shopSearch input { flex: 1; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 15px; color: inherit; outline: none; }
-.shopSearch:focus-within { box-shadow: 0 0 0 2px var(--portal-primary, #0b63c6); }
+.shopSearch:focus-within { box-shadow: 0 0 0 2px var(--portal-primary, var(--primary)); }
 .shopChips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
 .shopChips button { flex-shrink: 0; min-height: 34px; padding: 0 12px; border: 0; border-radius: 99px; background: #f2f5f9; font: inherit; font-size: 13px; font-weight: 600; color: inherit; cursor: pointer; white-space: nowrap; }
 .shopChips button[aria-pressed="true"] { background: #10223a; color: #fff; font-weight: 700; }
@@ -1219,10 +1220,10 @@ button.link {
 .shopName { display: grid; gap: 2px; min-width: 0; }
 .shopName strong { font-size: 14px; }
 .shopName span { font-size: 13px; font-weight: 700; color: #0e7a45; }
-.shopName small { font-size: 12px; color: var(--portal-muted, #5a6b82); }
+.shopName small { font-size: 12px; color: var(--portal-muted, var(--muted)); }
 .shopControls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .shopUnits { display: flex; padding: 3px; border-radius: 10px; background: #f2f5f9; }
-.shopUnits button { min-height: 30px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; font: inherit; font-size: 12px; font-weight: 600; color: var(--portal-muted, #5a6b82); cursor: pointer; }
+.shopUnits button { min-height: 30px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; font: inherit; font-size: 12px; font-weight: 600; color: var(--portal-muted, var(--muted)); cursor: pointer; }
 .shopUnits button[aria-checked="true"] { background: #fff; color: #10223a; font-weight: 700; }
 .stepper { margin-left: auto; display: flex; align-items: center; border: 1px solid #0e7a45; border-radius: 12px; overflow: hidden; }
 .stepper button { width: 40px; height: 40px; display: grid; place-items: center; border: 0; background: #fff; color: #0e7a45; cursor: pointer; }

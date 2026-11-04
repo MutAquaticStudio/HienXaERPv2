@@ -9,6 +9,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { formatQuantity } from "@/lib/core/quantity";
 import { SupplierDocumentReviewForm } from "@/modules/invoicing/supplier-document-forms";
 import { PRICE_SOURCE } from "@/modules/invoicing/price-source";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 /** Unit prices may carry decimals (per base unit on credit notes); whole numbers show as đồng. */
 function formatVndText(value: string) { return /^\d+$/.test(value) ? formatVnd(vnd(value)) : `${formatQuantity(value)} ₫`; }
@@ -24,7 +25,7 @@ export default async function SupplierDocumentDetail({ params }: { params: Promi
  const matched = lines.filter(l => l.match_result.startsWith("MATCHED")).length;
  const off = (left: string, right: string) => !new Decimal(left || "0").eq(right || "0");
  const resultLabel: Record<string, string> = { MATCHED: "Khớp", MATCHED_APPROVED_RETURN_CHARGE: "Khớp khoản giảm / phí giữ lại đã duyệt", QUANTITY_VARIANCE: "Lệch lượng", PRICE_VARIANCE: "Lệch giá", VALUE_VARIANCE: "Lệch giá trị", ARITHMETIC_VARIANCE: "Lệch tính tiền" };
- return <><header className="page-heading"><div><p className="eyebrow">Đối chiếu nguồn nội bộ</p><h1>{d.document_number}</h1><p className="lede">{d.supplier_name} · {d.document_date}</p></div><Link className="button button-secondary" href="/admin/invoices/purchases/matching">Chứng từ đối chiếu</Link></header>
+ return <><header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/invoices/purchases/matching", label: "Đối chiếu hóa đơn mua" }} /><h1>{d.document_number}</h1><p className="lede">{d.supplier_name} · {d.document_date}</p></div><Link className="button button-secondary" href="/admin/invoices/purchases/matching">Chứng từ đối chiếu</Link></header>
   <section className="card card-pad"><h2>{d.match_state === "MATCHED" ? "Đã khớp nguồn" : "Còn ngoại lệ đối chiếu"}</h2><p>Khai báo {formatVnd(vnd(d.declared_value_vnd))}; nguồn đã ghi {formatVnd(vnd(d.source_value_vnd))}.</p><p>{d.business_state === "BUSINESS_APPROVED" ? "Đã duyệt nội bộ" : d.business_state === "CANCELLED" ? "Đã hủy bản nháp, giữ lịch sử" : "Chờ rà soát"}. Chưa xác minh pháp lý, không phát hành hóa đơn điện tử.</p>{d.review_reason && <p>{d.review_reason}</p>}<a className="button button-secondary" href={`/api/supplier-documents/${id}/review/csv`}>Xuất bảng đối chiếu theo nguồn</a></section>
   <section className="card"><div className="section-head"><h2>Dòng hóa đơn</h2><p className="muted">{matched}/{lines.length} dòng khớp</p></div><div className="table-wrap"><table className="matching-table"><thead><tr><th>Phiếu nhập / đơn mua</th><th>Hàng · ĐVT</th><th className="numeric">SL đặt</th><th className="numeric">SL nhận</th><th className="numeric">SL hóa đơn</th><th className="numeric">Giá đơn mua</th><th className="numeric">Giá hóa đơn</th><th className="numeric">Thành tiền nhận → hóa đơn</th><th>Kết quả</th></tr></thead><tbody>{lines.map(l => {
    const c = contextByKey.get(`${l.source_kind}:${l.source_id}`);

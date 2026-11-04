@@ -122,7 +122,7 @@ export function RecoveryConfirmForm({ surface, hasAuthError }: { surface: "admin
     : status === "invalid" ? (expired ? "Liên kết đã hết hạn hoặc đã được dùng" : "Liên kết không hợp lệ hoặc đã hết hạn")
     : status === "updated" ? (invite ? "Tài khoản đã sẵn sàng" : "Đã cập nhật mật khẩu")
     : invite ? "Đặt mật khẩu cho tài khoản mới" : "Đặt mật khẩu mới";
-  return <AuthFrame><p className="eyebrow">{invite ? "Kích hoạt tài khoản" : "Khôi phục tài khoản"}</p><h1>{heading}</h1>
+  return <AuthFrame><h1>{heading}</h1>
     {status === "checking" && <p className="muted" role="status">Đang kiểm tra liên kết. Vui lòng chờ.</p>}
     {status === "invalid" && <><p className="form-message" role="alert">{expired
       ? "Liên kết chỉ dùng được một lần và có hạn. Hãy nhờ quản lý bấm \"Link kích hoạt\" ở danh sách nhân viên để tạo link mới, hoặc yêu cầu liên kết khôi phục bằng đúng email của bạn."

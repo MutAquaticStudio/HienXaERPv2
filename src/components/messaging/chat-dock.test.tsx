@@ -17,6 +17,7 @@ const minh = { ...lan, auth_user_id: "a1b2c3d4-0000-4000-8000-000000000002", dis
 
 beforeEach(() => {
   vi.clearAllMocks(); mocks.path = "/admin/orders"; mocks.wide = true;
+  Object.defineProperty(window, "innerWidth", { value: 1920, configurable: true });
   window.matchMedia = vi.fn(() => ({ matches: mocks.wide, addEventListener: vi.fn(), removeEventListener: vi.fn() })) as never;
   mocks.dock.mockResolvedValue({ contacts: [lan, minh], canAi: true });
   mocks.chat.mockResolvedValue({ conversationId: null, messages: [], me: "me" });
@@ -73,9 +74,22 @@ it("collapses to a strip of faces and opens again, remembering the choice", asyn
   expect(window.localStorage.getItem("hx_chat_dock_collapsed")).toBe("0");
 });
 
-it("keeps many chats open: up to three windows, the others as chat heads", async () => {
+it("starts as the strip below 1600px so tables keep their columns, until the user opens it (D55)", async () => {
   window.localStorage.removeItem("hx_chat_dock_collapsed");
   Object.defineProperty(window, "innerWidth", { value: 1440, configurable: true });
+  const first = render(<ChatDock surface="admin" />);
+  expect(await screen.findByRole("complementary", { name: "Người liên hệ" })).toHaveClass("collapsed");
+  fireEvent.click(screen.getByRole("button", { name: "Mở danh bạ" }));
+  expect(screen.getByRole("complementary", { name: "Người liên hệ" })).not.toHaveClass("collapsed");
+  expect(window.localStorage.getItem("hx_chat_dock_collapsed")).toBe("0");
+  first.unmount();
+  render(<ChatDock surface="admin" />);
+  expect(await screen.findByRole("complementary", { name: "Người liên hệ" })).not.toHaveClass("collapsed");
+});
+
+it("keeps many chats open: up to three windows, the others as chat heads", async () => {
+  window.localStorage.removeItem("hx_chat_dock_collapsed");
+  Object.defineProperty(window, "innerWidth", { value: 1920, configurable: true });
   const people = ["Chị Lan", "Anh Minh", "Cô Hoa", "Chú Ba"].map((name, index) => ({ ...lan, auth_user_id: `a1b2c3d4-0000-4000-8000-00000000001${index}`, display_name: name, unread_count: 0 }));
   mocks.dock.mockResolvedValue({ contacts: people, canAi: true });
   render(<ChatDock surface="admin" />);

@@ -74,7 +74,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
   ];
 
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Bán hàng</p><h1>Khách hàng</h1><p className="lede">Hồ sơ khách hàng tại {access.branchName}. Bấm vào một dòng để xem chi tiết.</p></div>
+    <header className="page-heading"><div><h1>Khách hàng</h1><p className="lede">Hồ sơ khách hàng tại {access.branchName}. Bấm vào một dòng để xem chi tiết.</p></div>
       {create && <div className="action-cluster"><CatalogCreateButton {...create} label="+ Khách hàng" /><Link className="button button-secondary" href="/admin/customers/manage?kind=sites">Công trình</Link></div>}
     </header>
     <div className="list-layout">

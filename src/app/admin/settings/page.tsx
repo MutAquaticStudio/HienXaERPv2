@@ -17,7 +17,7 @@ export default async function SettingsPage() {
     supabase.from("branch_operation_settings").select("stop_minutes, version, default_warehouse_id, auto_source_enabled, trip_cost_vnd::text, dispatch_mode, work_day_start, work_day_end").eq("branch_id", access.branchId).maybeSingle(),
     supabase.from("warehouses").select("id, name").eq("branch_id", access.branchId).eq("active", true).order("name").limit(100)]);
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Hệ thống · {access.branchName}</p><h1>Cài đặt</h1><p className="lede">Thông tin doanh nghiệp in trên chứng từ, vận hành giao hàng, giao diện trên thiết bị này, chi nhánh, phạm vi dữ liệu và phân quyền.</p></div></header>
+    <header className="page-heading"><div><h1>Cài đặt</h1><p className="lede">Thông tin doanh nghiệp in trên chứng từ, vận hành giao hàng, giao diện trên thiết bị này, chi nhánh, phạm vi dữ liệu và phân quyền.</p></div></header>
     <div className="settings-grid">
       <section className="card card-pad"><div className="section-head flush"><h2>Thông tin doanh nghiệp</h2></div>
         <p className="card-scope-note">In ở đầu đơn bán, đơn mua, phiếu giao, phiếu thu/chi và bảng đối chiếu công nợ. Chi nhánh vẫn in như hiện tại.</p>

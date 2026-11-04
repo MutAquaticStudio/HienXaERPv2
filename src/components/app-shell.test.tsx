@@ -7,6 +7,7 @@ vi.mock("next/navigation", () => ({ usePathname: () => location.pathname }));
 // The bell loads its feed through a server action; it has its own tests.
 vi.mock("@/components/notifications/notification-bell", () => ({ NotificationBell: ({ branchId }: { branchId: string }) => <button type="button" data-branch={branchId}>Thông báo</button> }));
 vi.mock("@/modules/ai/ai-bubble", () => ({ AiBubble: () => <div data-testid="ai-bubble" /> }));
+vi.mock("@/components/search/global-search", () => ({ GlobalSearch: () => <button type="button">Tìm chung</button> }));
 vi.mock("@/components/messaging/chat-dock", () => ({ ChatDock: () => null }));
 vi.mock("@/lib/auth/actions", () => ({ selectBranchAction: vi.fn() }));
 
@@ -234,3 +235,10 @@ describe("brand and branch in the top bar", () => {
   });
 });
 
+
+it("starts with a skip link to the page content (WCAG 2.4.1)", () => {
+  render(<AppShell surface="admin" permissions={ownerPermissions} actorName="Chủ QA" branchId="b1"><p>Nội dung</p></AppShell>);
+  const skip = screen.getByRole("link", { name: "Bỏ qua menu" });
+  expect(skip).toHaveAttribute("href", "#main-content");
+  expect(document.getElementById("main-content")).toHaveTextContent("Nội dung");
+});

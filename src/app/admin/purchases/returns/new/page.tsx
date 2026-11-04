@@ -4,6 +4,7 @@ import { requireInternalAccess } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { formatBusinessDate } from "@/lib/core/business-time";
 import { SupplierReturnCompleteForm, type ReturnLine } from "@/modules/purchasing/supplier-return-complete-form";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 type Row = { purchase_receipt_id: string; receipt_number: string; received_at: string; purchase_order_number: string; supplier_name: string; receipt_line_id: string;
  material_code: string; material_name: string; warehouse_name: string; uom_symbol: string; received_quantity: string; returnable_quantity: string; unit_cost_vnd: string | number };
@@ -14,7 +15,7 @@ export default async function NewSupplierReturnPage({ searchParams }: { searchPa
  const access = await requireInternalAccess(), query = await searchParams, db = await createServerSupabase();
  if (!access.permissions.has("purchasing.create")) return <p>Bạn cần quyền mua hàng để trả hàng nhập.</p>;
  const receiptId = /^[0-9a-f-]{36}$/i.test(query.receipt ?? "") ? query.receipt! : null;
- const heading = <header className="page-heading"><div><p className="eyebrow"><Link href="/admin/purchases/returns">Trả hàng nhập</Link></p><h1>Tạo phiếu trả hàng nhập</h1>
+ const heading = <header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/purchases/returns", label: "Trả hàng nhà cung cấp" }} /><h1>Tạo phiếu trả hàng nhập</h1>
   <p className="lede">Chọn phiếu nhập, nhập số lượng trả theo đơn vị đã mua rồi bấm Hoàn thành. Hàng xuất khỏi kho và công nợ nhà cung cấp giảm ngay.</p></div></header>;
 
  if (!receiptId) {

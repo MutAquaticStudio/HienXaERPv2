@@ -21,5 +21,5 @@ export default async function Home({ searchParams }: PageProps<"/">) {
     if (error instanceof AppError && error.code === "CONFLICT") redirect("/select-branch?surface=admin");
   }
   if (landing) redirect(landing);
-  return <AuthFrame footnote={LOGIN_FOOTNOTE} logoUrl={await loadSignInLogoUrl()}><PortalLogin initial={portal === "work" || portal === "customer" ? portal : "admin"} remember={portal !== "work" && portal !== "customer"} /></AuthFrame>;
+  return <AuthFrame footnote={LOGIN_FOOTNOTE} logoUrl={await loadSignInLogoUrl()} tagline="Đăng nhập nhân viên và khách hàng"><PortalLogin initial={portal === "work" || portal === "customer" ? portal : "admin"} remember={portal !== "work" && portal !== "customer"} /></AuthFrame>;
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ButtonLink } from "@/components/ui/button-link";
+import { OrderPrintMenu } from "@/components/sales/order-print-menu";
 import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { deliveryStateLabel } from "@/modules/delivery/presentation";
@@ -10,7 +11,7 @@ export type NextStepPurchase = { id: string; number: string; state: string };
 
 /** Where a delivery of the order stands, in the words of the FB7 flow (staff assign, the worker loads and delivers). */
 export function nextStepDeliveryText(delivery: NextStepDelivery) {
-  if (delivery.state === "PLANNED") return "chờ phân xe, tài xế";
+  if (delivery.state === "PLANNED") return "chờ phân giao (chưa có xe, tài xế)";
   if (delivery.state === "CANCELLED") return delivery.splitInto?.length ? `đã tách thành ${delivery.splitInto.join(", ")}` : "đã hủy";
   const who = [delivery.vehicle && `xe ${delivery.vehicle}`, delivery.driver && `tài xế ${delivery.driver}`, delivery.scheduledAt && formatBusinessDateTime(delivery.scheduledAt)].filter(Boolean).join(" · ");
   const where = delivery.state === "ASSIGNED" ? "đã giao việc qua cổng thợ, chờ thợ lấy hàng lên xe"
@@ -23,7 +24,8 @@ export function nextStepDeliveryText(delivery: NextStepDelivery) {
 /**
  * FB5/FB7 (Owner: "xác nhận xong yêu cầu hành động tiếp theo"; the card must stay after visiting a delivery): for a confirmed
  * order one card says what the system already did (deliveries and where they are, supplier orders waiting, what the customer
- * still owes) and offers the usual next moves — Thu tiền, In đơn, Tạo đơn mới — so nobody has to look for them.
+ * still owes) and offers the usual next moves — Thu tiền, In (A4 / K80), Tạo đơn mới — so nobody has to look for them. While this card is
+ * shown it holds the order's only print menu (the page header drops its own).
  */
 export function OrderNextSteps({ orderId, orderNumber, customerId, siteId, deliveries, purchases, remainingVnd, can, justConfirmed = false, delivered = false }: {
   orderId: string; orderNumber: string; customerId: string; siteId: string; deliveries: NextStepDelivery[]; purchases: NextStepPurchase[];
@@ -44,12 +46,12 @@ export function OrderNextSteps({ orderId, orderNumber, customerId, siteId, deliv
         {can.purchases && <Link className="code-link" href={`/admin/purchase-orders/${purchase.id}`}>Duyệt đơn mua</Link>}
       </li>)}
       {!deliveries.length && !waitingPurchases.length && <li><span>Chưa có phiếu giao.{can.createDelivery ? " Bấm “Lập phiếu giao” ở khung Hành động tiếp theo." : ""}</span></li>}
-      {remainingVnd !== null && <li><span>Khách còn phải trả <strong className="mono">{formatVnd(vnd(remainingVnd))}</strong></span></li>}
+      {remainingVnd !== null && <li><span>Khách còn phải trả <strong className="mono">{formatVnd(vnd(remainingVnd))}</strong>{remainingVnd !== "0" && !delivered
+        ? <small className="table-subline">Số này vào Công nợ khi phiếu giao được xác nhận đã giao; trước đó Công nợ chưa tính.</small> : null}</span></li>}
     </ul>
     <div className="inline-actions">
       {can.collect && remainingVnd !== "0" && <ButtonLink href={`/admin/receivables?customer=${customerId}`}>Thu tiền</ButtonLink>}
-      <ButtonLink href={`/api/orders/${orderId}/pdf`} variant="secondary">In đơn</ButtonLink>
-      <ButtonLink href={`/api/orders/${orderId}/pdf?kho=k80`} variant="secondary">In K80</ButtonLink>
+      <OrderPrintMenu orderId={orderId} />
       {can.createOrder && <ButtonLink href={`/admin/orders/new?customer=${customerId}&site=${siteId}`} variant="secondary">Tạo đơn mới cho khách này</ButtonLink>}
     </div>
   </section>;

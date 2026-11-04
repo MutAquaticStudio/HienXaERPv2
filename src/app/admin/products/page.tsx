@@ -104,7 +104,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   ];
 
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Kho hàng</p><h1>Vật tư</h1><p className="lede">Danh mục vật tư, giá bán và tồn kho. Bấm vào một dòng để xem chi tiết.</p></div>
+    <header className="page-heading"><div><h1>Vật tư</h1><p className="lede">Danh mục vật tư, giá bán và tồn kho. Bấm vào một dòng để xem chi tiết.</p></div>
       {(can.manage || can.price) && <div className="action-cluster">
         {create && <CatalogCreateButton {...create} label="+ Vật tư" />}
         {can.manage && <VariantGroupButton label="+ Hàng cùng loại" />}

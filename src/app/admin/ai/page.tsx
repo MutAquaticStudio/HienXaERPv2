@@ -32,7 +32,7 @@ export default async function AiPage() {
 
   return <>
     <header className="page-heading">
-      <div><p className="eyebrow">Claude</p><h1>Trợ lý AI</h1>
+      <div><h1>Trợ lý AI</h1>
         <p className="lede">Một trợ lý cho toàn hệ thống: tự đọc số liệu theo quyền của bạn và trả lời bằng tiếng Việt. Trợ lý không tự ghi sổ: việc cần thay đổi được ghi thành đề xuất để người quản lý duyệt. Cuộc trò chuyện này cũng có trong Tin nhắn và nút trợ lý ở góc màn hình.</p></div>
     </header>
     <div className="two-column ai-layout">

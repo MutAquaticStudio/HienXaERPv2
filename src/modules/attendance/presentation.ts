@@ -119,3 +119,18 @@ export function attendanceError(message: string | null | undefined) {
   ];
   return known.find(([code]) => text.includes(code))?.[1] ?? "Chưa lưu được. Kiểm tra kết nối rồi thử lại.";
 }
+
+/** "02/11" of a work date "2026-11-02". */
+export function formatWorkDay(workDate: string) {
+  return `${workDate.slice(8, 10)}/${workDate.slice(5, 7)}`;
+}
+
+/**
+ * The shift card heading for an open attendance record (clocked in, not out). A shift left open on an earlier day says
+ * so, because "Vào ca" is refused until it is closed (clock_attendance: attendance_already_in).
+ */
+export function openShiftHeading(open: { work_date: string; clock_in_at: string }, today: string) {
+  return open.work_date === today
+    ? `Đã vào ca lúc ${formatClock(open.clock_in_at)}`
+    : `Ca ${formatWorkDay(open.work_date)} chưa ra ca (vào lúc ${formatClock(open.clock_in_at)})`;
+}
