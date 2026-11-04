@@ -28,8 +28,10 @@ it("reads as Khi · Nếu · Thì and shows what was sent and why it waits", () 
   expect(within(rows[2]).getByText("Chỉ giao thiếu / không giao được")).toBeInTheDocument();
   expect(within(rows[2]).getByText("Đang tắt")).toBeInTheDocument();
   expect(screen.getByText(/Gửi lại sau · lần 2/)).toBeInTheDocument();
-  expect(screen.getByText("Chưa cấu hình Telegram (hx_telegram_bot_token)")).toBeInTheDocument();
-  expect(screen.getByText(/Telegram: chưa có mã bot/)).toBeInTheDocument();
+  // D59: the owner reads the problem, not the vault key name.
+  expect(screen.getByText("Chưa cấu hình Telegram")).toBeInTheDocument();
+  expect(screen.getByText(/Telegram: chưa có bot — cần kỹ thuật cài mã bot/)).toBeInTheDocument();
+  expect(screen.getByText(/Gửi nền và tự gửi lại khi lỗi: đã bật/)).not.toHaveTextContent(/pg_net/);
   expect(screen.getByText(/2 máy đã bật nhận/)).toBeInTheDocument();
 });
 
@@ -51,7 +53,7 @@ it("creates a rule with an amount condition and a Telegram target", async () => 
 it("offers the problems-only condition just for delivery results and edits with the rule's version", async () => {
   m.save.mockResolvedValue({ ok: false, message: "Quy tắc vừa được người khác sửa. Tải lại trang rồi sửa lại." });
   render(<AutomationRules overview={overview} />);
-  fireEvent.click(screen.getAllByRole("button", { name: "Sửa" })[1]);
+  fireEvent.click(screen.getByRole("button", { name: "Sửa quy tắc Giao có vấn đề" }));
   expect(screen.getByLabelText(/Chỉ khi giao thiếu/)).toBeChecked();
   expect(screen.queryByLabelText(/Nếu tổng tiền từ/)).not.toBeInTheDocument();
   expect(screen.queryByLabelText("Nơi nhận")).not.toBeInTheDocument();
@@ -60,15 +62,21 @@ it("offers the problems-only condition just for delivery results and edits with 
   expect(m.save).toHaveBeenCalledWith(expect.objectContaining({ ruleId: "r2", expectedVersion: 1, problemsOnly: true, channel: "PUSH" }));
 });
 
-it("sends a test and deletes after confirming", async () => {
+it("sends a test and deletes only after confirming in the app's popup (D59)", async () => {
   m.test.mockResolvedValue({ ok: true, message: "Đã gửi thử." });
   m.remove.mockResolvedValue({ ok: true, message: "Đã xóa quy tắc." });
-  vi.spyOn(window, "confirm").mockReturnValue(true);
   render(<AutomationRules overview={overview} />);
-  fireEvent.click(screen.getAllByRole("button", { name: "Gửi thử" })[0]);
+  fireEvent.click(screen.getByRole("button", { name: "Gửi thử quy tắc Đơn khách lớn" }));
+  expect(m.test).not.toHaveBeenCalled();
+  fireEvent.click(within(await screen.findByRole("dialog", { name: "Gửi thử quy tắc?" })).getByRole("button", { name: "Gửi thử" }));
   await screen.findByText("Đã gửi thử.");
   expect(m.test).toHaveBeenCalledWith("r1");
-  fireEvent.click(screen.getAllByRole("button", { name: "Xóa" })[0]);
+  fireEvent.click(screen.getByRole("button", { name: "Xóa quy tắc Đơn khách lớn" }));
+  const dialog = await screen.findByRole("dialog", { name: "Xóa quy tắc?" });
+  fireEvent.click(within(dialog).getByRole("button", { name: "Không, quay lại" }));
+  expect(m.remove).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Xóa quy tắc Đơn khách lớn" }));
+  fireEvent.click(within(await screen.findByRole("dialog", { name: "Xóa quy tắc?" })).getByRole("button", { name: "Xóa quy tắc" }));
   await screen.findByText("Đã xóa quy tắc.");
   expect(m.remove).toHaveBeenCalledWith("r1");
 });

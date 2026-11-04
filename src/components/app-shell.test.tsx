@@ -59,7 +59,9 @@ describe("blue menu bar (D29)", () => {
     render(shell());
     expect(screen.queryByRole("button", { name: "Đăng xuất" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /Chủ QA/ }));
-    expect(screen.getByRole("button", { name: "Giao diện" })).toBeInTheDocument();
+    expect(within(document.getElementById("user-menu-panel")!).getByRole("button", { name: "Giao diện" })).toBeInTheDocument();
+    // D59: the phone drawer carries it too.
+    expect(screen.getByRole("navigation", { name: "Menu chính" }).querySelector(".menu-drawer-foot button")).toHaveTextContent("Giao diện");
     expect(screen.getByRole("button", { name: "Đăng xuất" }).closest("form")).toHaveAttribute("method", "post");
     expect(screen.getAllByText("Chi nhánh QA").length).toBeGreaterThan(0);
   });

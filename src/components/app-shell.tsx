@@ -236,6 +236,8 @@ export function AppShell({ surface, children, permissions, actorName, branchName
             </>}
           </div>
           {canCreateOrder && <Link className="button button-commerce menu-cta" href="/admin/orders/new" onClick={navigated}><Plus aria-hidden="true" size={17} strokeWidth={2.4} />Tạo đơn bán</Link>}
+          {/* D59: on a phone the drawer carries "Giao diện" too (UXUI: chân menu trái), not only the account menu. */}
+          <div className="menu-drawer-foot"><AppearanceButton /></div>
         </div>
       </nav>
       <div className="workspace" inert={open}>

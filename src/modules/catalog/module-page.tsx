@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { redirect } from 'next/navigation';
 import { requireInternalAccess } from '@/lib/access/context';
 import { createServerSupabase } from '@/lib/supabase/server';
@@ -6,7 +7,7 @@ import { branchScopedCatalogs, catalogs } from '@/modules/catalog/fields';
 import { CatalogTable } from './catalog-dialog';
 import { loadCatalogOptions, visibleCatalogFields } from './editor-data';
 import { catalogHref, listOwnedCatalogs, manageableCatalogs, type CatalogQuery } from './ownership';
-export default async function ModuleCatalogPage({searchParams,kinds}:{searchParams:Promise<CatalogQuery>;kinds:readonly string[]}) {
+export default async function ModuleCatalogPage({searchParams,kinds,parent}:{searchParams:Promise<CatalogQuery>;kinds:readonly string[];parent?:{href:string;label:string}}) {
  const access=await requireInternalAccess(); const params=await searchParams;
  // Materials, customers and suppliers are edited on their own list/detail pages; old links lead there.
  if(params.kind&&Object.hasOwn(listOwnedCatalogs,params.kind)) redirect(catalogHref(params.kind,{id:params.id,q:params.q}));
@@ -26,10 +27,10 @@ export default async function ModuleCatalogPage({searchParams,kinds}:{searchPara
  let rows=data as unknown as Record<string,unknown>[];
  if(kind==='customers'&&rows.length){const privateResult=await supabase.rpc('customer_private_fields',{target_customer_ids:rows.map(row=>String(row.id))}).select("customer_id,credit_limit_vnd::text,internal_note");if(privateResult.error)throw new Error('Không tải được thông tin riêng tư khách hàng.');const privateRows=Array.isArray(privateResult.data)?privateResult.data:privateResult.data?[privateResult.data]:[];const privateById=new Map<string,{credit_limit_vnd:string|number|null;internal_note:string|null}>(privateRows.map((field:{customer_id:string;credit_limit_vnd:string|number|null;internal_note:string|null})=>[field.customer_id,{credit_limit_vnd:field.credit_limit_vnd,internal_note:field.internal_note}] as const));rows=rows.map(row=>{const privateFields=privateById.get(String(row.id));return privateFields?{...row,...privateFields}:row;});}
  const options=await loadCatalogOptions(kind,access,supabase,rows);
- return <div className="page-stack"><header className="page-heading"><div><h1>{config.title}</h1><p className="lede">Bấm “Thêm” hoặc “Sửa” để mở biểu mẫu ngay trên trang. Xóa được khi chưa phát sinh chứng từ; đã dùng thì ngừng dùng, lịch sử chứng từ không thay đổi.</p></div></header>
+ return <div className="page-stack">{parent&&<Breadcrumb parent={parent} current={config.title}/>}<header className="page-heading"><div><h1>{config.title}</h1><p className="lede">Bấm “Thêm” hoặc “Sửa” để mở biểu mẫu ngay trên trang. Xóa được khi chưa phát sinh chứng từ; đã dùng thì ngừng dùng, lịch sử chứng từ không thay đổi.</p></div></header>
   {available.length>1&&<nav className="action-cluster" aria-label="Danh mục">{available.map(([k,c])=><Link className={`button ${k===kind?'button-primary':'button-secondary'}`} aria-current={k===kind?'page':undefined} key={k} href={catalogHref(k)}>{c.title}</Link>)}</nav>}
   <form className="form-actions"><input type="hidden" name="kind" value={kind}/><label htmlFor="catalog-search">Tìm theo tên</label><input id="catalog-search" name="q" defaultValue={params.q}/><button className="button button-secondary" type="submit">Tìm</button>{(params.q||params.id)&&<Link className="code-link" href={catalogHref(kind)}>Xem tất cả</Link>}</form>
   <CatalogTable key={`${kind}:${params.id??''}`} kind={kind} rows={rows} options={options} permissions={[...access.permissions]} scopePrefix={`${access.authUserId}:${access.branchId}:CATALOG`} openId={params.id} openTab={params.tab==='units'?'units':undefined}
    openNew={kind==='sites'&&!!params.customerId&&!params.id} initial={kind==='sites'&&params.customerId?{customer_id:params.customerId}:undefined}/>
-  <p className="muted">Hiển thị tối đa 200 bản ghi. Dùng tìm kiếm để thu hẹp danh sách.</p></div>;
+  {rows.length>=200&&<p className="muted">Hiển thị tối đa 200 bản ghi. Dùng tìm kiếm để thu hẹp danh sách.</p>}</div>;
 }

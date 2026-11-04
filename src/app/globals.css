@@ -128,7 +128,7 @@ button, a, input, select, textarea { outline-offset: 3px; }
 .logout-button:hover, .logout-button:focus-visible { background: var(--surface-sunken); }
 .main-menu { position: relative; z-index: 20; color: var(--navigation-text); background: var(--navigation); }
 .main-menu :focus-visible { outline-color: #fff; }
-.menu-drawer-head { display: none; }
+.menu-drawer-head, .menu-drawer-foot { display: none; }
 .main-menu-inner { display: flex; align-items: flex-end; gap: 12px; width: 100%; margin: 0 auto; padding: 6px 16px 0; }
 .nav-list { display: flex; flex: 1 1 auto; align-items: flex-end; gap: 2px; min-width: 0; }
 .nav-link, .nav-group-toggle {
@@ -207,6 +207,8 @@ button, a, input, select, textarea { outline-offset: 3px; }
   .main-menu.open { visibility: visible; transform: none; box-shadow: 20px 0 60px rgba(9, 27, 51, 0.32); }
   .sidebar-backdrop { display: block; position: fixed; inset: 0; z-index: 59; border: 0; background: rgba(9, 27, 51, 0.42); animation: fade-in var(--dur) var(--ease-out) both; }
   .menu-drawer-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.16); color: #fff; }
+  .menu-drawer-foot { display: block; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255, 255, 255, 0.16); }
+  .menu-drawer-foot .logout-button { width: 100%; min-height: 46px; color: #fff; }
   .main-menu-inner { flex-direction: column; align-items: stretch; width: 100%; padding: 12px; }
   .nav-list { flex-direction: column; align-items: stretch; }
   .nav-link, .nav-group-toggle { width: 100%; min-height: 46px; border-radius: 10px; }
@@ -2344,3 +2346,57 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .portal-branch-form .button { justify-self: start; }
 .auth-closed { display: grid; gap: 14px; }
 .auth-closed p { margin: 0; color: var(--text); line-height: 1.6; }
+
+/* D59 Cài đặt: a grouped index with what each setting is and how it stands, then the forms of this page. */
+.settings-index { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr)); gap: 14px; align-items: start; }
+.settings-index-group { padding: 14px 6px 6px; }
+.settings-index-group h2 { margin: 0 10px 6px; font-size: var(--font-size-label); color: var(--muted); }
+.settings-index-group ul { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.settings-index-group a { display: grid; gap: 2px; min-height: 52px; padding: 8px 10px; border-radius: var(--radius-sm); color: inherit; text-decoration: none; }
+.settings-index-group a:hover { background: var(--primary-soft); }
+.settings-entry-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.settings-index-group a strong { color: var(--primary-text, var(--primary)); font-weight: 650; }
+.settings-index-group a small { color: var(--muted); font-size: var(--font-size-caption); text-wrap: pretty; }
+.settings-status { padding: 1px 8px; border-radius: 999px; font-size: var(--font-size-caption); font-weight: 600; white-space: nowrap; }
+.settings-status.ok { color: var(--success); background: var(--success-soft); }
+.settings-status.warn { color: var(--warning); background: var(--warning-soft); }
+.settings-status.muted { color: var(--muted); background: var(--surface-soft); }
+.settings-section { scroll-margin-top: 80px; }
+.settings-note { margin: 0 0 12px; color: var(--muted); font-size: var(--font-size-caption); text-wrap: pretty; }
+.settings-warning { margin: 0; padding: 8px 12px; border: 1px solid color-mix(in srgb, var(--warning) 35%, transparent); border-radius: var(--radius-sm); color: var(--warning); background: var(--warning-soft); font-size: var(--font-size-caption); font-weight: 600; }
+.settings-dirty { align-self: center; color: var(--warning); font-size: var(--font-size-caption); font-weight: 600; }
+.settings-fieldset { margin: 0; padding: 12px 14px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+.settings-fieldset legend { padding: 0 4px; font-size: var(--font-size-label); font-weight: 700; }
+.settings-fieldset .form-grid { margin: 0; }
+.settings-tech { margin-top: 10px; }
+.settings-tech summary { cursor: pointer; color: var(--muted); font-size: var(--font-size-caption); font-weight: 600; }
+.settings-tech p { margin: 6px 0 0; }
+.settings-page .company-logo { margin-top: 16px; }
+.segmented-radio label { min-height: 36px; }
+.confirm-body p { margin: 0; line-height: 1.6; }
+.ai-key-form .form-actions { justify-content: flex-start; }
+.ai-key-form .field input { max-width: 520px; }
+.page-heading .lede, .card .muted { text-wrap: pretty; }
+/* Row actions: separated, and finger-sized on a phone. */
+.row-actions { display: inline-flex; flex-wrap: nowrap; justify-content: flex-end; gap: 4px 16px; }
+.card-pad > .settings-warning { margin: 4px 0 12px; }
+.row-actions .link-button { min-height: 32px; padding: 4px 2px; }
+/* Automation channel checks: tokens, so the "ok" rows read in dark mode too. */
+.automation-checks li.ok { border-color: color-mix(in srgb, var(--success) 35%, transparent); background: var(--success-soft); color: var(--text); }
+.automation-checks li.warn { color: var(--text); }
+/* Zalo templates: rows of one list, not cards inside a card. */
+.zalo-templates > summary { display: flex; align-items: baseline; gap: 4px; cursor: pointer; list-style: none; }
+.zalo-templates > summary::-webkit-details-marker { display: none; }
+.zalo-templates > summary h2 { margin: 0; }
+.zalo-templates > summary::after { content: ""; width: 8px; height: 8px; margin-left: auto; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); transition: transform 160ms ease-out; }
+.zalo-templates[open] > summary::after { transform: rotate(-135deg); }
+.zalo-templates[open] > summary { margin-bottom: 8px; }
+.zalo-template-list { gap: 0; }
+.zalo-template { padding: 14px 0; border: 0; border-top: 1px solid var(--border); border-radius: 0; }
+@media (max-width: 760px) {
+  .settings-index-group a { min-height: 56px; }
+  .row-actions { flex-wrap: wrap; }
+  .row-actions .link-button, .segmented-radio label { min-height: 44px; }
+  /* The floating assistant button must not cover the last controls of a page. */
+  .content { padding-bottom: 96px; }
+}
