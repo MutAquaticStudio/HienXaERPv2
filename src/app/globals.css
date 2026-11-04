@@ -2335,3 +2335,12 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
   .segmented a { flex: none; padding: 4px 10px; }
   .dash-chart .section-head { flex-direction: column; align-items: flex-start; gap: 8px; }
 }
+
+/* D58: the register form names the wrong box and keeps what was typed. */
+.auth-form .field-hint { display: block; margin-top: 4px; color: var(--muted); font-size: var(--font-size-caption); }
+.auth-form .field-error { margin: 4px 0 0; font-size: var(--font-size-caption); font-weight: 600; }
+.auth-form .field-invalid .input-with-icon input, .auth-form .field-invalid .input-with-icon textarea { border-color: var(--danger); }
+.portal-branch-form { display: grid; gap: 10px; align-content: start; }
+.portal-branch-form .button { justify-self: start; }
+.auth-closed { display: grid; gap: 14px; }
+.auth-closed p { margin: 0; color: var(--text); line-height: 1.6; }
