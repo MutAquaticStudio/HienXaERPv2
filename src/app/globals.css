@@ -2400,3 +2400,7 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
   /* The floating assistant button must not cover the last controls of a page. */
   .content { padding-bottom: 96px; }
 }
+
+/* D60 Nhật ký: the object as people know it, under the sentence. */
+.audit-object { margin-top: 2px; font-size: var(--font-size-caption); }
+.audit-object > span { color: var(--muted); }
