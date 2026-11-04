@@ -28,16 +28,16 @@ Ghi chú cho phiên sau:
 - Lệnh `git push --force-with-lease` bị chặn trong phiên: sau khi PR squash-merge thì `git merge origin/main` vào nhánh (không force-push).
 - `regex {m,n}` trong Postgres giới hạn n ≤ 255.
 
-**04/11 — Soát giao diện Impeccable + sửa (D55)**, nhánh `claude/epic-davinci-ankiqa`, **chưa merge/deploy**: lỗi ca thợ, danh bạ tự thu dưới 1600 px, bảng không còn tràn ở 1280–1440 px, khung tổng tạo đơn gọn, menu "In ▾", trang 404 tiếng Việt, độ tương phản / focus / skip link, bỏ zod khỏi trình duyệt. Chi tiết `implementation.md` 04/11. Skill Impeccable chỉ cài trong phiên (`~/.claude/skills/impeccable`, clone `pbakaus/impeccable`). Chạy app cục bộ nối QA: build với env QA (`NEXT_PUBLIC_SUPABASE_URL` QA + publishable key, `HX_QA_PROJECT_REF`, `HX_QA_RUNTIME_APPROVED=true`, `HX_CLOUD_RUNTIME_APPROVED=true`), chạy `next start` với `NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt`; môi trường phải cho phép host Supabase QA.
+**04/11 — Soát giao diện Impeccable + sửa (D55)** (đã lên Production qua PR #102): lỗi ca thợ, danh bạ tự thu dưới 1600 px, bảng không còn tràn ở 1280–1440 px, khung tổng tạo đơn gọn, menu "In ▾", trang 404 tiếng Việt, độ tương phản / focus / skip link, bỏ zod khỏi trình duyệt. Chi tiết `implementation.md` 04/11. Skill Impeccable chỉ cài trong phiên (`~/.claude/skills/impeccable`, clone `pbakaus/impeccable`). Chạy app cục bộ nối QA: build với env QA (`NEXT_PUBLIC_SUPABASE_URL` QA + publishable key, `HX_QA_PROJECT_REF`, `HX_QA_RUNTIME_APPROVED=true`, `HX_CLOUD_RUNTIME_APPROVED=true`), chạy `next start` với `NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt`; môi trường phải cho phép host Supabase QA.
 
-**04/11 — D56** (cùng nhánh, chưa merge/deploy): Tổng quan mới (Cần xử lý hôm nay, so kỳ trước, cột Thu/Chi, giao hàng hôm nay, nhóm hàng, tuổi nợ, quỹ), ô tìm chung Ctrl K (migration `20261104100000_d56_global_search` — đã áp QA, **Production chưa**), bỏ nhãn nhỏ trên tiêu đề + breadcrumb. Concept: Artifact "Concept giao diện Hiền Xa".
+**04/11 — D56** (PR #102, đã lên QA + Production 04/11): Tổng quan mới (Cần xử lý hôm nay, so kỳ trước, cột Thu/Chi, giao hàng hôm nay, nhóm hàng, tuổi nợ, quỹ), ô tìm chung Ctrl K (migration `20261104100000_d56_global_search` — đã áp QA + Production), bỏ nhãn nhỏ trên tiêu đề + breadcrumb. Concept: Artifact "Concept giao diện Hiền Xa".
 
 ## 1. Trạng thái phát hành (03/11/2026)
 
 | Môi trường | Địa chỉ | Supabase | Code | Migration mới nhất |
 |---|---|---|---|---|
-| Production | https://app.hienxavlxd.com (đã xác minh; tên cũ https://hien-xa-erp-v2-nu.vercel.app vẫn chạy) | `nbwynrwkdbtfsitafsxa` | `main` @ `1feb925` (PR #101: D54), deploy `dpl_3EDpgr6p5x6QaYB57AKQgLsiuysK` | `20261103140000_d54_vehicle_plate_optional` |
-| QA (nghiệm thu) | Preview từ `main` @ `57b4bff` (**chưa** deploy lại bản 03/11): `dpl_C6ddHam7vy5AYgtbgEZfuWmngzff` (https://hien-xa-erp-v2-p5su7q7iz-hienxa.vercel.app, cần đăng nhập Vercel). Owner 03/11: **không cần** tên miền `qa.hienxavlxd.com` nữa | `ffrwiglcrlumfvhubaxg` | `main` @ `57b4bff` | `20261103140000_d54_vehicle_plate_optional` |
+| Production | https://app.hienxavlxd.com (đã xác minh; tên cũ https://hien-xa-erp-v2-nu.vercel.app vẫn chạy) | `nbwynrwkdbtfsitafsxa` | `main` @ `bad6954` (PR #102: D55 + D56), deploy `dpl_26S2P9NFPVzf45psQMzgk4hb48Pe` | `20261104100000_d56_global_search` |
+| QA (nghiệm thu) | Preview từ `main` @ `bad6954` (04/11): `dpl_9DVqShgPDVtB95Qzzv8QVU8qEB6L` (https://hien-xa-erp-v2-co59grgds-hienxa.vercel.app, cần đăng nhập Vercel). Owner 03/11: **không cần** tên miền `qa.hienxavlxd.com` nữa | `ffrwiglcrlumfvhubaxg` | `main` @ `bad6954` | `20261104100000_d56_global_search` |
 
 - Kiểm phiên bản: `GET /api/health` → `buildSha` (dùng `web_fetch_vercel_url` cho bản preview có bảo vệ).
 - Vercel: team `team_9qd9uzBYBc6WtzJVu7wGP7uC`, project `prj_o6ya9YI1b3fTFC8nxiOtjHiwaS3W`. Auto-deploy tắt (`vercel.json`); deploy bằng `create_deployment` (gitSource `{type: github, org: MutAquaticStudio, repo: HienXaERPv2, ref: main, sha}`; `target: production` cho Production, bỏ `target` cho bản QA preview).
