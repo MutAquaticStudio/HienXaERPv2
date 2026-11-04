@@ -32,7 +32,7 @@ export async function ReportCenterView({ access, report, filters, today }: { acc
   const chartRows = chartColumn ? result.rows.filter((row) => Number(row[chartColumn.key] ?? 0) > 0).slice(0, report.key === "SALES_BY_DAY" ? 31 : 10) : [];
   const max = chartRows.reduce((top, row) => Math.max(top, Number(row[chartColumn!.key])), 1);
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Báo cáo</p><h1>{report.group} · {report.label}</h1><p className="lede">{report.hint}</p></div>
+    <header className="page-heading"><div><p className="eyebrow">Báo cáo</p><h1>{report.group === report.label ? report.label : `${report.group} · ${report.label}`}</h1><p className="lede">{report.hint}</p></div>
       <a className="button button-secondary" href={`/api/reports/center${href({})}`} download>Xuất CSV</a></header>
     <div className="report-hub">
       <nav className="card card-pad report-nav" aria-label="Danh sách báo cáo">

@@ -154,6 +154,7 @@ export function AppShell({ surface, children, permissions, actorName, branchName
 
   return (
     <div className="app-shell">
+      <a className="skip-link" href="#main-content">Bỏ qua menu</a>
       {open && <button className="sidebar-backdrop" type="button" tabIndex={-1} aria-label="Đóng điều hướng" onClick={closeMenu} />}
       <header className="utility-bar" inert={open}>
         <div className="utility-inner">
@@ -236,7 +237,7 @@ export function AppShell({ surface, children, permissions, actorName, branchName
         </div>
       </nav>
       <div className="workspace" inert={open}>
-        <main className="content">{children}{surface === "admin" && <UatBrowserTiming />}</main>
+        <main className="content" id="main-content" tabIndex={-1}>{children}{surface === "admin" && <UatBrowserTiming />}</main>
         <ChatDock surface={surface} />
         {surface === "admin" && permissions?.includes("ai.use") && <AiBubble />}
       </div>

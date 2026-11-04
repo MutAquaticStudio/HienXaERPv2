@@ -82,6 +82,7 @@ export function PortalShell({
 
   return (
     <div className={styles.shell}>
+      <a className="skip-link" href="#main-content">Bỏ qua menu</a>
       <aside className={styles.side}>
         <div className={styles.sideBrand}>
           {mark}
@@ -92,7 +93,7 @@ export function PortalShell({
         </div>
         <nav className={styles.sideNav} aria-label={scope}>{nav()}</nav>
       </aside>
-      <main className={styles.main}>
+      <main className={styles.main} id="main-content" tabIndex={-1}>
         <header className={styles.topbar}>
           <div className={styles.topIdentity}>
             {mark}

@@ -234,3 +234,10 @@ describe("brand and branch in the top bar", () => {
   });
 });
 
+
+it("starts with a skip link to the page content (WCAG 2.4.1)", () => {
+  render(<AppShell surface="admin" permissions={ownerPermissions} actorName="Chủ QA" branchId="b1"><p>Nội dung</p></AppShell>);
+  const skip = screen.getByRole("link", { name: "Bỏ qua menu" });
+  expect(skip).toHaveAttribute("href", "#main-content");
+  expect(document.getElementById("main-content")).toHaveTextContent("Nội dung");
+});

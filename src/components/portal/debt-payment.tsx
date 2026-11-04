@@ -6,7 +6,8 @@ import { useEffect, useState } from "react";
 import { Dialog } from "@/components/ui/dialog";
 import styles from "@/components/portal/portal.module.css";
 import { CopyButton } from "@/components/portal/copy-button";
-import { debtPaymentOptionsSchema, paymentTarget, vietQrImageUrl, type DebtPaymentOptions, type PaymentRequest } from "@/modules/finance/sepay";
+import { paymentTarget, vietQrImageUrl } from "@/modules/finance/payment-target";
+import type { DebtPaymentOptions, PaymentRequest } from "@/modules/finance/sepay";
 import { createPaymentRequestAction } from "@/modules/finance/payment-request-actions";
 import { formatPortalMoney as money } from "@/modules/portal/money";
 
@@ -46,8 +47,9 @@ function PaymentDialog({ customerId, targetKey, onClose }: { customerId: string;
         if (cancelled) return;
         if (!response.ok) { setView({ kind: "error", message: body.error ?? "Chưa lấy được thông tin thanh toán." }); return; }
         if (body.options === null) { setView({ kind: "error", message: "Cửa hàng chưa bật thanh toán tự xác nhận. Vui lòng chuyển khoản theo thông tin ở trang Công nợ." }); return; }
-        const options = debtPaymentOptionsSchema.parse(body.options);
-        if (!options.qr_enabled) { setView({ kind: "error", message: "Cửa hàng chưa bật thanh toán tự xác nhận. Vui lòng chuyển khoản theo thông tin ở trang Công nợ." }); return; }
+        // Validated by /api/portal/debt-payment (debtPaymentOptionsSchema) before it is sent: no schema library in the browser.
+        const options = body.options as DebtPaymentOptions;
+        if (options.qr_enabled === false) { setView({ kind: "error", message: "Cửa hàng chưa bật thanh toán tự xác nhận. Vui lòng chuyển khoản theo thông tin ở trang Công nợ." }); return; }
         const target = paymentTarget(options, targetKey);
         setView(target ? { kind: "ready", options, ...target } : { kind: "settled" });
       } catch {

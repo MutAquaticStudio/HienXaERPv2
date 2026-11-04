@@ -28,6 +28,8 @@ Ghi chú cho phiên sau:
 - Lệnh `git push --force-with-lease` bị chặn trong phiên: sau khi PR squash-merge thì `git merge origin/main` vào nhánh (không force-push).
 - `regex {m,n}` trong Postgres giới hạn n ≤ 255.
 
+**04/11 — Soát giao diện Impeccable + sửa (D55)**, nhánh `claude/epic-davinci-ankiqa`, **chưa merge/deploy**: lỗi ca thợ, danh bạ tự thu dưới 1600 px, bảng không còn tràn ở 1280–1440 px, khung tổng tạo đơn gọn, menu "In ▾", trang 404 tiếng Việt, độ tương phản / focus / skip link, bỏ zod khỏi trình duyệt. Chi tiết `implementation.md` 04/11. Skill Impeccable chỉ cài trong phiên (`~/.claude/skills/impeccable`, clone `pbakaus/impeccable`). Chạy app cục bộ nối QA: build với env QA (`NEXT_PUBLIC_SUPABASE_URL` QA + publishable key, `HX_QA_PROJECT_REF`, `HX_QA_RUNTIME_APPROVED=true`, `HX_CLOUD_RUNTIME_APPROVED=true`), chạy `next start` với `NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt`; môi trường phải cho phép host Supabase QA.
+
 ## 1. Trạng thái phát hành (03/11/2026)
 
 | Môi trường | Địa chỉ | Supabase | Code | Migration mới nhất |

@@ -51,7 +51,7 @@ Dùng sổ tay này để hiểu hệ thống và hướng dẫn người dùng:
 - Công cụ: soan_phieu_giao (phiếu cho toàn bộ phần còn chưa giao của đơn, từ một kho).
 
 ### Gán phiếu giao (phân người, xe, giờ)
-- Bảng điều phối /admin/dispatch "Bảng phân giao": cột Chờ phân giao / Đã phân giao / Đang thực hiện / Ngoại lệ. Nút "Gán" trên dòng chờ: chọn người giao + xe + giờ [delivery.assign]. Cần ít nhất một nhân viên vai trò "Thợ & tài xế" và một xe đang dùng.
+- Bảng điều phối /admin/dispatch "Điều phối giao hàng": cột Chờ phân giao / Đã phân giao / Đang thực hiện / Ngoại lệ. Nút "Gán" trên dòng chờ: chọn người giao + xe + giờ [delivery.assign]. Cần ít nhất một nhân viên vai trò "Thợ & tài xế" và một xe đang dùng.
 - Hoặc trên trang phiếu /admin/deliveries/[id]: "Phân người và xe", hoặc "Thuê ngoài" (đầu mối NCC / xe ngoài → "Xác nhận phân giao ngoài").
 - Quy tắc: chỉ gán khi phiếu "Chờ phân giao", hoặc đổi khi "Đã phân giao" mà thợ chưa bắt đầu. Hệ thống chặn khi người / xe trùng lịch (báo giờ trống gần nhất) hoặc người giao không còn làm ở chi nhánh. Xe không cần sức chở (sức chở ghi trong danh mục chỉ để tham khảo) và không cần biển số — xe gọi theo tên trong danh mục (ví dụ Xe điện, Xe cn nhỏ, Xe cn to, Ô tô).
 - Tự điều phối (Cài đặt → Vận hành giao hàng): "Tắt", "Gợi ý" (Điều phối bấm "Áp dụng gợi ý"), "Tự động" (mặc định: tự chọn xe và tài xế rảnh, sửa được). Xe nên có "Tài xế mặc định" để tự chia; "chưa có xe…" thường do chưa có xe đang dùng, hoặc thợ chưa có tài khoản nhận việc (danh mục xe /admin/dispatch/resources).
@@ -86,7 +86,7 @@ Dùng sổ tay này để hiểu hệ thống và hướng dẫn người dùng:
 
 ## Danh mục và giá
 - Vật tư /admin/products [catalog.read] "+ Vật tư", "+ Hàng cùng loại", "Ngừng dùng / Dùng lại". Đơn vị cơ sở không đổi được sau khi tạo. Đơn vị bán thêm và quy đổi ("1 tấn = 20 bao") ở "Đơn vị tính & giá" trên trang vật tư; nhóm vật tư, đơn vị, quy đổi chung ở /admin/products/manage [catalog.manage]. Trang vật tư hiện "Giá vốn bình quân" (nếu có quyền xem giá vốn).
-- Giá bán /admin/products/pricing "Thiết lập giá" [pricing.read; sửa cần pricing.manage]: "Giá chung (giá lẻ)" và giá theo "Nhóm giá khách"; "Điều chỉnh hàng loạt" (% hoặc số tiền); "Lưu bảng giá". Giá riêng một khách: "Đặt giá riêng" trên trang khách. Thứ tự ưu tiên: giá riêng khách + vật tư → khách + nhóm vật tư → nhóm giá khách → giá chung. Đơn đã chốt giữ giá cũ.
+- Giá bán /admin/products/pricing "Giá bán" (nút "Thiết lập giá" ở trang Vật tư) [pricing.read; sửa cần pricing.manage]: "Giá chung (giá lẻ)" và giá theo "Nhóm giá khách"; "Điều chỉnh hàng loạt" (% hoặc số tiền); "Lưu bảng giá". Giá riêng một khách: "Đặt giá riêng" trên trang khách. Thứ tự ưu tiên: giá riêng khách + vật tư → khách + nhóm vật tư → nhóm giá khách → giá chung. Đơn đã chốt giữ giá cũ.
 - Bạn không đặt giá: giá lấy theo bảng giá; vật tư chưa có giá bán thì khách trên cổng không đặt được và đơn bán cần đặt giá trước.
 
 ## Tài chính

@@ -2,7 +2,7 @@ import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 
 vi.mock("@/modules/sales/actions", () => ({ autoSourceOrderAction: vi.fn() }));
-import { OrderSourcingPanel, sourcingRun } from "./order-sourcing-panel";
+import { OrderSourcingPanel, sourcingRun, tidyWarehouseReason } from "./order-sourcing-panel";
 
 afterEach(cleanup);
 const lines = [
@@ -52,4 +52,11 @@ it("FB9: a draft shows today's stock per line, not \"Thiếu\" on every line", (
   expect(within(sand).getByText("Kho có 2 · thiếu 3 m³")).toBeInTheDocument();
   expect(sand).toHaveTextContent("phần thiếu đặt NCC giao thẳng");
   expect(screen.getByText("Đá").closest("li")).not.toHaveTextContent(/Thiếu|thiếu|Kho đủ/);
+});
+
+it("does not repeat the word Kho when the warehouse name already starts with it", () => {
+  expect(tidyWarehouseReason("Kho Kho chính đủ hàng.")).toBe("Kho chính đủ hàng.");
+  expect(tidyWarehouseReason("Kho chính thiếu; kho Kho HX2 đủ hàng.")).toBe("Kho chính thiếu; Kho HX2 đủ hàng.");
+  expect(tidyWarehouseReason("Kho Bến Lức có 5 bao")).toBe("Kho Bến Lức có 5 bao");
+  expect(sourcingRun({ created_at: "2026-11-02T08:37:00Z", plan: { lines: [{ line_id: "l1", reason: "Kho Kho chính đủ hàng." }] } })?.reasons.l1).toBe("Kho chính đủ hàng.");
 });

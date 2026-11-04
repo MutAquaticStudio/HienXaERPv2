@@ -22,7 +22,11 @@ const MAX_CHATS = 10;
 const WINDOW_WIDTH = 342;
 
 const COLLAPSED_KEY = "hx_chat_dock_collapsed";
-const readCollapsed = () => { try { return typeof window !== "undefined" && window.localStorage.getItem(COLLAPSED_KEY) === "1"; } catch { return false; } };
+/** D55: below this width the list starts as the narrow strip, so tables keep their columns; a choice made with the toggle wins. */
+export const AUTO_COLLAPSE_WIDTH = 1600;
+const readCollapsed = (): "1" | "0" | null => {
+  try { const value = typeof window !== "undefined" ? window.localStorage.getItem(COLLAPSED_KEY) : null; return value === "1" || value === "0" ? value : null; } catch { return null; }
+};
 const keyOf = (contact: MessengerContact) => `${contact.auth_user_id}:${contact.customer_id ?? ""}`;
 
 export function ChatDock({ surface }: { surface: MessageSurface }) {
@@ -31,15 +35,18 @@ export function ChatDock({ surface }: { surface: MessageSurface }) {
   const [contacts, setContacts] = useState<MessengerContact[]>([]);
   const [canAi, setCanAi] = useState(false);
   const [query, setQuery] = useState("");
-  // "Thu gọn" leaves a narrow strip of faces (unread still shows); the choice is remembered on this device.
-  const [collapsed, setCollapsed] = useState(readCollapsed);
-  const toggleCollapsed = () => setCollapsed((current) => {
-    try { window.localStorage.setItem(COLLAPSED_KEY, current ? "0" : "1"); } catch { /* private mode: not remembered */ }
-    return !current;
-  });
+  // "Thu gọn" leaves a narrow strip of faces (unread still shows); the choice is remembered on this device. Without a
+  // choice the list is open on wide screens and a strip below AUTO_COLLAPSE_WIDTH (D55).
+  const [choice, setChoice] = useState(readCollapsed);
+  const [viewport, setViewport] = useState(1440);
+  const collapsed = choice === "1" || (choice === null && viewport < AUTO_COLLAPSE_WIDTH);
+  const toggleCollapsed = () => {
+    const next = collapsed ? "0" : "1";
+    try { window.localStorage.setItem(COLLAPSED_KEY, next); } catch { /* private mode: not remembered */ }
+    setChoice(next);
+  };
   const [chats, setChats] = useState<DockWindow[]>([]);
   const [minimized, setMinimized] = useState<string[]>([]);
-  const [viewport, setViewport] = useState(1440);
   const [version, setVersion] = useState(0);
   // The Tin nhắn page already is the messenger.
   const onMessagesPage = pathname.startsWith(`/${surface}/messages`);

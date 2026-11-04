@@ -12,7 +12,7 @@ export default async function WorkPoolPage() {
       <header className={styles.sectionHead}>
         <div>
           <h1>Kho việc có thể nhận</h1>
-          <p>Chỉ hiển thị việc ở chi nhánh bạn đang có quyền active.</p>
+          <p>Chỉ hiện việc ở chi nhánh bạn đang làm.</p>
         </div>
       </header>
       <div className={styles.grid}>

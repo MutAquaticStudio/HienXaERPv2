@@ -336,6 +336,11 @@ it("takes what the customer paid up front, into the account matching the method,
   expect(within(group).getByLabelText("Vào quỹ")).toHaveValue("bank");
   fireEvent.change(within(group).getByLabelText("Số tiền"), { target: { value: "20000" } });
   expect(await within(group).findByText(/Còn phải trả 100.000 ₫/)).toBeInTheDocument();
+  // Folded behind one button on small screens (CSS), the button says what was entered and opens / closes the details.
+  const more = screen.getByRole("button", { name: "Đã nhập trả trước 20.000 ₫ · Sửa" });
+  expect(more).toHaveAttribute("aria-expanded", "false");
+  fireEvent.click(more);
+  expect(screen.getByRole("button", { name: "Thu gọn" })).toHaveAttribute("aria-expanded", "true");
   const create = screen.getByRole("button", { name: "Xác nhận đơn" });
   await waitFor(() => expect(create).toBeEnabled());
   fireEvent.click(create);

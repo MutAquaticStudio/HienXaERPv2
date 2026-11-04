@@ -66,7 +66,12 @@ function DraftStock({ line }: { line: SourcingLine }) {
 }
 
 /** Reasons of the latest run per line, from the stored plan. */
+/** The sourcing reason says "Kho " + the warehouse name, which often starts with "Kho" itself: "Kho Kho chính" → "Kho chính". */
+export function tidyWarehouseReason(text: string) {
+  return text.replace(/\b([Kk]ho) (?=Kho\b)/g, "");
+}
+
 export function sourcingRun(row: { created_at: string; plan: { lines?: { line_id: string; reason?: string }[] } } | null): SourcingRun | null {
   if (!row) return null;
-  return { createdAt: row.created_at, reasons: Object.fromEntries((row.plan.lines ?? []).filter((line) => line.reason).map((line) => [line.line_id, line.reason!])) };
+  return { createdAt: row.created_at, reasons: Object.fromEntries((row.plan.lines ?? []).filter((line) => line.reason).map((line) => [line.line_id, tidyWarehouseReason(line.reason!)])) };
 }

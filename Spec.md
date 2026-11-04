@@ -63,6 +63,8 @@
 
 > Quyết định Owner 03/11/2026: **D54** — **Xe giao hàng không cần biển số.** Danh mục Xe chỉ còn "Tên xe" (mã, ví dụ Xe điện / Xe cn nhỏ / Xe cn to / Ô tô), sức chở và tài xế mặc định (tham khảo); ô Biển số bỏ khỏi biểu mẫu. Cột `vehicles.plate_number` thành không bắt buộc (giữ biển cũ nếu có; chuỗi trống không được tính là biển số). Mọi chỗ hiển thị xe (điều phối, lộ trình, bản đồ GPS, báo cáo chuyến, phiếu in, trợ lý AI) dùng biển số nếu có, nếu không thì dùng tên xe. Migration `20261103140000_d54_vehicle_plate_optional`.
 
+> Quyết định Owner 04/11/2026: **D55** — **Danh bạ "Người liên hệ" tự thu gọn trên màn hình hẹp.** Sau đợt soát giao diện (Impeccable critique + audit), Owner chọn: khi người dùng chưa tự chọn mở/thu, màn hình dưới 1600 px mở danh bạ ở dạng dải 64 px (ảnh đại diện + số chưa đọc), từ 1600 px mở cột 280 px như UXUI.md mục danh bạ; bấm thu/mở vẫn được nhớ trên máy và ưu tiên hơn mặc định. Mục đích: bảng dữ liệu ở 1280–1599 px không bị mất cột (UX-040.1 "không bó hẹp data table"). Không migration.
+
 # Spec.md — HIỀN XA ERP V2
 
 > **Bộ tài liệu:** `HX-V2-DOCSET-4.4`  

@@ -31,7 +31,7 @@ export function DispatchDayBoard({ day, board, canAssign, notice, error, assign 
     {notice && <p className="form-message success" role="status">{notice}</p>}
     {error && <p className="form-message" role="alert">{error}</p>}
     <div className="dispatch-day-columns">
-    <div className="dispatch-waiting">
+    <div className="dispatch-waiting" id="dispatch-waiting">
       <div className="section-head flush"><h3>Chờ điều phối ({board.waiting.length})</h3>
         {canAssign && board.waiting.length > 0 && <form action={autoDispatchDayAction}><input type="hidden" name="day" value={day} />
           <input type="hidden" name="operationId" value={randomUUID()} /><button className="button button-primary button-compact" type="submit">Tự chia việc</button></form>}</div>
