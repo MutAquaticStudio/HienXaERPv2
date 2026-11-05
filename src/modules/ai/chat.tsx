@@ -7,14 +7,16 @@ import { useEffect, useRef, useState, useSyncExternalStore, useTransition } from
 
 import { ScrollToEnd } from "@/components/messaging/messaging-controls";
 import { Dialog } from "@/components/ui/dialog";
-import { CommandForm } from "@/components/ui/command-form";
-import { askAiAction, decideAiProposalAction, newAiChatAction } from "@/modules/ai/actions";
+import { askAiAction, listAiProposalsAction, newAiChatAction, type AiProposalCard } from "@/modules/ai/actions";
 import { listAiActionsAction, type AiActionCard } from "@/modules/ai/agent/actions";
 import { AiActionCardView } from "@/modules/ai/agent/action-card";
 import type { AiTurn } from "@/modules/ai/assistant";
+import { AiProposalCardView } from "@/modules/ai/proposal-card";
 import { AI_ATTACHMENT_ACCEPT, AI_ATTACHMENT_MAX_FILES, attachmentKind, attachmentProblem, type AiTurnAttachment } from "@/modules/ai/attachment-limits";
 import { AI_EFFORTS, AI_MODELS, aiEffort, aiModel, DEFAULT_AI_EFFORT, DEFAULT_AI_MODEL, type AiEffortId, type AiModelId } from "@/modules/ai/models";
 
+/** Proposals shown at once in the chat; the rest open with "Xem thêm". */
+const PROPOSALS_SHOWN = 3;
 const PICK_EVENT = "hx-ai-pick";
 /** The picks of this page load, so the pickers work even where the browser keeps no storage. */
 const picked = new Map<string, string>();
@@ -125,6 +127,13 @@ export function AiChat({ initialTurns, compact = false }: { initialTurns: AiChat
     listAiActionsAction().then((waiting) => { if (live) setCards(waiting); }, () => null);
     return () => { live = false; };
   }, []);
+  // D66: proposals waiting for a manager are cards of the chat too (no separate page).
+  const [proposals, setProposals] = useState<AiProposalCard[]>([]);
+  const [canDecide, setCanDecide] = useState(false);
+  const [allProposals, setAllProposals] = useState(false);
+  const loadProposals = () => listAiProposalsAction().then((list) => { setProposals(list.proposals); setCanDecide(list.canDecide); }, () => null);
+  useEffect(() => { void loadProposals(); }, []);
+  const shownProposals = allProposals ? proposals : proposals.slice(0, PROPOSALS_SHOWN);
   const replaceCard = (next: AiActionCard) => setCards((current) => current.map((item) => item.id === next.id ? next : item));
 
   function ask(text: string) {
@@ -156,7 +165,7 @@ export function AiChat({ initialTurns, compact = false }: { initialTurns: AiChat
       // The files went with this question; after a failure they stay attached for the next try.
       if (answer.outcome === "OK") setFiles((current) => current.filter((file) => !sent.includes(file)));
       if (answer.actions.length) setCards((current) => [...current.filter((item) => !answer.actions.some((next) => next.id === item.id)), ...answer.actions]);
-      if (answer.proposals) setNotice(`Đã ghi ${answer.proposals} đề xuất chờ duyệt.`);
+      if (answer.proposals) { setNotice(`Đã ghi ${answer.proposals} đề xuất chờ duyệt.`); void loadProposals(); }
     });
   }
 
@@ -179,8 +188,13 @@ export function AiChat({ initialTurns, compact = false }: { initialTurns: AiChat
         <div className="chat-bubble">{turn.attachments?.length ? <TurnAttachments items={turn.attachments} /> : null}{visibleTurnText(turn)}</div>
       </div>)}
       {cards.length > 0 && <div className="ai-action-list" aria-label="Việc trợ lý soạn sẵn">{cards.map((card) => <AiActionCardView key={card.id} card={card} onChange={replaceCard} />)}</div>}
+      {proposals.length > 0 && <div className="ai-action-list" aria-label="Đề xuất chờ duyệt">
+        {shownProposals.map((proposal) => <AiProposalCardView key={proposal.id} proposal={proposal} canDecide={canDecide} onDecided={(id) => setProposals((current) => current.filter((item) => item.id !== id))} />)}
+        {proposals.length > PROPOSALS_SHOWN && <button type="button" className="button button-secondary button-compact" onClick={() => setAllProposals(!allProposals)}>
+          {allProposals ? "Thu gọn danh sách đề xuất" : `Xem thêm ${proposals.length - PROPOSALS_SHOWN} đề xuất`}</button>}
+      </div>}
       {pending && <div className="chat-bubble-row theirs"><div className="chat-bubble muted">Đang đọc dữ liệu và trả lời…</div></div>}
-      <ScrollToEnd signal={`${turns.length}:${pending}:${cards.length}`} />
+      <ScrollToEnd signal={`${turns.length}:${pending}:${cards.length}:${proposals.length}`} />
     </div>
     {notice && <p className="form-message success" role="status">{notice}</p>}
     <form className="chat-composer ai-composer" onSubmit={(event) => { event.preventDefault(); ask(question); }}>
@@ -218,11 +232,4 @@ export function AiChat({ initialTurns, compact = false }: { initialTurns: AiChat
       </div>
     </form>
   </section>;
-}
-
-export function DecideProposalForm({ proposalId, decision }: { proposalId: string; decision: "DONE" | "DISMISSED" }) {
-  return <CommandForm action={decideAiProposalAction} submit={decision === "DONE" ? "Đã làm" : "Bỏ qua"} danger={decision === "DISMISSED"} className="mini-command">
-    <input type="hidden" name="proposalId" value={proposalId} />
-    <input type="hidden" name="decision" value={decision} />
-  </CommandForm>;
 }

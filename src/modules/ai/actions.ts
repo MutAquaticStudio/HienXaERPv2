@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { requireInternalPermission } from "@/lib/access/context";
+import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { askAssistant, type AiAnswer } from "@/modules/ai/assistant";
 import { attachmentBlocks, type AiContentBlock, type ReadAttachment } from "@/modules/ai/attachments";
@@ -59,7 +60,6 @@ export async function askAiAction(input: unknown): Promise<AiChatAnswer> {
     await supabase.rpc("save_ai_chat_turn", { target_branch_id: access.branchId, question: withAttachmentNames(parsed.data.question, attachedNames),
       answer: answer.text.slice(0, 20000), operation_id: operationId, attachments: kept });
   }
-  if (answer.proposals) revalidatePath("/admin/ai");
   const actions = answer.actionIds?.length ? await listAiActionsAction({ ids: answer.actionIds }) : [];
   return { ...answer, actions };
 }
@@ -77,17 +77,29 @@ export async function newAiChatAction(): Promise<{ success: boolean }> {
   return { success: !error };
 }
 
-export type ProposalState = { success?: boolean; message?: string } | undefined;
+/** D66: a proposal of the assistant waiting for a manager, shown as a card inside the chat. */
+export type AiProposalCard = { id: string; title: string; body: string; linkPath: string | null; createdAt: string };
+export type AiProposalList = { proposals: AiProposalCard[]; canDecide: boolean };
 
-export async function decideAiProposalAction(_: ProposalState, form: FormData): Promise<ProposalState> {
-  const parsed = z.object({ proposalId: z.guid(), decision: z.enum(["DONE", "DISMISSED"]), operationId: z.guid() }).safeParse(Object.fromEntries(form));
-  if (!parsed.success) return { message: "Không xác định được đề xuất." };
+export async function listAiProposalsAction(): Promise<AiProposalList> {
+  const access = await requireInternalPermission("ai.use");
+  const { data, error } = await (await createServerSupabase()).from("ai_proposals").select("id, title, body, link_path, created_at")
+    .eq("branch_id", access.branchId).eq("state", "PENDING").order("created_at", { ascending: false }).limit(30);
+  if (error) return { proposals: [], canDecide: false };
+  const rows = data as { id: string; title: string; body: string; link_path: string | null; created_at: string }[];
+  return { canDecide: access.permissions.has("ai.manage"),
+    proposals: rows.map((row) => ({ id: row.id, title: row.title, body: row.body, linkPath: row.link_path, createdAt: formatBusinessDateTime(row.created_at) })) };
+}
+
+/** "Đã làm" / "Bỏ qua" on a proposal card: the database lets only a person who may manage the assistant decide. */
+export async function decideAiProposalAction(input: unknown): Promise<{ ok: boolean; message: string }> {
+  const parsed = z.object({ proposalId: z.guid(), decision: z.enum(["DONE", "DISMISSED"]) }).safeParse(input);
+  if (!parsed.success) return { ok: false, message: "Không xác định được đề xuất." };
   await requireInternalPermission("ai.manage");
-  const supabase = await createServerSupabase();
-  const { error } = await supabase.rpc("decide_ai_proposal", {
-    target_proposal_id: parsed.data.proposalId, decision: parsed.data.decision, operation_id: parsed.data.operationId,
+  const { error } = await (await createServerSupabase()).rpc("decide_ai_proposal", {
+    target_proposal_id: parsed.data.proposalId, decision: parsed.data.decision, operation_id: randomUUID(),
   });
-  if (error) return { message: "Bạn không có quyền duyệt đề xuất này." };
-  revalidatePath("/admin/ai");
-  return { success: true, message: parsed.data.decision === "DONE" ? "Đã đánh dấu đã làm." : "Đã bỏ qua đề xuất." };
+  if (error) return { ok: false, message: "Bạn không có quyền duyệt đề xuất này." };
+  revalidatePath("/admin", "layout");
+  return { ok: true, message: parsed.data.decision === "DONE" ? "Đã đánh dấu đã làm." : "Đã bỏ qua đề xuất." };
 }

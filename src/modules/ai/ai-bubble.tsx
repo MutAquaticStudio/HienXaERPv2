@@ -14,8 +14,8 @@ import { chatDockVisible, OPEN_AI_EVENT } from "@/modules/ai/events";
 export function AiBubble() {
   const pathname = usePathname();
   const router = useRouter();
-  // The AI page and Tin nhắn already show the conversation: there the top bar button opens the assistant's chat in Tin nhắn.
-  const hidden = pathname.startsWith("/admin/ai") || pathname.startsWith("/admin/messages");
+  // Tin nhắn already shows the conversation: there the top bar button opens the assistant's chat in Tin nhắn (D66: no separate AI page).
+  const hidden = pathname.startsWith("/admin/messages");
   const [open, setOpen] = useState(false);
   const [turns, setTurns] = useState<AiTurn[] | null>(null);
   const [failed, setFailed] = useState(false);
