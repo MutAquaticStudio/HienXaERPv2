@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 
-vi.mock("@/modules/ai/actions", () => ({ askAiAction: vi.fn(), decideAiProposalAction: vi.fn(), newAiChatAction: vi.fn() }));
+vi.mock("@/modules/ai/actions", () => ({ askAiAction: vi.fn(), listAiProposalsAction: vi.fn(async () => ({ proposals: [], canDecide: false })), newAiChatAction: vi.fn() }));
 vi.mock("@/modules/ai/agent/actions", () => ({ listAiActionsAction: vi.fn(async () => []) }));
 vi.mock("@/modules/ai/agent/action-card", () => ({ AiActionCardView: () => null }));
 vi.mock("@/components/messaging/messaging-controls", () => ({ ScrollToEnd: () => null }));
