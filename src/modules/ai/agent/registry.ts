@@ -20,6 +20,7 @@ import {
 } from "./resolve";
 import { createCustomers } from "./batch-customers";
 import { createMaterials, createSuppliers } from "./batch-catalog";
+import { createMaterial, createSupplier } from "./single-catalog";
 import { updatePurchasePrices } from "./batch-prices";
 import { salesOrdersFromList } from "./batch-orders";
 import { purchaseFromDocument } from "./batch-purchase";
@@ -40,6 +41,8 @@ export type AgentAction = {
   description: string;
   properties: Record<string, unknown>;
   prepare(context: AgentContext, input: unknown): Promise<Prepared>;
+  /** D65: the real catalog form this action opens on the card ("Xem và sửa"); `initial` is what the form starts with (strings, "" = unticked). */
+  catalog?: { kind: string; initial(payload: Record<string, unknown>): Record<string, string>; site?(payload: Record<string, unknown>, customerId: string): Record<string, string> | null };
   /** The rows of a list card, from the stored payload (D64); absent for ordinary one-record actions. */
   view?(payload: Record<string, unknown>): ListView | null;
   /** `options.exclude`: rows of a list card (D63) the person unticked before confirming. */
@@ -104,6 +107,9 @@ const createCustomer: AgentAction = {
     }
     return { link: `/admin/customers/${actionId}`, message: "Đã tạo khách hàng." };
   },
+  catalog: { kind: "customers",
+    initial: (payload) => ({ code: String(payload.code ?? ""), display_name: String(payload.ten ?? ""), customer_type: String(payload.loai ?? "BUSINESS"), phone: String(payload.dien_thoai ?? ""), address_text: String(payload.dia_chi_giao ?? "") }),
+    site: (payload, customerId) => payload.dia_chi_giao ? { customer_id: customerId, code: "CT1", name: `Công trình ${String(payload.ten ?? "").slice(0, 140)}`, address_text: String(payload.dia_chi_giao), receiver_phone: String(payload.dien_thoai ?? "") } : null },
 };
 
 const createSalesOrder: AgentAction = {
@@ -462,7 +468,7 @@ const sendMessage: AgentAction = {
   },
 };
 
-export const AGENT_ACTIONS: readonly AgentAction[] = [createCustomer, createCustomers, createMaterials, createSuppliers, updatePurchasePrices, purchaseFromDocument, receiptsFromTransfers, salesOrdersFromList, createSalesOrder, confirmSalesOrder, createDelivery, assignDelivery, createPurchaseOrder,
+export const AGENT_ACTIONS: readonly AgentAction[] = [createCustomer, createCustomers, createSupplier, createMaterial, createMaterials, createSuppliers, updatePurchasePrices, purchaseFromDocument, receiptsFromTransfers, salesOrdersFromList, createSalesOrder, confirmSalesOrder, createDelivery, assignDelivery, createPurchaseOrder,
   receivePurchaseOrder, transferStock, receivePayment, recordExpense, saveAttendance, adjustPayroll, sendMessage];
 
 export const agentActionOf = (kind: string) => AGENT_ACTIONS.find((action) => action.kind === kind);

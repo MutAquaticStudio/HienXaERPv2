@@ -1,16 +1,24 @@
 "use client";
 
 // FB15 (D37): a card of what the assistant prepared. Nothing is written until "Xác nhận".
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 
 import { confirmAiActionAction, dismissAiActionAction, type AiActionCard } from "./actions";
+
+// The two forms are loaded only when "Xem và sửa" is pressed: the chat bubble is on every admin page.
+const ActionFormDialog = dynamic(() => import("./action-form-dialog").then((module) => module.ActionFormDialog), { ssr: false });
+const CatalogActionDialog = dynamic(() => import("./catalog-action-dialog").then((module) => module.CatalogActionDialog), { ssr: false });
 
 const STATE_LABELS: Record<AiActionCard["state"], string> = { PENDING: "Chờ bạn xác nhận", DONE: "Đã thực hiện", FAILED: "Không thực hiện được", CANCELLED: "Đã bỏ qua" };
 
 export function AiActionCardView({ card, onChange }: { card: AiActionCard; onChange(card: AiActionCard): void }) {
   const [error, setError] = useState("");
   const [busy, start] = useTransition();
+  // D65: the pre-filled form that "Xem và sửa" opens.
+  const [editing, setEditing] = useState<"catalog" | "form" | null>(null);
+  const canEdit = card.state === "PENDING" && Boolean(card.form || card.catalog);
   // D63: rows of a list card the person unticked; they are left out when confirming.
   const [excluded, setExcluded] = useState<ReadonlySet<number>>(new Set());
   const list = card.list;
@@ -49,11 +57,15 @@ export function AiActionCardView({ card, onChange }: { card: AiActionCard; onCha
       </tr>)}</tbody>
     </table></div>}
     {card.state === "PENDING" && <div className="ai-action-buttons">
-      <button type="button" className="button button-primary button-compact" onClick={confirm} disabled={busy || (list !== undefined && chosen === 0)}>
+      {canEdit && <button type="button" className="button button-primary button-compact" onClick={() => setEditing(card.catalog ? "catalog" : "form")} disabled={busy}>Xem và sửa</button>}
+      <button type="button" className={`button ${canEdit ? "button-secondary" : "button-primary"} button-compact`} onClick={confirm} disabled={busy || (list !== undefined && chosen === 0)}>
         {busy ? "Đang thực hiện…" : list ? (chosen ? `Xác nhận ${list.verb} ${chosen} ${list.noun}` : `Chọn ${list.noun} để ${list.verb}`) : "Xác nhận"}</button>
       <button type="button" className="button button-secondary button-compact" onClick={dismiss} disabled={busy}>Bỏ qua</button>
     </div>}
     {card.state === "DONE" && <p className="ai-action-result">{card.message}{card.link && <> <Link href={card.link}>Mở</Link></>}</p>}
     {error && <p className="form-message error" role="alert">{error}</p>}
+    {/* Stays mounted after the card is done: a new customer then goes on to the form of its first site. */}
+    {editing === "catalog" && <CatalogActionDialog card={card} onClose={() => setEditing(null)} onDone={onChange} />}
+    {editing === "form" && <ActionFormDialog card={card} onClose={() => setEditing(null)} onDone={onChange} />}
   </article>;
 }

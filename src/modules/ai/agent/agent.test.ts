@@ -21,7 +21,7 @@ const access = vi.hoisted(() => ({ permissions: ["ai.use", "finance.expense.mana
 vi.mock("@/lib/access/context", () => ({ requireInternalPermission: async () => ({ branchId: "b1", permissions: access.permissions }) }));
 
 import { AGENT_TOOLS } from "./tools";
-import { confirmAiActionAction, dismissAiActionAction } from "./actions";
+import { confirmAiActionAction, dismissAiActionAction, finishAiCatalogActionAction, submitAiActionFormAction } from "./actions";
 import { AGENT_ACTIONS } from "./registry";
 import { findCustomer } from "./resolve";
 
@@ -37,7 +37,7 @@ describe("assistant actions (D37)", () => {
   });
 
   it("offers each action only to people with its permissions, as a non-strict tool (validated by prepare)", () => {
-    expect(AGENT_ACTIONS).toHaveLength(20);
+    expect(AGENT_ACTIONS).toHaveLength(22);
     expect(expenseTool.define(context(["ai.use"]))).toBeNull();
     const definition = expenseTool.define(context(["ai.use", "finance.expense.manage"]));
     expect(definition).toMatchObject({ name: "soan_chi_phi" });
@@ -88,6 +88,52 @@ describe("assistant actions (D37)", () => {
     expect(state.rpc).not.toHaveBeenCalled();
   });
 
+  it("D65: Lưu in the form re-runs the action's own checks with the edited values, then runs it with the card id and marks it done", async () => {
+    const id = "11111111-1111-4111-8111-111111111111";
+    state.tables.ai_actions = [{ id, title: "Ghi chi", summary: [], state: "PENDING", result_link: null, result_message: null, kind: "soan_chi_phi", payload: { __input: expenseInput } }];
+    state.tables.finance_accounts = [{ id: "acc", code: "TM", name: "Tiền mặt" }];
+    state.rpc.mockResolvedValue({ data: "ok", error: null });
+    const outcome = await submitAiActionFormAction({ actionId: id, values: { ...expenseInput, so_tien: "900.000" } });
+    expect(outcome).toMatchObject({ ok: true, card: { state: "DONE", link: "/admin/expenses" } });
+    expect(state.rpc).toHaveBeenNthCalledWith(1, "record_operating_expense", expect.objectContaining({ amount_vnd: "900000", operation_id: id }));
+    expect(state.rpc).toHaveBeenNthCalledWith(2, "finish_ai_action", expect.objectContaining({ new_state: "DONE" }));
+  });
+
+  it("D65: a refusal of the checks stays in the form (nothing written, card still waiting); other people's cards, missing rights and done cards are refused", async () => {
+    const id = "11111111-1111-4111-8111-111111111111";
+    state.tables.ai_actions = [{ id, title: "Ghi chi", summary: [], state: "PENDING", result_link: null, result_message: null, kind: "soan_chi_phi", payload: {} }];
+    const refused = await submitAiActionFormAction({ actionId: id, values: { ...expenseInput, so_tien: "-5" } });
+    expect(refused.ok).toBe(false);
+    expect(refused.message).not.toMatch(/^Lỗi:/);
+    expect(refused.message).toMatch(/^Thông tin chưa hợp lệ\. Số tiền \(₫\): .*[^.]\.$/);
+    expect(refused.message).not.toContain("so_tien");
+    expect(state.rpc).not.toHaveBeenCalled();
+    expect(await submitAiActionFormAction({ actionId: "not-a-guid", values: {} })).toMatchObject({ ok: false });
+    // An action without a form (confirm-only, or a catalog card) is not saved through it.
+    access.permissions = ["ai.use", "orders.confirm"];
+    state.tables.ai_actions = [{ id, title: "Xác nhận đơn", summary: [], state: "PENDING", result_link: null, result_message: null, kind: "soan_xac_nhan_don_ban", payload: {} }];
+    expect(await submitAiActionFormAction({ actionId: id, values: {} })).toMatchObject({ ok: false, message: "Thao tác này không có form." });
+    access.permissions = ["ai.use"];
+    state.tables.ai_actions = [{ id, title: "Ghi chi", summary: [], state: "PENDING", result_link: null, result_message: null, kind: "soan_chi_phi", payload: {} }];
+    expect(await submitAiActionFormAction({ actionId: id, values: expenseInput })).toMatchObject({ ok: false, message: "Bạn không có quyền thực hiện thao tác này." });
+    access.permissions = ["ai.use", "finance.expense.manage"];
+    state.tables.ai_actions = [{ id, title: "Ghi chi", summary: [], state: "DONE", result_link: null, result_message: "Đã ghi", kind: "soan_chi_phi", payload: {} }];
+    expect(await submitAiActionFormAction({ actionId: id, values: expenseInput })).toMatchObject({ ok: false, message: "Thao tác đã được thực hiện." });
+    expect(state.rpc).not.toHaveBeenCalled();
+  });
+
+  it("D65: a catalog card is marked done only once the record saved by the form really exists", async () => {
+    const id = "11111111-1111-4111-8111-111111111111";
+    access.permissions = ["ai.use", "suppliers.manage"];
+    state.tables.ai_actions = [{ id, title: "Tạo nhà cung cấp", summary: [], state: "PENDING", result_link: null, result_message: null, kind: "soan_tao_nha_cung_cap", payload: { rows: [] } }];
+    state.rpc.mockResolvedValue({ data: "ok", error: null });
+    expect(await finishAiCatalogActionAction({ actionId: id })).toMatchObject({ ok: false, message: expect.stringMatching(/Chưa thấy bản ghi/) });
+    expect(state.rpc).not.toHaveBeenCalled();
+    state.tables.suppliers = [{ id }];
+    expect(await finishAiCatalogActionAction({ actionId: id })).toMatchObject({ ok: true, card: { state: "DONE", link: "/admin/suppliers" } });
+    expect(state.rpc).toHaveBeenCalledWith("finish_ai_action", expect.objectContaining({ new_state: "DONE" }));
+  });
+
   it("does not run an action twice, and can dismiss", async () => {
     state.tables.ai_actions = [{ id: "11111111-1111-4111-8111-111111111111", title: "Ghi chi", summary: [], state: "DONE", result_link: "/admin/expenses", result_message: "Đã ghi", kind: "soan_chi_phi", payload: {} }];
     expect(await confirmAiActionAction({ actionId: "11111111-1111-4111-8111-111111111111" })).toMatchObject({ ok: true, message: "Thao tác đã được thực hiện." });
@@ -108,7 +154,7 @@ describe("assistant actions (D37)", () => {
     const prepared = await assignTool.run(context(["ai.use", "delivery.assign"]), input);
     expect(prepared.isError).toBe(false);
     expect(state.rpc).toHaveBeenCalledWith("create_ai_action", expect.objectContaining({ action_kind: "soan_gan_phieu_giao", action_payload: {
-      deliveryId: "d1", version: 3, employeeId: "e1", vehicleId: "v1", externalName: "", externalPhone: "", start: "2026-11-04T08:00:00+07:00", end: "2026-11-04T03:00:00.000Z" } }));
+      deliveryId: "d1", version: 3, employeeId: "e1", vehicleId: "v1", externalName: "", externalPhone: "", start: "2026-11-04T08:00:00+07:00", end: "2026-11-04T03:00:00.000Z", __input: input } }));
     // Both a truck and an outside carrier, or neither, is asked back; a delivery already on its way cannot be reassigned.
     expect((await assignTool.run(context(["ai.use", "delivery.assign"]), { ...input, don_vi_ngoai: "Vận tải Bình An" })).text).toMatch(/Chọn một trong hai/);
     expect((await assignTool.run(context(["ai.use", "delivery.assign"]), { ...input, xe: "" })).text).toMatch(/Cần cả người giao và xe/);
