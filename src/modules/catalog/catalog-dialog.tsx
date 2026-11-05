@@ -23,10 +23,14 @@ type DialogTab = "info" | "units";
  * One catalog record (or a new one) edited in a popup; the page behind keeps its place. A material also has the
  * "Đơn vị tính & giá" tab; a new material moves there right after it is created.
  */
-export function CatalogDialog({ kind, record, options, permissions, initial, scope, onClose, onSaved, initialTab = "info" }: EditorProps & {
+export function CatalogDialog({ kind, record, options, permissions, initial, scope, onClose, onSaved, onCreated, operationId: givenOperationId, initialTab = "info" }: EditorProps & {
   record?: Row; scope: string; onClose: () => void; onSaved: (saved: Saved) => void; initialTab?: DialogTab;
+  /** D65: a card of the assistant opens this form with the card's own operation id, so the record can never be made twice. */
+  operationId?: string;
+  /** Called when a new record is saved, also for a material, which stays open for its units and prices. */
+  onCreated?: (saved: Saved) => void;
 }) {
-  const [operationId] = useState(() => crypto.randomUUID());
+  const [operationId] = useState(() => givenOperationId ?? crypto.randomUUID());
   const [createdId, setCreatedId] = useState<string | null>(null);
   const [notice, setNotice] = useState("");
   const materialId = kind === "materials" ? (record?.id ? String(record.id) : createdId) : null;
@@ -36,8 +40,8 @@ export function CatalogDialog({ kind, record, options, permissions, initial, sco
   const name = record ? String(record.name ?? record.display_name ?? record.code ?? "") : "";
   const show = (next: DialogTab) => { setTab(next); if (next === "units") setUnitsOpened(true); };
   const saved = kind === "materials" && !record
-    ? (result: Saved) => { setCreatedId(result.id); setNotice(`${result.message} Thêm đơn vị bán và giá bên dưới, hoặc bấm “Đóng”.`); show("units"); }
-    : onSaved;
+    ? (result: Saved) => { setCreatedId(result.id); setNotice(`${result.message} Thêm đơn vị bán và giá bên dưới, hoặc bấm “Đóng”.`); show("units"); onCreated?.(result); }
+    : (result: Saved) => { onCreated?.(result); onSaved(result); };
   return <Dialog size="lg" eyebrow={record ? "Sửa" : "Thêm mới"} title={record ? `${title}${name ? ` · ${name}` : ""}` : `Thêm ${lower(title)}`} onClose={onClose}
     description={record ? "Xóa được khi chưa có chứng từ liên quan; đã dùng thì ngừng dùng để ẩn khỏi lựa chọn mới." : undefined}>
     {kind === "materials" && <div className="dialog-tabs" role="tablist" aria-label="Phần thông tin vật tư">

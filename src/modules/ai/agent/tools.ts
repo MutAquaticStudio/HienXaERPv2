@@ -6,6 +6,7 @@ import { ZodError } from "zod";
 
 import { AppError } from "@/lib/core/errors";
 import type { AiTool } from "@/modules/ai/tools";
+import { FORM_HINTS } from "./form-spec";
 import { AGENT_ACTIONS, canUseAction, type AgentAction } from "./registry";
 import { ResolveError } from "./resolve";
 
@@ -31,7 +32,9 @@ function agentTool(action: AgentAction): AiTool {
       try {
         const prepared = await action.prepare(context, input);
         const { data, error } = await context.supabase.rpc("create_ai_action", { target_branch_id: context.branchId, action_kind: action.kind,
-          action_title: prepared.title, action_summary: prepared.summary, action_payload: prepared.payload });
+          action_title: prepared.title, action_summary: prepared.summary,
+          // D65: the assistant's own input is kept so "Xem và sửa" can fill the form with it.
+          action_payload: FORM_HINTS[action.kind] ? { ...prepared.payload, __input: input } : prepared.payload });
         if (error || !data) {
           return { text: error?.message.includes("too_many_pending_ai_actions") ? "Lỗi: đang có quá nhiều thao tác chờ xác nhận; người dùng cần xác nhận hoặc bỏ qua bớt." : "Lỗi: chưa lưu được thao tác soạn sẵn.", isError: true };
         }
