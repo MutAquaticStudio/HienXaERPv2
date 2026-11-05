@@ -2,7 +2,7 @@ import { box, button, emailLayout, linkFallback, paragraph, spacer, strong } fro
 
 /**
  * D62: the Supabase Auth emails in the Hiền Xa frame. The HTML is written to supabase/templates/<file> (checked by
- * auth-templates.test.ts) and pasted into Supabase → Authentication → Emails. Links stay {{ .ConfirmationURL }}, the
+ * auth-templates.test.ts) and pasted into Supabase → Authentication → Emails. Links (D67) are on the shop's own address with {{ .TokenHash }}, the
  * one Supabase builds, so sign-up confirmation and password recovery keep working exactly as with the default emails.
  */
 export type AuthTemplate = {
@@ -17,6 +17,9 @@ export type AuthTemplate = {
 
 const LOGO = "{{ .SiteURL }}/api/company/logo";
 const SITE = "{{ .SiteURL }}";
+/** D67: links on the shop's own address (the token is used in the browser), never the supabase.co verify link. */
+const CONFIRM_URL = "{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=signup";
+const RECOVERY_URL = "{{ if .RedirectTo }}{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=recovery{{ else }}{{ .SiteURL }}/recovery/confirm?token_hash={{ .TokenHash }}&type=recovery{{ end }}";
 const frame = (subject: string, preheader: string, eyebrow: string, title: string, content: string) =>
   emailLayout({ subject, preheader, eyebrow, title, content, logoUrl: LOGO, siteLabel: SITE });
 
@@ -30,17 +33,17 @@ export const AUTH_TEMPLATES: AuthTemplate[] = [
     html: frame(CONFIRM_SUBJECT, "Bấm nút trong thư để kích hoạt tài khoản đặt hàng của bạn.", "Đăng ký tài khoản", "Xác nhận email của bạn",
       paragraph("Chào bạn,")
       + paragraph(`Bạn vừa đăng ký tài khoản khách hàng tại Hiền Xa bằng email ${strong("{{ .Email }}")}. Bấm nút dưới đây để xác nhận email và hoàn tất đăng ký.`)
-      + button("Xác nhận email", "{{ .ConfirmationURL }}")
+      + button("Xác nhận email", CONFIRM_URL)
       + paragraph("Sau khi xác nhận, đăng nhập bằng email và mật khẩu bạn vừa tạo để đặt hàng, xem đơn và công nợ.")
       + box("Link chỉ dùng được một lần. Link hết hạn? Đăng ký lại bằng chính email này để nhận link mới.<br>Không phải bạn đăng ký? Bỏ qua email này, tài khoản sẽ không được kích hoạt.")
-      + spacer() + linkFallback("{{ .ConfirmationURL }}")) },
+      + spacer() + linkFallback(CONFIRM_URL)) },
   { file: "recovery.html", dashboard: "Emails → Templates → Reset password", configKey: "auth.email.template.recovery", subject: RECOVERY_SUBJECT,
     html: frame(RECOVERY_SUBJECT, "Có yêu cầu đặt lại mật khẩu cho tài khoản của bạn.", "Bảo mật tài khoản", "Đặt mật khẩu mới",
       paragraph("Chào bạn,")
       + paragraph(`Hiền Xa vừa nhận yêu cầu đặt lại mật khẩu cho tài khoản ${strong("{{ .Email }}")}. Bấm nút dưới đây để chọn mật khẩu mới.`)
-      + button("Đặt mật khẩu mới", "{{ .ConfirmationURL }}")
+      + button("Đặt mật khẩu mới", RECOVERY_URL)
       + box("Không phải bạn yêu cầu? Bỏ qua email này, mật khẩu hiện tại vẫn dùng bình thường.<br>Link chỉ dùng được một lần; cần link mới thì bấm “Quên mật khẩu” lần nữa.")
-      + spacer() + linkFallback("{{ .ConfirmationURL }}")) },
+      + spacer() + linkFallback(RECOVERY_URL)) },
   { file: "password_changed_notification.html", dashboard: "Emails → Security notifications → Password changed", configKey: "auth.email.notification.password_changed", subject: PASSWORD_SUBJECT,
     html: frame(PASSWORD_SUBJECT, "Nếu không phải bạn đổi, hãy đặt lại mật khẩu ngay.", "Thông báo bảo mật", "Mật khẩu của bạn đã được đổi",
       paragraph(`Mật khẩu của tài khoản ${strong("{{ .Email }}")} vừa được đổi thành công. Nếu chính bạn vừa đổi, bạn không cần làm gì thêm.`)

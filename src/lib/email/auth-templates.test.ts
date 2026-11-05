@@ -5,8 +5,8 @@ import { AUTH_TEMPLATES } from "./auth-templates";
 
 const DIR = join(process.cwd(), "supabase", "templates");
 const REQUIRED: Record<string, string[]> = {
-  "confirmation.html": ["{{ .ConfirmationURL }}", "{{ .Email }}", "{{ .SiteURL }}"],
-  "recovery.html": ["{{ .ConfirmationURL }}", "{{ .Email }}"],
+  "confirmation.html": ["{{ .TokenHash }}", "{{ .SiteURL }}/auth/confirm?token_hash=", "{{ .Email }}", "{{ .SiteURL }}"],
+  "recovery.html": ["{{ .TokenHash }}", "{{ .RedirectTo }}", "/recovery/confirm?token_hash=", "{{ .Email }}"],
   "password_changed_notification.html": ["{{ .Email }}", "{{ .SiteURL }}"],
   "email_changed_notification.html": ["{{ .OldEmail }}", "{{ .Email }}"],
 };
@@ -25,6 +25,14 @@ describe("Supabase Auth email templates (D62)", () => {
     expect(template.html).toContain('lang="vi"');
     expect(template.subject).toMatch(/[À-ỹĐđ]/u);
     expect(template.html).toContain("{{ .SiteURL }}/api/company/logo");
+  });
+
+  it("D67: the confirmation and recovery links never show a Supabase address", () => {
+    for (const file of ["confirmation.html", "recovery.html"]) {
+      const html = AUTH_TEMPLATES.find((template) => template.file === file)!.html;
+      expect(html, file).not.toContain("{{ .ConfirmationURL }}");
+      expect(html, file).not.toMatch(/supabase\.co/i);
+    }
   });
 
   it("covers the four emails the Owner chose, each declared in the local config", () => {
