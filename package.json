@@ -36,7 +36,7 @@
     "leaflet": "1.9.4",
     "lucide-react": "^1.44.0",
     "next": "16.4.5",
-    "nodemailer": "10.4.0",
+    "nodemailer": "10.3.1",
     "pdf-lib": "1.17.1",
     "postgres": "^3.4.9",
     "react": "19.2.8",
