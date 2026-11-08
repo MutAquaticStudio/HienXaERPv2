@@ -1,3 +1,8 @@
 allowBuilds:
   sharp: false
   unrs-resolver: false
+# D69: patched versions of packages pulled in by exceljs (zip/glob helpers) and Next's PostCSS; same major, API unchanged.
+overrides:
+  "uuid@<11.1.1": "11.1.1"
+  "brace-expansion@<1.1.21": "1.1.21"
+  "source-map-js@<1.2.2": "1.2.2"

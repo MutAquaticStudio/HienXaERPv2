@@ -1,11 +1,10 @@
 import fs from 'node:fs/promises';
 import assert from 'node:assert/strict';
-import { resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import postgres from 'postgres';
 import { PGlite } from '@electric-sql/pglite';
 import { pgcrypto } from '@electric-sql/pglite/contrib/pgcrypto';
-import { plan, root, migrationFiles, catalog, assertTarget, applyTransaction, transactionBody, hashJson } from './reconcile-current-candidate.mjs';
+import { plan, migrationFiles, catalog, assertTarget, applyTransaction, transactionBody } from './reconcile-current-candidate.mjs';
 import { readViewCatalog, prepareViewReference } from './reconciliation-view-catalog.mjs';
 
 const mode = process.argv[2] ?? '--native';
