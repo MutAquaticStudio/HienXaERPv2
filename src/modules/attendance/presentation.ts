@@ -134,3 +134,13 @@ export function openShiftHeading(open: { work_date: string; clock_in_at: string 
     ? `Đã vào ca lúc ${formatClock(open.clock_in_at)}`
     : `Ca ${formatWorkDay(open.work_date)} chưa ra ca (vào lúc ${formatClock(open.clock_in_at)})`;
 }
+
+/** What a day of "Lịch tuần này" says (D68): the shifts planned, what was really clocked, a recorded leave, and "Chưa xếp ca" (never a
+ * false "Nghỉ") when nothing is planned and nothing was clocked. */
+export function weekDayCell(plannedShifts: string[], records: { status: string; clock_in_at: string | null; clock_out_at: string | null }[]) {
+  const clocked = records.filter((record) => record.status === "WORKED" && record.clock_in_at)
+    .map((record) => `${formatClock(record.clock_in_at)} – ${record.clock_out_at ? formatClock(record.clock_out_at) : "đang làm"}`);
+  const leave = records.filter((record) => record.status !== "WORKED").map((record) => attendanceStatusLabel(record.status));
+  const head = plannedShifts.length ? plannedShifts.join(", ") : clocked.length ? "Ngoài ca" : leave.length ? "" : "Chưa xếp ca";
+  return [head, ...clocked, ...leave].filter(Boolean).join(" · ");
+}

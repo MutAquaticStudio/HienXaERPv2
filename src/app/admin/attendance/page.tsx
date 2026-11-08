@@ -41,7 +41,7 @@ export default async function AttendancePage({ searchParams }: { searchParams: P
   const [peopleResult, shiftsResult, recordsResult, plansResult, periodsResult, settingsResult, todayResult] = await Promise.all([
     supabase.from("workforce_read").select("id, display_name").eq("branch_id", access.branchId).eq("active", true).order("display_name"),
     supabase.from("work_shifts").select("id, code, name, start_time, end_time, break_minutes, active").eq("branch_id", access.branchId).order("start_time"),
-    supabase.from("attendance_records").select("id, employee_id, work_date, shift_id, status, clock_in_at, clock_out_at, worked_minutes, late_minutes, early_minutes, overtime_minutes, note, source")
+    supabase.from("attendance_records").select("id, employee_id, work_date, shift_id, status, clock_in_at, clock_out_at, worked_minutes, late_minutes, early_minutes, overtime_minutes, note, source, auto_closed_at")
       .eq("branch_id", access.branchId).gte("work_date", range.from).lte("work_date", range.to),
     supabase.from("shift_assignments").select("id, employee_id, work_date, shift_id").eq("branch_id", access.branchId).is("cancelled_at", null)
       .gte("work_date", range.from).lte("work_date", range.to),
