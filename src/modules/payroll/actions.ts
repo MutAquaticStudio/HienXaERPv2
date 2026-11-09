@@ -59,6 +59,7 @@ export async function savePayrollComponentAction(_: PayrollFormState, form: Form
     method: z.enum(COMPONENT_METHODS),
     amount: optionalMoney,
     employeeId: z.union([z.guid(), z.literal("")]).optional(),
+    vehicleId: z.union([z.guid(), z.literal("")]).optional(),
     active: z.enum(["on"]).optional(),
     operationId: z.guid(),
   }).safeParse(Object.fromEntries(form));
@@ -79,13 +80,15 @@ export async function savePayrollComponentAction(_: PayrollFormState, form: Form
   } else if (!input.amount || BigInt(input.amount) <= 0n) {
     return { message: "Nhập số tiền lớn hơn 0." };
   }
+  // D70: a price tied to a vehicle is for every worker and only for trips.
+  const vehicleId = input.method === "PER_TRIP" && input.vehicleId ? input.vehicleId : null;
   const access = await requireInternalPermission("compensation.manage");
   const supabase = await createServerSupabase();
   const { error } = await supabase.rpc("save_payroll_component", {
     target_branch_id: access.branchId, target_component_id: input.componentId || null, component_code: input.code, component_name: input.name,
     component_kind: input.kind, component_method: input.method, amount: input.method === "SALES_TIERS" ? null : input.amount,
-    component_tiers: tiers, target_employee_id: input.employeeId || null, is_active: input.componentId ? input.active === "on" : true,
-    operation_id: input.operationId,
+    component_tiers: tiers, target_employee_id: vehicleId ? null : input.employeeId || null, is_active: input.componentId ? input.active === "on" : true,
+    operation_id: input.operationId, component_vehicle_id: vehicleId,
   });
   if (error) return { message: payrollError(error.message) };
   return done(input.componentId ? "Đã lưu khoản thu nhập khác." : "Đã thêm khoản thu nhập khác.");

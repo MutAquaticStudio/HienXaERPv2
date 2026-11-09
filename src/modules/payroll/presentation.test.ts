@@ -16,6 +16,12 @@ describe("payroll presentation", () => {
     expect(componentMethodLabel("PER_JOB")).toBe("Mỗi việc dịch vụ đã xác minh");
   });
 
+  it("explains a second price for one vehicle in Vietnamese (D70)", () => {
+    expect(payrollError('duplicate key value violates unique constraint "payroll_components_trip_vehicle_unique"'))
+      .toBe("Xe này đã có đơn giá chuyến. Sửa đơn giá đó thay vì thêm mới.");
+    expect(payrollError("duplicate key value violates unique constraint \"payroll_components_branch_id_code_key\"")).toBe("Mã đã có. Chọn mã khác.");
+  });
+
   it("describes sales tiers in order", () => {
     expect(describeTiers([{ from_vnd: "100000000", rate_bps: 150 }, { from_vnd: "0", rate_bps: 50 }]))
       .toBe("từ 0 đ: 0,5% · từ 100.000.000 đ: 1,5%");

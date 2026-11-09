@@ -12,7 +12,7 @@ import { attendanceWeek, monthEarnings } from "@/modules/portal/earnings";
 type Payslip = {
   id: string; work_days: string; standard_work_days: string; base_amount_vnd: string; overtime_amount_vnd: string; allowance_vnd: string;
   bonus_vnd: string; deduction_vnd: string; manual_bonus_vnd: string; manual_deduction_vnd: string; manual_note: string | null; net_pay_vnd: string;
-  details: Array<{ code: string; name: string; kind: string; amount_vnd: string }>;
+  details: Array<{ code: string; name: string; kind: string; method?: string; quantity?: number; amount_vnd: string }>;
   earning_event_id: string | null;
   payroll_periods: { name: string; period_start: string; period_end: string } | null;
 };
@@ -81,7 +81,7 @@ export default async function WorkEarningsPage() {
             <dl>
               <dt>Lương chính</dt><dd>{money(slip.base_amount_vnd)}</dd>
               <dt>Làm thêm giờ</dt><dd>{money(slip.overtime_amount_vnd)}</dd>
-              {slip.details.map((item) => <div key={item.code}><dt>{componentKindLabel(item.kind)}: {item.name}</dt><dd>{item.kind === "DEDUCTION" ? "−" : ""}{money(item.amount_vnd)}</dd></div>)}
+              {slip.details.map((item) => <div key={item.code}><dt>{componentKindLabel(item.kind)}: {item.name}{item.method === "PER_TRIP" ? ` (${item.quantity ?? 0} chuyến)` : ""}</dt><dd>{item.kind === "DEDUCTION" ? "−" : ""}{money(item.amount_vnd)}</dd></div>)}
               {slip.manual_bonus_vnd !== "0" && <div><dt>Cộng thêm</dt><dd>{money(slip.manual_bonus_vnd)}</dd></div>}
               {slip.manual_deduction_vnd !== "0" && <div><dt>Trừ{slip.manual_note ? ` (${slip.manual_note})` : ""}</dt><dd>−{money(slip.manual_deduction_vnd)}</dd></div>}
               <dt>Thực lĩnh</dt><dd><strong>{money(slip.net_pay_vnd)}</strong></dd>

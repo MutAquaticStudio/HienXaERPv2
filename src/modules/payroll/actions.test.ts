@@ -48,6 +48,17 @@ describe("payroll commands", () => {
     expect(mocks.rpc).toHaveBeenCalledWith("save_payroll_component", expect.objectContaining({ component_method: "PER_TRIP", amount: "50000", component_tiers: null }));
   });
 
+  it("ties a trip price to a vehicle for every worker and ignores a vehicle on other methods (D70)", async () => {
+    const vehicleId = "7f332800-0000-4000-8000-000000000040";
+    await savePayrollComponentAction(undefined, form({ code: "xe-nho", name: "Tiền chuyến Xe cn nhỏ", kind: "BONUS", method: "PER_TRIP", amount: "30000",
+      vehicleId, employeeId, operationId }));
+    expect(mocks.rpc).toHaveBeenCalledWith("save_payroll_component", expect.objectContaining({
+      component_method: "PER_TRIP", component_vehicle_id: vehicleId, target_employee_id: null, amount: "30000",
+    }));
+    await savePayrollComponentAction(undefined, form({ code: "an", name: "Ăn trưa", kind: "ALLOWANCE", method: "PER_WORKDAY", amount: "30000", vehicleId, operationId }));
+    expect(mocks.rpc).toHaveBeenLastCalledWith("save_payroll_component", expect.objectContaining({ component_method: "PER_WORKDAY", component_vehicle_id: null }));
+  });
+
   it("needs an amount for a fixed allowance", async () => {
     expect(await savePayrollComponentAction(undefined, form({ code: "AN", name: "Ăn trưa", kind: "ALLOWANCE", method: "PER_WORKDAY", amount: "", operationId })))
       .toEqual({ message: "Nhập số tiền lớn hơn 0." });

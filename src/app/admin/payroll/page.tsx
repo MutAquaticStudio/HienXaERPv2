@@ -9,7 +9,7 @@ import { formatBusinessDate } from "@/lib/core/business-time";
 import { formatVnd, vnd } from "@/lib/core/money";
 import {
   CreatePayrollForm, PayrollComponentForm, PayrollHolidayForm, SalaryProfileForm,
-  type PayrollComponent, type PersonOption, type SalaryProfile,
+  VehicleTripRateForm, type PayrollComponent, type PersonOption, type SalaryProfile, type VehicleOption,
 } from "@/modules/payroll/forms";
 import {
   componentKindLabel, componentMethodLabel, describeTiers, payBasisLabel, payBasisUnit, payrollStateLabel, payrollStateTone,
@@ -32,15 +32,16 @@ export default async function PayrollPage({ searchParams }: { searchParams: Prom
   ];
   const tab = activeTab(tabs, (await searchParams).tab);
   const supabase = await createServerSupabase();
-  const [periodsResult, linesResult, peopleResult, profilesResult, componentsResult, holidaysResult] = await Promise.all([
+  const [periodsResult, linesResult, peopleResult, profilesResult, componentsResult, holidaysResult, vehiclesResult] = await Promise.all([
     supabase.from("payroll_periods").select("id, code, name, period_start, period_end, state, closed_at").eq("branch_id", access.branchId).order("period_start", { ascending: false }).limit(36),
     supabase.from("payroll_lines").select("payroll_period_id, net_pay_vnd::text, included").eq("branch_id", access.branchId),
     supabase.from("workforce_read").select("id, display_name").eq("branch_id", access.branchId).eq("active", true).order("display_name"),
     supabase.from("salary_profiles").select("employee_id, pay_basis, base_rate_vnd::text, overtime_enabled, overtime_hourly_vnd::text, overtime_weekday_pct, overtime_restday_pct, overtime_holiday_pct, rest_weekday, active").eq("branch_id", access.branchId),
-    supabase.from("payroll_components").select("id, code, name, kind, method, amount_vnd::text, tiers, employee_id, active").eq("branch_id", access.branchId).order("kind").order("code"),
+    supabase.from("payroll_components").select("id, code, name, kind, method, amount_vnd::text, tiers, employee_id, vehicle_id, active").eq("branch_id", access.branchId).order("kind").order("code"),
     supabase.from("payroll_holidays").select("holiday_date, name, active").eq("branch_id", access.branchId).eq("active", true).order("holiday_date", { ascending: false }),
+    supabase.from("vehicles").select("id, code").eq("branch_id", access.branchId).eq("active", true).order("code"),
   ]);
-  if ([periodsResult, linesResult, peopleResult, profilesResult, componentsResult, holidaysResult].some((result) => result.error)) {
+  if ([periodsResult, linesResult, peopleResult, profilesResult, componentsResult, holidaysResult, vehiclesResult].some((result) => result.error)) {
     throw new Error("Không tải được bảng lương. Vui lòng thử lại hoặc liên hệ quản trị viên.");
   }
   const periods = periodsResult.data as Period[];
@@ -49,6 +50,10 @@ export default async function PayrollPage({ searchParams }: { searchParams: Prom
   const profiles = new Map((profilesResult.data as SalaryProfile[]).map((profile) => [profile.employee_id, profile]));
   const components = componentsResult.data as PayrollComponent[];
   const holidays = holidaysResult.data as Array<{ holiday_date: string; name: string }>;
+  const vehicles = vehiclesResult.data as VehicleOption[];
+  // D70: the price per trip of each vehicle (a "PER_TRIP" component tied to it).
+  const vehicleRates = new Map(components.filter((component) => component.vehicle_id && component.active).map((component) => [component.vehicle_id as string, component]));
+  const vehicleName = (id: string | null) => (id ? vehicles.find((vehicle) => vehicle.id === id)?.code ?? "Một xe" : null);
   const day = today();
   const monthStart = `${day.slice(0, 7)}-01`;
   const lastMonthEnd = new Date(Date.UTC(Number(day.slice(0, 4)), Number(day.slice(5, 7)) - 1, 0)).toISOString().slice(0, 10);
@@ -103,11 +108,30 @@ export default async function PayrollPage({ searchParams }: { searchParams: Prom
       </table></div>
     </section>}
 
+    {tab === "components" && vehicles.length > 0 && <section className="card">
+      <div className="section-head"><h2>Đơn giá chuyến theo xe</h2>
+        <span className="scope-chip">{vehicles.filter((vehicle) => vehicleRates.has(vehicle.id)).length} / {vehicles.length} xe đã có đơn giá</span></div>
+      <p className="muted">Mỗi phiếu giao đã xác minh là một chuyến, trả cho người giao theo xe thực tế đã chở. Xe chưa có đơn giá không được tính tiền chuyến, trừ khi có khoản “Mỗi chuyến” áp dụng cho mọi xe ở bảng dưới.</p>
+      <div className="table-wrap"><table>
+        <thead><tr><th>Xe</th><th>Đơn giá mỗi chuyến</th><th></th></tr></thead>
+        <tbody>{vehicles.map((vehicle) => {
+          const rate = vehicleRates.get(vehicle.id);
+          return <tr key={vehicle.id}>
+            <td>{vehicle.code}</td>
+            <td className="mono">{rate ? `${formatVnd(vnd(rate.amount_vnd ?? "0"))} / chuyến` : <span className="muted">Chưa có đơn giá</span>}</td>
+            <td className="table-actions">{canManage && <FormDialog label={rate ? "Sửa" : "Đặt đơn giá"} title={`Đơn giá chuyến · ${vehicle.code}`}
+              buttonClassName={rate ? "button button-secondary button-compact" : "button button-primary button-compact"}>
+              <VehicleTripRateForm vehicle={vehicle} component={rate} /></FormDialog>}</td>
+          </tr>;
+        })}</tbody>
+      </table></div>
+    </section>}
+
     {tab === "components" && <section className="card">
       <div className="section-head"><h2>Thu nhập khác</h2>
         {canManage && <FormDialog label="Thêm khoản" title="Thêm khoản thu nhập khác" size="lg" buttonClassName="button button-primary button-compact"
           description="Phụ cấp, thưởng (cả thưởng theo doanh thu bậc) hoặc giảm trừ (đi muộn, nghỉ không phép…) tự tính vào mọi bảng lương.">
-          <PayrollComponentForm people={people} /></FormDialog>}</div>
+          <PayrollComponentForm people={people} vehicles={vehicles} /></FormDialog>}</div>
       <div className="table-wrap"><table>
         <thead><tr><th>Mã</th><th>Tên</th><th>Loại</th><th>Cách tính</th><th>Mức</th><th>Áp dụng cho</th><th></th></tr></thead>
         <tbody>{components.map((component) => <tr key={component.id} className={component.active ? undefined : "row-muted"}>
@@ -115,9 +139,9 @@ export default async function PayrollPage({ searchParams }: { searchParams: Prom
           <td><StatusBadge tone={component.kind === "DEDUCTION" ? "danger" : component.kind === "BONUS" ? "success" : "info"}>{componentKindLabel(component.kind)}</StatusBadge></td>
           <td>{componentMethodLabel(component.method)}</td>
           <td className="mono">{component.method === "SALES_TIERS" ? describeTiers(component.tiers) : `${formatVnd(vnd(component.amount_vnd ?? "0"))}${component.method === "PER_TRIP" ? " / chuyến" : component.method === "PER_JOB" ? " / việc" : ""}`}</td>
-          <td>{personName(component.employee_id)}</td>
+          <td>{component.vehicle_id ? `Xe ${vehicleName(component.vehicle_id)}` : personName(component.employee_id)}</td>
           <td className="table-actions">{canManage && <FormDialog label="Sửa" title={`Sửa ${component.name}`} size="lg" buttonClassName="button button-secondary button-compact">
-            <PayrollComponentForm component={component} people={people} /></FormDialog>}</td>
+            <PayrollComponentForm component={component} people={people} vehicles={vehicles} /></FormDialog>}</td>
         </tr>)}</tbody>
       </table>{!components.length && <p className="empty-inline">Chưa có khoản nào. Ví dụ: phụ cấp ăn trưa 30.000 đ mỗi ngày công, tiền chuyến 50.000 đ mỗi chuyến giao, phạt đi muộn 50.000 đ mỗi lần, hoa hồng 1% doanh thu từ 100 triệu.</p>}</div>
     </section>}
