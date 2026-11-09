@@ -21,8 +21,9 @@ export type SalaryProfile = {
 };
 export type PayrollComponent = {
   id: string; code: string; name: string; kind: string; method: string; amount_vnd: string | null; tiers: SalesTier[] | null;
-  employee_id: string | null; active: boolean;
+  employee_id: string | null; vehicle_id: string | null; active: boolean;
 };
+export type VehicleOption = { id: string; code: string };
 
 const restDays = [[7, "Chủ nhật"], [6, "Thứ 7"], [1, "Thứ 2"], [2, "Thứ 3"], [3, "Thứ 4"], [4, "Thứ 5"], [5, "Thứ 6"]] as const;
 
@@ -55,7 +56,23 @@ export function SalaryProfileForm({ person, profile }: { person: PersonOption; p
   </CommandForm>;
 }
 
-export function PayrollComponentForm({ component, people }: { component?: PayrollComponent; people: PersonOption[] }) {
+/** D70: the price per trip of one vehicle (one kind of vehicle = one price), saved as a "PER_TRIP" component tied to that vehicle. */
+export function VehicleTripRateForm({ vehicle, component }: { vehicle: VehicleOption; component?: PayrollComponent }) {
+  return <CommandForm action={savePayrollComponentAction} submit="Lưu đơn giá">
+    {component && <input type="hidden" name="componentId" value={component.id} />}
+    <input type="hidden" name="code" value={component?.code ?? `XE-${vehicle.id.replaceAll("-", "").slice(0, 8).toUpperCase()}`} />
+    <input type="hidden" name="name" value={component?.name ?? `Tiền chuyến ${vehicle.code}`.slice(0, 80)} />
+    <input type="hidden" name="kind" value="BONUS" />
+    <input type="hidden" name="method" value="PER_TRIP" />
+    <input type="hidden" name="vehicleId" value={vehicle.id} />
+    {component && <input type="hidden" name="active" value="on" />}
+    <div className="field"><label htmlFor={`vrate-${vehicle.id}`}>Số tiền mỗi chuyến chở bằng {vehicle.code}</label>
+      <MoneyInput id={`vrate-${vehicle.id}`} name="amount" defaultValue={component?.amount_vnd} required /></div>
+    <p className="muted">Mỗi phiếu giao đã xác minh là một chuyến, trả cho người giao theo xe thực tế đã chở. Áp dụng cho mọi nhân viên có thiết lập lương.</p>
+  </CommandForm>;
+}
+
+export function PayrollComponentForm({ component, people, vehicles = [] }: { component?: PayrollComponent; people: PersonOption[]; vehicles?: VehicleOption[] }) {
   const [method, setMethod] = useState(component?.method ?? "FIXED_PER_PERIOD");
   const tiers = component?.tiers?.length ? component.tiers : [{ from_vnd: "0", rate_bps: 0 }];
   const rows = [...tiers, ...Array.from({ length: Math.max(0, 4 - tiers.length) }, () => null)];
@@ -71,7 +88,11 @@ export function PayrollComponentForm({ component, people }: { component?: Payrol
         {COMPONENT_METHODS.map((item) => <option key={item} value={item}>{componentMethodLabel(item)}</option>)}</select></div>
       {method !== "SALES_TIERS" && <div className="field"><label htmlFor={`camount-${key}`}>{method === "FIXED_PER_PERIOD" ? "Số tiền mỗi kỳ" : method === "PER_LATE_MINUTE" ? "Số tiền mỗi phút" : method === "PER_WORKDAY" ? "Số tiền mỗi ngày công" : method === "PER_TRIP" ? "Số tiền mỗi chuyến" : method === "PER_JOB" ? "Số tiền mỗi việc" : "Số tiền mỗi lần / ngày"}</label>
         <MoneyInput id={`camount-${key}`} name="amount" defaultValue={component?.amount_vnd} required /></div>}
-      {(method === "PER_TRIP" || method === "PER_JOB") && <p className="muted field-full">{method === "PER_TRIP" ? "Đếm các phiếu giao của người đó được xác minh trong kỳ (theo ngày xác minh)." : "Đếm các việc dịch vụ của người đó được xác minh trong kỳ (theo ngày xác minh)."}</p>}
+      {(method === "PER_TRIP" || method === "PER_JOB") && <p className="muted field-full">{method === "PER_TRIP" ? "Đếm các phiếu giao của người đó được xác minh trong kỳ (theo ngày xác minh). Chọn xe để đặt đơn giá riêng cho xe đó (áp dụng cho mọi nhân viên)." : "Đếm các việc dịch vụ của người đó được xác minh trong kỳ (theo ngày xác minh)."}</p>}
+      {method === "PER_TRIP" && vehicles.length > 0 && <div className="field"><label htmlFor={`cveh-${key}`}>Áp dụng cho xe</label>
+        <select id={`cveh-${key}`} name="vehicleId" defaultValue={component?.vehicle_id ?? ""}>
+          <option value="">Mọi xe chưa có đơn giá riêng</option>
+          {vehicles.map((vehicle) => <option key={vehicle.id} value={vehicle.id}>{vehicle.code}</option>)}</select></div>}
       <div className="field"><label htmlFor={`cemp-${key}`}>Áp dụng cho</label><select id={`cemp-${key}`} name="employeeId" defaultValue={component?.employee_id ?? ""}>
         <option value="">Mọi nhân viên có thiết lập lương</option>
         {people.map((person) => <option key={person.id} value={person.id}>{person.display_name}</option>)}</select></div>
