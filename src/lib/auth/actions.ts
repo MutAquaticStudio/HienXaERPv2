@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { accountPortals, wrongPortalMessage } from "./account-portals";
 import { deterministicUuid, portalRpc } from "@/modules/portal/server";
-import { randomUUID } from "node:crypto";
+import { randomInt, randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { requireInternalPermission } from "@/lib/access/context";
 import { reasonOrDefault } from "@/lib/core/reason";
@@ -13,6 +13,7 @@ import { displayLogin, isPhoneLogin, loginEmail, normalizePhone } from "@/lib/au
 import { getSupabaseConfig } from "@/lib/supabase/config";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { portalRegistrationOpen } from "@/lib/auth/portal-registration";
+import { loadBulkPortalPlan } from "@/lib/auth/bulk-portal";
 import { sendEmail } from "@/lib/email/send";
 import { welcomeEmail } from "@/modules/portal/welcome-email";
 import { cookies } from "next/headers";
@@ -407,6 +408,62 @@ export async function createCustomerPortalAccountAction(_: PortalAccountState, f
   }
   revalidatePath(`/admin/customers/${customer.id}`);
   return { success: true, message: "Đã tạo tài khoản cổng khách. Gửi thông tin dưới đây cho khách qua Zalo.", shareText: await portalShareText(email, parsed.data.password) };
+}
+
+export type BulkPortalResult = { customerId: string; code: string; name: string; phone: string;
+  status: "CREATED" | "SKIPPED" | "FAILED"; password?: string; message?: string };
+export type BulkPortalBatchState = { results: BulkPortalResult[]; message?: string };
+const BULK_BATCH_LIMIT = 10;
+const bulkAlphabet = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789";
+/** A random temporary password without look-alike characters (0/O, 1/l/I). */
+const bulkPassword = () => Array.from({ length: 10 }, () => bulkAlphabet[randomInt(bulkAlphabet.length)]).join("");
+
+/**
+ * D71 "Tạo tài khoản hàng loạt" (customers page): a batch of up to 10 customers per call (the page loops, so a long list never
+ * runs into the server time limit). Only customers that are still eligible (valid phone of their own, no login yet) get one:
+ * the phone number as the login, a random temporary password changed at the first sign-in. The passwords are returned once,
+ * to the manager's browser, and are not stored anywhere.
+ */
+export async function createCustomerPortalAccountsBatchAction(customerIds: string[]): Promise<BulkPortalBatchState> {
+  const parsed = z.array(z.guid()).min(1).max(BULK_BATCH_LIMIT).safeParse(customerIds);
+  if (!parsed.success) return { results: [], message: `Mỗi lượt tạo tối đa ${BULK_BATCH_LIMIT} khách.` };
+  const actor = await requireInternalPermission("customers.manage");
+  const supabase = await createServerSupabase();
+  const admin = authAdminClient();
+  if (!admin) return { results: [], message: "Dịch vụ tài khoản chưa được cấu hình. Vui lòng liên hệ quản trị viên." };
+  let plan;
+  try { plan = await loadBulkPortalPlan(supabase, actor.branchId); } catch { return { results: [], message: "Không tải được danh sách khách hàng. Thử lại sau." }; }
+  const eligible = new Map(plan.eligible.map((customer) => [customer.id, customer]));
+  const skipped = new Map(plan.skipped.map((customer) => [customer.id, customer]));
+  const results: BulkPortalResult[] = [];
+  for (const id of new Set(parsed.data)) {
+    const customer = eligible.get(id);
+    if (!customer) {
+      const other = skipped.get(id);
+      results.push({ customerId: id, code: other?.code ?? "", name: other?.name ?? "", phone: "", status: "SKIPPED", message: other?.reason ?? "Không tìm thấy khách trong chi nhánh đang quản lý." });
+      continue;
+    }
+    const base = { customerId: customer.id, code: customer.code, name: customer.name, phone: customer.phone };
+    const password = bulkPassword();
+    const { data: created, error: createError } = await admin.createUser({ email: customer.login, password, email_confirm: true,
+      app_metadata: { hx_must_change_password: true }, user_metadata: { hx_portal: "customer" } });
+    if (createError || !created.user) {
+      results.push(/already|registered|exists/i.test(createError?.message ?? "")
+        ? { ...base, status: "SKIPPED", message: "Số điện thoại này đã có tài khoản đăng nhập" }
+        : { ...base, status: "FAILED", message: "Không tạo được tài khoản" });
+      continue;
+    }
+    const { error: grantError } = await supabase.rpc("grant_customer_portal_access", { target_customer_id: customer.id, target_auth_user_id: created.user.id,
+      membership_role: "OWNER", operation_id: randomUUID() });
+    if (grantError) {
+      await admin.deleteUser(created.user.id).catch(() => undefined);
+      results.push({ ...base, status: "FAILED", message: "Không gắn được tài khoản vào khách; tài khoản vừa tạo đã được hủy" });
+      continue;
+    }
+    results.push({ ...base, status: "CREATED", password });
+  }
+  revalidatePath("/admin/customers");
+  return { results };
 }
 
 /** "Đặt lại mật khẩu" for a customer login of this customer: a new temporary password, changed at the next sign-in. */

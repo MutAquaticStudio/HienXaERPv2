@@ -8,6 +8,9 @@ import { formatVnd, vnd } from "@/lib/core/money";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { CatalogCreateButton } from "@/modules/catalog/catalog-dialog";
 import { catalogCreateProps } from "@/modules/catalog/editor-data";
+import { BulkPortalAccounts } from "@/components/customers/bulk-portal-accounts";
+import { appOrigin } from "@/lib/auth/app-origin";
+import { loadBulkPortalPlan, type BulkPlan } from "@/lib/auth/bulk-portal";
 import { BulkActionBar, BulkPageCheckbox, BulkRowCheckbox, BulkSelection } from "@/components/lists/bulk-selection";
 import { BULK_CLEAR, BULK_LIMIT, type BulkFieldChoice } from "@/modules/catalog/bulk";
 
@@ -57,6 +60,10 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
   for (const row of debtRows) debts.set(row.customer_id, (debts.get(row.customer_id) ?? 0n) + BigInt(row.outstanding_amount_vnd));
   const isFiltered = Boolean(list.q || list.state || tier || type);
   const create = canManage ? await catalogCreateProps("customers", access, supabase) : null;
+  // D71: who would get a customer-portal login in "Tạo tài khoản hàng loạt"; the button is left out when this cannot be read.
+  let bulkPlan: BulkPlan | null = null;
+  if (canManage) { try { bulkPlan = await loadBulkPortalPlan(supabase, access.branchId); } catch { bulkPlan = null; } }
+  const origin = bulkPlan ? await appOrigin() : "";
   // Bulk changes: every customer matching the filter can be chosen at once when there are at most 200 of them.
   const total = count ?? 0;
   const [matchingResult, ownerResult] = canManage ? await Promise.all([
@@ -75,7 +82,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
 
   return <div className="page-stack">
     <header className="page-heading"><div><h1>Khách hàng</h1><p className="lede">Hồ sơ khách hàng tại {access.branchName}. Bấm vào một dòng để xem chi tiết.</p></div>
-      {create && <div className="action-cluster"><CatalogCreateButton {...create} label="+ Khách hàng" /><Link className="button button-secondary" href="/admin/customers/manage?kind=sites">Công trình</Link></div>}
+      {create && <div className="action-cluster"><CatalogCreateButton {...create} label="+ Khách hàng" />{bulkPlan && <BulkPortalAccounts plan={bulkPlan} origin={origin} />}<Link className="button button-secondary" href="/admin/customers/manage?kind=sites">Công trình</Link></div>}
     </header>
     <div className="list-layout">
       <AutoFilterForm className="card card-pad list-filters" aria-label="Bộ lọc khách hàng">
