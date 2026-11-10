@@ -26,7 +26,7 @@ vi.mock("./account-portals", async (original) => ({ ...(await original<typeof im
 vi.mock("next/navigation", () => ({ redirect: m.redirect }));
 vi.mock("./portal-registration", () => ({ portalRegistrationOpen: m.open }));
 vi.mock("@/modules/portal/server", () => ({ portalRpc: vi.fn(), deterministicUuid: (seed: string) => `uuid(${seed})` }));
-import { changeOwnPasswordAction, createCustomerPortalAccountAction, loginAction, registerCustomerAccountAction, resetCustomerPortalPasswordAction } from "./actions";
+import { changeOwnPasswordAction, createCustomerPortalAccountAction, createCustomerPortalAccountsBatchAction, loginAction, registerCustomerAccountAction, resetCustomerPortalPasswordAction } from "./actions";
 
 const customerId = "11111111-1111-4111-8111-111111111111";
 const membershipId = "22222222-2222-4222-8222-222222222222";
@@ -195,4 +195,45 @@ it("registers a customer: the record is made right away when signed in, or after
 
   m.signUp.mockResolvedValue({ data: { user: null, session: null }, error: { message: "Signups not allowed for this instance" } });
   expect((await registerCustomerAccountAction(undefined, form(values)))?.message).toContain("chưa mở tự đăng ký");
+});
+
+// ---- D71: "Tạo tài khoản hàng loạt" ------------------------------------------------------------------------------------
+const batchCustomers = [
+  { id: "11111111-1111-4111-8111-1111111111a1", code: "KH001", display_name: "Khách một", phone: "0912345678", active: true },
+  { id: "11111111-1111-4111-8111-1111111111a2", code: "KH002", display_name: "Khách hai", phone: null, active: true },
+  { id: "11111111-1111-4111-8111-1111111111a3", code: "KH003", display_name: "Khách ba", phone: "0987654321", active: true },
+];
+const batchPlanTables = (customers = batchCustomers) => m.list.mockReturnValueOnce({ data: customers as never, error: null }).mockReturnValueOnce({ data: [] as never, error: null });
+
+it("creates a login per eligible customer with the phone as the sign-in and a random temporary password, once (D71)", async () => {
+  batchPlanTables();
+  m.createUser.mockResolvedValueOnce({ data: { user: { id: "u1" } }, error: null }).mockResolvedValueOnce({ data: { user: { id: "u3" } }, error: null });
+  const outcome = await createCustomerPortalAccountsBatchAction(batchCustomers.map((customer) => customer.id));
+  expect(outcome.results.map((result) => [result.code, result.status])).toEqual([["KH001", "CREATED"], ["KH002", "SKIPPED"], ["KH003", "CREATED"]]);
+  expect(outcome.results[1].message).toBe("Chưa có số điện thoại");
+  const [first, third] = [outcome.results[0], outcome.results[2]];
+  expect(first.password).toMatch(/^[a-km-zA-HJ-NP-Z2-9]{10}$/);
+  expect(third.password).not.toBe(first.password);
+  expect(m.createUser).toHaveBeenCalledWith(expect.objectContaining({ email: "0912345678@sdt.hienxavlxd.com", password: first.password, email_confirm: true,
+    app_metadata: { hx_must_change_password: true } }));
+  expect(m.rpc).toHaveBeenCalledWith("grant_customer_portal_access", expect.objectContaining({ target_customer_id: batchCustomers[0].id, target_auth_user_id: "u1", membership_role: "OWNER" }));
+});
+
+it("undoes a login that could not be linked and reports an existing phone login as skipped (D71)", async () => {
+  batchPlanTables([batchCustomers[0], batchCustomers[2]]);
+  m.createUser.mockResolvedValueOnce({ data: { user: { id: "u1" } }, error: null }).mockResolvedValueOnce({ data: { user: null }, error: { message: "User already registered" } });
+  m.rpc.mockResolvedValueOnce({ data: null, error: { message: "boom" } });
+  const outcome = await createCustomerPortalAccountsBatchAction([batchCustomers[0].id, batchCustomers[2].id]);
+  expect(m.deleteUser).toHaveBeenCalledWith("u1");
+  expect(outcome.results.map((result) => [result.code, result.status, result.password])).toEqual([["KH001", "FAILED", undefined], ["KH003", "SKIPPED", undefined]]);
+});
+
+it("refuses more than 10 customers per call and a customer that is no longer eligible (D71)", async () => {
+  expect((await createCustomerPortalAccountsBatchAction(Array.from({ length: 11 }, (_, index) => `11111111-1111-4111-8111-${String(index).padStart(12, "0")}`))).message)
+    .toBe("Mỗi lượt tạo tối đa 10 khách.");
+  expect(m.createUser).not.toHaveBeenCalled();
+  batchPlanTables([]);
+  const outcome = await createCustomerPortalAccountsBatchAction([batchCustomers[0].id]);
+  expect(outcome.results[0]).toMatchObject({ status: "SKIPPED", message: "Không tìm thấy khách trong chi nhánh đang quản lý." });
+  expect(m.createUser).not.toHaveBeenCalled();
 });

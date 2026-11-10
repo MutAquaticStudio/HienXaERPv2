@@ -17,6 +17,8 @@ vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({
 }) }));
 vi.mock("@/modules/catalog/editor-data", () => ({ catalogCreateProps: async () => ({ kind: "customers", options: {}, permissions: [], scope: "s" }) }));
 vi.mock("@/modules/catalog/catalog-dialog", () => ({ CatalogCreateButton: ({ label }: { label: string }) => <button type="button">{label}</button> }));
+vi.mock("@/lib/auth/app-origin", () => ({ appOrigin: async () => "https://erp.example.test" }));
+vi.mock("@/lib/auth/actions", () => ({ createCustomerPortalAccountsBatchAction: vi.fn() }));
 vi.mock("@/modules/catalog/bulk-actions", () => ({ bulkCatalogAction: vi.fn(), exportCatalogCsvAction: vi.fn() }));
 import Page from "./page";
 
@@ -77,8 +79,10 @@ it("lets a customer manager choose rows for a bulk change, and a reader only bro
   expect(screen.getByRole("checkbox", { name: "Chọn tất cả trên trang này" })).toBeInTheDocument();
   const row = screen.getByRole("link", { name: "Công ty Minh Phát" }).closest("tr")!;
   expect(within(row).getByRole("checkbox", { name: "Chọn KH001 Công ty Minh Phát" })).not.toBeChecked();
+  expect(screen.getByRole("button", { name: "Tạo tài khoản hàng loạt" })).toBeInTheDocument();
   cleanup();
   m.access.mockResolvedValue({ branchId: "b", branchName: "CN", permissions: new Set(["customers.read"]) });
   render(await Page({ searchParams: Promise.resolve({}) }));
   expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Tạo tài khoản hàng loạt" })).not.toBeInTheDocument();
 });
