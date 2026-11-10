@@ -50,7 +50,8 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   // Counts beside each filter stop at 99: an exact count over a long history is not worth the wait on every visit.
   // The open filter alone is counted exactly, for "Trang x / y" and "Đến trang".
   const [{ data, error, count: total }, ...counts] = await Promise.all([
-    scoped(list.state, true).order("created_at", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1),
+    // Owner 10/11/2026: list follows the delivery date (orders imported later still sit on their real day).
+    scoped(list.state, true).order("requested_delivery_at", { ascending: false, nullsFirst: false }).order("created_at", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1),
     ...STATES.map((state) => scoped(state.value).limit(100)),
   ]);
   if (error) throw new Error("Không thể tải đơn bán.");
@@ -96,8 +97,8 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
       <section className="card list-main">
         <div className="section-head"><h2>{currentLabel}</h2><span className="scope-chip">{CORE_LIST_PAGE_SIZE} / trang</span></div>
         {rows.length > 0 ? <div className="table-wrap"><table className="row-link-table">
-          <thead><tr><th><span className="sr-only">Xem nhanh</span></th><th>Mã đơn</th><th>Khách hàng / công trình</th><th className="numeric">Giá trị</th><th>Trạng thái</th><th>Giao hàng</th><th>Thanh toán</th><th>Ngày tạo</th></tr></thead>
-          <ExpandableRows columns={8} rows={rows.map((order) => {
+          <thead><tr><th><span className="sr-only">Xem nhanh</span></th><th>Mã đơn</th><th>Khách hàng / công trình</th><th className="numeric">Giá trị</th><th>Trạng thái</th><th>Giao hàng</th><th>Thanh toán</th><th>Ngày giao</th><th>Ngày tạo</th></tr></thead>
+          <ExpandableRows columns={9} rows={rows.map((order) => {
             const href = `/admin/orders/${order.id}`;
             const orderLines = lines.filter((line) => line.sales_order_id === order.id);
             return { id: order.id, label: order.order_number, className: order.commercial_state === "CANCELLED" ? "row-muted" : undefined,
@@ -108,6 +109,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                 <td data-label="Trạng thái"><StatusBadge tone={salesStateTone(order.commercial_state)}>{salesStateLabel(order.commercial_state)}</StatusBadge></td>
                 <td data-label="Giao hàng">{salesDeliveryStateLabel(order.fulfillment_state)}</td>
                 <td data-label="Thanh toán">{salesStateLabel(order.payment_state)}</td>
+                <td data-label="Ngày giao">{order.requested_delivery_at ? formatBusinessDate(order.requested_delivery_at) : "Chưa hẹn"}</td>
                 <td data-label="Ngày tạo">{formatBusinessDate(order.created_at)}</td>
               </>,
               detail: <div className="row-expansion-grid">
