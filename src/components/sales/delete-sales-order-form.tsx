@@ -10,7 +10,7 @@ function Submit({ ready }: { ready: boolean }) {
   return <button className="button button-danger action-full" type="submit" disabled={!ready || pending}>{pending ? "Đang xóa..." : "Xóa đơn bán"}</button>;
 }
 
-export function DeleteSalesOrderForm({ entityId, operationId, orderNumber, action }: { entityId: string; operationId: string; orderNumber: string; action: (data: FormData) => void | Promise<void> }) {
+export function DeleteSalesOrderForm({ entityId, operationId, orderNumber, action, blockedNote }: { entityId: string; operationId: string; orderNumber: string; action: (data: FormData) => void | Promise<void>; blockedNote?: string | null }) {
   const reasonId = useId();
   const numberId = useId();
   const [reason, setReason] = useState("");
@@ -22,6 +22,7 @@ export function DeleteSalesOrderForm({ entityId, operationId, orderNumber, actio
       <input type="hidden" name="entityId" value={entityId} />
       <input type="hidden" name="operationId" value={operationId} />
       <p>Xóa hẳn đơn này khỏi hệ thống, cùng hạn mức và phần giữ hàng của đơn. Không khôi phục được. Chỉ xóa được khi đơn chưa có phiếu giao, tiền, đơn mua hay ngoại lệ tín dụng; hệ thống kiểm lại lúc xóa. Nhật ký vẫn ghi ai xóa, đơn nào và lý do. Muốn bỏ đơn mà giữ lịch sử thì dùng “Hủy đơn”.</p>
+      {blockedNote && <p className="form-message warning" role="note">{blockedNote}</p>}
       <div className="field"><label htmlFor={reasonId}>Lý do xóa</label><input id={reasonId} name="reason" required minLength={3} maxLength={300} value={reason} onChange={(event) => setReason(event.target.value)} /></div>
       <div className="field"><label htmlFor={numberId}>Gõ mã đơn <strong className="mono">{orderNumber}</strong> để xác nhận</label><input id={numberId} name="confirmNumber" autoComplete="off" required value={typed} onChange={(event) => setTyped(event.target.value)} /></div>
       <Submit ready={ready} />

@@ -27,6 +27,7 @@ import { allocateWarehouseSourceAction, createDeliveryAction } from "@/modules/d
 import { deliveryStateLabel, sourceModeLabel, vehicleStatusLabel, type VehicleStatus } from "@/modules/delivery/presentation";
 import { cancelSalesOrderAction, confirmSalesOrderAction, deleteSalesOrderAction } from "@/modules/sales/actions";
 import { DeleteSalesOrderForm } from "@/components/sales/delete-sales-order-form";
+import { deleteBlockedNote } from "@/modules/sales/delete-order";
 import { salesDeliveryStateLabel, salesStateLabel, salesStateTone } from "@/modules/sales/presentation";
 import styles from "./order-detail.module.css";
 import { SellerChangeForm } from "@/components/sales/seller-change-form";
@@ -157,7 +158,8 @@ export default async function OrderDetailPage({ params, searchParams }: { params
         <button className="button button-primary action-full" type="submit">Tạo phiếu giao</button>
       </form>)}</details>}
       {["DRAFT", "CONFIRMED"].includes(order.commercial_state) && deliveries.length === 0 && access.permissions.has("orders.cancel") && <CancelDocumentForm entityId={order.id} operationId={randomUUID()} state={order.commercial_state} label="Hủy đơn" action={cancelSalesOrderAction} />}
-      {["DRAFT", "CONFIRMED", "CANCELLED"].includes(order.commercial_state) && deliveries.length === 0 && access.permissions.has("orders.cancel") && <DeleteSalesOrderForm entityId={order.id} operationId={randomUUID()} orderNumber={order.order_number} action={deleteSalesOrderAction} />}
+      {access.permissions.has("orders.cancel") && <DeleteSalesOrderForm entityId={order.id} operationId={randomUUID()} orderNumber={order.order_number} action={deleteSalesOrderAction}
+        blockedNote={deleteBlockedNote(order.commercial_state, deliveries.length)} />}
       {order.commercial_state === "CONFIRMED" && allocations.length === 0 && <p className="muted">Chưa có nguồn hàng. Chọn nguồn hoặc đặt NCC từ dòng hàng.</p>}
       {order.commercial_state === "CONFIRMED" && <SendToCustomerZalo label="Gửi xác nhận đơn qua Zalo" pdfUrl={`/api/orders/${order.id}/pdf`} pdfName={`${order.order_number}.pdf`}
         zaloUrl={zaloChatLink((customerPhoneResult.data as { phone: string | null } | null)?.phone)}

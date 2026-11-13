@@ -31,6 +31,14 @@ it("enables the delete only with a reason and the exact order number", () => {
   expect(button).toBeDisabled();
 });
 
+it("shows what is already known to block the delete, and keeps the delete available", () => {
+  render(<DeleteSalesOrderForm entityId="order-id" operationId="intent" orderNumber="SO-2026-000123" action={vi.fn()} blockedNote="Đơn này đã có phiếu giao." />);
+  expect(screen.getByRole("note")).toHaveTextContent("Đơn này đã có phiếu giao.");
+  fireEvent.change(screen.getByLabelText("Lý do xóa"), { target: { value: "Nhập nhầm khách" } });
+  fireEvent.change(screen.getByLabelText(/Gõ mã đơn/), { target: { value: "SO-2026-000123" } });
+  expect(screen.getByRole("button", { name: "Xóa đơn bán" })).toBeEnabled();
+});
+
 it("says in Vietnamese that the delete is permanent and points to cancelling to keep history", () => {
   mount();
   expect(screen.getByText(/Không khôi phục được/)).toBeInTheDocument();
