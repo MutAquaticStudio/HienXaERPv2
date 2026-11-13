@@ -18,6 +18,14 @@ export function commandError(message: string, confirmingOrder = false) {
   if (message.includes("sales_order_unresolved_execution")) return "Còn giao hàng, việc hoặc hàng đang vận chuyển chưa xử lý. Hãy hoàn tất trước khi đóng phần còn lại.";
   if (message.includes("sales_order_has_no_remaining")) return "Đơn không còn số lượng chưa giao để đóng.";
   if (message.includes("sales_order_not_closeable")) return "Đơn không còn ở trạng thái có thể đóng phần còn lại. Hãy tải lại.";
+  // D72: refusals of "Xóa đơn bán".
+  if (message.includes("sales_order_has_delivery")) return "Đơn đã có phiếu giao (kể cả phiếu đã hủy). Hệ thống giữ lịch sử phiếu giao nên không xóa được đơn này.";
+  if (message.includes("sales_order_has_credit_override")) return "Đơn đã được duyệt vượt hạn mức tín dụng và lịch sử đó được giữ nguyên, nên không xóa được.";
+  if (message.includes("sales_order_has_purchase")) return "Đơn có đơn mua nhà cung cấp liên quan. Hủy hoặc xử lý đơn mua trước khi xóa đơn bán.";
+  if (message.includes("sales_order_has_prepayment")) return "Đơn đã có khoản khách trả trước. Đảo phiếu thu trước khi xóa đơn.";
+  if (message.includes("sales_order_has_ledger_records")) return "Đơn đã phát sinh sổ sách (doanh thu, chi phí hoặc tiền). Không xóa được.";
+  if (message.includes("sales_order_not_deletable")) return "Đơn đã đóng nên không xóa được.";
+  if (message.includes("delete_reason_required")) return "Vui lòng nhập lý do xóa đơn (từ 3 đến 300 ký tự).";
   if (message.includes("credit_limit_exceeded")) return "Hạn mức tín dụng không đủ để xác nhận đơn.";
   if (message.includes("credit_limit_not_approved")) return "Khách hàng chưa có hạn mức tín dụng được duyệt.";
   if (message.includes("overdue_receivable_blocks_credit")) return "Khách hàng có công nợ quá hạn; chưa thể xác nhận đơn.";

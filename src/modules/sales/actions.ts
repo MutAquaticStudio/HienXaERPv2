@@ -330,6 +330,29 @@ export async function cancelSalesOrderAction(formData: FormData) {
   return internalCommand("orders.cancel", "cancel_sales_order", { target_order_id: parsed.data.entityId, cancel_reason: reasonOrDefault(parsed.data.reason, "Hủy đơn"), operation_id: parsed.data.operationId }, `/admin/orders/${parsed.data.entityId}`, "cancelled");
 }
 
+/**
+ * D72 (Owner 13/11/2026): "Xóa đơn bán" removes an order that has produced nothing yet (no delivery plan, money, purchase or credit
+ * override). The person types the order number as a second confirmation; the database re-checks every condition and audits the delete.
+ */
+export async function deleteSalesOrderAction(formData: FormData) {
+  const ids = commandSchema.safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId") });
+  if (!ids.success) redirect("/admin/orders?error=invalid-command");
+  const page = `/admin/orders/${ids.data.entityId}`;
+  const reason = z.string().trim().min(3).max(300).safeParse(formData.get("reason"));
+  if (!reason.success) redirect(`${page}?error=${encodeURIComponent("Vui lòng nhập lý do xóa đơn (từ 3 đến 300 ký tự).")}`);
+  const access = await requireInternalPermission("orders.cancel");
+  const supabase = await createServerSupabase();
+  const { data: order } = await supabase.from("sales_order_read").select("order_number").eq("id", ids.data.entityId).eq("branch_id", access.branchId).maybeSingle();
+  if (!order) redirect("/admin/orders?error=invalid-command");
+  if (String(formData.get("confirmNumber") ?? "").trim().toUpperCase() !== String((order as { order_number: string }).order_number).toUpperCase()) {
+    redirect(`${page}?error=${encodeURIComponent("Mã đơn gõ chưa khớp. Gõ đúng mã đơn để xác nhận xóa.")}`);
+  }
+  const { error } = await supabase.rpc("delete_sales_order", { target_order_id: ids.data.entityId, delete_reason: reason.data, operation_id: ids.data.operationId });
+  if (error) redirect(`${page}?error=${encodeURIComponent(commandError(error.message))}`);
+  revalidatePath("/admin/orders");
+  redirect("/admin/orders?notice=order-deleted");
+}
+
 export async function closeSalesOrderRemainingAction(formData: FormData) {
   const parsed = commandSchema.extend({ reason: z.string().trim().max(500).nullish() }).safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId"), reason: formData.get("reason") });
   if (!parsed.success) redirect("/admin/orders?error=invalid-command");
