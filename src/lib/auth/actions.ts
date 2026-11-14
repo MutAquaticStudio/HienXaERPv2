@@ -12,6 +12,7 @@ import { activationUrl, appOrigin, passwordSetupUrl } from "@/lib/auth/app-origi
 import { displayLogin, isPhoneLogin, loginEmail, normalizePhone } from "@/lib/auth/login-identifier";
 import { getSupabaseConfig } from "@/lib/supabase/config";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { AUTH_COOKIE_OPTIONS, SESSION_ONLY_COOKIE } from "@/lib/supabase/cookie-options";
 import { portalRegistrationOpen } from "@/lib/auth/portal-registration";
 import { loadBulkPortalPlan } from "@/lib/auth/bulk-portal";
 import { sendEmail } from "@/lib/email/send";
@@ -54,10 +55,13 @@ export async function loginAction(_: AuthFormState, formData: FormData): Promise
 
   let registeredNow = false;
   let welcome: WelcomeUser | null = null;
+  // D77: "Ghi nhớ đăng nhập" off keeps this device signed in only until the browser closes; other devices stay signed in.
+  const sessionOnly = formData.get("remember") !== "on";
   try {
-    const supabase = await createServerSupabase();
+    const supabase = await createServerSupabase({ sessionOnly });
     const { data, error } = await supabase.auth.signInWithPassword({ email: parsed.data.email, password: parsed.data.password });
     if (error) return { message: "Không thể đăng nhập với thông tin đã cung cấp." };
+    await rememberLoginChoice(sessionOnly);
     if (parsed.data.surface === "customer" && data.user) {
       const completion = await completePortalRegistration(supabase, data.user);
       if (completion === "CLOSED" || completion === "FAILED") {
@@ -79,6 +83,13 @@ export async function loginAction(_: AuthFormState, formData: FormData): Promise
     return { message: "Dịch vụ đăng nhập chưa sẵn sàng. Vui lòng thử lại sau." };
   }
   redirect(parsed.data.surface === "customer" ? registeredNow ? "/customer?notice=registered" : "/customer" : "/");
+}
+
+/** D77: the browser-session marker (no lifetime) when the login is not remembered; removed when it is. */
+async function rememberLoginChoice(sessionOnly: boolean) {
+  const cookieStore = await cookies();
+  if (sessionOnly) cookieStore.set(SESSION_ONLY_COOKIE, "1", { ...AUTH_COOKIE_OPTIONS });
+  else cookieStore.delete(SESSION_ONLY_COOKIE);
 }
 
 export async function recoveryAction(_: AuthFormState, formData: FormData): Promise<AuthFormState> {

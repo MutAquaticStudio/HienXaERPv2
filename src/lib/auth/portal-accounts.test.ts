@@ -6,12 +6,14 @@ const m = vi.hoisted(() => ({
   list: vi.fn((): { data: { id: string }[]; error: null } => ({ data: [], error: null })),
   redirect: vi.fn((url: string) => { throw new Error(`REDIRECT:${url}`); }),
   send: vi.fn(async () => ({ status: 200 })),
+  cookieSet: vi.fn(), cookieDelete: vi.fn(), serverOptions: vi.fn(),
 }));
 // D62: the welcome email is sent after the response; here the callback runs at once so the test sees it.
 vi.mock("next/server", () => ({ after: (callback: () => unknown) => { void callback(); } }));
 vi.mock("@/lib/email/send", () => ({ sendEmail: m.send }));
 vi.mock("@/lib/access/context", () => ({ requireInternalPermission: m.access }));
-vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => {
+vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async (options?: unknown) => {
+  m.serverOptions(options);
   const query: Record<string, unknown> = { select: () => query, eq: () => query, limit: () => query, maybeSingle: m.customer,
     then: (resolve: (value: unknown) => unknown) => resolve(m.list()) };
   return { from: () => query, rpc: m.rpc,
@@ -20,7 +22,7 @@ vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => {
 vi.mock("@/lib/supabase/config", () => ({ getSupabaseConfig: () => ({ url: "https://qa.example.test" }) }));
 vi.mock("@supabase/supabase-js", () => ({ createClient: () => ({ auth: { admin: { createUser: m.createUser, deleteUser: m.deleteUser, updateUserById: m.updateUserById } } }) }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
-vi.mock("next/headers", () => ({ cookies: vi.fn(), headers: vi.fn(async () => new Headers({ host: "erp.example.test", "x-forwarded-proto": "https" })) }));
+vi.mock("next/headers", () => ({ cookies: vi.fn(async () => ({ set: m.cookieSet, delete: m.cookieDelete, get: () => undefined })), headers: vi.fn(async () => new Headers({ host: "erp.example.test", "x-forwarded-proto": "https" })) }));
 vi.mock("server-only", () => ({}));
 vi.mock("./account-portals", async (original) => ({ ...(await original<typeof import("./account-portals")>()), accountPortals: m.portals }));
 vi.mock("next/navigation", () => ({ redirect: m.redirect }));
@@ -52,6 +54,22 @@ it("signs in with a phone number as the internal phone login", async () => {
   await expect(loginAction(undefined, form({ email: "0912 345 678", password: "matkhau123", surface: "work" }))).rejects.toThrow("REDIRECT:/");
   expect(m.signIn).toHaveBeenCalledWith({ email: "0912345678@sdt.hienxavlxd.com", password: "matkhau123" });
   expect(m.rpc).not.toHaveBeenCalled();
+});
+
+it("keeps a remembered login on this device and ends one that is not when the browser closes (D77)", async () => {
+  m.signIn.mockResolvedValue({ data: { user: { id: userId, user_metadata: {} } }, error: null });
+  await expect(loginAction(undefined, form({ email: "0912345678", password: "matkhau123", surface: "work", remember: "on" }))).rejects.toThrow("REDIRECT:/");
+  expect(m.serverOptions).toHaveBeenLastCalledWith({ sessionOnly: false });
+  expect(m.cookieDelete).toHaveBeenCalledWith("hx_session_only");
+  expect(m.cookieSet).not.toHaveBeenCalled();
+  vi.clearAllMocks();
+  m.portals.mockResolvedValue({ admin: false, work: true, customer: false });
+  m.signIn.mockResolvedValue({ data: { user: { id: userId, user_metadata: {} } }, error: null });
+  await expect(loginAction(undefined, form({ email: "0912345678", password: "matkhau123", surface: "work" }))).rejects.toThrow("REDIRECT:/");
+  expect(m.serverOptions).toHaveBeenLastCalledWith({ sessionOnly: true });
+  expect(m.cookieSet).toHaveBeenCalledWith("hx_session_only", "1", expect.not.objectContaining({ maxAge: expect.anything() }));
+  // Signing in here never signs the person out of their other devices.
+  expect(m.signOut).not.toHaveBeenCalled();
 });
 
 it.each([
