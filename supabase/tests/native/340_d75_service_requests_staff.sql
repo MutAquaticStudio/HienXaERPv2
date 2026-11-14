@@ -73,6 +73,12 @@ begin
   assert failed = 'invalid_service_job', format('end before start, got %s', failed);
   assert (select state = 'SUBMITTED' and service_job_id is null and version = 1 from public.service_requests where id = first_request), 'still open after refusals';
 
+  -- A missing version is a stale version, not a skipped check (audit 14/11).
+  failed := null;
+  begin perform public.schedule_service_request(first_request, null, null, start_at, start_at + interval '4 hours', 2, null, null, vehicle, null, gen_random_uuid());
+  exception when others then failed := sqlerrm; end;
+  assert failed = 'stale_service_request', format('no version, got %s', failed);
+
   -- Schedule: a service job with the type's snapshot, linked one to one; replay returns the same job.
   job := public.schedule_service_request(first_request, 1, null, start_at, start_at + interval '4 hours', 2, 'Chạc gạch vỡ ở cổng', null, vehicle, null, '7f750000-0000-4000-8000-0000000000d1');
   assert public.schedule_service_request(first_request, 1, null, start_at, start_at + interval '4 hours', 2, 'Chạc gạch vỡ ở cổng', null, vehicle, null, '7f750000-0000-4000-8000-0000000000d1') = job, 'replay';
@@ -127,8 +133,10 @@ begin
 
   -- Another type and quantity may be chosen when scheduling; a job the store cancels shows as such to the customer.
   perform pg_temp.act_as('10000000-0000-4000-8000-000000000001');
-  job2 := public.schedule_service_request(second_request, 1, type_may, start_at + interval '1 day', start_at + interval '1 day 8 hours', 1, null, null, null, machine, gen_random_uuid());
+  -- No quantity given: the job keeps the quantity the customer asked for (audit 14/11).
+  job2 := public.schedule_service_request(second_request, 1, type_may, start_at + interval '1 day', start_at + interval '1 day 8 hours', null, null, null, null, machine, gen_random_uuid());
   select * into job_row from public.service_jobs where id = job2;
+  assert job_row.planned_quantity = 1, format('requested quantity kept, got %s', job_row.planned_quantity);
   assert job_row.service_type = 'Máy xúc' and job_row.unit_label = 'ca' and job_row.unit_price_vnd = 2500000 and job_row.machine_id = machine
     and job_row.description = 'Dịch vụ Máy xúc', format('another type %s', to_jsonb(job_row));
   perform public.cancel_scheduled_service_job(job2, job_row.version, 'Máy hỏng', gen_random_uuid());

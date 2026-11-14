@@ -33,7 +33,8 @@ export function LoginForm({ surface }: { surface: Surface }) {
   const [state, action, pending] = useActionState(loginAction, undefined);
   const [showPassword, setShowPassword] = useState(false);
   const savedLogin = useSyncExternalStore(subscribe, () => read(rememberedLoginKey(surface)) ?? "", () => "");
-  const rememberOff = useSyncExternalStore(subscribe, () => read(REMEMBER_CHOICE_KEY) === "0", () => false);
+  // Off when the person turned it off here before, or when a sign-out of a shared device just wiped that memory (D77).
+  const rememberOff = useSyncExternalStore(subscribe, () => read(REMEMBER_CHOICE_KEY) === "0" || new URLSearchParams(window.location.search).get("remember") === "off", () => false);
 
   function keep(event: FormEvent<HTMLFormElement>) {
     const data = new FormData(event.currentTarget);

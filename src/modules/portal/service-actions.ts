@@ -71,10 +71,13 @@ const submitFailures: Record<string, string> = {
   quantity_invalid_or_out_of_range: "Số lượng phải lớn hơn 0 và tối đa 6 chữ số thập phân.",
   quantity_precision_exceeds_six: "Số lượng phải lớn hơn 0 và tối đa 6 chữ số thập phân.",
   forbidden: "Tài khoản của bạn không được đặt dịch vụ. Chỉ chủ tài khoản đặt được.",
-  operation_payload_conflict: "Yêu cầu này vừa được gửi với nội dung khác. Tải lại trang trước khi gửi lại.",
 };
+// The first send may have gone through while its answer was lost; the details were then changed. Kept UNKNOWN so the form
+// keeps its operation id: sending again can never make a second request.
+const CHANGED_AFTER_SEND = "Có thể yêu cầu đã được gửi ở lần bấm trước. Xem ở Đơn hàng → Dịch vụ; muốn gửi một yêu cầu khác thì tải lại trang.";
 
 function submitFailure(error: { code?: string; message?: string }): CommandOutcome {
+  if (error.message?.includes("operation_payload_conflict")) return { status: "UNKNOWN", message: CHANGED_AFTER_SEND };
   const known = Object.entries(submitFailures).find(([key]) => error.message?.includes(key));
   if (known) return { status: "FAILED", message: known[1] };
   if (error.code === "42501") return { status: "FAILED", message: submitFailures.forbidden };

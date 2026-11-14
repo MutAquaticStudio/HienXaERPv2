@@ -150,7 +150,7 @@ begin
   if me is null or submit_service_request.operation_id is null or target_customer_id is null or customer.id is null then
     raise exception 'forbidden' using errcode = '42501';
   end if;
-  if target_service_type_id is null or requested_date is null or requested_date not between today and today + 120
+  if target_service_type_id is null or requested_date is null
     or requested_slot is null or requested_slot not in ('MORNING', 'AFTERNOON', 'TIME') or (requested_slot = 'TIME') <> (requested_time is not null)
     or char_length(clean_name) not between 2 and 120 or char_length(clean_phone) not between 6 and 30
     or char_length(regexp_replace(clean_phone, '\D', '', 'g')) not between 8 and 15
@@ -167,6 +167,8 @@ begin
     end if;
     return receipt.result_entity_id;
   end if;
+  -- Checked after the receipt: a request sent today and retried after midnight is answered, not refused (audit 14/11).
+  if requested_date not between today and today + 120 then raise exception 'portal_service_request_invalid' using errcode = '22023'; end if;
   perform private.require_exact_quantity(requested_quantity, false);
 
   select * into chosen from public.service_types t
@@ -309,11 +311,11 @@ begin
     end if;
     return receipt.result_entity_id;
   end if;
-  if req.version <> expected_version then raise exception 'stale_service_request' using errcode = 'PT409'; end if;
+  if expected_version is distinct from req.version then raise exception 'stale_service_request' using errcode = 'PT409'; end if;
   if req.state <> 'SUBMITTED' then raise exception 'service_request_not_open' using errcode = '23514'; end if;
 
   job_id := public.schedule_service_job(req.branch_id, req.customer_id, req.site_id, coalesce(target_service_type_id, req.service_type_id),
-    coalesce(job_description, ''), job_start, job_end, job_quantity, target_sales_employee_id, target_vehicle_id, target_machine_id,
+    coalesce(job_description, ''), job_start, job_end, coalesce(job_quantity, req.quantity), target_sales_employee_id, target_vehicle_id, target_machine_id,
     md5('d75:schedule:' || schedule_service_request.operation_id::text)::uuid);
   update public.service_requests set state = 'SCHEDULED', service_job_id = job_id, decided_at = now(), decided_by = me, version = version + 1 where id = req.id;
   insert into public.command_receipts values (schedule_service_request.operation_id, me, 'schedule_service_request', hash, 'service_job', job_id, now());
@@ -348,7 +350,7 @@ begin
     end if;
     return receipt.result_entity_id;
   end if;
-  if req.version <> expected_version then raise exception 'stale_service_request' using errcode = 'PT409'; end if;
+  if expected_version is distinct from req.version then raise exception 'stale_service_request' using errcode = 'PT409'; end if;
   if req.state <> 'SUBMITTED' then raise exception 'service_request_not_open' using errcode = '23514'; end if;
   update public.service_requests set state = 'REJECTED', decided_at = now(), decided_by = me, decision_reason = clean_reason, version = version + 1 where id = req.id;
   insert into public.command_receipts values (reject_service_request.operation_id, me, 'reject_service_request', hash, 'service_request', req.id, now());

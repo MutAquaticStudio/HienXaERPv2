@@ -132,7 +132,7 @@ export function TransportRateForm({ materials, rate }: { materials: RateMaterial
         <select id={`runit-${key}`} name={rate ? undefined : "uomId"} defaultValue={rate?.uom_id} disabled={Boolean(rate)} key={materialId}>
           {units.map((unit) => <option key={unit.id} value={unit.id}>{unit.symbol}</option>)}</select></div>
       <div className="field"><label htmlFor={`rrate-${key}`}>Đơn giá cho thợ mỗi đơn vị</label><MoneyInput id={`rrate-${key}`} name="rate" defaultValue={rate?.rate_vnd} required /></div>
-      {rate && <label className="check-inline"><input type="checkbox" name="active" value="on" defaultChecked={rate.active} /> Đang áp dụng</label>}
+      {rate && <><input type="hidden" name="active" value="off" /><label className="check-inline"><input type="checkbox" name="active" value="on" defaultChecked={rate.active} /> Đang áp dụng</label></>}
     </div>
     <p className="muted">Số tiền thợ nhận cho mỗi đơn vị hàng đã giao, đúng theo đơn vị khách đặt (ví dụ 2.000 đ mỗi bao, 40 đ mỗi viên, 20.000 đ mỗi xe). Không hiện cho khách.</p>
   </CommandForm>;
@@ -154,7 +154,7 @@ export function ServiceRateForm({ serviceTypes, rate }: { serviceTypes: ServiceT
       {mode === "AMOUNT"
         ? <div className="field"><label htmlFor={`samt-${key}`}>Số tiền mỗi đơn vị</label><MoneyInput id={`samt-${key}`} name="amount" defaultValue={rate?.rate_vnd ?? ""} required /></div>
         : <div className="field"><label htmlFor={`spct-${key}`}>% số tiền tính khách</label><input id={`spct-${key}`} name="percent" inputMode="decimal" defaultValue={rate?.rate_bps ? bpsToPercent(rate.rate_bps) : "20"} required /></div>}
-      {rate && <label className="check-inline"><input type="checkbox" name="active" value="on" defaultChecked={rate.active} /> Đang áp dụng</label>}
+      {rate && <><input type="hidden" name="active" value="off" /><label className="check-inline"><input type="checkbox" name="active" value="on" defaultChecked={rate.active} /> Đang áp dụng</label></>}
     </div>
     <p className="muted">{mode === "AMOUNT" ? "Thợ nhận số tiền này nhân với khối lượng tính công đã xác minh của việc." : "Thợ nhận % này của số tiền việc được tính cho khách khi xác minh (ví dụ vận chuyển 20%)."}</p>
   </CommandForm>;

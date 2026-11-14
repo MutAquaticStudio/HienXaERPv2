@@ -36,7 +36,7 @@ create policy portal_link_requests_read on public.portal_link_requests for selec
 -- Digits only, an international +84 read as a leading 0: "0912 345 678", "+84912345678" and "84912345678" are one number.
 create or replace function private.phone_key(value text) returns text
 language sql immutable set search_path = '' as $function$
-  select case when d ~ '^84[0-9]{9,10}$' then '0' || substr(d, 3) else d end
+  select case when d ~ '^84[0-9]{8,10}$' then '0' || substr(d, 3) else d end
   from (select regexp_replace(coalesce(value, ''), '[^0-9]', '', 'g') as d) x
 $function$;
 
@@ -86,6 +86,10 @@ begin
     (select b.id from public.branches b where b.active and (select count(*) from public.branches x where x.active) = 1))
   into branch;
   if branch is null then raise exception 'portal_branch_not_configured' using errcode = '23514'; end if;
+  -- A login the office refused stays refused, whatever operation id it tries next.
+  if exists (select 1 from public.portal_link_requests q where q.auth_user_id = me and q.state = 'REJECTED') then
+    raise exception 'portal_link_rejected' using errcode = '23514';
+  end if;
 
   -- D78: the number already belongs to an active customer of the branch: wait for the office.
   select c.* into matched from public.customers c
@@ -121,7 +125,9 @@ begin
   values (me, branch, 'customer.self_registered', 'customer', customer_id, register_portal_customer.operation_id, array['customer', 'site', 'portal_membership'],
     'Khách tự đăng ký trên cổng khách');
   perform private.notify(branch, 'customer.self_registered', 'customer', customer_id, 'Khách mới tự đăng ký: ' || trim(display_name),
-    clean_phone || ' · ' || trim(address_text), '/admin/customers/' || customer_id, 'customers.manage', null, 'customer.self_registered:' || customer_id);
+    clean_phone || ' · ' || trim(address_text) || case when exists (select 1 from public.customers c where c.branch_id = branch and c.id <> customer_id
+      and private.phone_key(c.phone) = private.phone_key(clean_phone)) then ' · Có khách đã ngừng dùng cùng số điện thoại, kiểm tra trùng.' else '' end,
+    '/admin/customers/' || customer_id, 'customers.manage', null, 'customer.self_registered:' || customer_id);
   return customer_id;
 end
 $function$;
@@ -137,13 +143,14 @@ declare
   hash text;
   receipt public.command_receipts%rowtype;
   customer_id uuid;
-  role_name text := coalesce(nullif(decide_portal_link_request.membership_role, ''), 'OWNER');
+  role_name text := nullif(decide_portal_link_request.membership_role, '');
 begin
   select * into req from public.portal_link_requests q where q.id = target_request_id;
   if req.id is null or auth.uid() is null or not private.has_permission(req.branch_id, 'customers.manage') then
     raise exception 'forbidden' using errcode = '42501';
   end if;
-  if decision not in ('LINK', 'NEW_CUSTOMER', 'REJECT') or role_name not in ('OWNER', 'FINANCE_CONTACT', 'RECEIVER')
+  -- The office always chooses the role of a linked login (no silent default to the owner's full access).
+  if decision not in ('LINK', 'NEW_CUSTOMER', 'REJECT') or (decision = 'LINK' and (role_name is null or role_name not in ('OWNER', 'FINANCE_CONTACT', 'RECEIVER')))
     or (nullif(trim(note), '') is not null and char_length(trim(note)) not between 3 and 500) or decide_portal_link_request.operation_id is null then
     raise exception 'invalid_input' using errcode = '22023';
   end if;

@@ -43,3 +43,12 @@ it("keeps each portal's account name apart", () => {
   render(<LoginForm surface="work" />);
   expect(account().value).toBe("");
 });
+
+it("starts with the box off right after a shared device signed out, although its storage was wiped (D77)", () => {
+  window.history.replaceState(null, "", "/?portal=work&remember=off");
+  render(<LoginForm surface="work" />);
+  expect(remember().checked).toBe(false);
+  submit();
+  expect(localStorage.getItem(REMEMBER_CHOICE_KEY)).toBe("0");
+  window.history.replaceState(null, "", "/");
+});

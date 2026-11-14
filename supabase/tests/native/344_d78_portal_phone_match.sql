@@ -25,6 +25,7 @@ declare
   failed text;
 begin
   assert private.phone_key('+84 972 964 332') = '0972964332' and private.phone_key('0972.964.332') = '0972964332', 'one number, written several ways';
+  assert private.phone_key('+8412345678') = '012345678', 'a +84 number with 8 digits too';
   select count(*) into customers_before from public.customers;
 
   -- The number of "Vang 132", written with +84: no new customer, a waiting request, the office told.
@@ -89,6 +90,12 @@ begin
   failed := null;
   begin perform public.register_portal_customer('Người lạ', '0972964332', 'Không rõ địa chỉ', '7f780000-0000-4000-8000-0000000000a3'); exception when others then failed := sqlerrm; end;
   assert failed = 'portal_link_rejected', format('told it was refused, got %s', failed);
+  failed := null;
+  begin perform public.register_portal_customer('Người lạ', '0972964332', 'Không rõ địa chỉ', '7f780000-0000-4000-8000-0000000000a9'); exception when others then failed := sqlerrm; end;
+  assert failed = 'portal_link_rejected', format('still refused with another operation id, got %s', failed);
+  perform pg_temp.act_as_admin();
+  assert (select count(*) from public.portal_link_requests where auth_user_id = stranger) = 1, 'no new request after a refusal';
+  perform pg_temp.act_as(stranger);
   perform pg_temp.act_as_admin();
   assert not exists (select 1 from public.customer_portal_memberships where auth_user_id = stranger), 'no access';
 
@@ -100,8 +107,16 @@ begin
   assert (select source from public.customers where id = result) = 'SELF_REGISTERED', 'self-registered';
   assert not exists (select 1 from public.portal_link_requests where auth_user_id = newcomer), 'no request';
 
-  -- Bad input.
+  -- Bad input; linking needs the role chosen by the office (no silent owner access).
+  perform pg_temp.act_as_admin();
+  insert into auth.users(id, email) values ('10000000-0000-4000-8000-000000000785', 'chau@example.test');
+  perform pg_temp.act_as('10000000-0000-4000-8000-000000000785');
+  assert public.register_portal_customer('Cháu Vang', '0972964332', 'Vang con bà Hiền, Khoang', '7f780000-0000-4000-8000-0000000000a5') is null, 'waits';
   perform pg_temp.act_as('10000000-0000-4000-8000-000000000001');
+  select id into request from public.portal_link_requests where auth_user_id = '10000000-0000-4000-8000-000000000785';
+  failed := null;
+  begin perform public.decide_portal_link_request(request, 'LINK', null, null, '7f780000-0000-4000-8000-0000000000b8'); exception when others then failed := sqlerrm; end;
+  assert failed = 'invalid_input', format('link without a role refused, got %s', failed);
   failed := null;
   begin perform public.decide_portal_link_request(request, 'MERGE', null, null, '7f780000-0000-4000-8000-0000000000b7'); exception when others then failed := sqlerrm; end;
   assert failed = 'invalid_input', 'unknown decision';

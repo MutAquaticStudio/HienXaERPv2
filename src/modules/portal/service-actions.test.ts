@@ -38,6 +38,14 @@ it("rejects bad input before calling the database", async () => {
   expect(m.rpc).not.toHaveBeenCalled();
 });
 
+it("keeps the operation after a send whose answer was lost and whose details were then changed, so no second request is made (D75)", async () => {
+  m.rpc.mockResolvedValueOnce({ data: null, error: { code: "23505", message: "operation_payload_conflict" } });
+  const outcome = await submitServiceRequestAction(input);
+  expect(outcome.status).toBe("UNKNOWN");
+  expect(outcome.message).toContain("Đơn hàng → Dịch vụ");
+  expect(outcome.message).not.toMatch(/operation_payload|23505/);
+});
+
 it("explains database rejections in Vietnamese, without codes, and keeps transport failures unknown so the same operation can be sent again", async () => {
   const cases: Array<[{ code?: string; message: string }, string]> = [
     [{ code: "22023", message: "portal_service_request_invalid" }, "ngày mong muốn"],
@@ -45,7 +53,6 @@ it("explains database rejections in Vietnamese, without codes, and keeps transpo
     [{ code: "23503", message: "customer_or_site_invalid" }, "Công trình không còn dùng được"],
     [{ code: "22023", message: "quantity_invalid_or_out_of_range" }, "Số lượng phải lớn hơn 0"],
     [{ code: "42501", message: "forbidden" }, "Chỉ chủ tài khoản đặt được"],
-    [{ code: "23505", message: "operation_payload_conflict" }, "Tải lại trang"],
     [{ code: "22000", message: "something_else" }, "Kiểm tra lại thông tin"],
   ];
   for (const [error, text] of cases) {

@@ -173,6 +173,20 @@ begin
   begin perform public.save_transport_pay_rate(branch, cement, bao, 0, true, gen_random_uuid());
   exception when others then failed := sqlerrm; end;
   assert failed = 'invalid_work_rate', format('a zero rate, got %s', failed);
+  -- A rate can be stopped after its material was stopped; a new rate for a stopped material cannot be added (audit 14/11).
+  perform pg_temp.act_as_admin();
+  update public.materials set active = false where id = cement;
+  perform pg_temp.act_as('10000000-0000-4000-8000-000000000001');
+  perform public.save_transport_pay_rate(branch, cement, bao, 2500, false, gen_random_uuid());
+  assert not (select active from public.transport_pay_rates where material_id = cement and uom_id = bao), 'stopped';
+  failed := null;
+  begin perform public.save_transport_pay_rate(branch, cement, bao, 2500, true, gen_random_uuid());
+  exception when others then failed := sqlerrm; end;
+  assert failed = 'invalid_work_rate', format('not restarted for a stopped material, got %s', failed);
+  perform pg_temp.act_as_admin();
+  update public.materials set active = true where id = cement;
+  perform pg_temp.act_as('10000000-0000-4000-8000-000000000001');
+  perform public.save_transport_pay_rate(branch, cement, bao, 2500, true, gen_random_uuid());
   failed := null;
   begin perform public.save_service_pay_rate(branch, svc_type, 1000, 500, true, gen_random_uuid());
   exception when others then failed := sqlerrm; end;

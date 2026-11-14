@@ -14,3 +14,12 @@ it("leaves nothing on a shared device, and keeps what a remembered device rememb
   expect(logoutClearSiteData(true)).toBe('"cache", "cookies", "storage"');
   expect(logoutClearSiteData(false)).toBe('"cache"');
 });
+
+it("tells the sign-in page that a shared device signed out, and expires every login cookie chunk (D77)", async () => {
+  const { expiredAuthCookies, logoutDestination } = await import("./logout");
+  expect(logoutDestination("work", true)).toBe("/?portal=work&remember=off");
+  expect(logoutDestination("admin", true)).toBe("/?remember=off");
+  expect(logoutDestination("customer", false)).toBe("/?portal=customer");
+  expect(expiredAuthCookies(["sb-abc123-auth-token", "sb-abc123-auth-token.0", "sb-abc123-auth-token.1", "hx_branch_id", "sb-abc123-auth-token-code-verifier"]))
+    .toEqual(["sb-abc123-auth-token", "sb-abc123-auth-token.0", "sb-abc123-auth-token.1"]);
+});
