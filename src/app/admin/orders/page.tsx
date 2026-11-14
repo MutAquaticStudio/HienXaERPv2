@@ -56,7 +56,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   // Counts beside each filter stop at 99: an exact count over a long history is not worth the wait on every visit.
   // The open filter alone is counted exactly, for "Trang x / y" and "Đến trang".
   const [{ data, error, count: total }, ...counts] = await Promise.all([
-    scoped(list.state, true).order("created_at", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1),
+    scoped(list.state, true).order("created_at", { ascending: false }).order("order_number", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1),
     ...STATES.map((state) => scoped(state.value).limit(100)),
   ]);
   if (error) throw new Error("Không thể tải đơn bán.");

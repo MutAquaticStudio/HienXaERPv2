@@ -29,7 +29,7 @@ export default async function DeliveriesPage({ searchParams }: { searchParams: P
   };
   const [{ data, error, count: total }, ...counts] = await Promise.all([
     scoped(list.state, "id, sales_order_id, delivery_number, customer_name_snapshot, site_name_snapshot, execution_state, result_kind, scheduled_at, external_carrier_name, vehicle_id, created_at", true)
-      .order("created_at", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1),
+      .order("created_at", { ascending: false }).order("delivery_number", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1),
     ...STATES.map((state) => scoped(state, "id").limit(100)),
   ]);
   if (error) throw new Error("Không thể tải giao hàng.");

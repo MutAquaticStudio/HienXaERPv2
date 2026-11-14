@@ -49,7 +49,7 @@ export default async function ServiceJobsPage({ searchParams }: { searchParams: 
         .eq("branch_id", branchId)
         .or(`job_number.ilike.${ilikePattern(list.q)},customer_name.ilike.${ilikePattern(list.q)},site_name.ilike.${ilikePattern(list.q)},service_type.ilike.${ilikePattern(list.q)},operator_name.ilike.${ilikePattern(list.q)}`);
       if (list.state) request = request.eq("execution_state", list.state);
-      const { data, error, count } = await request.order("scheduled_start", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1);
+      const { data, error, count } = await request.order("scheduled_start", { ascending: false }).order("job_number", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1);
       if (error) throw new Error("Không thể tải công việc dịch vụ.");
       const rows = (data ?? []) as Job[];
       return { jobs: rows.slice(0, CORE_LIST_PAGE_SIZE), hasNext: rows.length > CORE_LIST_PAGE_SIZE, total: count ?? undefined };
@@ -58,7 +58,7 @@ export default async function ServiceJobsPage({ searchParams }: { searchParams: 
     let request = supabase.from("service_jobs").select("id, job_number, service_type, scheduled_start, scheduled_end, description, planned_quantity, unit_label, execution_state", { count: "exact" })
       .eq("branch_id", branchId);
     if (list.state) request = request.eq("execution_state", list.state);
-    const { data, error, count } = await request.order("scheduled_start", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1);
+    const { data, error, count } = await request.order("scheduled_start", { ascending: false }).order("job_number", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1);
     if (error) throw new Error("Không thể tải công việc dịch vụ.");
     const pageRows = data ?? [];
     const total = count ?? undefined;
