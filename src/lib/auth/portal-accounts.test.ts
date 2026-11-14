@@ -28,6 +28,7 @@ vi.mock("./account-portals", async (original) => ({ ...(await original<typeof im
 vi.mock("next/navigation", () => ({ redirect: m.redirect }));
 vi.mock("./portal-registration", () => ({ portalRegistrationOpen: m.open }));
 vi.mock("@/modules/portal/server", () => ({ portalRpc: vi.fn(), deterministicUuid: (seed: string) => `uuid(${seed})` }));
+import { PORTAL_LINK_PENDING_MESSAGE, PORTAL_LINK_REJECTED_MESSAGE } from "./portal-link";
 import { changeOwnPasswordAction, createCustomerPortalAccountAction, createCustomerPortalAccountsBatchAction, loginAction, registerCustomerAccountAction, resetCustomerPortalPasswordAction } from "./actions";
 
 const customerId = "11111111-1111-4111-8111-111111111111";
@@ -40,7 +41,7 @@ beforeEach(() => {
   vi.stubEnv("SUPABASE_SECRET_KEY", "test-only-not-a-credential");
   m.access.mockResolvedValue({ branchId: "b1", permissions: new Set(["customers.manage"]) });
   m.customer.mockResolvedValue({ data: { id: customerId }, error: null });
-  m.rpc.mockResolvedValue({ data: null, error: null });
+  m.rpc.mockResolvedValue({ data: customerId, error: null });
   m.createUser.mockResolvedValue({ data: { user: { id: userId } }, error: null });
   m.updateUserById.mockResolvedValue({ data: {}, error: null });
   m.updateUser.mockResolvedValue({ data: {}, error: null });
@@ -194,6 +195,25 @@ it("changes the temporary password, clears the flag and opens the portal", async
   expect(m.updateUser).toHaveBeenCalledWith({ password: "MatKhauMoi1" });
   expect(m.updateUserById).toHaveBeenCalledWith(userId, { app_metadata: { hx_must_change_password: false } });
   expect(m.refresh).toHaveBeenCalled();
+});
+
+it("D78: a registration with a phone number the store already has waits for the office, at sign-up and at every sign-in", async () => {
+  const registration = { hx_registration: { name: "Vang", phone: "0972964332", address: "Vang con bà Hiền, Khoang" } };
+  m.signIn.mockResolvedValue({ data: { user: { id: userId, email: "vang@example.test", user_metadata: registration } }, error: null });
+  m.rpc.mockResolvedValueOnce({ data: null, error: null });
+  const waiting = await loginAction(undefined, form({ email: "vang@example.test", password: "matkhau123", surface: "customer" }));
+  expect(waiting?.message).toBe(PORTAL_LINK_PENDING_MESSAGE);
+  expect(m.signOut).toHaveBeenCalledWith({ scope: "local" });
+  expect(m.send).not.toHaveBeenCalled();
+
+  m.rpc.mockResolvedValueOnce({ data: null, error: { code: "23514", message: "portal_link_rejected" } });
+  expect((await loginAction(undefined, form({ email: "vang@example.test", password: "matkhau123", surface: "customer" })))?.message).toBe(PORTAL_LINK_REJECTED_MESSAGE);
+
+  const values = { name: "Vang", phone: "0972964332", address: "Vang con bà Hiền, Khoang", email: "vang@example.test", password: "matkhau123", confirm: "matkhau123" };
+  m.signUp.mockResolvedValue({ data: { user: { id: userId, email: "vang@example.test", user_metadata: registration }, session: { access_token: "t" } }, error: null });
+  m.rpc.mockResolvedValueOnce({ data: null, error: null });
+  expect(await registerCustomerAccountAction(undefined, form(values))).toEqual({ success: true, message: PORTAL_LINK_PENDING_MESSAGE });
+  expect(m.send).not.toHaveBeenCalled();
 });
 
 it("registers a customer: the record is made right away when signed in, or after the email is confirmed", async () => {

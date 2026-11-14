@@ -16,6 +16,7 @@ import { QUOTATIONS_ENABLED } from "@/lib/features";
 import { CatalogCreateButton, CatalogEditButton } from "@/modules/catalog/catalog-dialog";
 import { catalogChildRecordsProps, catalogCreateProps, catalogRecordProps } from "@/modules/catalog/editor-data";
 import { PortalAccountsCard, type PortalAccount } from "@/components/customers/portal-accounts-card";
+import { PortalLinkRequestsCard, type PortalLinkRequest } from "@/components/customers/portal-link-requests-card";
 import { StaffPaymentRequestPanel, type CashAccount, type PaymentRequestRow } from "@/modules/finance/staff-payment-request";
 import { debtPaymentOptionsSchema } from "@/modules/finance/sepay";
 import { loadCompanyProfile } from "@/lib/company/profile";
@@ -135,11 +136,15 @@ type Supabase = Awaited<ReturnType<typeof createServerSupabase>>;
 type SiteEdit = Awaited<ReturnType<typeof catalogChildRecordsProps>>;
 
 async function InfoTab({ customer, note, can, supabase, siteEdit }: { customer: CustomerProfile; note: string | null | undefined; can: { createOrder: boolean; service: boolean; manage: boolean }; supabase: Supabase; siteEdit: SiteEdit | null }) {
-  const [{ data }, accountsResult, zaloResult] = await Promise.all([
+  const [{ data }, accountsResult, zaloResult, linkResult] = await Promise.all([
     supabase.from("customer_sites").select("id, code, name, address_text, receiver_name, receiver_phone, access_note, active").eq("customer_id", customer.id).order("active", { ascending: false }).order("name").limit(100),
     supabase.rpc("customer_portal_accounts", { target_customer_id: customer.id }),
     supabase.rpc("customer_zalo_notify", { target_customer_id: customer.id }),
+    // D78: self-registrations with this customer's phone number, waiting for the office (only customers.manage reads them).
+    can.manage ? supabase.from("portal_link_requests").select("id, display_name, phone, address_text, email, created_at")
+      .eq("matched_customer_id", customer.id).eq("state", "PENDING").order("created_at").limit(20) : Promise.resolve({ data: [] }),
   ]);
+  const linkRequests = (linkResult.data ?? []) as PortalLinkRequest[];
   const sites = (data ?? []) as unknown as SiteRow[];
   const accounts = accountsResult.error ? null : ((accountsResult.data ?? []) as PortalAccount[]);
   return <div className="two-column">
@@ -164,6 +169,7 @@ async function InfoTab({ customer, note, can, supabase, siteEdit }: { customer: 
     </dl>
       {typeof zaloResult?.data === "boolean" && <ZaloNotifyToggle className="zalo-notify" customerId={customer.id} enabled={zaloResult.data} canChange={can.manage} phoneUsable={isZaloPhone(customer.phone)} />}
     </section>
+    {can.manage && <PortalLinkRequestsCard customerId={customer.id} customerName={customer.display_name} requests={linkRequests} />}
     {accounts && <PortalAccountsCard customerId={customer.id} customerPhone={customer.phone} accounts={accounts} canManage={can.manage} />}</div>
   </div>;
 }

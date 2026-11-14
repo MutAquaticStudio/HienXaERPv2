@@ -15,6 +15,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { AUTH_COOKIE_OPTIONS, SESSION_ONLY_COOKIE } from "@/lib/supabase/cookie-options";
 import { portalRegistrationOpen } from "@/lib/auth/portal-registration";
 import { loadBulkPortalPlan } from "@/lib/auth/bulk-portal";
+import { PORTAL_LINK_PENDING_MESSAGE, PORTAL_LINK_REJECTED_MESSAGE } from "@/lib/auth/portal-link";
 import { sendEmail } from "@/lib/email/send";
 import { welcomeEmail } from "@/modules/portal/welcome-email";
 import { cookies } from "next/headers";
@@ -64,6 +65,10 @@ export async function loginAction(_: AuthFormState, formData: FormData): Promise
     await rememberLoginChoice(sessionOnly);
     if (parsed.data.surface === "customer" && data.user) {
       const completion = await completePortalRegistration(supabase, data.user);
+      if (completion === "PENDING" || completion === "REJECTED") {
+        await supabase.auth.signOut({ scope: "local" });
+        return { message: completion === "PENDING" ? PORTAL_LINK_PENDING_MESSAGE : PORTAL_LINK_REJECTED_MESSAGE };
+      }
       if (completion === "CLOSED" || completion === "FAILED") {
         await supabase.auth.signOut({ scope: "local" });
         return { message: completion === "CLOSED"
@@ -519,11 +524,16 @@ const pendingRegistrationSchema = z.object({ name: z.string(), phone: z.string()
 /** One registration per login: the same operation id every time, so a later sign-in only replays the first one. */
 const registrationOperationId = (userId: string) => deterministicUuid(`register_portal_customer:${userId}`);
 
+/**
+ * The customer record of a self-registration. `pending` (D78): the phone number belongs to a customer the store already
+ * has, so nothing was made and the office decides; the login waits until then.
+ */
 async function registerPortalCustomer(supabase: Awaited<ReturnType<typeof createServerSupabase>>, userId: string, registration: PendingRegistration) {
-  const { error } = await supabase.rpc("register_portal_customer", { display_name: registration.name, phone: registration.phone,
+  const { data, error } = await supabase.rpc("register_portal_customer", { display_name: registration.name, phone: registration.phone,
     address_text: registration.address, operation_id: registrationOperationId(userId) });
-  return error;
+  return { error, pending: !error && !data };
 }
+
 
 type WelcomeUser = { email?: string | null; user_metadata?: Record<string, unknown> };
 
@@ -548,14 +558,16 @@ async function scheduleWelcomeEmail(user: WelcomeUser) {
  * → NONE. D58: a refusal is no longer swallowed — the shop not taking registrations (CLOSED) or another failure is told
  * to the customer instead of an unexplained "chưa được cấp quyền"; the details stay on the login for the next sign-in.
  */
-async function completePortalRegistration(supabase: Awaited<ReturnType<typeof createServerSupabase>>, user: { id: string; user_metadata?: Record<string, unknown> }): Promise<"NONE" | "CREATED" | "CLOSED" | "FAILED"> {
+async function completePortalRegistration(supabase: Awaited<ReturnType<typeof createServerSupabase>>, user: { id: string; user_metadata?: Record<string, unknown> }): Promise<"NONE" | "CREATED" | "CLOSED" | "FAILED" | "PENDING" | "REJECTED"> {
   const registration = pendingRegistrationSchema.safeParse(user.user_metadata?.hx_registration);
   if (!registration.success) return "NONE";
   const { data: memberships } = await supabase.from("customer_portal_memberships").select("id").eq("auth_user_id", user.id).eq("active", true).limit(1);
   if (memberships?.length) return "NONE";
-  const error = await registerPortalCustomer(supabase, user.id, registration.data).catch(() => ({ message: "transport" }));
+  const { error, pending } = await registerPortalCustomer(supabase, user.id, registration.data).catch(() => ({ error: { message: "transport" }, pending: false }));
+  if (pending) return "PENDING";
   if (!error) return "CREATED";
   if (/portal_already_registered|portal_user_is_employee/.test(error.message)) return "NONE";
+  if (error.message.includes("portal_link_rejected")) return "REJECTED";
   return error.message.includes("portal_branch_not_configured") ? "CLOSED" : "FAILED";
 }
 
@@ -608,9 +620,13 @@ export async function registerCustomerAccountAction(_: AuthFormState, formData: 
     return answer("Chưa đăng ký được. Thử lại sau ít phút.");
   }
   if (!data.session || !data.user) return { success: true, message: `Đã tạo tài khoản. Mở email gửi tới ${parsed.data.email.toLowerCase()}, bấm “Xác nhận” rồi đăng nhập để bắt đầu đặt hàng.` };
-  const registerError = await registerPortalCustomer(supabase, data.user.id, registration);
+  const { error: registerError, pending } = await registerPortalCustomer(supabase, data.user.id, registration);
   if (registerError?.message.includes("portal_branch_not_configured")) return answer("Cửa hàng chưa mở tự đăng ký. Gọi cửa hàng để được tạo tài khoản.");
   if (registerError) return answer("Đã tạo tài khoản nhưng chưa lập được hồ sơ khách. Đăng nhập lại để hoàn tất, hoặc gọi cửa hàng.");
+  if (pending) {
+    await supabase.auth.signOut({ scope: "local" });
+    return { success: true, message: PORTAL_LINK_PENDING_MESSAGE };
+  }
   await scheduleWelcomeEmail(data.user);
   redirect("/customer?notice=registered");
 }

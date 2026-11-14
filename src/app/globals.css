@@ -1604,6 +1604,15 @@ td.cell-wrap { min-width: 11rem; max-width: 26rem; white-space: normal; }
 .portal-account-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .portal-account-list > li { display: grid; gap: 6px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; }
 .portal-account-list > li.row-muted { color: var(--muted); }
+/* D78: a self-registration waiting for the office, with the three answers. */
+.portal-link-requests { display: grid; gap: 10px; align-content: start; border-color: var(--warning); }
+.portal-link-requests > .muted { margin: 0; }
+.portal-link-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.portal-link-list > li { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+.portal-link-form { display: grid; gap: 10px; }
+.portal-link-form .form-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.portal-link-form .form-actions .button { min-height: 44px; }
+@media (max-width: 640px) { .portal-link-form .form-actions .button { flex: 1 1 100%; } }
 .portal-share { display: grid; gap: 10px; }
 .auth-note { margin: 0; color: var(--muted); font-size: var(--font-size-caption); text-align: center; }
 
