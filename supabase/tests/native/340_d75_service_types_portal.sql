@@ -13,7 +13,7 @@ begin
   perform pg_temp.act_as('10000000-0000-4000-8000-000000000001');
   -- A new type is hidden from customers unless it says otherwise.
   perform public.save_catalog_record('service_types', chac_xe, branch,
-    '{"code":"CHAC-GACH-XE","name":"Chạc gạch","unit_label":"xe","default_price_vnd":"170000","resource_kind":"VEHICLE","active":true}', null,
+    '{"code":"CHAC-GACH-XE","name":"Chạc gạch","unit_label":"xe cn nhỏ","default_price_vnd":"170000","resource_kind":"VEHICLE","active":true}', null,
     'Tạo loại dịch vụ', '7f750000-0000-4000-8000-0000000000a1');
   select * into row_data from public.service_types where id = chac_xe;
   assert row_data.portal_visible = false and row_data.portal_group is null, 'hidden by default';
@@ -34,12 +34,12 @@ begin
   failed := null;
   begin
     perform public.save_catalog_record('service_types', chac_dup, branch,
-      '{"code":"CHAC-GACH-DUP","name":" chạc GẠCH ","unit_label":"Xe","resource_kind":"VEHICLE","portal_visible":true,"portal_group":"Chạc","active":true}', null,
+      '{"code":"CHAC-GACH-DUP","name":" chạc GẠCH ","unit_label":"Xe CN Nhỏ","resource_kind":"VEHICLE","portal_visible":true,"portal_group":"Chạc","active":true}', null,
       'Tạo loại dịch vụ', '7f750000-0000-4000-8000-0000000000a4');
   exception when unique_violation then failed := sqlerrm; end;
   assert failed like '%service_types_portal_option_unique%', format('duplicate option refused, got %s', failed);
   perform public.save_catalog_record('service_types', chac_dup, branch,
-    '{"code":"CHAC-GACH-DUP","name":"Chạc gạch","unit_label":"xe","resource_kind":"VEHICLE","portal_visible":false,"active":true}', null,
+    '{"code":"CHAC-GACH-DUP","name":"Chạc gạch","unit_label":"xe cn nhỏ","resource_kind":"VEHICLE","portal_visible":false,"active":true}', null,
     'Tạo loại dịch vụ', '7f750000-0000-4000-8000-0000000000a5');
   assert not exists (select 1 from public.service_types where id = chac_dup and portal_visible), 'hidden duplicate allowed';
   failed := null;

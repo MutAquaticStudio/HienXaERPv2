@@ -66,7 +66,7 @@ revoke all on function private.portal_member(uuid) from public, anon, authentica
 create or replace function private.service_request_payload(target_request_id uuid, member_role text) returns jsonb
 language sql stable security definer set search_path = '' as $$
   select jsonb_strip_nulls(jsonb_build_object(
-    'id', r.id, 'number', r.request_number, 'state', r.state,
+    'id', r.id, 'number', r.request_number, 'state', r.state, 'member_role', member_role,
     'stage', case r.state
       when 'SUBMITTED' then 'SUBMITTED' when 'CANCELLED' then 'CANCELLED' when 'REJECTED' then 'REJECTED'
       else case j.execution_state when 'IN_PROGRESS' then 'IN_PROGRESS' when 'RESULT_SUBMITTED' then 'CONFIRMING'

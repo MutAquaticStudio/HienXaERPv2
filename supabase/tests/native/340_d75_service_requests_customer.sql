@@ -19,7 +19,7 @@ insert into public.customer_portal_memberships(auth_user_id, customer_id, member
   ('7f750000-0000-4000-8000-0000000000a4', '7f750000-0000-4000-8000-000000000040', 'FINANCE_CONTACT');
 -- Types: "Chạc gạch" in two units (shown), "Máy xúc" without a price (shown), one hidden, one stopped, one in the other branch.
 insert into public.service_types(id, branch_id, code, name, unit_label, default_price_vnd, resource_kind, active, portal_visible, portal_group) values
-  ('7f750000-0000-4000-8000-000000000011', '20000000-0000-4000-8000-00000000000a', 'CHAC-GACH-XE', 'Chạc gạch', 'xe', 170000, 'VEHICLE', true, true, 'Chạc'),
+  ('7f750000-0000-4000-8000-000000000011', '20000000-0000-4000-8000-00000000000a', 'CHAC-GACH-XE', 'Chạc gạch', 'xe cn nhỏ', 170000, 'VEHICLE', true, true, 'Chạc'),
   ('7f750000-0000-4000-8000-000000000012', '20000000-0000-4000-8000-00000000000a', 'CHAC-GACH-TO', 'Chạc gạch', 'xe cn to', 340000, 'VEHICLE', true, true, 'Chạc'),
   ('7f750000-0000-4000-8000-000000000013', '20000000-0000-4000-8000-00000000000a', 'MAY-XUC', 'Máy xúc', 'ca', null, 'MACHINE', true, true, 'Máy'),
   ('7f750000-0000-4000-8000-000000000014', '20000000-0000-4000-8000-00000000000a', 'AN-NOI-BO', 'Vận chuyển nội bộ', 'lượt', 150000, 'VEHICLE', true, false, 'Vận chuyển'),
@@ -51,7 +51,7 @@ begin
   assert jsonb_array_length(catalog->'groups') = 2, format('two groups, got %s', catalog->'groups');
   assert catalog->'groups'->0->>'name' = 'Chạc' and catalog->'groups'->1->>'name' = 'Máy', 'group names';
   assert jsonb_array_length(catalog->'groups'->0->'services') = 1 and catalog->'groups'->0->'services'->0->>'name' = 'Chạc gạch', 'merged by name';
-  assert (select array_agg(o->>'unit_label' order by ord) from jsonb_array_elements(catalog->'groups'->0->'services'->0->'options') with ordinality as t(o, ord)) = array['xe', 'xe cn to']
+  assert (select array_agg(o->>'unit_label' order by ord) from jsonb_array_elements(catalog->'groups'->0->'services'->0->'options') with ordinality as t(o, ord)) = array['xe cn nhỏ', 'xe cn to']
     and catalog->'groups'->0->'services'->0->'options'->0->>'unit_price_vnd' = '170000'
     and catalog->'groups'->0->'services'->0->'options'->1->>'unit_price_vnd' = '340000', 'one option per unit, cheapest first';
   assert (catalog->'groups'->1->'services'->0->'options'->0->'unit_price_vnd') = 'null'::jsonb, 'no price: the store quotes';
@@ -135,7 +135,7 @@ begin
   -- The customer's view: owner and finance contact see money, the receiver does not; another customer sees nothing.
   perform pg_temp.act_as('7f750000-0000-4000-8000-0000000000a1');
   detail := public.customer_portal_service_request(request);
-  assert detail->>'stage' = 'SUBMITTED' and (detail->>'can_cancel')::boolean and detail->>'estimate_vnd' = '680000' and detail->>'unit_price_vnd' = '340000'
+  assert detail->>'member_role' = 'OWNER' and detail->>'stage' = 'SUBMITTED' and (detail->>'can_cancel')::boolean and detail->>'estimate_vnd' = '680000' and detail->>'unit_price_vnd' = '340000'
     and detail->>'quantity' = '2' and detail->>'contact_phone' = '0901 234 567' and detail->>'note' = 'Hẻm nhỏ' and detail->>'preferred_slot' = 'MORNING', format('owner view %s', detail);
   perform pg_temp.act_as('7f750000-0000-4000-8000-0000000000a4');
   detail := public.customer_portal_service_request(request);
@@ -143,7 +143,7 @@ begin
   perform pg_temp.act_as('7f750000-0000-4000-8000-0000000000a2');
   detail := public.customer_portal_service_request(request);
   assert not (detail ? 'estimate_vnd') and not (detail ? 'unit_price_vnd') and not (detail ? 'final_amount_vnd') and not (detail->>'can_cancel')::boolean
-    and detail->>'service_name' = 'Chạc gạch', format('receiver follows without money %s', detail);
+    and detail->>'service_name' = 'Chạc gạch' and detail->>'member_role' = 'RECEIVER', format('receiver follows without money %s', detail);
   listing := public.customer_portal_service_requests(null, 100);
   assert listing->>'membership_role' = 'RECEIVER' and jsonb_array_length(listing->'requests') = 2 and listing->'requests'->0->>'id' = second::text, 'receiver lists, newest first';
   perform pg_temp.act_as('7f750000-0000-4000-8000-0000000000a3');

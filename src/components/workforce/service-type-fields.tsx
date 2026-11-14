@@ -14,11 +14,13 @@ const priceText = (type: ServiceTypeOption) => type.default_price_vnd ? `${forma
  * D23: the service is picked from the owner's catalogue ("+ Thêm loại" adds one in a popup and selects it). The type
  * sets the unit of the planned quantity and shows only the vehicle or the machine field it needs.
  */
-export function ServiceTypeFields({ types, vehicleField, machineField, scope }: {
+export function ServiceTypeFields({ types, vehicleField, machineField, scope, defaultTypeId, defaultQuantity }: {
   types: ServiceTypeOption[]; vehicleField: ReactNode; machineField: ReactNode; scope: string;
+  /** D75: a customer request opens the form with its type and quantity filled in. */
+  defaultTypeId?: string; defaultQuantity?: string;
 }) {
   const router = useRouter();
-  const [typeId, setTypeId] = useState(types.length === 1 ? types[0].id : "");
+  const [typeId, setTypeId] = useState(defaultTypeId && types.some((type) => type.id === defaultTypeId) ? defaultTypeId : types.length === 1 ? types[0].id : "");
   const [adding, setAdding] = useState(false);
   const [notice, setNotice] = useState("");
   const selected = types.find((type) => type.id === typeId);
@@ -40,7 +42,7 @@ export function ServiceTypeFields({ types, vehicleField, machineField, scope }: 
     {/* FB8: trips or hours are often only known on site; empty = counted when the worker finishes. */}
     <div className="field">
       <label htmlFor="service-quantity">Số lượng dự kiến (không bắt buộc)</label>
-      <QuantityStepper id="service-quantity" name="plannedQuantity" label="Số lượng dự kiến" unit={selected?.unit_label} allowEmpty placeholder="Theo thực tế"
+      <QuantityStepper id="service-quantity" name="plannedQuantity" label="Số lượng dự kiến" unit={selected?.unit_label} allowEmpty placeholder="Theo thực tế" defaultValue={defaultQuantity}
         describedBy="service-quantity-hint" />
       <small id="service-quantity-hint" className="muted">Chưa biết thì để trống: thợ bấm số {selected?.unit_label ?? "lượng"} thực tế khi hoàn tất.</small>
     </div>

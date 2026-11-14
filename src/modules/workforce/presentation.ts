@@ -14,6 +14,11 @@ export function recognitionKindLabel(value?: string | null) {
   return lookupLabel({ WORK_ITEM_VERIFICATION: "Xác minh kết quả công việc", AR_PAYMENT_ALLOCATION: "Phân bổ tiền thu vào công nợ" }, value, "Ghi nhận từ nghiệp vụ");
 }
 
+/** D75: a customer's service request as the store sees it (the customer's own wording is in modules/portal/service-request). */
+export function serviceRequestStateLabel(value?: string | null) {
+  return lookupLabel({ SUBMITTED: "Chờ xác nhận lịch", SCHEDULED: "Đã xếp lịch", CANCELLED: "Khách đã hủy", REJECTED: "Đã từ chối" }, value, "Trạng thái đang cập nhật");
+}
+
 export function serviceStateLabel(value?: string | null) {
   return lookupLabel({ SCHEDULED: "Đã lên lịch", PLANNED: "Đã lên lịch", IN_PROGRESS: "Đang thực hiện", RESULT_SUBMITTED: "Chờ xác minh", COMPLETED: "Đã hoàn tất", VERIFIED: "Đã xác minh", CANCELLED: "Đã hủy" }, value, "Trạng thái đang cập nhật");
 }
