@@ -103,6 +103,7 @@ Dùng sổ tay này để hiểu hệ thống và hướng dẫn người dùng:
 
 ## Dịch vụ (thuê máy, vận chuyển, nhân công…)
 - /admin/service-jobs "+ Tạo đơn dịch vụ" [service.manage]: khách, công trình, loại dịch vụ, số lượng dự kiến (trống = theo thực tế). Loại dịch vụ và đơn giá mặc định ở /admin/service-jobs/types.
+- Yêu cầu khách gửi từ cổng: /admin/service-jobs/requests "Yêu cầu từ khách" [service.manage] (chuông báo "Yêu cầu dịch vụ mới từ khách") → "Xếp lịch" (tạo đơn dịch vụ từ yêu cầu: chọn giờ, xe hoặc máy, nhân viên; đổi được loại và số lượng) hoặc "Từ chối" kèm lý do khách đọc được. Ngày và buổi của khách chỉ là mong muốn.
 - "Giao việc" (thẳng cho một thợ hoặc để thợ tự nhận) → thợ "Bắt đầu" rồi "Hoàn tất" với số lượng thực tế → văn phòng "Xác minh & ghi công nợ" [service.verify] ("Tính khách", "Tính công cho thợ") → phát sinh phải thu.
 
 ## Nhân sự
@@ -113,8 +114,9 @@ Dùng sổ tay này để hiểu hệ thống và hướng dẫn người dùng:
 - Công cụ: soan_cham_cong (chấm hộ một ngày), soan_cong_tru_luong (cộng / trừ tay trên bảng lương tạm tính gần nhất).
 
 ## Cổng khách /customer
-- Menu: Trang chủ, Đơn hàng, Đặt hàng, Công nợ, Tin nhắn, Tôi. Chỉ "Chủ tài khoản" đặt hàng; "Người nhận hàng" không xem công nợ.
+- Menu: Trang chủ, Đơn hàng, Đặt (nút xanh giữa, mở tờ chọn Hàng hóa / Dịch vụ), Công nợ, Tin nhắn, Tôi. Chỉ "Chủ tài khoản" đặt hàng và đặt dịch vụ; "Người nhận hàng" không xem công nợ.
 - Đặt hàng /customer/orders/new: tìm hàng, "Giao tới", "Muốn nhận lúc", ghi chú → "Xem & gửi đơn" → "Gửi đơn". Giá theo bảng giá của khách; đơn chờ cửa hàng duyệt, chưa giữ hàng. Khách "Hủy đơn" được khi chưa duyệt; "Đặt lại" đơn cũ. Đơn đã duyệt chưa giao hiện "Đã duyệt".
+- Đặt dịch vụ /customer/services/new (D75): chọn dịch vụ (gộp theo tên, chọn đơn vị như xe cn nhỏ / xe cn to) → chi tiết (công trình, số lượng, ngày + buổi MONG MUỐN, người liên hệ, ghi chú) → "Gửi yêu cầu". Khách chưa bị tính tiền, "Tạm tính" chỉ là đơn giá mặc định × số lượng (loại chưa có giá hiện "Cửa hàng báo giá"). Khách theo dõi ở tab Đơn hàng → "Dịch vụ" (Chờ xác nhận → Đã xếp lịch → Đang thực hiện → Chờ xác nhận khối lượng → Hoàn tất, ghi công nợ) và "Hủy yêu cầu" được khi cửa hàng chưa xếp lịch. Loại dịch vụ chỉ hiện cho khách khi bật "Hiện cho khách đặt trên cổng khách" ở /admin/service-jobs/types.
 - Công nợ /customer/debts: chọn khoản cần trả → "Chuyển khoản bằng mã QR" (không sửa nội dung chuyển khoản) hoặc "Trả tiền mặt tại cửa hàng".
 
 ## Khác
