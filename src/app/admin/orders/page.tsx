@@ -15,10 +15,11 @@ import { formatVnd, vnd } from "@/lib/core/money";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { salesDeliveryStateLabel, salesStateLabel, salesStateTone } from "@/modules/sales/presentation";
 import { loadSellers } from "@/modules/sales/seller";
+import { applyDayRange, hasOrderDateFilter, parseOrderDateFilters } from "@/modules/sales/order-list-dates";
 
 type OrderRow = { id: string; order_number: string; sales_owner_employee_id: string | null; customer_name_snapshot: string; site_name_snapshot: string; commercial_state: string; fulfillment_state: string; payment_state: string; total_vnd: string; requested_delivery_at: string | null; created_at: string };
 type LineRow = { sales_order_id: string; line_number: number; material_name_snapshot: string; quantity: string; line_total_vnd: string; units_of_measure: { symbol: string } | { symbol: string }[] | null };
-type Query = { notice?: string; error?: string; q?: string; state?: string; page?: string; seller?: string };
+type Query = { notice?: string; error?: string; q?: string; state?: string; page?: string; seller?: string; createdFrom?: string; createdTo?: string; deliveryFrom?: string; deliveryTo?: string };
 
 const STATES = [
   { value: "", label: "Đang làm việc" },
@@ -39,9 +40,14 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   const sellers = await loadSellers(supabase, access.branchId);
   const seller = query.seller === "me" ? access.employeeId : sellers.some((item) => item.id === query.seller) ? query.seller! : "";
   const sellerParam = seller ? query.seller : undefined;
+  // "Ngày tạo" and "Ngày giao" (the requested delivery day): each a from-to range of Vietnam business days, both ends included.
+  const dates = parseOrderDateFilters(query);
+  const dateParams = { createdFrom: dates.createdFrom || undefined, createdTo: dates.createdTo || undefined, deliveryFrom: dates.deliveryFrom || undefined, deliveryTo: dates.deliveryTo || undefined };
   const scoped = (state: string, counted = false) => {
     let request = supabase.from("sales_orders").select("id", counted ? { count: "exact" } : undefined).eq("branch_id", access.branchId);
     if (seller) request = request.eq("sales_owner_employee_id", seller);
+    request = applyDayRange(request, "created_at", dates.createdFrom, dates.createdTo);
+    request = applyDayRange(request, "requested_delivery_at", dates.deliveryFrom, dates.deliveryTo);
     if (list.q) request = request.or(`order_number.ilike.${ilikePattern(list.q)},customer_name_snapshot.ilike.${ilikePattern(list.q)},site_name_snapshot.ilike.${ilikePattern(list.q)}`);
     // D15: "Khách đặt · chờ duyệt" = portal orders still in draft.
     return state === "PORTAL_WAITING" ? request.eq("order_channel", "CUSTOMER_PORTAL").eq("commercial_state", "DRAFT")
@@ -72,7 +78,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
     if (rows.length !== visibleIds.length) throw new Error("Danh sách đơn bán không nhất quán.");
     lines = (lineResult.data ?? []) as unknown as LineRow[];
   }
-  const isFiltered = Boolean(list.q || list.state || seller);
+  const isFiltered = Boolean(list.q || list.state || seller || hasOrderDateFilter(dates));
   const sellerName = (id: string | null) => sellers.find((item) => item.id === id)?.name;
   const canCreate = access.permissions.has("orders.create");
   const currentLabel = STATES.find((state) => state.value === list.state)?.label ?? "Đang làm việc";
@@ -89,6 +95,10 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
           <option value="">Tất cả</option><option value="me">Đơn của tôi</option>
           {sellers.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
         </select></label>
+        <label>Ngày tạo từ<input type="date" name="createdFrom" defaultValue={dates.createdFrom} /></label>
+        <label>Ngày tạo đến<input type="date" name="createdTo" defaultValue={dates.createdTo} /></label>
+        <label>Ngày giao từ<input type="date" name="deliveryFrom" defaultValue={dates.deliveryFrom} /></label>
+        <label>Ngày giao đến<input type="date" name="deliveryTo" defaultValue={dates.deliveryTo} /></label>
         <ListFilterGroup key={list.state} legend="Trạng thái đơn" name="state" value={list.state}
           options={STATES.map((state, index) => ({ ...state, count: countText(counts[index].data) }))} />
         {isFiltered && <Link className="code-link" href="/admin/orders">Xóa lọc</Link>}
@@ -96,8 +106,8 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
       <section className="card list-main">
         <div className="section-head"><h2>{currentLabel}</h2><span className="scope-chip">{CORE_LIST_PAGE_SIZE} / trang</span></div>
         {rows.length > 0 ? <div className="table-wrap"><table className="row-link-table">
-          <thead><tr><th><span className="sr-only">Xem nhanh</span></th><th>Mã đơn</th><th>Khách hàng / công trình</th><th className="numeric">Giá trị</th><th>Trạng thái</th><th>Giao hàng</th><th>Thanh toán</th><th>Ngày tạo</th></tr></thead>
-          <ExpandableRows columns={8} rows={rows.map((order) => {
+          <thead><tr><th><span className="sr-only">Xem nhanh</span></th><th>Mã đơn</th><th>Khách hàng / công trình</th><th className="numeric">Giá trị</th><th>Trạng thái</th><th>Giao hàng</th><th>Thanh toán</th><th>Ngày tạo</th><th>Ngày giao</th></tr></thead>
+          <ExpandableRows columns={9} rows={rows.map((order) => {
             const href = `/admin/orders/${order.id}`;
             const orderLines = lines.filter((line) => line.sales_order_id === order.id);
             return { id: order.id, label: order.order_number, className: order.commercial_state === "CANCELLED" ? "row-muted" : undefined,
@@ -109,6 +119,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                 <td data-label="Giao hàng">{salesDeliveryStateLabel(order.fulfillment_state)}</td>
                 <td data-label="Thanh toán">{salesStateLabel(order.payment_state)}</td>
                 <td data-label="Ngày tạo">{formatBusinessDate(order.created_at)}</td>
+                <td data-label="Ngày giao">{order.requested_delivery_at ? formatBusinessDate(order.requested_delivery_at) : <span className="muted">Chưa hẹn</span>}</td>
               </>,
               detail: <div className="row-expansion-grid">
                 <section><h3>Hàng hóa</h3>{orderLines.length ? <ul className="clean-list">{orderLines.map((line) => <li key={line.line_number}>
@@ -126,7 +137,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
           <p>{isFiltered ? "Không có đơn bán phù hợp. Thử tên khác hoặc xóa bộ lọc." : "Chưa có đơn bán trong chi nhánh này."}</p>
           {isFiltered ? <Link className="button button-secondary" href="/admin/orders">Xóa bộ lọc</Link> : canCreate && <ButtonLink href="/admin/orders/new" variant="commerce">Tạo đơn bán đầu tiên</ButtonLink>}
         </div>}
-        <ListPager page={list.page} total={total ?? undefined} hasNext={hasNext} params={{ q: list.q, state: list.state, seller: sellerParam }} />
+        <ListPager page={list.page} total={total ?? undefined} hasNext={hasNext} params={{ q: list.q, state: list.state, seller: sellerParam, ...dateParams }} />
       </section>
     </div>
   </div>;
