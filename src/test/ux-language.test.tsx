@@ -25,7 +25,7 @@ import { priceSourceLabel, pricingScopeLabel } from "@/modules/pricing/presentat
 import { purchaseStateLabel } from "@/modules/purchasing/presentation";
 import { routePlanStateLabel } from "@/modules/routing/presentation";
 import { salesStateLabel } from "@/modules/sales/presentation";
-import { earningTypeLabel, earningClassificationLabel, recognitionKindLabel, serviceStateLabel } from "@/modules/workforce/presentation";
+import { earningTypeLabel, earningClassificationLabel, recognitionKindLabel, serviceRequestStateLabel, serviceStateLabel } from "@/modules/workforce/presentation";
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -48,7 +48,7 @@ describe("Vietnamese display boundaries", () => {
     ["customer payment state", value => customerDocumentStateLabel("PAYMENT", value)],
     ["price source", priceSourceLabel], ["price scope", pricingScopeLabel], ["purchase", purchaseStateLabel],
     ["route", routePlanStateLabel], ["sales", salesStateLabel], ["earning type", earningTypeLabel],
-    ["classification", earningClassificationLabel], ["recognition", recognitionKindLabel], ["service", serviceStateLabel],
+    ["classification", earningClassificationLabel], ["recognition", recognitionKindLabel], ["service", serviceStateLabel], ["service request", serviceRequestStateLabel],
   ];
   it.each(presenters)("%s renders readable fallback rather than an unknown enum or inherited object", (_domain, present) => {
     for (const source of ["UNRECOGNIZED_INTERNAL_STATE", "constructor", "toString", "__proto__"]) {

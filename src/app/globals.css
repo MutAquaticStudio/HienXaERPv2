@@ -511,6 +511,11 @@ a.variant-chip:hover, a.variant-chip:focus-visible { border-color: var(--primary
 .auth-submit { width: 100%; min-height: 48px; margin-top: 6px; border-radius: 10px; box-shadow: 0 6px 16px rgba(11, 99, 198, 0.24); }
 .auth-submit:hover:not(:disabled) { box-shadow: 0 8px 20px rgba(11, 99, 198, 0.30); }
 .auth-link, .auth-switch { color: var(--primary); font-size: var(--font-size-caption); font-weight: 700; text-align: center; }
+/* D77: "Ghi nhớ đăng nhập" — a full-width tap target with the shared-device hint under it. */
+.auth-remember { display: grid; gap: 2px; margin-top: -4px; }
+.auth-remember-check { display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: var(--font-size-table); font-weight: 600; cursor: pointer; }
+.auth-remember-check input[type="checkbox"] { width: 20px; height: 20px; min-height: 0; margin: 0; flex: none; accent-color: var(--primary); }
+.auth-remember .field-hint { margin: 0 0 0 30px; color: var(--muted); font-size: var(--font-size-caption); }
 .auth-switch { display: block; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border); }
 .empty-state { display: grid; min-height: 60vh; place-items: center; padding: 30px; text-align: center; }
 .empty-state > div { max-width: 560px; }
@@ -1599,6 +1604,15 @@ td.cell-wrap { min-width: 11rem; max-width: 26rem; white-space: normal; }
 .portal-account-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .portal-account-list > li { display: grid; gap: 6px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; }
 .portal-account-list > li.row-muted { color: var(--muted); }
+/* D78: a self-registration waiting for the office, with the three answers. */
+.portal-link-requests { display: grid; gap: 10px; align-content: start; border-color: var(--warning); }
+.portal-link-requests > .muted { margin: 0; }
+.portal-link-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.portal-link-list > li { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+.portal-link-form { display: grid; gap: 10px; }
+.portal-link-form .form-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.portal-link-form .form-actions .button { min-height: 44px; }
+@media (max-width: 640px) { .portal-link-form .form-actions .button { flex: 1 1 100%; } }
 .portal-share { display: grid; gap: 10px; }
 .auth-note { margin: 0; color: var(--muted); font-size: var(--font-size-caption); text-align: center; }
 

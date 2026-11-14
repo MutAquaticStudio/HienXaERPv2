@@ -3,13 +3,16 @@ import { portalOrderProgress, portalOrderStateLabel, salesStateLabel } from "@/m
 import { randomUUID } from "node:crypto";
 
 import Link from "next/link";
-import { ChevronRight, CreditCard, Plus, Truck } from "lucide-react";
+import { ChevronRight, CreditCard, Plus, Truck, Wrench } from "lucide-react";
 import { formatBusinessDate } from "@/lib/core/business-time";
 import { formatQuantity } from "@/lib/core/quantity";
 import { QUOTATIONS_ENABLED } from "@/lib/features";
 
 import styles from "@/components/portal/portal.module.css";
 import { getCustomerPortalSnapshot, requestQuotationChangeAction } from "@/modules/portal/actions";
+import { quickReorders, type QuickReorder } from "@/modules/portal/quick-reorder";
+import { getCustomerServiceRequests } from "@/modules/portal/service-actions";
+import { isOpenStage, requestTitle, serviceStageLabel, serviceStageTone, wishText } from "@/modules/portal/service-request";
 
 
 const notices: Record<string, string> = {
@@ -21,6 +24,10 @@ const notices: Record<string, string> = {
 export default async function CustomerHomePage({ searchParams }: { searchParams: Promise<{ notice?: string }> }) {
   const notice = notices[(await searchParams).notice ?? ""];
   const snapshot = await getCustomerPortalSnapshot();
+  // D75: the customer's service requests; a failure here must not take the home page down.
+  const serviceRequests = (await getCustomerServiceRequests().catch(() => null))?.requests ?? [];
+  const openServices = serviceRequests.filter((request) => isOpenStage(request.stage));
+  const firstService = openServices[0];
   // FB10: only the account owner orders; the accountant follows orders, debts and payments.
   const canOrder = snapshot.membership_role === "OWNER";
   const waiting = snapshot.orders.filter((order) => order.channel === "CUSTOMER_PORTAL" && order.state === "DRAFT").length;
@@ -35,6 +42,11 @@ export default async function CustomerHomePage({ searchParams }: { searchParams:
   const onTheWay = tracked?.deliveries.find((delivery) => delivery.state === "DISPATCHED" || delivery.state === "ARRIVED");
   const clock = (value?: string) => value ? new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(value)) : "";
   const goods = (order: (typeof snapshot.orders)[number]) => (order.lines ?? []).slice(0, 2).map((line) => `${formatQuantity(line.quantity)} ${line.uom_symbol} ${line.material_name}`).join(" · ");
+  const cards = quickReorders(
+    reorderable.map((order): QuickReorder => ({ key: order.id, kind: "goods", at: order.ordered_at ?? "", title: goods(order) || order.number || "Đơn hàng", site: order.site_name, href: `/customer/orders/new?from=${order.id}` })),
+    serviceRequests.filter((request) => request.stage !== "CANCELLED" && request.stage !== "REJECTED" && request.stage !== "SCHEDULE_CANCELLED")
+      .map((request): QuickReorder => ({ key: request.id, kind: "service", at: request.submitted_at, title: requestTitle(request), site: request.site_name, href: `/customer/services/new?from=${request.id}` })),
+  );
   return (
     <div className={styles.page}>
       {notice && <p className={styles.status} role="status">{notice}</p>}
@@ -48,7 +60,17 @@ export default async function CustomerHomePage({ searchParams }: { searchParams:
           <span><strong>{onTheWay?.scheduled_at ? `Xe tới khoảng ${clock(onTheWay.scheduled_at)}` : progress.find((step) => step.state === "current")?.label ?? "Đang xử lý"}</strong>
             <small>{[onTheWay?.number, tracked.site_name ?? "Công trình"].filter(Boolean).join(" · ")}</small></span></span>
         <span className={styles.trackBar}><span style={{ width: `${progressPercent}%` }} /></span>
-      </Link> : canOrder && <Link className={`${styles.button} ${styles.buttonCommerce} ${styles.buttonBlock}`} href="/customer/orders/new"><Plus aria-hidden size={20} strokeWidth={2.4} />Đặt hàng mới</Link>}
+      </Link> : null}
+      {firstService && <Link className={styles.svcHomeCard} href={`/customer/services/${firstService.id}`} aria-label={`Yêu cầu dịch vụ ${requestTitle(firstService)}, ${serviceStageLabel(firstService.stage)}`}>
+        <span className={styles.svcHomeTop}><span>YÊU CẦU DỊCH VỤ{openServices.length > 1 ? ` · ${openServices.length} ĐANG XỬ LÝ` : ""}</span>
+          <span className={styles.reqChip} data-tone={serviceStageTone(firstService.stage)}>{serviceStageLabel(firstService.stage)}</span></span>
+        <span className={styles.svcHomeMain}><span className={styles.svcHomeIcon}><Wrench aria-hidden size={24} /></span>
+          <span><strong>{requestTitle(firstService)}</strong><small>{[firstService.stage === "SUBMITTED" ? wishText(firstService) : null, firstService.site_name].filter(Boolean).join(" · ")}</small></span></span>
+      </Link>}
+      {canOrder && <div className={styles.shortcutGrid}>
+        <Link className={styles.shortcutGoods} href="/customer/orders/new"><Plus aria-hidden size={20} strokeWidth={2.4} />Đặt hàng</Link>
+        <Link className={styles.shortcutService} href="/customer/services/new"><Wrench aria-hidden size={20} />Đặt dịch vụ</Link>
+      </div>}
       {waiting > 0 && <p className={styles.status} role="status">{waiting} đơn đang chờ cửa hàng duyệt. <Link className={styles.link} href="/customer/orders">Xem đơn</Link></p>}
 
       {QUOTATIONS_ENABLED && snapshot.quotation ? (
@@ -71,12 +93,12 @@ export default async function CustomerHomePage({ searchParams }: { searchParams:
         </section>
       ) : null}
 
-      {canOrder && reorderable.length > 0 && <section aria-labelledby="reorder">
-        <div className={styles.cardHead}><h2 id="reorder">Đặt lại nhanh</h2><Link className={styles.link} href="/customer/orders">Tất cả đơn</Link></div>
-        <div className={styles.reorderGrid}>{reorderable.map((order) => <article key={order.id} className={styles.reorderCard}>
-          <small>{order.ordered_at ? formatBusinessDate(order.ordered_at) : "Đơn trước"}{order.site_name ? ` · ${order.site_name}` : ""}</small>
-          <strong>{goods(order) || order.number || "Đơn hàng"}</strong>
-          <Link className={styles.reorderButton} href={`/customer/orders/new?from=${order.id}`}>Đặt lại</Link>
+      {canOrder && cards.length > 0 && <section aria-labelledby="reorder">
+        <div className={styles.cardHead}><h2 id="reorder">Đặt lại nhanh</h2><Link className={styles.headLink} href="/customer/orders">Tất cả đơn</Link></div>
+        <div className={styles.reorderGrid}>{cards.map((card) => <article key={card.key} className={styles.reorderCard}>
+          <small>{card.kind === "service" ? "Dịch vụ" : "Hàng hóa"} · {card.at ? formatBusinessDate(card.at).slice(0, 5) : "trước"}{card.site ? ` · ${card.site}` : ""}</small>
+          <strong>{card.title}</strong>
+          <Link className={styles.reorderButton} href={card.href}>Đặt lại</Link>
         </article>)}</div>
       </section>}
 

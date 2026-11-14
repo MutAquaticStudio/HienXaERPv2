@@ -1,11 +1,10 @@
 "use client";
 
-import { createBrowserClient } from "@supabase/ssr";
 import { Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AUTH_COOKIE_OPTIONS } from "@/lib/supabase/cookie-options";
+import { createBrowserSupabase } from "@/lib/supabase/browser";
 import { sendDirectMessageAction, sendMessageAction, type MessageActionState } from "@/modules/messaging/actions";
 
 const initialState: MessageActionState = { status: "idle", message: "" };
@@ -20,7 +19,8 @@ export function useMessageInserts(conversationId: string | undefined, onMessage:
     if (!enabled || !url || !key) return;
     let active = true;
     const refresh = () => { if (active) callback.current(); };
-    const supabase = createBrowserClient(url, key, { cookieOptions: AUTH_COOKIE_OPTIONS });
+    // The app's browser client, so a login kept only until the browser closes stays that way (D77).
+    const supabase = createBrowserSupabase();
     const createChannel = () => supabase
       .channel(`message-refresh-${conversationId ?? "all"}-${Math.random().toString(36).slice(2)}`)
       // Without a filter, RLS still limits the events to the person's own conversations.

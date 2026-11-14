@@ -1,9 +1,11 @@
 // FB12 (D34b): labels and helpers of "Bảng lương".
 import { toCsv } from "@/lib/core/csv";
+import { formatVnd, vnd } from "@/lib/core/money";
+import { formatQuantity } from "@/lib/core/quantity";
 
 export const PAY_BASES = ["MONTHLY_WORKDAYS", "PER_SHIFT", "PER_HOUR", "FIXED"] as const;
 export const COMPONENT_KINDS = ["ALLOWANCE", "BONUS", "DEDUCTION"] as const;
-export const COMPONENT_METHODS = ["FIXED_PER_PERIOD", "PER_WORKDAY", "PER_LATE", "PER_LATE_MINUTE", "PER_UNPAID_DAY", "SALES_TIERS", "PER_TRIP", "PER_JOB"] as const;
+export const COMPONENT_METHODS = ["FIXED_PER_PERIOD", "PER_WORKDAY", "PER_LATE", "PER_LATE_MINUTE", "PER_UNPAID_DAY", "SALES_TIERS", "PER_TRIP", "PER_JOB", "WORK_RATE"] as const;
 
 const payBasisLabels: Record<string, string> = {
   MONTHLY_WORKDAYS: "Theo ngày công chuẩn",
@@ -27,6 +29,7 @@ const methodLabels: Record<string, string> = {
   SALES_TIERS: "% doanh thu theo bậc (hoa hồng)",
   PER_TRIP: "Mỗi chuyến giao đã xác minh",
   PER_JOB: "Mỗi việc dịch vụ đã xác minh",
+  WORK_RATE: "Theo đơn giá công việc (hàng đã giao, dịch vụ)",
 };
 const stateLabels: Record<string, string> = { DRAFT: "Tạm tính", CLOSED: "Đã chốt", CANCELLED: "Đã hủy" };
 
@@ -58,6 +61,23 @@ export function describeTiers(tiers: SalesTier[] | null | undefined) {
     .map((tier) => `từ ${BigInt(tier.from_vnd).toLocaleString("vi-VN")} đ: ${bpsToPercent(tier.rate_bps)}%`).join(" · ");
 }
 
+/** D76: one line of a "Theo đơn giá công việc" payslip line — goods delivered or a service done, with the rate it was paid by (or none yet). */
+export type WorkRateItem = {
+  kind: "GOODS" | "SERVICE"; label: string; uom: string; quantity: string; rate_vnd?: string | null; rate_bps?: number | null; amount_vnd?: string | null;
+};
+
+/** "Xi măng · 4 bao × 2.500 đ = 10.000 đ", "Chạc · 2 chuyến = 20% của số tiền tính khách = 450.000 đ", or "Thép · 40 kg" for work with no rate. */
+export function describeWorkRateItem(item: WorkRateItem) {
+  const quantity = `${item.label} · ${formatQuantity(item.quantity)} ${item.uom}`;
+  if (item.amount_vnd == null) return quantity;
+  const amount = formatVnd(vnd(item.amount_vnd));
+  if (item.rate_bps) return `${quantity} × ${bpsToPercent(item.rate_bps)}% số tiền tính khách = ${amount}`;
+  return `${quantity} × ${formatVnd(vnd(item.rate_vnd ?? "0"))} = ${amount}`;
+}
+
+/** "(3 mặt hàng)" next to a "Theo đơn giá công việc" line of a payslip. */
+export const workRateCount = (items: readonly unknown[] | null | undefined) => items?.length ? ` (${items.length} loại hàng / dịch vụ)` : "";
+
 /** CSV of a payroll for spreadsheets. */
 export const payrollCsv = toCsv;
 
@@ -70,8 +90,10 @@ export function payrollError(message: string | null | undefined) {
     ["payroll_not_draft", "Bảng lương đã chốt hoặc đã hủy, không sửa được nữa."],
     ["payroll_version_conflict", "Bảng lương vừa được người khác cập nhật. Tải lại trang rồi thử lại."],
     ["invalid_salary_profile", "Thiết lập lương chưa hợp lệ: kiểm tra mức lương (0 nếu chỉ trả theo chuyến / việc) và hệ số làm thêm (100–1000%)."],
-    ["invalid_payroll_component", "Khoản thu nhập khác chưa hợp lệ: nhập số tiền, hoặc các bậc doanh thu và % (tối đa 100%). Đơn giá theo xe chỉ dùng cho tiền chuyến và áp dụng cho mọi nhân viên."],
+    ["invalid_payroll_component", "Khoản thu nhập khác chưa hợp lệ: nhập số tiền, hoặc các bậc doanh thu và % (tối đa 100%). Đơn giá theo xe chỉ dùng cho tiền chuyến. “Theo đơn giá công việc” áp dụng cho mọi nhân viên, là phụ cấp hoặc thưởng, không nhập số tiền."],
     ["payroll_components_trip_vehicle_unique", "Xe này đã có đơn giá chuyến. Sửa đơn giá đó thay vì thêm mới."],
+    ["payroll_components_work_rate_unique", "Đã có một khoản “Theo đơn giá công việc” đang áp dụng. Sửa khoản đó thay vì thêm khoản thứ hai (sẽ trả trùng)."],
+    ["invalid_work_rate", "Đơn giá chưa hợp lệ: số tiền phải lớn hơn 0; đơn vị phải là đơn vị vật tư được bán; dịch vụ nhập số tiền mỗi đơn vị hoặc % số tiền tính khách (1–100), không nhập cả hai."],
     ["payroll_component_not_found", "Không tìm thấy khoản thu nhập khác."],
     ["invalid_holiday", "Nhập ngày và tên ngày lễ."],
     ["invalid_payroll", "Thông tin bảng lương chưa hợp lệ (kỳ tối đa 62 ngày)."],

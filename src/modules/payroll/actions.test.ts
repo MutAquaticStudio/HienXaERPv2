@@ -6,7 +6,7 @@ vi.mock("@/lib/access/context", () => ({ requireInternalPermission: mocks.permis
 vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({ rpc: mocks.rpc }) }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
-import { closePayrollAction, createPayrollAction, savePayrollComponentAction, saveSalaryProfileAction } from "./actions";
+import { closePayrollAction, createPayrollAction, savePayrollComponentAction, saveSalaryProfileAction, saveServicePayRateAction, saveTransportPayRateAction } from "./actions";
 
 const operationId = "61c446b6-cb9f-49b2-994c-70c73e3e5802";
 const employeeId = "b81b801c-2610-48b9-985e-64b10d859d74";
@@ -57,6 +57,40 @@ describe("payroll commands", () => {
     }));
     await savePayrollComponentAction(undefined, form({ code: "an", name: "Ăn trưa", kind: "ALLOWANCE", method: "PER_WORKDAY", amount: "30000", vehicleId, operationId }));
     expect(mocks.rpc).toHaveBeenLastCalledWith("save_payroll_component", expect.objectContaining({ component_method: "PER_WORKDAY", component_vehicle_id: null }));
+  });
+
+  it("saves the pay by work rates with no amount, for everyone, and never as a deduction (D76)", async () => {
+    await savePayrollComponentAction(undefined, form({ code: "cong-viec", name: "Tiền công theo đơn giá", kind: "BONUS", method: "WORK_RATE", amount: "5000", employeeId, vehicleId: "7f332800-0000-4000-8000-000000000040", operationId }));
+    expect(mocks.rpc).toHaveBeenCalledWith("save_payroll_component", expect.objectContaining({
+      component_method: "WORK_RATE", amount: null, component_tiers: null, target_employee_id: null, component_vehicle_id: null,
+    }));
+    mocks.rpc.mockClear();
+    expect(await savePayrollComponentAction(undefined, form({ code: "cong-viec", name: "Trừ", kind: "DEDUCTION", method: "WORK_RATE", operationId })))
+      .toEqual({ message: "Khoản theo đơn giá công việc là phụ cấp hoặc thưởng, không phải giảm trừ." });
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+
+  it("saves what the deliverer earns for a unit of a material and refuses a missing or zero rate (D76)", async () => {
+    const materialId = "7f334200-0000-4000-8000-000000000031";
+    const uomId = "7f334000-0000-4000-8000-000000000032";
+    expect((await saveTransportPayRateAction(undefined, form({ materialId, uomId, rate: "2000", operationId })))?.success).toBe(true);
+    expect(mocks.permission).toHaveBeenCalledWith("compensation.manage");
+    expect(mocks.rpc).toHaveBeenCalledWith("save_transport_pay_rate", expect.objectContaining({ target_material_id: materialId, target_uom_id: uomId, rate: "2000", is_active: true }));
+    expect((await saveTransportPayRateAction(undefined, form({ materialId, uomId, rate: "0", operationId })))?.message).toContain("đơn giá lớn hơn 0");
+    expect((await saveTransportPayRateAction(undefined, form({ materialId, uomId, rate: "", operationId })))?.success).toBeUndefined();
+    mocks.rpc.mockClear();
+    expect((await saveTransportPayRateAction(undefined, form({ materialId, uomId, rate: "2000", active: "off", operationId })))?.message).toBe("Đã ngừng đơn giá.");
+    expect(mocks.rpc).toHaveBeenCalledWith("save_transport_pay_rate", expect.objectContaining({ is_active: false }));
+  });
+
+  it("saves a service rate as an amount per unit or as a share of the billed amount (D76)", async () => {
+    const serviceTypeId = "7f334800-0000-4000-8000-0000000000a0";
+    await saveServicePayRateAction(undefined, form({ serviceTypeId, mode: "AMOUNT", amount: "100000", operationId }));
+    expect(mocks.rpc).toHaveBeenCalledWith("save_service_pay_rate", expect.objectContaining({ rate: "100000", rate_percent_bps: null, is_active: true }));
+    await saveServicePayRateAction(undefined, form({ serviceTypeId, mode: "PERCENT", percent: "20", operationId }));
+    expect(mocks.rpc).toHaveBeenLastCalledWith("save_service_pay_rate", expect.objectContaining({ rate: null, rate_percent_bps: 2000 }));
+    expect((await saveServicePayRateAction(undefined, form({ serviceTypeId, mode: "PERCENT", percent: "150", operationId })))?.message).toBe("Nhập % từ 0,01 đến 100.");
+    expect((await saveServicePayRateAction(undefined, form({ serviceTypeId, mode: "AMOUNT", amount: "", operationId })))?.message).toBe("Nhập số tiền mỗi đơn vị lớn hơn 0.");
   });
 
   it("needs an amount for a fixed allowance", async () => {

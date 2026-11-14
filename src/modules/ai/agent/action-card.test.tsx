@@ -63,7 +63,8 @@ it("D65: Xem và sửa opens the form filled in, sends the edited values, and sh
   expect(await screen.findByRole("alert")).toHaveTextContent("Không tìm thấy loại chi");
   expect(m.submit).toHaveBeenLastCalledWith({ actionId: expense.id, values: { loai_chi: "Xăng xe", so_tien: "450000", ghi_chu: "" } });
   expect(onChange).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole("button", { name: "Lưu" }));
+  // The button reads "Đang lưu..." until the refused save settles; wait for it to come back.
+  fireEvent.click(await screen.findByRole("button", { name: "Lưu" }));
   await waitFor(() => expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ state: "DONE" })));
   await waitFor(() => expect(screen.queryByLabelText("Số tiền (₫)")).not.toBeInTheDocument());
 });
