@@ -41,8 +41,8 @@ def main() -> None:
     values = json.loads(raw[raw.find("{"):])["values"]
     done = set()
     for part in re.findall(r"[0-9]+(?:-[0-9]+)?", imported):
-        lo, _, hi = part.partition("-")
-        done.update(range(int(lo), int(hi or lo) + 1))
+        a, _, b = part.partition("-")
+        done.update(range(int(a), int(b or a) + 1))
     rows = []
     for r in values:
         if not r or not str(r[0]).strip().isdigit():
