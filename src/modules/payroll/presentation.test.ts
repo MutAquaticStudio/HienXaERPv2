@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { componentMethodLabel, describeTiers, payrollCsv, payrollError, percentToBps } from "./presentation";
+import { componentMethodLabel, describeTiers, describeWorkRateItem, payrollCsv, payrollError, percentToBps, workRateCount } from "./presentation";
 
 describe("payroll presentation", () => {
   it("reads a percent typed with a comma or a dot", () => {
@@ -20,6 +20,21 @@ describe("payroll presentation", () => {
     expect(payrollError('duplicate key value violates unique constraint "payroll_components_trip_vehicle_unique"'))
       .toBe("Xe này đã có đơn giá chuyến. Sửa đơn giá đó thay vì thêm mới.");
     expect(payrollError("duplicate key value violates unique constraint \"payroll_components_branch_id_code_key\"")).toBe("Mã đã có. Chọn mã khác.");
+  });
+
+  it("describes each line of the pay by work rates, paid or still without a rate (D76)", () => {
+    expect(componentMethodLabel("WORK_RATE")).toBe("Theo đơn giá công việc (hàng đã giao, dịch vụ)");
+    expect(describeWorkRateItem({ kind: "GOODS", label: "Xi măng", uom: "bao", quantity: "4", rate_vnd: "2500", amount_vnd: "10000" })).toBe("Xi măng · 4 bao × 2.500 ₫ = 10.000 ₫");
+    expect(describeWorkRateItem({ kind: "SERVICE", label: "Vận chuyển", uom: "lượt", quantity: "3", rate_bps: 2000, amount_vnd: "90000" }))
+      .toBe("Vận chuyển · 3 lượt × 20% số tiền tính khách = 90.000 ₫");
+    expect(describeWorkRateItem({ kind: "GOODS", label: "Thép buộc", uom: "kg", quantity: "40" })).toBe("Thép buộc · 40 kg");
+    expect(workRateCount([{}, {}])).toBe(" (2 loại hàng / dịch vụ)");
+    expect(workRateCount([])).toBe("");
+  });
+
+  it("explains a refused work rate and a second pay-by-work component in Vietnamese (D76)", () => {
+    expect(payrollError("invalid_work_rate")).toContain("Đơn giá chưa hợp lệ");
+    expect(payrollError('duplicate key value violates unique constraint "payroll_components_work_rate_unique"')).toContain("Đã có một khoản “Theo đơn giá công việc”");
   });
 
   it("describes sales tiers in order", () => {

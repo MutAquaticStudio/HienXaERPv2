@@ -8,11 +8,12 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { formatBusinessDate } from "@/lib/core/business-time";
 import { formatVnd, vnd } from "@/lib/core/money";
 import {
-  CreatePayrollForm, PayrollComponentForm, PayrollHolidayForm, SalaryProfileForm,
-  VehicleTripRateForm, type PayrollComponent, type PersonOption, type SalaryProfile, type VehicleOption,
+  CreatePayrollForm, PayrollComponentForm, PayrollHolidayForm, SalaryProfileForm, ServiceRateForm, TransportRateForm,
+  VehicleTripRateForm, type PayrollComponent, type PersonOption, type RateMaterial, type SalaryProfile, type ServiceRate, type ServiceTypeOption,
+  type TransportRate, type VehicleOption,
 } from "@/modules/payroll/forms";
 import {
-  componentKindLabel, componentMethodLabel, describeTiers, payBasisLabel, payBasisUnit, payrollStateLabel, payrollStateTone,
+  bpsToPercent, componentKindLabel, componentMethodLabel, describeTiers, payBasisLabel, payBasisUnit, payrollStateLabel, payrollStateTone,
 } from "@/modules/payroll/presentation";
 
 type Period = { id: string; code: string; name: string; period_start: string; period_end: string; state: string; closed_at: string | null };
@@ -28,10 +29,32 @@ export default async function PayrollPage({ searchParams }: { searchParams: Prom
     { id: "periods", label: "Bảng lương" },
     { id: "profiles", label: "Thiết lập lương" },
     { id: "components", label: "Thu nhập khác" },
+    { id: "rates", label: "Đơn giá công việc" },
     { id: "holidays", label: "Ngày lễ" },
   ];
   const tab = activeTab(tabs, (await searchParams).tab);
   const supabase = await createServerSupabase();
+  // D76: the rates are read only on their own tab.
+  const rateTables = tab === "rates" ? await Promise.all([
+    supabase.from("transport_pay_rates").select("id, material_id, uom_id, rate_vnd::text, active").eq("branch_id", access.branchId),
+    supabase.from("service_pay_rates").select("id, service_type_id, rate_vnd::text, rate_bps, active").eq("branch_id", access.branchId),
+    supabase.from("materials").select("id, code, name, base_uom_id").eq("active", true).order("code"),
+    supabase.from("material_uom_conversions").select("material_id, from_uom_id, to_uom_id").eq("active", true),
+    supabase.from("units_of_measure").select("id, symbol"),
+    supabase.from("service_types").select("id, code, name, unit_label").eq("branch_id", access.branchId).eq("active", true).order("name"),
+  ]) : null;
+  if (rateTables?.some((result) => result.error)) throw new Error("Không tải được đơn giá công việc. Vui lòng thử lại hoặc liên hệ quản trị viên.");
+  const transportRates = (rateTables?.[0].data ?? []) as TransportRate[];
+  const serviceRates = (rateTables?.[1].data ?? []) as ServiceRate[];
+  const symbolOf = new Map(((rateTables?.[4].data ?? []) as Array<{ id: string; symbol: string }>).map((unit) => [unit.id, unit.symbol]));
+  const conversions = (rateTables?.[3].data ?? []) as Array<{ material_id: string | null; from_uom_id: string; to_uom_id: string }>;
+  // The units a material is sold in: its base unit and every unit that converts to it.
+  const rateMaterials: RateMaterial[] = ((rateTables?.[2].data ?? []) as Array<{ id: string; code: string; name: string; base_uom_id: string }>).map((material) => ({
+    id: material.id, code: material.code, name: material.name,
+    units: [...new Set([material.base_uom_id, ...conversions.filter((row) => row.material_id === material.id && row.to_uom_id === material.base_uom_id).map((row) => row.from_uom_id)])]
+      .map((uomId) => ({ id: uomId, symbol: symbolOf.get(uomId) ?? "?" })),
+  }));
+  const rateServiceTypes = (rateTables?.[5].data ?? []) as ServiceTypeOption[];
   const [periodsResult, linesResult, peopleResult, profilesResult, componentsResult, holidaysResult, vehiclesResult] = await Promise.all([
     supabase.from("payroll_periods").select("id, code, name, period_start, period_end, state, closed_at").eq("branch_id", access.branchId).order("period_start", { ascending: false }).limit(36),
     supabase.from("payroll_lines").select("payroll_period_id, net_pay_vnd::text, included").eq("branch_id", access.branchId),
@@ -138,13 +161,54 @@ export default async function PayrollPage({ searchParams }: { searchParams: Prom
           <td className="mono">{component.code}</td><td>{component.name}{!component.active && <small className="table-subline">Ngừng áp dụng</small>}</td>
           <td><StatusBadge tone={component.kind === "DEDUCTION" ? "danger" : component.kind === "BONUS" ? "success" : "info"}>{componentKindLabel(component.kind)}</StatusBadge></td>
           <td>{componentMethodLabel(component.method)}</td>
-          <td className="mono">{component.method === "SALES_TIERS" ? describeTiers(component.tiers) : `${formatVnd(vnd(component.amount_vnd ?? "0"))}${component.method === "PER_TRIP" ? " / chuyến" : component.method === "PER_JOB" ? " / việc" : ""}`}</td>
+          <td className="mono">{component.method === "SALES_TIERS" ? describeTiers(component.tiers) : component.method === "WORK_RATE" ? "Theo bảng đơn giá công việc" : `${formatVnd(vnd(component.amount_vnd ?? "0"))}${component.method === "PER_TRIP" ? " / chuyến" : component.method === "PER_JOB" ? " / việc" : ""}`}</td>
           <td>{component.vehicle_id ? `Xe ${vehicleName(component.vehicle_id)}` : personName(component.employee_id)}</td>
           <td className="table-actions">{canManage && <FormDialog label="Sửa" title={`Sửa ${component.name}`} size="lg" buttonClassName="button button-secondary button-compact">
             <PayrollComponentForm component={component} people={people} vehicles={vehicles} /></FormDialog>}</td>
         </tr>)}</tbody>
       </table>{!components.length && <p className="empty-inline">Chưa có khoản nào. Ví dụ: phụ cấp ăn trưa 30.000 đ mỗi ngày công, tiền chuyến 50.000 đ mỗi chuyến giao, phạt đi muộn 50.000 đ mỗi lần, hoa hồng 1% doanh thu từ 100 triệu.</p>}</div>
     </section>}
+
+    {tab === "rates" && <>
+      <section className="card">
+        <div className="section-head"><h2>Đơn giá cho thợ theo hàng đã giao</h2>
+          {canManage && <FormDialog label="Thêm đơn giá" title="Thêm đơn giá theo hàng" buttonClassName="button button-primary button-compact"
+            description="Số tiền thợ nhận cho mỗi đơn vị hàng đã giao, đúng theo đơn vị khách đặt."><TransportRateForm materials={rateMaterials} /></FormDialog>}</div>
+        <p className="muted">Không hiện cho khách. Thợ được tính khi phiếu giao đã xác minh, theo số lượng thực giao. Hàng chưa có đơn giá không được tính tiền và hiện trên phiếu lương để bổ sung. Cần có khoản “Theo đơn giá công việc” ở mục Thu nhập khác.</p>
+        <div className="table-wrap"><table>
+          <thead><tr><th>Vật tư</th><th>Đơn vị bán</th><th>Đơn giá mỗi đơn vị</th><th>Trạng thái</th><th></th></tr></thead>
+          <tbody>{[...transportRates].sort((a, b) => (rateMaterials.find((m) => m.id === a.material_id)?.code ?? "").localeCompare(rateMaterials.find((m) => m.id === b.material_id)?.code ?? "")).map((rate) => {
+            const material = rateMaterials.find((item) => item.id === rate.material_id);
+            return <tr key={rate.id} className={rate.active ? undefined : "row-muted"}>
+              <td>{material ? `${material.code} · ${material.name}` : "Vật tư"}</td><td>{symbolOf.get(rate.uom_id) ?? "?"}</td>
+              <td className="mono">{formatVnd(vnd(rate.rate_vnd))}</td>
+              <td><StatusBadge tone={rate.active ? "success" : "warning"}>{rate.active ? "Đang áp dụng" : "Ngừng"}</StatusBadge></td>
+              <td className="table-actions">{canManage && <FormDialog label="Sửa" title="Sửa đơn giá theo hàng" buttonClassName="button button-secondary button-compact">
+                <TransportRateForm materials={rateMaterials} rate={rate} /></FormDialog>}</td>
+            </tr>;
+          })}</tbody>
+        </table>{!transportRates.length && <p className="empty-inline">Chưa có đơn giá nào. Ví dụ: xi măng 2.000 đ mỗi bao, gạch 40 đ mỗi viên, sắt 180 đ mỗi kg.</p>}</div>
+      </section>
+      <section className="card">
+        <div className="section-head"><h2>Đơn giá cho thợ theo loại dịch vụ</h2>
+          {canManage && rateServiceTypes.length > 0 && <FormDialog label="Thêm đơn giá" title="Thêm đơn giá theo dịch vụ" buttonClassName="button button-primary button-compact"
+            description="Số tiền cho mỗi đơn vị của loại dịch vụ, hoặc % số tiền tính khách."><ServiceRateForm serviceTypes={rateServiceTypes} /></FormDialog>}</div>
+        <p className="muted">Tính theo khối lượng tính công đã xác minh của việc dịch vụ, hoặc theo % số tiền việc được tính cho khách (ví dụ vận chuyển 20%).</p>
+        <div className="table-wrap"><table>
+          <thead><tr><th>Loại dịch vụ</th><th>Cách trả</th><th>Trạng thái</th><th></th></tr></thead>
+          <tbody>{serviceRates.map((rate) => {
+            const type = rateServiceTypes.find((item) => item.id === rate.service_type_id);
+            return <tr key={rate.id} className={rate.active ? undefined : "row-muted"}>
+              <td>{type ? type.name : "Loại dịch vụ đã ngừng"}</td>
+              <td className="mono">{rate.rate_bps ? `${bpsToPercent(rate.rate_bps)}% số tiền tính khách` : `${formatVnd(vnd(rate.rate_vnd ?? "0"))} / ${type?.unit_label ?? "đơn vị"}`}</td>
+              <td><StatusBadge tone={rate.active ? "success" : "warning"}>{rate.active ? "Đang áp dụng" : "Ngừng"}</StatusBadge></td>
+              <td className="table-actions">{canManage && type && <FormDialog label="Sửa" title="Sửa đơn giá theo dịch vụ" buttonClassName="button button-secondary button-compact">
+                <ServiceRateForm serviceTypes={rateServiceTypes} rate={rate} /></FormDialog>}</td>
+            </tr>;
+          })}</tbody>
+        </table>{!serviceRates.length && <p className="empty-inline">Chưa có đơn giá dịch vụ. Dịch vụ chưa có đơn giá không được tính tiền cho thợ.</p>}</div>
+      </section>
+    </>}
 
     {tab === "holidays" && <section className="card">
       <div className="section-head"><h2>Ngày lễ</h2>

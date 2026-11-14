@@ -14,7 +14,9 @@ import { formatBusinessDate, formatBusinessDateTime } from "@/lib/core/business-
 import { formatVnd, vnd } from "@/lib/core/money";
 import { formatMinutes } from "@/modules/attendance/presentation";
 import { AdjustPayrollLineForm, PayrollCommandForm } from "@/modules/payroll/forms";
-import { componentKindLabel, payBasisLabel, payrollCsv, payrollStateLabel, payrollStateTone } from "@/modules/payroll/presentation";
+import {
+  componentKindLabel, describeWorkRateItem, payBasisLabel, payrollCsv, payrollStateLabel, payrollStateTone, workRateCount, type WorkRateItem,
+} from "@/modules/payroll/presentation";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 type Line = {
@@ -22,7 +24,7 @@ type Line = {
   paid_leave_days: number; unpaid_days: number; worked_minutes: number; overtime_minutes: number; late_count: number; late_early_minutes: number;
   sales_revenue_vnd: string; base_amount_vnd: string; overtime_amount_vnd: string; allowance_vnd: string; bonus_vnd: string; deduction_vnd: string;
   manual_bonus_vnd: string; manual_deduction_vnd: string; manual_note: string | null; net_pay_vnd: string; other_earnings_vnd: string;
-  details: Array<{ code: string; name: string; kind: string; method: string; quantity: number | string | null; amount_vnd: string }>; earning_event_id: string | null;
+  details: Array<{ code: string; name: string; kind: string; method: string; quantity: number | string | null; amount_vnd: string; items?: WorkRateItem[]; unpriced?: WorkRateItem[] }>; earning_event_id: string | null;
 };
 
 const money = (value: string | bigint) => formatVnd(vnd(String(value)));
@@ -30,7 +32,7 @@ const localNow = () => new Intl.DateTimeFormat("sv-SE", {
   timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false,
 }).format(new Date()).replace(" ", "T");
 /** "2 chuyến" / "3 việc" next to a trip / job pay line of a payslip. */
-const countLabel = (item: Line["details"][number]) => item.method === "PER_TRIP" ? ` (${item.quantity} chuyến)` : item.method === "PER_JOB" ? ` (${item.quantity} việc)` : "";
+const countLabel = (item: Line["details"][number]) => item.method === "PER_TRIP" ? ` (${item.quantity} chuyến)` : item.method === "PER_JOB" ? ` (${item.quantity} việc)` : item.method === "WORK_RATE" ? workRateCount(item.items) : "";
 const sum = (lines: Line[], key: keyof Line) => lines.reduce((total, line) => total + BigInt(String(line[key])), 0n);
 
 /** FB12 (D34b): one payroll — a payslip per person, like KiotViet's "Bảng lương" detail. */
@@ -122,7 +124,10 @@ export default async function PayrollDetailPage({ params, searchParams }: { para
                 <dt>Đi muộn / về sớm</dt><dd>{line.late_count} lần · {formatMinutes(line.late_early_minutes)}</dd>
                 <dt>Lương chính</dt><dd>{money(line.base_amount_vnd)}</dd>
                 <dt>Làm thêm giờ</dt><dd>{money(line.overtime_amount_vnd)}</dd>
-                {line.details.map((item) => <Fragment key={item.code}><dt>{componentKindLabel(item.kind)}: {item.name}{countLabel(item)}</dt><dd>{item.kind === "DEDUCTION" ? "−" : ""}{money(item.amount_vnd)}</dd></Fragment>)}
+                {line.details.map((item) => <Fragment key={item.code}><dt>{componentKindLabel(item.kind)}: {item.name}{countLabel(item)}</dt><dd>{item.kind === "DEDUCTION" ? "−" : ""}{money(item.amount_vnd)}</dd>
+                  {item.items?.map((row, index) => <dd className="muted" key={`paid-${index}`}>{describeWorkRateItem(row)}</dd>)}
+                  {item.unpriced?.map((row, index) => <dd className="muted" key={`open-${index}`}><strong>Chưa có đơn giá, chưa tính tiền:</strong> {describeWorkRateItem(row)}</dd>)}
+                </Fragment>)}
                 {BigInt(line.sales_revenue_vnd) > 0n && <><dt>Doanh thu đã giao</dt><dd>{money(line.sales_revenue_vnd)}</dd></>}
                 <dt>Cộng / trừ tay</dt><dd>{money(line.manual_bonus_vnd)} / −{money(line.manual_deduction_vnd)}{line.manual_note ? ` · ${line.manual_note}` : ""}</dd>
                 <dt>Thực lĩnh</dt><dd><strong>{money(line.net_pay_vnd)}</strong></dd>

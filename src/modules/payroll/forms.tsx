@@ -8,7 +8,8 @@ import { CommandForm } from "@/components/ui/command-form";
 import { MoneyInput } from "@/components/ui/money-input";
 import {
   adjustPayrollLineAction, cancelPayrollAction, closePayrollAction, createPayrollAction, recalculatePayrollAction,
-  savePayrollComponentAction, savePayrollHolidayAction, saveSalaryProfileAction, type PayrollFormState,
+  savePayrollComponentAction, savePayrollHolidayAction, saveSalaryProfileAction, saveServicePayRateAction, saveTransportPayRateAction,
+  type PayrollFormState,
 } from "@/modules/payroll/actions";
 import {
   bpsToPercent, COMPONENT_KINDS, COMPONENT_METHODS, componentKindLabel, componentMethodLabel, PAY_BASES, payBasisLabel, type SalesTier,
@@ -86,16 +87,17 @@ export function PayrollComponentForm({ component, people, vehicles = [] }: { com
         {COMPONENT_KINDS.map((item) => <option key={item} value={item}>{componentKindLabel(item)}</option>)}</select></div>
       <div className="field"><label htmlFor={`cmethod-${key}`}>Cách tính</label><select id={`cmethod-${key}`} name="method" value={method} onChange={(event) => setMethod(event.target.value)}>
         {COMPONENT_METHODS.map((item) => <option key={item} value={item}>{componentMethodLabel(item)}</option>)}</select></div>
-      {method !== "SALES_TIERS" && <div className="field"><label htmlFor={`camount-${key}`}>{method === "FIXED_PER_PERIOD" ? "Số tiền mỗi kỳ" : method === "PER_LATE_MINUTE" ? "Số tiền mỗi phút" : method === "PER_WORKDAY" ? "Số tiền mỗi ngày công" : method === "PER_TRIP" ? "Số tiền mỗi chuyến" : method === "PER_JOB" ? "Số tiền mỗi việc" : "Số tiền mỗi lần / ngày"}</label>
+      {method !== "SALES_TIERS" && method !== "WORK_RATE" && <div className="field"><label htmlFor={`camount-${key}`}>{method === "FIXED_PER_PERIOD" ? "Số tiền mỗi kỳ" : method === "PER_LATE_MINUTE" ? "Số tiền mỗi phút" : method === "PER_WORKDAY" ? "Số tiền mỗi ngày công" : method === "PER_TRIP" ? "Số tiền mỗi chuyến" : method === "PER_JOB" ? "Số tiền mỗi việc" : "Số tiền mỗi lần / ngày"}</label>
         <MoneyInput id={`camount-${key}`} name="amount" defaultValue={component?.amount_vnd} required /></div>}
       {(method === "PER_TRIP" || method === "PER_JOB") && <p className="muted field-full">{method === "PER_TRIP" ? "Đếm các phiếu giao của người đó được xác minh trong kỳ (theo ngày xác minh). Chọn xe để đặt đơn giá riêng cho xe đó (áp dụng cho mọi nhân viên)." : "Đếm các việc dịch vụ của người đó được xác minh trong kỳ (theo ngày xác minh)."}</p>}
+      {method === "WORK_RATE" && <p className="muted field-full">Trả theo mục “Đơn giá công việc”: với mỗi phiếu giao đã xác minh của người đó, số lượng thực giao × đơn giá của vật tư và đơn vị bán; với việc dịch vụ đã xác minh, theo đơn giá của loại dịch vụ. Hàng hoặc dịch vụ chưa có đơn giá không được tính tiền và được liệt kê trên phiếu lương. Chỉ có một khoản như vậy cho cả chi nhánh, áp dụng cho mọi nhân viên có thiết lập lương.</p>}
       {method === "PER_TRIP" && vehicles.length > 0 && <div className="field"><label htmlFor={`cveh-${key}`}>Áp dụng cho xe</label>
         <select id={`cveh-${key}`} name="vehicleId" defaultValue={component?.vehicle_id ?? ""}>
           <option value="">Mọi xe chưa có đơn giá riêng</option>
           {vehicles.map((vehicle) => <option key={vehicle.id} value={vehicle.id}>{vehicle.code}</option>)}</select></div>}
-      <div className="field"><label htmlFor={`cemp-${key}`}>Áp dụng cho</label><select id={`cemp-${key}`} name="employeeId" defaultValue={component?.employee_id ?? ""}>
+      {method !== "WORK_RATE" && <div className="field"><label htmlFor={`cemp-${key}`}>Áp dụng cho</label><select id={`cemp-${key}`} name="employeeId" defaultValue={component?.employee_id ?? ""}>
         <option value="">Mọi nhân viên có thiết lập lương</option>
-        {people.map((person) => <option key={person.id} value={person.id}>{person.display_name}</option>)}</select></div>
+        {people.map((person) => <option key={person.id} value={person.id}>{person.display_name}</option>)}</select></div>}
       {component && <label className="check-inline"><input type="checkbox" name="active" defaultChecked={component.active} /> Đang áp dụng</label>}
     </div>
     {method === "SALES_TIERS" && <fieldset className="attendance-choices"><legend>Bậc thưởng theo doanh thu đã giao của nhân viên kinh doanh</legend>
@@ -105,6 +107,56 @@ export function PayrollComponentForm({ component, people, vehicles = [] }: { com
         <div className="field"><label htmlFor={`trate-${key}-${index}`}>Thưởng (%)</label><input id={`trate-${key}-${index}`} name="tierPercent" inputMode="decimal" defaultValue={tier ? bpsToPercent(tier.rate_bps) : ""} /></div>
       </div>)}</div>
     </fieldset>}
+  </CommandForm>;
+}
+
+/** D76: a material with the units it is sold in (its base unit and the units that convert to it). */
+export type RateMaterial = { id: string; code: string; name: string; units: Array<{ id: string; symbol: string }> };
+export type TransportRate = { id: string; material_id: string; uom_id: string; rate_vnd: string; active: boolean };
+export type ServiceTypeOption = { id: string; code: string; name: string; unit_label: string };
+export type ServiceRate = { id: string; service_type_id: string; rate_vnd: string | null; rate_bps: number | null; active: boolean };
+
+/** D76: what the deliverer earns for each unit of a material as the order sold it. */
+export function TransportRateForm({ materials, rate }: { materials: RateMaterial[]; rate?: TransportRate }) {
+  const [materialId, setMaterialId] = useState(rate?.material_id ?? materials[0]?.id ?? "");
+  const units = materials.find((material) => material.id === materialId)?.units ?? [];
+  const key = rate?.id ?? "new";
+  return <CommandForm action={saveTransportPayRateAction} submit={rate ? "Lưu đơn giá" : "Thêm đơn giá"}>
+    <div className="form-grid">
+      <div className="field"><label htmlFor={`rmat-${key}`}>Vật tư</label>
+        {rate && <input type="hidden" name="materialId" value={rate.material_id} />}
+        <select id={`rmat-${key}`} name={rate ? undefined : "materialId"} value={materialId} disabled={Boolean(rate)} onChange={(event) => setMaterialId(event.target.value)}>
+          {materials.map((material) => <option key={material.id} value={material.id}>{material.code} · {material.name}</option>)}</select></div>
+      <div className="field"><label htmlFor={`runit-${key}`}>Đơn vị bán</label>
+        {rate && <input type="hidden" name="uomId" value={rate.uom_id} />}
+        <select id={`runit-${key}`} name={rate ? undefined : "uomId"} defaultValue={rate?.uom_id} disabled={Boolean(rate)} key={materialId}>
+          {units.map((unit) => <option key={unit.id} value={unit.id}>{unit.symbol}</option>)}</select></div>
+      <div className="field"><label htmlFor={`rrate-${key}`}>Đơn giá cho thợ mỗi đơn vị</label><MoneyInput id={`rrate-${key}`} name="rate" defaultValue={rate?.rate_vnd} required /></div>
+      {rate && <label className="check-inline"><input type="checkbox" name="active" value="on" defaultChecked={rate.active} /> Đang áp dụng</label>}
+    </div>
+    <p className="muted">Số tiền thợ nhận cho mỗi đơn vị hàng đã giao, đúng theo đơn vị khách đặt (ví dụ 2.000 đ mỗi bao, 40 đ mỗi viên, 20.000 đ mỗi xe). Không hiện cho khách.</p>
+  </CommandForm>;
+}
+
+/** D76: what the worker earns for a service type — an amount per unit, or a share of what the job was billed to the customer. */
+export function ServiceRateForm({ serviceTypes, rate }: { serviceTypes: ServiceTypeOption[]; rate?: ServiceRate }) {
+  const [mode, setMode] = useState(rate?.rate_bps ? "PERCENT" : "AMOUNT");
+  const key = rate?.id ?? "new";
+  return <CommandForm action={saveServicePayRateAction} submit={rate ? "Lưu đơn giá" : "Thêm đơn giá"}>
+    <div className="form-grid">
+      <div className="field"><label htmlFor={`stype-${key}`}>Loại dịch vụ</label>
+        {rate && <input type="hidden" name="serviceTypeId" value={rate.service_type_id} />}
+        <select id={`stype-${key}`} name={rate ? undefined : "serviceTypeId"} defaultValue={rate?.service_type_id} disabled={Boolean(rate)}>
+          {serviceTypes.map((type) => <option key={type.id} value={type.id}>{type.name} (tính theo {type.unit_label})</option>)}</select></div>
+      <div className="field"><label htmlFor={`smode-${key}`}>Cách trả</label>
+        <select id={`smode-${key}`} name="mode" value={mode} onChange={(event) => setMode(event.target.value)}>
+          <option value="AMOUNT">Số tiền cho mỗi đơn vị</option><option value="PERCENT">% số tiền tính khách</option></select></div>
+      {mode === "AMOUNT"
+        ? <div className="field"><label htmlFor={`samt-${key}`}>Số tiền mỗi đơn vị</label><MoneyInput id={`samt-${key}`} name="amount" defaultValue={rate?.rate_vnd ?? ""} required /></div>
+        : <div className="field"><label htmlFor={`spct-${key}`}>% số tiền tính khách</label><input id={`spct-${key}`} name="percent" inputMode="decimal" defaultValue={rate?.rate_bps ? bpsToPercent(rate.rate_bps) : "20"} required /></div>}
+      {rate && <label className="check-inline"><input type="checkbox" name="active" value="on" defaultChecked={rate.active} /> Đang áp dụng</label>}
+    </div>
+    <p className="muted">{mode === "AMOUNT" ? "Thợ nhận số tiền này nhân với khối lượng tính công đã xác minh của việc." : "Thợ nhận % này của số tiền việc được tính cho khách khi xác minh (ví dụ vận chuyển 20%)."}</p>
   </CommandForm>;
 }
 

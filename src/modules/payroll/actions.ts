@@ -77,21 +77,59 @@ export async function savePayrollComponentAction(_: PayrollFormState, form: Form
       tiers.push({ from_vnd: froms[index] || "0", rate_bps: bps });
     }
     if (!tiers.length) return { message: "Nhập ít nhất một bậc doanh thu." };
+  } else if (input.method === "WORK_RATE") {
+    // D76: paid by the rates of "Đơn giá công việc"; no amount, for everyone, never a deduction.
+    if (input.kind === "DEDUCTION") return { message: "Khoản theo đơn giá công việc là phụ cấp hoặc thưởng, không phải giảm trừ." };
   } else if (!input.amount || BigInt(input.amount) <= 0n) {
     return { message: "Nhập số tiền lớn hơn 0." };
   }
   // D70: a price tied to a vehicle is for every worker and only for trips.
   const vehicleId = input.method === "PER_TRIP" && input.vehicleId ? input.vehicleId : null;
+  const noAmount = input.method === "SALES_TIERS" || input.method === "WORK_RATE";
   const access = await requireInternalPermission("compensation.manage");
   const supabase = await createServerSupabase();
   const { error } = await supabase.rpc("save_payroll_component", {
     target_branch_id: access.branchId, target_component_id: input.componentId || null, component_code: input.code, component_name: input.name,
-    component_kind: input.kind, component_method: input.method, amount: input.method === "SALES_TIERS" ? null : input.amount,
-    component_tiers: tiers, target_employee_id: vehicleId ? null : input.employeeId || null, is_active: input.componentId ? input.active === "on" : true,
+    component_kind: input.kind, component_method: input.method, amount: noAmount ? null : input.amount,
+    component_tiers: tiers, target_employee_id: vehicleId || input.method === "WORK_RATE" ? null : input.employeeId || null, is_active: input.componentId ? input.active === "on" : true,
     operation_id: input.operationId, component_vehicle_id: vehicleId,
   });
   if (error) return { message: payrollError(error.message) };
   return done(input.componentId ? "Đã lưu khoản thu nhập khác." : "Đã thêm khoản thu nhập khác.");
+}
+
+/** D76: what the person who delivers earns for each unit of a material as sold (not shown to customers). */
+export async function saveTransportPayRateAction(_: PayrollFormState, form: FormData): Promise<PayrollFormState> {
+  const parsed = z.object({ materialId: z.guid(), uomId: z.guid(), rate: money, active: z.enum(["on", "off"]).optional(), operationId: z.guid() }).safeParse(Object.fromEntries(form));
+  if (!parsed.success || BigInt(parsed.data.rate) <= 0n) return { message: "Chọn vật tư, đơn vị và nhập đơn giá lớn hơn 0." };
+  const access = await requireInternalPermission("compensation.manage");
+  const supabase = await createServerSupabase();
+  const { error } = await supabase.rpc("save_transport_pay_rate", {
+    target_branch_id: access.branchId, target_material_id: parsed.data.materialId, target_uom_id: parsed.data.uomId, rate: parsed.data.rate,
+    is_active: parsed.data.active !== "off", operation_id: parsed.data.operationId,
+  });
+  if (error) return { message: payrollError(error.message) };
+  return done(parsed.data.active === "off" ? "Đã ngừng đơn giá." : "Đã lưu đơn giá công việc.");
+}
+
+/** D76: what the worker earns for a service type: an amount per unit, or a share of what the job was billed. */
+export async function saveServicePayRateAction(_: PayrollFormState, form: FormData): Promise<PayrollFormState> {
+  const parsed = z.object({ serviceTypeId: z.guid(), mode: z.enum(["AMOUNT", "PERCENT"]), amount: optionalMoney, percent: z.string().optional(),
+    active: z.enum(["on", "off"]).optional(), operationId: z.guid() }).safeParse(Object.fromEntries(form));
+  if (!parsed.success) return { message: "Chọn loại dịch vụ và cách trả." };
+  const input = parsed.data;
+  const bps = input.mode === "PERCENT" ? percentToBps(input.percent ?? "") : null;
+  if (input.mode === "AMOUNT" ? !input.amount || BigInt(input.amount) <= 0n : !bps || bps < 1) {
+    return { message: input.mode === "AMOUNT" ? "Nhập số tiền mỗi đơn vị lớn hơn 0." : "Nhập % từ 0,01 đến 100." };
+  }
+  const access = await requireInternalPermission("compensation.manage");
+  const supabase = await createServerSupabase();
+  const { error } = await supabase.rpc("save_service_pay_rate", {
+    target_branch_id: access.branchId, target_service_type_id: input.serviceTypeId, rate: input.mode === "AMOUNT" ? input.amount : null,
+    rate_percent_bps: input.mode === "PERCENT" ? bps : null, is_active: input.active !== "off", operation_id: input.operationId,
+  });
+  if (error) return { message: payrollError(error.message) };
+  return done(input.active === "off" ? "Đã ngừng đơn giá dịch vụ." : "Đã lưu đơn giá dịch vụ.");
 }
 
 export async function savePayrollHolidayAction(_: PayrollFormState, form: FormData): Promise<PayrollFormState> {
