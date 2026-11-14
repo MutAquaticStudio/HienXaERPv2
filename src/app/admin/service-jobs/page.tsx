@@ -91,6 +91,9 @@ export default async function ServiceJobsPage({ searchParams }: { searchParams: 
     ...STATES.map(countOf),
   ]);
   const serviceTypes = (typeResult.data ?? []) as ServiceTypeOption[];
+  // D75: requests the customers sent from the portal and the store has not answered yet (shown up to 99).
+  const requestResult = await supabase.from("service_requests").select("id").eq("branch_id", branchId).eq("state", "SUBMITTED").limit(100);
+  const openRequests = requestResult.data?.length ? (requestResult.data.length > 99 ? "99+" : requestResult.data.length) : 0;
   const jobs = jobResult.jobs;
   // Started from an order or a customer ("Tạo dịch vụ", D9): the location is chosen already.
   const uuid = /^[0-9a-f-]{36}$/i;
@@ -103,8 +106,9 @@ export default async function ServiceJobsPage({ searchParams }: { searchParams: 
   return <div className="page-stack">
     <header className="page-heading"><div><h1>Đơn dịch vụ</h1>
       <p className="lede">Chở hàng theo chuyến, máy theo giờ, bốc xếp theo công. Chưa biết số lượng thì để trống: thợ bấm số thực tế khi hoàn tất, văn phòng xác minh và ghi công nợ.</p></div>
-      {canManage && <div className="action-cluster">
-        <FormDialog label="+ Tạo đơn dịch vụ" title="Tạo đơn dịch vụ" size="lg" buttonClassName="button button-primary" defaultOpen={!!startCustomer.data}
+      <div className="action-cluster">
+        <Link className="button button-secondary" href="/admin/service-jobs/requests">Yêu cầu từ khách{openRequests ? ` (${openRequests})` : ""}</Link>
+        {canManage && <FormDialog label="+ Tạo đơn dịch vụ" title="Tạo đơn dịch vụ" size="lg" buttonClassName="button button-primary" defaultOpen={!!startCustomer.data}
           description="Chọn khách, công trình và loại dịch vụ. Số lượng có thể để trống nếu chưa biết.">
           <form className="command-panel service-job-form" action={createServiceJobAction}><input type="hidden" name="operationId" value={randomUUID()} />
             <fieldset className="form-section"><legend>Khách & công trình</legend>
@@ -118,8 +122,8 @@ export default async function ServiceJobsPage({ searchParams }: { searchParams: 
               <ServiceJobResourceField kind="sales" label="Nhân viên kinh doanh phụ trách" name="salesEmployeeId" initialOptions={salesStaff} />
               <div className="field field-full"><label htmlFor="service-description">Ghi chú công việc</label><textarea id="service-description" name="description" maxLength={500} placeholder="VD: chở cát từ bãi A lên công trình, đường hẹp" /></div></fieldset>
             <button className="button button-primary" type="submit">Tạo đơn dịch vụ</button></form>
-        </FormDialog>
-        <Link className="button button-secondary" href="/admin/service-jobs/types">Loại dịch vụ</Link></div>}
+        </FormDialog>}
+        {canManage && <Link className="button button-secondary" href="/admin/service-jobs/types">Loại dịch vụ</Link>}</div>
     </header>
     <ActionNotice notice={query.notice} error={query.error} />
     <div className="list-layout">

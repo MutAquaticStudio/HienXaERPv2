@@ -40,6 +40,8 @@ export async function saveCatalogAction(_:CatalogState|undefined, form:FormData)
    if(String(values.unit_label).length>30) return {message:'Đơn vị tính tối đa 30 ký tự.',field:'unit_label'};
    if(values.default_price_vnd!=null&&!/^\d{1,15}$/.test(String(values.default_price_vnd))) return {message:'Đơn giá phải là số VND nguyên không âm.',field:'default_price_vnd'};
    if(!['NONE','VEHICLE','MACHINE'].includes(String(values.resource_kind))) return {message:'Chọn loại dịch vụ cần xe, cần máy hay không cần.'};
+   if(values.portal_group!=null&&String(values.portal_group).length>60) return {message:'Tên nhóm khách thấy tối đa 60 ký tự.',field:'portal_group'};
+   if(values.portal_visible&&!String(values.unit_label??'').trim()) return {message:'Loại hiện cho khách cần có đơn vị tính.',field:'unit_label'};
   }
   if(kind==='materials'&&!values.sale_enabled&&!values.purchase_enabled) return {message:'Vật tư phải cho phép bán hoặc mua.'};
   if(kind==='units'){
@@ -79,6 +81,7 @@ export async function saveCatalogAction(_:CatalogState|undefined, form:FormData)
   return {success:true,message:'Đã lưu và ghi lịch sử thay đổi.',recordId,kind};
  }catch(error){
   const code=error instanceof PortalRpcError?error.code:'';
+  if(error instanceof PortalRpcError&&error.rawMessage.includes('service_types_portal_option_unique')) return {message:'Đã có loại dịch vụ cùng tên và cùng đơn vị tính đang hiện cho khách. Đổi đơn vị tính (ví dụ “xe cn nhỏ” và “xe cn to”) hoặc tắt hiển thị ở loại kia.',field:'unit_label'};
   if(error instanceof Error&&error.message.includes('vehicle_capacity_locked_by_assignment')) return {message:'Xe đang có phân giao chưa hoàn tất. Xử lý phân giao trước khi thay dữ liệu sức chứa.'};
   if(error instanceof Error&&error.message.includes('vehicle_capacity_locked_by_cargo')) return {message:'Xe còn hàng đã bàn giao chưa được xử lý hết. Đối chiếu và xử lý hàng còn trước khi đổi sức chứa, đơn vị hoặc ngừng sử dụng xe.'};
   return {status:isAuthoritativeRejection(code)?'FAILED':'UNKNOWN',message:code==='40001'||code==='PT409'?'Dữ liệu đã thay đổi. Mở lại bản ghi trước khi lưu.':code==='23505'?'Mã hoặc bản ghi đã tồn tại. Tải lại danh sách trước khi thử lại.':code==='42501'?'Không có quyền với đối tượng/chi nhánh này.':'Chưa xác định được kết quả. Tra cứu hoặc thử lại cùng thao tác; không tạo bản ghi lần nữa.'};
