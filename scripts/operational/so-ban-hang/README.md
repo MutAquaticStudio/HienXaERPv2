@@ -39,9 +39,10 @@ Owner (14/11/2026): *"Từ hôm nay vào 7h30 sáng mỗi ngày vào sheet 11.26
 | --- | --- |
 | Ngày từ hôm nay trở đi | Để lần sau (sổ trong ngày còn đang ghi). |
 | "Thanh toán công nợ", "Điều chỉnh V", vật tư trống | Bỏ qua (Owner cho bỏ phiếu thu công nợ). |
-| Vật tư kho (bảng `stock_map`) | Đơn bán (giá theo sổ) → xác nhận → phiếu giao (xe theo ĐVT, mặc định Xe cn nhỏ) → giao đủ → xác nhận giao. |
-| Người giao trống | Giao cho "Owner Hiền Xa". |
-| Người giao "VĂN AN" | Văn An giao thẳng: đơn mua (giá 85% giá bán) + đơn bán liên kết, không ảnh, ghi công nợ phải trả. |
+| Vật tư (bảng `stock_map`), người giao là nhân viên | Đơn bán (giá theo sổ) → xác nhận → phiếu giao (xe theo ĐVT, mặc định Xe cn nhỏ) → giao đủ → xác nhận giao. |
+| Người giao trống | Hàng kho, giao cho chủ doanh nghiệp ("Owner Hiền Xa"). |
+| Người giao trùng tên một nhân viên của chi nhánh | Hàng kho, giao cho nhân viên đó. |
+| Người giao là tên khác (Owner 15/11/2026: "ngoài tên nhân viên thì đều là nhà cung cấp giao") | Nhà cung cấp giao thẳng (Văn An là một trong số đó): tìm NCC theo tên trước dấu ngoặc hoặc mã; chưa có thì **tạo NCC mới** (`NCC###`) và báo. Đơn mua + đơn bán liên kết, giá mua theo Bảng giá mua của NCC, chưa có thì 85% giá bán, không ảnh, ghi công nợ phải trả. Dịch vụ do người ngoài làm thì giữ lại. |
 | Dịch vụ (tên + ĐVT trùng một loại dịch vụ) | Việc dịch vụ → giao người → làm → nộp → xác nhận, tiền = thành tiền sổ, hạn nợ +14 ngày. |
 | Khách | Theo tên (duy nhất) → theo SĐT (duy nhất) → tạo khách mới `KH###` (hạn nợ 14 ngày) + công trình CT1. |
 | Kho không đủ | Một phiếu kiểm kho bù đúng phần thiếu, giá vốn 85% giá bán trung bình, duyệt luôn. |
@@ -52,6 +53,11 @@ Mỗi dòng được tạo trong một giao dịch con: dòng lỗi chỉ bị g
 `tab + TT`, nên gửi lại cùng dữ liệu không tạo trùng.
 
 ## Thử
+
+- QA 15/11/2026 (Owner: "nhập ở QA"): chép danh mục từ Production sang QA (chi nhánh `HXQA-A`, tài khoản `a0d17000-…-0001`), nhập cả sổ 11.26
+  (418 dòng) bằng `hx_nhap_so(…, 'HXQA-A', '<tài khoản>')` rồi `hx_dong_bo_ngay('HXQA-A', '<tài khoản>')`: 379 đơn + 39 việc dịch vụ, tiền hàng và
+  dịch vụ đến 13/11 khớp Production (544.011.396 đ và 20.770.000 đ); Văn An đúng 2 đơn (dòng 178, 367), dòng 22 là hàng kho; dòng giả 9001
+  (người giao "TÚ SẮT") tạo NCC mới NCC002; không mặt hàng nào âm kho; ngày chứng từ khớp sổ. Giữ lại đúng dòng 418 (ĐVT "Xe rùa").
 
 - Chạy khô: thêm `--kho` ở bước 4 (tự hủy, trả lỗi `DRY OK {báo cáo}`). Muốn thử cả dòng của hôm nay:
   `select pg_temp.hx_nhap_so('11.26', $rows$[...]$rows$::jsonb, true, '<ngày mai>');` (chỉ chạy khô mới được đặt ngày).

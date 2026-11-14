@@ -1,15 +1,17 @@
 -- Đồng bộ ngày chứng từ nhập từ sổ bán hàng với ngày ghi trong sổ (Owner 14/11/2026), chạy SAU nhap-so-hang-ngay.sql.
 -- Các lệnh nghiệp vụ ghi giờ lúc chạy; khối này đặt lại các mốc giờ theo ngày sổ, đúng như lần đồng bộ tay 14/11:
 --   đơn hàng: tạo 07:30, xác nhận 07:31, giao 08:10, nộp kết quả 09:00, xác nhận giao + doanh thu + công nợ 09:05, hạn nợ = ngày sổ + 14;
---   Văn An giao thẳng: thêm đơn mua, phiếu NCC giao, công nợ phải trả (hạn = ngày sổ);
+--   nhà cung cấp giao thẳng: thêm đơn mua, phiếu NCC giao, công nợ phải trả (hạn = ngày sổ);
 --   dịch vụ: 08:40 → 10:05, hạn nợ = ngày sổ + 14; phiếu bù tồn: 07:00 ngày sổ đầu tiên của đợt.
 -- Chỉ chạm chứng từ có dấu "Sổ <tab> dòng" còn lệch ngày, nên chạy lại bao nhiêu lần cũng được. Không đổi số lượng, tiền hay trạng thái.
 -- Một giao dịch: lỗi ở đâu thì hủy cả khối. Gửi nguyên file (tạo hàm tạm, gọi hàm, rồi câu kiểm tra) trong một lần chạy SQL.
-create or replace function pg_temp.hx_dong_bo_ngay() returns jsonb language plpgsql as $dongbo$
-declare owner constant uuid := '1a5a03c5-df68-4c95-af31-4f254c87216a'; branch uuid; n_orders bigint; n_jobs bigint; n_counts bigint;
+create or replace function pg_temp.hx_dong_bo_ngay(branch_code text default 'HX', actor uuid default '1a5a03c5-df68-4c95-af31-4f254c87216a')
+returns jsonb language plpgsql as $dongbo$
+declare branch uuid; n_orders bigint; n_jobs bigint; n_counts bigint;
 begin
   set local session_replication_role = replica;
-  select id into branch from public.branches where code = 'HX';
+  select id into branch from public.branches where code = branch_code;
+  if branch is null then raise exception 'không có chi nhánh %', branch_code; end if;
 
   create temp table hx_od on commit drop as
     select o.id as order_id, (((o.requested_delivery_at at time zone 'Asia/Ho_Chi_Minh')::date)::text || ' 08:00:00+07')::timestamptz as t0
@@ -46,7 +48,7 @@ begin
     update public.inventory_movements m set occurred_at = case m.movement_type when 'DELIVERY_HANDOFF' then od.t0 + interval '10 minutes' else od.t0 + interval '65 minutes' end,
         created_at = case m.movement_type when 'DELIVERY_HANDOFF' then od.t0 + interval '10 minutes' else od.t0 + interval '65 minutes' end
       from public.deliveries d join hx_od od on od.order_id = d.sales_order_id where m.delivery_id = d.id and m.movement_type in ('DELIVERY_HANDOFF', 'DELIVERY_VERIFIED');
-    -- Văn An giao thẳng
+    -- Nhà cung cấp giao thẳng
     update public.purchase_orders po set created_at = od.t0 - interval '30 minutes', confirmed_at = od.t0 - interval '29 minutes' from hx_od od where po.source_sales_order_id = od.order_id;
     update public.supplier_fulfillments f set verified_at = od.t0 + interval '65 minutes'
       from public.purchase_orders po join hx_od od on od.order_id = po.source_sales_order_id where f.purchase_order_id = po.id;
@@ -80,7 +82,7 @@ begin
     select x.count_id, x.t0 from (
       select l.stock_count_id as count_id, (min(substring(l.reason from 'ngày ([0-9]{4}-[0-9]{2}-[0-9]{2})')) || ' 07:00:00+07')::timestamptz as t0
       from public.stock_count_lines l where l.reason like 'Bù tồn trước khi giao theo sổ bán hàng % ngày ____-__-__%' group by 1) x
-    join public.stock_counts c on c.id = x.count_id where c.cutoff_at is distinct from x.t0;
+    join public.stock_counts c on c.id = x.count_id where c.branch_id = branch and c.cutoff_at is distinct from x.t0;
   select count(*) into n_counts from hx_sc;
   if n_counts > 0 then
     update public.stock_counts c set created_at = sc.t0, cutoff_at = sc.t0, approved_at = sc.t0 + interval '5 minutes' from hx_sc sc where c.id = sc.count_id;
@@ -90,14 +92,14 @@ begin
 
   if n_orders + n_jobs + n_counts > 0 then
     insert into public.audit_events(actor_auth_user_id, branch_id, action, entity_type, entity_id, trace_id, changed_fields, reason)
-    values (owner, branch, 'sales_ledger.dates_synced', 'sales_ledger', gen_random_uuid(), gen_random_uuid(), array['created_at', 'verified_at', 'recorded_at', 'due_date', 'occurred_at'],
+    values (actor, branch, 'sales_ledger.dates_synced', 'sales_ledger', gen_random_uuid(), gen_random_uuid(), array['created_at', 'verified_at', 'recorded_at', 'due_date', 'occurred_at'],
       format('Đồng bộ ngày theo sổ bán hàng (Owner 14/11/2026): %s đơn, %s việc dịch vụ, %s phiếu bù tồn.', n_orders, n_jobs, n_counts));
   end if;
   return jsonb_build_object('don', n_orders, 'dich_vu', n_jobs, 'phieu_bu_ton', n_counts);
 end
 $dongbo$;
 
-select pg_temp.hx_dong_bo_ngay() as da_dong_bo;
+select pg_temp.hx_dong_bo_ngay() as da_dong_bo;   -- QA: pg_temp.hx_dong_bo_ngay('<mã chi nhánh QA>', '<tài khoản chủ QA>')
 
 -- Kiểm tra sau khi chạy: hai cột "lech" phải bằng 0.
 select (select count(*) from public.sales_orders o where o.commercial_terms like 'Sổ %dòng %'

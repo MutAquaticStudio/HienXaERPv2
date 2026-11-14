@@ -8,6 +8,9 @@ Dùng:
   tab                   tên tab tháng, ví dụ 11.26.
   tt-da-nhap            TT đã có trong ERP, dạng "1-14,16-30,…" (lấy bằng câu truy vấn trong README).
   --kho                 chạy khô (tự hủy, chỉ báo cáo).
+  --branch=MÃ --actor=UUID   chạy cho chi nhánh / tài khoản khác (QA); mặc định HX + chủ doanh nghiệp Production.
+  --tu=N --den=M        chỉ gửi các TT trong khoảng này (chia đợt khi nhập nhiều dòng).
+  --chi-goi             chỉ in dòng gọi hàm (hàm đã được tạo trước trong cùng phiên / schema).
 
 In ra: nội dung nhap-so-hang-ngay.sql + một dòng gọi hàm với các dòng sổ CHƯA nhập (bỏ dòng thu tiền).
 """
@@ -21,7 +24,14 @@ PAYMENT_ITEMS = {"", "thanh toán công nợ", "điều chỉnh v"}
 
 def main() -> None:
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
-    dry = "--kho" in sys.argv[1:]
+    opts = dict(a[2:].split("=", 1) if "=" in a else (a[2:], "1") for a in sys.argv[1:] if a.startswith("--"))
+    dry = "kho" in opts
+    lo, hi = int(opts.get("tu", 0)), int(opts.get("den", 10**9))
+    extra = ""
+    if "branch" in opts or "actor" in opts:
+        if not re.fullmatch(r"[A-Za-z0-9_-]{1,40}", opts.get("branch", "HX")) or not re.fullmatch(r"[0-9a-f-]{36}", opts.get("actor", "")):
+            sys.exit("--branch và --actor phải đi cùng nhau và đúng dạng")
+        extra = f", null, '{opts['branch']}', '{opts['actor']}'"
     if len(args) != 3:
         sys.exit(__doc__)
     source, tab, imported = args
@@ -38,7 +48,7 @@ def main() -> None:
         if not r or not str(r[0]).strip().isdigit():
             continue
         cells = [str(c) for c in r[:18]]
-        if int(cells[0].strip()) in done:
+        if int(cells[0].strip()) in done or not lo <= int(cells[0].strip()) <= hi:
             continue
         if (cells[5].strip().lower() if len(cells) > 5 else "") in PAYMENT_ITEMS:
             continue
@@ -46,9 +56,10 @@ def main() -> None:
     payload = json.dumps(rows, ensure_ascii=False, separators=(",", ":"))
     if "$rows$" in payload:
         sys.exit("dữ liệu sổ có chuỗi $rows$, dừng lại")
-    body = (pathlib.Path(__file__).with_name("nhap-so-hang-ngay.sql")).read_text(encoding="utf-8")
-    sys.stdout.write(body.rstrip() + "\n\n")
-    sys.stdout.write(f"select pg_temp.hx_nhap_so('{tab}', $rows${payload}$rows$::jsonb, {'true' if dry else 'false'}) as bao_cao;\n")
+    if "chi-goi" not in opts:
+        body = (pathlib.Path(__file__).with_name("nhap-so-hang-ngay.sql")).read_text(encoding="utf-8")
+        sys.stdout.write(body.rstrip() + "\n\n")
+    sys.stdout.write(f"select pg_temp.hx_nhap_so('{tab}', $rows${payload}$rows$::jsonb, {'true' if dry else 'false'}{extra}) as bao_cao;\n")
     sys.stderr.write(f"{len(rows)} dòng chưa nhập được gửi đi\n")
 
 
