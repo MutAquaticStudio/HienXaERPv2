@@ -1,13 +1,16 @@
 import Link from "next/link";
 import { ChevronRight, Clock3, KeyRound, LogOut, MapPin, MessageSquare } from "lucide-react";
+import { AnnouncementHistory } from "@/components/announcements/announcement-history";
 import styles from "@/components/portal/portal.module.css";
 import { PushToggle } from "@/components/notifications/push-toggle";
 import { openedInNativeApp } from "@/lib/app-shell/server";
+import { loadAnnouncementHistory } from "@/modules/announcements/server";
 import { getWorkerPortalSnapshot } from "@/modules/portal/actions";
 
 export default async function WorkProfilePage() {
   const { employee } = await getWorkerPortalSnapshot();
   const inApp = await openedInNativeApp();
+  const announcements = await loadAnnouncementHistory("WORKER");
   return (
     <div className={styles.page}>
       <header className={styles.sectionHead}>
@@ -23,6 +26,10 @@ export default async function WorkProfilePage() {
         <div className={styles.kv}><span>Họ tên</span><strong>{employee.display_name}</strong></div>
         <div className={styles.kv}><span>Mã nhân sự</span><strong>{employee.code}</strong></div>
         <p className={styles.hint}>Nếu quyền chi nhánh hoặc phân công bị thu hồi, lần đọc tiếp theo sẽ bị chặn ngay.</p>
+      </section>
+      <section className={styles.card} aria-labelledby="work-announcements">
+        <h2 id="work-announcements">Thông báo từ cửa hàng</h2>
+        <AnnouncementHistory items={announcements} surface="WORKER" emptyText="Chưa có thông báo nào. Đơn giá công đổi hoặc tin mới của văn phòng sẽ hiện ở đây." />
       </section>
       <section className={styles.card}>
         <h2>Báo việc mới về điện thoại</h2>

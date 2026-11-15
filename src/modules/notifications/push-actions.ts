@@ -9,7 +9,7 @@ const subscription = z.object({
   userAgent: z.string().max(300).optional(),
 });
 
-/** "Bật thông báo trên máy này": stores this browser's push address for the signed-in login (staff or worker). */
+/** "Bật thông báo trên máy này": stores this browser's push address for the signed-in login (staff, worker or customer — D83). */
 export async function savePushSubscriptionAction(input: unknown): Promise<boolean> {
   const parsed = subscription.safeParse(input);
   if (!parsed.success) return false;

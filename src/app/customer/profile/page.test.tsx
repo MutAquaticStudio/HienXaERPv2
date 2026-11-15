@@ -1,7 +1,9 @@
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
-const m = vi.hoisted(() => ({ client: vi.fn(), rpc: vi.fn(), inApp: vi.fn(async () => false) }));
+const m = vi.hoisted(() => ({ client: vi.fn(), rpc: vi.fn(), inApp: vi.fn(async () => false), history: vi.fn(async (): Promise<unknown[] | null> => []) }));
+vi.mock("@/modules/announcements/server", () => ({ loadAnnouncementHistory: m.history }));
+vi.mock("@/components/notifications/push-toggle", () => ({ PushToggle: () => <button type="button">Bật thông báo trên máy này</button> }));
 vi.mock("@/lib/app-shell/server", () => ({ openedInNativeApp: m.inApp }));
 vi.mock("@/modules/portal/server", () => ({ authenticatedPortalClient: m.client, portalRpc: m.rpc }));
 vi.mock("@/modules/zalo/notify-actions", () => ({ setCustomerZaloNotifyAction: vi.fn() }));
@@ -47,6 +49,27 @@ it("sends a signed-out visitor to the customer sign-in", async () => {
 it("D47: the customer's owner can switch Zalo notifications off", async () => {
   render(await CustomerAccountPage());
   expect(screen.getByRole("checkbox", { name: "Nhận thông báo qua Zalo" })).toBeChecked();
+});
+
+it("D83: the store's announcements, own price lines only, and push on this phone (not inside the Android app)", async () => {
+  m.history.mockResolvedValueOnce([{ id: "10000000-0000-4000-8000-000000000083", audience: "CUSTOMER", kind: "PRICE", label: null,
+    title: "Giá mới từ thứ Hai, 16/11/2026", body: "Cửa hàng điều chỉnh giá 1 mặt hàng của bạn.", link: null, effective_at: "2026-11-16T00:00:00+07:00",
+    created_at: "2026-11-15T02:12:00Z", updated_at: "2026-11-15T02:12:00Z", seen_at: null,
+    lines: [{ code: "XM40", name: "Xi măng PCB40", unit: "Bao", old: "95000", old_kind: "VND", new: "98000", new_kind: "VND" }] }]);
+  render(await CustomerAccountPage());
+  expect(m.history).toHaveBeenCalledWith("CUSTOMER");
+  const news = screen.getByRole("region", { name: "Thông báo từ cửa hàng" });
+  expect(within(news).getByText("Giá mới từ thứ Hai, 16/11/2026")).toBeInTheDocument();
+  expect(within(news).getByText("Tăng 3.000 ₫")).toBeInTheDocument();
+  expect(within(news).getByText("Chưa xem")).toBeInTheDocument();
+  const push = screen.getByRole("region", { name: "Thông báo trên điện thoại" });
+  expect(within(push).getByRole("button", { name: "Bật thông báo trên máy này" })).toBeInTheDocument();
+  cleanup();
+  m.inApp.mockResolvedValueOnce(true);
+  render(await CustomerAccountPage());
+  expect(screen.queryByRole("region", { name: "Thông báo trên điện thoại" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Bật thông báo trên máy này" })).not.toBeInTheDocument();
+  expect(screen.getByText(/Chưa có thông báo nào/)).toBeInTheDocument();
 });
 
 it("D82: the 'Tải app' hint is hidden inside the Android app", async () => {

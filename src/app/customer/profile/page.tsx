@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { AnnouncementHistory } from "@/components/announcements/announcement-history";
+import { PushToggle } from "@/components/notifications/push-toggle";
 import { ZaloNotifyToggle } from "@/components/zalo/zalo-notify-toggle";
 import { isZaloPhone } from "@/modules/zalo/phone";
 import { redirect } from "next/navigation";
@@ -7,6 +9,7 @@ import styles from "@/components/portal/portal.module.css";
 import { openedInNativeApp } from "@/lib/app-shell/server";
 import { displayLogin, isPhoneLogin } from "@/lib/auth/login-identifier";
 import { formatBusinessDateTime } from "@/lib/core/business-time";
+import { loadAnnouncementHistory } from "@/modules/announcements/server";
 import { catalogChoiceLabel } from "@/modules/catalog/presentation";
 import { authenticatedPortalClient, portalRpc } from "@/modules/portal/server";
 import type { CustomerPortalAccount } from "@/modules/portal/types";
@@ -24,6 +27,7 @@ export default async function CustomerAccountPage() {
   const canZalo = account.membership_role === "OWNER" || account.membership_role === "FINANCE_CONTACT";
   const zalo = canZalo ? await context.supabase.rpc("customer_zalo_notify", { target_customer_id: customer.id }) : null;
   const inApp = await openedInNativeApp();
+  const announcements = await loadAnnouncementHistory("CUSTOMER");
   return (
     <div className={styles.page}>
       <header className={styles.sectionHead}>
@@ -55,6 +59,15 @@ export default async function CustomerAccountPage() {
       {typeof zalo?.data === "boolean" && <section className={styles.card} aria-labelledby="account-zalo">
         <h2 id="account-zalo">Thông báo Zalo</h2>
         <ZaloNotifyToggle customerId={customer.id} enabled={zalo.data} canChange phoneUsable={isZaloPhone(customer.phone)} />
+      </section>}
+      <section className={styles.card} aria-labelledby="account-announcements">
+        <h2 id="account-announcements">Thông báo từ cửa hàng</h2>
+        <AnnouncementHistory items={announcements} surface="CUSTOMER" emptyText="Chưa có thông báo nào. Khi cửa hàng đổi giá hàng bạn hay mua hoặc có tin mới, thông báo sẽ hiện ở đây." />
+      </section>
+      {/* D83: the announcements also come as a push to this phone; not offered inside the Android app, which cannot receive it. */}
+      {!inApp && <section className={styles.card} aria-labelledby="account-push">
+        <h2 id="account-push">Thông báo trên điện thoại</h2>
+        <PushToggle onText="Đã bật. Điện thoại sẽ báo khi cửa hàng có thông báo mới." />
       </section>}
       <section className={styles.card} aria-labelledby="account-sites">
         <h2 id="account-sites">Địa chỉ giao hàng ({sites.length})</h2>
