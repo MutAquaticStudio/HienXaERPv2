@@ -19,3 +19,5 @@ reports/document-pdf-forms/qa/
 
 # Claude Code: per-user local settings
 .claude/settings.local.json
+
+__pycache__/

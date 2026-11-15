@@ -41,7 +41,7 @@ export default async function PurchaseOrdersPage({ searchParams }: { searchParam
     return applyDocumentListScope(request, "state", state);
   };
   const [{ data, error, count }, ...counts] = await Promise.all([
-    scoped(list.state, fields, "exact").order("created_at", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to),
+    scoped(list.state, fields, "exact").order("created_at", { ascending: false }).order("purchase_order_number", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to),
     ...STATES.map((state) => scoped(state.value, "id").limit(100)),
   ]);
   if (error) throw new Error("Không thể tải đơn mua.");
