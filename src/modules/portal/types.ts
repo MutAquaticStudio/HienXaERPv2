@@ -47,6 +47,20 @@ export type WorkerJob = {
   };
 };
 
+/** D79: a delivery waiting for dispatch that the worker may take, with the trucks free for him and when. */
+export type WorkerPoolDelivery = {
+  id: string;
+  number: string;
+  version: number;
+  requested_at?: string;
+  customer_name?: string;
+  site_name?: string;
+  address?: string;
+  lines: { material_name: string; quantity: string; unit: string }[];
+  vehicles: { vehicle_id: string; code: string; plate_number?: string; start_at: string; end_at: string }[];
+  suggested_vehicle_id?: string | null;
+};
+
 export type WorkerEarning = {
   id: string;
   type?: string;

@@ -1,11 +1,12 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
-const m = vi.hoisted(() => ({ tables: {} as Record<string, unknown[]>, calls: [] as { table: string; method: string; args: unknown[] }[] }));
+const m = vi.hoisted(() => ({ tables: {} as Record<string, unknown[]>, calls: [] as { table: string; method: string; args: unknown[] }[], deliveries: 0 }));
 vi.mock("server-only", () => ({}));
 vi.mock("@/lib/access/context", () => ({ requireInternalAccess: async () => ({ employeeId: "e1", branchId: "b1" }) }));
 vi.mock("@/modules/attendance/forms", () => ({ ClockPanel: ({ clockedIn }: { clockedIn: boolean }) => <button type="button">{clockedIn ? "Ra ca" : "Vào ca"}</button> }));
-vi.mock("@/modules/portal/actions", () => ({ getWorkerPortalSnapshot: async () => ({ employee: { display_name: "Anh Hải" }, jobs: [], pool: [] }) }));
+vi.mock("@/modules/portal/actions", () => ({ getWorkerPortalSnapshot: async () => ({ employee: { display_name: "Anh Hải" }, jobs: [], pool: [] }),
+  getWorkerDeliveryPoolCount: async () => m.deliveries }));
 vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({
   from(table: string) {
     const filters: { method: string; args: unknown[] }[] = [];
@@ -31,6 +32,7 @@ beforeEach(() => {
   vi.useFakeTimers({ toFake: ["Date"] });
   vi.setSystemTime(new Date("2026-11-04T02:00:00Z"));
   m.calls = [];
+  m.deliveries = 0;
   m.tables = { shift_assignments: [], attendance_records: [] };
 });
 afterEach(() => { cleanup(); vi.useRealTimers(); });
@@ -51,4 +53,10 @@ it("says not clocked in when there is no open shift", async () => {
   render(await Page({ searchParams: Promise.resolve({}) }));
   expect(screen.getByText("Chưa vào ca")).toBeTruthy();
   expect(screen.getByRole("button", { name: "Vào ca" })).toBeTruthy();
+});
+
+it("D79: points to deliveries waiting for a driver", async () => {
+  m.deliveries = 2;
+  render(await Page({ searchParams: Promise.resolve({}) }));
+  expect(screen.getByRole("link", { name: /Có 2 phiếu giao chờ người nhận/ }).getAttribute("href")).toBe("/work/pool");
 });

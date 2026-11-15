@@ -34,7 +34,8 @@ export async function applyDispatchProposalAction(formData: FormData) {
   const supabase = await createServerSupabase();
   const { error } = await supabase.rpc("apply_dispatch_proposal", { target_delivery_id: parsed.data.deliveryId, operation_id: parsed.data.operationId });
   const path = boardPath(parsed.data.day);
-  if (error) redirect(`${path}${path.includes("?") ? "&" : "?"}error=${encodeURIComponent(error.message.includes("dispatch_proposal_missing")
+  if (error) redirect(`${path}${path.includes("?") ? "&" : "?"}error=${encodeURIComponent(error.message.includes("delivery_already_claimed")
+    ? "Thợ đã tự nhận phiếu này trong Kho việc. Tải lại bảng." : error.message.includes("dispatch_proposal_missing")
     ? "Gợi ý đã được áp dụng hoặc đã hết. Tải lại bảng." : "Không áp dụng được gợi ý (lịch hoặc xe đã thay đổi). Phân xe trên phiếu giao.")}`);
   revalidatePath("/admin/dispatch");
   redirect(`${path}${path.includes("?") ? "&" : "?"}dispatched=${encodeURIComponent("Đã áp dụng gợi ý điều phối.")}`);

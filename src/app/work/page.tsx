@@ -8,7 +8,7 @@ import { requireInternalAccess } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { ClockPanel } from "@/modules/attendance/forms";
 import { formatClock, formatShiftTime, openShiftHeading } from "@/modules/attendance/presentation";
-import { getWorkerPortalSnapshot } from "@/modules/portal/actions";
+import { getWorkerDeliveryPoolCount, getWorkerPortalSnapshot } from "@/modules/portal/actions";
 import type { WorkerJob } from "@/modules/portal/types";
 
 const zone = { timeZone: "Asia/Ho_Chi_Minh" } as const;
@@ -53,8 +53,9 @@ function NextJob({ job }: { job: WorkerJob }) {
 
 /** FB18: "Hôm nay" — the shift card, the job in hand with its steps and one-tap call / directions, then what comes next. */
 export default async function WorkHomePage({ searchParams }: { searchParams: Promise<{ notice?: string }> }) {
-  const snapshot = await getWorkerPortalSnapshot();
+  const [snapshot, deliveryCount] = await Promise.all([getWorkerPortalSnapshot(), getWorkerDeliveryPoolCount()]);
   const query = await searchParams;
+  const poolCount = snapshot.pool.length + deliveryCount;
   const now = new Date();
   const today = dayKey(now.toISOString());
   const shift = await todayShift(today);
@@ -108,7 +109,7 @@ export default async function WorkHomePage({ searchParams }: { searchParams: Pro
         <ul className={styles.timeline}>{later.map((job) => <NextJob key={job.id} job={job} />)}</ul>
       </section>}
 
-      {snapshot.pool.length > 0 && <Link className={styles.poolHint} href="/work/pool"><PlusCircle aria-hidden size={18} /><span>Có {snapshot.pool.length} việc mới có thể nhận</span>Xem</Link>}
+      {poolCount > 0 && <Link className={styles.poolHint} href="/work/pool"><PlusCircle aria-hidden size={18} /><span>{deliveryCount > 0 ? `Có ${deliveryCount} phiếu giao chờ người nhận${snapshot.pool.length ? ` và ${snapshot.pool.length} việc khác` : ""}` : `Có ${snapshot.pool.length} việc mới có thể nhận`}</span>Xem</Link>}
     </div>
   );
 }
