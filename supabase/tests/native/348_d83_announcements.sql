@@ -16,21 +16,28 @@ insert into public.customers(id, branch_id, code, display_name, customer_type, t
 insert into auth.users(id) values
   ('7f348000-0000-4000-8000-0000000000a1'), ('7f348000-0000-4000-8000-0000000000a2'), ('7f348000-0000-4000-8000-0000000000a3'),
   ('7f348000-0000-4000-8000-0000000000b1'), ('7f348000-0000-4000-8000-0000000000b2'), ('7f348000-0000-4000-8000-0000000000b3'),
-  ('7f348000-0000-4000-8000-0000000000b4'), ('7f348000-0000-4000-8000-0000000000b5');
+  ('7f348000-0000-4000-8000-0000000000b4'), ('7f348000-0000-4000-8000-0000000000b5'), ('7f348000-0000-4000-8000-0000000000a4');
 insert into public.employees(id, auth_user_id, code, display_name) values
   ('7f348000-0000-4000-8000-0000000000e1', '7f348000-0000-4000-8000-0000000000a1', 'NT_BH348', 'Bán hàng 348'),
   ('7f348000-0000-4000-8000-0000000000e2', '7f348000-0000-4000-8000-0000000000a2', 'NT_TH3481', 'Thợ A 348'),
-  ('7f348000-0000-4000-8000-0000000000e3', '7f348000-0000-4000-8000-0000000000a3', 'NT_TH3482', 'Thợ B 348');
+  ('7f348000-0000-4000-8000-0000000000e3', '7f348000-0000-4000-8000-0000000000a3', 'NT_TH3482', 'Thợ B 348'),
+  ('7f348000-0000-4000-8000-0000000000e4', '7f348000-0000-4000-8000-0000000000a4', 'NT_TC348', 'Thợ chính 348');
 insert into public.roles(id, code, name) values
   ('7f348000-0000-4000-8000-0000000000c1', 'nt_sales348', 'Bán hàng thử 348'),
   ('7f348000-0000-4000-8000-0000000000c2', 'nt_worker348', 'Thợ thử 348');
 insert into public.role_permissions(role_id, permission_code) values
   ('7f348000-0000-4000-8000-0000000000c1', 'pricing.read'), ('7f348000-0000-4000-8000-0000000000c1', 'orders.read'),
+  ('7f348000-0000-4000-8000-0000000000c1', 'pricing.manage'),
   ('7f348000-0000-4000-8000-0000000000c2', 'work.read'), ('7f348000-0000-4000-8000-0000000000c2', 'work.claim');
 insert into public.employee_branch_access(employee_id, branch_id, role_id) values
   ('7f348000-0000-4000-8000-0000000000e1', '20000000-0000-4000-8000-00000000000a', '7f348000-0000-4000-8000-0000000000c1'),
   ('7f348000-0000-4000-8000-0000000000e2', '20000000-0000-4000-8000-00000000000a', '7f348000-0000-4000-8000-0000000000c2'),
-  ('7f348000-0000-4000-8000-0000000000e3', '20000000-0000-4000-8000-00000000000a', '7f348000-0000-4000-8000-0000000000c2');
+  ('7f348000-0000-4000-8000-0000000000e3', '20000000-0000-4000-8000-00000000000a', '7f348000-0000-4000-8000-0000000000c2'),
+  ('7f348000-0000-4000-8000-0000000000e4', '20000000-0000-4000-8000-00000000000a', '7f348000-0000-4000-8000-0000000000c2');
+-- D85: a lead worker ("thợ chính") holds the personal grant work.field_dispatch; he stays a worker for announcements.
+insert into public.permissions(code, name) values ('work.field_dispatch', 'Điều phối tại hiện trường') on conflict do nothing;
+insert into public.employee_permission_grants(employee_id, branch_id, permission_code, granted_by) values
+  ('7f348000-0000-4000-8000-0000000000e4', '20000000-0000-4000-8000-00000000000a', 'work.field_dispatch', '10000000-0000-4000-8000-000000000001');
 -- Customer 1: owner, accountant, receiver. Customers 2 and 3: an owner each. Customer 4: nobody on the portal.
 insert into public.customer_portal_memberships(auth_user_id, customer_id, membership_role) values
   ('7f348000-0000-4000-8000-0000000000b1', '7f348000-0000-4000-8000-000000000011', 'OWNER'),
@@ -45,12 +52,13 @@ insert into public.pricing_rules(branch_id, scope_type, customer_id, material_id
   ('20000000-0000-4000-8000-00000000000a', 'CUSTOMER_TIER', null, '7f348000-0000-4000-8000-000000000003', 'NT_SI348', '7f348000-0000-4000-8000-000000000001', 90000, 1, 'LIST', now() - interval '1 day', '10000000-0000-4000-8000-000000000001'),
   ('20000000-0000-4000-8000-00000000000a', 'CUSTOMER_MATERIAL', '7f348000-0000-4000-8000-000000000013', '7f348000-0000-4000-8000-000000000003', null, '7f348000-0000-4000-8000-000000000001', 93000, 1, 'CONTRACT', now() - interval '1 day', '10000000-0000-4000-8000-000000000001');
 select set_config('request.jwt.claim.sub', '', true);
--- Devices: customer 1's owner has two, its receiver one, worker A one.
+-- Devices: customer 1's owner has two, its receiver one, worker A one, customer 3's owner one.
 insert into public.push_subscriptions(id, auth_user_id, endpoint, p256dh, auth_secret) values
   ('7f348000-0000-4000-8000-0000000000f1', '7f348000-0000-4000-8000-0000000000b1', 'https://push.example.test/348-1', repeat('a', 30), repeat('k', 10)),
   ('7f348000-0000-4000-8000-0000000000f2', '7f348000-0000-4000-8000-0000000000b1', 'https://push.example.test/348-2', repeat('b', 30), repeat('k', 10)),
   ('7f348000-0000-4000-8000-0000000000f3', '7f348000-0000-4000-8000-0000000000b3', 'https://push.example.test/348-3', repeat('c', 30), repeat('k', 10)),
-  ('7f348000-0000-4000-8000-0000000000f4', '7f348000-0000-4000-8000-0000000000a2', 'https://push.example.test/348-4', repeat('d', 30), repeat('k', 10));
+  ('7f348000-0000-4000-8000-0000000000f4', '7f348000-0000-4000-8000-0000000000a2', 'https://push.example.test/348-4', repeat('d', 30), repeat('k', 10)),
+  ('7f348000-0000-4000-8000-0000000000f6', '7f348000-0000-4000-8000-0000000000b5', 'https://push.example.test/348-6', repeat('f', 30), repeat('k', 10));
 
 do $test$
 declare
@@ -58,6 +66,8 @@ declare
   owner constant uuid := '10000000-0000-4000-8000-000000000001';
   sales constant uuid := '7f348000-0000-4000-8000-0000000000a1';
   worker_a constant uuid := '7f348000-0000-4000-8000-0000000000a2';
+  lead constant uuid := '7f348000-0000-4000-8000-0000000000a4';
+  grp constant uuid := '7f348000-0000-4000-8000-000000000002';
   c1_owner constant uuid := '7f348000-0000-4000-8000-0000000000b1';
   c1_finance constant uuid := '7f348000-0000-4000-8000-0000000000b2';
   c1_receiver constant uuid := '7f348000-0000-4000-8000-0000000000b3';
@@ -72,20 +82,13 @@ declare
   today constant timestamptz := date_trunc('day', now() at time zone 'Asia/Ho_Chi_Minh') at time zone 'Asia/Ho_Chi_Minh';
   result jsonb;
   pending jsonb;
-  a1 uuid; a1b uuid; office_a uuid; pay_a uuid; manual_a uuid; first_rule uuid;
+  a1 uuid; a1b uuid; a3 uuid; office_a uuid; pay_a uuid; manual_a uuid; first_rule uuid;
   n integer;
   failed boolean;
 begin
   set constraints all immediate;
   set constraints all deferred;
   assert not exists (select 1 from public.announcements), 'the first prices of a new item tell nobody';
-
-  -- The resolver at a given time chooses as the price resolver does now (customer → group → common).
-  assert (select unit_price_vnd from private.announcement_prices(branch, cement, bao, now(), array[c1]))
-    = (select p.unit_price_vnd from public.pricing_rules p where p.id = private.preferred_commercial_price_rule(branch, c1, cement, bao)), 'common price';
-  assert (select unit_price_vnd from private.announcement_prices(branch, cement, bao, now(), array[c2]))
-    = (select p.unit_price_vnd from public.pricing_rules p where p.id = private.preferred_commercial_price_rule(branch, c2, cement, bao)), 'group price';
-  assert (select unit_price_vnd from private.announcement_prices(branch, cement, bao, now(), array[c3])) = 93000, 'customer price';
 
   -- 1. The owner saves the common price list: cement 95 000 → 98 000, steel 120 000 → 116 000.
   perform pg_temp.act_as(owner);
@@ -109,6 +112,14 @@ begin
   assert (select array_agg(item_name order by item_name) from public.announcement_lines l join public.announcements a on a.id = l.announcement_id
     where a.customer_id = c3) = array['Thép 348'], 'customer 3 keeps its own cement price: only steel';
   assert (select count(*) from public.announcements where audience = 'CUSTOMER') = 3, 'nobody for the customer without portal accounts';
+  -- What each customer is told as the new price is what the price resolver now chooses for them (customer → group → common).
+  assert not exists (select 1 from public.announcements a join public.announcement_lines l on l.announcement_id = a.id
+    where a.audience = 'CUSTOMER' and l.new_value is distinct from (select p.unit_price_vnd from public.pricing_rules p
+      where p.id = private.preferred_commercial_price_rule(branch, a.customer_id, case when l.item_name = 'Thép 348' then steel else cement end, bao))),
+    'new price = the resolver''s price';
+  select id into a3 from public.announcements where customer_id = c3;
+  assert (select count(*) from public.outbound_jobs where dedupe_key = 'announcement:' || a3 || ':7f348000-0000-4000-8000-0000000000f6' and state = 'PENDING') = 1,
+    'customer 3 owner phone';
   assert (select title from public.announcements where id = a1) = 'Giá mới từ ' || private.announcement_day(now()), 'title with the day';
   select id into office_a from public.announcements where audience = 'OFFICE' and kind = 'PRICE';
   assert (select count(*) from public.announcement_lines where announcement_id = office_a) = 2, 'office: the common price changes';
@@ -169,6 +180,8 @@ begin
   assert (select array_agg(item_name || ' ' || old_value || '→' || new_value) from public.announcement_lines where announcement_id = a1)
     = array['Xi măng 348 95000→97000'], 'cement 95 000 → 97 000, steel back to its old price';
   assert not exists (select 1 from public.announcements where customer_id in (c2, c3)), 'customers 2 and 3: nothing changed any more';
+  assert (select state from public.outbound_jobs where dedupe_key = 'announcement:' || a3 || ':7f348000-0000-4000-8000-0000000000f6') = 'DEAD',
+    'its push, not sent yet, is cancelled';
   assert (select count(*) from public.announcements where audience = 'OFFICE') = 1, 'office: still one';
   assert (select count(*) from public.outbound_jobs where dedupe_key like 'announcement:' || a1 || ':%') = 2, 'no second push';
   assert (select body from public.announcements where id = a1) like 'Cửa hàng điều chỉnh giá 1 mặt hàng%', 'text follows the lines';
@@ -208,6 +221,62 @@ begin
   assert (select count(*) from public.announcements a join public.announcement_lines l on l.announcement_id = a.id
     where a.customer_id = c3 and l.old_value = 93000 and l.new_value = 94000) = 1, 'customer 3 told';
   assert (select count(*) from public.announcements where audience = 'CUSTOMER' and created_at = now() and customer_id not in (c1, c3)) = 0, 'nobody else';
+
+  -- Another person saves the common price: the office gets a new announcement (its author is left out), not folded into the owner's.
+  perform pg_temp.act_as(sales);
+  perform public.save_pricing_rules_batch(branch, jsonb_build_array(
+    jsonb_build_object('material_id', steel, 'price_uom_id', bao, 'unit_price_vnd', 121000,
+      'supersedes_id', (select id from public.pricing_rules where scope_type = 'DEFAULT' and material_id = steel and active order by version desc limit 1), 'expected_version', 3)),
+    today, 'Cập nhật giá', '7f348000-0000-4000-8000-000000000105');
+  perform pg_temp.act_as_admin();
+  set constraints all immediate;
+  set constraints all deferred;
+  assert (select count(*) from public.announcements where audience = 'OFFICE') = 2 and exists (select 1 from public.announcements
+    where audience = 'OFFICE' and created_by = sales), 'a second office announcement, by its own author';
+  perform pg_temp.act_as(owner);
+  assert (select count(*) from jsonb_array_elements(public.pending_announcements('OFFICE')) x where x->>'title' like 'Giá chung đổi 1 mặt hàng%') = 1,
+    'the owner is told about the other person''s change';
+  perform pg_temp.act_as_admin();
+
+  -- One customer's announcement failing does not lose the others'.
+  create function public.nt348_fail() returns trigger language plpgsql as $fail$
+  begin
+    if exists (select 1 from public.announcements a where a.id = new.announcement_id and a.customer_id = '7f348000-0000-4000-8000-000000000012') then
+      raise exception 'nt348_fail';
+    end if;
+    return new;
+  end $fail$;
+  create trigger nt348_fail before insert or update on public.announcement_lines for each row execute function public.nt348_fail();
+  perform pg_temp.act_as(owner);
+  perform public.save_pricing_rules_batch(branch, jsonb_build_array(
+    jsonb_build_object('material_id', steel, 'price_uom_id', bao, 'unit_price_vnd', 122000,
+      'supersedes_id', (select id from public.pricing_rules where scope_type = 'DEFAULT' and material_id = steel and active order by version desc limit 1), 'expected_version', 4)),
+    today, 'Cập nhật giá', '7f348000-0000-4000-8000-000000000106');
+  perform pg_temp.act_as_admin();
+  set constraints all immediate;
+  set constraints all deferred;
+  drop trigger nt348_fail on public.announcement_lines;
+  drop function public.nt348_fail();
+  assert exists (select 1 from public.announcements a join public.announcement_lines l on l.announcement_id = a.id
+    where a.customer_id = c1 and l.item_name = 'Thép 348' and l.new_value = 122000), 'customer 1 told';
+  assert exists (select 1 from public.announcements a join public.announcement_lines l on l.announcement_id = a.id
+    where a.customer_id = c3 and l.item_name = 'Thép 348' and l.new_value = 122000), 'customer 3 told';
+  assert (select max(l.new_value) from public.announcements a join public.announcement_lines l on l.announcement_id = a.id
+    where a.customer_id = c2 and l.item_name = 'Thép 348') = 121000, 'customer 2''s failed alone (its earlier line stays)';
+
+  -- A customer's own price for a whole material group ranks above the group price list and the common price.
+  perform pg_temp.act_as(owner);
+  perform public.save_pricing_rule('7f348000-0000-4000-8000-000000000302', branch, null, null,
+    jsonb_build_object('scope_type', 'CUSTOMER_GROUP', 'customer_id', c2, 'material_group_id', grp, 'price_uom_id', bao, 'unit_price_vnd', 85000,
+      'source_type', 'CONTRACT', 'effective_from', today), 'Giá hợp đồng nhóm', '7f348000-0000-4000-8000-000000000107');
+  perform pg_temp.act_as_admin();
+  set constraints all immediate;
+  set constraints all deferred;
+  assert (select array_agg(l.item_name || ' ' || l.old_value || '→' || l.new_value order by l.item_name) from public.announcements a
+    join public.announcement_lines l on l.announcement_id = a.id where a.customer_id = c2)
+    = array['Thép 348 120000→85000', 'Xi măng 348 90000→85000'], 'both items of the group, from its group-list cement price';
+  assert not exists (select 1 from public.announcement_lines l join public.announcements a on a.id = l.announcement_id
+    where a.customer_id <> c2 and l.new_value = 85000), 'only that customer';
 
   -- 5. After 30 days an unseen announcement stops showing.
   update public.announcements set created_at = now() - interval '31 days', expires_at = now() - interval '1 day' where id in (a1, a1b);
@@ -268,7 +337,8 @@ begin
     perform public.create_announcement(branch, 'CUSTOMER', 'FEATURE', 'Khác', null, null, null, '7f348000-0000-4000-8000-000000000503');
   exception when unique_violation then failed := true; end;
   assert failed, 'same operation, other content';
-  assert (select count(*) from public.outbound_jobs where dedupe_key like 'announcement:' || manual_a || ':%') = 4, 'owner 2 devices + receiver 1 + customer 2';
+  assert (select count(*) from public.outbound_jobs where dedupe_key like 'announcement:' || manual_a || ':%') = 5,
+    'owner 2 devices + receiver 1 + customer 2 + customer 3';
   perform pg_temp.act_as_admin();
   assert exists (select 1 from public.outbound_jobs j join public.push_subscriptions s on s.id::text = j.target
     where j.dedupe_key like 'announcement:' || manual_a || ':%' and s.auth_user_id = c2_owner and j.payload->>'link' = '/customer'
@@ -284,6 +354,9 @@ begin
 
   -- "Ngừng hiện": gone from the popup and the history.
   perform public.stop_announcement(manual_a, '7f348000-0000-4000-8000-000000000504');
+  perform pg_temp.act_as_admin();
+  assert not exists (select 1 from public.outbound_jobs where dedupe_key like 'announcement:' || manual_a || ':%' and state <> 'DEAD'),
+    'its pushes not sent yet are cancelled';
   perform pg_temp.act_as(c1_receiver);
   assert public.pending_announcements('CUSTOMER') = '[]'::jsonb and public.announcement_history('CUSTOMER') = '[]'::jsonb, 'withdrawn';
   perform pg_temp.act_as(sales);
@@ -299,6 +372,18 @@ begin
   perform pg_temp.act_as(worker_a);
   assert jsonb_array_length(public.pending_announcements('WORKER')) = 5, 'five at a time';
   assert public.pending_announcements('WORKER')->0->>'kind' = 'PAY_RATE', 'pay rates first';
+
+  -- D85: a lead worker (personal grant work.field_dispatch) is a worker: worker announcements, not the office's.
+  perform pg_temp.act_as(owner);
+  result := public.announcement_composer_options(branch);
+  assert (result->>'office')::integer = 2 and (result->>'workers')::integer = 3, 'office: sales + reader; workers: A, B and the lead';
+  assert not exists (select 1 from jsonb_array_elements(result->'roles') r where r->>'name' = 'Thợ thử 348'), 'the worker role is not an office role';
+  perform public.create_announcement(branch, 'OFFICE', 'NEWS', 'Lịch nghỉ Tết', null, null, null, '7f348000-0000-4000-8000-000000000505');
+  perform pg_temp.act_as(lead);
+  assert public.pending_announcements('OFFICE') = '[]'::jsonb, 'no office announcement for the lead';
+  assert jsonb_array_length(public.pending_announcements('WORKER')) = 5, 'worker announcements for the lead';
+  perform pg_temp.act_as(sales);
+  assert jsonb_array_length(public.pending_announcements('OFFICE')) >= 1, 'office staff get it';
   perform pg_temp.act_as_admin();
 end
 $test$;
