@@ -155,6 +155,35 @@ returns jsonb language sql stable security definer set search_path = '' as $$
 $$;
 revoke all on function private.field_delivery_lines(uuid) from public, anon, authenticated, service_role;
 
+-- Every worker + truck the dispatch suggestion could use for a delivery, with the time it would give them; the one it would
+-- pick first (private.auto_dispatch_delivery's order).
+create or replace function private.field_delivery_pairs(target_delivery_id uuid)
+returns jsonb language sql stable security definer set search_path = '' as $$
+  select coalesce(jsonb_agg(jsonb_build_object('employee_id', p.employee_id, 'vehicle_id', p.vehicle_id, 'start_at', p.start_at, 'end_at', p.end_at,
+      'default_driver', p.default_driver, 'same_site', p.same_site, 'day_count', p.day_count)
+      order by p.start_at, p.default_driver desc, p.day_count, p.same_site desc, p.vehicle_code, p.employee_name, p.vehicle_id, p.employee_id), '[]'::jsonb)
+  from private.dispatch_pairs(target_delivery_id) p
+$$;
+revoke all on function private.field_delivery_pairs(uuid) from public, anon, authenticated, service_role;
+
+-- Who declined a delivery, when and why.
+create or replace function private.field_delivery_declined(target_delivery_id uuid)
+returns jsonb language sql stable security definer set search_path = '' as $$
+  select jsonb_agg(jsonb_build_object('employee_id', x.employee_id, 'name', e.display_name, 'reason', x.reason, 'at', x.created_at) order by x.created_at)
+  from public.delivery_dispatch_exclusions x join public.employees e on e.id = x.employee_id where x.delivery_id = target_delivery_id
+$$;
+revoke all on function private.field_delivery_declined(uuid) from public, anon, authenticated, service_role;
+
+-- When each worker of the branch could do a service job (its time, or later when he is busy then).
+create or replace function private.field_service_candidates(target_work_item_id uuid)
+returns jsonb language sql stable security definer set search_path = '' as $$
+  select coalesce(jsonb_agg(jsonb_build_object('employee_id', e.id,
+      'start_at', private.field_work_free_start(w.id, e.id, greatest(w.scheduled_start, date_trunc('minute', now())))) order by e.id), '[]'::jsonb)
+  from public.work_items w join public.employees e on e.active and e.auth_user_id is not null and private.field_dispatch_eligible(e.id, w.branch_id)
+  where w.id = target_work_item_id
+$$;
+revoke all on function private.field_service_candidates(uuid) from public, anon, authenticated, service_role;
+
 -- Today's jobs of the branch's workers (Vietnam day): deliveries with a worker, and service jobs with a person.
 create or replace function private.field_dispatch_today(target_branch_id uuid)
 returns table(kind text, entity_id uuid, work_item_id uuid, number text, version integer, employee_id uuid, vehicle_id uuid,
@@ -222,11 +251,7 @@ begin
   end if;
   for d in select x.* from public.deliveries x where x.branch_id = target_branch_id and x.execution_state = 'PLANNED' and private.delivery_pool_open(x.id)
     order by coalesce(x.scheduled_at, x.created_at), x.delivery_number limit 30 loop
-    -- Every worker + truck the suggestion could use, with the time it would give them; first the one it would pick.
-    select coalesce(jsonb_agg(jsonb_build_object('employee_id', p.employee_id, 'vehicle_id', p.vehicle_id, 'start_at', p.start_at, 'end_at', p.end_at,
-        'default_driver', p.default_driver, 'same_site', p.same_site, 'day_count', p.day_count)
-        order by p.start_at, p.default_driver desc, p.day_count, p.same_site desc, p.vehicle_code, p.employee_name, p.vehicle_id, p.employee_id), '[]'::jsonb)
-    into pairs from private.dispatch_pairs(d.id) p;
+    pairs := private.field_delivery_pairs(d.id);
     select * into proposal from public.delivery_dispatch_proposals x where x.delivery_id = d.id;
     suggestion := null;
     if proposal.delivery_id is not null then
@@ -238,8 +263,7 @@ begin
       'kind', 'DELIVERY', 'id', d.id, 'number', d.delivery_number, 'version', d.version, 'requested_at', d.scheduled_at,
       'customer_name', d.customer_name_snapshot, 'site_name', d.site_name_snapshot, 'address', d.delivery_address_snapshot,
       'lines', private.field_delivery_lines(d.id),
-      'declined', (select jsonb_agg(jsonb_build_object('employee_id', x.employee_id, 'name', e.display_name, 'reason', x.reason, 'at', x.created_at)
-          order by x.created_at) from public.delivery_dispatch_exclusions x join public.employees e on e.id = x.employee_id where x.delivery_id = d.id),
+      'declined', private.field_delivery_declined(d.id),
       'pairs', pairs, 'suggestion', suggestion)));
   end loop;
 
@@ -249,9 +273,7 @@ begin
       'duration_minutes', (extract(epoch from (w.scheduled_end - w.scheduled_start)) / 60)::integer,
       'title', s.service_type, 'description', s.description, 'customer_name', c.display_name, 'site_name', cs.name, 'address', cs.address_text,
       'quantity', trim_scale(s.planned_quantity)::text, 'unit', s.unit_label,
-      'candidates', (select coalesce(jsonb_agg(jsonb_build_object('employee_id', e.id,
-          'start_at', private.field_work_free_start(w.id, e.id, greatest(w.scheduled_start, date_trunc('minute', now())))) order by e.id), '[]'::jsonb)
-        from public.employees e where e.active and e.auth_user_id is not null and private.field_dispatch_eligible(e.id, w.branch_id)))) as item
+      'candidates', private.field_service_candidates(w.id))) as item
     from public.work_items w join public.service_jobs s on s.id = w.service_job_id
       join public.customers c on c.id = s.customer_id join public.customer_sites cs on cs.id = s.site_id
     where w.id in (select x from private.field_waiting_work(target_branch_id) x limit 30)) q;
@@ -310,6 +332,27 @@ begin
 end $$;
 revoke all on function public.field_dispatch_summary(uuid) from public, anon;
 grant execute on function public.field_dispatch_summary(uuid) to authenticated;
+
+-- "Đổi người": who could take one of today's jobs instead, and when.
+create or replace function public.field_dispatch_options(target_kind text, target_id uuid)
+returns jsonb language plpgsql stable security definer set search_path = '' as $$
+declare branch uuid;
+begin
+  if target_kind = 'DELIVERY' then
+    select d.branch_id into branch from public.deliveries d where d.id = target_id;
+  elsif target_kind = 'SERVICE_JOB' then
+    select w.branch_id into branch from public.work_items w where w.id = target_id and w.delivery_id is null;
+  end if;
+  if auth.uid() is null or private.current_employee_id() is null or branch is null or not private.has_permission(branch, 'work.field_dispatch') then
+    raise exception 'forbidden' using errcode = '42501';
+  end if;
+  if target_kind = 'DELIVERY' then
+    return jsonb_strip_nulls(jsonb_build_object('pairs', private.field_delivery_pairs(target_id), 'declined', private.field_delivery_declined(target_id)));
+  end if;
+  return jsonb_build_object('candidates', private.field_service_candidates(target_id));
+end $$;
+revoke all on function public.field_dispatch_options(text, uuid) from public, anon;
+grant execute on function public.field_dispatch_options(text, uuid) to authenticated;
 
 -- ---------------------------------------------------------------------------------------------------------------
 -- 4. Giving a delivery to a worker (ASSIGN: waiting in "Chờ người"; REASSIGN: change the person before loading).

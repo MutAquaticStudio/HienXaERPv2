@@ -250,6 +250,9 @@ begin
 
   -- 10. Change the person before loading: the job moves to the lead himself; the office sees it.
   version_now := pg_temp.dv(d1);
+  result := public.field_dispatch_options('DELIVERY', d1);
+  assert jsonb_array_length(result->'pairs') = 4 and result->'declined'->0->>'name' = 'Hùng'
+    and not exists (select 1 from jsonb_array_elements(result->'pairs') p where p->>'employee_id' = hung::text), format('change options %s', result);
   failed := null;
   begin perform public.field_reassign_delivery(d1, son, v2, null, version_now, '7f349000-0000-4000-8000-0000000000dc'); exception when others then failed := sqlerrm; end;
   assert failed = 'field_dispatch_same_worker', format('same worker refused, got %s', failed);
@@ -323,6 +326,12 @@ begin
   begin perform public.field_reassign_work_item(wi, lead, nine + interval '4 hours', pg_temp.wv(wi), '7f349000-0000-4000-8000-0000000000e5');
   exception when others then get stacked diagnostics failed = message_text, hint = pg_exception_hint; end;
   assert failed = 'field_dispatch_busy' and hint like 'next_free_at=%', format('lead busy at 13:00 with his delivery: %s %s', failed, hint);
+  assert jsonb_array_length(public.field_dispatch_options('SERVICE_JOB', wi)->'candidates') = 3, 'service change options';
+  perform pg_temp.act_as(hung_user);
+  failed := null;
+  begin perform public.field_dispatch_options('SERVICE_JOB', wi); exception when insufficient_privilege then failed := 'denied'; end;
+  assert failed = 'denied', 'ordinary worker has no options';
+  perform pg_temp.act_as(lead_user);
   result := public.field_reassign_work_item(wi, son, null, pg_temp.wv(wi), '7f349000-0000-4000-8000-0000000000e6');
   perform pg_temp.act_as_admin();
   assert (select a.employee_id from public.work_item_assignments a where a.work_item_id = wi and a.superseded_at is null) = son, 'moved to Sơn';
