@@ -21,7 +21,8 @@ const G35 = "33333333-3333-4333-8333-000000000035";
 // 16/11, Vietnam time: 09:30 = 02:30Z.
 const at = (hhmm: string) => new Date(`2026-11-16T${hhmm}:00+07:00`).toISOString();
 
-const board: FieldDispatchBoard = {
+// What the database knows; the board carries no pairs / candidates (the sheet loads them, see beforeEach).
+const full: FieldDispatchBoard = {
   branch_id: "b1", now: at("08:20"), me: ME, stop_minutes: 60,
   workers: [
     { id: ME, name: "Tuấn", me: true, clocked_in_at: at("06:50"), free_from: at("10:00") },
@@ -58,9 +59,20 @@ const board: FieldDispatchBoard = {
   ],
 };
 
+const board: FieldDispatchBoard = { ...full, waiting: full.waiting.map((job) => {
+  const { pairs: _pairs, candidates: _candidates, ...rest } = job as typeof job & { pairs?: unknown; candidates?: unknown };
+  return rest as typeof job;
+}) };
+
 beforeEach(() => {
   vi.clearAllMocks();
   m.assign.mockResolvedValue({ ok: true, startAt: at("09:30") });
+  // field_dispatch_options: who could take the job and when, loaded when the sheet opens.
+  m.options.mockImplementation(async (_kind: string, id: string) => {
+    const job = full.waiting.find((item) => item.id === id);
+    if (!job) return { ok: false, message: "Không mở được việc này." };
+    return job.kind === "DELIVERY" ? { ok: true, pairs: job.pairs, declined: job.declined ?? [] } : { ok: true, candidates: job.candidates };
+  });
 });
 afterEach(cleanup);
 
@@ -79,11 +91,13 @@ it("puts a refused delivery first and gives the suggestion with one tap", async 
   expect(screen.getByRole("status").textContent).toContain("Đã giao DL-2026-000041 cho Hùng · Xe cn nhỏ · 09:30");
 });
 
-it("blocks the worker who refused and orders the rest: suggestion, on shift, free soonest", () => {
+it("blocks the worker who refused and orders the rest: suggestion, on shift, free soonest", async () => {
   render(<FieldDispatchBoardView board={board} />);
   fireEvent.click(within(screen.getByRole("article", { name: /DL-2026-000038/ })).getByRole("button", { name: "Giao người khác" }));
   const sheet = screen.getByRole("dialog", { name: "Giao lại DL-2026-000038" });
-  const son = within(sheet).getByRole("radio", { name: /Sơn/ });
+  expect(within(sheet).getByText("Đang tải danh sách thợ...")).toBeTruthy();
+  const son = await within(sheet).findByRole("radio", { name: /Sơn/ });
+  expect(m.options).toHaveBeenCalledWith("DELIVERY", D38);
   expect(son).toBeDisabled();
   expect(within(sheet).getByText(/Đã từ chối phiếu này lúc 08:05/)).toBeTruthy();
   const names = within(sheet).getAllByRole("radio").filter((radio) => radio.getAttribute("name") === "fd-worker")
@@ -97,7 +111,7 @@ it("gives a delivery to another worker, not clocked in, at a time the lead picks
   render(<FieldDispatchBoardView board={board} />);
   fireEvent.click(within(screen.getByRole("article", { name: /DL-2026-000041/ })).getByRole("button", { name: "Chọn người khác" }));
   const sheet = screen.getByRole("dialog", { name: "Giao DL-2026-000041" });
-  fireEvent.click(within(sheet).getByRole("radio", { name: /Sơn/ }));
+  fireEvent.click(await within(sheet).findByRole("radio", { name: /Sơn/ }));
   expect(within(sheet).getByText("Chưa vào ca", { selector: "span" })).toBeTruthy();
   expect(within(sheet).getByRole("radio", { name: /Xe cn to/ })).toBeTruthy();
   expect(within(sheet).getByText(/trễ 45 phút so với hẹn/)).toBeTruthy();
@@ -117,7 +131,7 @@ it("says when the picked time is taken, offers the free time and retries an uncl
   render(<FieldDispatchBoardView board={board} />);
   fireEvent.click(within(screen.getByRole("article", { name: /DL-2026-000041/ })).getByRole("button", { name: "Chọn người khác" }));
   const sheet = screen.getByRole("dialog");
-  fireEvent.click(within(sheet).getByRole("radio", { name: /Chọn giờ khác/ }));
+  fireEvent.click(await within(sheet).findByRole("radio", { name: /Chọn giờ khác/ }));
   fireEvent.change(within(sheet).getByLabelText("Giờ đi"), { target: { value: "2026-11-16T10:00" } });
   fireEvent.click(within(sheet).getByRole("button", { name: /Giao cho Hùng/ }));
   expect((await within(sheet).findByRole("alert")).textContent).toContain("Rảnh từ 11:00");
@@ -136,15 +150,16 @@ it("gives a service job by picking only the worker", async () => {
   render(<FieldDispatchBoardView board={board} />);
   fireEvent.click(within(screen.getByRole("article", { name: /SRV-202611-000012/ })).getByRole("button", { name: "Chọn người" }));
   const sheet = screen.getByRole("dialog", { name: "Giao SRV-202611-000012" });
+  fireEvent.click(await within(sheet).findByRole("radio", { name: /Tuấn/ }));
   expect(within(sheet).queryByText("2. Chọn xe")).toBeNull();
-  fireEvent.click(within(sheet).getByRole("radio", { name: /Tuấn/ }));
+  expect(m.options).toHaveBeenCalledWith("SERVICE_JOB", W12);
   fireEvent.click(within(sheet).getByRole("button", { name: "Tự nhận · lúc 13:30" }));
   await waitFor(() => expect(m.assign).toHaveBeenCalled());
   expect(m.assign.mock.calls[0][0]).toMatchObject({ kind: "SERVICE_JOB", mode: "ASSIGN", targetId: W12, employeeId: ME, vehicleId: null, version: 1 });
 });
 
 it("changes the person before loading; a loaded job is locked and a short one can be called", async () => {
-  m.options.mockResolvedValue({ ok: true, pairs: [{ employee_id: SON, vehicle_id: V1, start_at: at("08:30"), end_at: at("09:30") }], declined: [] });
+  m.options.mockImplementation(async () => ({ ok: true, pairs: [{ employee_id: SON, vehicle_id: V1, start_at: at("08:30"), end_at: at("09:30") }], declined: [] }));
   render(<FieldDispatchBoardView board={board} />);
   fireEvent.click(screen.getByRole("tab", { name: /Đã giao hôm nay · 3/ }));
   expect(screen.getAllByRole("button", { name: /Đổi người/ })).toHaveLength(1);
@@ -168,6 +183,15 @@ it("explains in Vietnamese when someone else took it first, and reloads the list
   fireEvent.click(within(screen.getByRole("article", { name: /DL-2026-000041/ })).getByRole("button", { name: "Giao cho Hùng" }));
   expect((await screen.findByRole("alert")).textContent).toContain("vừa có người nhận");
   expect(m.refresh).toHaveBeenCalled();
+});
+
+it("says so when the list of workers cannot be loaded", async () => {
+  m.options.mockImplementation(async () => ({ ok: false, message: "Chưa tải được danh sách thợ. Kiểm tra kết nối rồi mở lại." }));
+  render(<FieldDispatchBoardView board={board} />);
+  fireEvent.click(within(screen.getByRole("article", { name: /DL-2026-000041/ })).getByRole("button", { name: "Chọn người khác" }));
+  const sheet = screen.getByRole("dialog");
+  expect((await within(sheet).findByRole("alert")).textContent).toContain("Chưa tải được danh sách thợ");
+  expect(within(sheet).queryByRole("radio")).toBeNull();
 });
 
 it("shows an empty list when nothing waits", () => {

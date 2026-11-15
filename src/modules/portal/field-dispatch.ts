@@ -32,7 +32,9 @@ export type FieldDispatchWaitingDelivery = {
   address?: string;
   lines: { material_name: string; quantity: string; unit: string }[];
   declined?: FieldDispatchDeclined[];
-  pairs: FieldDispatchPair[];
+  /** Every free worker + truck; loaded when the sheet opens (field_dispatch_options), absent on the board. */
+  pairs?: FieldDispatchPair[];
+  /** The office's dispatch suggestion while it can still be used: the one-tap "Giao cho …". */
   suggestion?: FieldDispatchPair | null;
 };
 
@@ -51,7 +53,8 @@ export type FieldDispatchWaitingService = {
   address?: string;
   quantity?: string;
   unit?: string;
-  candidates: { employee_id: string; start_at: string }[];
+  /** When each worker could do it; loaded when the sheet opens, absent on the board. */
+  candidates?: { employee_id: string; start_at: string }[];
 };
 
 export type FieldDispatchWaiting = FieldDispatchWaitingDelivery | FieldDispatchWaitingService;
@@ -224,8 +227,8 @@ export function rankWorkers(job: FieldDispatchWaiting | null, board: Pick<FieldD
   const suggestion = job?.kind === "DELIVERY" ? job.suggestion?.employee_id ?? null : null;
   const startFor = options.startFor ?? ((employeeId: string) => {
     if (!job) return null;
-    if (job.kind === "SERVICE_JOB") return job.candidates.find((item) => item.employee_id === employeeId)?.start_at ?? null;
-    const times = job.pairs.filter((pair) => pair.employee_id === employeeId).map((pair) => pair.start_at).sort();
+    if (job.kind === "SERVICE_JOB") return (job.candidates ?? []).find((item) => item.employee_id === employeeId)?.start_at ?? null;
+    const times = (job.pairs ?? []).filter((pair) => pair.employee_id === employeeId).map((pair) => pair.start_at).sort();
     return times[0] ?? null;
   });
   const choices = board.workers.map<WorkerChoice>((worker) => {
@@ -247,10 +250,10 @@ export function rankWorkers(job: FieldDispatchWaiting | null, board: Pick<FieldD
 }
 
 /** Trucks free for this worker on this delivery, soonest first, the suggested one flagged. */
-export function vehicleChoices(job: FieldDispatchWaitingDelivery | { pairs: FieldDispatchPair[]; suggestion?: FieldDispatchPair | null },
+export function vehicleChoices(job: { pairs?: FieldDispatchPair[]; suggestion?: FieldDispatchPair | null },
   employeeId: string, vehicles: FieldDispatchBoard["vehicles"]) {
   const byId = new Map(vehicles.map((vehicle) => [vehicle.id, vehicle]));
-  return job.pairs.filter((pair) => pair.employee_id === employeeId && byId.has(pair.vehicle_id))
+  return (job.pairs ?? []).filter((pair) => pair.employee_id === employeeId && byId.has(pair.vehicle_id))
     .sort((left, right) => left.start_at.localeCompare(right.start_at) || (byId.get(left.vehicle_id)!.code).localeCompare(byId.get(right.vehicle_id)!.code, "vi"))
     .map((pair) => ({ pair, vehicle: byId.get(pair.vehicle_id)!,
       suggested: job.suggestion?.employee_id === employeeId && job.suggestion.vehicle_id === pair.vehicle_id }));
