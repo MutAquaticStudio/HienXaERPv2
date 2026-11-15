@@ -154,7 +154,7 @@ function PortalSheet({ item, index, total, link, footNote, onAcknowledge, onClos
       </div>
       {manual && item.body && <p className={styles.manualBody}>{item.body}</p>}
       <Lines item={item} limit={PORTAL_LINES} office={false} />
-      {(manual || item.kind === "PAY_RATE") && <p className={styles.signOff}>{signOff(item)}</p>}
+      {manual && <p className={styles.signOff}>{signOff(item)}</p>}
       <div className={styles.footer}>
         {link && <Link className={portal.buttonSecondary} href={item.link!} onClick={onAcknowledge}>{link}</Link>}
         <button ref={okRef} type="button" className={portal.button} onClick={onAcknowledge}>Đã hiểu</button>
