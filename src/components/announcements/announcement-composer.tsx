@@ -73,7 +73,7 @@ export function AnnouncementComposer({ options, sent, now }: {
     }
   }
 
-  return <div className="page-stack">
+  return <div className={`page-stack ${styles.scope}`}>
     <div className={styles.composer}>
       <form className="card card-pad form-stack" aria-label="Nội dung thông báo" noValidate onSubmit={(event) => {
         event.preventDefault();

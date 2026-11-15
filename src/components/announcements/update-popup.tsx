@@ -104,7 +104,7 @@ export function UpdatePopup({ items, surface, home }: { items: Announcement[]; s
     const label = current.kind === "PRICE" ? "Cập nhật giá" : LABEL_NAMES[current.label ?? "NEWS"];
     const eyebrow = [label, items.length > 1 ? `${index}/${items.length}` : null, formatBusinessDateTime(current.updated_at ?? current.created_at)].filter(Boolean).join(" · ");
     return <Dialog title={current.title} eyebrow={eyebrow} onClose={close} size={current.lines.length ? "lg" : "md"} initialFocusId="update-popup-ok">
-      <div className="form-stack">
+      <div className={`form-stack ${styles.scope}`}>
         {current.body && <p className={styles.manualBody}>{current.body}</p>}
         <Lines key={current.id} item={current} limit={OFFICE_LINES} office />
         <footer className={styles.officeFoot}>
@@ -138,7 +138,7 @@ function PortalSheet({ item, index, total, link, footNote, onAcknowledge, onClos
   }, []);
   const manual = item.kind === "MANUAL";
   return <div className={portal.sheetBackdrop} role="presentation" onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-    <section className={`${portal.sheet} ${styles.panel}`} role="dialog" aria-modal="true" aria-labelledby={titleId}>
+    <section className={`${portal.sheet} ${styles.panel} ${styles.scope} ${styles.portal}`} role="dialog" aria-modal="true" aria-labelledby={titleId}>
       <QuickCreateFocusGuard />
       <span className={portal.sheetHandle} aria-hidden="true" />
       <div className={styles.top}>

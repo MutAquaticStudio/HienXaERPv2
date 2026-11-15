@@ -13,14 +13,16 @@ export function AnnouncementHistory({ items, surface, emptyText, first = 5 }: {
   /** Shown at once; the older ones open under "Xem thêm". */
   first?: number;
 }) {
+  // Inside the worker and customer portals the list takes the portal's colours (D84); in the office the app's.
+  const scope = `${styles.scope}${surface === "OFFICE" ? "" : ` ${styles.portal}`}`;
   if (items === null) return <p className="form-message" role="alert">Chưa tải được thông báo. Tải lại trang.</p>;
   if (!items.length) return <p className="muted">{emptyText}</p>;
   const older = items.slice(first);
-  return <>
+  return <div className={scope}>
     <HistoryList items={items.slice(0, first)} surface={surface} />
     {older.length > 0 && <details><summary className={styles.toggle}>Xem thêm {older.length} thông báo cũ hơn</summary>
       <HistoryList items={older} surface={surface} /></details>}
-  </>;
+  </div>;
 }
 
 function HistoryList({ items, surface }: { items: Announcement[]; surface: AnnouncementSurface }) {
