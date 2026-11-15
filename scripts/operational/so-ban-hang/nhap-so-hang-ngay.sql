@@ -11,8 +11,10 @@
 -- Quy tắc (đã chốt với Owner 14/11/2026):
 --  * Chỉ nhập dòng có ngày TRƯỚC hôm nay (giờ Việt Nam); dòng đã nhập (đơn hoặc việc dịch vụ có dấu "Sổ <tab> dòng <TT> ·") bỏ qua.
 --  * Dòng thu tiền ("Thanh toán công nợ", "Điều chỉnh V", vật tư trống) không nhập (phiếu thu công nợ Owner cho bỏ qua).
---  * Người giao trống → chủ doanh nghiệp (nhân viên của `actor`); trùng tên một nhân viên → nhân viên đó: hàng xuất kho, 1 đơn bán +
---    phiếu giao + giao xong + xác nhận; xe theo ĐVT (mặc định Xe cn nhỏ).
+--  * Người giao trống → khách tự tới lấy: hàng xuất kho, phiếu giao ghi "Khách tự lấy", không nhân viên, không xe (Owner 15/11/2026);
+--    dịch vụ người làm trống → chủ doanh nghiệp (nhân viên của `actor`).
+--  * Người giao trùng tên một nhân viên → nhân viên đó: hàng xuất kho, 1 đơn bán + phiếu giao + giao xong + xác nhận; xe theo ĐVT
+--    (Xe cn to / Xe cn nhỏ / Xe điện / Ô tô; ĐVT khác mặc định Xe cn nhỏ).
 --  * Người giao là tên khác (không phải nhân viên) → NHÀ CUNG CẤP giao thẳng (Văn An là một trong số đó): tìm NCC theo tên (phần trước
 --    dấu ngoặc) hoặc mã, chưa có thì tạo NCC mới theo tên; đơn mua + đơn bán liên kết, giá mua theo Bảng giá mua của NCC, chưa có thì
 --    85% giá bán; không cần ảnh.
@@ -104,7 +106,8 @@ begin
       end if;
       if why is null and (qty is null or qty <= 0) then why := 'số lượng trống hoặc không đọc được'; end if;
       if why is null and (price is null or price <= 0) then why := 'đơn giá trống hoặc bằng 0'; end if;
-      if why is null and kind = 'GOODS' then
+      -- Người giao trống = khách tự tới lấy (Owner 15/11/2026): phiếu giao ghi "Khách tự lấy", không gắn nhân viên, không gắn xe.
+      if why is null and kind = 'GOODS' and giao <> '' then
         select id into veh from public.vehicles where branch_id = branch and active and code = case when uom_sym = any(vehicle_uoms) then uom_sym else 'Xe cn nhỏ' end;
         if veh is null then why := 'thiếu xe giao'; end if;
       end if;
@@ -165,7 +168,7 @@ begin
       'item', item, 'mat', mat, 'uom', uom, 'num', num, 'den', den, 'mode', mode, 'qty', qty, 'price', price, 'sheet_total', total,
       'base_qty', case when num is not null then qty * num / den end, 'typ', typ.id, 'emp', emp, 'veh', veh, 'mach', mach, 'cust', cust, 'site', site,
       'sup', sup, 'sup_label', coalesce(sup_label, giao_txt), 'sup_key', case when kind = 'DIRECT' then giao end, 'cost', cost, 'cost_src', cost_src,
-      'note', trim(coalesce(x->>17, '')), 'giao', case when giao = '' then 'OWNER' else giao end);
+      'note', trim(coalesce(x->>17, '')), 'giao', case when giao = '' then 'KHÁCH TỰ LẤY' else giao end, 'pickup', kind = 'GOODS' and giao = '');
   end loop;
 
   -- 2a. Nhà cung cấp mới (người giao là tên chưa có trong danh sách NCC).
@@ -240,8 +243,13 @@ begin
           perform public.confirm_sales_order(ord, md5(tag || ':' || tt || ':confirm')::uuid);
           select id into oline from public.sales_order_lines where sales_order_id = ord;
           res := public.create_delivery_for_order(ord, wh, jsonb_build_array(jsonb_build_object('sales_order_line_id', oline, 'quantity', trim_scale(qty)::text)), t0,
-            jsonb_build_object('employee_id', p->>'emp', 'vehicle_id', p->>'veh', 'schedule_mode', 'NOW'), md5(tag || ':' || tt || ':delivery')::uuid);
+            case when (p->>'pickup')::boolean then null else jsonb_build_object('employee_id', p->>'emp', 'vehicle_id', p->>'veh', 'schedule_mode', 'NOW') end,
+            md5(tag || ':' || tt || ':delivery')::uuid);
           dl := (res->>'delivery_id')::uuid;
+          if (p->>'pickup')::boolean then
+            select version into v from public.deliveries where id = dl;
+            perform public.assign_delivery(dl, null, null, 'Khách tự lấy', null, v, md5(tag || ':' || tt || ':pickup')::uuid);
+          end if;
         else
           term := 'Sổ ' || tab || ' dòng ' || tt || ' · giao: ' || (p->>'giao') || ' · nhà cung cấp giao thẳng' || coalesce(nullif(' · ' || (p->>'note'), ' · '), '');
           po := public.create_linked_direct_drafts(branch, (p->>'sup')::uuid, (p->>'cust')::uuid, (p->>'site')::uuid,

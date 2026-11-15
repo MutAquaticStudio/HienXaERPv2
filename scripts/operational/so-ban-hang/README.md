@@ -40,7 +40,7 @@ Owner (14/11/2026): *"Từ hôm nay vào 7h30 sáng mỗi ngày vào sheet 11.26
 | Ngày từ hôm nay trở đi | Để lần sau (sổ trong ngày còn đang ghi). |
 | "Thanh toán công nợ", "Điều chỉnh V", vật tư trống | Bỏ qua (Owner cho bỏ phiếu thu công nợ). |
 | Vật tư (bảng `stock_map`), người giao là nhân viên | Đơn bán (giá theo sổ) → xác nhận → phiếu giao (xe theo ĐVT, mặc định Xe cn nhỏ) → giao đủ → xác nhận giao. |
-| Người giao trống | Hàng kho, giao cho chủ doanh nghiệp ("Owner Hiền Xa"). |
+| Người giao trống | Khách tự tới lấy (Owner 15/11/2026): hàng xuất kho, vẫn có phiếu giao, người giao ghi "Khách tự lấy", không gắn nhân viên, không gắn xe. Dịch vụ người làm trống thì giao cho chủ doanh nghiệp. |
 | Người giao trùng tên một nhân viên của chi nhánh | Hàng kho, giao cho nhân viên đó. |
 | Người giao là tên khác (Owner 15/11/2026: "ngoài tên nhân viên thì đều là nhà cung cấp giao") | Nhà cung cấp giao thẳng (Văn An là một trong số đó): tìm NCC theo tên trước dấu ngoặc hoặc mã; chưa có thì **tạo NCC mới** (`NCC###`) và báo. Đơn mua + đơn bán liên kết, giá mua theo Bảng giá mua của NCC, chưa có thì 85% giá bán, không ảnh, ghi công nợ phải trả. Dịch vụ do người ngoài làm thì giữ lại. |
 | Dịch vụ (tên + ĐVT trùng một loại dịch vụ) | Việc dịch vụ → giao người → làm → nộp → xác nhận, tiền = thành tiền sổ, hạn nợ +14 ngày. |

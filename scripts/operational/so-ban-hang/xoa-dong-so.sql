@@ -70,7 +70,7 @@ begin
       ':' || tt || ':draft', ':' || tt || ':confirm', ':' || tt || ':delivery',
       ':' || tt || ':GOODS:handoff', ':' || tt || ':GOODS:result', ':' || tt || ':GOODS:verify',
       ':' || tt || ':DIRECT:handoff', ':' || tt || ':DIRECT:result', ':' || tt || ':DIRECT:verify',
-      ':' || tt || ':handoff', ':' || tt || ':result', ':' || tt || ':verify',
+      ':' || tt || ':handoff', ':' || tt || ':result', ':' || tt || ':verify', ':' || tt || ':pickup',
       ':ncc:' || tt || ':draft', ':ncc:' || tt || ':po', ':ncc:' || tt || ':so', ':ncc:' || tt || ':del', ':ncc:' || tt || ':assign',
       ':vanan:' || tt || ':draft', ':vanan:' || tt || ':po', ':vanan:' || tt || ':so', ':vanan:' || tt || ':del', ':vanan:' || tt || ':assign',
       ':vanan:' || tt || ':handoff', ':vanan:' || tt || ':result', ':vanan:' || tt || ':verify']) x);
