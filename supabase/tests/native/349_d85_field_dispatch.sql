@@ -27,19 +27,22 @@ insert into public.sales_order_lines(id, sales_order_id, line_number, material_i
   ('7f349000-0000-4000-8000-000000000013', '7f349000-0000-4000-8000-000000000012', 1, '7f349000-0000-4000-8000-000000000003', 'Xi măng 349',
    '7f349000-0000-4000-8000-000000000001', '7f349000-0000-4000-8000-000000000001', 5000, 1, 1, 'HALF_UP', 2000, 10000000, 'MANUAL_APPROVED',
    '10000000-0000-4000-8000-000000000001', 'Giá thử');
--- The lead (Tuấn) and two workers (Hùng, Sơn), all "Thợ & tài xế" (work.claim + work.read); two trucks.
-insert into auth.users(id) values ('10000000-0000-4000-8000-000000000349'), ('10000000-0000-4000-8000-000000000350'), ('10000000-0000-4000-8000-000000000351');
+-- The lead (Tuấn), a second lead (Phong) and two workers (Hùng, Sơn), all "Thợ & tài xế" (work.claim + work.read); two trucks.
+insert into auth.users(id) values ('10000000-0000-4000-8000-000000000349'), ('10000000-0000-4000-8000-000000000350'), ('10000000-0000-4000-8000-000000000351'),
+  ('10000000-0000-4000-8000-000000000352');
 insert into public.employees(id, auth_user_id, code, display_name) values
   ('30000000-0000-4000-8000-000000000349', '10000000-0000-4000-8000-000000000349', 'NT_TC349', 'Tuấn'),
   ('30000000-0000-4000-8000-000000000350', '10000000-0000-4000-8000-000000000350', 'NT_TH350', 'Hùng'),
-  ('30000000-0000-4000-8000-000000000351', '10000000-0000-4000-8000-000000000351', 'NT_TH351', 'Sơn');
+  ('30000000-0000-4000-8000-000000000351', '10000000-0000-4000-8000-000000000351', 'NT_TH351', 'Sơn'),
+  ('30000000-0000-4000-8000-000000000352', '10000000-0000-4000-8000-000000000352', 'NT_TC352', 'Phong');
 insert into public.roles(id, code, name) values ('40000000-0000-4000-8000-000000000349', 'nt_worker349', 'Thợ thử 349');
 insert into public.role_permissions(role_id, permission_code) values
   ('40000000-0000-4000-8000-000000000349', 'work.claim'), ('40000000-0000-4000-8000-000000000349', 'work.read');
 insert into public.employee_branch_access(employee_id, branch_id, role_id) values
   ('30000000-0000-4000-8000-000000000349', '20000000-0000-4000-8000-00000000000a', '40000000-0000-4000-8000-000000000349'),
   ('30000000-0000-4000-8000-000000000350', '20000000-0000-4000-8000-00000000000a', '40000000-0000-4000-8000-000000000349'),
-  ('30000000-0000-4000-8000-000000000351', '20000000-0000-4000-8000-00000000000a', '40000000-0000-4000-8000-000000000349');
+  ('30000000-0000-4000-8000-000000000351', '20000000-0000-4000-8000-00000000000a', '40000000-0000-4000-8000-000000000349'),
+  ('30000000-0000-4000-8000-000000000352', '20000000-0000-4000-8000-00000000000a', '40000000-0000-4000-8000-000000000349');
 insert into public.vehicles(id, branch_id, code, plate_number) values
   ('7f349000-0000-4000-8000-000000000020', '20000000-0000-4000-8000-00000000000a', 'NT_V3491', '99C-349.01'),
   ('7f349000-0000-4000-8000-000000000021', '20000000-0000-4000-8000-00000000000a', 'NT_V3492', '99C-349.02');
@@ -66,6 +69,7 @@ declare
   lead constant uuid := '30000000-0000-4000-8000-000000000349';
   hung constant uuid := '30000000-0000-4000-8000-000000000350';
   son constant uuid := '30000000-0000-4000-8000-000000000351';
+  phong constant uuid := '30000000-0000-4000-8000-000000000352';
   lead_user constant uuid := '10000000-0000-4000-8000-000000000349';
   hung_user constant uuid := '10000000-0000-4000-8000-000000000350';
   son_user constant uuid := '10000000-0000-4000-8000-000000000351';
@@ -117,6 +121,7 @@ begin
   -- 2. The office grants it under Nhân viên & quyền → Quyền riêng.
   perform pg_temp.act_as(office);
   perform public.set_employee_explicit_permissions(lead, branch, array['work.field_dispatch'], 'Thợ chính chi nhánh', '7f349000-0000-4000-8000-0000000000c2');
+  perform public.set_employee_explicit_permissions(phong, branch, array['work.field_dispatch'], 'Thợ chính thứ hai', '7f349000-0000-4000-8000-0000000000c3');
   perform pg_temp.act_as(lead_user);
   assert (public.field_dispatch_summary(branch)->>'waiting')::integer = 0, 'nothing waits yet';
 
@@ -145,11 +150,13 @@ begin
   board := public.field_dispatch_board(branch);
   select x into row from jsonb_array_elements(board->'waiting') x where x->>'id' = d1::text;
   assert row->>'kind' = 'DELIVERY' and row->'lines'->0->>'quantity' = '1000' and row->'lines'->0->>'unit' = 'kg', format('delivery row %s', row);
-  assert jsonb_array_length(row->'pairs') = 6, format('3 workers x 2 trucks %s', row->'pairs');
+  assert not (row ? 'pairs') and jsonb_array_length(public.field_dispatch_options('DELIVERY', d1)->'pairs') = 8,
+    'the sheet loads 4 workers x 2 trucks';
+  assert (row->'suggestion'->>'start_at')::timestamptz = nine, format('suggested time %s', row->'suggestion');
   assert row->'suggestion'->>'from_proposal' = 'true' and row->'suggestion'->>'employee_id' = proposal_employee::text
     and row->'suggestion'->>'vehicle_id' = proposal_vehicle::text, format('the office suggestion %s', row->'suggestion');
   assert proposal_employee = hung and proposal_vehicle = v1, 'suggestion: Hùng with truck 1';
-  assert jsonb_array_length(board->'workers') = 3 and board->>'me' = lead::text, format('workers %s', board->'workers');
+  assert jsonb_array_length(board->'workers') = 4 and board->>'me' = lead::text, format('workers %s', board->'workers');
   assert (select x ? 'clocked_in_at' from jsonb_array_elements(board->'workers') x where x->>'id' = hung::text), 'Hùng on shift';
   assert (select not (x ? 'clocked_in_at') from jsonb_array_elements(board->'workers') x where x->>'id' = son::text), 'Sơn not clocked in';
   assert board::text !~* '(price|_vnd|amount|credit|debt)', 'no money on the board';
@@ -201,23 +208,38 @@ begin
 
   -- 8. Hùng declines: the lead is told (push), the delivery waits again and Hùng cannot be chosen for it.
   select w.version into version_now from public.work_items w where w.id = work;
+  perform pg_temp.act_as_admin();
+  insert into public.automation_rules(id, branch_id, name, event, channel, target, created_by)
+  values ('7f349000-0000-4000-8000-0000000000aa', branch, 'Báo nhóm khi thợ từ chối', 'work.declined', 'TELEGRAM', '-100349349', office);
+  perform pg_temp.act_as(hung_user);
   perform public.decline_portal_work_item(work, 'Ngõ hẹp, xe không vào được', version_now, '7f349000-0000-4000-8000-0000000000d5');
   perform pg_temp.act_as_admin();
-  assert exists (select 1 from public.notifications where kind = 'work.declined' and entity_id = d1 and recipient_employee_id = lead
-    and link = '/work/dispatch' and title = 'Hùng từ chối ' || num1 and body = 'Ngõ hẹp, xe không vào được'), 'lead told of the refusal';
+  assert (select count(*) from public.outbound_jobs where rule_id = '7f349000-0000-4000-8000-0000000000aa' and channel = 'TELEGRAM') = 1,
+    'the office Telegram rule fires once per refusal, whatever the number of leads';
+  assert exists (select 1 from public.notifications where kind = 'work.field_declined' and entity_id = d1 and recipient_employee_id = lead
+    and link = '/work/dispatch' and title = 'Hùng từ chối ' || num1 and body = 'Ngõ hẹp, xe không vào được · Phiếu đang chờ người khác'), 'lead told of the refusal';
+  assert not exists (select 1 from public.notifications where kind = 'work.declined' and recipient_employee_id is not null), 'work.declined stays the office''s';
   assert exists (select 1 from public.outbound_jobs j join public.notifications n on n.id = j.notification_id
-    where n.kind = 'work.declined' and n.entity_id = d1 and n.recipient_employee_id = lead and j.target = '7f349000-0000-4000-8000-0000000000f1'), 'pushed';
+    where n.kind = 'work.field_declined' and n.entity_id = d1 and n.recipient_employee_id = lead and j.target = '7f349000-0000-4000-8000-0000000000f1'), 'pushed';
   assert exists (select 1 from public.notifications where kind = 'work.declined' and entity_id = d1 and recipient_employee_id is null), 'office still told';
   set constraints all immediate;
   set constraints all deferred;
-  assert exists (select 1 from public.notifications where kind = 'delivery.pool_open' and entity_id = d1 and recipient_employee_id = lead
-    and dedupe_key like '%:' || pg_temp.dv(d1)), 'waiting again: lead told again';
+  -- Waiting again: each lead got the refusal only (no second "Việc chờ người" push); the other workers are told as in D80.
+  assert (select count(*) from public.notifications where entity_id = d1 and recipient_employee_id in (lead, phong)
+    and dedupe_key like 'delivery.pool_open:%:' || pg_temp.dv(d1)) = 2
+    and not exists (select 1 from public.notifications where entity_id = d1 and recipient_employee_id in (lead, phong)
+      and kind = 'delivery.pool_open' and dedupe_key like 'delivery.pool_open:%:' || pg_temp.dv(d1)), 'one message per lead for the refusal';
+  assert (select count(*) from public.outbound_jobs j join public.notifications n on n.id = j.notification_id
+    where n.entity_id = d1 and n.recipient_employee_id = lead and n.dedupe_key like 'delivery.pool_open:%:' || pg_temp.dv(d1)) = 1, 'one push for the lead';
+  assert exists (select 1 from public.notifications where kind = 'delivery.pool_open' and entity_id = d1 and recipient_employee_id = son
+    and link = '/work/pool' and dedupe_key like '%:' || pg_temp.dv(d1)), 'workers told it waits again';
   perform pg_temp.act_as(lead_user);
   summary := public.field_dispatch_summary(branch);
   assert (summary->>'waiting')::integer = 1 and (summary->>'declined')::integer = 1, format('summary %s', summary);
   select x into row from jsonb_array_elements(public.field_dispatch_board(branch)->'waiting') x where x->>'id' = d1::text;
   assert row->'declined'->0->>'name' = 'Hùng' and row->'declined'->0->>'reason' = 'Ngõ hẹp, xe không vào được', format('declined %s', row->'declined');
-  assert not exists (select 1 from jsonb_array_elements(row->'pairs') p where p->>'employee_id' = hung::text), 'no pair for Hùng';
+  assert not (row ? 'suggestion'), 'the office suggestion was used up: no one-tap suggestion';
+  assert not exists (select 1 from jsonb_array_elements(public.field_dispatch_options('DELIVERY', d1)->'pairs') p where p->>'employee_id' = hung::text), 'no pair for Hùng';
   version_now := (row->>'version')::integer;
   failed := null;
   begin perform public.field_assign_delivery(d1, hung, v1, null, version_now, '7f349000-0000-4000-8000-0000000000d6'); exception when others then failed := sqlerrm; end;
@@ -251,7 +273,7 @@ begin
   -- 10. Change the person before loading: the job moves to the lead himself; the office sees it.
   version_now := pg_temp.dv(d1);
   result := public.field_dispatch_options('DELIVERY', d1);
-  assert jsonb_array_length(result->'pairs') = 4 and result->'declined'->0->>'name' = 'Hùng'
+  assert jsonb_array_length(result->'pairs') = 6 and result->'declined'->0->>'name' = 'Hùng'
     and not exists (select 1 from jsonb_array_elements(result->'pairs') p where p->>'employee_id' = hung::text), format('change options %s', result);
   failed := null;
   begin perform public.field_reassign_delivery(d1, son, v2, null, version_now, '7f349000-0000-4000-8000-0000000000dc'); exception when others then failed := sqlerrm; end;
@@ -305,8 +327,9 @@ begin
   board := public.field_dispatch_board(branch);
   select x into row from jsonb_array_elements(board->'waiting') x where x->>'id' = wi::text;
   assert row->>'kind' = 'SERVICE_JOB' and row->>'title' = 'Bốc hàng lên tầng 3' and row->>'number' = sj_number
-    and jsonb_array_length(row->'candidates') = 3, format('service row %s', row);
-  assert (select (c->>'start_at')::timestamptz from jsonb_array_elements(row->'candidates') c where c->>'employee_id' = lead::text) = nine + interval '5 hours',
+    and not (row ? 'candidates') and jsonb_array_length(public.field_dispatch_options('SERVICE_JOB', wi)->'candidates') = 4, format('service row %s', row);
+  assert (select (c->>'start_at')::timestamptz from jsonb_array_elements(public.field_dispatch_options('SERVICE_JOB', wi)->'candidates') c
+    where c->>'employee_id' = lead::text) = nine + interval '5 hours',
     'the lead is free only after his delivery';
   assert board::text !~* '(price|_vnd|amount)', 'no service price';
   result := public.field_assign_work_item(wi, hung, null, (row->>'version')::integer, '7f349000-0000-4000-8000-0000000000e3');
@@ -326,7 +349,7 @@ begin
   begin perform public.field_reassign_work_item(wi, lead, nine + interval '4 hours', pg_temp.wv(wi), '7f349000-0000-4000-8000-0000000000e5');
   exception when others then get stacked diagnostics failed = message_text, hint = pg_exception_hint; end;
   assert failed = 'field_dispatch_busy' and hint like 'next_free_at=%', format('lead busy at 13:00 with his delivery: %s %s', failed, hint);
-  assert jsonb_array_length(public.field_dispatch_options('SERVICE_JOB', wi)->'candidates') = 3, 'service change options';
+  assert jsonb_array_length(public.field_dispatch_options('SERVICE_JOB', wi)->'candidates') = 4, 'service change options';
   perform pg_temp.act_as(hung_user);
   failed := null;
   begin perform public.field_dispatch_options('SERVICE_JOB', wi); exception when insufficient_privilege then failed := 'denied'; end;
@@ -343,6 +366,19 @@ begin
   begin perform public.field_reassign_work_item(wi, hung, null, pg_temp.wv(wi), '7f349000-0000-4000-8000-0000000000e8');
   exception when others then failed := sqlerrm; end;
   assert failed = 'field_dispatch_locked', format('locked once started, got %s', failed);
+
+  -- 12b. A service job not published to the pool (DIRECT, nobody on it) stays the office's.
+  perform pg_temp.act_as(office);
+  sj := public.create_service_job(branch, '7f349000-0000-4000-8000-000000000010', '7f349000-0000-4000-8000-000000000011', 'Vận chuyển',
+    'Chở đồ cho khách', nine + interval '7 hours', nine + interval '8 hours', 1, 'chuyến', null, null, null, '7f349000-0000-4000-8000-0000000000eb');
+  wi := public.publish_work_item(branch, 'SERVICE_JOB', sj, 'POOL_CLAIM', null, '7f349000-0000-4000-8000-0000000000ec');
+  perform pg_temp.act_as_admin();
+  update public.work_items set assignment_mode = 'DIRECT' where id = wi;
+  perform pg_temp.act_as(lead_user);
+  assert not exists (select 1 from jsonb_array_elements(public.field_dispatch_board(branch)->'waiting') x where x->>'id' = wi::text), 'DIRECT job not listed';
+  failed := null;
+  begin perform public.field_assign_work_item(wi, hung, null, pg_temp.wv(wi), '7f349000-0000-4000-8000-0000000000ed'); exception when others then failed := sqlerrm; end;
+  assert failed = 'field_dispatch_not_open', format('DIRECT job refused, got %s', failed);
 
   -- 13. "Đã giao hôm nay": today's jobs by worker, a short delivery marked with the receiver's phone to call.
   perform pg_temp.act_as(office);

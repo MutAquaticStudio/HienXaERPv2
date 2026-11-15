@@ -14,8 +14,12 @@
 --    cannot be chosen for it. A worker not clocked in yet can be chosen. The new worker gets the existing "Việc mới" (D80); the
 --    office gets a notification and an audit line "Tuấn đã giao … cho …"; the job page names who gave the job.
 -- 4. The lead's phone (D80 built-in push, Owner: "Có") is told when a delivery or a service job waits for a person and when a
---    worker declines one. Leads are people with work.field_dispatch and work.claim at the branch, without delivery.assign
---    (office dispatchers already get the office notifications).
+--    worker declines one (one message per refusal, of its own kind work.field_declined, so the office's Telegram / e-mail /
+--    webhook rules on work.declined still fire once). Leads are people with work.field_dispatch and work.claim at the branch,
+--    without delivery.assign (office dispatchers already get the office notifications).
+-- Locks: every command here takes the dispatch suggestion row, then the delivery, then its job (the order of the office's
+-- assignment, apply_dispatch_proposal and claim_delivery); decline_portal_work_item is aligned to it below, so a worker declining
+-- while the office or a lead gives the same delivery cannot deadlock.
 begin;
 
 -- ---------------------------------------------------------------------------------------------------------------
@@ -166,6 +170,38 @@ returns jsonb language sql stable security definer set search_path = '' as $$
 $$;
 revoke all on function private.field_delivery_pairs(uuid) from public, anon, authenticated, service_role;
 
+-- The office's dispatch suggestion (Gợi ý mode) for a waiting delivery, while that worker + truck can still take it, with the
+-- time private.dispatch_pairs would give them (the same loop, for this one pair only).
+create or replace function private.field_delivery_suggestion(target_delivery_id uuid)
+returns jsonb language plpgsql stable security definer set search_path = '' as $$
+declare d public.deliveries%rowtype; p public.delivery_dispatch_proposals%rowtype; v public.vehicles%rowtype; stop interval; start_at timestamptz;
+begin
+  select * into p from public.delivery_dispatch_proposals x where x.delivery_id = target_delivery_id;
+  if p.delivery_id is null then return null; end if;
+  select * into d from public.deliveries x where x.id = target_delivery_id;
+  select * into v from public.vehicles x where x.id = p.vehicle_id and x.branch_id = d.branch_id and x.active;
+  if v.id is null or not exists (select 1 from public.employees e where e.id = p.employee_id and e.active and e.auth_user_id is not null)
+    or not private.employee_can_report_work(p.employee_id, d.branch_id)
+    or exists (select 1 from public.delivery_dispatch_exclusions x where x.delivery_id = d.id and x.employee_id = p.employee_id)
+    or (p.employee_id is distinct from v.default_driver_employee_id and exists (select 1 from public.employee_branch_access a
+      join public.role_permissions rp on rp.role_id = a.role_id
+      where a.employee_id = p.employee_id and a.branch_id = d.branch_id and a.active and rp.permission_code = 'roles.manage')) then
+    return null;
+  end if;
+  stop := coalesce(d.scheduled_end_at - d.scheduled_at, private.delivery_stop_interval(d.branch_id));
+  if stop <= interval '0' then stop := private.delivery_stop_interval(d.branch_id); end if;
+  start_at := private.field_free_start(d.branch_id, p.employee_id, v.id, greatest(coalesce(d.scheduled_at, now()), now()), stop, d.id);
+  return jsonb_build_object('employee_id', p.employee_id, 'vehicle_id', v.id, 'start_at', start_at, 'end_at', start_at + stop, 'from_proposal', true,
+    'default_driver', v.default_driver_employee_id is not distinct from p.employee_id,
+    'day_count', (select count(*)::integer from public.delivery_assignments a join public.deliveries o on o.id = a.delivery_id
+      where a.superseded_at is null and a.employee_id = p.employee_id and o.id <> d.id and o.execution_state in ('ASSIGNED', 'DISPATCHED', 'ARRIVED', 'RESULT_SUBMITTED')
+        and (o.scheduled_at at time zone 'Asia/Ho_Chi_Minh')::date = (start_at at time zone 'Asia/Ho_Chi_Minh')::date),
+    'same_site', exists (select 1 from public.delivery_assignments a join public.deliveries o on o.id = a.delivery_id
+      where a.superseded_at is null and a.vehicle_id = v.id and o.id <> d.id and o.site_id = d.site_id and o.execution_state in ('ASSIGNED', 'DISPATCHED', 'ARRIVED')
+        and (o.scheduled_at at time zone 'Asia/Ho_Chi_Minh')::date = (start_at at time zone 'Asia/Ho_Chi_Minh')::date));
+end $$;
+revoke all on function private.field_delivery_suggestion(uuid) from public, anon, authenticated, service_role;
+
 -- Who declined a delivery, when and why.
 create or replace function private.field_delivery_declined(target_delivery_id uuid)
 returns jsonb language sql stable security definer set search_path = '' as $$
@@ -218,11 +254,12 @@ language sql stable security definer set search_path = '' as $$
 $$;
 revoke all on function private.field_dispatch_today(uuid) from public, anon, authenticated, service_role;
 
--- Service jobs published to the pool and waiting for a person (as "Nhận việc": the next 14 days).
+-- Service jobs published to the pool and waiting for a person (as "Nhận việc" and claim_work_item: POOL_CLAIM, the next 14 days).
 create or replace function private.field_waiting_work(target_branch_id uuid)
 returns setof uuid language sql stable security definer set search_path = '' as $$
   select w.id from public.work_items w
   where w.branch_id = target_branch_id and w.delivery_id is null and w.service_job_id is not null and w.execution_state = 'AVAILABLE'
+    and w.assignment_mode = 'POOL_CLAIM'
     and not exists (select 1 from public.work_item_assignments a where a.work_item_id = w.id and a.superseded_at is null)
     and w.scheduled_start < now() + interval '14 days'
   order by w.scheduled_start, w.work_number
@@ -238,9 +275,6 @@ declare
   stop interval := private.delivery_stop_interval(target_branch_id);
   waiting jsonb := '[]'::jsonb;
   d public.deliveries%rowtype;
-  pairs jsonb;
-  suggestion jsonb;
-  proposal public.delivery_dispatch_proposals%rowtype;
   services jsonb;
   given jsonb;
   workers jsonb;
@@ -251,20 +285,14 @@ begin
   end if;
   for d in select x.* from public.deliveries x where x.branch_id = target_branch_id and x.execution_state = 'PLANNED' and private.delivery_pool_open(x.id)
     order by coalesce(x.scheduled_at, x.created_at), x.delivery_number limit 30 loop
-    pairs := private.field_delivery_pairs(d.id);
-    select * into proposal from public.delivery_dispatch_proposals x where x.delivery_id = d.id;
-    suggestion := null;
-    if proposal.delivery_id is not null then
-      select e.value || jsonb_build_object('from_proposal', true) into suggestion from jsonb_array_elements(pairs) e(value)
-      where e.value->>'employee_id' = proposal.employee_id::text and e.value->>'vehicle_id' = proposal.vehicle_id::text limit 1;
-    end if;
-    if suggestion is null and jsonb_array_length(pairs) > 0 then suggestion := pairs->0; end if;
     waiting := waiting || jsonb_build_array(jsonb_strip_nulls(jsonb_build_object(
       'kind', 'DELIVERY', 'id', d.id, 'number', d.delivery_number, 'version', d.version, 'requested_at', d.scheduled_at,
       'customer_name', d.customer_name_snapshot, 'site_name', d.site_name_snapshot, 'address', d.delivery_address_snapshot,
       'lines', private.field_delivery_lines(d.id),
       'declined', private.field_delivery_declined(d.id),
-      'pairs', pairs, 'suggestion', suggestion)));
+      -- Who could take it and when is loaded when the sheet opens (field_dispatch_options): every worker x truck for every waiting
+      -- delivery here took seconds on a busy branch.
+      'suggestion', private.field_delivery_suggestion(d.id))));
   end loop;
 
   select coalesce(jsonb_agg(q.item order by q.start_at, q.number), '[]'::jsonb) into services from (
@@ -272,8 +300,7 @@ begin
       'kind', 'SERVICE_JOB', 'id', w.id, 'number', s.job_number, 'version', w.version, 'requested_at', w.scheduled_start,
       'duration_minutes', (extract(epoch from (w.scheduled_end - w.scheduled_start)) / 60)::integer,
       'title', s.service_type, 'description', s.description, 'customer_name', c.display_name, 'site_name', cs.name, 'address', cs.address_text,
-      'quantity', trim_scale(s.planned_quantity)::text, 'unit', s.unit_label,
-      'candidates', private.field_service_candidates(w.id))) as item
+      'quantity', trim_scale(s.planned_quantity)::text, 'unit', s.unit_label)) as item
     from public.work_items w join public.service_jobs s on s.id = w.service_job_id
       join public.customers c on c.id = s.customer_id join public.customer_sites cs on cs.id = s.site_id
     where w.id in (select x from private.field_waiting_work(target_branch_id) x limit 30)) q;
@@ -333,7 +360,7 @@ end $$;
 revoke all on function public.field_dispatch_summary(uuid) from public, anon;
 grant execute on function public.field_dispatch_summary(uuid) to authenticated;
 
--- "Đổi người": who could take one of today's jobs instead, and when.
+-- The sheet ("Chọn người" / "Chọn người khác" / "Đổi người"): who could take this delivery or service job, and when.
 create or replace function public.field_dispatch_options(target_kind text, target_id uuid)
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 declare branch uuid;
@@ -393,7 +420,8 @@ begin
     end if;
     return jsonb_build_object('work_item_id', receipt.result_entity_id, 'delivery_id', target_delivery_id, 'replayed', true);
   end if;
-  -- One winner: the dispatch suggestion row, then the delivery (the order of claim_delivery and apply_dispatch_proposal).
+  -- One winner: the dispatch suggestion row, then the delivery, then its job — the order of claim_delivery, apply_dispatch_proposal
+  -- and the office's assignment (private.assign_delivery_core), and of decline_portal_work_item since D85, so none can deadlock.
   perform 1 from public.delivery_dispatch_proposals p where p.delivery_id = target_delivery_id for update;
   select * into d from public.deliveries x where x.id = target_delivery_id for update;
   if d.id is null or not private.has_permission(d.branch_id, 'work.field_dispatch') then raise exception 'forbidden' using errcode = '42501'; end if;
@@ -524,7 +552,10 @@ begin
   if mode = 'ASSIGN' then
     if w.execution_state = 'CANCELLED' or s.execution_state = 'CANCELLED' then raise exception 'field_dispatch_not_open' using errcode = '55000'; end if;
     if w.execution_state <> 'AVAILABLE' or current_assignment.id is not null then raise exception 'field_dispatch_taken' using errcode = 'PT409'; end if;
-    if w.scheduled_start >= now() + interval '14 days' then raise exception 'field_dispatch_not_open' using errcode = '55000'; end if;
+    -- Only jobs published to the pool wait for a person (as claim_work_item); a DIRECT job is the office's.
+    if w.assignment_mode <> 'POOL_CLAIM' or w.scheduled_start >= now() + interval '14 days' then
+      raise exception 'field_dispatch_not_open' using errcode = '55000';
+    end if;
   else
     if w.started_at is not null or w.execution_state in ('IN_PROGRESS', 'BLOCKED', 'DONE', 'VERIFIED') then
       raise exception 'field_dispatch_locked' using errcode = '55000';
@@ -664,7 +695,8 @@ begin
   if d.id is null or not private.delivery_pool_open(d.id) then return 0; end if;
   select string_agg(x->>'material_name' || ' ' || (x->>'quantity') || ' ' || (x->>'unit'), ', ') into goods
   from jsonb_array_elements(private.field_delivery_lines(d.id)) x;
-  for lead in select * from private.field_dispatch_leads(d.branch_id) loop
+  for lead in select x from private.field_dispatch_leads(d.branch_id) x
+    where not exists (select 1 from public.delivery_dispatch_exclusions ex where ex.delivery_id = d.id and ex.employee_id = x) loop
     perform private.notify(d.branch_id, 'delivery.pool_open', 'delivery', d.id,
       'Việc chờ người: ' || coalesce(d.site_name_snapshot, d.customer_name_snapshot, d.delivery_number),
       concat_ws(' · ', d.delivery_number, left(goods, 300), nullif(d.delivery_address_snapshot, '')),
@@ -740,7 +772,9 @@ create constraint trigger work_items_field_dispatch_notify
   for each row when (new.delivery_id is null and new.execution_state = 'AVAILABLE')
   execute function private.field_dispatch_work_notify_trigger();
 
--- A worker declining a delivery: the leads are told too (the office already is). Body unchanged except that line.
+-- A worker declining a delivery: the leads are told too (the office already is), once — kind work.field_declined, keyed as the
+-- "Việc chờ người" notice of the delivery's new version so that one is not sent as well. The delivery is now locked before its
+-- job, the order every dispatch command takes (office, suggestion, Kho việc, lead). Otherwise unchanged.
 CREATE OR REPLACE FUNCTION public.decline_portal_work_item(target_work_item_id uuid, reason text, expected_version integer, operation_id uuid)
  RETURNS uuid
  LANGUAGE plpgsql
@@ -756,6 +790,8 @@ declare
   receipt public.command_receipts%rowtype;
   lead uuid;
   who text;
+  source_delivery uuid;
+  reopened integer;
 begin
   if auth.uid() is null or me is null or decline_portal_work_item.operation_id is null then raise exception 'forbidden' using errcode = '42501'; end if;
   if char_length(trim(coalesce(reason, ''))) not between 3 and 300 then raise exception 'decline_reason_required' using errcode = '22023'; end if;
@@ -768,6 +804,8 @@ begin
     end if;
     return receipt.result_entity_id;
   end if;
+  select w.delivery_id into source_delivery from public.work_items w where w.id = target_work_item_id;
+  if source_delivery is not null then perform 1 from public.deliveries x where x.id = source_delivery for update; end if;
   select * into work from public.work_items w where w.id = target_work_item_id for update;
   select * into current_assignment from public.work_item_assignments a where a.work_item_id = work.id and a.superseded_at is null;
   if work.id is null or current_assignment.employee_id is distinct from me or not private.has_permission(work.branch_id, 'work.claim') then
@@ -795,10 +833,12 @@ begin
   perform private.notify(d.branch_id, 'work.declined', 'delivery', d.id,
     who || ' từ chối ' || d.delivery_number, trim(reason),
     '/admin/dispatch', 'delivery.assign', null, 'work.declined:' || decline_portal_work_item.operation_id);
-  -- D85: and every lead worker of the branch, to his Điều phối tab.
+  -- D85: and every lead worker of the branch, to his Điều phối tab: one message that also says it waits again.
+  select x.version into reopened from public.deliveries x where x.id = d.id;
   for lead in select x from private.field_dispatch_leads(d.branch_id) x where x <> me loop
-    perform private.notify(d.branch_id, 'work.declined', 'delivery', d.id, who || ' từ chối ' || d.delivery_number, trim(reason),
-      '/work/dispatch', 'work.field_dispatch', lead, 'work.declined:' || decline_portal_work_item.operation_id || ':' || lead);
+    perform private.notify(d.branch_id, 'work.field_declined', 'delivery', d.id, who || ' từ chối ' || d.delivery_number,
+      trim(reason) || ' · Phiếu đang chờ người khác', '/work/dispatch', 'work.field_dispatch', lead,
+      'delivery.pool_open:' || d.id || ':' || lead || ':' || reopened);
   end loop;
   insert into public.audit_events(actor_auth_user_id, branch_id, action, entity_type, entity_id, trace_id, changed_fields, reason)
   values ((select auth.uid()), d.branch_id, 'work_item.declined', 'work_item', work.id, decline_portal_work_item.operation_id,
@@ -839,8 +879,9 @@ begin
     end if;
   end loop;
   -- D80: the worker's own jobs reach his phone without a rule (unless a PUSH rule for the event already sends them).
-  -- D85: so do the lead's (a job waiting for a person, a worker declining one).
-  if new.recipient_employee_id is not null and new.kind in ('work.assigned', 'delivery.pool_open', 'work.pool_open', 'work.declined')
+  -- D85: so do the lead's (a job waiting for a person, a worker declining one — work.field_declined, no rule event, so rules on
+  -- work.declined keep firing once per refusal).
+  if new.recipient_employee_id is not null and new.kind in ('work.assigned', 'delivery.pool_open', 'work.pool_open', 'work.field_declined')
     and not exists (select 1 from public.automation_rules r where r.branch_id = new.branch_id and r.active and r.event = new.kind and r.channel = 'PUSH') then
     for sub in select s.* from public.push_subscriptions s join public.employees e on e.auth_user_id = s.auth_user_id
       where e.id = new.recipient_employee_id and e.active order by s.id

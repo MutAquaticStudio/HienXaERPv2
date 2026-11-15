@@ -152,7 +152,6 @@ export function FieldDispatchBoardView({ board }: { board: FieldDispatchBoard })
           const declined = job.kind === "DELIVERY" ? job.declined ?? [] : [];
           const suggestion = job.kind === "DELIVERY" ? job.suggestion ?? null : null;
           const suggestedVehicle = suggestion ? vehicles.get(suggestion.vehicle_id) : undefined;
-          const canAssign = job.kind === "SERVICE_JOB" ? job.candidates.length > 0 : job.pairs.length > 0;
           return <article key={job.id} className={fd.job} data-declined={declined.length ? "" : undefined} aria-label={`${job.number} · ${headline(job)}`}>
             <div className={fd.jobTop}>
               <span className={`${fd.badge} ${declined.length ? fd.badgeDanger : ""}`}>
@@ -172,14 +171,13 @@ export function FieldDispatchBoardView({ board }: { board: FieldDispatchBoard })
               <span><strong>Gợi ý: {nameOf(suggestion.employee_id)} · {suggestedVehicle.code} · đi {fieldTime(suggestion.start_at, today)}</strong>
                 <small>{suggestionReason(suggestion, suggestedVehicle.code)}</small></span>
             </div>}
-            {!canAssign && <p className={fd.hint}>Chưa có thợ hoặc xe nhận được việc này. Văn phòng xử lý.</p>}
-            {canAssign && <div className={fd.actions} data-two={suggestion ? "" : undefined}>
+            <div className={fd.actions} data-two={suggestion ? "" : undefined}>
               {suggestion && job.kind === "DELIVERY" && <button type="button" className={styles.button} disabled={busy !== null} onClick={() => quick(job)}>
                 {busy === job.id ? "Đang giao..." : `Giao cho ${suggestion.employee_id === board.me ? "bạn" : nameOf(suggestion.employee_id)}`}</button>}
               <button type="button" className={suggestion ? styles.buttonSecondary : styles.button} disabled={busy !== null}
                 onClick={(event) => open({ mode: "ASSIGN", job }, event.currentTarget)}>
                 {declined.length ? "Giao người khác" : suggestion ? "Chọn người khác" : "Chọn người"}</button>
-            </div>}
+            </div>
           </article>;
         })}
         {waiting.length === 0 && <div className={fd.empty}><strong>Không còn việc chờ người</strong><span>Việc mới từ văn phòng sẽ hiện ở đây.</span></div>}
@@ -255,7 +253,8 @@ function AssignSheet({ target, board, returnFocusTo, onClose, onDone, onStale, s
   const reassign = target.mode === "REASSIGN" ? target.row : null;
   const kind = target.mode === "ASSIGN" ? target.job.kind : target.row.kind;
   const isDelivery = kind === "DELIVERY";
-  const [options, setOptions] = useState<Options>(target.mode === "ASSIGN" ? { status: "ready", pairs: [], declined: [], candidates: [] } : { status: "loading" });
+  // Who could take it and when: loaded when the sheet opens (the board only carries the office's suggestion).
+  const [options, setOptions] = useState<Options>({ status: "loading" });
   const [workerId, setWorkerId] = useState<string | null>(null);
   const [vehicleId, setVehicleId] = useState<string | null>(null);
   const [timeMode, setTimeMode] = useState<"system" | "custom">("system");
@@ -264,11 +263,11 @@ function AssignSheet({ target, board, returnFocusTo, onClose, onDone, onStale, s
   const [message, setMessage] = useState("");
   const [freeAt, setFreeAt] = useState<string | null>(null);
 
-  // "Đổi người": the free workers and trucks are loaded when the sheet opens.
+  const optionsKind = target.mode === "ASSIGN" ? target.job.kind : target.row.kind;
+  const optionsId = target.mode === "ASSIGN" ? target.job.id : target.row.kind === "DELIVERY" ? target.row.id : target.row.work_item_id ?? target.row.id;
   useEffect(() => {
-    if (!reassign) return;
     let live = true;
-    fieldDispatchOptionsAction(reassign.kind, reassign.kind === "DELIVERY" ? reassign.id : reassign.work_item_id ?? reassign.id)
+    fieldDispatchOptionsAction(optionsKind, optionsId)
       .then((result) => {
         if (!live) return;
         setOptions(result.ok ? { status: "ready", pairs: result.pairs ?? [], declined: result.declined ?? [], candidates: result.candidates ?? [] }
@@ -276,7 +275,7 @@ function AssignSheet({ target, board, returnFocusTo, onClose, onDone, onStale, s
       })
       .catch(() => { if (live) setOptions({ status: "error", message: "Chưa tải được danh sách thợ. Kiểm tra kết nối rồi mở lại." }); });
     return () => { live = false; };
-  }, [reassign]);
+  }, [optionsKind, optionsId]);
 
   // Focus inside, Escape closes, Tab stays in the sheet, the page behind does not scroll; focus goes back on close.
   useEffect(() => {
@@ -300,8 +299,11 @@ function AssignSheet({ target, board, returnFocusTo, onClose, onDone, onStale, s
 
   // The job as the worker list and truck list read it.
   const job: FieldDispatchWaiting | null = useMemo(() => {
-    if (target.mode === "ASSIGN") return target.job;
     if (options.status !== "ready") return null;
+    if (target.mode === "ASSIGN") {
+      return target.job.kind === "DELIVERY" ? { ...target.job, pairs: options.pairs, declined: options.declined.length ? options.declined : target.job.declined }
+        : { ...target.job, candidates: options.candidates };
+    }
     const row = target.row;
     return row.kind === "DELIVERY"
       ? { kind: "DELIVERY", id: row.id, number: row.number, version: row.version, lines: [], pairs: options.pairs, declined: options.declined, suggestion: null }
