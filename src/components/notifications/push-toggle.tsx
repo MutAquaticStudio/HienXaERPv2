@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { isNativeApp } from "@/lib/app-shell/native-app";
 import { deletePushSubscriptionAction, savePushSubscriptionAction } from "@/modules/notifications/push-actions";
 
-type Status = "checking" | "unsupported" | "not-configured" | "blocked" | "off" | "on" | "install-first";
+type Status = "checking" | "unsupported" | "not-configured" | "blocked" | "off" | "on" | "install-first" | "android-app";
 
 function applicationServerKey(base64: string) {
   const padded = (base64 + "=".repeat((4 - (base64.length % 4)) % 4)).replace(/-/g, "+").replace(/_/g, "/");
@@ -13,6 +14,7 @@ function applicationServerKey(base64: string) {
 /**
  * F5 "Thông báo trên điện thoại": registers the service worker and this browser's push address, so the automation rules can
  * reach this phone. On iPhone the app must first be added to the home screen (Safari → Chia sẻ → Thêm vào MH chính).
+ * D82: the Android app shows the site in a WebView, which cannot receive web push; it says so instead of offering the button.
  */
 export function PushToggle({ publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "", prompt }: {
   publicKey?: string;
@@ -27,6 +29,7 @@ export function PushToggle({ publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KE
     let live = true;
     async function check() {
       if (!publicKey) return "not-configured" as const;
+      if (isNativeApp(navigator.userAgent)) return "android-app" as const;
       const iphone = /iPhone|iPad/.test(navigator.userAgent);
       const standalone = window.matchMedia?.("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
       if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) return iphone && !standalone ? "install-first" as const : "unsupported" as const;
@@ -76,6 +79,7 @@ export function PushToggle({ publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KE
     off: "Máy này chưa nhận thông báo.",
     on: "Máy này đang nhận thông báo.",
     "install-first": "Trên iPhone: mở bằng Safari → Chia sẻ → “Thêm vào MH chính”, rồi mở ứng dụng từ màn hình chính để bật thông báo.",
+    "android-app": "App Android chưa nhận được thông báo đẩy. Muốn điện thoại báo việc mới: mở app.hienxavlxd.com bằng Chrome trên máy này, đăng nhập rồi bật thông báo ở đây.",
   };
   if (prompt) {
     if (status !== "off" && status !== "install-first" && !message) return null;

@@ -4,6 +4,7 @@ import { isZaloPhone } from "@/modules/zalo/phone";
 import { redirect } from "next/navigation";
 import { roleLabel } from "@/components/access/presentation";
 import styles from "@/components/portal/portal.module.css";
+import { openedInNativeApp } from "@/lib/app-shell/server";
 import { displayLogin, isPhoneLogin } from "@/lib/auth/login-identifier";
 import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { catalogChoiceLabel } from "@/modules/catalog/presentation";
@@ -22,6 +23,7 @@ export default async function CustomerAccountPage() {
   const login = context.user.email ?? "";
   const canZalo = account.membership_role === "OWNER" || account.membership_role === "FINANCE_CONTACT";
   const zalo = canZalo ? await context.supabase.rpc("customer_zalo_notify", { target_customer_id: customer.id }) : null;
+  const inApp = await openedInNativeApp();
   return (
     <div className={styles.page}>
       <header className={styles.sectionHead}>
@@ -36,7 +38,7 @@ export default async function CustomerAccountPage() {
           <Link className={styles.buttonSecondary} href="/customer/change-password?from=account">Đổi mật khẩu</Link>
           <form action="/auth/logout" method="post"><input type="hidden" name="surface" value="customer" /><button className={styles.buttonSecondary} type="submit">Đăng xuất</button></form>
         </div>
-        <p className={styles.hint}>Đặt hàng nhanh hơn trên điện thoại: <Link href="/tai-app">Tải app Hiền Xa</Link>.</p>
+        {!inApp && <p className={styles.hint}>Đặt hàng nhanh hơn trên điện thoại: <Link href="/tai-app">Tải app Hiền Xa</Link>.</p>}
       </section>
       <section className={styles.card} aria-labelledby="account-customer">
         <h2 id="account-customer">Thông tin khách hàng</h2>

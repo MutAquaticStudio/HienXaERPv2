@@ -11,7 +11,7 @@ function footnoteParts(text: string) {
  */
 export function AuthFrame({ children, footnote, logoUrl, tagline = "Hệ thống nội bộ", installLink = false }: {
   children: ReactNode; footnote?: ReactNode; logoUrl?: string | null; tagline?: string;
-  /** D81: the sign-in screens point to /tai-app (hidden once opened from the installed app). */
+  /** D81: the sign-in screens point to /tai-app (hidden once opened from the installed app; D82: also inside the Android app). */
   installLink?: boolean;
 }) {
   return <main className="auth-screen">

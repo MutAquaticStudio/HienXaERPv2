@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { EMAIL_LINK_HANDOFF_SCRIPT } from "@/components/auth/email-link-handoff";
 import { Suspense } from "react";
 import { NavigationProgress } from "@/components/navigation-progress";
+import { AppUpdateBanner } from "@/components/install/app-update-banner";
 import { VietnameseFormValidation } from "@/components/vietnamese-form-validation";
 import "@fontsource/noto-sans/400.css";
 import "@fontsource/noto-sans/500.css";
@@ -36,7 +37,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang="vi" {...appearanceAttributes(appearance)} suppressHydrationWarning>
       <head><script dangerouslySetInnerHTML={{ __html: APPEARANCE_SCRIPT }} /><script dangerouslySetInnerHTML={{ __html: EMAIL_LINK_HANDOFF_SCRIPT }} /></head>
-      <body><Suspense fallback={null}><NavigationProgress /></Suspense><VietnameseFormValidation />{children}</body>
+      <body><Suspense fallback={null}><NavigationProgress /></Suspense><VietnameseFormValidation />{children}<AppUpdateBanner /></body>
     </html>
   );
 }

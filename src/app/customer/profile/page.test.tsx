@@ -1,7 +1,8 @@
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
-const m = vi.hoisted(() => ({ client: vi.fn(), rpc: vi.fn() }));
+const m = vi.hoisted(() => ({ client: vi.fn(), rpc: vi.fn(), inApp: vi.fn(async () => false) }));
+vi.mock("@/lib/app-shell/server", () => ({ openedInNativeApp: m.inApp }));
 vi.mock("@/modules/portal/server", () => ({ authenticatedPortalClient: m.client, portalRpc: m.rpc }));
 vi.mock("@/modules/zalo/notify-actions", () => ({ setCustomerZaloNotifyAction: vi.fn() }));
 vi.mock("next/navigation", () => ({ redirect: (path: string) => { throw new Error(`redirect:${path}`); } }));
@@ -46,4 +47,13 @@ it("sends a signed-out visitor to the customer sign-in", async () => {
 it("D47: the customer's owner can switch Zalo notifications off", async () => {
   render(await CustomerAccountPage());
   expect(screen.getByRole("checkbox", { name: "Nhận thông báo qua Zalo" })).toBeChecked();
+});
+
+it("D82: the 'Tải app' hint is hidden inside the Android app", async () => {
+  render(await CustomerAccountPage());
+  expect(screen.getByRole("link", { name: "Tải app Hiền Xa" })).toHaveAttribute("href", "/tai-app");
+  cleanup();
+  m.inApp.mockResolvedValueOnce(true);
+  render(await CustomerAccountPage());
+  expect(screen.queryByRole("link", { name: "Tải app Hiền Xa" })).not.toBeInTheDocument();
 });

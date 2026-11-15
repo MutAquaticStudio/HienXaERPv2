@@ -2505,3 +2505,12 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .install-more { justify-self: center; border: 0; background: none; cursor: pointer; }
 .auth-install-link { display: inline-block; margin-top: 10px; color: var(--primary); font-size: var(--font-size-caption); font-weight: 700; }
 @media (display-mode: standalone) { .auth-install-link { display: none; } }
+
+/* D82: "Có bản app mới" inside an older Android app, above the portal tab bars, below dialogs. */
+.app-update { position: fixed; z-index: 85; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); left: 12px; display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: center; justify-content: space-between; max-width: 480px; margin-inline: auto; padding: 12px 14px; color: var(--text); border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-lg); }
+.app-update-text { flex: 1 1 220px; min-width: 0; }
+.app-update-text strong { display: block; font-size: 0.95rem; }
+.app-update-text p { margin: 2px 0 0; color: var(--muted); font-size: 0.85rem; line-height: 1.4; }
+.app-update-actions { display: flex; flex: 0 0 auto; gap: 8px; }
+/* Room to scroll the page end (e.g. "Đăng nhập") out from under the card. */
+body:has(.app-update) { padding-bottom: 150px; }

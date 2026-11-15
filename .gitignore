@@ -22,7 +22,10 @@ reports/document-pdf-forms/qa/
 
 __pycache__/
 
-# D81 Android app build output and signing keys (never commit keys)
+# D81/D82 Android app build output and signing keys (never commit keys)
 mobile/android/build/
+mobile/android/app/build/
+mobile/android/.gradle/
+mobile/android/local.properties
 *.keystore
 *.jks

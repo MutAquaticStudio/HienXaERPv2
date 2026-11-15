@@ -5,6 +5,7 @@ import { PortalLogin } from "@/components/auth/portal-login";
 import { resolveInternalAccess } from "@/lib/access/context";
 import { internalLandingPath } from "@/lib/access/landing";
 import { loadSignInLogoUrl } from "@/lib/company/sign-in-logo";
+import { openedInNativeApp } from "@/lib/app-shell/server";
 import { accountPortals } from "@/lib/auth/account-portals";
 import { AppError } from "@/lib/core/errors";
 import { createServerSupabase } from "@/lib/supabase/server";
@@ -31,5 +32,5 @@ export default async function Home({ searchParams }: PageProps<"/">) {
     if (error instanceof AppError && error.code === "FORBIDDEN" && await signedInCustomer().catch(() => false)) redirect("/customer");
   }
   if (landing) redirect(landing);
-  return <AuthFrame footnote={LOGIN_FOOTNOTE} logoUrl={await loadSignInLogoUrl()} tagline="Đăng nhập nhân viên và khách hàng" installLink><PortalLogin initial={portal === "work" || portal === "customer" ? portal : "admin"} remember={portal !== "work" && portal !== "customer"} /></AuthFrame>;
+  return <AuthFrame footnote={LOGIN_FOOTNOTE} logoUrl={await loadSignInLogoUrl()} tagline="Đăng nhập nhân viên và khách hàng" installLink={!(await openedInNativeApp())}><PortalLogin initial={portal === "work" || portal === "customer" ? portal : "admin"} remember={portal !== "work" && portal !== "customer"} /></AuthFrame>;
 }
