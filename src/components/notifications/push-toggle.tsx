@@ -14,7 +14,11 @@ function applicationServerKey(base64: string) {
  * F5 "Thông báo trên điện thoại": registers the service worker and this browser's push address, so the automation rules can
  * reach this phone. On iPhone the app must first be added to the home screen (Safari → Chia sẻ → Thêm vào MH chính).
  */
-export function PushToggle({ publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "" }: { publicKey?: string }) {
+export function PushToggle({ publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "", prompt }: {
+  publicKey?: string;
+  /** D80: a short card (heading + one button) shown only while this phone could still switch notifications on. */
+  prompt?: { title: string; text: string; className?: string };
+}) {
   const [status, setStatus] = useState<Status>("checking");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -43,7 +47,7 @@ export function PushToggle({ publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KE
       const json = subscription.toJSON();
       const saved = await savePushSubscriptionAction({ endpoint: json.endpoint, keys: json.keys, userAgent: navigator.userAgent.slice(0, 300) });
       if (!saved) { await subscription.unsubscribe(); setMessage("Chưa lưu được máy này. Thử lại sau."); return; }
-      setStatus("on"); setMessage("Đã bật. Máy này sẽ nhận thông báo theo quy tắc tự động.");
+      setStatus("on"); setMessage(prompt ? "Đã bật. Điện thoại sẽ báo khi có việc mới." : "Đã bật. Máy này sẽ nhận thông báo theo quy tắc tự động.");
     } catch {
       setMessage("Không bật được thông báo trên trình duyệt này.");
     } finally {
@@ -73,6 +77,17 @@ export function PushToggle({ publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KE
     on: "Máy này đang nhận thông báo.",
     "install-first": "Trên iPhone: mở bằng Safari → Chia sẻ → “Thêm vào MH chính”, rồi mở ứng dụng từ màn hình chính để bật thông báo.",
   };
+  if (prompt) {
+    if (status !== "off" && status !== "install-first" && !message) return null;
+    return <section className={prompt.className} aria-label={prompt.title}>
+      <h2>{prompt.title}</h2>
+      <div className="push-toggle">
+        <p className="muted">{status === "off" ? prompt.text : status === "install-first" ? text["install-first"] : null}</p>
+        {status === "off" && <button type="button" className="button button-primary" disabled={busy} onClick={() => { void turnOn(); }}>{busy ? "Đang bật..." : "Bật thông báo trên máy này"}</button>}
+        {message && <p className="form-message" role="status">{message}</p>}
+      </div>
+    </section>;
+  }
   return <div className="push-toggle">
     <p className="muted">{text[status]}</p>
     {status === "off" && <button type="button" className="button button-primary" disabled={busy} onClick={() => { void turnOn(); }}>{busy ? "Đang bật..." : "Bật thông báo trên máy này"}</button>}

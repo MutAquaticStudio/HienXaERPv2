@@ -2,6 +2,7 @@ import { jobStateLabel, directionsHref, telHref } from "@/modules/portal/present
 import Link from "next/link";
 import { ChevronRight, Clock3, Navigation, Phone, PlusCircle } from "lucide-react";
 
+import { PushToggle } from "@/components/notifications/push-toggle";
 import { JobSteps } from "@/components/portal/job-steps";
 import styles from "@/components/portal/portal.module.css";
 import { requireInternalAccess } from "@/lib/access/context";
@@ -110,6 +111,9 @@ export default async function WorkHomePage({ searchParams }: { searchParams: Pro
       </section>}
 
       {poolCount > 0 && <Link className={styles.poolHint} href="/work/pool"><PlusCircle aria-hidden size={18} /><span>{deliveryCount > 0 ? `Có ${deliveryCount} phiếu giao chờ người nhận${snapshot.pool.length ? ` và ${snapshot.pool.length} việc khác` : ""}` : `Có ${snapshot.pool.length} việc mới có thể nhận`}</span>Xem</Link>}
+
+      <PushToggle prompt={{ title: "Báo việc mới về điện thoại", className: styles.card,
+        text: "Bật để điện thoại báo ngay khi có việc giao cho bạn hoặc phiếu giao chờ người nhận." }} />
     </div>
   );
 }
