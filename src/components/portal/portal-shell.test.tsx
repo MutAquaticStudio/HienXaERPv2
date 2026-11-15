@@ -60,6 +60,14 @@ it("opens 'Bạn muốn đặt gì?' from the green Đặt button with two equal
   unmount();
 });
 
+it("marks both portal shells so the dark palette covers them (D84)", () => {
+  for (const audience of ["worker", "customer"] as const) {
+    const { container, unmount } = render(<PortalShell audience={audience}>QA</PortalShell>);
+    expect(container.firstElementChild).toHaveClass("portal-shell");
+    unmount();
+  }
+});
+
 it("shows no order button to accountants and receivers (D75, FB10)", () => {
   const { container, unmount } = render(<PortalShell audience="customer" canViewDebt>QA</PortalShell>);
   const menu = [...container.querySelectorAll("nav")].at(-1) as HTMLElement;

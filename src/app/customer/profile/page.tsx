@@ -1,10 +1,13 @@
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { ZaloNotifyToggle } from "@/components/zalo/zalo-notify-toggle";
 import { isZaloPhone } from "@/modules/zalo/phone";
 import { redirect } from "next/navigation";
 import { roleLabel } from "@/components/access/presentation";
+import { PortalAppearance } from "@/components/portal/portal-appearance";
 import styles from "@/components/portal/portal.module.css";
 import { openedInNativeApp } from "@/lib/app-shell/server";
+import { APPEARANCE_COOKIE, parseAppearance } from "@/lib/appearance";
 import { displayLogin, isPhoneLogin } from "@/lib/auth/login-identifier";
 import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { catalogChoiceLabel } from "@/modules/catalog/presentation";
@@ -24,6 +27,7 @@ export default async function CustomerAccountPage() {
   const canZalo = account.membership_role === "OWNER" || account.membership_role === "FINANCE_CONTACT";
   const zalo = canZalo ? await context.supabase.rpc("customer_zalo_notify", { target_customer_id: customer.id }) : null;
   const inApp = await openedInNativeApp();
+  const appearance = parseAppearance((await cookies()).get(APPEARANCE_COOKIE)?.value);
   return (
     <div className={styles.page}>
       <header className={styles.sectionHead}>
@@ -64,6 +68,7 @@ export default async function CustomerAccountPage() {
         </article>) : <p className={styles.empty}>Chưa có địa chỉ giao hàng.</p>}
         <p className={styles.hint}>Thêm địa chỉ mới ngay khi đặt hàng: chọn “+ Địa chỉ giao mới” ở mục Giao tới.</p>
       </section>
+      <PortalAppearance initial={appearance} />
     </div>
   );
 }

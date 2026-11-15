@@ -1,8 +1,9 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 
-const m = vi.hoisted(() => ({ inApp: vi.fn(async () => false) }));
+const m = vi.hoisted(() => ({ inApp: vi.fn(async () => false), appearance: undefined as string | undefined }));
 vi.mock("@/lib/app-shell/server", () => ({ openedInNativeApp: m.inApp }));
+vi.mock("next/headers", () => ({ cookies: async () => ({ get: (name: string) => name === "hx-appearance" && m.appearance ? { value: m.appearance } : undefined }) }));
 
 vi.mock("@/components/notifications/push-toggle", () => ({ PushToggle: () => null }));
 vi.mock("@/modules/portal/actions", () => ({
@@ -18,6 +19,15 @@ it("lets the worker sign out from Tôi (FB18)", async () => {
   const form = button.closest("form")!;
   expect(form).toHaveAttribute("action", "/auth/logout");
   expect(form.querySelector('input[name="surface"]')).toHaveAttribute("value", "work");
+});
+
+it("D84: Tôi has Giao diện with this device's saved choice", async () => {
+  m.appearance = "dark.lg.be-vietnam";
+  render(await WorkProfilePage());
+  const section = screen.getByRole("region", { name: "Giao diện" });
+  expect(within(section).getByLabelText("Tối")).toBeChecked();
+  expect(within(section).getByLabelText("Lớn")).toBeChecked();
+  m.appearance = undefined;
 });
 
 it("D82: inside the Android app neither the push card nor the 'Tải app' hint is shown", async () => {

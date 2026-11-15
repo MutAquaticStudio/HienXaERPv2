@@ -1,13 +1,17 @@
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { ChevronRight, Clock3, KeyRound, LogOut, MapPin, MessageSquare } from "lucide-react";
+import { PortalAppearance } from "@/components/portal/portal-appearance";
 import styles from "@/components/portal/portal.module.css";
 import { PushToggle } from "@/components/notifications/push-toggle";
 import { openedInNativeApp } from "@/lib/app-shell/server";
+import { APPEARANCE_COOKIE, parseAppearance } from "@/lib/appearance";
 import { getWorkerPortalSnapshot } from "@/modules/portal/actions";
 
 export default async function WorkProfilePage() {
   const { employee } = await getWorkerPortalSnapshot();
   const inApp = await openedInNativeApp();
+  const appearance = parseAppearance((await cookies()).get(APPEARANCE_COOKIE)?.value);
   return (
     <div className={styles.page}>
       <header className={styles.sectionHead}>
@@ -30,6 +34,7 @@ export default async function WorkProfilePage() {
         <PushToggle />
         <p className={styles.hint}>Chưa cài app? <Link href="/tai-app">Tải app Hiền Xa cho điện thoại</Link>.</p>
       </section>}
+      <PortalAppearance initial={appearance} />
       <form action="/auth/logout" method="post">
         <input type="hidden" name="surface" value="work" />
         <button className={styles.buttonSecondary} type="submit"><LogOut aria-hidden size={18} />Đăng xuất</button>

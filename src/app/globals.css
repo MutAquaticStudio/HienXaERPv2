@@ -264,8 +264,8 @@ h3 { font-size: var(--font-size-body); }
 /* D29: confirming a sale, collecting money and other commercial "go" actions are green, as in KiotViet. */
 .button-commerce { color: #fff; background: var(--commerce); }
 .button-commerce:hover:not(:disabled) { background: var(--commerce-strong); }
-:root[data-color="dark"]:has(.app-shell) .button-commerce { background: #1d7346; }
-:root[data-color="dark"]:has(.app-shell) .button-commerce:hover:not(:disabled) { background: #1f7a4c; }
+:root[data-color="dark"]:has(.app-shell, .portal-shell) .button-commerce { background: #1d7346; }
+:root[data-color="dark"]:has(.app-shell, .portal-shell) .button-commerce:hover:not(:disabled) { background: #1f7a4c; }
 .button:disabled { opacity: 0.5; cursor: not-allowed; }
 .mobile-menu, .mobile-close { min-width: 44px; min-height: 44px; border-radius: 9px; }
 .button-secondary { border-color: var(--border-strong); color: var(--text); background: var(--surface); }
@@ -1434,9 +1434,10 @@ td.cell-wrap { min-width: 11rem; max-width: 26rem; white-space: normal; }
 :root[data-font="noto"] { --font-sans: "Noto Sans", sans-serif; }
 :root[data-font-size="sm"] { --font-size-caption: 12px; --font-size-label: 12px; --font-size-table: 13px; --font-size-body: 14px; --font-size-section: 16px; --font-size-title: clamp(20px, 2.2vw, 23px); }
 :root[data-font-size="lg"] { --font-size-caption: 14px; --font-size-label: 14px; --font-size-table: 16px; --font-size-body: 18px; --font-size-section: 21px; --font-size-title: clamp(26px, 3vw, 30px); }
-/* Dark colours cover the internal workspace (the screens with the side menu); portals and sign-in keep their own colours.
-   Browsers without :has() simply stay light. */
-:root[data-color="dark"]:has(.app-shell) {
+/* Dark colours cover the internal workspace (the screens with the side menu) and, since D84, the worker and customer
+   portals (.portal-shell, whose own tokens are in src/components/portal/portal.module.css). Sign-in screens and /tai-app
+   keep their light colours. Browsers without :has() simply stay light. */
+:root[data-color="dark"]:has(.app-shell, .portal-shell) {
   color-scheme: dark;
   --background: #0f1620;
   --surface: #172130;
@@ -1473,21 +1474,29 @@ td.cell-wrap { min-width: 11rem; max-width: 26rem; white-space: normal; }
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.5);
 }
-:root[data-color="dark"]:has(.app-shell) .button-primary,
-:root[data-color="dark"]:has(.app-shell) .route-step-number { background: #2b74c6; color: #fff; }
-:root[data-color="dark"]:has(.app-shell) th { background: var(--surface-soft); }
-:root[data-color="dark"]:has(.app-shell) tbody tr:hover { background: #1b2736; }
-:root[data-color="dark"]:has(.app-shell) .status-info { background: #16304d; }
-:root[data-color="dark"]:has(.app-shell) .mock-banner { border-color: #2f5f92; color: #9cc8f7; background: #13263b; }
+:root[data-color="dark"]:has(.app-shell, .portal-shell) .button-primary,
+:root[data-color="dark"]:has(.app-shell, .portal-shell) .route-step-number { background: #2b74c6; color: #fff; }
+/* D84: the other solid primary fills with white text (on the dark theme's light --primary they fell to 2.6:1). */
+:root[data-color="dark"]:has(.app-shell, .portal-shell) :is(.chat-bubble-row.mine .chat-bubble, .messenger-unread, .chat-dock-dot, .delivery-progress li.current .delivery-progress-dot,
+  .discount-mode button[aria-pressed="true"]) { background: #2b74c6; color: #fff; }
+:root[data-color="dark"]:has(.app-shell, .portal-shell) .import-steps li::before { background: #2b74c6; color: #fff; }
+:root[data-color="dark"]:has(.app-shell, .portal-shell) .notification-count { background: #c4392f; }
+:root[data-color="dark"]:has(.app-shell, .portal-shell) th { background: var(--surface-soft); }
+:root[data-color="dark"]:has(.app-shell, .portal-shell) tbody tr:hover { background: #1b2736; }
+:root[data-color="dark"]:has(.app-shell, .portal-shell) .status-info { background: #16304d; }
+:root[data-color="dark"]:has(.app-shell, .portal-shell) .mock-banner { border-color: #2f5f92; color: #9cc8f7; background: #13263b; }
 :root[data-color="dark"]:has(.app-shell) :is(.field input, .field select, .field textarea, .doc-editor-search input, .doc-editor-lines input, .doc-editor-lines select,
   .list-filters input, .list-filters select, .price-book-filters input, .price-book-filters select, .price-book-tools input, .price-book-tools select,
   .price-book-save input, .price-book-table input[inputmode], .stock-count-sheet input, .stock-count-sheet select, input, select, textarea) {
   border-color: #3a4b62; color: var(--text); background: #111a26;
 }
-:root[data-color="dark"]:has(.app-shell) .button-secondary:hover:not(:disabled) { border-color: #3a4b62; }
-:root[data-color="dark"]:has(.app-shell) .stock-count-table tr.row-variance td { background: #2d2512; }
-:root[data-color="dark"]:has(.app-shell) :is(.credit-override, .form-message.warning, .route-stop.warning) { border-color: #6b5320; }
-:root[data-color="dark"]:has(.app-shell) .portal-accept { border-color: #2f5f92; background: #13263b; }
+:root[data-color="dark"]:has(.app-shell, .portal-shell) .button-secondary:hover:not(:disabled) { border-color: #3a4b62; }
+:root[data-color="dark"]:has(.app-shell, .portal-shell) .stock-count-table tr.row-variance td { background: #2d2512; }
+/* D84: messages keep a dark edge instead of the light pink/green one. */
+:root[data-color="dark"]:has(.app-shell, .portal-shell) .form-message { border-color: #6b2a26; }
+:root[data-color="dark"]:has(.app-shell, .portal-shell) .form-message.success { border-color: #1f5a3c; }
+:root[data-color="dark"]:has(.app-shell, .portal-shell) :is(.credit-override, .form-message.warning, .route-stop.warning) { border-color: #6b5320; }
+:root[data-color="dark"]:has(.app-shell, .portal-shell) .portal-accept { border-color: #2f5f92; background: #13263b; }
 
 /* Cài đặt: company heading preview and appearance choices. */
 .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 18px; align-items: start; }
