@@ -1420,3 +1420,10 @@ a.card:active { transform: scale(0.985); }
 .shortcutGrid a { min-height: 56px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 8px; border-radius: 14px; font-weight: 700; text-align: center; text-decoration: none; }
 .shortcutGoods { color: #fff; background: var(--portal-commerce); }
 .shortcutService { color: var(--primary-text); background: var(--surface); border: 1.5px solid var(--primary); }
+
+/* D79: a delivery waiting for dispatch in "Nhận việc" — what to carry, then the truck to take it with. */
+.claimLines { list-style: none; margin: 0; padding: 10px 0; display: grid; gap: 6px; border-block: 1px solid var(--border); }
+.claimLines li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 0.92rem; }
+.claimLines li span { min-width: 0; overflow-wrap: anywhere; }
+.claimLines li strong { flex: none; font-variant-numeric: tabular-nums; }
+.claimLabel { margin: 0; font-weight: 700; font-size: 0.92rem; }

@@ -54,7 +54,7 @@ function failure(error: { code?: string; message?: string }): CommandOutcome {
   return { status: "UNKNOWN", message: "Chưa rõ đơn đã gửi chưa. Bấm “Gửi đơn” lần nữa — hệ thống không tạo đơn trùng." };
 }
 
-/** "Gửi đơn": a DRAFT order "Chờ duyệt" priced on the server; the same operation id never creates a second order. */
+/** "Gửi đơn": an order priced on the server, "Chờ duyệt" unless approved at once (D79); the same operation id never creates a second order. */
 export async function submitPortalOrderAction(input: PortalOrderInput): Promise<CommandOutcome> {
   const parsed = orderInput.safeParse(input);
   if (!parsed.success) return { status: "FAILED", message: "Kiểm tra lại: ít nhất một mặt hàng với số lượng hợp lệ và một địa chỉ giao." };
@@ -73,7 +73,11 @@ export async function submitPortalOrderAction(input: PortalOrderInput): Promise<
   if (typeof data !== "string") return { status: "UNKNOWN", message: "Chưa rõ đơn đã gửi chưa. Bấm “Gửi đơn” lần nữa — hệ thống không tạo đơn trùng." };
   revalidatePath("/customer");
   revalidatePath("/customer/orders");
-  return { status: "SUCCESS", message: "Đã gửi đơn. Cửa hàng sẽ duyệt và báo ngày giao.", resultId: data };
+  // D79: an order within the credit limit and fully in stock is approved at once.
+  const { data: order } = await context.supabase.rpc("customer_portal_order", { target_order_id: data });
+  const approved = (order as { state?: string } | null)?.state === "CONFIRMED";
+  return { status: "SUCCESS", resultId: data,
+    message: approved ? "Đã gửi và duyệt đơn. Cửa hàng đang xếp xe giao." : "Đã gửi đơn. Cửa hàng sẽ duyệt và báo ngày giao." };
 }
 
 /** "Hủy đơn" while the order still waits for approval. */

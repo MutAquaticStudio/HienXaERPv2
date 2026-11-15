@@ -159,9 +159,8 @@ begin
   exception when check_violation then failed := true; end;
   assert failed, 'already cancelled';
 
-  -- The business approves the second with the normal confirm; the customer can no longer cancel it.
-  perform pg_temp.act_as('10000000-0000-4000-8000-000000000001');
-  perform public.confirm_sales_order(second, '7f210000-0000-4000-8000-0000000000d1');
+  -- D79: the second (cement only, in stock, within the credit limit) was approved at once, without "Duyệt đơn";
+  -- the customer can no longer cancel it.
   perform pg_temp.act_as('7f210000-0000-4000-8000-0000000000a1');
   detail := public.customer_portal_order(second);
   assert detail->>'state' = 'CONFIRMED' and not (detail->>'can_cancel')::boolean, 'approved';

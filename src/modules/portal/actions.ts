@@ -13,6 +13,7 @@ import type {
   CustomerPortalSnapshot,
   PaymentNotice,
   WorkerJob,
+  WorkerPoolDelivery,
   WorkerPortalSnapshot,
 } from "@/modules/portal/types";
 
@@ -25,6 +26,21 @@ async function portalClientOrRedirect(loginPath: string) {
 export async function getWorkerPortalSnapshot() {
   const supabase = await portalClientOrRedirect("/work/login");
   return portalRpc<WorkerPortalSnapshot>(supabase, "worker_portal_snapshot");
+}
+
+/** D79: deliveries waiting for dispatch that the signed-in worker may take ("Nhận việc"). */
+export async function getWorkerDeliveryPool() {
+  const supabase = await portalClientOrRedirect("/work/login");
+  return portalRpc<WorkerPoolDelivery[]>(supabase, "worker_delivery_pool");
+}
+
+export async function getWorkerDeliveryPoolCount() {
+  const supabase = await portalClientOrRedirect("/work/login");
+  try {
+    return await portalRpc<number>(supabase, "worker_delivery_pool_count");
+  } catch {
+    return 0;
+  }
 }
 
 export async function getWorkerPortalJob(id: string) {
