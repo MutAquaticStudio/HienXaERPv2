@@ -5,7 +5,16 @@ import { PortalLogin } from "@/components/auth/portal-login";
 import { resolveInternalAccess } from "@/lib/access/context";
 import { internalLandingPath } from "@/lib/access/landing";
 import { loadSignInLogoUrl } from "@/lib/company/sign-in-logo";
+import { accountPortals } from "@/lib/auth/account-portals";
 import { AppError } from "@/lib/core/errors";
+import { createServerSupabase } from "@/lib/supabase/server";
+
+/** D81: a customer still signed in (the installed app reopened) goes straight to the customer portal. */
+async function signedInCustomer() {
+  const supabase = await createServerSupabase();
+  const { data } = await supabase.auth.getUser();
+  return Boolean(data.user) && (await accountPortals(supabase, data.user!.id)).customer;
+}
 
 export default async function Home({ searchParams }: PageProps<"/">) {
   // Supabase falls back to the site root when a recovery redirect is not allowed; finish it on the password page.
@@ -19,7 +28,8 @@ export default async function Home({ searchParams }: PageProps<"/">) {
     landing = internalLandingPath(access.permissions, access.roleName);
   } catch (error) {
     if (error instanceof AppError && error.code === "CONFLICT") redirect("/select-branch?surface=admin");
+    if (error instanceof AppError && error.code === "FORBIDDEN" && await signedInCustomer().catch(() => false)) redirect("/customer");
   }
   if (landing) redirect(landing);
-  return <AuthFrame footnote={LOGIN_FOOTNOTE} logoUrl={await loadSignInLogoUrl()} tagline="Đăng nhập nhân viên và khách hàng"><PortalLogin initial={portal === "work" || portal === "customer" ? portal : "admin"} remember={portal !== "work" && portal !== "customer"} /></AuthFrame>;
+  return <AuthFrame footnote={LOGIN_FOOTNOTE} logoUrl={await loadSignInLogoUrl()} tagline="Đăng nhập nhân viên và khách hàng" installLink><PortalLogin initial={portal === "work" || portal === "customer" ? portal : "admin"} remember={portal !== "work" && portal !== "customer"} /></AuthFrame>;
 }

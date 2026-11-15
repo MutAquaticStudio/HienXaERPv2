@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { EMAIL_LINK_HANDOFF_SCRIPT } from "@/components/auth/email-link-handoff";
 import { Suspense } from "react";
@@ -23,7 +23,12 @@ export const metadata: Metadata = {
     template: "%s | Hiền Xa ERP",
   },
   description: "Hệ thống điều hành bán hàng, cung ứng và công nợ Hiền Xa.",
+  // D81: installed from Safari ("Thêm vào MH chính") it opens full screen as "Hiền Xa" with its own icon.
+  appleWebApp: { capable: true, title: "Hiền Xa", statusBarStyle: "default" },
+  icons: { apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }] },
 };
+
+export const viewport: Viewport = { themeColor: "#172c49" };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   // Giao diện is chosen per device (Cài đặt → Giao diện) and rendered here so the first paint already uses it.

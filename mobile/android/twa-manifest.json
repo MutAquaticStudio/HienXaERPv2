@@ -1,0 +1,41 @@
+{
+  "packageId": "com.hienxavlxd.app",
+  "host": "app.hienxavlxd.com",
+  "name": "Hiền Xa",
+  "launcherName": "Hiền Xa",
+  "display": "standalone",
+  "orientation": "portrait",
+  "themeColor": "#172C49",
+  "themeColorDark": "#0F2038",
+  "navigationColor": "#172C49",
+  "navigationColorDark": "#0F2038",
+  "navigationDividerColor": "#172C49",
+  "navigationDividerColorDark": "#0F2038",
+  "backgroundColor": "#0F2038",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "/icon-512.png",
+  "maskableIconUrl": "/icon-maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "",
+    "alias": "hienxa"
+  },
+  "appVersionCode": 1,
+  "appVersion": "1.0.0",
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-core",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": false,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://app.hienxavlxd.com/",
+  "minSdkVersion": 24,
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": []
+}

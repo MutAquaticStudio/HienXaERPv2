@@ -2490,3 +2490,18 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .supplier-assignments-add { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
 .supplier-assignments-add select { min-height: 42px; }
 .supplier-assignment-new td { background: color-mix(in srgb, var(--warning-soft) 55%, transparent); }
+
+/* D81 "Cài app Hiền Xa" (/tai-app): one block per phone, numbered steps, the main action full width. */
+.install-guide { display: grid; gap: 20px; margin-top: 16px; }
+.install-block { display: grid; gap: 10px; }
+.install-block + .install-block { padding-top: 18px; border-top: 1px solid var(--border); }
+.install-block h2 { margin: 0; font-size: 17px; }
+.install-block .muted { margin: 0; font-size: var(--font-size-caption); }
+.install-block .form-message { margin: 0; }
+.install-action { width: 100%; justify-content: center; min-height: 48px; }
+.install-steps { display: grid; gap: 8px; margin: 0; padding-left: 22px; line-height: 1.5; }
+.install-icon { display: inline-block; margin: 0 2px; vertical-align: -3px; color: var(--primary); }
+.install-safari { display: grid; gap: 10px; }
+.install-more { justify-self: center; border: 0; background: none; cursor: pointer; }
+.auth-install-link { display: inline-block; margin-top: 10px; color: var(--primary); font-size: var(--font-size-caption); font-weight: 700; }
+@media (display-mode: standalone) { .auth-install-link { display: none; } }
