@@ -3,6 +3,7 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
 const m = vi.hoisted(() => ({ tables: {} as Record<string, unknown[]>, calls: [] as { table: string; method: string; args: unknown[] }[], deliveries: 0 }));
 vi.mock("server-only", () => ({}));
+vi.mock("@/components/notifications/push-toggle", () => ({ PushToggle: () => null }));
 vi.mock("@/lib/access/context", () => ({ requireInternalAccess: async () => ({ employeeId: "e1", branchId: "b1" }) }));
 vi.mock("@/modules/attendance/forms", () => ({ ClockPanel: ({ clockedIn }: { clockedIn: boolean }) => <button type="button">{clockedIn ? "Ra ca" : "Vào ca"}</button> }));
 vi.mock("@/modules/portal/actions", () => ({ getWorkerPortalSnapshot: async () => ({ employee: { display_name: "Anh Hải" }, jobs: [], pool: [] }),
