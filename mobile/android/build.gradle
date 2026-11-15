@@ -1,0 +1,4 @@
+// D82: app Android "Hiền Xa" — native shell (WebView của chính app) mở https://app.hienxavlxd.com.
+plugins {
+    id 'com.android.application' version '8.9.1' apply false
+}

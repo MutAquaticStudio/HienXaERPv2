@@ -19,6 +19,7 @@ it("tells the phones apart; Zalo and Chrome on iPhone are not Safari; opened fro
   expect(detectDevice(IPHONE_ZALO, false)).toBe("ios-other");
   expect(detectDevice(DESKTOP, false)).toBe("desktop");
   expect(detectDevice(IPHONE_SAFARI, true)).toBe("installed");
+  expect(detectDevice(`${ANDROID} HienXaAndroid/2.0.0`, false)).toBe("installed");
 });
 
 it("Android: the APK button and its three steps only", async () => {

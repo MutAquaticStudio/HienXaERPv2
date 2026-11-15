@@ -2,10 +2,12 @@ import Link from "next/link";
 import { ChevronRight, Clock3, KeyRound, LogOut, MapPin, MessageSquare } from "lucide-react";
 import styles from "@/components/portal/portal.module.css";
 import { PushToggle } from "@/components/notifications/push-toggle";
+import { openedInNativeApp } from "@/lib/app-shell/server";
 import { getWorkerPortalSnapshot } from "@/modules/portal/actions";
 
 export default async function WorkProfilePage() {
   const { employee } = await getWorkerPortalSnapshot();
+  const inApp = await openedInNativeApp();
   return (
     <div className={styles.page}>
       <header className={styles.sectionHead}>
@@ -25,7 +27,7 @@ export default async function WorkProfilePage() {
       <section className={styles.card}>
         <h2>Báo việc mới về điện thoại</h2>
         <PushToggle />
-        <p className={styles.hint}>Chưa cài app? <Link href="/tai-app">Tải app Hiền Xa cho điện thoại</Link>.</p>
+        {!inApp && <p className={styles.hint}>Chưa cài app? <Link href="/tai-app">Tải app Hiền Xa cho điện thoại</Link>.</p>}
       </section>
       <form action="/auth/logout" method="post">
         <input type="hidden" name="surface" value="work" />

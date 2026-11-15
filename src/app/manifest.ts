@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 /**
  * F5 + D81: the installed app "Hiền Xa" — one app for the three portals (Vận hành / Thợ & tài xế / Khách hàng). iPhone installs it
- * from Safari ("Thêm vào MH chính"); Android installs the APK (a Trusted Web Activity over this same manifest, see /tai-app).
+ * from Safari ("Thêm vào MH chính"); Android installs the APK (D82: a native app showing this site in its own WebView, see /tai-app).
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {

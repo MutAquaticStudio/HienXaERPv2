@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Hiền Xa</string>
+    <string name="offline_title">Chưa kết nối được</string>
+    <string name="offline_body">Kiểm tra mạng (Wi-Fi hoặc 4G) rồi bấm Thử lại.</string>
+    <string name="retry">Thử lại</string>
+    <string name="choose_file">Chọn ảnh hoặc tệp</string>
+    <string name="download_started">Đang tải %1$s về thư mục Tải xuống</string>
+    <string name="no_app_for_link">Máy chưa có ứng dụng mở được liên kết này.</string>
+    <string name="download_saved">Đã lưu %1$s vào thư mục Tải xuống</string>
+    <string name="download_failed">Chưa tải được tệp. Kiểm tra mạng rồi thử lại.</string>
+    <string name="no_app_for_file">Đã lưu vào thư mục Tải xuống, nhưng máy chưa có ứng dụng mở được tệp này.</string>
+    <string name="webview_missing">Máy cần cập nhật “Android System WebView” trên CH Play rồi mở lại app Hiền Xa.</string>
+</resources>

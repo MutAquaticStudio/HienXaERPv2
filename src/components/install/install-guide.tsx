@@ -3,13 +3,14 @@
 import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { Share, SquarePlus } from "lucide-react";
+import { isNativeApp } from "@/lib/app-shell/native-app";
 
 export const APK_PATH = "/app/hien-xa.apk";
 type Device = "android" | "ios-safari" | "ios-other" | "installed" | "desktop";
 
-/** Which install steps fit this device (D81). In-app browsers (Zalo, Facebook) count as "not Safari" on iPhone. */
+/** Which install steps fit this device (D81). In-app browsers (Zalo, Facebook) count as "not Safari" on iPhone; the Android app itself (D82) is "installed". */
 export function detectDevice(userAgent: string, standalone: boolean): Device {
-  if (standalone) return "installed";
+  if (standalone || isNativeApp(userAgent)) return "installed";
   const iphone = /iPhone|iPad|iPod/.test(userAgent) || (/Macintosh/.test(userAgent) && /Mobile/.test(userAgent));
   if (iphone) {
     const otherBrowser = /CriOS|FxiOS|EdgiOS|OPiOS|GSA\/|Zalo|FBAN|FBAV|Instagram|Line\//.test(userAgent);
@@ -34,10 +35,10 @@ function AndroidSteps({ inApp }: { inApp: boolean }) {
     {inApp && <p className="form-message warning" role="note">Đang mở trong Zalo / Facebook: nếu bấm tải không được, chọn “Mở bằng trình duyệt” (Chrome) rồi tải lại.</p>}
     <ol className="install-steps">
       <li>Bấm <strong>Tải app Android</strong>, tải xong thì mở tệp <strong>hien-xa.apk</strong>.</li>
-      <li>Nếu máy hỏi, cho phép <strong>cài ứng dụng từ nguồn này</strong>, rồi bấm <strong>Cài đặt</strong>.</li>
-      <li>Mở app <strong>Hiền Xa</strong>, đăng nhập đúng tab của mình và <strong>cho phép thông báo</strong>.</li>
+      <li>Nếu máy hỏi, cho phép <strong>cài ứng dụng từ nguồn này</strong>, rồi bấm <strong>Cài đặt</strong> (đã có app cũ: bấm <strong>Cập nhật</strong>, không cần gỡ).</li>
+      <li>Mở app <strong>Hiền Xa</strong>, đăng nhập đúng tab của mình. Khi app hỏi, cho phép <strong>Máy ảnh</strong> và <strong>Vị trí</strong> để chụp ảnh giao hàng và chấm công.</li>
     </ol>
-    <p className="muted">Máy cần có Chrome (điện thoại Android thường có sẵn).</p>
+    <p className="muted">Android 7 trở lên.</p>
   </section>;
 }
 

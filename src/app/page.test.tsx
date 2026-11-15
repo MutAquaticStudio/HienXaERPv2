@@ -1,7 +1,7 @@
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
-const m = vi.hoisted(() => ({ access: vi.fn(), portals: vi.fn(), user: vi.fn(), redirect: vi.fn((path: string) => { throw new Error(`redirect:${path}`); }) }));
+const m = vi.hoisted(() => ({ inApp: vi.fn(async () => false), access: vi.fn(), portals: vi.fn(), user: vi.fn(), redirect: vi.fn((path: string) => { throw new Error(`redirect:${path}`); }) }));
 vi.mock("next/navigation", () => ({ redirect: m.redirect }));
 vi.mock("@/lib/access/context", () => ({ resolveInternalAccess: m.access }));
 vi.mock("@/lib/access/landing", () => ({ internalLandingPath: () => "/admin" }));
@@ -9,6 +9,7 @@ vi.mock("@/lib/auth/actions", () => ({ loginAction: vi.fn() }));
 vi.mock("@/lib/company/sign-in-logo", () => ({ loadSignInLogoUrl: async () => null }));
 vi.mock("@/lib/auth/account-portals", () => ({ accountPortals: m.portals }));
 vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({ auth: { getUser: m.user } }) }));
+vi.mock("@/lib/app-shell/server", () => ({ openedInNativeApp: m.inApp }));
 import { AppError } from "@/lib/core/errors";
 import Home from "./page";
 
@@ -47,4 +48,14 @@ it("D81: a customer still signed in (the app reopened) goes straight to the cust
   m.portals.mockResolvedValue({ admin: false, work: false, customer: false });
   render(await Home(params()));
   expect(screen.getByRole("heading", { level: 1, name: "Đăng nhập" })).toBeInTheDocument();
+});
+
+it("D82: points to /tai-app, except inside the Android app", async () => {
+  m.access.mockRejectedValue(new AppError({ code: "UNAUTHENTICATED", message: "Chưa đăng nhập", status: 401 }));
+  render(await Home(params()));
+  expect(screen.getByRole("link", { name: "Tải app Hiền Xa cho điện thoại" })).toHaveAttribute("href", "/tai-app");
+  cleanup();
+  m.inApp.mockResolvedValueOnce(true);
+  render(await Home(params()));
+  expect(screen.queryByRole("link", { name: "Tải app Hiền Xa cho điện thoại" })).not.toBeInTheDocument();
 });

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { openedInNativeApp } from "@/lib/app-shell/server";
 import { loadSignInLogoUrl } from "@/lib/company/sign-in-logo";
 import { AuthFrame } from "./auth-frame";
 import { PortalLogin } from "./portal-login";
@@ -20,7 +21,7 @@ export async function AuthScreen({ surface, title, detail, notice, children, swi
 }) {
   const logoUrl = await loadSignInLogoUrl();
   // The shared sign-in also serves customers, so it does not call itself internal; the customer screens name the portal.
-  if (!children) return <AuthFrame footnote={LOGIN_FOOTNOTE} logoUrl={logoUrl} tagline="Đăng nhập nhân viên và khách hàng" installLink><PortalLogin initial={surface} notice={notice} /></AuthFrame>;
+  if (!children) return <AuthFrame footnote={LOGIN_FOOTNOTE} logoUrl={logoUrl} tagline="Đăng nhập nhân viên và khách hàng" installLink={!(await openedInNativeApp())}><PortalLogin initial={surface} notice={notice} /></AuthFrame>;
   const link = switchLink === undefined ? { href: "/", label: "← Về màn đăng nhập" } : switchLink;
   return <AuthFrame logoUrl={logoUrl} tagline={copy[surface].eyebrow}><h1>{title}</h1>{detail && <p className="muted">{detail}</p>}
     {notice && <p className="form-message" role="status">{notice}</p>}{children}
