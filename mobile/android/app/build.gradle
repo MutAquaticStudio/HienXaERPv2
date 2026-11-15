@@ -16,8 +16,8 @@ android {
         minSdk 24
         targetSdk 36
         // Version 1 was the Trusted Web Activity; same package and key, so this installs over it.
-        versionCode 3
-        versionName '2.1.0'
+        versionCode 4
+        versionName '2.2.0'
         buildConfigField 'String', 'APP_URL', '"https://app.hienxavlxd.com/"'
         buildConfigField 'String', 'APP_HOST', '"app.hienxavlxd.com"'
     }

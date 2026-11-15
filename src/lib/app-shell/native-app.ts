@@ -5,7 +5,7 @@
 const NATIVE_APP_AGENT = /\bHienXaAndroid\/(\d+(?:\.\d+)*)/;
 
 /** The APK published at /app/hien-xa.apk. scripts/mobile/build-android.mjs refuses an APK with another versionName. */
-export const ANDROID_APP_VERSION = "2.1.0";
+export const ANDROID_APP_VERSION = "2.2.0";
 export const ANDROID_APK_PATH = "/app/hien-xa.apk";
 /** The D81 app (Trusted Web Activity) opened the site in Chrome with this referrer. */
 export const TWA_REFERRER = "android-app://com.hienxavlxd.app";

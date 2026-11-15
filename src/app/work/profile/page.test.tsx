@@ -20,11 +20,13 @@ it("lets the worker sign out from Tôi (FB18)", async () => {
   expect(form.querySelector('input[name="surface"]')).toHaveAttribute("value", "work");
 });
 
-it("D82: the 'Tải app' hint is hidden inside the Android app", async () => {
+it("D82: inside the Android app neither the push card nor the 'Tải app' hint is shown", async () => {
   render(await WorkProfilePage());
+  expect(screen.getByRole("heading", { name: "Báo việc mới về điện thoại" })).toBeInTheDocument();
   expect(screen.getByRole("link", { name: "Tải app Hiền Xa cho điện thoại" })).toHaveAttribute("href", "/tai-app");
   cleanup();
   m.inApp.mockResolvedValueOnce(true);
   render(await WorkProfilePage());
+  expect(screen.queryByRole("heading", { name: "Báo việc mới về điện thoại" })).not.toBeInTheDocument();
   expect(screen.queryByRole("link", { name: "Tải app Hiền Xa cho điện thoại" })).not.toBeInTheDocument();
 });

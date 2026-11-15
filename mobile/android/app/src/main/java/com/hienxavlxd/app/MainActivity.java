@@ -10,6 +10,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
@@ -68,6 +69,9 @@ public class MainActivity extends Activity {
     private static final int REQUEST_CAMERA = 11;
     private static final int REQUEST_LOCATION = 12;
     private static final int REQUEST_STORAGE = 13;
+    private static final int REQUEST_LOCATION_FIRST = 14;
+    private static final String PREFS = "hien_xa";
+    private static final String ASKED_LOCATION = "asked_location";
     private static final String STATE_URL = "hx_url";
     private static final String BRIDGE = "HienXaAndroid";
     private static final long CAMERA_FILE_MAX_AGE_MS = 24L * 60 * 60 * 1000;
@@ -242,7 +246,14 @@ public class MainActivity extends Activity {
         }
 
         @Override
+        public void doUpdateVisitedHistory(WebView view, String url, boolean isReload) {
+            // Also called when the site changes page without reloading (signing in, the tab bar).
+            askLocationOnceForWorkers(url);
+        }
+
+        @Override
         public void onPageFinished(WebView view, String url) {
+            askLocationOnceForWorkers(url);
             if (!mainFrameFailed) offline.setVisibility(View.GONE);
             view.evaluateJavascript(PAGE_HELPER, null);
             CookieManager.getInstance().flush();
@@ -301,6 +312,23 @@ public class MainActivity extends Activity {
             geoCallback = callback;
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_LOCATION);
         }
+    }
+
+    /**
+     * D82 (Owner 16/11: "App nên yêu cầu cấp quyền gps khi lần đầu mở"): the first time the worker portal opens, the app
+     * asks for location at once (chấm công, chia sẻ vị trí), instead of waiting for the first clock-in. Asked once per
+     * install; customers and office staff are not asked. Later the page still asks whenever it needs location.
+     */
+    private void askLocationOnceForWorkers(String url) {
+        if (url == null || hasLocation() || geoCallback != null) return;
+        Uri uri = Uri.parse(url);
+        String path = uri.getPath();
+        if (!isAppUrl(uri) || path == null || !(path.equals("/work") || path.startsWith("/work/"))) return;
+        SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+        if (prefs.getBoolean(ASKED_LOCATION, false)) return;
+        prefs.edit().putBoolean(ASKED_LOCATION, true).apply();
+        requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                REQUEST_LOCATION_FIRST);
     }
 
     private boolean hasLocation() {

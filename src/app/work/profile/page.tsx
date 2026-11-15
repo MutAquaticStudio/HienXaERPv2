@@ -24,11 +24,12 @@ export default async function WorkProfilePage() {
         <div className={styles.kv}><span>Mã nhân sự</span><strong>{employee.code}</strong></div>
         <p className={styles.hint}>Nếu quyền chi nhánh hoặc phân công bị thu hồi, lần đọc tiếp theo sẽ bị chặn ngay.</p>
       </section>
-      <section className={styles.card}>
+      {/* D82: the Android app cannot receive push yet; workers there are not told about it (Owner 16/11). */}
+      {!inApp && <section className={styles.card}>
         <h2>Báo việc mới về điện thoại</h2>
         <PushToggle />
-        {!inApp && <p className={styles.hint}>Chưa cài app? <Link href="/tai-app">Tải app Hiền Xa cho điện thoại</Link>.</p>}
-      </section>
+        <p className={styles.hint}>Chưa cài app? <Link href="/tai-app">Tải app Hiền Xa cho điện thoại</Link>.</p>
+      </section>}
       <form action="/auth/logout" method="post">
         <input type="hidden" name="surface" value="work" />
         <button className={styles.buttonSecondary} type="submit"><LogOut aria-hidden size={18} />Đăng xuất</button>
