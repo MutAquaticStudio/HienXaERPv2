@@ -96,7 +96,8 @@ export function PortalShell({
   });
 
   return (
-    <div className={styles.shell}>
+    // "portal-shell" lets globals.css give the portals the system's dark palette (D84); the portal tokens use styles.shell.
+    <div className={`${styles.shell} portal-shell`}>
       <a className="skip-link" href="#main-content">Bỏ qua menu</a>
       <aside className={styles.side}>
         <div className={styles.sideBrand}>

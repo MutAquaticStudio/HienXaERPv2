@@ -40,6 +40,12 @@ export type WeekDay = {
   note?: string;
 };
 
+/** D84: what each day's colour means, in words for screen readers (the strip also marks late and absent days by shape). */
+export const WEEK_TONE_LABEL: Record<WeekDay["tone"], string> = {
+  done: "đã chấm công", late: "vào trễ hoặc về sớm", open: "đang trong ca", leave: "nghỉ phép", absent: "vắng",
+  today: "hôm nay", planned: "có lịch làm", off: "không có lịch",
+};
+
 /** "Chấm công tuần này": Monday → Sunday with what happened (or is planned) each day, and worked / scheduled days. */
 export function attendanceWeek(monday: string, today: string, records: ReadonlyArray<AttendanceCell & { work_date: string }>, plannedDates: readonly string[]) {
   const planned = new Set(plannedDates);
