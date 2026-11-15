@@ -5,6 +5,8 @@ import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
 import { reasonOrDefault } from "@/lib/core/reason";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { reachSentence } from "@/modules/announcements/presentation";
+import { priceAnnouncementReach } from "@/modules/announcements/reach";
 import { portalRpc, PortalRpcError } from "@/modules/portal/server";
 
 export type PricingState = { message: string; success?: boolean };
@@ -55,10 +57,13 @@ export async function savePricingRuleAction(_: PricingState | undefined, form: F
     Object.assign(values, { scope_type: scope, customer_id: scope === "CUSTOMER_MATERIAL" || scope === "CUSTOMER_GROUP" ? customer : null, material_id: scope === "CUSTOMER_GROUP" ? null : material, material_group_id: scope === "CUSTOMER_GROUP" ? group : null, customer_tier_code: scope === "CUSTOMER_TIER" ? tier : null, price_uom_id: uom });
   }
   try {
-    await portalRpc(await createServerSupabase(), "save_pricing_rule", { target_id: targetId, target_branch_id: access.branchId, supersedes_id: mode === "replace" ? supersedesId : null, expected_version: mode === "replace" ? expectedVersion : null, values_json: values, change_reason: reason, operation_id: operationId });
+    const supabase = await createServerSupabase();
+    await portalRpc(supabase, "save_pricing_rule", { target_id: targetId, target_branch_id: access.branchId, supersedes_id: mode === "replace" ? supersedesId : null, expected_version: mode === "replace" ? expectedVersion : null, values_json: values, change_reason: reason, operation_id: operationId });
     revalidatePath("/admin/settings/pricing");
     revalidatePath("/admin/products/pricing");
-    return { message: mode === "replace" ? "Đã tạo phiên bản giá mới; lịch sử giữ nguyên." : "Đã tạo chính sách giá.", success: true };
+    // D83: the save announced the change to each customer whose own price changed.
+    const reach = await priceAnnouncementReach(supabase, access.branchId, targetId);
+    return { message: `${mode === "replace" ? "Đã tạo phiên bản giá mới; lịch sử giữ nguyên." : "Đã tạo chính sách giá."}${reachSentence(reach)}`, success: true };
   } catch (error) { return pricingError(error); }
 }
 

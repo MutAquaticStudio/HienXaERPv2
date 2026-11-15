@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
+import { PendingUpdates } from "@/components/announcements/pending-updates";
 import { AppShell } from "@/components/app-shell";
 import { NO_EMPLOYEE_MESSAGE, resolveInternalAccess, requireInternalAccess } from "@/lib/access/context";
+import { internalLandingPath } from "@/lib/access/landing";
 import { AppError } from "@/lib/core/errors";
 import { loadCompanyLogoUrl } from "@/lib/company/profile";
 import { createServerSupabase } from "@/lib/supabase/server";
@@ -17,6 +19,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const access = await requireInternalAccess();
   if (![...access.permissions].some((permission) => !WORKER_ONLY.has(permission))) redirect("/work");
   const logoUrl = await loadCompanyLogoUrl(await createServerSupabase());
+  // D83: the office popup waits for this person's own home page (the page "/" opens for them).
+  let home = "/admin";
+  try { home = internalLandingPath(access.permissions, access.roleName); } catch { /* no landing page: keep /admin */ }
   return <AppShell surface="admin" permissions={[...access.permissions]} actorName={access.employeeName} branchName={access.branchName} branchId={access.branchId}
-    branches={access.branches} logoUrl={logoUrl}>{children}</AppShell>;
+    branches={access.branches} logoUrl={logoUrl}>{children}<PendingUpdates surface="OFFICE" home={home} /></AppShell>;
 }

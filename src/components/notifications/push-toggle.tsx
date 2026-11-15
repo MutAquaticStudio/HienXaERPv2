@@ -16,8 +16,10 @@ function applicationServerKey(base64: string) {
  * reach this phone. On iPhone the app must first be added to the home screen (Safari → Chia sẻ → Thêm vào MH chính).
  * D82: the Android app shows the site in a WebView, which cannot receive web push; it says so instead of offering the button.
  */
-export function PushToggle({ publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "", prompt }: {
+export function PushToggle({ publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "", prompt, onText }: {
   publicKey?: string;
+  /** D83: what "Đã bật" says on this page (the customer portal: the store's announcements, not automation rules). */
+  onText?: string;
   /** D80: a short card (heading + one button) shown only while this phone could still switch notifications on. */
   prompt?: { title: string; text: string; className?: string };
 }) {
@@ -50,7 +52,7 @@ export function PushToggle({ publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KE
       const json = subscription.toJSON();
       const saved = await savePushSubscriptionAction({ endpoint: json.endpoint, keys: json.keys, userAgent: navigator.userAgent.slice(0, 300) });
       if (!saved) { await subscription.unsubscribe(); setMessage("Chưa lưu được máy này. Thử lại sau."); return; }
-      setStatus("on"); setMessage(prompt ? "Đã bật. Điện thoại sẽ báo khi có việc mới." : "Đã bật. Máy này sẽ nhận thông báo theo quy tắc tự động.");
+      setStatus("on"); setMessage(onText ?? (prompt ? "Đã bật. Điện thoại sẽ báo khi có việc mới." : "Đã bật. Máy này sẽ nhận thông báo theo quy tắc tự động."));
     } catch {
       setMessage("Không bật được thông báo trên trình duyệt này.");
     } finally {
