@@ -192,7 +192,7 @@ export function FieldDispatchBoardView({ board }: { board: FieldDispatchBoard })
             <header className={fd.groupHead}>
               <span className={fd.initial} aria-hidden="true">{(worker?.name ?? "?").trim().split(/\s+/).at(-1)?.charAt(0).toLocaleUpperCase("vi-VN")}</span>
               <span><strong>{name}</strong>
-                <small>{worker?.clocked_in_at ? `Đã vào ca ${fieldTime(worker.clocked_in_at)}` : "Chưa vào ca"}{worker?.free_from ? ` · rảnh từ ${fieldTime(worker.free_from, today)}` : ""}</small></span>
+                <small>{worker?.clocked_in_at ? `Đã vào ca ${fieldTime(worker.clocked_in_at, today)}` : "Chưa vào ca"}{worker?.free_from ? ` · rảnh từ ${fieldTime(worker.free_from, today)}` : ""}</small></span>
               <span>{rows.length} việc</span>
             </header>
             <ul className={fd.rows}>
@@ -357,7 +357,7 @@ function AssignSheet({ target, board, returnFocusTo, onClose, onDone, onStale, s
   }
 
   const workerLine = (choice: (typeof choices)[number]) => choice.blocked ?? [
-    choice.worker.clocked_in_at ? `Đã vào ca ${fieldTime(choice.worker.clocked_in_at)}` : "Chưa vào ca",
+    choice.worker.clocked_in_at ? `Đã vào ca ${fieldTime(choice.worker.clocked_in_at, today)}` : "Chưa vào ca",
     `${choice.jobsToday} việc hôm nay`, choice.startAt ? `rảnh ${fieldTime(choice.startAt, today)}` : null].filter(Boolean).join(" · ");
 
   return <section ref={panel} className={fd.sheet} role="dialog" aria-modal="true" aria-labelledby={titleId}>
