@@ -26,7 +26,18 @@ it("saves without a reason and records a plain description instead (FB7)", async
   expect(await savePriceBookAction(input({ reason: undefined }))).toMatchObject({ success: true });
   expect(m.rpc).toHaveBeenCalledWith("save_pricing_rules_batch", expect.objectContaining({ change_reason: "Cập nhật giá" }));
   await savePriceBookAction(input({ reason: "x" }));
-  expect(m.rpc).toHaveBeenLastCalledWith("save_pricing_rules_batch", expect.objectContaining({ change_reason: "Cập nhật giá: x" }));
+  expect(m.rpc).toHaveBeenCalledWith("save_pricing_rules_batch", expect.objectContaining({ change_reason: "Cập nhật giá: x" }));
+});
+
+it("D83: says how many customers the save told, from the batch's first new rule", async () => {
+  m.rpc.mockImplementation(async (name: string) => name === "price_announcement_reach" ? { data: 3, error: null }
+    : { data: { count: 1, rule_ids: [ids.rule] }, error: null });
+  expect((await savePriceBookAction(input())).message).toBe("Đã lưu 1 giá mới. Đơn đã chốt trước đó giữ nguyên giá cũ. Đã báo 3 khách có giá thay đổi.");
+  expect(m.rpc).toHaveBeenCalledWith("price_announcement_reach", { target_branch_id: "branch", target_rule_id: ids.rule });
+  // Nobody's price changed, or the count is unknown: the save still succeeds, without the sentence.
+  m.rpc.mockImplementation(async (name: string) => name === "price_announcement_reach" ? { data: null, error: { message: "x" } }
+    : { data: { count: 1, rule_ids: [ids.rule] }, error: null });
+  expect(await savePriceBookAction(input())).toMatchObject({ success: true, message: "Đã lưu 1 giá mới. Đơn đã chốt trước đó giữ nguyên giá cũ." });
 });
 
 it("rejects bad input before any permission or database call", async () => {

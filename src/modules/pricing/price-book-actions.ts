@@ -5,6 +5,8 @@ import { z } from "zod";
 import { requireInternalPermission } from "@/lib/access/context";
 import { reasonOrDefault } from "@/lib/core/reason";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { reachSentence } from "@/modules/announcements/presentation";
+import { priceAnnouncementReach } from "@/modules/announcements/reach";
 
 export type PriceBookResult = { success: boolean; message: string; count?: number; outcomeUnknown?: boolean };
 
@@ -57,5 +59,8 @@ export async function savePriceBookAction(input: unknown): Promise<PriceBookResu
   revalidatePath("/admin/products");
   revalidatePath("/admin/settings/pricing");
   const count = Number((data as { count?: number } | null)?.count ?? parsed.data.items.length);
-  return { success: true, count, message: `Đã lưu ${count} giá mới. Đơn đã chốt trước đó giữ nguyên giá cũ.` };
+  // D83: the save itself announced the change to each customer whose own price changed; say how many, never fail on it.
+  const firstRule = (data as { rule_ids?: unknown[] } | null)?.rule_ids?.[0];
+  const reach = await priceAnnouncementReach(supabase, access.branchId, typeof firstRule === "string" ? firstRule : null);
+  return { success: true, count, message: `Đã lưu ${count} giá mới. Đơn đã chốt trước đó giữ nguyên giá cũ.${reachSentence(reach)}` };
 }
