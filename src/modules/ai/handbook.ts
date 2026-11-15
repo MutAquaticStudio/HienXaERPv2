@@ -67,7 +67,7 @@ Dùng sổ tay này để hiểu hệ thống và hướng dẫn người dùng:
 - Hủy kế hoạch giao: /admin/deliveries/[id]/cancel [delivery.exception], chỉ phiếu chưa phân công, chưa thực thi; nhả tồn đã giữ, không hủy đơn.
 
 ### Thợ đi giao (cổng /work)
-- Tải app điện thoại (D81, D82): /tai-app — một app "Hiền Xa" cho cả 3 cổng; Android tải APK (app native, không cần Chrome, cài đè lên bản cũ; chưa có thông báo đẩy trong app), iPhone cài từ Safari (Chia sẻ → Thêm vào MH chính).
+- Tải app điện thoại (D81, D82): /tai-app — một app "Hiền Xa" cho cả 3 cổng; Android tải APK (app native, không cần Chrome, cài đè lên bản cũ; chưa có thông báo đẩy trong app; đổi trên web thì app có ngay, chỉ khi có bản app mới app mới hiện "Có bản app Hiền Xa mới · Cập nhật"), iPhone cài từ Safari (Chia sẻ → Thêm vào MH chính).
 - "Hôm nay": việc được giao tự hiện ("Mở việc", "Chỉ đường", "Gọi"); "Nhận việc" /work/pool để tự nhận việc chưa ai nhận, gồm cả phiếu giao đang chờ điều phối (D79: thợ chọn xe rảnh, xe gợi ý chọn sẵn; ai bấm trước được phiếu, văn phòng vẫn đổi người được trước khi bốc hàng); D80: điện thoại thợ đã "Bật thông báo" tự báo khi có việc giao cho mình và khi có phiếu giao chờ người nhận, không cần quy tắc tự động); "Từ chối việc" khi chưa bắt đầu (việc trả về điều phối).
 - Trong việc: "Đã lấy hàng lên xe · chụp ảnh" (1–5 ảnh; "Lấy đủ như phiếu giao" hoặc "Lấy thiếu") → trừ kho. Rồi "Đã giao · chụp ảnh": "Giao đủ" hoặc "Giao thiếu / Không giao được", người nhận, ít nhất một ảnh → "Xác nhận đã giao".
 - Bước "Đã giao" của thợ chính là xác minh: tự ghi phải thu, doanh thu, giá vốn. Nếu có vấn đề kế toán (ví dụ vượt hạn mức) thì phiếu "Cần xác minh tay": văn phòng kiểm tra rồi bấm "Xác minh và ghi nhận" [delivery.verify].

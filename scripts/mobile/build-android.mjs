@@ -6,7 +6,8 @@
 // Needs: JDK 17+, an Android SDK with "platforms;android-36" and "build-tools;36.0.0", and the signing key the Owner keeps
 // (never in the repo):
 //   ANDROID_HOME=… HX_APK_KEYSTORE=…/hien-xa.keystore HX_APK_KEYSTORE_PASS_FILE=…/password.txt node scripts/mobile/build-android.mjs
-// Raise versionCode / versionName in mobile/android/app/build.gradle for every new APK.
+// Raise versionCode / versionName in mobile/android/app/build.gradle for every new APK, and ANDROID_APP_VERSION in
+// src/lib/app-shell/native-app.ts to the same versionName (older apps then show "Có bản app mới").
 import { execFileSync } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import path from "node:path";
@@ -36,6 +37,11 @@ if (!fingerprint || !listed.includes(fingerprint)) {
 }
 const badging = execFileSync(path.join(buildTools, "aapt2"), ["dump", "badging", built], { encoding: "utf8" });
 const version = /versionCode='(\d+)' versionName='([^']+)'/.exec(badging);
+const published = /ANDROID_APP_VERSION = "([^"]+)"/.exec(readFileSync(path.join(root, "src/lib/app-shell/native-app.ts"), "utf8"))?.[1];
+if (version?.[2] !== published) {
+  console.error(`APK là phiên bản ${version?.[2]} nhưng src/lib/app-shell/native-app.ts ghi ANDROID_APP_VERSION = ${published}: sửa cho khớp.`);
+  process.exit(1);
+}
 mkdirSync(path.dirname(output), { recursive: true });
 copyFileSync(built, output);
 console.info(`APK: ${path.relative(root, output)} · phiên bản ${version?.[2]} (mã ${version?.[1]})\nChứng chỉ SHA-256: ${fingerprint}`);

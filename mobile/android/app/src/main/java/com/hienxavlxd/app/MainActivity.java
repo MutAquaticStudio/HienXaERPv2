@@ -471,7 +471,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    /** A PDF or file the app downloaded opens by itself when it is done (as "Tải PDF" does in a browser). */
+    /** A PDF or file the app downloaded opens by itself when it is done (as "Tải PDF" does in a browser); a new APK opens the installer. */
     private void registerDownloadReceiver() {
         downloadReceiver = new BroadcastReceiver() {
             @Override

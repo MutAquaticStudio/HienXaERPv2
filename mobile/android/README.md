@@ -13,7 +13,9 @@ Phần native trong `app/src/main/java/com/hienxavlxd/app/MainActivity.java`:
 - link điện thoại, Zalo, bản đồ, trang ngoài mở bằng app tương ứng; link `app.hienxavlxd.com` (Zalo, tin nhắn) mở thẳng trong app
   (xác minh bằng `public/.well-known/assetlinks.json`);
 - tải tệp: PDF / tệp từ máy chủ qua Trình quản lý tải xuống (kèm cookie) rồi tự mở; tệp trang tự tạo (CSV, Excel) lưu vào Tải xuống;
-- nút Quay lại (cả cử chỉ quay lại Android 13+), màn "Chưa kết nối được" có nút Thử lại.
+- nút Quay lại (cả cử chỉ quay lại Android 13+), màn "Chưa kết nối được" có nút Thử lại;
+- cập nhật app: tải xong bản APK mới thì mở luôn trình cài (quyền `REQUEST_INSTALL_PACKAGES`); trang web hiện thẻ
+  "Có bản app Hiền Xa mới" cho app cũ hơn `ANDROID_APP_VERSION` (`src/lib/app-shell/native-app.ts`).
 
 Chưa có: thông báo đẩy (WebView không nhận được thông báo web; cần Firebase, để bản sau).
 
@@ -24,7 +26,8 @@ bằng đúng khóa này, nếu không máy đã cài phải gỡ app cũ trư�
 
 ## Build lại
 
-1. Tăng `versionCode` (và `versionName`) trong `app/build.gradle`.
+1. Tăng `versionCode` (và `versionName`) trong `app/build.gradle`, và đặt `ANDROID_APP_VERSION` trong
+   `src/lib/app-shell/native-app.ts` đúng bằng `versionName` (script build từ chối nếu lệch).
 2. Cài JDK 17+ và Android SDK (`platforms;android-36`, `build-tools;36.0.0`).
 3. Chạy (Gradle build, Android lint, kiểm tra chứng chỉ khớp `assetlinks.json`, chép APK vào `public/app/hien-xa.apk`):
    ```bash
