@@ -25,6 +25,7 @@ export default async function WorkProfilePage() {
       <section className={styles.card}>
         <h2>Báo việc mới về điện thoại</h2>
         <PushToggle />
+        <p className={styles.hint}>Chưa cài app? <Link href="/tai-app">Tải app Hiền Xa cho điện thoại</Link>.</p>
       </section>
       <form action="/auth/logout" method="post">
         <input type="hidden" name="surface" value="work" />

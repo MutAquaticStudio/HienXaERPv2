@@ -21,3 +21,8 @@ reports/document-pdf-forms/qa/
 .claude/settings.local.json
 
 __pycache__/
+
+# D81 Android app build output and signing keys (never commit keys)
+mobile/android/build/
+*.keystore
+*.jks
