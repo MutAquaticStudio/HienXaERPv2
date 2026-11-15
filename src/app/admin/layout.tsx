@@ -7,7 +7,8 @@ import { AppError } from "@/lib/core/errors";
 import { loadCompanyLogoUrl } from "@/lib/company/profile";
 import { createServerSupabase } from "@/lib/supabase/server";
 
-const WORKER_ONLY = new Set(["work.read", "work.claim"]);
+// D85: the lead worker's "Điều phối" is a worker-portal permission, not a door to the office.
+const WORKER_ONLY = new Set(["work.read", "work.claim", "work.field_dispatch"]);
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // FB9: the operations side is for staff only — a signed-in customer goes to the customer portal, a worker to the jobs.

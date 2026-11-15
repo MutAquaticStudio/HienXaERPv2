@@ -10,6 +10,8 @@ import { DeliveryDoneForm } from "@/components/portal/delivery-done-form";
 import { DeliveryLoadForm } from "@/components/portal/delivery-load-form";
 import { DeclineJobButton } from "@/components/portal/decline-job-button";
 import { getWorkerPortalJob } from "@/modules/portal/actions";
+import { fieldTime } from "@/modules/portal/field-dispatch";
+import { loadWorkItemDispatcher } from "@/modules/portal/field-dispatch-server";
 import type { WorkerJob } from "@/modules/portal/types";
 import { formatQuantity } from "@/lib/core/quantity";
 import { formatBusinessDateTime } from "@/lib/core/business-time";
@@ -37,7 +39,7 @@ function deliveryStatusText(job: WorkerJob, notMine: boolean, available: boolean
 
 export default async function WorkJobPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const job = await getWorkerPortalJob(id);
+  const [job, dispatcher] = await Promise.all([getWorkerPortalJob(id), loadWorkItemDispatcher(id)]);
   const available = job.state === "AVAILABLE";
   const claimed = job.state === "CLAIMED";
   const delivery = job.delivery;
@@ -70,6 +72,8 @@ export default async function WorkJobPage({ params }: { params: Promise<{ id: st
             <strong>{soldQuantityLabel(line.loaded_base_quantity ?? line.planned_base_quantity, line, formatQuantity)}</strong>
           </li>)}</ul> : <p className={styles.hint}>{job.quantity ? `${job.quantity} ${job.unit ?? ""}` : "Theo xác nhận thực tế"}{job.description ? ` · ${job.description}` : ""}</p>}
           {(job.receiver_name || job.receiver_phone) && <div className={styles.kv}><span>Người nhận</span><strong>{[job.receiver_name, job.receiver_phone].filter(Boolean).join(" · ")}</strong></div>}
+          {/* D85: the lead worker who gave this job from "Điều phối". */}
+          {dispatcher && <div className={styles.kv}><span>Người giao việc</span><strong>{dispatcher.name} (thợ chính) · {fieldTime(dispatcher.assigned_at, new Date().toISOString())}</strong></div>}
           {available ? <ClaimJobButton version={job.version} workItemId={job.id} /> : null}
           {claimed && !job.delivery ? <StartJobButton version={job.version} workItemId={job.id} /> : null}
         </section>

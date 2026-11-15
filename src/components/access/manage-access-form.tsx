@@ -1,5 +1,5 @@
 "use client";
-import { permissionLabel } from "./presentation";
+import { permissionHint, permissionLabel } from "./presentation";
 import { roleLabel } from "./presentation";
 
 
@@ -17,7 +17,7 @@ export function ManageAccessForm({ employeeId, branches, roles, operationId: ini
 
 export function ExplicitPermissionForm({ employeeId, branchId, permissions, selected }: { employeeId: string; branchId: string; permissions: PermissionOption[]; selected: string[] }) {
   const [state, action, pending] = useActionState(setExplicitPermissionsAction, undefined);
-  return <form action={action} className="command-panel"><input type="hidden" name="employeeId" value={employeeId} /><input type="hidden" name="branchId" value={branchId} /><fieldset><legend>Quyền cộng thêm ngoài vai trò</legend>{permissions.map((permission) => <label key={permission.code}><input type="checkbox" name="permissionCode" value={permission.code} defaultChecked={selected.includes(permission.code)} /> {permissionLabel(permission.name)}</label>)}</fieldset>{!permissions.length && <p className="muted">Không có quyền nào trong phạm vi của bạn để cấp thêm.</p>}{state?.message && <p className={`form-message${state.success ? " success" : ""}`} role="status">{state.message}</p>}<button className="button button-primary" disabled={pending}>Lưu quyền bổ sung</button></form>;
+  return <form action={action} className="command-panel"><input type="hidden" name="employeeId" value={employeeId} /><input type="hidden" name="branchId" value={branchId} /><fieldset><legend>Quyền cộng thêm ngoài vai trò</legend>{permissions.map((permission) => <label key={permission.code}><input type="checkbox" name="permissionCode" value={permission.code} defaultChecked={selected.includes(permission.code)} /> {permissionLabel(permission.name)}{permissionHint(permission.code) && <small className="table-subline">{permissionHint(permission.code)}</small>}</label>)}</fieldset>{!permissions.length && <p className="muted">Không có quyền nào trong phạm vi của bạn để cấp thêm.</p>}{state?.message && <p className={`form-message${state.success ? " success" : ""}`} role="status">{state.message}</p>}<button className="button button-primary" disabled={pending}>Lưu quyền bổ sung</button></form>;
 }
 
 export function RevokeAccessForm({ accessId }: { accessId: string }) {

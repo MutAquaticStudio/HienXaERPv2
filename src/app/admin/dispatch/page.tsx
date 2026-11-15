@@ -70,10 +70,12 @@ export default async function DispatchPage({ searchParams }: { searchParams: Pro
   // D22: the day board (today by default, Vietnam time).
   const requestedDay = firstValue(query.day);
   const day = /^\d{4}-\d{2}-\d{2}$/.test(requestedDay) ? requestedDay : businessInputValue(new Date()).slice(0, 10);
-  const [{ data: dayData }, fleet] = await Promise.all([
+  const [{ data: dayData }, fleet, { data: fieldLabels }] = await Promise.all([
     supabase.rpc("dispatch_day", { target_branch_id: access.branchId, target_day: day }),
     // FB18 (D40): where the workers on shift are, refreshed by the map itself every 15 s.
     loadFleetSnapshot().catch(() => []),
+    // D85: deliveries a lead worker gave or moved from the worker portal ("Thợ chính Tuấn giao").
+    supabase.rpc("field_dispatch_labels", { target_branch_id: access.branchId, target_day: day }),
   ]);
   // "Gán" on a waiting delivery: who may take delivery work, the trucks, each delivery's version and the stop length.
   const waitingIds = ((dayData as DispatchDay | null)?.waiting ?? []).map((item) => item.id);
@@ -96,7 +98,7 @@ export default async function DispatchPage({ searchParams }: { searchParams: Pro
   }
   return <div className="page-stack">
     <header className="page-heading"><div><h1>Điều phối giao hàng</h1><p className="lede">Phân công và theo dõi tiến độ giao hàng.</p></div>{access.permissions.has("roles.manage") && <div className="action-cluster"><Link className="button button-secondary" href="/admin/dispatch/resources?kind=vehicles">Xe</Link><Link className="button button-secondary" href="/admin/dispatch/resources?kind=machines">Máy / thiết bị</Link></div>}</header>
-    {dayData ? <DispatchDayBoard day={day} board={dayData as DispatchDay} canAssign={access.permissions.has("delivery.assign")} assign={assign}
+    {dayData ? <DispatchDayBoard day={day} board={dayData as DispatchDay} canAssign={access.permissions.has("delivery.assign")} assign={assign} fieldLabels={(fieldLabels as Record<string, string> | null) ?? undefined}
       notice={firstValue(query.dispatched) || undefined} error={firstValue(query.error) || undefined} />
       : <p className="form-message" role="alert">Chưa tải được lịch giao theo tài xế. Hãy tải lại trang.</p>}
     <FleetMap initial={fleet as FleetPosition[]} />

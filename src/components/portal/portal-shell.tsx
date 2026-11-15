@@ -17,9 +17,11 @@ import {
   MapPin,
   Plus,
   UserRound,
+  UsersRound,
 } from "lucide-react";
 
 import { OrderChoiceSheet } from "@/components/portal/order-choice-sheet";
+import fieldDispatch from "@/components/portal/field-dispatch.module.css";
 import styles from "@/components/portal/portal.module.css";
 import { QUOTATIONS_ENABLED } from "@/lib/features";
 
@@ -33,6 +35,9 @@ const workerLinks = [
   { href: "/work/messages", label: "Tin nhắn", icon: MessageSquare, bottom: false },
   { href: "/work/profile", label: "Tôi", icon: UserRound, bottom: true },
 ];
+
+// D85: a lead worker (work.field_dispatch) gets "Điều phối" as the middle, fifth place.
+const dispatchLink = { href: "/work/dispatch", label: "Điều phối", icon: UsersRound, bottom: true };
 
 const customerLinks = [
   { href: "/customer", label: "Trang chủ", icon: House, bottom: true },
@@ -49,6 +54,7 @@ export function PortalShell({
   audience,
   canViewDebt,
   canOrder,
+  dispatchCount = null,
   logoUrl = null,
   children,
 }: {
@@ -58,6 +64,8 @@ export function PortalShell({
   canViewDebt?: boolean;
   /** D15: owners and finance contacts order on the portal; receivers only follow deliveries. */
   canOrder?: boolean;
+  /** D85: jobs waiting for a person, for a lead worker; null = an ordinary worker (no "Điều phối"). */
+  dispatchCount?: number | null;
   children: ReactNode;
 }) {
   const pathname = usePathname();
@@ -68,7 +76,7 @@ export function PortalShell({
     : <span className={styles.brandMark}>HX</span>;
   // Sign-in, registration and the forced password change are full-screen auth pages without the portal menu.
   if (["/login", "/register", "/change-password"].some((page) => pathname.endsWith(page))) return children;
-  const links = audience === "worker" ? workerLinks : customerLinks.filter((link) => (canViewDebt || link.href !== "/customer/debts") && (canOrder || link.href !== "/customer/orders/new"));
+  const links = audience === "worker" ? (dispatchCount === null ? workerLinks : [...workerLinks.slice(0, 2), dispatchLink, ...workerLinks.slice(2)]) : customerLinks.filter((link) => (canViewDebt || link.href !== "/customer/debts") && (canOrder || link.href !== "/customer/orders/new"));
   const root = audience === "worker" ? "/work" : "/customer";
   const scope = audience === "worker" ? "Cổng nhân sự" : "Cổng khách hàng";
 
@@ -87,10 +95,13 @@ export function PortalShell({
     if ("raised" in link && link.raised) {
       return <button type="button" className={className} key={href} aria-haspopup="dialog" aria-expanded={sheet !== null} onClick={(event) => setSheet({ from: event.currentTarget })}>{icon}<span>{label}</span></button>;
     }
+    const waiting = href === dispatchLink.href && dispatchCount ? dispatchCount : 0;
     return (
-      <Link className={className} href={href} key={href} aria-current={active ? "page" : undefined}>
+      <Link className={className} href={href} key={href} aria-current={active ? "page" : undefined}
+        aria-label={waiting ? `${label}, ${waiting} việc chờ người` : undefined}>
         {icon}
         <span>{label}</span>
+        {waiting > 0 && <span className={fieldDispatch.navBadge} aria-hidden="true">{waiting > 99 ? "99+" : waiting}</span>}
       </Link>
     );
   });
