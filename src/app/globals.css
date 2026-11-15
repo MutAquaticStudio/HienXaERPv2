@@ -2491,17 +2491,75 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .supplier-assignments-add select { min-height: 42px; }
 .supplier-assignment-new td { background: color-mix(in srgb, var(--warning-soft) 55%, transparent); }
 
-/* D81 "Cài app Hiền Xa" (/tai-app): one block per phone, numbered steps, the main action full width. */
-.install-guide { display: grid; gap: 20px; margin-top: 16px; }
-.install-block { display: grid; gap: 10px; }
-.install-block + .install-block { padding-top: 18px; border-top: 1px solid var(--border); }
-.install-block h2 { margin: 0; font-size: 17px; }
-.install-block .muted { margin: 0; font-size: var(--font-size-caption); }
+/* D81 "Cài app Hiền Xa" (/tai-app): the app's own icon on top, one block per phone with its main action full width,
+   numbered steps joined by a line, and a small drawing of what the phone shows where it helps to recognise it. */
+.install-page { container-type: inline-size; }
+.install-hero { display: flex; align-items: center; gap: 16px; }
+.install-app-icon { flex: none; width: 64px; height: 64px; border-radius: 15px; box-shadow: 0 1px 2px rgba(16, 34, 58, 0.12), 0 6px 16px rgba(16, 34, 58, 0.16); }
+.install-hero-text { display: grid; gap: 4px; min-width: 0; }
+.install-hero h1 { margin: 0; font-size: 24px; line-height: 1.25; letter-spacing: -0.01em; }
+.install-hero .muted { margin: 0; }
+/* Each sentence wraps as a unit while it fits on a line. */
+.install-hero .muted > span { display: inline-block; }
+.install-portals { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 16px 0 0; padding: 0; list-style: none; color: var(--muted); font-size: var(--font-size-caption); font-weight: 600; }
+.install-portals li { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.install-portals svg { flex: none; color: var(--primary); }
+.install-guide { display: grid; gap: 24px; margin-top: 24px; }
+.install-platforms { display: grid; gap: 24px; }
+.install-guide > *, .install-platforms > * { min-width: 0; }
+.install-platforms > .install-block + .install-block { padding-top: 24px; border-top: 1px solid var(--border); }
+.install-block { display: grid; align-content: start; gap: 16px; }
 .install-block .form-message { margin: 0; }
-.install-action { width: 100%; justify-content: center; min-height: 48px; }
-.install-steps { display: grid; gap: 8px; margin: 0; padding-left: 22px; line-height: 1.5; }
-.install-icon { display: inline-block; margin: 0 2px; vertical-align: -3px; color: var(--primary); }
+.install-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
+.install-head h2 { margin: 0; font-size: var(--font-size-section); line-height: var(--line-height-heading); }
+.install-head h2:focus:not(:focus-visible) { outline: none; }
+.install-pill { padding: 2px 10px; border: 1px solid var(--border); border-radius: 999px; color: var(--muted); background: var(--surface-sunken); font-size: var(--font-size-caption); font-weight: 600; white-space: nowrap; }
+.install-action { width: 100%; min-height: 48px; border-radius: 10px; font-size: var(--font-size-body); box-shadow: 0 6px 16px rgba(11, 99, 198, 0.24); }
+.install-action:hover:not(:disabled) { box-shadow: 0 8px 20px rgba(11, 99, 198, 0.30); }
+.install-steps { display: grid; margin: 0; padding: 0; list-style: none; counter-reset: install-step; line-height: 1.55; }
+.install-steps > li { position: relative; padding: 3px 0 22px 42px; counter-increment: install-step; text-wrap: pretty; }
+.install-steps > li:last-child { padding-bottom: 0; }
+.install-steps > li::before { content: counter(install-step); position: absolute; top: 0; left: 0; display: grid; width: 28px; height: 28px; place-items: center; border-radius: 50%; color: var(--primary-text); background: var(--primary-soft); font-size: var(--font-size-caption); font-weight: 700; line-height: 1; }
+.install-steps > li:not(:last-child)::after { content: ""; position: absolute; top: 34px; bottom: 6px; left: 13px; width: 2px; border-radius: 1px; background: var(--border); }
+/* A step's drawing: Safari's Share button, the "Thêm vào MH chính" row, the app on the home screen. The part to tap is ringed. */
+.install-figure { display: flex; align-items: center; gap: 10px; width: fit-content; max-width: 100%; margin-top: 10px; padding: 8px 14px 8px 8px; border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); background: var(--surface-sunken); font-size: var(--font-size-table); font-weight: 600; line-height: 1.3; }
+.install-figure-tap { display: inline-flex; flex: none; align-items: center; justify-content: center; border-radius: 10px; color: var(--primary); background: var(--surface); box-shadow: 0 0 0 2px var(--primary), 0 3px 8px rgba(11, 99, 198, 0.18); }
+.install-figure-share { width: 36px; height: 36px; }
+.install-figure-row { flex: 0 1 232px; justify-content: space-between; gap: 12px; min-width: 0; min-height: 40px; padding: 0 12px; color: var(--text); font-weight: 500; }
+.install-figure:has(.install-figure-row) { padding-right: 8px; }
+.install-figure-home { flex-direction: column; gap: 4px; padding: 10px 14px 7px; border-color: transparent; color: #fff; background: linear-gradient(160deg, var(--navigation) 0%, var(--navigation-soft) 100%); font-size: 12px; }
+.install-figure-home img { display: block; width: 40px; height: 40px; border-radius: 9px; box-shadow: 0 2px 6px rgba(4, 30, 64, 0.35); }
+.install-note { display: flex; gap: 10px; margin: 0; padding: 12px 14px; border-radius: var(--radius); color: var(--text); background: var(--surface-soft); font-size: var(--font-size-table); line-height: 1.5; }
+.install-note svg { flex: none; margin-top: 3px; color: var(--primary); }
 .install-safari { display: grid; gap: 10px; }
-.install-more { justify-self: center; border: 0; background: none; cursor: pointer; }
+.install-copy { min-height: 44px; }
+.install-copy svg { flex: none; color: var(--primary); }
+.install-done .form-message { display: flex; align-items: center; gap: 8px; }
+.install-done .form-message svg { flex: none; }
+.install-more { display: inline-flex; align-items: center; justify-self: center; gap: 6px; min-height: 44px; padding: 0 12px; border: 0; border-radius: var(--radius-sm); color: var(--primary); background: none; font: inherit; font-size: var(--font-size-table); font-weight: 700; cursor: pointer; transition: background-color var(--dur-fast) var(--ease-out); }
+.install-more:hover { background: var(--primary-soft); }
+.install-page > .auth-switch { margin-top: 24px; }
+/* Already installed: "Mở trang đăng nhập" is the one way on. */
+.install-page:has(.install-done) > .auth-switch { display: none; }
+/* On a computer: send the link first, then both ways side by side. */
+.install-share { display: grid; gap: 6px; padding: 18px 20px; border: 1px solid color-mix(in srgb, var(--primary) 22%, var(--surface)); border-radius: var(--radius); background: var(--surface-soft); }
+.install-share h2 { margin: 0; font-size: var(--font-size-section); line-height: var(--line-height-heading); }
+.install-share .muted { margin: 0; font-size: var(--font-size-table); }
+.install-share-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.install-link { display: flex; flex: 1 1 240px; align-items: center; min-width: 0; min-height: 44px; padding: 0 14px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); color: var(--text); background: var(--surface); font-weight: 600; overflow-wrap: anywhere; user-select: all; }
+/* Only this page widens the sign-in card, and only while it shows both phones. */
+.auth-card:has(.install-platforms-both) { width: min(920px, 100%); }
+@media (min-width: 761px) { .auth-card:has(.install-platforms-both) { padding: 40px 44px 32px; } }
+@container (min-width: 720px) {
+  .install-hero h1 { font-size: 28px; }
+  .install-platforms-both { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; }
+  .install-platforms-both > .install-block:first-child { padding-right: 36px; }
+  .install-platforms-both > .install-block + .install-block { padding: 0 0 0 36px; border-top: 0; border-left: 1px solid var(--border); }
+}
+@media (max-width: 359px) {
+  .install-hero { gap: 12px; }
+  .install-app-icon { width: 52px; height: 52px; border-radius: 12px; }
+  .install-hero h1 { font-size: 21px; }
+}
 .auth-install-link { display: inline-block; margin-top: 10px; color: var(--primary); font-size: var(--font-size-caption); font-weight: 700; }
 @media (display-mode: standalone) { .auth-install-link { display: none; } }
