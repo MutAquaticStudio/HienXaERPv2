@@ -255,6 +255,10 @@ begin
     perform public.create_announcement(branch, 'CUSTOMER', 'NEWS', 'Có link ngoài', null, '/admin/orders', null, '7f348000-0000-4000-8000-000000000502');
   exception when sqlstate '22023' then failed := true; end;
   assert failed, 'only the portal''s own pages';
+  -- A customer login switches push on for its phone ("Thông báo trên điện thoại" on the account page).
+  perform pg_temp.act_as(c2_owner);
+  assert public.save_push_subscription('https://push.example.test/348-5', repeat('e', 30), repeat('k', 10), 'Điện thoại thử') is not null, 'customer saves a device';
+  perform pg_temp.act_as(owner);
   manual_a := public.create_announcement(branch, 'CUSTOMER', 'FEATURE', 'Mới: đặt dịch vụ ngay trên app', 'Bấm nút Đặt ở giữa thanh dưới.',
     '/customer/services/new', null, '7f348000-0000-4000-8000-000000000503');
   assert public.create_announcement(branch, 'CUSTOMER', 'FEATURE', 'Mới: đặt dịch vụ ngay trên app', 'Bấm nút Đặt ở giữa thanh dưới.',
@@ -264,7 +268,11 @@ begin
     perform public.create_announcement(branch, 'CUSTOMER', 'FEATURE', 'Khác', null, null, null, '7f348000-0000-4000-8000-000000000503');
   exception when unique_violation then failed := true; end;
   assert failed, 'same operation, other content';
-  assert (select count(*) from public.outbound_jobs where dedupe_key like 'announcement:' || manual_a || ':%') = 3, 'owner 2 devices + receiver 1';
+  assert (select count(*) from public.outbound_jobs where dedupe_key like 'announcement:' || manual_a || ':%') = 4, 'owner 2 devices + receiver 1 + customer 2';
+  perform pg_temp.act_as_admin();
+  assert exists (select 1 from public.outbound_jobs j join public.push_subscriptions s on s.id::text = j.target
+    where j.dedupe_key like 'announcement:' || manual_a || ':%' and s.auth_user_id = c2_owner and j.payload->>'link' = '/customer'
+      and j.payload->>'title' = 'Mới: đặt dịch vụ ngay trên app' and j.payload->>'body' = 'Bấm nút Đặt ở giữa thanh dưới.'), 'customer phone, portal home';
   perform pg_temp.act_as(c1_receiver);
   pending := public.pending_announcements('CUSTOMER');
   assert jsonb_array_length(pending) = 1 and pending->0->>'label' = 'FEATURE' and pending->0->>'link' = '/customer/services/new', 'receiver gets news';
