@@ -16,6 +16,13 @@ it("says what was done in the owner's words, never 'thao tác trên đối tư�
   expect(actionPhrase("something.odd", "nothing_known")).toBe("thao tác trên dữ liệu");
 });
 
+it("tells what a lead worker did from Điều phối (D85)", () => {
+  expect(auditSentence("Tuấn", "delivery.field_assigned", "delivery")).toBe("Tuấn đã giao phiếu giao");
+  expect(auditSentence("Tuấn", "delivery.field_claimed", "delivery")).toBe("Tuấn đã tự nhận phiếu giao");
+  expect(auditSentence("Tuấn", "delivery.field_reassigned", "delivery")).toBe("Tuấn đã đổi người phiếu giao");
+  expect(auditSentence("Tuấn", "service_job.field_assigned", "service_job")).toBe("Tuấn đã giao việc dịch vụ");
+});
+
 it("filters by kind of object across its stored codes", () => {
   expect(entityCodesFor("khách hàng").sort()).toEqual(["customer", "customers"]);
   expect(ENTITY_FILTERS).toContain("đơn bán");

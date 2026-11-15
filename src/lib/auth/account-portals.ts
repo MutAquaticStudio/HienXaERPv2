@@ -4,8 +4,8 @@ type Supabase = Awaited<ReturnType<typeof createServerSupabase>>;
 export type LoginSurface = "admin" | "work" | "customer";
 export type AccountPortals = { admin: boolean; work: boolean; customer: boolean };
 
-/** Permissions that only open the worker portal; any other permission opens the operations side. */
-const WORKER_ONLY = new Set(["work.read", "work.claim"]);
+/** Permissions that only open the worker portal (D85: the lead worker's "Điều phối" too); any other opens the operations side. */
+const WORKER_ONLY = new Set(["work.read", "work.claim", "work.field_dispatch"]);
 
 /**
  * FB9: which sign-in tabs an account belongs to, read with its own session (each reader is limited to the caller's own

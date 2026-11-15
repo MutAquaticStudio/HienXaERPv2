@@ -44,6 +44,9 @@ const ACTIONS: Record<string, string> = {
   "conversation.created": "tạo cuộc trò chuyện", "conversation.direct_opened": "mở tin nhắn riêng",
   "expense.recorded": "ghi chi phí", "earning.approved": "duyệt khoản thu nhập", "service_job.created": "tạo việc dịch vụ", "service_job.verified": "xác minh việc dịch vụ",
   "work_item.published": "đăng việc cho thợ", "work_item.declined": "từ chối việc",
+  // D85: the lead worker's "Điều phối" in the worker portal.
+  "delivery.field_assigned": "giao phiếu giao", "delivery.field_claimed": "tự nhận phiếu giao", "delivery.field_reassigned": "đổi người phiếu giao",
+  "service_job.field_assigned": "giao việc dịch vụ", "service_job.field_claimed": "tự nhận việc dịch vụ", "service_job.field_reassigned": "đổi người việc dịch vụ",
   "finance.account.bank_details": "cập nhật thông tin ngân hàng của", "finance.account.bank_feed": "cập nhật nguồn sao kê của",
   "operations.recording_started": "bắt đầu ghi nhận vận hành ở", "branch_operation_settings.saved": "lưu cài đặt giao hàng của",
   "company.portal_branch_set": "chọn chi nhánh nhận khách tự đăng ký",
