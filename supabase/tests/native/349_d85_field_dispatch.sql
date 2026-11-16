@@ -210,12 +210,12 @@ begin
   select w.version into version_now from public.work_items w where w.id = work;
   perform pg_temp.act_as_admin();
   insert into public.automation_rules(id, branch_id, name, event, channel, target, created_by)
-  values ('7f349000-0000-4000-8000-0000000000aa', branch, 'Báo nhóm khi thợ từ chối', 'work.declined', 'TELEGRAM', '-100349349', office);
+  values ('7f349000-0000-4000-8000-0000000000aa', branch, 'Báo hệ thống khác khi thợ từ chối', 'work.declined', 'WEBHOOK', 'https://hooks.example.test/349', office);
   perform pg_temp.act_as(hung_user);
   perform public.decline_portal_work_item(work, 'Ngõ hẹp, xe không vào được', version_now, '7f349000-0000-4000-8000-0000000000d5');
   perform pg_temp.act_as_admin();
-  assert (select count(*) from public.outbound_jobs where rule_id = '7f349000-0000-4000-8000-0000000000aa' and channel = 'TELEGRAM') = 1,
-    'the office Telegram rule fires once per refusal, whatever the number of leads';
+  assert (select count(*) from public.outbound_jobs where rule_id = '7f349000-0000-4000-8000-0000000000aa' and channel = 'WEBHOOK') = 1,
+    'the office webhook rule (D93: Telegram removed) fires once per refusal, whatever the number of leads';
   assert exists (select 1 from public.notifications where kind = 'work.field_declined' and entity_id = d1 and recipient_employee_id = lead
     and link = '/work/dispatch' and title = 'Hùng từ chối ' || num1 and body = 'Ngõ hẹp, xe không vào được · Phiếu đang chờ người khác'), 'lead told of the refusal';
   assert not exists (select 1 from public.notifications where kind = 'work.declined' and recipient_employee_id is not null), 'work.declined stays the office''s';
