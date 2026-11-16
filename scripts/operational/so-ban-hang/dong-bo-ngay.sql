@@ -1,8 +1,9 @@
 -- Đồng bộ ngày chứng từ nhập từ sổ bán hàng với ngày ghi trong sổ (Owner 14/11/2026), chạy SAU nhap-so-hang-ngay.sql.
 -- Các lệnh nghiệp vụ ghi giờ lúc chạy; khối này đặt lại các mốc giờ theo ngày sổ, đúng như lần đồng bộ tay 14/11:
---   đơn hàng: tạo 07:30, xác nhận 07:31, giao 08:10, nộp kết quả 09:00, xác nhận giao + doanh thu + công nợ 09:05, hạn nợ = ngày sổ + 14;
+--   đơn hàng: tạo 07:30, xác nhận 07:31, giao 08:10, nộp kết quả 09:00, xác nhận giao + doanh thu + công nợ 09:05,
+--   hạn nợ = ngày sổ + hạn nợ của khách (mặc định 14 ngày; Owner 16/11/2026 đổi 7 khách thành 28 ngày);
 --   nhà cung cấp giao thẳng: thêm đơn mua, phiếu NCC giao, công nợ phải trả (hạn = ngày sổ);
---   dịch vụ: 08:40 → 10:05, hạn nợ = ngày sổ + 14; phiếu bù tồn: 07:00 ngày sổ đầu tiên của đợt.
+--   dịch vụ: 08:40 → 10:05, hạn nợ = ngày sổ + hạn nợ của khách; phiếu bù tồn: 07:00 ngày sổ đầu tiên của đợt.
 -- Chỉ chạm chứng từ có dấu "Sổ <tab> dòng" còn lệch ngày, nên chạy lại bao nhiêu lần cũng được. Không đổi số lượng, tiền hay trạng thái.
 -- Một giao dịch: lỗi ở đâu thì hủy cả khối. Gửi nguyên file (tạo hàm tạm, gọi hàm, rồi câu kiểm tra) trong một lần chạy SQL.
 create or replace function pg_temp.hx_dong_bo_ngay(branch_code text default 'HX', actor uuid default '1a5a03c5-df68-4c95-af31-4f254c87216a')
@@ -42,8 +43,11 @@ begin
     update public.work_item_verifications wv set verified_at = od.t0 + interval '65 minutes'
       from public.work_items w join public.deliveries d on d.id = w.delivery_id join hx_od od on od.order_id = d.sales_order_id where wv.work_item_id = w.id;
     update public.revenue_entries re set recorded_at = od.t0 + interval '65 minutes' from hx_od od where re.sales_order_id = od.order_id;
-    update public.receivable_obligations ro set recorded_at = od.t0 + interval '65 minutes', due_date = ((od.t0 at time zone 'Asia/Ho_Chi_Minh')::date) + 14
-      from public.delivery_verifications v join public.deliveries d on d.id = v.delivery_id join hx_od od on od.order_id = d.sales_order_id where ro.delivery_verification_id = v.id;
+    update public.receivable_obligations ro set recorded_at = od.t0 + interval '65 minutes',
+        due_date = ((od.t0 at time zone 'Asia/Ho_Chi_Minh')::date) + coalesce(c.payment_terms_days, 14)
+      from public.delivery_verifications v join public.deliveries d on d.id = v.delivery_id join hx_od od on od.order_id = d.sales_order_id
+        join public.customers c on c.id = d.customer_id
+      where ro.delivery_verification_id = v.id;
     update public.direct_cost_entries dc set recorded_at = od.t0 + interval '65 minutes' from hx_od od where dc.sales_order_id = od.order_id;
     update public.inventory_movements m set occurred_at = case m.movement_type when 'DELIVERY_HANDOFF' then od.t0 + interval '10 minutes' else od.t0 + interval '65 minutes' end,
         created_at = case m.movement_type when 'DELIVERY_HANDOFF' then od.t0 + interval '10 minutes' else od.t0 + interval '65 minutes' end
@@ -73,8 +77,11 @@ begin
       from hx_sj sj where l.service_job_id = sj.job_id;
     update public.service_verifications v set verified_at = sj.t0 + interval '65 minutes' from hx_sj sj where v.service_job_id = sj.job_id;
     update public.work_item_verifications wv set verified_at = sj.t0 + interval '65 minutes' from public.work_items w join hx_sj sj on sj.job_id = w.service_job_id where wv.work_item_id = w.id;
-    update public.receivable_obligations ro set recorded_at = sj.t0 + interval '65 minutes', due_date = ((sj.t0 at time zone 'Asia/Ho_Chi_Minh')::date) + 14
-      from public.service_verifications v join hx_sj sj on sj.job_id = v.service_job_id where ro.service_verification_id = v.id;
+    update public.receivable_obligations ro set recorded_at = sj.t0 + interval '65 minutes',
+        due_date = ((sj.t0 at time zone 'Asia/Ho_Chi_Minh')::date) + coalesce(c.payment_terms_days, 14)
+      from public.service_verifications v join hx_sj sj on sj.job_id = v.service_job_id join public.service_jobs j on j.id = sj.job_id
+        join public.customers c on c.id = j.customer_id
+      where ro.service_verification_id = v.id;
   end if;
 
   -- Phiếu bù tồn của đợt nhập tự động: về 07:00 ngày sổ ghi trong lý do của dòng phiếu.
