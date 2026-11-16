@@ -23,6 +23,10 @@ it("tells what a lead worker did from Điều phối (D85)", () => {
   expect(auditSentence("Tuấn", "service_job.field_assigned", "service_job")).toBe("Tuấn đã giao việc dịch vụ");
 });
 
+it("names the deliveries cancelled with an order in their own event (D94, Owner 16/11/2026)", () => {
+  expect(auditSentence("Owner", "sales_order.cancel_deliveries", "sales_order")).toBe("Owner đã hủy phiếu giao chưa chạy theo đơn bán");
+});
+
 it("filters by kind of object across its stored codes", () => {
   expect(entityCodesFor("khách hàng").sort()).toEqual(["customer", "customers"]);
   expect(ENTITY_FILTERS).toContain("đơn bán");

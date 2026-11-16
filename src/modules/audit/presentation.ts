@@ -23,6 +23,7 @@ export const ENTITY_NOUNS: Record<string, string> = {
 const ACTIONS: Record<string, string> = {
   "command.create_sales_order_draft": "tạo đơn bán nháp", "sales_order.confirm": "xác nhận đơn bán",
   "sales_order.confirm_credit_override": "xác nhận đơn bán vượt hạn mức", "sales_order.cancel": "hủy đơn bán",
+  "sales_order.cancel_deliveries": "hủy phiếu giao chưa chạy theo đơn bán",
   "sales_order.auto_sourced": "tự phân nguồn đơn bán", "sales_order.portal_submitted": "gửi đơn tự đặt trên cổng khách",
   "sales_order.portal_auto_approved": "tự duyệt đơn khách tự đặt",
   "command.create_delivery_from_allocations": "tạo phiếu giao", "delivery.assigned": "phân xe, tài xế cho phiếu giao",

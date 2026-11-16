@@ -134,8 +134,11 @@ begin
   assert (select state from public.outbound_jobs where dedupe_key = 'nt357-sent') = 'SENT', 'a sent push stays';
   assert (select released_vnd from public.credit_commitments where sales_order_id = o1) = 200000, 'credit released as before';
   assert exists (select 1 from public.audit_events where action = 'sales_order.cancel' and entity_id = o1 and trace_id = op1
-      and reason = 'Khách đổi ý · hủy kèm 2 phiếu giao chưa chạy: ' || numbers and 'deliveries' = any(changed_fields)),
-    format('the audit lists the cancelled deliveries %s: %s', numbers, (select reason from public.audit_events where action = 'sales_order.cancel' and entity_id = o1));
+      and reason = 'Khách đổi ý' and 'deliveries' = any(changed_fields))
+    -- D93/D94 follow-up (20261116200000): the cancel reason stays plain; the list is its own internal audit event.
+    and exists (select 1 from public.audit_events where action = 'sales_order.cancel_deliveries' and entity_id = o1 and trace_id = op1
+      and reason = 'Hủy kèm 2 phiếu giao chưa chạy: ' || numbers),
+    format('the audit lists the cancelled deliveries %s: %s', numbers, (select reason from public.audit_events where action = 'sales_order.cancel_deliveries' and entity_id = o1));
   assert (select count(*) from public.audit_events where action = 'delivery.cancel' and entity_id in (d_planned, d_assigned) and trace_id = op1
       and reason = 'Hủy theo đơn NT-SO-3571: Khách đổi ý') = 2, 'each delivery has its cancel event';
   select count(*) into audits from public.audit_events where trace_id = op1;

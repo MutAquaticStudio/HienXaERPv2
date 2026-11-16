@@ -39,7 +39,7 @@ it("refuses Telegram, email, unknown events, empty recipients and explains datab
 });
 
 it("accepts the D88 event for portal orders approved when stock arrives", async () => {
-  expect(await saveAutomationRuleAction({ ...rule, event: "order.portal_auto_approved", channel: "PUSH" })).toEqual({ ok: true, message: "Đã lưu quy tắc." });
+  expect(await saveAutomationRuleAction({ ...rule, event: "order.portal_auto_approved", channels: ["PUSH"] })).toEqual({ ok: true, message: "Đã lưu quy tắc." });
   expect(m.rpc.mock.calls[0][1].rule.event).toBe("order.portal_auto_approved");
 });
 
