@@ -82,7 +82,7 @@ declare
   row jsonb;
   summary jsonb;
   labels jsonb;
-  d1 uuid; d2 uuid; d4 uuid;
+  d1 uuid; d2 uuid; d4 uuid; d5 uuid; work5 uuid;
   num1 text; num2 text;
   work uuid;
   sj uuid; wi uuid; sj_number text;
@@ -398,6 +398,28 @@ begin
     and row->>'shortfall' = 'Xi măng 349 0/300 kg', format('short row %s', row);
   summary := public.field_dispatch_summary(branch);
   assert (summary->>'short')::integer = 1 and (summary->>'given')::integer >= 1, format('summary %s', summary);
+
+  -- 13b. A refusal of a delivery that does not come back to the leads' board (dispatch mode Tắt): the office handles it, and the
+  --      lead's notice says so, without a link to Điều phối where it would not appear.
+  perform pg_temp.act_as(office);
+  result := public.create_delivery_for_order(sale, wh, jsonb_build_array(jsonb_build_object('sales_order_line_id', line, 'quantity', '200')), nine, null,
+    '7f349000-0000-4000-8000-0000000000f5');
+  d5 := (result->>'delivery_id')::uuid;
+  perform public.assign_delivery_scheduled(d5, hung, v2, null, null, pg_temp.dv(d5), '7f349000-0000-4000-8000-0000000000f6',
+    nine + interval '8 hours', nine + interval '9 hours');
+  perform public.save_branch_operation_settings(branch, '{"dispatch_mode":"OFF"}', 1, '7f349000-0000-4000-8000-0000000000f7');
+  perform pg_temp.act_as_admin();
+  work5 := (select id from public.work_items where delivery_id = d5);
+  perform pg_temp.act_as(hung_user);
+  perform public.decline_portal_work_item(work5, 'Xe hỏng', pg_temp.wv(work5), '7f349000-0000-4000-8000-0000000000f8');
+  perform pg_temp.act_as_admin();
+  set constraints all immediate;
+  set constraints all deferred;
+  assert (select count(*) from public.notifications where entity_id = d5 and recipient_employee_id = lead) = 1
+    and exists (select 1 from public.notifications where entity_id = d5 and recipient_employee_id = lead and kind = 'work.field_declined'
+      and body = 'Xe hỏng · Văn phòng xử lý phiếu này' and link is null), 'not on the board: the office handles it, no link';
+  perform pg_temp.act_as(lead_user);
+  assert not exists (select 1 from jsonb_array_elements(public.field_dispatch_board(branch)->'waiting') x where x->>'id' = d5::text), 'indeed not on the board';
 
   -- 14. Taking the grant back closes the tab at once.
   perform pg_temp.act_as(office);

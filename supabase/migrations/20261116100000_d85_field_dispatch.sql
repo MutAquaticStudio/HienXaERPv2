@@ -291,7 +291,8 @@ begin
       'lines', private.field_delivery_lines(d.id),
       'declined', private.field_delivery_declined(d.id),
       -- Who could take it and when is loaded when the sheet opens (field_dispatch_options): every worker x truck for every waiting
-      -- delivery here took seconds on a busy branch.
+      -- delivery here took 2.0–2.5 s on a busy branch (30 waiting deliveries, 25 workers, 10 trucks, 20 service jobs, local
+      -- PostgreSQL); without it the board takes about 60–70 ms and one sheet about 50 ms.
       'suggestion', private.field_delivery_suggestion(d.id))));
   end loop;
 
@@ -773,8 +774,12 @@ create constraint trigger work_items_field_dispatch_notify
   execute function private.field_dispatch_work_notify_trigger();
 
 -- A worker declining a delivery: the leads are told too (the office already is), once — kind work.field_declined, keyed as the
--- "Việc chờ người" notice of the delivery's new version so that one is not sent as well. The delivery is now locked before its
--- job, the order every dispatch command takes (office, suggestion, Kho việc, lead). Otherwise unchanged.
+-- "Việc chờ người" notice of the delivery's new version so that one is not sent as well. When the delivery is back on the leads'
+-- board (open as in "Nhận việc") the notice says it waits for someone and opens Điều phối; when it is not (dispatch mode Tắt,
+-- missing phone / address, supplier-direct lines, more than 14 days ahead) it says the office handles it, with no link.
+-- Locks: the delivery is now taken before its job, the order of every dispatch command (private.assign_delivery_core for the
+-- office, apply_dispatch_proposal, claim_delivery, the lead's commands), so a worker declining while someone else gives the same
+-- delivery cannot deadlock (it used to lock the job first). Otherwise unchanged.
 CREATE OR REPLACE FUNCTION public.decline_portal_work_item(target_work_item_id uuid, reason text, expected_version integer, operation_id uuid)
  RETURNS uuid
  LANGUAGE plpgsql
@@ -792,6 +797,7 @@ declare
   who text;
   source_delivery uuid;
   reopened integer;
+  on_board boolean;
 begin
   if auth.uid() is null or me is null or decline_portal_work_item.operation_id is null then raise exception 'forbidden' using errcode = '42501'; end if;
   if char_length(trim(coalesce(reason, ''))) not between 3 and 300 then raise exception 'decline_reason_required' using errcode = '22023'; end if;
@@ -833,11 +839,13 @@ begin
   perform private.notify(d.branch_id, 'work.declined', 'delivery', d.id,
     who || ' từ chối ' || d.delivery_number, trim(reason),
     '/admin/dispatch', 'delivery.assign', null, 'work.declined:' || decline_portal_work_item.operation_id);
-  -- D85: and every lead worker of the branch, to his Điều phối tab: one message that also says it waits again.
+  -- D85: and every lead worker of the branch: one message, which says whether the delivery is back on his Điều phối board.
   select x.version into reopened from public.deliveries x where x.id = d.id;
+  on_board := private.delivery_pool_open(d.id);
   for lead in select x from private.field_dispatch_leads(d.branch_id) x where x <> me loop
     perform private.notify(d.branch_id, 'work.field_declined', 'delivery', d.id, who || ' từ chối ' || d.delivery_number,
-      trim(reason) || ' · Phiếu đang chờ người khác', '/work/dispatch', 'work.field_dispatch', lead,
+      trim(reason) || case when on_board then ' · Phiếu đang chờ người khác' else ' · Văn phòng xử lý phiếu này' end,
+      case when on_board then '/work/dispatch' end, 'work.field_dispatch', lead,
       'delivery.pool_open:' || d.id || ':' || lead || ':' || reopened);
   end loop;
   insert into public.audit_events(actor_auth_user_id, branch_id, action, entity_type, entity_id, trace_id, changed_fields, reason)
