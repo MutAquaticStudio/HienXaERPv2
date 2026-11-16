@@ -35,5 +35,7 @@ it("explains refusals and keeps an unknown outcome retryable", async () => {
 it("groups permissions like the menu and keeps roles.manage owner only", () => {
   const groups = groupPermissions([{ code: "orders.read" }, { code: "inventory.count" }, { code: "finance.ar.read" }, { code: "dashboard.read" }]);
   expect(groups.map((group) => group.label)).toEqual(["Bán hàng", "Kho hàng", "Tài chính", "Khác"]);
+  // Chấm công is under Nhân công in the menu, so its permissions are too.
+  expect(groupPermissions([{ code: "attendance.read" }, { code: "work.claim" }]).map((group) => [group.label, group.items.length])).toEqual([["Nhân công", 2]]);
   expect(OWNER_ONLY_PERMISSIONS).toContain("roles.manage");
 });

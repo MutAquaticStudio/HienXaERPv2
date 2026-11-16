@@ -1,13 +1,14 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
-const m = vi.hoisted(() => ({ tables: {} as Record<string, unknown[]> }));
+const m = vi.hoisted(() => ({ tables: {} as Record<string, unknown[]>, forms: {} as Record<string, Record<string, unknown>> }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn(), refresh: vi.fn() }), usePathname: () => "/admin/access" }));
 vi.mock("@/lib/access/context", () => ({ requireInternalPermission: async () => ({ branchId: "b1", branchName: "Chi nhánh A", employeeId: "me", permissions: new Set(["roles.manage", "inventory.read", "inventory.count", "orders.read"]) }) }));
 vi.mock("@/components/access/invite-employee-form", () => ({ InviteEmployeeForm: () => <form>Biểu mẫu mời</form> }));
 vi.mock("@/components/access/activation-link", () => ({ ActivationLinkForm: () => <form>Link kích hoạt</form> }));
 vi.mock("@/components/access/manage-access-form", () => ({
-  ManageAccessForm: () => <form>Đổi vai trò</form>, ExplicitPermissionForm: () => <form>Quyền riêng</form>,
+  ManageAccessForm: (props: Record<string, unknown>) => { m.forms.role = props; return <form>Đổi vai trò</form>; },
+  ExplicitPermissionForm: (props: Record<string, unknown>) => { m.forms.explicit = props; return <form>Quyền riêng</form>; },
   RevokeAccessForm: () => <form>Thu hồi</form>, ReactivateAccessForm: () => <form>Kích hoạt</form>,
   RemoveEmployeeForm: () => <form>Xóa</form>, RestoreEmployeeForm: () => <form>Dùng lại</form>,
 }));
@@ -46,15 +47,47 @@ it("lists employees with their actions in popups, tagged for scripted checks", a
   render(await Page({ searchParams: Promise.resolve({}) }));
   expect(screen.getByRole("link", { name: /Nhân viên/ })).toHaveAttribute("aria-current", "page");
   const nam = screen.getByText("Anh Nam").closest("tr")!;
-  expect(within(nam).getByRole("button", { name: "Thu hồi" })).toHaveAttribute("data-access-id", "a1");
+  // Owner 16/11/2026: two everyday actions in the row; the rest, destructive ones last, behind "Thêm".
+  expect(within(nam).getAllByRole("button").map((button) => button.textContent)).toEqual(["Đổi vai trò", "Quyền riêng", "Thêm"]);
   expect(within(nam).getByRole("button", { name: "Quyền riêng" })).toHaveAttribute("data-action", "explicit");
-  expect(within(nam).getByRole("button", { name: "Xóa" })).toHaveAttribute("data-action", "remove");
+  const more = within(nam).getByRole("button", { name: "Thêm thao tác · Anh Nam" });
+  expect(more).toHaveAttribute("data-access-id", "a1");
+  fireEvent.click(more);
+  const menu = screen.getByRole("menu", { name: "Thêm thao tác · Anh Nam" });
+  expect(within(menu).getAllByRole("menuitem").map((item) => item.textContent)).toEqual(["Link kích hoạt", "Thu hồi", "Xóa"]);
+  expect(within(menu).getByRole("menuitem", { name: "Thu hồi" })).toHaveAttribute("data-access-id", "a1");
+  expect(within(menu).getByRole("menuitem", { name: "Thu hồi" })).toHaveClass("more-actions-danger");
+  expect(within(menu).getByRole("menuitem", { name: "Xóa" })).toHaveAttribute("data-action", "remove");
+  // The item opens the same confirmation form as before.
+  fireEvent.click(within(menu).getByRole("menuitem", { name: "Thu hồi" }));
+  expect(screen.getByRole("dialog", { name: "Thu hồi quyền · Anh Nam" })).toHaveTextContent("Thu hồi");
+  fireEvent.click(screen.getByRole("button", { name: "Đóng" }));
   const lan = screen.getByText("Chị Lan").closest("tr")!;
   expect(within(lan).getByRole("button", { name: "Kích hoạt lại" })).toHaveAttribute("data-access-id", "a2");
   expect(within(lan).getByRole("button", { name: "Cấp vai trò" })).toBeInTheDocument();
-  expect(within(screen.getByText("Chủ").closest("tr")!).queryByRole("button")).not.toBeInTheDocument();
+  fireEvent.click(within(lan).getByRole("button", { name: "Thêm thao tác · Chị Lan" }));
+  expect(screen.getAllByRole("menuitem").map((item) => item.textContent)).toEqual(["Xóa"]);
+  const me = screen.getByText("Chủ").closest("tr")!;
+  expect(within(me).queryByRole("button")).not.toBeInTheDocument();
+  expect(me).toHaveTextContent("Tài khoản của bạn");
   expect(screen.getByRole("button", { name: "Mời nhân viên" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Tạo vai trò" })).toBeInTheDocument();
+});
+
+it("shows two extra permissions and +N, and hands the popups the role the person holds", async () => {
+  m.tables.employee_permission_grants = ["inventory.count", "orders.read", "roles.manage"].map((permission_code) => ({ employee_id: "e1", branch_id: "b1", permission_code }));
+  render(await Page({ searchParams: Promise.resolve({}) }));
+  const nam = screen.getByText("Anh Nam").closest("tr")!;
+  const chips = within(nam).getByRole("list");
+  expect(chips).toHaveAttribute("title", "Kiểm kho, Xem đơn, Quản lý quyền");
+  expect(within(chips).getAllByRole("listitem").map((item) => item.textContent)).toEqual(["Kiểm kho", "Xem đơn", "+1và 1 quyền khác: Quản lý quyền"]);
+  fireEvent.click(within(nam).getByRole("button", { name: "Đổi vai trò" }));
+  expect(m.forms.role).toMatchObject({ employeeId: "e1", assignments: [{ branchId: "b1", branchName: "Chi nhánh A", roleId: "r1", roleLabel: "Thủ kho", active: true }] });
+  fireEvent.click(screen.getByRole("button", { name: "Đóng" }));
+  fireEvent.click(within(nam).getByRole("button", { name: "Quyền riêng" }));
+  expect(m.forms.explicit).toMatchObject({ branchId: "b1", selected: ["inventory.count", "orders.read", "roles.manage"], roleName: "Thủ kho",
+    inherited: [{ code: "inventory.read", name: "Xem tồn kho" }] });
+  expect((m.forms.explicit.permissions as { code: string }[]).map((item) => item.code)).not.toContain("inventory.read");
 });
 
 it("shows preset and administrator roles read-only and custom roles editable", async () => {

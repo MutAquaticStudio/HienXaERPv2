@@ -1287,6 +1287,19 @@ td.cell-wrap { min-width: 11rem; max-width: 26rem; white-space: normal; }
 .more-actions-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; display: grid; min-width: 200px; padding: 0.35rem; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow); }
 .more-actions-menu a { padding: 0.55rem 0.75rem; border-radius: 8px; color: var(--text); text-decoration: none; }
 .more-actions-menu a:hover, .more-actions-menu a:focus-visible { background: var(--surface-soft); }
+/* RowActionsMenu (components/ui/row-actions-menu.tsx): the same list, drawn in <body> next to its "Thêm" button so a
+   table's sideways scroller cannot clip it; buttons as items, the destructive ones last and in red. */
+.row-actions-menu { position: fixed; top: 0; right: auto; left: 0; z-index: 65; min-width: 190px; transform-origin: top right; }
+.row-actions-menu[data-side="top"] { transform-origin: bottom right; }
+.row-actions-menu[hidden] { display: none; }
+.more-actions-item { display: flex; align-items: center; width: 100%; min-height: 36px; padding: 0.5rem 0.75rem; border: 0; border-radius: 8px; color: var(--text); background: none; font: inherit; font-size: var(--font-size-table); font-weight: 500; text-align: left; cursor: pointer; transition: background-color var(--dur-fast) var(--ease-out); }
+.more-actions-item:hover { background: var(--surface-soft); }
+.more-actions-item:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; background: var(--surface-soft); }
+.more-actions-item.more-actions-danger { color: var(--danger); }
+.more-actions-item.more-actions-danger:is(:hover, :focus-visible) { background: var(--danger-soft); }
+.more-actions-item.more-actions-danger:focus-visible { outline-color: var(--danger); }
+.row-actions-separator { height: 1px; margin: 4px 6px; background: var(--border); }
+@media (pointer: coarse) { .more-actions-item { min-height: 44px; } }
 @media (max-width: 760px) {
   .material-list-table td.row-toggle { position: absolute; top: 0.6rem; right: 0.5rem; width: auto; }
   .material-list-table tr.row-expansion { display: block; padding: 0.5rem 1rem 1rem; }
@@ -1409,6 +1422,75 @@ td.cell-wrap { min-width: 11rem; max-width: 26rem; white-space: normal; }
 .role-permission { margin: 0; font-size: var(--font-size-label); }
 .form-message.warning { border-color: #f3d39b; color: var(--warning); background: var(--warning-soft); }
 .access-table td[data-label="Nhân viên"] { min-width: 200px; white-space: normal; }
+/* Owner 16/11/2026: one short line per person — two actions plus "Thêm", extra permissions as two chips and "+N". */
+.access-table td { vertical-align: middle; }
+.access-table td[data-label="Quyền bổ sung"] { white-space: normal; }
+.row-actions { display: inline-flex; align-items: center; justify-content: flex-end; gap: 6px; }
+.row-actions-trigger { gap: 4px; padding-right: 8px; }
+.row-actions-trigger svg { transition: transform var(--dur-fast) var(--ease-out); }
+.row-actions-trigger[aria-expanded="true"] { border-color: var(--input-border); background: var(--surface-soft); }
+.row-actions-trigger[aria-expanded="true"] svg { transform: rotate(180deg); }
+.permission-chips { display: flex; flex-wrap: wrap; gap: 4px; max-width: 320px; margin: 0; padding: 0; list-style: none; }
+.permission-chip { max-width: 190px; overflow: hidden; padding: 1px 9px; border: 1px solid var(--border); border-radius: 999px; color: var(--text); background: var(--surface-sunken); font-size: var(--font-size-caption); line-height: 1.6; text-overflow: ellipsis; white-space: nowrap; }
+.permission-chip-more { border-color: transparent; color: var(--primary-text); background: var(--primary-soft); font-weight: 600; }
+@media (max-width: 760px) {
+  .access-table td[data-label="Quyền bổ sung"] { grid-column: 1 / -1; order: 1; }
+  .access-table td.table-actions { order: 2; padding-top: 0.35rem; }
+  .access-table td.table-actions::before { display: none; }
+  .access-table td.table-actions:empty { display: none; }
+  .access-table .row-actions { display: flex; width: 100%; }
+  .access-table .row-actions > .button { flex: 1 1 0; }
+  .access-table .row-actions > .row-actions-trigger { flex: 0 0 auto; }
+  .permission-chips { max-width: none; }
+}
+/* "Đổi vai trò": the roles held today above the two fields. */
+.access-role-form { gap: 16px; }
+.access-role-form .form-grid { align-items: start; }
+.access-role-form .form-message { margin: 0; }
+.access-role-form .form-actions { margin-top: 4px; }
+.access-role-form .field small { font-size: var(--font-size-caption); }
+.access-current { display: grid; gap: 8px; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-sunken); }
+.access-current h3 { margin: 0; color: var(--muted); font-size: var(--font-size-label); font-weight: 600; }
+.access-current p, .access-current dl { margin: 0; }
+.access-current dl { display: grid; gap: 6px; }
+.access-current dl > div { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 12px; }
+.access-current dt { color: var(--muted); }
+.access-current dd { display: inline-flex; align-items: center; gap: 8px; margin: 0; }
+/* "Quyền riêng": search on top, groups scroll in between, the save buttons stay at the bottom of the popup. */
+.dialog-panel:has(> .permission-picker) { display: flex; flex-direction: column; overflow: hidden; }
+.dialog-panel:has(> .permission-picker) > :not(.permission-picker) { flex: none; }
+.permission-picker { display: flex; flex: 1 1 auto; flex-direction: column; gap: 12px; min-height: 0; }
+.permission-picker-bar { display: grid; gap: 8px; }
+.permission-search-box { position: relative; display: block; }
+.permission-search-box svg { position: absolute; top: 50%; left: 12px; color: var(--muted); transform: translateY(-50%); pointer-events: none; }
+.field .permission-search-box input { padding-left: 36px; }
+.permission-picker-summary { margin: 0; color: var(--muted); font-size: var(--font-size-caption); }
+.permission-picker-summary strong { color: var(--text); }
+.permission-picker-scroll { display: grid; flex: 1 1 auto; align-content: start; gap: 18px; min-height: 0; margin-inline: -24px; padding: 6px 24px 18px; overflow-y: auto; overscroll-behavior: contain; border-block: 1px solid var(--border); }
+.permission-group { min-width: 0; margin: 0; padding: 0; border: 0; }
+.permission-group legend { display: flex; width: 100%; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 4px; padding: 10px 0 6px; border-bottom: 1px solid var(--border); color: var(--text); font-size: var(--font-size-label); font-weight: 700; }
+.permission-group-count { color: var(--muted); font-size: 12px; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.permission-group-count.active { color: var(--primary-text); font-weight: 600; }
+.permission-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px 12px; }
+.permission-option { display: grid; grid-template-columns: 18px minmax(0, 1fr); align-items: start; gap: 10px; padding: 7px 10px; border-radius: var(--radius-sm); font-size: var(--font-size-table); font-weight: 500; cursor: pointer; transition: background-color var(--dur-fast) var(--ease-out); }
+.permission-option[hidden] { display: none; }
+.permission-option:hover { background: var(--surface-sunken); }
+.permission-option:has(input:checked:not(:disabled)) { background: var(--primary-soft); }
+.permission-option input { width: 18px; height: 18px; margin: 1px 0 0; accent-color: var(--primary); cursor: pointer; }
+.permission-option-text { display: grid; gap: 2px; min-width: 0; }
+.permission-option-text small { color: var(--muted); font-size: var(--font-size-caption); font-weight: 400; line-height: 1.45; }
+.permission-option.inherited { color: var(--muted); cursor: default; }
+.permission-option.inherited:hover { background: none; }
+.permission-option.inherited input { cursor: default; }
+.permission-picker-empty { margin: 0; padding: 24px 0; color: var(--muted); text-align: center; }
+.permission-picker-foot { display: grid; gap: 10px; }
+.permission-picker-foot .form-message { margin: 0; }
+.permission-picker-foot .form-actions { margin-top: 0; }
+@media (max-width: 640px) {
+  .permission-options { grid-template-columns: 1fr; }
+  .permission-picker-scroll { margin-inline: -16px; padding-inline: 16px; }
+}
+@media (pointer: coarse) { .permission-option { min-height: 44px; padding-block: 10px; } }
 
 /* FB2 Đợt 7 — Lộ trình: three numbered steps, stop list with expected times. */
 .route-step { display: grid; gap: 0.75rem; margin: 0; padding: 0.9rem 1rem; border: 1px solid var(--border); border-radius: 12px; min-width: 0; }
