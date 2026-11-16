@@ -16,7 +16,22 @@
 --   push through the automation rules ("Đơn khách tự duyệt khi kho có hàng → báo văn phòng", PUSH, like the 17/10 starters).
 -- * Still not approvable: the body ends " — chờ duyệt (<lý do mới nhất>)", the reason replaced, never appended (also fixes
 --   the D79 rewrite, whose pattern no longer matched after one failed attempt).
+-- Owner's answers (16/11/2026):
+-- * "Vượt hạn mức thì chờ duyệt tay": an order refused for a credit reason (vượt hạn mức nợ, khách có nợ quá hạn, khách chưa
+--   có hạn mức nợ) — at submit or later — is never tried again automatically ("chờ duyệt tay (<lý do>)"); the office approves
+--   it by hand. Only orders short of stock are tried again.
+-- * "Có": stock that becomes free without a stock movement counts too — a reservation released (a delivery cancelled…), a
+--   warehouse source of an order removed or reduced, an order cancelled (or leaving DRAFT/CONFIRMED otherwise).
+-- * "ok": an order placed more than 7 days ago is no longer approved automatically; it waits for the office.
 begin;
+
+-- Portal orders the office approves by hand (refused for a credit reason): never tried again automatically.
+create table private.portal_manual_review (
+  sales_order_id uuid primary key references public.sales_orders(id) on delete cascade,
+  reason text not null,
+  held_at timestamptz not null default now()
+);
+revoke all on private.portal_manual_review from public, anon, authenticated, service_role;
 
 -- ===== 1. The approval (D79), with the notification text fixed and a "later" mode for D88 =====
 create or replace function private.portal_auto_approve(target_sales_order_id uuid, trace uuid, later boolean)
@@ -31,6 +46,7 @@ declare
   sourced jsonb;
   line_count integer;
   total bigint;
+  manual boolean := false;
 begin
   select * into o from public.sales_orders x where x.id = target_sales_order_id;
   if o.id is null or o.commercial_state <> 'DRAFT' or o.order_channel <> 'CUSTOMER_PORTAL' then return jsonb_build_object('status', 'SKIPPED'); end if;
@@ -54,6 +70,7 @@ begin
         when sqlerrm = 'overdue_receivable_blocks_credit' then 'khách có nợ quá hạn'
         when sqlerrm = 'credit_limit_not_approved' then 'khách chưa có hạn mức nợ'
         else 'chưa tự duyệt được' end;
+      manual := sqlerrm in ('credit_limit_exceeded', 'overdue_receivable_blocks_credit', 'credit_limit_not_approved');
     end;
     perform set_config('request.jwt.claim.sub', coalesce(caller, ''), true);
   end if;
@@ -76,7 +93,13 @@ begin
         '/admin/orders/' || o.id, 'orders.read', null, 'order.portal_auto_approved:' || o.id);
     end if;
   else
-    update public.notifications n set body = regexp_replace(coalesce(n.body, ''), ' — chờ duyệt[^—]*$', ' — chờ duyệt (' || why || ')')
+    -- A credit reason: the office decides by hand, never tried again automatically (Owner: "Vượt hạn mức thì chờ duyệt tay").
+    if manual then
+      insert into private.portal_manual_review(sales_order_id, reason) values (o.id, why)
+      on conflict (sales_order_id) do update set reason = excluded.reason, held_at = now();
+    end if;
+    update public.notifications n set body = regexp_replace(coalesce(n.body, ''), ' — chờ duyệt[^—]*$',
+      case when manual then ' — chờ duyệt tay (' else ' — chờ duyệt (' end || why || ')')
     where n.branch_id = o.branch_id and n.dedupe_key = 'order.portal_submitted:' || o.id;
   end if;
   return jsonb_strip_nulls(jsonb_build_object('status', status, 'reason', why, 'deliveries', sourced->'deliveries'));
@@ -104,6 +127,34 @@ revoke all on private.portal_reapprove_stage, private.portal_reapprove_flush fro
 create or replace function private.portal_reapprove_cap() returns integer language sql immutable set search_path = '' as $$ select 10 $$;
 revoke all on function private.portal_reapprove_cap() from public, anon, authenticated, service_role;
 
+-- A portal order that may still be approved automatically: waiting, placed within the last 7 days, not left to the office.
+create or replace function private.portal_reapprove_candidate(o public.sales_orders) returns boolean
+language sql stable security definer set search_path = '' as $$
+  select o.order_channel = 'CUSTOMER_PORTAL' and o.commercial_state = 'DRAFT' and o.created_at > now() - interval '7 days'
+    and not exists (select 1 from private.portal_manual_review h where h.sales_order_id = o.id)
+$$;
+revoke all on function private.portal_reapprove_candidate(public.sales_orders) from public, anon, authenticated, service_role;
+
+-- Stock of (branch, material) may have become free: noted once per transaction when a candidate order needs it.
+create or replace function private.stage_portal_reapprove_pair(target_branch_id uuid, target_material_id uuid) returns void
+language plpgsql security definer set search_path = '' as $$
+begin
+  begin
+    insert into private.portal_reapprove_stage(txid, branch_id, material_id)
+    select txid_current(), target_branch_id, target_material_id
+    where exists (select 1 from public.sales_orders o join public.sales_order_lines l on l.sales_order_id = o.id
+      where o.branch_id = target_branch_id and o.order_channel = 'CUSTOMER_PORTAL' and o.commercial_state = 'DRAFT'
+        and l.material_id = target_material_id and private.portal_reapprove_candidate(o))
+    on conflict do nothing;
+    if found then
+      insert into private.portal_reapprove_flush(txid) values (txid_current()) on conflict do nothing;
+    end if;
+  exception when others then
+    raise warning 'portal_reapprove_stage_failed: %', sqlerrm;
+  end;
+end $$;
+revoke all on function private.stage_portal_reapprove_pair(uuid, uuid) from public, anon, authenticated, service_role;
+
 create or replace function private.stage_portal_reapprove() returns trigger
 language plpgsql security definer set search_path = '' as $$
 begin
@@ -113,7 +164,8 @@ begin
     select distinct txid_current(), a.branch_id, a.material_id from added a
     where a.base_quantity_delta > 0 and a.location_kind = 'WAREHOUSE'
       and exists (select 1 from public.sales_orders o join public.sales_order_lines l on l.sales_order_id = o.id
-        where o.branch_id = a.branch_id and o.order_channel = 'CUSTOMER_PORTAL' and o.commercial_state = 'DRAFT' and l.material_id = a.material_id)
+        where o.branch_id = a.branch_id and o.order_channel = 'CUSTOMER_PORTAL' and o.commercial_state = 'DRAFT' and l.material_id = a.material_id
+          and private.portal_reapprove_candidate(o))
     on conflict do nothing;
     if found then
       insert into private.portal_reapprove_flush(txid) values (txid_current()) on conflict do nothing;
@@ -127,6 +179,40 @@ revoke all on function private.stage_portal_reapprove() from public, anon, authe
 create trigger inventory_movements_portal_reapprove after insert on public.inventory_movements
   referencing new table as added for each statement execute function private.stage_portal_reapprove();
 
+-- Stock freed without a movement (Owner: "Có"): a reservation released or removed, a warehouse source of an order removed or
+-- reduced, an order no longer open (cancelled). Rare, a few rows each: row triggers, the same staging.
+create or replace function private.stage_portal_reapprove_freed() returns trigger
+language plpgsql security definer set search_path = '' as $$
+declare pair record;
+begin
+  if tg_table_name = 'inventory_reservations' then
+    perform private.stage_portal_reapprove_pair(old.branch_id, old.material_id);
+  elsif tg_table_name = 'supply_allocations' then
+    perform private.stage_portal_reapprove_pair(old.branch_id, l.material_id) from public.sales_order_lines l where l.id = old.sales_order_line_id;
+  else
+    for pair in select distinct l.material_id from public.sales_order_lines l
+      join public.supply_allocations a on a.sales_order_line_id = l.id and a.supply_mode = 'WAREHOUSE'
+      where l.sales_order_id = old.id
+    loop
+      perform private.stage_portal_reapprove_pair(old.branch_id, pair.material_id);
+    end loop;
+  end if;
+  return null;
+end $$;
+revoke all on function private.stage_portal_reapprove_freed() from public, anon, authenticated, service_role;
+create trigger inventory_reservations_portal_reapprove after update of state on public.inventory_reservations
+  for each row when (old.state = 'ACTIVE' and new.state = 'RELEASED') execute function private.stage_portal_reapprove_freed();
+create trigger inventory_reservations_portal_reapprove_delete after delete on public.inventory_reservations
+  for each row when (old.state = 'ACTIVE') execute function private.stage_portal_reapprove_freed();
+create trigger supply_allocations_portal_reapprove after update on public.supply_allocations
+  for each row when (old.supply_mode = 'WAREHOUSE' and (new.supply_mode <> 'WAREHOUSE' or new.warehouse_id is distinct from old.warehouse_id
+    or new.allocated_base_quantity < old.allocated_base_quantity)) execute function private.stage_portal_reapprove_freed();
+create trigger supply_allocations_portal_reapprove_delete after delete on public.supply_allocations
+  for each row when (old.supply_mode = 'WAREHOUSE') execute function private.stage_portal_reapprove_freed();
+create trigger sales_orders_portal_reapprove after update of commercial_state on public.sales_orders
+  for each row when (old.commercial_state in ('DRAFT', 'CONFIRMED') and new.commercial_state not in ('DRAFT', 'CONFIRMED'))
+  execute function private.stage_portal_reapprove_freed();
+
 -- ===== 3. At commit: try the waiting orders again, oldest first, one by one =====
 create or replace function private.flush_portal_reapprove(tx bigint) returns integer
 language plpgsql security definer set search_path = '' as $$
@@ -136,7 +222,7 @@ declare
 begin
   for target in
     select o.id from public.sales_orders o
-    where o.order_channel = 'CUSTOMER_PORTAL' and o.commercial_state = 'DRAFT'
+    where o.order_channel = 'CUSTOMER_PORTAL' and o.commercial_state = 'DRAFT' and private.portal_reapprove_candidate(o)
       and exists (select 1 from public.sales_order_lines l join private.portal_reapprove_stage s
         on s.txid = tx and s.branch_id = o.branch_id and s.material_id = l.material_id where l.sales_order_id = o.id)
     order by o.created_at, o.id

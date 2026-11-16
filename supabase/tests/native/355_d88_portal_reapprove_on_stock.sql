@@ -2,6 +2,8 @@
 -- with the D79 conditions, when a transaction adds warehouse stock of one of its materials — at the end of that transaction,
 -- oldest order first. The office is told (the order's notification rewritten + a new unread one); a still-waiting order shows
 -- the latest reason, replaced not appended. Nothing here ever fails or undoes the stock transaction.
+-- Owner's answers: a credit refusal waits for the office ("chờ duyệt tay", never tried again); stock freed without a movement
+-- (an order cancelled) counts too; an order older than 7 days is left to the office.
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);
 insert into public.units_of_measure(id, code, name, symbol) values ('7f355000-0000-4000-8000-000000000001', 'nt_m3_355', 'Khối thử 355', 'khối');
 insert into public.material_groups(id, code, name) values ('7f355000-0000-4000-8000-000000000002', 'NT_G355', 'Nhóm thử 355');
@@ -39,6 +41,20 @@ insert into public.sales_order_lines(id, sales_order_id, line_number, material_i
   ('7f355000-0000-4000-8000-000000000031', '7f355000-0000-4000-8000-000000000030', 1, '7f355000-0000-4000-8000-000000000003', 'Cát đen 355',
    '7f355000-0000-4000-8000-000000000001', '7f355000-0000-4000-8000-000000000001', 0.2, 1, 1, 'HALF_UP', 300000, 60000, 'MANUAL_APPROVED',
    '10000000-0000-4000-8000-000000000001', 'Giá thử');
+-- A staff order (confirmed) holding 0,6 khối of the warehouse's sand: cancelling it frees stock without a stock movement.
+insert into public.sales_orders(id, branch_id, order_number, customer_id, site_id, commercial_state, customer_name_snapshot, site_name_snapshot,
+  delivery_address_snapshot, receiver_name_snapshot, receiver_phone_snapshot, created_by, confirmed_at) values
+  ('7f355000-0000-4000-8000-000000000032', '20000000-0000-4000-8000-00000000000a', 'NT-SO-3552', '7f355000-0000-4000-8000-000000000010',
+   '7f355000-0000-4000-8000-000000000020', 'CONFIRMED', 'Khách 355 A', 'Công trình 355 A', 'Địa chỉ 355 A', 'Anh A', '0901355001',
+   '10000000-0000-4000-8000-000000000001', now());
+insert into public.sales_order_lines(id, sales_order_id, line_number, material_id, material_name_snapshot, ordered_uom_id, base_uom_id, quantity,
+  conversion_numerator, conversion_denominator, rounding_mode, unit_price_vnd, line_total_vnd, price_source_type, override_by, override_reason) values
+  ('7f355000-0000-4000-8000-000000000033', '7f355000-0000-4000-8000-000000000032', 1, '7f355000-0000-4000-8000-000000000003', 'Cát đen 355',
+   '7f355000-0000-4000-8000-000000000001', '7f355000-0000-4000-8000-000000000001', 0.6, 1, 1, 'HALF_UP', 300000, 180000, 'MANUAL_APPROVED',
+   '10000000-0000-4000-8000-000000000001', 'Giá thử');
+insert into public.supply_allocations(branch_id, sales_order_line_id, supply_mode, warehouse_id, allocated_base_quantity, created_by) values
+  ('20000000-0000-4000-8000-00000000000a', '7f355000-0000-4000-8000-000000000033', 'WAREHOUSE', '7f355000-0000-4000-8000-000000000005', 0.6,
+   '10000000-0000-4000-8000-000000000001');
 -- Stone comes in through a purchase receipt (the second stock-in path).
 insert into public.suppliers(id, branch_id, code, name, phone) values
   ('7f355000-0000-4000-8000-000000000040', '20000000-0000-4000-8000-00000000000a', 'NT_NCC355', 'NCC 355', '0901355009');
@@ -82,12 +98,16 @@ declare
   m3 constant uuid := '7f355000-0000-4000-8000-000000000001';
   office constant uuid := '10000000-0000-4000-8000-000000000001';
   staff_draft constant uuid := '7f355000-0000-4000-8000-000000000030';
-  order_a uuid; order_x uuid; order_b uuid; order_p uuid;
+  holder constant uuid := '7f355000-0000-4000-8000-000000000032';
+  order_a uuid; order_x uuid; order_b uuid; order_p uuid; order_old uuid;
   first_note uuid;
   movements integer;
   counted jsonb;
 begin
-  -- 0. Placed with no stock: all wait "kho chưa đủ hàng" (D79 at submit). X (small limit) oldest, then A, B, P.
+  -- 0. Placed with no stock: all wait "kho chưa đủ hàng" (D79 at submit). An 8-day-old one, then X (small limit), A, B, P.
+  perform pg_temp.act_as('7f355000-0000-4000-8000-0000000000a1');
+  order_old := public.submit_portal_order('7f355000-0000-4000-8000-000000000010', '7f355000-0000-4000-8000-000000000020', null, null,
+    jsonb_build_array(jsonb_build_object('material_id', sand, 'ordered_uom_id', m3, 'quantity', '0.1')), null, '7f355000-0000-4000-8000-0000000000e0');
   perform pg_temp.act_as('7f355000-0000-4000-8000-0000000000a2');
   order_x := public.submit_portal_order('7f355000-0000-4000-8000-000000000011', '7f355000-0000-4000-8000-000000000021', null, null,
     jsonb_build_array(jsonb_build_object('material_id', sand, 'ordered_uom_id', m3, 'quantity', '0.5')), null, '7f355000-0000-4000-8000-0000000000e1');
@@ -101,30 +121,32 @@ begin
   order_p := public.submit_portal_order('7f355000-0000-4000-8000-000000000010', '7f355000-0000-4000-8000-000000000020', null, null,
     jsonb_build_array(jsonb_build_object('material_id', stone, 'ordered_uom_id', m3, 'quantity', '2')), null, '7f355000-0000-4000-8000-0000000000e4');
   perform pg_temp.act_as_admin();
+  update public.sales_orders set created_at = now() - interval '8 days' where id = order_old;
   update public.sales_orders set created_at = now() - interval '40 minutes' where id = order_x;
   update public.sales_orders set created_at = now() - interval '30 minutes' where id = order_a;
   update public.sales_orders set created_at = now() - interval '20 minutes' where id = order_b;
   update public.sales_orders set created_at = now() - interval '10 minutes' where id = order_p;
   perform pg_temp.commit_point();
-  assert (select count(*) from public.sales_orders where id in (order_x, order_a, order_b, order_p) and commercial_state = 'DRAFT') = 4, 'all wait';
+  assert (select count(*) from public.sales_orders where id in (order_old, order_x, order_a, order_b, order_p) and commercial_state = 'DRAFT') = 5, 'all wait';
   assert (select bool_and(body like '%— chờ duyệt (kho chưa đủ hàng)') from public.notifications
-    where kind = 'order.portal_submitted' and entity_id in (order_x, order_a, order_b, order_p)), 'reason: stock';
+    where kind = 'order.portal_submitted' and entity_id in (order_old, order_x, order_a, order_b, order_p)), 'reason: stock';
   -- The office already read A's notification.
   select id into first_note from public.notifications where kind = 'order.portal_submitted' and entity_id = order_a;
   insert into public.notification_reads(notification_id, auth_user_id) values (first_note, office);
 
-  -- 1. A stock count adds 1 khối of sand. Decided at the end of the transaction, not before.
-  counted := pg_temp.count_sand('1', 'd88-count-1');
+  -- 1. A stock count adds 1,5 khối of sand (0,6 of it held by a staff order: 0,9 free). Decided at the end of the transaction.
+  counted := pg_temp.count_sand('1.5', 'd88-count-1');
   assert (select commercial_state from public.sales_orders where id = order_a) = 'DRAFT', 'not yet: decided at commit';
   assert exists (select 1 from private.portal_reapprove_stage where txid = txid_current() and branch_id = branch and material_id = sand), 'sand staged';
   perform pg_temp.commit_point();
   assert not exists (select 1 from private.portal_reapprove_stage where txid = txid_current()), 'work rows cleaned';
-  -- X (oldest) is over its credit limit: stays waiting, nothing held, reason replaced (not appended).
+  -- X (oldest within 7 days) is over its credit limit: left to the office ("chờ duyệt tay"), nothing held, reason replaced.
   assert (select commercial_state from public.sales_orders where id = order_x) = 'DRAFT'
     and not exists (select 1 from public.credit_commitments where sales_order_id = order_x), 'over the limit waits';
-  assert (select body from public.notifications where kind = 'order.portal_submitted' and entity_id = order_x) like '% — chờ duyệt (vượt hạn mức nợ)'
+  assert (select body from public.notifications where kind = 'order.portal_submitted' and entity_id = order_x) like '% — chờ duyệt tay (vượt hạn mức nợ)'
     and (select body from public.notifications where kind = 'order.portal_submitted' and entity_id = order_x) not like '%kho chưa đủ hàng%',
     format('reason replaced: %s', (select body from public.notifications where kind = 'order.portal_submitted' and entity_id = order_x));
+  assert exists (select 1 from private.portal_manual_review where sales_order_id = order_x and reason = 'vượt hạn mức nợ'), 'X left to the office';
   -- A: approved, sourced, a delivery, audited, office told.
   assert (select commercial_state from public.sales_orders where id = order_a) = 'CONFIRMED', 'A approved';
   assert exists (select 1 from public.credit_commitments where sales_order_id = order_a), 'credit held';
@@ -141,7 +163,9 @@ begin
   assert (select commercial_state from public.sales_orders where id = order_b) = 'DRAFT', 'B waits';
   assert (select body like '% — chờ duyệt (kho chưa đủ hàng)' from public.notifications where kind = 'order.portal_submitted' and entity_id = order_b),
     'B: stock';
-  -- Stone order untouched (no stone came in), staff draft untouched.
+  -- The 8-day-old order is left to the office (it would fit: 0,1); stone order and staff draft untouched.
+  assert (select commercial_state from public.sales_orders where id = order_old) = 'DRAFT'
+    and not exists (select 1 from public.audit_events where entity_id = order_old and action = 'sales_order.portal_auto_approved'), 'older than 7 days skipped';
   assert (select commercial_state from public.sales_orders where id = order_p) = 'DRAFT', 'P waits';
   assert (select commercial_state from public.sales_orders where id = staff_draft) = 'DRAFT'
     and not exists (select 1 from public.audit_events where entity_id = staff_draft), 'staff draft untouched';
@@ -158,8 +182,8 @@ begin
   assert (select count(*) from public.notifications where kind = 'order.portal_auto_approved' and entity_id = order_a) = 1, 'told once';
   assert (select count(*) from public.deliveries where sales_order_id = order_a) = 1, 'one delivery still';
 
-  -- 3. Stock going out triggers nothing.
-  perform pg_temp.count_sand('0.9', 'd88-count-2');
+  -- 3. Stock going out triggers nothing (1,5 → 1,4).
+  perform pg_temp.count_sand('1.4', 'd88-count-2');
   assert (select count(*) from public.inventory_movements where material_id = sand and base_quantity_delta < 0) = 1, 'a loss posted';
   assert not exists (select 1 from private.portal_reapprove_stage where txid = txid_current())
     and not exists (select 1 from private.portal_reapprove_flush where txid = txid_current()), 'nothing staged for a loss';
@@ -175,7 +199,7 @@ begin
   assert exists (select 1 from public.notifications where kind = 'order.portal_auto_approved' and entity_id = order_p), 'P told';
   assert (select commercial_state from public.sales_orders where id = order_b) = 'DRAFT', 'stone does not touch B';
 
-  -- 5. The approval raising never fails the stock transaction: B stays waiting, the stock is in.
+  -- 5. The approval raising never fails the stock transaction: B stays waiting, the stock is in (1,4 → 2: 0,7 free).
   create function pg_temp.boom() returns trigger language plpgsql as $f$ begin raise exception 'boom'; end $f$;
   create trigger boom355 before insert on public.audit_events for each row when (new.action = 'sales_order.portal_auto_approved')
     execute function pg_temp.boom();
@@ -185,17 +209,28 @@ begin
   assert (select commercial_state from public.sales_orders where id = order_b) = 'DRAFT'
     and not exists (select 1 from public.credit_commitments where sales_order_id = order_b), 'B not half-approved';
   drop trigger boom355 on public.audit_events;
-  -- The next stock-in tries again and B goes through.
-  perform pg_temp.count_sand('2.5', 'd88-count-4');
+  perform pg_temp.count_sand('1.6', 'd88-count-4');
   perform pg_temp.commit_point();
-  assert (select commercial_state from public.sales_orders where id = order_b) = 'CONFIRMED', 'B approved later';
+  assert (select commercial_state from public.sales_orders where id = order_b) = 'DRAFT', 'a loss does not retry B (0,3 free)';
+
+  -- 6. Stock freed without a movement: the staff order holding 0,6 is cancelled → B approved at commit. X, now within a
+  -- bigger limit, is not tried again (left to the office), though it is older and would fit.
+  update public.customers set credit_limit_vnd = 100000000 where id = '7f355000-0000-4000-8000-000000000011';
+  perform pg_temp.act_as(office);
+  perform public.cancel_sales_order(holder, 'Khách đổi ý', '7f355000-0000-4000-8000-0000000000f2');
+  perform pg_temp.act_as_admin();
+  assert exists (select 1 from private.portal_reapprove_stage where txid = txid_current() and material_id = sand), 'release staged';
+  perform pg_temp.commit_point();
+  assert (select commercial_state from public.sales_orders where id = order_b) = 'CONFIRMED', 'B approved when the stock was freed';
   assert (select body like '% — đã tự duyệt khi kho có hàng, đang điều phối giao' and body not like '%chờ duyệt%' from public.notifications
     where kind = 'order.portal_submitted' and entity_id = order_b), 'B: pending reason replaced by the approval';
-  assert (select commercial_state from public.sales_orders where id = order_x) = 'DRAFT', 'X still over its limit';
-  assert (select body like '% — chờ duyệt (vượt hạn mức nợ)' from public.notifications where kind = 'order.portal_submitted' and entity_id = order_x),
+  assert (select commercial_state from public.sales_orders where id = order_x) = 'DRAFT'
+    and not exists (select 1 from public.audit_events where entity_id = order_x and action = 'sales_order.portal_auto_approved'), 'X not retried';
+  assert (select body like '% — chờ duyệt tay (vượt hạn mức nợ)' from public.notifications where kind = 'order.portal_submitted' and entity_id = order_x),
     'X: one reason';
+  assert (select commercial_state from public.sales_orders where id = order_old) = 'DRAFT', 'old order still skipped';
 
-  -- 6. Automation: the new event can drive a rule.
+  -- 7. Automation: the new event can drive a rule.
   assert (select count(*) from pg_constraint where conname = 'automation_rules_event_check'
     and pg_get_constraintdef(oid) like '%order.portal_auto_approved%') = 1, 'event allowed for rules';
 end
