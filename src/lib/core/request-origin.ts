@@ -12,3 +12,13 @@ export function hasSameRequestOrigin(request: Request) {
     return new URL(origin).origin === origin && origin === destination.origin;
   } catch { return false; }
 }
+
+/**
+ * D97 (G-6): the answer to a cookie-authenticated POST sent by a page of another site (a sibling subdomain counts as
+ * "same-site" for SameSite=Lax cookies, so the cookie alone does not stop it), or null to carry on. Webhooks that are
+ * checked by a signature (SePay, /api/automation/deliver) do not use this.
+ */
+export function crossOriginRefusal(request: Request): Response | null {
+  if (hasSameRequestOrigin(request)) return null;
+  return Response.json({ error: "Nguồn yêu cầu không hợp lệ." }, { status: 403, headers: { "cache-control": "no-store" } });
+}

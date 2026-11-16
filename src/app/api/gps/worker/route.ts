@@ -3,6 +3,7 @@ import { z } from "zod";
 import { resolveInternalAccess } from "@/lib/access/context";
 import { AppError } from "@/lib/core/errors";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { crossOriginRefusal } from "@/lib/core/request-origin";
 
 const noStore = { "cache-control": "private, no-store" };
 const position = z.object({
@@ -30,6 +31,8 @@ export async function GET() {
 
 /** FB18 (D40): one position from the worker's phone during the shift. The database refuses it outside a shift. */
 export async function POST(request: Request) {
+  const refused = crossOriginRefusal(request);
+  if (refused) return refused;
   const me = await access();
   if (typeof me === "number") return NextResponse.json({ error: "Cần đăng nhập." }, { status: me, headers: noStore });
   const parsed = position.safeParse(await request.json().catch(() => null));

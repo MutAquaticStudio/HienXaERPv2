@@ -4,8 +4,11 @@ import { authenticatedPortalClient, portalRpc } from "@/modules/portal/server";
 import { workCommandHttpStatus } from "@/modules/portal/work-command-status";
 import { parseWorkResultInput } from "@/modules/portal/work-result-input";
 import { userFacingError } from "@/lib/core/errors";
+import { crossOriginRefusal } from "@/lib/core/request-origin";
 
 export async function POST(request: Request) {
+  const refused = crossOriginRefusal(request);
+  if (refused) return refused;
   const context = await authenticatedPortalClient();
   if (!context) return NextResponse.json({ error: "Phiên đăng nhập đã hết hạn" }, { status: 401 });
   try {

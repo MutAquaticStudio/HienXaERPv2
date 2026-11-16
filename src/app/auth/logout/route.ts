@@ -4,8 +4,11 @@ import { NextResponse } from "next/server";
 import { expiredAuthCookies, logoutClearSiteData, logoutDestination } from "@/lib/auth/logout";
 import { isSessionOnly } from "@/lib/supabase/cookie-options";
 import { appPushToken } from "@/modules/notifications/app-push-token";
+import { crossOriginRefusal } from "@/lib/core/request-origin";
 
 export async function POST(request: NextRequest) {
+  const refused = crossOriginRefusal(request);
+  if (refused) return refused;
   let form: FormData | null = null;
   const sessionOnly = isSessionOnly((name) => request.cookies.get(name)?.value);
   try {

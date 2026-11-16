@@ -4,6 +4,7 @@ import { z } from "zod";
 import { deliveryCommandMessage } from "@/modules/delivery/errors";
 import { authenticatedPortalClient, PortalRpcError, portalRpc } from "@/modules/portal/server";
 import { workCommandHttpStatus } from "@/modules/portal/work-command-status";
+import { crossOriginRefusal } from "@/lib/core/request-origin";
 
 const baseQuantity = z.string().trim().regex(/^\d+(?:\.\d{1,6})?$/);
 const schema = z.object({
@@ -31,6 +32,8 @@ export function deliveryLoadedMessage(raw: string) {
 
 /** "Đã lấy hàng lên xe" from the worker portal (FB7), with the photos already uploaded. */
 export async function POST(request: Request) {
+  const refused = crossOriginRefusal(request);
+  if (refused) return refused;
   const context = await authenticatedPortalClient();
   if (!context) return NextResponse.json({ error: "Phiên đăng nhập đã hết hạn. Đăng nhập lại." }, { status: 401 });
   const parsed = schema.safeParse(await request.json().catch(() => null));

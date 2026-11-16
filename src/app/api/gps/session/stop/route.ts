@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { userFacingError } from "@/lib/core/errors";
+import { crossOriginRefusal } from "@/lib/core/request-origin";
 
 export async function POST(request: Request) {
+  const refused = crossOriginRefusal(request);
+  if (refused) return refused;
   const body = await request.json().catch(() => null) as { sessionId?: string; operationId?: string } | null;
   if (!body?.sessionId || !body.operationId) return NextResponse.json({ error: "Phiên GPS không hợp lệ." }, { status: 400 });
   const supabase = await createServerSupabase();

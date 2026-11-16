@@ -5,6 +5,7 @@ import { availableReportKinds, loadFixedReport, loadObligationRows, type ReportF
 import { attachmentHeader, EXPORT_CONTENT_TYPE, exportFormat, toReportCsv, type ExportFormat } from "@/modules/reports/export-table";
 import { toReportXlsx } from "@/modules/reports/export-xlsx";
 import { financeExportTable } from "@/modules/reports/finance-table";
+import { crossOriginRefusal } from "@/lib/core/request-origin";
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -111,5 +112,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const refused = crossOriginRefusal(request);
+  if (refused) return refused;
   return new URL(request.url).searchParams.has("job") ? jobRequest(request, true) : initialRequest(request, true);
 }
