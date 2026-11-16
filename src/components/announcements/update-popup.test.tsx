@@ -80,6 +80,31 @@ describe("portal sheet", () => {
     expect(m.seen).toHaveBeenLastCalledWith(expect.objectContaining({ ids: [news.id] }));
   });
 
+  it("D92: an announcement that arrives while the page is open (refresh after a push) shows, even after Đóng", () => {
+    const view = render(<UpdatePopup items={[price, news]} surface="CUSTOMER" home="/customer" />);
+    fireEvent.click(screen.getByRole("button", { name: "Đóng" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    // The refresh still lists the one left for the next open: it stays closed.
+    view.rerender(<UpdatePopup items={[news]} surface="CUSTOMER" home="/customer" />);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    // A new one arrives: it shows on its own (the one left for later is not reopened).
+    view.rerender(<UpdatePopup items={[news, rule]} surface="CUSTOMER" home="/customer" />);
+    const dialog = screen.getByRole("dialog", { name: "Quy định mới khi nhận hàng" });
+    expect(within(dialog).queryByLabelText(/^Thông báo \d trên/)).not.toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Đã hiểu" }));
+    expect(m.seen).toHaveBeenLastCalledWith(expect.objectContaining({ ids: [rule.id] }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("D92: after Đã hiểu on the last one, a newly pending one still appears without reloading", () => {
+    const view = render(<UpdatePopup items={[price]} surface="CUSTOMER" home="/customer" />);
+    fireEvent.click(screen.getByRole("button", { name: "Đã hiểu" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    // The refresh may still list the acknowledged one until the server has it: it does not come back.
+    view.rerender(<UpdatePopup items={[price, news]} surface="CUSTOMER" home="/customer" />);
+    expect(screen.getByRole("dialog", { name: "Mới: đặt dịch vụ ngay trên app" })).toBeInTheDocument();
+  });
+
   it("gives the focus back where it was and keeps the page behind out of reach", () => {
     const view = render(<div><button type="button">Trước đó</button></div>);
     const before = screen.getByRole("button", { name: "Trước đó" });
