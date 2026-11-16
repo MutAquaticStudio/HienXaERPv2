@@ -35,6 +35,8 @@ const BANK_REASON: Record<string, string> = {
   ambiguous_customer: "Mã khách trùng nhiều khách hàng",
   customer_inactive: "Khách hàng đã ngừng",
   post_failed: "Người bật tự ghi sổ không còn quyền — bật lại ở tài khoản ngân hàng",
+  // D96 (F1): the receipt made from it was reversed; choose the right customer and "Ghi thu" again.
+  reversed: "Phiếu thu đã ghi cho giao dịch này bị đảo — chọn đúng khách rồi ghi thu lại",
 };
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
