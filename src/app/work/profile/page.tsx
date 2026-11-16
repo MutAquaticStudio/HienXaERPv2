@@ -4,7 +4,7 @@ import { ChevronRight, Clock3, KeyRound, LogOut, MapPin, MessageSquare } from "l
 import { PortalAppearance } from "@/components/portal/portal-appearance";
 import styles from "@/components/portal/portal.module.css";
 import { PushToggle } from "@/components/notifications/push-toggle";
-import { openedInNativeApp } from "@/lib/app-shell/server";
+import { openedInAppWithoutPush, openedInNativeApp } from "@/lib/app-shell/server";
 import { APPEARANCE_COOKIE, parseAppearance } from "@/lib/appearance";
 import { AnnouncementHistory } from "@/components/announcements/announcement-history";
 import { loadAnnouncementHistory } from "@/modules/announcements/server";
@@ -12,7 +12,7 @@ import { getWorkerPortalSnapshot } from "@/modules/portal/actions";
 
 export default async function WorkProfilePage() {
   const { employee } = await getWorkerPortalSnapshot();
-  const inApp = await openedInNativeApp();
+  const [inApp, appWithoutPush] = await Promise.all([openedInNativeApp(), openedInAppWithoutPush()]);
   const appearance = parseAppearance((await cookies()).get(APPEARANCE_COOKIE)?.value);
   const announcements = await loadAnnouncementHistory("WORKER");
   return (
@@ -35,11 +35,11 @@ export default async function WorkProfilePage() {
         <h2 id="work-announcements">Thông báo từ cửa hàng</h2>
         <AnnouncementHistory items={announcements} surface="WORKER" emptyText="Chưa có thông báo nào. Đơn giá công đổi hoặc tin mới của văn phòng sẽ hiện ở đây." />
       </section>
-      {/* D82: the Android app cannot receive push yet; workers there are not told about it (Owner 16/11). */}
-      {!inApp && <section className={styles.card}>
+      {/* D86: the Android app 2.3.0+ receives push itself; an older app cannot, and its workers are not told about it (D82). */}
+      {!appWithoutPush && <section className={styles.card}>
         <h2>Báo việc mới về điện thoại</h2>
         <PushToggle />
-        <p className={styles.hint}>Chưa cài app? <Link href="/tai-app">Tải app Hiền Xa cho điện thoại</Link>.</p>
+        {!inApp && <p className={styles.hint}>Chưa cài app? <Link href="/tai-app">Tải app Hiền Xa cho điện thoại</Link>.</p>}
       </section>}
       <PortalAppearance initial={appearance} />
       <form action="/auth/logout" method="post">

@@ -1,9 +1,9 @@
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 
-const m = vi.hoisted(() => ({ inApp: vi.fn(async () => false), appearance: undefined as string | undefined, history: vi.fn(async (): Promise<unknown[] | null> => []) }));
+const m = vi.hoisted(() => ({ inApp: vi.fn(async () => false), oldApp: vi.fn(async () => false), appearance: undefined as string | undefined, history: vi.fn(async (): Promise<unknown[] | null> => []) }));
 vi.mock("@/modules/announcements/server", () => ({ loadAnnouncementHistory: m.history }));
-vi.mock("@/lib/app-shell/server", () => ({ openedInNativeApp: m.inApp }));
+vi.mock("@/lib/app-shell/server", () => ({ openedInNativeApp: m.inApp, openedInAppWithoutPush: m.oldApp }));
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: (name: string) => name === "hx-appearance" && m.appearance ? { value: m.appearance } : undefined }) }));
 
 vi.mock("@/components/notifications/push-toggle", () => ({ PushToggle: () => null }));
@@ -44,12 +44,18 @@ it("D84: Tôi has Giao diện with this device's saved choice", async () => {
   m.appearance = undefined;
 });
 
-it("D82: inside the Android app neither the push card nor the 'Tải app' hint is shown", async () => {
+it("D86: inside the Android app 2.3.0+ the push card is there without the 'Tải app' hint; an older app shows neither (D82)", async () => {
   render(await WorkProfilePage());
   expect(screen.getByRole("heading", { name: "Báo việc mới về điện thoại" })).toBeInTheDocument();
   expect(screen.getByRole("link", { name: "Tải app Hiền Xa cho điện thoại" })).toHaveAttribute("href", "/tai-app");
   cleanup();
   m.inApp.mockResolvedValueOnce(true);
+  render(await WorkProfilePage());
+  expect(screen.getByRole("heading", { name: "Báo việc mới về điện thoại" })).toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: "Tải app Hiền Xa cho điện thoại" })).not.toBeInTheDocument();
+  cleanup();
+  m.inApp.mockResolvedValueOnce(true);
+  m.oldApp.mockResolvedValueOnce(true);
   render(await WorkProfilePage());
   expect(screen.queryByRole("heading", { name: "Báo việc mới về điện thoại" })).not.toBeInTheDocument();
   expect(screen.queryByRole("link", { name: "Tải app Hiền Xa cho điện thoại" })).not.toBeInTheDocument();
