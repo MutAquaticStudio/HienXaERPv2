@@ -5,7 +5,7 @@
 const NATIVE_APP_AGENT = /\bHienXaAndroid\/(\d+(?:\.\d+)*)/;
 
 /** The APK published at /app/hien-xa.apk. scripts/mobile/build-android.mjs refuses an APK with another versionName. */
-export const ANDROID_APP_VERSION = "2.3.0";
+export const ANDROID_APP_VERSION = "2.3.1";
 /** D86: the first app that receives push (Firebase). Older apps keep D82's "no push": the push sections stay hidden there. */
 export const ANDROID_PUSH_VERSION = "2.3.0";
 export const ANDROID_APK_PATH = "/app/hien-xa.apk";

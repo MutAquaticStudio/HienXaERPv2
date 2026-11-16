@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { PendingUpdates } from "@/components/announcements/pending-updates";
+import { LiveRefresh } from "@/components/notifications/live-refresh";
 import { PortalShell } from "@/components/portal/portal-shell";
 import { loadCompanyLogoUrl } from "@/lib/company/profile";
 import { createServerSupabase } from "@/lib/supabase/server";
@@ -12,6 +13,7 @@ export default async function WorkLayout({ children }: { children: ReactNode }) 
     // D85: a lead worker's fifth menu item "Điều phối" with the jobs waiting for a person; null = an ordinary worker, no item.
     loadFieldDispatchSummary().catch(() => null),
   ]);
-  // D83: "Thông báo cập nhật" on "Hôm nay" (a visitor who is not signed in gets nothing).
-  return <PortalShell audience="worker" logoUrl={logoUrl} dispatchCount={dispatch ? dispatch.waiting : null}>{children}<PendingUpdates surface="WORKER" home="/work" /></PortalShell>;
+  // D83: "Thông báo cập nhật" on "Hôm nay" (a visitor who is not signed in gets nothing). D92: the open page re-reads its data
+  // when a push arrives, so new jobs, the counts and the popup appear without tapping the notification.
+  return <PortalShell audience="worker" logoUrl={logoUrl} dispatchCount={dispatch ? dispatch.waiting : null}>{children}<PendingUpdates surface="WORKER" home="/work" /><LiveRefresh /></PortalShell>;
 }

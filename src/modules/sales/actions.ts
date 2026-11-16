@@ -331,8 +331,8 @@ export async function cancelSalesOrderAction(formData: FormData) {
 }
 
 /**
- * D72 (Owner 13/11/2026): "Xóa đơn bán" removes an order that has produced nothing yet (no delivery plan, money, purchase or credit
- * override). The person types the order number as a second confirmation; the database re-checks every condition and audits the delete.
+ * D72 (Owner 13/11/2026): "Xóa đơn bán" removes an order that has produced nothing yet (no money, purchase or credit override);
+ * D90 (16/11/2026): its deliveries that never ran are deleted with it, a delivery that ran refuses. The person types the order number as a second confirmation; the database re-checks every condition and audits the delete.
  */
 export async function deleteSalesOrderAction(formData: FormData) {
   const ids = commandSchema.safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId") });

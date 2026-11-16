@@ -215,7 +215,7 @@ begin
   perform pg_temp.act_as_admin();
   assert (select commercial_state from public.sales_orders where id = other) = 'DRAFT'
     and not exists (select 1 from public.credit_commitments where sales_order_id = other), 'over the limit waits, nothing held';
-  assert (select body like '%— chờ duyệt (vượt hạn mức nợ)' from public.notifications where kind = 'order.portal_submitted' and entity_id = other),
+  assert (select body like '%— chờ duyệt tay (vượt hạn mức nợ)' from public.notifications where kind = 'order.portal_submitted' and entity_id = other),
     'reason: credit';
 end
 $test$;

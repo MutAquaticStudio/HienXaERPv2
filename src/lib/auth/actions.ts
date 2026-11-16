@@ -237,7 +237,7 @@ export async function inviteEmployeeAction(_: ActivationFormState, formData: For
   if (!userId) {
     // Default, and the fallback when the email cannot be sent (e.g. the project's built-in mailer only reaches its own team).
     const generated = await generateActivationLink(admin, parsed.data.email, surface, false);
-    if (!generated) return { message: "Không tạo được tài khoản cho email này. Nếu email đã có tài khoản, dùng nút \"Link kích hoạt\" ở dòng nhân viên." };
+    if (!generated) return { message: "Không tạo được tài khoản cho email này. Nếu email đã có tài khoản, dùng \"Thêm\" › \"Link kích hoạt\" ở dòng nhân viên." };
     userId = generated.userId;
     activationLink = generated.link;
   }

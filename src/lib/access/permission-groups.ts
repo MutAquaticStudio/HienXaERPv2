@@ -7,10 +7,11 @@ const GROUPS = [
   { id: "inventory", label: "Kho hàng", prefixes: ["inventory.", "catalog."] },
   { id: "delivery", label: "Giao hàng", prefixes: ["delivery."] },
   { id: "finance", label: "Tài chính", prefixes: ["finance."] },
-  { id: "workforce", label: "Nhân công", prefixes: ["work.", "workforce.", "compensation."] },
+  // Chấm công sits under Nhân công in the menu, so attendance.* goes there too rather than under "Khác".
+  { id: "workforce", label: "Nhân công", prefixes: ["work.", "workforce.", "compensation.", "attendance."] },
 ] as const;
 
-/** Permissions grouped the way the menu is, for the role editor; anything unmatched goes under "Khác". */
+/** Permissions grouped the way the menu is, for the role editor and "Quyền riêng"; anything unmatched goes under "Khác". */
 export function groupPermissions<T extends { code: string }>(permissions: T[]) {
   const groups = GROUPS.map((group) => ({ id: group.id, label: group.label, items: permissions.filter((item) => group.prefixes.some((prefix) => item.code.startsWith(prefix))) }));
   const grouped = new Set(groups.flatMap((group) => group.items.map((item) => item.code)));

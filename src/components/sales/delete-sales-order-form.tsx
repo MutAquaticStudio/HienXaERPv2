@@ -1,6 +1,6 @@
 "use client";
 
-// D72 (Owner 13/11/2026): "Xóa đơn bán" on the order detail. Hard delete of an order that has produced nothing; the person gives a reason and
+// D72 (Owner 13/11/2026) + D90 (16/11/2026): "Xóa đơn bán" on the order detail. Hard delete of an order that has produced nothing, with its deliveries that never ran; the person gives a reason and
 // types the order number, so a stray tap cannot delete. The server and the database check the same conditions again.
 import { useId, useState } from "react";
 import { useFormStatus } from "react-dom";
@@ -21,7 +21,7 @@ export function DeleteSalesOrderForm({ entityId, operationId, orderNumber, actio
     <form className="inline-command" action={action}>
       <input type="hidden" name="entityId" value={entityId} />
       <input type="hidden" name="operationId" value={operationId} />
-      <p>Xóa hẳn đơn này khỏi hệ thống, cùng hạn mức và phần giữ hàng của đơn. Không khôi phục được. Chỉ xóa được khi đơn chưa có phiếu giao, tiền, đơn mua hay ngoại lệ tín dụng; hệ thống kiểm lại lúc xóa. Nhật ký vẫn ghi ai xóa, đơn nào và lý do. Muốn bỏ đơn mà giữ lịch sử thì dùng “Hủy đơn”.</p>
+      <p>Xóa hẳn đơn này khỏi hệ thống, cùng hạn mức, phần giữ hàng và các phiếu giao chưa chạy của đơn (kể cả phiếu đã hủy). Không khôi phục được. Chỉ xóa được khi chưa có phiếu giao nào đã lên hàng, đã giao hay đã xác nhận, chưa có tiền, đơn mua hay ngoại lệ tín dụng; hệ thống kiểm lại lúc xóa. Nhật ký vẫn ghi ai xóa, đơn nào và lý do. Muốn bỏ đơn mà giữ lịch sử thì dùng “Hủy đơn”.</p>
       {blockedNote && <p className="form-message warning" role="note">{blockedNote}</p>}
       <div className="field"><label htmlFor={reasonId}>Lý do xóa</label><input id={reasonId} name="reason" required minLength={3} maxLength={300} value={reason} onChange={(event) => setReason(event.target.value)} /></div>
       <div className="field"><label htmlFor={numberId}>Gõ mã đơn <strong className="mono">{orderNumber}</strong> để xác nhận</label><input id={numberId} name="confirmNumber" autoComplete="off" required value={typed} onChange={(event) => setTyped(event.target.value)} /></div>

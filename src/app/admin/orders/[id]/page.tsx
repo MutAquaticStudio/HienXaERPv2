@@ -28,6 +28,7 @@ import { deliveryStateLabel, sourceModeLabel, vehicleStatusLabel, type VehicleSt
 import { cancelSalesOrderAction, confirmSalesOrderAction, deleteSalesOrderAction } from "@/modules/sales/actions";
 import { DeleteSalesOrderForm } from "@/components/sales/delete-sales-order-form";
 import { deleteBlockedNote } from "@/modules/sales/delete-order";
+import { cancelOrderView } from "@/modules/sales/cancel-order";
 import { salesDeliveryStateLabel, salesStateLabel, salesStateTone } from "@/modules/sales/presentation";
 import styles from "./order-detail.module.css";
 import { SellerChangeForm } from "@/components/sales/seller-change-form";
@@ -78,6 +79,8 @@ export default async function OrderDetailPage({ params, searchParams }: { params
   const supplies = new Map(((supplyResult.data ?? []) as Supply[]).map((row) => [row.sales_order_line_id, row]));
   const allocations = (allocationResult.data ?? []) as unknown as Allocation[];
   const deliveries = (deliveryResult.data ?? []) as Delivery[];
+  // D94: "Hủy đơn" when no delivery ran; the unrun ones are cancelled with the order.
+  const cancelView = cancelOrderView(order.commercial_state, deliveries.map((delivery) => ({ number: delivery.delivery_number, state: delivery.execution_state })));
   // D46: a cancelled note that was split says which notes replaced it.
   const splitInto = new Map<string, string[]>();
   if (deliveries.some((delivery) => delivery.execution_state === "CANCELLED")) {
@@ -116,7 +119,7 @@ export default async function OrderDetailPage({ params, searchParams }: { params
       .reduce((sum, position) => sum.plus(position.available_base_quantity), new Decimal(0)).toFixed() : null }));
   return <div className="page-stack">
     <header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/orders", label: "Đơn bán" }} /><h1>{order.order_number}</h1><p className="lede">{order.customer_name_snapshot} · {order.site_name_snapshot}</p></div><div className="inline-actions">{!names && <OrderPrintMenu orderId={order.id} />}<ButtonLink href="/admin/orders" variant="secondary">Về danh sách</ButtonLink></div></header>
-    {fromPortal && <p className="form-message warning" role="note"><strong>Đơn khách tự đặt trên cổng khách{order.commercial_state === "DRAFT" ? " — chờ duyệt" : ""}.</strong>{order.commercial_state === "DRAFT" ? " Kiểm tra hàng, giá và ngày giao (sửa bản nháp nếu cần), rồi bấm “Duyệt đơn” để giữ hạn mức và tự phân nguồn; hoặc hủy đơn — khách thấy ghi chú hủy nếu có." : ""}{channel?.portal_note ? ` Ghi chú của khách: “${channel.portal_note}”.` : ""}</p>}
+    {fromPortal && <p className="form-message warning" role="note"><strong>Đơn khách tự đặt trên cổng khách{order.commercial_state === "DRAFT" ? " — chờ duyệt" : ""}.</strong>{order.commercial_state === "DRAFT" ? " Kiểm tra hàng, giá và ngày giao (sửa bản nháp nếu cần), rồi bấm “Duyệt đơn” để giữ hạn mức và tự phân nguồn (đơn chờ vì kho chưa đủ hàng và đặt trong 7 ngày thì hệ thống tự duyệt lại khi kho có hàng, nếu khách trong hạn mức); hoặc hủy đơn — khách thấy ghi chú hủy nếu có." : ""}{channel?.portal_note ? ` Ghi chú của khách: “${channel.portal_note}”.` : ""}</p>}
     <SalesOrderCreditOverride orderId={id} blocked={parseCreditBlock(query.credit)} />
     <ActionNotice notice={query.notice} error={query.error} />
     {names && <OrderNextSteps orderId={order.id} orderNumber={order.order_number} customerId={order.customer_id} siteId={order.site_id}
@@ -159,9 +162,11 @@ export default async function OrderDetailPage({ params, searchParams }: { params
         <div className="field"><label htmlFor={"schedule-" + group.key}>Lịch giao</label><input id={"schedule-" + group.key} name="scheduledAt" type="datetime-local" /></div>
         <button className="button button-primary action-full" type="submit">Tạo phiếu giao</button>
       </form>)}</details>}
-      {["DRAFT", "CONFIRMED"].includes(order.commercial_state) && deliveries.length === 0 && access.permissions.has("orders.cancel") && <CancelDocumentForm entityId={order.id} operationId={randomUUID()} state={order.commercial_state} label="Hủy đơn" action={cancelSalesOrderAction} />}
+      {access.permissions.has("orders.cancel") && (cancelView.canCancel
+        ? <CancelDocumentForm entityId={order.id} operationId={randomUUID()} state={order.commercial_state} label="Hủy đơn" action={cancelSalesOrderAction} note={cancelView.note} />
+        : cancelView.note && <p className="muted" role="note">{cancelView.note}</p>)}
       {access.permissions.has("orders.cancel") && <DeleteSalesOrderForm entityId={order.id} operationId={randomUUID()} orderNumber={order.order_number} action={deleteSalesOrderAction}
-        blockedNote={deleteBlockedNote(order.commercial_state, deliveries.length)} />}
+        blockedNote={deleteBlockedNote(order.commercial_state, deliveries.map((delivery) => ({ number: delivery.delivery_number, state: delivery.execution_state })))} />}
       {order.commercial_state === "CONFIRMED" && allocations.length === 0 && <p className="muted">Chưa có nguồn hàng. Chọn nguồn hoặc đặt NCC từ dòng hàng.</p>}
       {order.commercial_state === "CONFIRMED" && <SendToCustomerZalo label="Gửi xác nhận đơn qua Zalo" pdfUrl={`/api/orders/${order.id}/pdf`} pdfName={`${order.order_number}.pdf`}
         zaloUrl={zaloChatLink((customerPhoneResult.data as { phone: string | null } | null)?.phone)}

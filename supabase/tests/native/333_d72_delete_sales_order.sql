@@ -1,5 +1,5 @@
 -- D72: "Xóa đơn bán". Xóa hẳn đơn nháp / đã hủy / đã xác nhận chưa phát sinh gì, kèm phần giữ hạn mức, giữ hàng, phân nguồn;
--- chặn khi có phiếu giao, ngoại lệ tín dụng, khoản trả trước còn hiệu lực hoặc đơn đã đóng; ghi nhật ký; chống ghi trùng.
+-- chặn khi có phiếu giao đã chạy (D90), ngoại lệ tín dụng, khoản trả trước còn hiệu lực hoặc đơn đã đóng; ghi nhật ký; chống ghi trùng.
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);
 insert into public.units_of_measure(id, code, name, symbol) values ('7f720000-0000-4000-8000-000000000001', 'nt_bao720', 'Bao thử 720', 'bao');
 insert into public.material_groups(id, code, name) values ('7f720000-0000-4000-8000-000000000002', 'NT_G720', 'Nhóm thử 720');
@@ -43,10 +43,10 @@ insert into public.inventory_reservations(id, branch_id, warehouse_id, material_
 insert into public.sales_order_sourcing_runs(id, branch_id, sales_order_id, operation_id, plan, outcome, created_by) values
   ('7f720000-0000-4000-8000-000000000502', '20000000-0000-4000-8000-00000000000a', '7f720000-0000-4000-8000-000000000052',
    '7f720000-0000-4000-8000-0000000005a2', '{"lines":[]}', '{}', '10000000-0000-4000-8000-000000000001');
--- Order 53: a planned delivery (even a cancelled plan would keep the history).
-insert into public.deliveries(id, branch_id, sales_order_id, delivery_number, customer_id, site_id, customer_name_snapshot, site_name_snapshot,
+-- Order 53: a delivery already on the road (D90: only a delivery that never ran is deleted with the order; see 353).
+insert into public.deliveries(id, branch_id, sales_order_id, delivery_number, execution_state, customer_id, site_id, customer_name_snapshot, site_name_snapshot,
   delivery_address_snapshot, created_by) values
-  ('7f720000-0000-4000-8000-000000000603', '20000000-0000-4000-8000-00000000000a', '7f720000-0000-4000-8000-000000000053', 'NT-GH-723',
+  ('7f720000-0000-4000-8000-000000000603', '20000000-0000-4000-8000-00000000000a', '7f720000-0000-4000-8000-000000000053', 'NT-GH-723', 'DISPATCHED',
    '7f720000-0000-4000-8000-000000000010', '7f720000-0000-4000-8000-000000000011', 'Khách 720', 'Công trình 720', 'Địa chỉ 720', '10000000-0000-4000-8000-000000000001');
 -- Order 54: a recorded credit override (history is immutable).
 insert into public.command_receipts values ('7f720000-0000-4000-8000-0000000005a4', '10000000-0000-4000-8000-000000000001', 'confirm_sales_order_with_credit_override',
@@ -141,7 +141,7 @@ begin
   -- Blocked: delivery history, credit override, live prepayment, closed order.
   failed := null;
   begin perform public.delete_sales_order(with_delivery, 'Thử xóa', '7f720000-0000-4000-8000-0000000007b1'); exception when others then failed := sqlerrm; end;
-  assert failed = 'sales_order_has_delivery', format('delivery blocks, got %s', failed);
+  assert failed = 'sales_order_delivery_started: NT-GH-723', format('a delivery that ran blocks, got %s', failed);
   failed := null;
   begin perform public.delete_sales_order(with_override, 'Thử xóa', '7f720000-0000-4000-8000-0000000007b2'); exception when others then failed := sqlerrm; end;
   assert failed = 'sales_order_has_credit_override', format('credit override blocks, got %s', failed);

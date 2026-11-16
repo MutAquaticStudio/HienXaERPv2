@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { PendingUpdates } from "@/components/announcements/pending-updates";
+import { LiveRefresh } from "@/components/notifications/live-refresh";
 import { PortalShell } from "@/components/portal/portal-shell";
 import { loadCompanyLogoUrl } from "@/lib/company/profile";
 import { authenticatedPortalClient, portalRpc } from "@/modules/portal/server";
@@ -16,5 +17,7 @@ export default async function CustomerLayout({ children }: { children: ReactNode
     {children}
     {/* D83: "Thông báo cập nhật" on the customer's home page. */}
     {authenticated && <PendingUpdates surface="CUSTOMER" home="/customer" />}
+    {/* D92: the open page re-reads its data when a push arrives. */}
+    {authenticated && <LiveRefresh />}
   </PortalShell>;
 }

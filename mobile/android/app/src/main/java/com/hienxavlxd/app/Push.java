@@ -28,6 +28,8 @@ final class Push {
     static final String PREFS = "hien_xa";
     /** The page's event with the phone's token ("" when there is none): window 'hx-push-token'. */
     static final String EVENT = "hx-push-token";
+    /** D92: the page's event when a push arrives while the app is open: window 'hx-push' (the page refreshes its data). */
+    static final String EVENT_ARRIVED = "hx-push";
     /** The page to open, as an intent extra; FCM also puts the message's data ("link", "kind", "id") in the extras. */
     static final String EXTRA_LINK = "link";
     static final String TOKEN = "push_token";

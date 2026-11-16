@@ -90,3 +90,17 @@ it.each([
   expect(message).toContain(fragment);
   expect(message).not.toContain(code);
 });
+
+it("D90: names the delivery that already ran and points to returns instead of deleting", () => {
+  const message = commandError("sales_order_delivery_started: DL-2026-000045");
+  expect(message).toContain("Phiếu giao DL-2026-000045 đã chạy");
+  expect(message).toContain("trả hàng");
+  expect(message).not.toContain("sales_order_delivery_started");
+  expect(commandError("sales_order_delivery_started")).toContain("Phiếu giao của đơn đã chạy");
+});
+
+it("D90: the refusal reaches the order page in Vietnamese", async () => {
+  m.rpc.mockResolvedValue({ error: { message: "sales_order_delivery_started: DL-2026-000045" } });
+  await expect(deleteSalesOrderAction(form())).rejects.toThrow(encodeURIComponent("Phiếu giao DL-2026-000045 đã chạy"));
+  expect(m.revalidate).not.toHaveBeenCalled();
+});
