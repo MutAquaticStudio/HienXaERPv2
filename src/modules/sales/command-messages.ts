@@ -18,6 +18,13 @@ export function commandError(message: string, confirmingOrder = false) {
   if (message.includes("sales_order_unresolved_execution")) return "Còn giao hàng, việc hoặc hàng đang vận chuyển chưa xử lý. Hãy hoàn tất trước khi đóng phần còn lại.";
   if (message.includes("sales_order_has_no_remaining")) return "Đơn không còn số lượng chưa giao để đóng.";
   if (message.includes("sales_order_not_closeable")) return "Đơn không còn ở trạng thái có thể đóng phần còn lại. Hãy tải lại.";
+  // D94: "Hủy đơn" when a delivery of the order already ran; the unrun ones are cancelled with the order.
+  if (message.includes("sales_order_cancel_delivery_started")) {
+    const number = /sales_order_cancel_delivery_started:\s*([A-Za-z0-9._-]+)/.exec(message)?.[1];
+    return `Phiếu giao ${number ?? "của đơn"} đã chạy (đã lên hàng, đang giao, đã giao, đã xác nhận hoặc đã xuất kho) nên không hủy được đơn. Hãy dùng trả hàng hoặc “Đóng phần còn lại”.`;
+  }
+  if (message.includes("Sales order with delivery history cannot be cancelled")) return "Đơn còn phiếu giao đang chạy hoặc đã giao nên không hủy được. Hãy dùng trả hàng hoặc “Đóng phần còn lại”.";
+  if (message.includes("sales_order_not_cancellable")) return "Đơn không còn ở trạng thái có thể hủy. Hãy tải lại để kiểm tra.";
   // D72: refusals of "Xóa đơn bán".
   // D90: a delivery of the order already ran (loaded, on the road, delivered, verified, stock moved or the job started).
   if (message.includes("sales_order_delivery_started")) {
