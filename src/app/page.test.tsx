@@ -50,12 +50,16 @@ it("D81: a customer still signed in (the app reopened) goes straight to the cust
   expect(screen.getByRole("heading", { level: 1, name: "Đăng nhập" })).toBeInTheDocument();
 });
 
-it("D82: points to /tai-app, except inside the Android app", async () => {
+it("D87: the sign-in screen shows \"Tải về\" (top bar + panel) to /tai-ve, except inside the Android app", async () => {
   m.access.mockRejectedValue(new AppError({ code: "UNAUTHENTICATED", message: "Chưa đăng nhập", status: 401 }));
   render(await Home(params()));
-  expect(screen.getByRole("link", { name: "Tải app Hiền Xa cho điện thoại" })).toHaveAttribute("href", "/tai-app");
+  const links = screen.getAllByRole("link", { name: "Tải về" });
+  expect(links).toHaveLength(2);
+  links.forEach((link) => expect(link).toHaveAttribute("href", "/tai-ve"));
+  expect(screen.getByRole("complementary", { name: "Tải app Hiền Xa về điện thoại" })).toBeInTheDocument();
   cleanup();
   m.inApp.mockResolvedValueOnce(true);
   render(await Home(params()));
-  expect(screen.queryByRole("link", { name: "Tải app Hiền Xa cho điện thoại" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: "Tải về" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("complementary", { name: "Tải app Hiền Xa về điện thoại" })).not.toBeInTheDocument();
 });

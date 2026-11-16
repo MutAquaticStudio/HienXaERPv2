@@ -1435,7 +1435,7 @@ td.cell-wrap { min-width: 11rem; max-width: 26rem; white-space: normal; }
 :root[data-font-size="sm"] { --font-size-caption: 12px; --font-size-label: 12px; --font-size-table: 13px; --font-size-body: 14px; --font-size-section: 16px; --font-size-title: clamp(20px, 2.2vw, 23px); }
 :root[data-font-size="lg"] { --font-size-caption: 14px; --font-size-label: 14px; --font-size-table: 16px; --font-size-body: 18px; --font-size-section: 21px; --font-size-title: clamp(26px, 3vw, 30px); }
 /* Dark colours cover the internal workspace (the screens with the side menu) and, since D84, the worker and customer
-   portals (.portal-shell, whose own tokens are in src/components/portal/portal.module.css). Sign-in screens and /tai-app
+   portals (.portal-shell, whose own tokens are in src/components/portal/portal.module.css). Sign-in screens and /tai-ve
    keep their light colours. Browsers without :has() simply stay light. */
 :root[data-color="dark"]:has(.app-shell, .portal-shell) {
   color-scheme: dark;
@@ -2500,7 +2500,7 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .supplier-assignments-add select { min-height: 42px; }
 .supplier-assignment-new td { background: color-mix(in srgb, var(--warning-soft) 55%, transparent); }
 
-/* D81 "Cài app Hiền Xa" (/tai-app): the app's own icon on top, one block per phone with its main action full width,
+/* D81 "Cài app Hiền Xa" (/tai-ve, D87): the app's own icon on top, one block per phone with its main action full width,
    numbered steps joined by a line, and a small drawing of what the phone shows where it helps to recognise it. */
 .install-page { container-type: inline-size; }
 .install-hero { display: flex; align-items: center; gap: 16px; }
@@ -2570,8 +2570,25 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
   .install-app-icon { width: 52px; height: 52px; border-radius: 12px; }
   .install-hero h1 { font-size: 21px; }
 }
-.auth-install-link { display: inline-block; margin-top: 10px; color: var(--primary); font-size: var(--font-size-caption); font-weight: 700; }
-@media (display-mode: standalone) { .auth-install-link { display: none; } }
+/* D87 "Tải về" on the sign-in screens: a pill on the blue band (always in view on a phone) and a panel under the card. */
+.auth-topbar-download { display: inline-flex; flex: none; align-items: center; gap: 6px; min-height: 40px; margin-left: auto; padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.42); border-radius: 999px; color: #fff; font-size: 14px; font-weight: 700; text-decoration: none;
+  background: rgba(255, 255, 255, 0.12); transition: background var(--dur) var(--ease-out); }
+.auth-topbar-download:hover { background: rgba(255, 255, 255, 0.22); }
+.auth-topbar-download:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.auth-download { display: flex; align-items: center; gap: 14px; width: min(480px, 100%); margin-top: 16px; padding: 14px 16px;
+  border: 1px solid var(--border); border-radius: 16px; background: var(--surface); box-shadow: 0 1px 2px rgba(16, 34, 58, 0.05), 0 8px 20px rgba(16, 34, 58, 0.06); }
+.auth-download-icon { flex: none; width: 44px; height: 44px; border-radius: 11px; }
+.auth-download-text { display: grid; flex: 1 1 auto; gap: 2px; min-width: 0; }
+.auth-download-text strong { font-size: 15px; line-height: 1.3; }
+.auth-download-text span { color: var(--muted); font-size: var(--font-size-caption); line-height: 1.35; text-wrap: pretty; }
+.auth-download-action { display: inline-flex; flex: none; align-items: center; gap: 6px; min-height: 44px; padding-inline: 16px; }
+@media (max-width: 420px) {
+  .auth-download { flex-wrap: wrap; }
+  .auth-download-text { flex-basis: calc(100% - 58px); }
+  .auth-download-action { flex: 1 1 100%; justify-content: center; }
+}
+@media (display-mode: standalone) { .auth-topbar-download, .auth-download { display: none; } }
 
 /* D82: "Có bản app mới" inside an older Android app, above the portal tab bars, below dialogs. */
 .app-update { position: fixed; z-index: 85; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); left: 12px; display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: center; justify-content: space-between; max-width: 480px; margin-inline: auto; padding: 12px 14px; color: var(--text); border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-lg); }

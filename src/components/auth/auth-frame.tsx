@@ -1,4 +1,8 @@
 import { Fragment, type ReactNode } from "react";
+import { Download } from "lucide-react";
+
+/** D87: the app download page (Owner 16/11/2026: "ở trang app.hienxavlxd.com nên thêm phần mục tải về … gán với route /tai-ve"). */
+export const DOWNLOAD_PATH = "/tai-ve";
 
 /** "A · B": each part stays whole; on a phone they stack and the dot is hidden, so no line starts with "·". */
 function footnoteParts(text: string) {
@@ -11,7 +15,8 @@ function footnoteParts(text: string) {
  */
 export function AuthFrame({ children, footnote, logoUrl, tagline = "Hệ thống nội bộ", installLink = false }: {
   children: ReactNode; footnote?: ReactNode; logoUrl?: string | null; tagline?: string;
-  /** D81: the sign-in screens point to /tai-app (hidden once opened from the installed app; D82: also inside the Android app). */
+  /** D81/D87: the sign-in screens show "Tải về" (top bar + a panel under the card) pointing to /tai-ve; hidden once opened
+   *  from the installed app (display-mode standalone) and inside the Android app (D82). */
   installLink?: boolean;
 }) {
   return <main className="auth-screen">
@@ -19,9 +24,16 @@ export function AuthFrame({ children, footnote, logoUrl, tagline = "Hệ thống
       // eslint-disable-next-line @next/next/no-img-element -- the uploaded company logo, served by the app (D49)
       ? <img className="brand-mark brand-logo" src={logoUrl} alt="" aria-hidden="true" width={36} height={36} />
       : <span className="brand-mark" aria-hidden="true">HX</span>}
-      <span className="auth-brand"><strong>Hiền Xa ERP</strong><span>{tagline}</span></span></header>
+      <span className="auth-brand"><strong>Hiền Xa ERP</strong><span>{tagline}</span></span>
+      {installLink && <a className="auth-topbar-download" href={DOWNLOAD_PATH}><Download aria-hidden size={16} />Tải về</a>}</header>
     <section className="auth-panel"><div className="auth-card">{children}</div>
       {footnote && <p className="auth-footnote">{typeof footnote === "string" ? footnoteParts(footnote) : footnote}</p>}
-      {installLink && <a className="auth-install-link" href="/tai-app">Tải app Hiền Xa cho điện thoại</a>}</section>
+      {installLink && <aside className="auth-download" aria-labelledby="auth-download-title">
+        {/* eslint-disable-next-line @next/next/no-img-element -- the app's own home-screen icon, a small static file */}
+        <img className="auth-download-icon" src="/apple-touch-icon.png" alt="" width={44} height={44} />
+        <div className="auth-download-text"><strong id="auth-download-title">Tải app Hiền Xa về điện thoại</strong>
+          <span>Android và iPhone · một app cho khách hàng, thợ và văn phòng</span></div>
+        <a className="button button-primary auth-download-action" href={DOWNLOAD_PATH}><Download aria-hidden size={18} />Tải về</a>
+      </aside>}</section>
   </main>;
 }

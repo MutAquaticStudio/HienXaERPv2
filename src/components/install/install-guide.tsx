@@ -23,7 +23,7 @@ export function detectDevice(userAgent: string, standalone: boolean): Device {
 
 const subscribeNever = () => () => {};
 /** The link to send: this page on this site ("" on the server). */
-const readLink = () => `${window.location.origin}/tai-app`;
+const readLink = () => `${window.location.origin}/tai-ve`;
 
 function CopyLink({ label }: { label: string }) {
   const [copied, setCopied] = useState(false);

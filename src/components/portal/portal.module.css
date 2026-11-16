@@ -8,7 +8,7 @@
    without :has(), and the dark values apply while a portal shell is on the page.
    The theme is the device's choice in "Giao diện" (Tôi / Tài khoản in the portals, Cài đặt in the office): the cookie
    hx-appearance puts data-color on <html> (src/lib/appearance.ts), and one choice covers every portal on that device.
-   Sign-in screens and /tai-app have no portal shell and stay light. Light values follow the system tokens in
+   Sign-in screens and /tai-ve have no portal shell and stay light. Light values follow the system tokens in
    globals.css; the dark block only lists what changes.
 
    Surfaces

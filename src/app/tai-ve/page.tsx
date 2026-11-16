@@ -15,7 +15,7 @@ const PORTALS = [
   { label: "Khách hàng", icon: UserRound },
 ] as const;
 
-/** D81: public page (no sign-in) to send by Zalo; each phone sees the steps for itself. */
+/** D81/D87: public page /tai-ve (no sign-in) to send by Zalo; each phone sees the steps for itself. */
 export default async function InstallAppPage() {
   return <AuthFrame logoUrl={await loadSignInLogoUrl().catch(() => null)} tagline="Tải app cho điện thoại">
     <div className="install-page">

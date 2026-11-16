@@ -84,7 +84,7 @@ it("iPhone in Zalo or Chrome: first asks to open Safari and copies the link to p
   render(<InstallGuide />);
   expect(await screen.findByText(/chỉ cài được từ/)).toBeInTheDocument();
   await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Chép link cài app" })); });
-  expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/tai-app`);
+  expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/tai-ve`);
   expect(screen.getByRole("button", { name: "Đã chép link" })).toBeInTheDocument();
 });
 
@@ -92,7 +92,7 @@ it("a computer: the link to send by Zalo first, then both ways", async () => {
   as(DESKTOP);
   render(<InstallGuide />);
   const share = await screen.findByRole("region", { name: "Gửi cho nhân viên, khách hàng" });
-  expect(within(share).getByText(`${window.location.host}/tai-app`)).toBeInTheDocument();
+  expect(within(share).getByText(`${window.location.host}/tai-ve`)).toBeInTheDocument();
   expect(within(share).getByRole("button", { name: "Chép link trang này" })).toBeInTheDocument();
   expect(screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent))
     .toEqual(["Gửi cho nhân viên, khách hàng", "Điện thoại Android", "iPhone"]);

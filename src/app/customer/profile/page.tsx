@@ -46,7 +46,7 @@ export default async function CustomerAccountPage() {
           <Link className={styles.buttonSecondary} href="/customer/change-password?from=account">Đổi mật khẩu</Link>
           <form action="/auth/logout" method="post"><input type="hidden" name="surface" value="customer" /><button className={styles.buttonSecondary} type="submit">Đăng xuất</button></form>
         </div>
-        {!inApp && <p className={styles.hint}>Đặt hàng nhanh hơn trên điện thoại: <Link href="/tai-app">Tải app Hiền Xa</Link>.</p>}
+        {!inApp && <p className={styles.hint}>Đặt hàng nhanh hơn trên điện thoại: <Link href="/tai-ve">Tải app Hiền Xa</Link>.</p>}
       </section>
       <section className={styles.card} aria-labelledby="account-customer">
         <h2 id="account-customer">Thông tin khách hàng</h2>

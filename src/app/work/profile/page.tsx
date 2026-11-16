@@ -39,7 +39,7 @@ export default async function WorkProfilePage() {
       {!inApp && <section className={styles.card}>
         <h2>Báo việc mới về điện thoại</h2>
         <PushToggle />
-        <p className={styles.hint}>Chưa cài app? <Link href="/tai-app">Tải app Hiền Xa cho điện thoại</Link>.</p>
+        <p className={styles.hint}>Chưa cài app? <Link href="/tai-ve">Tải app Hiền Xa cho điện thoại</Link>.</p>
       </section>}
       <PortalAppearance initial={appearance} />
       <form action="/auth/logout" method="post">

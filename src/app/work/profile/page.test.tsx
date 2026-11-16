@@ -47,7 +47,7 @@ it("D84: Tôi has Giao diện with this device's saved choice", async () => {
 it("D82: inside the Android app neither the push card nor the 'Tải app' hint is shown", async () => {
   render(await WorkProfilePage());
   expect(screen.getByRole("heading", { name: "Báo việc mới về điện thoại" })).toBeInTheDocument();
-  expect(screen.getByRole("link", { name: "Tải app Hiền Xa cho điện thoại" })).toHaveAttribute("href", "/tai-app");
+  expect(screen.getByRole("link", { name: "Tải app Hiền Xa cho điện thoại" })).toHaveAttribute("href", "/tai-ve");
   cleanup();
   m.inApp.mockResolvedValueOnce(true);
   render(await WorkProfilePage());

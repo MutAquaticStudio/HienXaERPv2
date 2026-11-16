@@ -84,7 +84,7 @@ it("D83: the store's announcements, own price lines only, and push on this phone
 
 it("D82: the 'Tải app' hint is hidden inside the Android app", async () => {
   render(await CustomerAccountPage());
-  expect(screen.getByRole("link", { name: "Tải app Hiền Xa" })).toHaveAttribute("href", "/tai-app");
+  expect(screen.getByRole("link", { name: "Tải app Hiền Xa" })).toHaveAttribute("href", "/tai-ve");
   cleanup();
   m.inApp.mockResolvedValueOnce(true);
   render(await CustomerAccountPage());

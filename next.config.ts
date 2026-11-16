@@ -15,6 +15,10 @@ const nextConfig: NextConfig = {
   // D50: a question to the assistant may carry up to 3,5 MB of files (src/modules/ai/attachment-limits.ts); the default
   // 1 MB Server Action body would refuse them. Kept under Vercel's 4,5 MB request limit.
   experimental: { serverActions: { bodySizeLimit: "4mb" } },
+  // D87: the download page moved to /tai-ve; links already sent by Zalo (/tai-app) keep working.
+  async redirects() {
+    return [{ source: "/tai-app", destination: "/tai-ve", permanent: true }];
+  },
   // Owner decisions D1 and D8: switched-off quotation and payment-notice screens must answer 404. The layout-level
   // notFound() alone renders the not-found page with HTTP 200, because the root loading boundary has already started streaming.
   async rewrites() {
