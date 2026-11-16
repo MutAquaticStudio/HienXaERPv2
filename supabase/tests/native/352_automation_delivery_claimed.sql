@@ -1,6 +1,6 @@
 -- Owner 16/11: "thêm quy tắc push cho thợ đã nhận phiếu". A worker claiming a delivery (D79 `delivery.claimed`) can drive an
 -- automation rule: the PUSH rule reaches the devices of the people who dispatch (delivery.assign), never a login without it,
--- Telegram works for the same event, and an unknown event is still refused. pg_net and Vault are stubbed as in 215 / 350.
+-- a webhook works for the same event (D93: Telegram removed), and an unknown event is still refused. pg_net and Vault are stubbed as in 215 / 350.
 create schema if not exists net;
 create table net._http_response(id bigint primary key, status_code integer, error_msg text, content text, created timestamptz not null default now());
 create table net.sent(id bigserial primary key, url text, body jsonb, headers jsonb);
@@ -34,8 +34,8 @@ begin
   perform pg_temp.act_as(office);
   push_rule := public.save_automation_rule(null, branch, jsonb_build_object('name', 'Thợ nhận phiếu giao → báo điều phối', 'event', 'delivery.claimed',
     'channel', 'PUSH'), null, gen_random_uuid());
-  chat_rule := public.save_automation_rule(null, branch, jsonb_build_object('name', 'Thợ nhận phiếu → nhóm điều phối', 'event', 'delivery.claimed',
-    'channel', 'TELEGRAM', 'target', '-1001234567890'), null, gen_random_uuid());
+  chat_rule := public.save_automation_rule(null, branch, jsonb_build_object('name', 'Thợ nhận phiếu → hệ thống điều phối', 'event', 'delivery.claimed',
+    'channel', 'WEBHOOK', 'target', 'https://hooks.example.test/352'), null, gen_random_uuid());
   assert (select event = 'delivery.claimed' and active and channel = 'PUSH' from public.automation_rules where id = push_rule), 'rule saved';
 
   -- The notification D79 writes when a worker claims a delivery (claim_delivery).
@@ -49,7 +49,7 @@ begin
     where j.rule_id = push_rule and j.notification_id = note;
   assert data->>'kind' = 'delivery.claimed' and data->>'title' = 'Thợ thử đã nhận NT-PG-352' and data->>'link' = 'https://app.example.test/admin/deliveries/' || delivery,
     format('push payload %s', data);
-  assert (select count(*) from public.outbound_jobs where rule_id = chat_rule and notification_id = note and channel = 'TELEGRAM') = 1, 'telegram once';
+  assert (select count(*) from public.outbound_jobs where rule_id = chat_rule and notification_id = note and channel = 'WEBHOOK') = 1, 'webhook once';
 
   -- The same notification again (replay of the same claim) does not push twice.
   perform private.notify(branch, 'delivery.claimed', 'delivery', delivery, 'Thợ thử đã nhận NT-PG-352',

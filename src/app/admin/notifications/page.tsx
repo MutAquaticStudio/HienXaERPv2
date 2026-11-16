@@ -34,7 +34,7 @@ export default async function NotificationsPage({ searchParams }: { searchParams
     </section>}
     <section className="card card-pad"><h2>Thông báo trên điện thoại</h2>
       <PushToggle />
-      {access.permissions.has("roles.manage") && <p className="muted">Chọn việc nào gửi về điện thoại, Telegram hay email ở <Link className="code-link" href="/admin/settings/automation">Quy tắc tự động</Link>.</p>}
+      {access.permissions.has("roles.manage") && <p className="muted">Chọn thông báo nào báo về điện thoại, ai nhận và giờ yên lặng ở <Link className="code-link" href="/admin/settings/automation">Quy tắc tự động</Link>.</p>}
     </section>
     <section className="card card-pad">
       {feed ? <NotificationList items={items} /> : <p className="form-message" role="alert">Chưa tải được thông báo. Hãy tải lại trang.</p>}

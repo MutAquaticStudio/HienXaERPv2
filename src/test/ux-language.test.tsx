@@ -25,6 +25,7 @@ import { priceSourceLabel, pricingScopeLabel } from "@/modules/pricing/presentat
 import { purchaseStateLabel } from "@/modules/purchasing/presentation";
 import { routePlanStateLabel } from "@/modules/routing/presentation";
 import { salesStateLabel } from "@/modules/sales/presentation";
+import { automationChannelLabel, automationEventLabel, outboundStateText } from "@/modules/settings/automation-presentation";
 import { earningTypeLabel, earningClassificationLabel, recognitionKindLabel, serviceRequestStateLabel, serviceStateLabel } from "@/modules/workforce/presentation";
 
 beforeEach(() => {
@@ -49,6 +50,7 @@ describe("Vietnamese display boundaries", () => {
     ["price source", priceSourceLabel], ["price scope", pricingScopeLabel], ["purchase", purchaseStateLabel],
     ["route", routePlanStateLabel], ["sales", salesStateLabel], ["earning type", earningTypeLabel],
     ["classification", earningClassificationLabel], ["recognition", recognitionKindLabel], ["service", serviceStateLabel], ["service request", serviceRequestStateLabel],
+    ["automation event", automationEventLabel], ["automation channel", automationChannelLabel], ["outbound state", outboundStateText],
   ];
   it.each(presenters)("%s renders readable fallback rather than an unknown enum or inherited object", (_domain, present) => {
     for (const source of ["UNRECOGNIZED_INTERNAL_STATE", "constructor", "toString", "__proto__"]) {
