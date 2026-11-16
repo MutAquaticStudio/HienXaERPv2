@@ -1,0 +1,134 @@
+/* D83 "Thông báo cập nhật". Colours only through theme variables, so the popup and the lists follow light and dark mode.
+   `.scope` maps them to the app's tokens (office); `.scope.portal` (worker and customer portals) to the portal's own
+   `--portal-*` variables (D84), falling back to the same tokens where a portal has not defined them. */
+.scope {
+  --ann-surface: var(--surface);
+  --ann-sunken: var(--surface-sunken);
+  --ann-text: var(--text);
+  --ann-muted: var(--muted);
+  --ann-subtle: var(--subtle);
+  --ann-border: var(--border);
+  --ann-accent: var(--primary-text);
+  --ann-accent-soft: var(--primary-soft);
+  --ann-focus: var(--primary);
+  --ann-warning: var(--warning);
+  --ann-warning-soft: var(--warning-soft);
+  --ann-success: var(--success);
+  --ann-success-soft: var(--success-soft);
+  --ann-info: var(--info);
+  --ann-info-soft: var(--info-soft);
+}
+.scope.portal {
+  --ann-surface: var(--portal-surface, var(--surface));
+  --ann-sunken: var(--portal-surface-soft, var(--surface-sunken));
+  --ann-text: var(--portal-text, var(--text));
+  --ann-muted: var(--portal-muted, var(--muted));
+  --ann-subtle: var(--portal-muted, var(--subtle));
+  --ann-border: var(--portal-border, var(--border));
+  --ann-accent: var(--portal-primary, var(--primary-text));
+  --ann-accent-soft: var(--portal-primary-soft, var(--primary-soft));
+  --ann-focus: var(--portal-primary, var(--primary));
+  --ann-warning-soft: var(--portal-warning-soft, var(--warning-soft));
+  --ann-success-soft: var(--portal-success-soft, var(--success-soft));
+}
+
+.panel { gap: 14px; padding-top: 10px; }
+
+.top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.topRight { display: flex; align-items: center; gap: 4px; }
+.count { color: var(--ann-muted); font-size: var(--font-size-caption); font-weight: 600; font-variant-numeric: tabular-nums; }
+.close {
+  width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 12px;
+  color: var(--ann-muted); background: var(--ann-sunken); cursor: pointer;
+}
+.close:hover { color: var(--ann-text); }
+.close:focus-visible, .toggle:focus-visible { outline: 2px solid var(--ann-focus); outline-offset: 2px; }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: var(--ann-accent); background: var(--ann-accent-soft);
+}
+.chip[data-tone="pay"], .chip[data-tone="rule"] { color: var(--ann-info); background: var(--ann-info-soft); }
+.chip[data-tone="news"] { color: var(--ann-warning); background: var(--ann-warning-soft); }
+
+.head { display: grid; gap: 6px; }
+.head h2 { margin: 0; color: var(--ann-text); font-size: 21px; line-height: var(--line-height-heading); }
+.head p { margin: 0; color: var(--ann-muted); }
+.manualBody { margin: 0; color: var(--ann-text); white-space: pre-line; }
+.signOff { margin: 0; color: var(--ann-muted); font-size: var(--font-size-caption); }
+
+.lines { list-style: none; margin: 0; padding: 0; border: 1px solid var(--ann-border); border-radius: var(--radius-lg); color: var(--ann-text); background: var(--ann-surface); }
+.lines li { display: grid; gap: 4px; padding: 11px 14px; }
+.lines li + li { border-top: 1px solid var(--ann-border); }
+.lineHead { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.lineHead strong { font-weight: 600; }
+.lineHead span { flex: none; color: var(--ann-muted); font-size: var(--font-size-caption); }
+.lineValues { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-variant-numeric: tabular-nums; }
+.old { color: var(--ann-muted); }
+.arrow { color: var(--ann-subtle); }
+.next { font-size: 17px; }
+
+.delta {
+  margin-left: auto; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap;
+  color: var(--ann-accent); background: var(--ann-accent-soft);
+}
+.delta[data-tone="up"] { color: var(--ann-warning); background: var(--ann-warning-soft); }
+.delta[data-tone="down"] { color: var(--ann-success); background: var(--ann-success-soft); }
+.delta[data-tone="stopped"] { color: var(--ann-muted); background: var(--ann-sunken); }
+
+.toggle {
+  justify-self: start; min-height: 44px; margin-top: -6px; padding: 0; border: 0;
+  color: var(--ann-accent); background: none; font: inherit; font-weight: 600; cursor: pointer;
+}
+.footer { display: grid; gap: 6px; }
+.footer p { margin: 0; text-align: center; color: var(--ann-muted); font-size: var(--font-size-caption); }
+.footer > a, .footer > button { width: 100%; }
+
+/* The office popup (shared dialog): a table on a computer, stacked rows on a phone. */
+.officeTable td.num, .officeTable th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.officeFoot { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px 12px; }
+.officeFoot p { margin: 0 auto 0 0; color: var(--ann-muted); font-size: var(--font-size-caption); }
+.officeFoot .button { min-height: 44px; }
+
+/* History lists ("Thông báo từ cửa hàng"). */
+.history { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.historyItem {
+  display: grid; gap: 8px; padding: 12px 14px; border: 1px solid var(--ann-border); border-radius: var(--radius-lg);
+  color: var(--ann-text); background: var(--ann-surface);
+}
+.historyItem > header { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.historyItem h3 { margin: 0; font-size: var(--font-size-body); }
+.historyItem time, .historyItem small { color: var(--ann-muted); font-size: var(--font-size-caption); }
+.historyItem p { margin: 0; }
+.historyItem a { color: var(--ann-accent); font-weight: 600; }
+.unseen { font-weight: 700; color: var(--ann-accent); }
+.history + details, .scope > details { margin-top: 10px; }
+
+/* "Soạn thông báo cập nhật" (owner, office only). */
+.composer { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 18px; align-items: start; }
+@media (max-width: 960px) { .composer { grid-template-columns: 1fr; } }
+.audiences { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0; padding: 0; border: 0; }
+@media (max-width: 640px) { .audiences { grid-template-columns: 1fr; } }
+.audiences legend, .legend { margin-bottom: 8px; padding: 0; font-size: var(--font-size-label); font-weight: 700; }
+.audience {
+  display: flex; align-items: flex-start; gap: 10px; min-height: 44px; padding: 12px; border: 1px solid var(--border-strong);
+  border-radius: var(--radius); background: var(--ann-surface); cursor: pointer;
+}
+.audience[data-checked] { border-color: var(--ann-focus); background: var(--row-hover); box-shadow: inset 0 0 0 1px var(--ann-focus); }
+.audience input { margin-top: 3px; }
+.audience span { display: grid; gap: 2px; }
+.audience small { color: var(--ann-muted); font-size: var(--font-size-caption); }
+.counted { display: flex; justify-content: space-between; gap: 8px; }
+.preview {
+  display: grid; gap: 12px; padding: 16px; border: 1px solid var(--ann-border); border-radius: var(--radius-lg);
+  background: var(--ann-surface); box-shadow: var(--shadow);
+}
+.previewPrimary, .previewSecondary {
+  display: grid; place-items: center; min-height: 48px; border-radius: 14px; font-weight: 700;
+}
+.previewPrimary { color: var(--ann-surface); background: var(--ann-focus); }
+.previewSecondary { color: var(--ann-accent); background: var(--ann-accent-soft); }
+
+@media (prefers-reduced-motion: reduce) {
+  .panel { animation: none; }
+}

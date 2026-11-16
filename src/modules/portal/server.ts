@@ -6,18 +6,21 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { operationalPostingError } from "@/lib/core/errors";
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createServerSupabase>>;
-type RpcFailure = { code?: string; message: string };
+type RpcFailure = { code?: string; message: string; hint?: string | null };
 type RpcResponse<T> = Promise<{ data: T | null; error: RpcFailure | null }>;
 
 export class PortalRpcError extends Error {
   code?: string;
   readonly rawMessage: string;
+  /** The database's hint, e.g. "next_free_at=…" on a schedule clash. */
+  readonly hint?: string;
 
   constructor(error: RpcFailure) {
     super(operationalPostingError(error.message) ?? error.message);
     this.name = "PortalRpcError";
     this.code = error.code;
     this.rawMessage = error.message;
+    this.hint = error.hint ?? undefined;
   }
 }
 

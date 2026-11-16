@@ -7,7 +7,7 @@ import { requireInternalAccess } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { componentKindLabel, describeWorkRateItem, workRateCount, type WorkRateItem } from "@/modules/payroll/presentation";
 import { addDays, weekStart } from "@/modules/attendance/presentation";
-import { attendanceWeek, monthEarnings } from "@/modules/portal/earnings";
+import { attendanceWeek, monthEarnings, WEEK_TONE_LABEL } from "@/modules/portal/earnings";
 
 type Payslip = {
   id: string; work_days: string; standard_work_days: string; base_amount_vnd: string; overtime_amount_vnd: string; allowance_vnd: string;
@@ -64,7 +64,7 @@ export default async function WorkEarningsPage() {
       <section className={styles.card} aria-labelledby="week-title">
         <div className={styles.sectionHead}><h2 id="week-title">Chấm công tuần này</h2><span className={styles.hint}>{week.worked} / {week.scheduled} ngày</span></div>
         <ol className={styles.weekStrip}>{week.days.map((day) => <li key={day.date} data-tone={day.tone} aria-current={day.date === today ? "date" : undefined}>
-          {day.weekday}<span title={day.note}>{day.day}</span>
+          {day.weekday}<span title={day.note}>{day.day}</span><small className="sr-only">, {WEEK_TONE_LABEL[day.tone]}</small>
         </li>)}</ol>
         {lateNotes.map((day) => <p key={day.date} className={styles.weekNote}><b>{day.weekday}:</b> {day.note}</p>)}
       </section>

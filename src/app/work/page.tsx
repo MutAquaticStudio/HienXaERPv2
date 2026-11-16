@@ -1,8 +1,9 @@
 import { jobStateLabel, directionsHref, telHref } from "@/modules/portal/presentation";
 import Link from "next/link";
-import { ChevronRight, Clock3, Navigation, Phone, PlusCircle } from "lucide-react";
+import { ChevronRight, Clock3, Navigation, Phone, PlusCircle, UsersRound } from "lucide-react";
 
 import { PushToggle } from "@/components/notifications/push-toggle";
+import fd from "@/components/portal/field-dispatch.module.css";
 import { JobSteps } from "@/components/portal/job-steps";
 import styles from "@/components/portal/portal.module.css";
 import { requireInternalAccess } from "@/lib/access/context";
@@ -10,6 +11,8 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { ClockPanel } from "@/modules/attendance/forms";
 import { formatClock, formatShiftTime, openShiftHeading } from "@/modules/attendance/presentation";
 import { getWorkerDeliveryPoolCount, getWorkerPortalSnapshot } from "@/modules/portal/actions";
+import { summaryLine } from "@/modules/portal/field-dispatch";
+import { loadFieldDispatchSummary } from "@/modules/portal/field-dispatch-server";
 import type { WorkerJob } from "@/modules/portal/types";
 
 const zone = { timeZone: "Asia/Ho_Chi_Minh" } as const;
@@ -54,7 +57,7 @@ function NextJob({ job }: { job: WorkerJob }) {
 
 /** FB18: "Hôm nay" — the shift card, the job in hand with its steps and one-tap call / directions, then what comes next. */
 export default async function WorkHomePage({ searchParams }: { searchParams: Promise<{ notice?: string }> }) {
-  const [snapshot, deliveryCount] = await Promise.all([getWorkerPortalSnapshot(), getWorkerDeliveryPoolCount()]);
+  const [snapshot, deliveryCount, dispatch] = await Promise.all([getWorkerPortalSnapshot(), getWorkerDeliveryPoolCount(), loadFieldDispatchSummary()]);
   const query = await searchParams;
   const poolCount = snapshot.pool.length + deliveryCount;
   const now = new Date();
@@ -110,7 +113,17 @@ export default async function WorkHomePage({ searchParams }: { searchParams: Pro
         <ul className={styles.timeline}>{later.map((job) => <NextJob key={job.id} job={job} />)}</ul>
       </section>}
 
-      {poolCount > 0 && <Link className={styles.poolHint} href="/work/pool"><PlusCircle aria-hidden size={18} /><span>{deliveryCount > 0 ? `Có ${deliveryCount} phiếu giao chờ người nhận${snapshot.pool.length ? ` và ${snapshot.pool.length} việc khác` : ""}` : `Có ${snapshot.pool.length} việc mới có thể nhận`}</span>Xem</Link>}
+      {/* D85: a lead worker sees the branch's whole day here, in place of the "Nhận việc" hint. */}
+      {dispatch && <Link className={fd.todayCard} href="/work/dispatch" aria-label={`Điều phối hôm nay: ${summaryLine(dispatch)}`}>
+        <span className={fd.todayMain}><span className={fd.todayIcon}><UsersRound aria-hidden size={20} /></span>
+          <span><strong>Điều phối hôm nay</strong><small>{summaryLine(dispatch)}</small></span><ChevronRight aria-hidden size={18} color="var(--muted)" /></span>
+        {(dispatch.declined > 0 || dispatch.short > 0) && <span className={fd.chips}>
+          {dispatch.declined > 0 && <span className={fd.chip} data-tone="warn">{dispatch.declined} thợ từ chối</span>}
+          {dispatch.short > 0 && <span className={fd.chip} data-tone="warn">{dispatch.short} giao thiếu</span>}
+        </span>}
+      </Link>}
+
+      {!dispatch && poolCount > 0 && <Link className={styles.poolHint} href="/work/pool"><PlusCircle aria-hidden size={18} /><span>{deliveryCount > 0 ? `Có ${deliveryCount} phiếu giao chờ người nhận${snapshot.pool.length ? ` và ${snapshot.pool.length} việc khác` : ""}` : `Có ${snapshot.pool.length} việc mới có thể nhận`}</span>Xem</Link>}
 
       <PushToggle prompt={{ title: "Báo việc mới về điện thoại", className: styles.card,
         text: "Bật để điện thoại báo ngay khi có việc giao cho bạn hoặc phiếu giao chờ người nhận." }} />

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { PendingUpdates } from "@/components/announcements/pending-updates";
 import { PortalShell } from "@/components/portal/portal-shell";
 import { loadCompanyLogoUrl } from "@/lib/company/profile";
 import { authenticatedPortalClient, portalRpc } from "@/modules/portal/server";
@@ -11,5 +12,9 @@ export default async function CustomerLayout({ children }: { children: ReactNode
   // completed, or a revoked one) gets the basic menu and the page itself explains.
   const snapshot = authenticated ? await portalRpc<CustomerPortalSnapshot>(authenticated.supabase, "customer_portal_snapshot", { target_customer_id: null }).catch(() => null) : null;
   const logoUrl = authenticated ? await loadCompanyLogoUrl(authenticated.supabase).catch(() => null) : null;
-  return <PortalShell audience="customer" logoUrl={logoUrl} canViewDebt={Boolean(snapshot?.can_view_debt)} canOrder={snapshot?.membership_role === "OWNER"}>{children}</PortalShell>;
+  return <PortalShell audience="customer" logoUrl={logoUrl} canViewDebt={Boolean(snapshot?.can_view_debt)} canOrder={snapshot?.membership_role === "OWNER"}>
+    {children}
+    {/* D83: "Thông báo cập nhật" on the customer's home page. */}
+    {authenticated && <PendingUpdates surface="CUSTOMER" home="/customer" />}
+  </PortalShell>;
 }

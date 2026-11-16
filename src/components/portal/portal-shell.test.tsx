@@ -60,10 +60,35 @@ it("opens 'Bạn muốn đặt gì?' from the green Đặt button with two equal
   unmount();
 });
 
+it("marks both portal shells so the dark palette covers them (D84)", () => {
+  for (const audience of ["worker", "customer"] as const) {
+    const { container, unmount } = render(<PortalShell audience={audience}>QA</PortalShell>);
+    expect(container.firstElementChild).toHaveClass("portal-shell");
+    unmount();
+  }
+});
+
 it("shows no order button to accountants and receivers (D75, FB10)", () => {
   const { container, unmount } = render(<PortalShell audience="customer" canViewDebt>QA</PortalShell>);
   const menu = [...container.querySelectorAll("nav")].at(-1) as HTMLElement;
   expect([...menu.querySelectorAll("a, button")].map((item) => item.textContent)).toEqual(["Trang chủ", "Đơn hàng", "Công nợ", "Tôi"]);
   expect(screen.queryByRole("button", { name: "Đặt" })).not.toBeInTheDocument();
   unmount();
+});
+
+it("gives a lead worker a fifth place, Điều phối in the middle with the jobs waiting; ordinary workers keep four (D85)", () => {
+  const { container, unmount } = render(<PortalShell audience="worker" dispatchCount={4}>QA</PortalShell>);
+  const bottom = [...container.querySelectorAll("nav")].at(-1) as HTMLElement;
+  expect([...bottom.querySelectorAll("a")].map((link) => link.querySelector("span")?.textContent)).toEqual(["Hôm nay", "Nhận việc", "Điều phối", "Thu nhập", "Tôi"]);
+  const item = within(bottom).getByRole("link", { name: "Điều phối, 4 việc chờ người" });
+  expect(item.getAttribute("href")).toBe("/work/dispatch");
+  expect(item.textContent).toBe("Điều phối4");
+  unmount();
+  const none = render(<PortalShell audience="worker" dispatchCount={0}>QA</PortalShell>);
+  const menu = [...none.container.querySelectorAll("nav")].at(-1) as HTMLElement;
+  expect(within(menu).getByRole("link", { name: "Điều phối" }).textContent).toBe("Điều phối");
+  none.unmount();
+  const ordinary = render(<PortalShell audience="worker" dispatchCount={null}>QA</PortalShell>);
+  expect(screen.queryByRole("link", { name: /Điều phối/ })).toBeNull();
+  ordinary.unmount();
 });

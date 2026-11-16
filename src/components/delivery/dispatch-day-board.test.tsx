@@ -30,6 +30,12 @@ it("shows each driver's day by time, the waiting deliveries with proposals and t
   expect(screen.getByText("Gợi ý")).toBeInTheDocument();
 });
 
+it("labels the deliveries a lead worker gave from the worker portal (D85)", () => {
+  render(<DispatchDayBoard day="2026-10-20" board={board} canAssign fieldLabels={{ d1: "Tuấn đổi người: Hùng → Tài xế A" }} />);
+  const a = screen.getByText("Tài xế A").closest("article")!;
+  expect(within(a).getByText("Tuấn đổi người: Hùng → Tài xế A")).toBeInTheDocument();
+});
+
 it("hides dispatch buttons without the right to assign", () => {
   render(<DispatchDayBoard day="2026-10-20" board={board} canAssign={false} />);
   expect(screen.queryByRole("button", { name: "Tự chia việc" })).not.toBeInTheDocument();

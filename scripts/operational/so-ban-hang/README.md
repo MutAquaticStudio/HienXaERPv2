@@ -24,14 +24,20 @@ Owner (14/11/2026): *"Từ hôm nay vào 7h30 sáng mỗi ngày vào sheet 11.26
    ```
 3. Đọc sổ: Google Sheets `get_values`, range `'<tab>'!A8:R1500`. Kết quả lớn được lưu thành file; nếu trả thẳng thì tự ghi JSON ra file.
 4. Tạo câu SQL: `python3 -I scripts/operational/so-ban-hang/tao-lenh-nhap.py <file> <tab> "<da_nhap>" > lenh.sql`
+   (nối thêm vào `<da_nhap>` các TT trong mục **Dòng Owner cho bỏ qua** bên dưới, để không gửi lại và không báo lại).
    (thêm `--kho` để chạy khô). Script bỏ dòng đã nhập và dòng thu tiền, ghép `nhap-so-hang-ngay.sql` với lệnh gọi.
    0 dòng → không cần chạy bước 5–6.
 5. Gửi **nguyên** `lenh.sql` bằng Supabase `execute_sql` (Production). Kết quả là báo cáo JSON (`bao_cao`).
    Lỗi cả khối (không phải `DRY OK`) nghĩa là **không có gì được ghi**; báo lỗi cho Owner, không thử sửa dữ liệu bằng tay.
-6. Gửi nguyên `dong-bo-ngay.sql` (đặt giờ chứng từ theo ngày sổ). Cột `don_lech` và `dich_vu_lech` phải bằng 0.
+6. Gửi nguyên `dong-bo-ngay.sql` (đặt giờ chứng từ theo ngày sổ; hạn nợ = ngày sổ + hạn nợ của khách, mặc định 14 ngày,
+   Owner 16/11/2026 đổi 7 khách KH009, KH051, KH064, KH066, KH068, KH071, KHBL thành 28 ngày). Cột `don_lech` và `dich_vu_lech` phải bằng 0.
    Nếu bước này không chạy được (máy chủ hỏi xác nhận mà không ai trả lời…), lần chạy sau sẽ tự làm bù; báo Owner.
 7. Báo cáo cho Owner bằng tiếng Việt, ngắn: số dòng đã nhập, tiền hàng, tiền dịch vụ, khách mới, mặt hàng bù tồn (số lượng + giá vốn),
    **từng dòng giữ lại kèm lý do** (TT, ngày, khách, hàng), dòng lệch tiền so với sổ, số dòng hôm nay để mai.
+
+## Dòng Owner cho bỏ qua
+
+- Tab `11.26`: dòng **454, 455** (trùng đơn SO-2026-000353) và **465** (trùng đơn SO-2026-000399): Owner 16/11/2026 "trùng rồi thì bỏ qua".
 
 ## Quy tắc trong `nhap-so-hang-ngay.sql`
 

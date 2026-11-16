@@ -5,7 +5,9 @@
 const NATIVE_APP_AGENT = /\bHienXaAndroid\/(\d+(?:\.\d+)*)/;
 
 /** The APK published at /app/hien-xa.apk. scripts/mobile/build-android.mjs refuses an APK with another versionName. */
-export const ANDROID_APP_VERSION = "2.1.0";
+export const ANDROID_APP_VERSION = "2.3.0";
+/** D86: the first app that receives push (Firebase). Older apps keep D82's "no push": the push sections stay hidden there. */
+export const ANDROID_PUSH_VERSION = "2.3.0";
 export const ANDROID_APK_PATH = "/app/hien-xa.apk";
 /** The D81 app (Trusted Web Activity) opened the site in Chrome with this referrer. */
 export const TWA_REFERRER = "android-app://com.hienxavlxd.app";
@@ -16,6 +18,12 @@ export function isNativeApp(userAgent: string | null | undefined): boolean {
 
 export function nativeAppVersion(userAgent: string | null | undefined): string | null {
   return (userAgent && NATIVE_APP_AGENT.exec(userAgent)?.[1]) || null;
+}
+
+/** D86: the Android app on this phone can receive push (2.3.0 or newer). */
+export function nativeAppHasPush(userAgent: string | null | undefined): boolean {
+  const version = nativeAppVersion(userAgent);
+  return version !== null && !isOlderVersion(version, ANDROID_PUSH_VERSION);
 }
 
 /** "2.0.0" < "2.1.0" < "2.10.0": compared part by part as numbers. */

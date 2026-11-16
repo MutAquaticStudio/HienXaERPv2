@@ -1,13 +1,15 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
-const m = vi.hoisted(() => ({ tables: {} as Record<string, unknown[]>, calls: [] as { table: string; method: string; args: unknown[] }[], deliveries: 0 }));
+const m = vi.hoisted(() => ({ tables: {} as Record<string, unknown[]>, calls: [] as { table: string; method: string; args: unknown[] }[], deliveries: 0,
+  dispatch: null as null | { waiting: number; declined: number; given: number; given_workers: number; short: number } }));
 vi.mock("server-only", () => ({}));
 vi.mock("@/components/notifications/push-toggle", () => ({ PushToggle: () => null }));
 vi.mock("@/lib/access/context", () => ({ requireInternalAccess: async () => ({ employeeId: "e1", branchId: "b1" }) }));
 vi.mock("@/modules/attendance/forms", () => ({ ClockPanel: ({ clockedIn }: { clockedIn: boolean }) => <button type="button">{clockedIn ? "Ra ca" : "Vào ca"}</button> }));
 vi.mock("@/modules/portal/actions", () => ({ getWorkerPortalSnapshot: async () => ({ employee: { display_name: "Anh Hải" }, jobs: [], pool: [] }),
   getWorkerDeliveryPoolCount: async () => m.deliveries }));
+vi.mock("@/modules/portal/field-dispatch-server", () => ({ loadFieldDispatchSummary: async () => m.dispatch }));
 vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({
   from(table: string) {
     const filters: { method: string; args: unknown[] }[] = [];
@@ -34,6 +36,7 @@ beforeEach(() => {
   vi.setSystemTime(new Date("2026-11-04T02:00:00Z"));
   m.calls = [];
   m.deliveries = 0;
+  m.dispatch = null;
   m.tables = { shift_assignments: [], attendance_records: [] };
 });
 afterEach(() => { cleanup(); vi.useRealTimers(); });
@@ -60,4 +63,16 @@ it("D79: points to deliveries waiting for a driver", async () => {
   m.deliveries = 2;
   render(await Page({ searchParams: Promise.resolve({}) }));
   expect(screen.getByRole("link", { name: /Có 2 phiếu giao chờ người nhận/ }).getAttribute("href")).toBe("/work/pool");
+});
+
+it("D85: a lead worker sees the branch's day in place of the Nhận việc hint", async () => {
+  m.deliveries = 2;
+  m.dispatch = { waiting: 4, declined: 1, given: 7, given_workers: 4, short: 1 };
+  render(await Page({ searchParams: Promise.resolve({}) }));
+  const card = screen.getByRole("link", { name: /Điều phối hôm nay/ });
+  expect(card.getAttribute("href")).toBe("/work/dispatch");
+  expect(card.textContent).toContain("4 việc chờ người · 7 việc đã giao cho 4 người");
+  expect(card.textContent).toContain("1 thợ từ chối");
+  expect(card.textContent).toContain("1 giao thiếu");
+  expect(screen.queryByRole("link", { name: /phiếu giao chờ người nhận/ })).toBeNull();
 });

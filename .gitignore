@@ -27,5 +27,8 @@ mobile/android/build/
 mobile/android/app/build/
 mobile/android/.gradle/
 mobile/android/local.properties
+# D86: the Owner's Firebase config for the app (scripts/mobile/build-android.mjs copies it from HX_GOOGLE_SERVICES_JSON)
+mobile/android/app/google-services.json
+google-services.json
 *.keystore
 *.jks

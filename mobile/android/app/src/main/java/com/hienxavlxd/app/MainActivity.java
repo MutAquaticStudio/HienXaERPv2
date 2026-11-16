@@ -1,6 +1,7 @@
 package com.hienxavlxd.app;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.ActivityNotFoundException;
@@ -10,6 +11,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
@@ -51,6 +53,7 @@ import androidx.core.view.WindowInsetsControllerCompat;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -62,12 +65,19 @@ import java.util.Set;
  * so it needs no Chrome and every web deploy is in the app at once. Native parts: sign-in kept (cookies), photos from the
  * camera or gallery, location for attendance and delivery tracking, phone / Zalo / map links opened in their own apps, file
  * downloads (PDFs open when done; files the page builds itself are saved too), Back, and a "no connection" screen.
+ * D86: push notifications through Firebase (Push, PushService): the page reads and asks through the bridge, a tapped
+ * notification opens its page here, and Android 13+ is asked for notifications on the first signed-in page.
  */
 public class MainActivity extends Activity {
     private static final int REQUEST_FILE = 10;
     private static final int REQUEST_CAMERA = 11;
     private static final int REQUEST_LOCATION = 12;
     private static final int REQUEST_STORAGE = 13;
+    private static final int REQUEST_LOCATION_FIRST = 14;
+    private static final int REQUEST_NOTIFICATIONS_FIRST = 15;
+    private static final int REQUEST_NOTIFICATIONS = 16;
+    private static final String[] LOCATION = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
+    private static final String ASKED_LOCATION = "asked_location";
     private static final String STATE_URL = "hx_url";
     private static final String BRIDGE = "HienXaAndroid";
     private static final long CAMERA_FILE_MAX_AGE_MS = 24L * 60 * 60 * 1000;
@@ -97,6 +107,15 @@ public class MainActivity extends Activity {
     private String[] pendingDownload;
     private final Set<Long> openWhenDone = new HashSet<>();
     private BroadcastReceiver downloadReceiver;
+
+    /** One Android permission dialog at a time: the others wait here, in order (never two system dialogs at once). */
+    private boolean permissionDialogOpen;
+    private final ArrayDeque<int[]> waitingDialogs = new ArrayDeque<>();
+    private String lastPushPermission;
+    /** A new Firebase token (PushService saves it) is handed to the open page. Kept in a field: Android holds listeners weakly. */
+    private final SharedPreferences.OnSharedPreferenceChangeListener tokenListener = (prefs, key) -> {
+        if (Push.TOKEN.equals(key)) sendTokenToPage(Push.token(this));
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,6 +161,10 @@ public class MainActivity extends Activity {
         registerBack();
         registerDownloadReceiver();
         cleanCameraFiles();
+        Push.ensureChannel(this);
+        Push.prefs(this).registerOnSharedPreferenceChangeListener(tokenListener);
+        // Warm the token up, so the page finds it at once (a changed token reaches the page through tokenListener).
+        Push.fetchToken(this, token -> { });
 
         String restored = savedInstanceState == null ? null : savedInstanceState.getString(STATE_URL);
         web.loadUrl(restored != null && isAppUrl(Uri.parse(restored)) ? restored : launchUrl(getIntent()));
@@ -188,16 +211,31 @@ public class MainActivity extends Activity {
     }
 
     private String launchUrl(Intent intent) {
-        Uri data = intent == null ? null : intent.getData();
+        String link = linkFrom(intent);
+        return link != null ? link : BuildConfig.APP_URL;
+    }
+
+    /** An app.hienxavlxd.com link opened from Zalo / messages, or (D86) the page of a tapped notification; else null. */
+    private static String linkFrom(Intent intent) {
+        if (intent == null) return null;
+        Uri data = intent.getData();
         if (data != null && Intent.ACTION_VIEW.equals(intent.getAction()) && isAppUrl(data)) return data.toString();
-        return BuildConfig.APP_URL;
+        try {
+            // Firebase puts the message's data in the extras of the notification it shows; Push.show does the same.
+            String link = intent.getStringExtra(Push.EXTRA_LINK);
+            if (link != null && isAppUrl(Uri.parse(link))) return link;
+        } catch (RuntimeException unreadable) {
+            // Extras from another app that cannot be read: open the home page.
+        }
+        return null;
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
-        if (web != null && intent.getData() != null) web.loadUrl(launchUrl(intent));
+        String link = linkFrom(intent);
+        if (web != null && link != null) web.loadUrl(link);
     }
 
     /** Links that leave the ERP (phone, Zalo, maps, other sites) open in the phone's own apps. */
@@ -242,7 +280,14 @@ public class MainActivity extends Activity {
         }
 
         @Override
+        public void doUpdateVisitedHistory(WebView view, String url, boolean isReload) {
+            // Also called when the site changes page without reloading (signing in, the tab bar).
+            askOnFirstOpen(url);
+        }
+
+        @Override
         public void onPageFinished(WebView view, String url) {
+            askOnFirstOpen(url);
             if (!mainFrameFailed) offline.setVisibility(View.GONE);
             view.evaluateJavascript(PAGE_HELPER, null);
             CookieManager.getInstance().flush();
@@ -283,7 +328,7 @@ public class MainActivity extends Activity {
             fileCallback = callback;
             fileParams = params;
             if (acceptsImages(params) && checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA);
+                askPermission(REQUEST_CAMERA);
             } else {
                 openChooser();
             }
@@ -299,8 +344,108 @@ public class MainActivity extends Activity {
             if (geoCallback != null) geoCallback.invoke(geoOrigin, false, false);
             geoOrigin = origin;
             geoCallback = callback;
-            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_LOCATION);
+            askPermission(REQUEST_LOCATION);
         }
+    }
+
+    /** POST_NOTIFICATIONS is only asked on Android 13+ (Push.needsPermission is false below). */
+    @SuppressLint("InlinedApi")
+    private static String[] permissionsFor(int requestCode) {
+        switch (requestCode) {
+            case REQUEST_CAMERA:
+                return new String[]{Manifest.permission.CAMERA};
+            case REQUEST_STORAGE:
+                return new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE};
+            case REQUEST_NOTIFICATIONS:
+            case REQUEST_NOTIFICATIONS_FIRST:
+                return new String[]{Manifest.permission.POST_NOTIFICATIONS};
+            default:
+                return LOCATION;
+        }
+    }
+
+    /** Shows Android's permission dialog, or queues it behind the one on screen (never two system dialogs at once). */
+    private void askPermission(int requestCode) {
+        if (permissionDialogOpen) {
+            for (int[] waiting : waitingDialogs) if (waiting[0] == requestCode) return;
+            waitingDialogs.add(new int[]{requestCode});
+            return;
+        }
+        permissionDialogOpen = true;
+        requestPermissions(permissionsFor(requestCode), requestCode);
+    }
+
+    /** After a dialog: the next waiting one when it is still needed (else its answer at once), then the first-open questions. */
+    private void nextPermissionDialog() {
+        while (!permissionDialogOpen && !waitingDialogs.isEmpty()) {
+            int requestCode = waitingDialogs.poll()[0];
+            boolean needed;
+            switch (requestCode) {
+                case REQUEST_CAMERA:
+                    needed = fileCallback != null && checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED;
+                    if (!needed && fileCallback != null) openChooser();
+                    break;
+                case REQUEST_STORAGE:
+                    needed = pendingDownload != null && needsStoragePermission();
+                    if (!needed && pendingDownload != null) {
+                        String[] job = pendingDownload;
+                        pendingDownload = null;
+                        download(job[0], job[1], job[2], job[3]);
+                    }
+                    break;
+                case REQUEST_NOTIFICATIONS:
+                case REQUEST_NOTIFICATIONS_FIRST:
+                    needed = Push.needsPermission(this);
+                    if (!needed) refreshTokenForPage();
+                    break;
+                case REQUEST_LOCATION_FIRST:
+                    needed = !hasLocation();
+                    break;
+                default:
+                    // A page that asked for location while another dialog was open, and is still waiting for the answer.
+                    needed = geoCallback != null && !hasLocation();
+                    if (!needed && geoCallback != null) {
+                        geoCallback.invoke(geoOrigin, hasLocation(), false);
+                        geoCallback = null;
+                        geoOrigin = null;
+                    }
+                    break;
+            }
+            if (needed) askPermission(requestCode);
+        }
+        if (!permissionDialogOpen && web != null) askOnFirstOpen(web.getUrl());
+    }
+
+    /** The website's pages that need a signed-in login: /work, /customer, /admin, but not their sign-in or sign-up pages. */
+    private static boolean signedInPortal(String path) {
+        if (path == null) return false;
+        String[] parts = path.split("/");
+        if (parts.length < 2 || !(parts[1].equals("work") || parts[1].equals("customer") || parts[1].equals("admin"))) return false;
+        String page = parts.length > 2 ? parts[2] : "";
+        return !page.equals("login") && !page.equals("register");
+    }
+
+    /**
+     * Questions asked once per install, the first time a signed-in page opens, one dialog after the other:
+     * D86 — on Android 13+, notifications (worker, customer and office portals alike; the page then registers the phone);
+     * D82 (Owner 16/11: "App nên yêu cầu cấp quyền gps khi lần đầu mở") — for the worker portal, location at once (chấm công,
+     * chia sẻ vị trí) instead of waiting for the first clock-in; customers and office staff are not asked. Workers are asked
+     * notifications first, then location. Later the page still asks whenever it needs either.
+     */
+    private void askOnFirstOpen(String url) {
+        if (url == null || permissionDialogOpen || !waitingDialogs.isEmpty() || geoCallback != null) return;
+        Uri uri = Uri.parse(url);
+        String path = uri.getPath();
+        if (!isAppUrl(uri) || !signedInPortal(path)) return;
+        SharedPreferences prefs = Push.prefs(this);
+        if (Push.configured(this) && Push.needsPermission(this) && !prefs.getBoolean(Push.ASKED, false)) {
+            prefs.edit().putBoolean(Push.ASKED, true).apply();
+            askPermission(REQUEST_NOTIFICATIONS_FIRST);
+            return;
+        }
+        if (!path.startsWith("/work") || hasLocation() || prefs.getBoolean(ASKED_LOCATION, false)) return;
+        prefs.edit().putBoolean(ASKED_LOCATION, true).apply();
+        askPermission(REQUEST_LOCATION_FIRST);
     }
 
     private boolean hasLocation() {
@@ -416,10 +561,12 @@ public class MainActivity extends Activity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        permissionDialogOpen = false;
         if (requestCode == REQUEST_CAMERA) {
             // Without the camera the gallery / files still open.
             openChooser();
-        } else if (requestCode == REQUEST_LOCATION && geoCallback != null) {
+        } else if ((requestCode == REQUEST_LOCATION || requestCode == REQUEST_LOCATION_FIRST) && geoCallback != null) {
+            // The first-open question also answers a page that asked for location meanwhile.
             geoCallback.invoke(geoOrigin, hasLocation(), false);
             geoCallback = null;
             geoOrigin = null;
@@ -427,6 +574,34 @@ public class MainActivity extends Activity {
             String[] job = pendingDownload;
             pendingDownload = null;
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) download(job[0], job[1], job[2], job[3]);
+        } else if (requestCode == REQUEST_NOTIFICATIONS || requestCode == REQUEST_NOTIFICATIONS_FIRST) {
+            // The page learns the answer (pushPermission) with the token, and registers the phone when allowed.
+            Push.noteAnswer(this);
+            lastPushPermission = Push.permission(this);
+            refreshTokenForPage();
+        }
+        nextPermissionDialog();
+    }
+
+    /** D86: the page's 'hx-push-token' event, with this phone's token ("" when there is none). */
+    private void sendTokenToPage(String token) {
+        if (web == null) return;
+        web.evaluateJavascript("window.dispatchEvent(new CustomEvent('" + Push.EVENT + "',{detail:" + jsString(token) + "}));", null);
+    }
+
+    private void refreshTokenForPage() {
+        Push.fetchToken(this, this::sendTokenToPage);
+    }
+
+    /** D86: "Bật thông báo trên máy này" in the app: Android's question when needed (Android 13+), then the token to the page. */
+    private void requestPushFromPage() {
+        if (!Push.configured(this)) {
+            sendTokenToPage("");
+        } else if (Push.needsPermission(this)) {
+            Push.prefs(this).edit().putBoolean(Push.ASKED, true).apply();
+            askPermission(REQUEST_NOTIFICATIONS);
+        } else {
+            refreshTokenForPage();
         }
     }
 
@@ -438,7 +613,7 @@ public class MainActivity extends Activity {
     private void download(String url, String userAgent, String contentDisposition, String mimeType) {
         if (needsStoragePermission()) {
             pendingDownload = new String[]{url, userAgent, contentDisposition, mimeType};
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_STORAGE);
+            askPermission(REQUEST_STORAGE);
             return;
         }
         if (url.startsWith("blob:") || url.startsWith("data:")) {
@@ -559,6 +734,26 @@ public class MainActivity extends Activity {
         public void saveFailed() {
             runOnUiThread(() -> toast(getString(R.string.download_failed)));
         }
+
+        /** D86: this phone's Firebase token, or "" (none yet: it is fetched and handed to the page when it comes). */
+        @JavascriptInterface
+        public String pushToken() {
+            String token = Push.token(MainActivity.this);
+            if (token.isEmpty() && Push.configured(MainActivity.this)) runOnUiThread(() -> Push.fetchToken(MainActivity.this, fresh -> { }));
+            return token;
+        }
+
+        /** D86: "granted", "denied" (refused for good or switched off in Android settings) or "default" (can be asked). */
+        @JavascriptInterface
+        public String pushPermission() {
+            return Push.permission(MainActivity.this);
+        }
+
+        /** D86: asks Android when needed, then fires 'hx-push-token' on the page with the token. */
+        @JavascriptInterface
+        public void requestPush() {
+            runOnUiThread(MainActivity.this::requestPushFromPage);
+        }
     }
 
     private static String safeName(String suggested, String mime) {
@@ -584,6 +779,10 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         if (web != null) web.onResume();
+        // Back from Android settings with notifications switched on or off: the page updates and registers or drops the phone.
+        String permission = Push.configured(this) ? Push.permission(this) : "";
+        if (lastPushPermission != null && !permission.equals(lastPushPermission)) refreshTokenForPage();
+        lastPushPermission = permission;
     }
 
     @Override
@@ -597,6 +796,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        Push.prefs(this).unregisterOnSharedPreferenceChangeListener(tokenListener);
         if (downloadReceiver != null) {
             try {
                 unregisterReceiver(downloadReceiver);

@@ -22,7 +22,9 @@ export type DispatchAssignOptions = { drivers: AssignOption[]; vehicles: AssignO
  * D22: the day by driver (timeline of deliveries), what still waits for a truck, and "Tự chia việc". The waiting
  * deliveries are a compact table that scrolls inside its box, beside the drivers on a wide screen.
  */
-export function DispatchDayBoard({ day, board, canAssign, notice, error, assign }: { day: string; board: DispatchDay; canAssign: boolean; notice?: string; error?: string; assign?: DispatchAssignOptions }) {
+export function DispatchDayBoard({ day, board, canAssign, notice, error, assign, fieldLabels }: { day: string; board: DispatchDay; canAssign: boolean; notice?: string; error?: string; assign?: DispatchAssignOptions;
+  /** D85: delivery id → "Thợ chính Tuấn giao" / "Tuấn đổi người: Hùng → Sơn" / "Thợ chính tự nhận". */
+  fieldLabels?: Record<string, string> }) {
   return <section className="card card-pad dispatch-day" aria-labelledby="dispatch-day-title">
     <div className="section-head flush"><h2 id="dispatch-day-title">Lịch giao theo tài xế</h2>
       <form className="inline-actions" action="/admin/dispatch" method="get"><label className="sr-only" htmlFor="dispatch-day">Ngày</label>
@@ -45,7 +47,8 @@ export function DispatchDayBoard({ day, board, canAssign, notice, error, assign 
         {driver.deliveries.length === 0 ? <p className="muted">Rảnh cả ngày.</p> : <ol className="dispatch-timeline">
           {driver.deliveries.map((item) => <li key={item.id}><span className="mono">{time(item.start)}–{time(item.end)}</span>
             <Link className="code-link mono" href={`/admin/deliveries/${item.id}`}>{item.number}</Link><span>{item.customer} · {item.site}</span>
-            <StatusBadge tone={deliveryStateTone(item.state)}>{deliveryStateLabel(item.state)}</StatusBadge></li>)}</ol>}
+            <StatusBadge tone={deliveryStateTone(item.state)}>{deliveryStateLabel(item.state)}</StatusBadge>
+            {fieldLabels?.[item.id] && <StatusBadge tone="info">{fieldLabels[item.id]}</StatusBadge>}</li>)}</ol>}
       </article>)}
     </div>}
     </div>

@@ -11,6 +11,8 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
     <!-- D82: "Có bản app mới · Cập nhật" mở trình cài ngay sau khi tải bản APK mới (cài đè, cùng khóa ký). -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- D86: thông báo đẩy (Firebase); Android 13+ hỏi người dùng lần đầu mở trang đã đăng nhập. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
@@ -56,6 +58,24 @@
                 <data android:scheme="https" android:host="app.hienxavlxd.com" />
             </intent-filter>
         </activity>
+
+        <!-- D86: Firebase messages and tokens; background notifications use this icon, colour and channel. -->
+        <service
+            android:name=".PushService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notification" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/accent" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="@string/push_channel_id" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
