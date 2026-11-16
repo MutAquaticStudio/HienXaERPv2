@@ -9,8 +9,10 @@ import { createServerSupabase } from "@/lib/supabase/server";
 
 function errorMessage(message?: string) {
   if (message?.includes("operation_payload_conflict")) return "Mã thao tác đã được dùng với dữ liệu khác. Hãy tải lại trang.";
-  if (message?.includes("delivery_cancel_version_conflict")) return "Phiếu đã thay đổi hoặc không còn ở trạng thái kế hoạch. Hãy tải lại.";
+  if (message?.includes("delivery_cancel_version_conflict")) return "Phiếu đã thay đổi hoặc đã lên hàng, không còn hủy được. Hãy tải lại.";
   if (message?.includes("delivery_cancel_not_safe")) return "Phiếu đã có bước thực thi nên không thể hủy bằng luồng này.";
+  // D95: an assigned delivery whose job the worker already started.
+  if (message?.includes("delivery_cancel_work_started")) return "Thợ đã bắt đầu việc của phiếu này nên không hủy được. Liên hệ thợ hoặc xử lý kết quả giao.";
   if (message?.includes("delivery_reservation_state_conflict")) return "Tồn đặt trước không khớp trạng thái phiếu. Chưa hủy, cần kiểm tra kho.";
   return "Không thể hủy phiếu giao. Không có thay đổi nào được chốt.";
 }

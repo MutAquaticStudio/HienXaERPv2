@@ -80,7 +80,7 @@ export default async function DeliveriesPage({ searchParams }: { searchParams: P
                 <section><h3>Giao nhận</h3><ul className="clean-list"><li>Lịch: {row.scheduled_at ? formatBusinessDateTime(row.scheduled_at) : "Chưa hẹn"}</li><li>Người/xe: {who(row)}</li></ul></section>
                 <section className="row-expansion-actions"><Link className="button button-primary" href={href}>Mở phiếu giao</Link><Link className="button button-secondary" href={`/admin/orders/${row.sales_order_id}`}>Mở đơn bán</Link>
                   {["PLANNED", "ASSIGNED"].includes(row.execution_state) && canSplit && deliveryLines.length > 0 && <Link className="button button-secondary" href={`/admin/deliveries/${row.id}/split`}>Tách phiếu</Link>}
-                  {row.execution_state === "PLANNED" && canCancel && <Link className="button button-danger" href={`/admin/deliveries/${row.id}/cancel`}>Hủy kế hoạch</Link>}</section>
+                  {["PLANNED", "ASSIGNED"].includes(row.execution_state) && canCancel && <Link className="button button-danger" href={`/admin/deliveries/${row.id}/cancel`}>Hủy kế hoạch</Link>}</section>
               </div> };
           })} />
         </table>{!deliveries.length && <p className="empty-inline">{isFiltered ? "Không có phiếu giao phù hợp." : "Chưa có phiếu giao."}</p>}</div>

@@ -23,14 +23,15 @@ export default async function CancelPlannedDeliveryPage({ params, searchParams }
   return <>
     <header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/deliveries", label: "Phiếu giao" }} /><h1>Hủy kế hoạch giao hàng</h1><p className="lede">{delivery.delivery_number} · {delivery.customer_name_snapshot} · {delivery.site_name_snapshot}</p></div></header>
     <section className="card">
-      {delivery.execution_state !== "PLANNED" ? <>
+      {!["PLANNED", "ASSIGNED"].includes(delivery.execution_state) ? <>
         <h2>{delivery.execution_state === "CANCELLED" ? "Phiếu đã hủy" : "Không thể hủy phiếu này"}</h2>
         <p>{delivery.execution_state === "CANCELLED" && query.notice === "cancelled"
           ? "Tồn đặt trước đã được giải phóng. Lịch sử phiếu vẫn được giữ lại."
-          : "Chỉ phiếu chưa phân công, chưa bắt đầu thực thi và còn ở trạng thái kế hoạch mới được hủy."}</p>
+          : "Chỉ phiếu chưa lên hàng (đang lập hoặc đã phân, thợ chưa bắt đầu việc) mới được hủy."}</p>
       </> : <>
         <h2>Xác nhận hủy phiếu chưa thực thi</h2>
         <p>Thao tác này giữ lịch sử phiếu, giải phóng tồn đã đặt trước và cho phép lập phiếu giao thay thế từ cùng nguồn. Không hủy đơn bán hay công nợ.</p>
+        {delivery.execution_state === "ASSIGNED" && <p>Phiếu đã phân người/xe: hủy sẽ gỡ phân công, việc của thợ chuyển Đã hủy và rời “Nhận việc”, thông báo chưa gửi về phiếu này không gửi nữa. Thợ đã bắt đầu việc hoặc đã lên hàng thì không hủy được.</p>}
         {query.error && <p role="alert">{query.error === "invalid" ? "Phiếu giao đã thay đổi hoặc ghi chú quá 500 ký tự. Tải lại trang rồi thử lại." : query.error}</p>}
         <form action={cancelPlannedDeliveryAction}>
           <input type="hidden" name="deliveryId" value={delivery.id} />

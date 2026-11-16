@@ -38,3 +38,10 @@ it("counts deliveries per state and opens the lines, with cancel for planned one
   expect(screen.getByRole("link", { name: "Hủy kế hoạch" })).toHaveAttribute("href", "/admin/deliveries/d1/cancel");
   expect(screen.getByRole("link", { name: "Mở đơn bán" })).toHaveAttribute("href", "/admin/orders/o1");
 });
+
+it("offers cancel for an assigned delivery that has not run (D95)", async () => {
+  m.tables.delivery_read = [{ ...(m.tables.delivery_read[0] as object), execution_state: "ASSIGNED" }];
+  render(await Page({ searchParams: Promise.resolve({}) }));
+  fireEvent.click(screen.getByRole("button", { name: "Xem nhanh DL-2026-000031" }));
+  expect(screen.getByRole("link", { name: "Hủy kế hoạch" })).toHaveAttribute("href", "/admin/deliveries/d1/cancel");
+});
