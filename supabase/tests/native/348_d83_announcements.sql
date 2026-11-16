@@ -385,5 +385,33 @@ begin
   perform pg_temp.act_as(sales);
   assert jsonb_array_length(public.pending_announcements('OFFICE')) >= 1, 'office staff get it';
   perform pg_temp.act_as_admin();
+
+  -- Folding locks first and checks again: one deleted, seen or stopped while the save waited is not folded into (a new one is made).
+  insert into public.announcements(id, branch_id, group_id, audience, kind, label, title, expires_at) values
+    ('7f348000-0000-4000-8000-000000000601', branch, '7f348000-0000-4000-8000-000000000601', 'OFFICE', 'MANUAL', 'NEWS', 'Đã xóa', now() + interval '1 day'),
+    ('7f348000-0000-4000-8000-000000000602', branch, '7f348000-0000-4000-8000-000000000602', 'OFFICE', 'MANUAL', 'NEWS', 'Đã xem', now() + interval '1 day'),
+    ('7f348000-0000-4000-8000-000000000603', branch, '7f348000-0000-4000-8000-000000000603', 'OFFICE', 'MANUAL', 'NEWS', 'Còn gộp được', now() + interval '1 day'),
+    ('7f348000-0000-4000-8000-000000000604', branch, '7f348000-0000-4000-8000-000000000604', 'OFFICE', 'MANUAL', 'NEWS', 'Đã ngừng', now() + interval '1 day');
+  delete from public.announcements where id = '7f348000-0000-4000-8000-000000000601';
+  insert into public.announcement_seen(announcement_id, auth_user_id) values ('7f348000-0000-4000-8000-000000000602', sales);
+  update public.announcements set withdrawn_at = now() where id = '7f348000-0000-4000-8000-000000000604';
+  assert private.announcement_lock_foldable(array['7f348000-0000-4000-8000-000000000601', '7f348000-0000-4000-8000-000000000602',
+      '7f348000-0000-4000-8000-000000000603', null, '7f348000-0000-4000-8000-000000000604']::uuid[])
+    = array[null, null, '7f348000-0000-4000-8000-000000000603', null, null]::uuid[], 'only the one still unseen, same order';
+
+  -- Housekeeping: announcements that ran out more than 90 days ago go, with their lines and "seen" marks; newer ones stay.
+  insert into public.announcements(id, branch_id, group_id, audience, kind, label, title, created_at, expires_at) values
+    ('7f348000-0000-4000-8000-000000000701', branch, '7f348000-0000-4000-8000-000000000701', 'OFFICE', 'MANUAL', 'NEWS', 'Rất cũ', now() - interval '200 days', now() - interval '100 days'),
+    ('7f348000-0000-4000-8000-000000000702', branch, '7f348000-0000-4000-8000-000000000702', 'OFFICE', 'MANUAL', 'NEWS', 'Hết hạn gần đây', now() - interval '40 days', now() - interval '10 days');
+  insert into public.announcement_lines(announcement_id, item_key, item_name, old_value, old_kind, new_value, new_kind) values
+    ('7f348000-0000-4000-8000-000000000701', 'price:x', 'Cũ', 1, 'VND', 2, 'VND'), ('7f348000-0000-4000-8000-000000000702', 'price:y', 'Gần đây', 1, 'VND', 2, 'VND');
+  insert into public.announcement_seen(announcement_id, auth_user_id) values ('7f348000-0000-4000-8000-000000000701', sales);
+  assert private.announcement_cleanup(500) = 1, 'one old announcement removed';
+  assert not exists (select 1 from public.announcement_lines where announcement_id = '7f348000-0000-4000-8000-000000000701')
+    and not exists (select 1 from public.announcement_seen where announcement_id = '7f348000-0000-4000-8000-000000000701'), 'with its lines and seen marks';
+  assert exists (select 1 from public.announcement_lines where announcement_id = '7f348000-0000-4000-8000-000000000702'), 'the recent one stays';
+  -- Deleting announcements never leaves their lines behind.
+  assert not exists (select 1 from public.announcement_lines l where not exists (select 1 from public.announcements a where a.id = l.announcement_id)),
+    'no orphan lines';
 end
 $test$;
