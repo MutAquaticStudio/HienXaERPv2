@@ -237,7 +237,7 @@ export async function inviteEmployeeAction(_: ActivationFormState, formData: For
   if (!userId) {
     // Default, and the fallback when the email cannot be sent (e.g. the project's built-in mailer only reaches its own team).
     const generated = await generateActivationLink(admin, parsed.data.email, surface, false);
-    if (!generated) return { message: "Không tạo được tài khoản cho email này. Nếu email đã có tài khoản, dùng nút \"Link kích hoạt\" ở dòng nhân viên." };
+    if (!generated) return { message: "Không tạo được tài khoản cho email này. Nếu email đã có tài khoản, dùng \"Thêm\" › \"Link kích hoạt\" ở dòng nhân viên." };
     userId = generated.userId;
     activationLink = generated.link;
   }
@@ -618,6 +618,11 @@ export async function registerCustomerAccountAction(_: AuthFormState, formData: 
     if (/already|registered|exists/i.test(error.message)) return answer("Email này đã có tài khoản. Đăng nhập hoặc dùng “Quên mật khẩu”.", { email: "Email này đã có tài khoản." });
     if (/password/i.test(error.message)) return answer("Mật khẩu này chưa đủ an toàn. Chọn mật khẩu khác.", { password: "Chọn mật khẩu khác, khó đoán hơn." });
     return answer("Chưa đăng ký được. Thử lại sau ít phút.");
+  }
+  // An email that already has a login: Supabase answers without an error (so nobody can probe which emails exist) but with no
+  // identity and sends no email. Saying "Mở email…" then left the customer waiting for a link that never comes.
+  if (data.user && !data.session && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+    return answer("Email này đã có tài khoản nên không có thư xác nhận mới. Đăng nhập, hoặc dùng “Quên mật khẩu” để đặt lại.", { email: "Email này đã có tài khoản." });
   }
   if (!data.session || !data.user) return { success: true, message: `Đã tạo tài khoản. Mở email gửi tới ${parsed.data.email.toLowerCase()}, bấm “Xác nhận” rồi đăng nhập để bắt đầu đặt hàng.` };
   const { error: registerError, pending } = await registerPortalCustomer(supabase, data.user.id, registration);

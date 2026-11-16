@@ -42,7 +42,9 @@ try {
   const [grant] = await q.sql`select id,active from public.employee_branch_access where employee_id=${d.personas.worker.employee} and branch_id=${d.branch}`;
   assert.equal(grant.active, true); accessId = grant.id;
   await owner.goto(origin + "/admin/access");
-  // FB2 Đợt 7: access actions open in popups from buttons tagged with the assignment they act on.
+  // FB2 Đợt 7: access actions open in popups from buttons tagged with the assignment they act on; since 16/11/2026
+  // "Thu hồi" sits in the row's "Thêm" menu.
+  await owner.locator(`button[data-access-id="${accessId}"][data-action="more"]`).click();
   await owner.locator(`button[data-access-id="${accessId}"][data-action="revoke"]`).click();
   const revoke = owner.getByRole("dialog").locator("form").filter({ has: owner.locator(`input[name=accessId][value="${accessId}"]`) });
   await revoke.locator("input[name=reason]").waitFor({ state: "attached" });

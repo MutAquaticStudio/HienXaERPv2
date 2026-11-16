@@ -63,7 +63,8 @@ const navigation: Record<Surface, readonly NavigationItem[]> = {
     { href: "/admin/reports", label: "Báo cáo", icon: BarChart3, permission: "dashboard.read" },
     { href: "/admin/audit", label: "Nhật ký", icon: ScrollText, permission: "roles.manage", group: "administration" },
     { href: "/admin/messages", label: "Tin nhắn", icon: MessageSquare },
-    { href: "/admin/settings", label: "Cài đặt", icon: Settings2, permission: "roles.manage", group: "administration" },
+    // D89: the update composer lives in Cài đặt (Owner: "Soạn thông báo cập nhật nên ở cài đặt").
+    { href: "/admin/settings", label: "Cài đặt", icon: Settings2, permission: "roles.manage", activePrefixes: ["/admin/notifications/updates"], group: "administration" },
   ],
   work: [
     { href: "/work", label: "Việc cần làm", icon: ClipboardCheck, exact: true },

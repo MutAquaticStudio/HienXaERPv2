@@ -10,6 +10,7 @@ export const AUTOMATION_EVENTS = [
   { value: "delivery.waiting_dispatch", label: "Phiếu giao chờ điều phối" },
   { value: "delivery.dispatch_suggested", label: "Có gợi ý điều phối" },
   { value: "delivery.result_submitted", label: "Phiếu giao có kết quả", problems: true },
+  { value: "delivery.claimed", label: "Thợ tự nhận phiếu giao" },
   { value: "work.assigned", label: "Việc mới giao cho thợ" },
   { value: "work.declined", label: "Thợ từ chối việc" },
   { value: "finance.overdue_digest", label: "Nợ quá hạn (07:00 mỗi sáng)" },
