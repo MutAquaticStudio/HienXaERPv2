@@ -136,7 +136,8 @@ export async function createImportedOrdersAction(input: unknown): Promise<Import
 /** "Xác nhận luôn": the same steps as "Xác nhận" on the order screen — confirm (credit checked), then source from stock
  * first and put the rest on a supplier purchase order. A pressed-again file replays the same commands. */
 async function confirmImported(supabase: Awaited<ReturnType<typeof createServerSupabase>>, branchId: string, orderId: string, operationId: string): Promise<Pick<ImportResult, "confirmed" | "confirmation">> {
-  const { error } = await supabase.rpc("confirm_sales_order", { target_order_id: orderId, operation_id: operationId });
+  // D96 (S5): the draft the import just created is version 1.
+  const { error } = await supabase.rpc("confirm_sales_order", { target_order_id: orderId, expected_draft_version: 1, operation_id: operationId });
   if (error) {
     return { confirmed: false, confirmation: creditBlockOf(error.message)
       ? "Vượt hạn mức công nợ — đơn để nháp, mở đơn để xin duyệt." : `Đơn để nháp: ${commandError(error.message, true)}` };

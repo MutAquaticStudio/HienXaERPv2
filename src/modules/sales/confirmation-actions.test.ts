@@ -16,7 +16,7 @@ const documentId = "11111111-1111-4111-8111-111111111111";
 const operationId = "22222222-2222-4222-8222-222222222222";
 const cases = [
   { label: "đơn bán", action: confirmSalesOrderAction, cancel: cancelSalesOrderAction, permission: "orders.confirm",
-    rpc: "confirm_sales_order", args: { target_order_id: documentId, operation_id: operationId },
+    rpc: "confirm_sales_order", args: { target_order_id: documentId, expected_draft_version: 3, operation_id: operationId },
     list: "/admin/orders", detail: `/admin/orders/${documentId}`, revalidation: `/admin/orders/${documentId}`,
     wrongState: "sales_order_not_confirmable", missingLines: "order_lines_required" },
   { label: "đơn mua", action: confirmPurchaseOrderAction, cancel: cancelPurchaseOrderAction, permission: "purchasing.confirm",
@@ -25,7 +25,7 @@ const cases = [
     wrongState: "purchase_order_not_confirmable", missingLines: "purchase_lines_required" },
 ];
 function input(entityId = documentId, operation = operationId) {
-  const form = new FormData(); form.set("entityId", entityId); form.set("operationId", operation);
+  const form = new FormData(); form.set("entityId", entityId); form.set("operationId", operation); form.set("expectedVersion", "3");
   return form;
 }
 async function destination(action: (form: FormData) => Promise<unknown>, form = input()) {
@@ -123,5 +123,21 @@ describe.each(cases)("confirmation feedback for $label", (flow) => {
     const url = await destination(flow.cancel, form);
     expect(url.searchParams.get("error")).toContain("Chưa thể ghi sổ");
     expect(url.searchParams.has("notice")).toBe(false); expect(mocks.revalidate).not.toHaveBeenCalled();
+  });
+});
+
+describe("D96 (S5): confirming the draft version the screen showed", () => {
+  it("refuses a form without the draft version before calling the database", async () => {
+    const form = input(); form.delete("expectedVersion");
+    const url = await destination(confirmSalesOrderAction, form);
+    expect(url.searchParams.get("error")).toBe("invalid-command");
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+
+  it("explains a draft changed by someone else in Vietnamese", async () => {
+    mocks.rpc.mockResolvedValue({ data: null, error: { code: "PT409", message: "sales_order_confirm_stale_version" } });
+    const url = await destination(confirmSalesOrderAction);
+    expect(url.searchParams.get("error")).toBe("Đơn vừa được người khác sửa. Tải lại để xem bản mới.");
+    expect(url.searchParams.has("notice")).toBe(false);
   });
 });

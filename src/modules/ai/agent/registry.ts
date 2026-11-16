@@ -152,7 +152,7 @@ const createSalesOrder: AgentAction = {
       siteId: String(payload.siteId), chosen: (payload.sellerId as string | null) ?? null, operationId: actionId });
     if (!payload.confirm) return { link: `/admin/orders/${orderId}`, message: "Đã tạo đơn bán nháp." };
     const confirmId = derivedOperationId(actionId, "confirm");
-    const { error } = await context.supabase.rpc("confirm_sales_order", { target_order_id: orderId, operation_id: confirmId });
+    const { error } = await context.supabase.rpc("confirm_sales_order", { target_order_id: orderId, expected_draft_version: 1, operation_id: confirmId });
     if (error) return { link: `/admin/orders/${orderId}`, message: "Đã tạo đơn nháp nhưng chưa xác nhận được (vượt hạn mức hoặc thiếu điều kiện). Mở đơn để xử lý." };
     await autoSourceConfirmedOrder(context.supabase, context.branchId, orderId, derivedOperationId(confirmId, "auto-source"), { onlyIfEnabled: true }).catch(() => null);
     return { link: `/admin/orders/${orderId}`, message: "Đã tạo và xác nhận đơn bán." };
@@ -167,11 +167,13 @@ const confirmSalesOrder: AgentAction = {
     const value = z.object({ ma_don: z.string().min(1) }).parse(input);
     const order = await findDocument(context.supabase, context.branchId, "sales_order_read", "order_number", value.ma_don, "đơn bán");
     if (order.commercial_state !== "DRAFT") throw new ResolveError(`Đơn ${order.order_number} không còn là bản nháp.`);
-    return { title: `Xác nhận đơn bán ${order.order_number}`, payload: { orderId: order.id },
+    // D96 (S5): approving confirms the draft as it was shown here.
+    const { data: draft } = await context.supabase.from("sales_orders").select("draft_version").eq("id", order.id).maybeSingle();
+    return { title: `Xác nhận đơn bán ${order.order_number}`, payload: { orderId: order.id, draftVersion: (draft as { draft_version?: number } | null)?.draft_version ?? null },
       summary: [{ label: "Khách hàng", value: String(order.customer_name_snapshot) }, { label: "Tổng tiền", value: money(String(order.total_vnd)) }] };
   },
   async execute(context, payload, actionId) {
-    await rpc(context, "confirm_sales_order", { target_order_id: payload.orderId, operation_id: actionId });
+    await rpc(context, "confirm_sales_order", { target_order_id: payload.orderId, expected_draft_version: payload.draftVersion ?? null, operation_id: actionId });
     await autoSourceConfirmedOrder(context.supabase, context.branchId, String(payload.orderId), derivedOperationId(actionId, "auto-source"), { onlyIfEnabled: true }).catch(() => null);
     return { link: `/admin/orders/${payload.orderId}`, message: "Đã xác nhận đơn bán." };
   },

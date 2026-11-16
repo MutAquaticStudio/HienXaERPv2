@@ -107,7 +107,7 @@ export const salesOrdersFromList: AgentAction = {
         const orderId = String(data);
         await assignSellerAfterCreate(context.supabase, { permissions: context.permissions, employeeId: "", orderId, customerId: order.customerId, siteId: order.siteId, chosen: order.sellerId, operationId });
         if (confirm) {
-          const confirmed = await context.supabase.rpc("confirm_sales_order", { target_order_id: orderId, operation_id: derivedOperationId(operationId, "confirm") });
+          const confirmed = await context.supabase.rpc("confirm_sales_order", { target_order_id: orderId, expected_draft_version: 1, operation_id: derivedOperationId(operationId, "confirm") });
           if (confirmed.error) notes.push(`đơn ${row.n}: ${creditBlockOf(confirmed.error.message) ? "vượt hạn mức công nợ, để nháp" : `để nháp (${commandError(confirmed.error.message, true)})`}`);
           else {
             const sourced = await autoSourceConfirmedOrder(context.supabase, context.branchId, orderId, derivedOperationId(operationId, "auto-source"), { onlyIfEnabled: true }).catch(() => null);
