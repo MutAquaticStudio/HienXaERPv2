@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { generateKeyPairSync } from "node:crypto";
+import { generateKeyPairSync, randomUUID } from "node:crypto";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
@@ -16,7 +16,7 @@ const device = "fcmRouteToken:APA91b" + "r".repeat(80);
 const fetch = vi.fn();
 
 function post(data: object) {
-  const text = JSON.stringify({ job_id: "33333333-3333-4333-8333-333333333333", channel: "PUSH", sent_at: new Date().toISOString(),
+  const text = JSON.stringify({ job_id: randomUUID(), channel: "PUSH", sent_at: new Date().toISOString(),
     title: "Có bản giá mới", body: "3 mặt hàng đổi giá từ 17/11/2026", link: "https://app.example.test/customer", subscription: null, ...data });
   return POST(new NextRequest("https://app.example.test/api/automation/deliver", { method: "POST",
     body: JSON.stringify({ data: text, signature: signDelivery(text, secret) }) }));
@@ -65,4 +65,20 @@ it("refuses a token that is not one, and a message not signed with the shared se
     body: JSON.stringify({ data: text, signature: signDelivery(text, "another-secret-456789") }) }));
   expect(forged.status).toBe(401);
   expect(fetch).not.toHaveBeenCalled();
+});
+
+it("D97 (T-6): the same signed message sent again is answered as done without a second push; a failed job may be sent again", async () => {
+  const text = JSON.stringify({ job_id: randomUUID(), channel: "PUSH", sent_at: new Date().toISOString(), title: "Việc mới", fcm: { token: device } });
+  const send = () => POST(new NextRequest("https://app.example.test/api/automation/deliver", { method: "POST",
+    body: JSON.stringify({ data: text, signature: signDelivery(text, secret) }) }));
+  vi.stubEnv("FIREBASE_SERVICE_ACCOUNT", "");
+  expect((await send()).status).toBe(503);
+  vi.stubEnv("FIREBASE_SERVICE_ACCOUNT", serviceAccount);
+  fetch.mockResolvedValueOnce(json(200, { access_token: "ya29.replay", expires_in: 3600 })).mockResolvedValueOnce(json(200, { name: "projects/hx-route-test/messages/10" }));
+  expect((await send()).status).toBe(200);
+  const calls = fetch.mock.calls.length;
+  const replay = await send();
+  expect(replay.status).toBe(200);
+  expect(await replay.json()).toEqual({ ok: true, duplicate: true });
+  expect(fetch.mock.calls.length).toBe(calls);
 });
