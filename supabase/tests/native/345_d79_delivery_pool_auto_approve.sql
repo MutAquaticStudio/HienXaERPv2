@@ -151,19 +151,23 @@ begin
   assert (select w.execution_state || ':' || wa.employee_id from public.work_items w join public.work_item_assignments wa on wa.work_item_id = w.id
     and wa.superseded_at is null where w.id = work) = 'CLAIMED:' || driver_b, 'work item now driver B''s';
 
-  -- 5. Not listed: missing receiver phone, dispatch OFF; an anonymous caller cannot take anything.
+  -- 5. Owner 16/11 (D79 sửa): listed even without address, receiver or phone; not listed when dispatch is OFF; an anonymous
+  -- caller cannot take anything.
   perform pg_temp.act_as(office);
   result := public.create_delivery_for_order(sale, wh, jsonb_build_array(jsonb_build_object('sales_order_line_id', line, 'quantity', '500')), nine, null,
     '7f345000-0000-4000-8000-0000000000b2');
   d2 := (result->>'delivery_id')::uuid;
   perform pg_temp.act_as_admin();
-  update public.deliveries set receiver_phone_snapshot = null where id = d2;
+  update public.deliveries set receiver_phone_snapshot = null, receiver_name_snapshot = null, delivery_address_snapshot = '' where id = d2;
   perform pg_temp.act_as(user_a);
-  assert public.worker_delivery_pool_count() = 0, 'no phone, not listed';
+  assert public.worker_delivery_pool_count() = 1, 'no phone, receiver or address: still listed';
+  pool := public.worker_delivery_pool();
+  assert jsonb_array_length(pool) = 1 and pool->0->>'id' = d2::text and coalesce(pool->0->>'address', '') = '', format('listed without an address %s', pool);
   perform pg_temp.act_as_admin();
-  update public.deliveries set receiver_phone_snapshot = '0901345000' where id = d2;
+  update public.deliveries set receiver_phone_snapshot = '0901345000', receiver_name_snapshot = 'Người nhận 345', delivery_address_snapshot = 'Địa chỉ 345'
+    where id = d2;
   perform pg_temp.act_as(user_a);
-  assert public.worker_delivery_pool_count() = 1, 'listed with a phone';
+  assert public.worker_delivery_pool_count() = 1, 'listed with the details too';
   perform pg_temp.act_as(office);
   perform public.save_branch_operation_settings(branch, '{"dispatch_mode":"OFF"}', 1, '7f345000-0000-4000-8000-0000000000c2');
   perform pg_temp.act_as(user_a);
