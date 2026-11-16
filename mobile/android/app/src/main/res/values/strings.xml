@@ -11,4 +11,8 @@
     <string name="download_failed">Chưa tải được tệp. Kiểm tra mạng rồi thử lại.</string>
     <string name="no_app_for_file">Đã lưu vào thư mục Tải xuống, nhưng máy chưa có ứng dụng mở được tệp này.</string>
     <string name="webview_missing">Máy cần cập nhật “Android System WebView” trên CH Play rồi mở lại app Hiền Xa.</string>
+    <!-- D86: the notification channel. The id is what the server sends (ANDROID_CHANNEL_ID in src/modules/automation/fcm.ts). -->
+    <string name="push_channel_id" translatable="false">hx_thong_bao</string>
+    <string name="push_channel_name">Thông báo Hiền Xa</string>
+    <string name="push_channel_description">Việc mới, phiếu giao, đơn hàng và thông báo của cửa hàng.</string>
 </resources>

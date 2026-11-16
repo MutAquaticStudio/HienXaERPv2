@@ -3,15 +3,23 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { expiredAuthCookies, logoutClearSiteData, logoutDestination } from "@/lib/auth/logout";
 import { isSessionOnly } from "@/lib/supabase/cookie-options";
+import { appPushToken } from "@/modules/notifications/app-push-token";
 
 export async function POST(request: NextRequest) {
-  let surface: FormDataEntryValue | null = null;
+  let form: FormData | null = null;
   const sessionOnly = isSessionOnly((name) => request.cookies.get(name)?.value);
   try {
-    surface = (await request.formData()).get("surface");
+    form = await request.formData();
   } catch { /* no form body: back to the default tab */ }
+  const surface = form?.get("surface") ?? null;
+  // D86: signed out inside the Android app, the phone's Firebase token (added by AppPushRegistrar) leaves this login.
+  const pushToken = appPushToken.safeParse(form?.get("push_token"));
   try {
     const supabase = await createServerSupabase();
+    if (pushToken.success) {
+      // Before the session ends (the database only deletes the caller's own token); a failure never blocks the sign-out.
+      try { await supabase.rpc("delete_app_push_token", { token: pushToken.data }); } catch { /* signed out all the same */ }
+    }
     await supabase.auth.signOut({ scope: "local" });
   } finally {
     const response = NextResponse.redirect(new URL(logoutDestination(surface, sessionOnly), request.url), 303);

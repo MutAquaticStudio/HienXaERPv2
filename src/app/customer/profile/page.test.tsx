@@ -1,10 +1,10 @@
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
-const m = vi.hoisted(() => ({ client: vi.fn(), rpc: vi.fn(), inApp: vi.fn(async () => false), appearance: undefined as string | undefined, history: vi.fn(async (): Promise<unknown[] | null> => []) }));
+const m = vi.hoisted(() => ({ client: vi.fn(), rpc: vi.fn(), inApp: vi.fn(async () => false), oldApp: vi.fn(async () => false), appearance: undefined as string | undefined, history: vi.fn(async (): Promise<unknown[] | null> => []) }));
 vi.mock("@/modules/announcements/server", () => ({ loadAnnouncementHistory: m.history }));
 vi.mock("@/components/notifications/push-toggle", () => ({ PushToggle: () => <button type="button">Bật thông báo trên máy này</button> }));
-vi.mock("@/lib/app-shell/server", () => ({ openedInNativeApp: m.inApp }));
+vi.mock("@/lib/app-shell/server", () => ({ openedInNativeApp: m.inApp, openedInAppWithoutPush: m.oldApp }));
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: (name: string) => name === "hx-appearance" && m.appearance ? { value: m.appearance } : undefined }) }));
 vi.mock("@/modules/portal/server", () => ({ authenticatedPortalClient: m.client, portalRpc: m.rpc }));
 vi.mock("@/modules/zalo/notify-actions", () => ({ setCustomerZaloNotifyAction: vi.fn() }));
@@ -61,7 +61,7 @@ it("D84: Tài khoản has Giao diện with this device's saved choice", async ()
   m.appearance = undefined;
 });
 
-it("D83: the store's announcements, own price lines only, and push on this phone (not inside the Android app)", async () => {
+it("D83: the store's announcements, own price lines only, and push on this phone (D86: also in the app 2.3.0+, not in an older app)", async () => {
   m.history.mockResolvedValueOnce([{ id: "10000000-0000-4000-8000-000000000083", audience: "CUSTOMER", kind: "PRICE", label: null,
     title: "Giá mới từ thứ Hai, 16/11/2026", body: "Cửa hàng điều chỉnh giá 1 mặt hàng của bạn.", link: null, effective_at: "2026-11-16T00:00:00+07:00",
     created_at: "2026-11-15T02:12:00Z", updated_at: "2026-11-15T02:12:00Z", seen_at: null,
@@ -76,6 +76,11 @@ it("D83: the store's announcements, own price lines only, and push on this phone
   expect(within(push).getByRole("button", { name: "Bật thông báo trên máy này" })).toBeInTheDocument();
   cleanup();
   m.inApp.mockResolvedValueOnce(true);
+  render(await CustomerAccountPage());
+  expect(screen.getByRole("region", { name: "Thông báo trên điện thoại" })).toBeInTheDocument();
+  cleanup();
+  m.inApp.mockResolvedValueOnce(true);
+  m.oldApp.mockResolvedValueOnce(true);
   render(await CustomerAccountPage());
   expect(screen.queryByRole("region", { name: "Thông báo trên điện thoại" })).not.toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "Bật thông báo trên máy này" })).not.toBeInTheDocument();

@@ -4,11 +4,14 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import webpush, { WebPushError } from "web-push";
 import { z } from "zod";
 import { sendEmail } from "@/lib/email/send";
+import { appPushToken } from "@/modules/notifications/app-push-token";
+import { sendFcm } from "./fcm";
 
 /**
- * F5: the database (pg_net) hands email and web-push jobs to the app, signed with the shared secret that is in Supabase
- * Vault (hx_automation_secret) and in the app environment (HX_AUTOMATION_SECRET). The app only sends; it never reads or
- * writes the database here, so no privileged database key is involved.
+ * F5: the database (pg_net) hands email and push jobs (web push; D86: the Android app through Firebase, `fcm.ts`) to the app,
+ * signed with the shared secret that is in Supabase Vault (hx_automation_secret) and in the app environment
+ * (HX_AUTOMATION_SECRET). The app only sends; it never reads or writes the database here, so no privileged database key is
+ * involved. A device that is gone answers 410, and the database removes it.
  */
 const MAX_AGE_MS = 15 * 60 * 1000;
 
@@ -21,6 +24,10 @@ const message = z.object({
   link: z.url().max(500).nullish(),
   to: z.email().nullish(),
   subscription: z.object({ endpoint: z.url().max(1000), keys: z.object({ p256dh: z.string().min(20).max(200), auth: z.string().min(8).max(100) }) }).nullish(),
+  // D86: a phone with the Android app (its Firebase token), and what the app needs to open the right page.
+  fcm: z.object({ token: appPushToken }).nullish(),
+  kind: z.string().max(100).nullish(),
+  id: z.string().max(100).nullish(),
 });
 export type DeliveryMessage = z.infer<typeof message>;
 
@@ -51,7 +58,8 @@ export async function deliverEmail(item: DeliveryMessage, env: Env = process.env
   return sendEmail({ to: item.to, subject: item.title, text: [item.body, item.link].filter(Boolean).join("\n\n") || item.title }, env);
 }
 
-export async function deliverPush(item: DeliveryMessage, env: Env = process.env): Promise<DeliveryResult> {
+export async function deliverPush(item: DeliveryMessage, env: Env = process.env, fetchImpl: typeof fetch = fetch): Promise<DeliveryResult> {
+  if (item.fcm) return sendFcm({ jobId: item.job_id, token: item.fcm.token, title: item.title, body: item.body, link: item.link, kind: item.kind, id: item.id }, env, fetchImpl);
   if (!item.subscription) return { status: 422, error: "missing_subscription" };
   if (!env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || !env.VAPID_PRIVATE_KEY) return { status: 503, error: "push_not_configured" };
   try {
