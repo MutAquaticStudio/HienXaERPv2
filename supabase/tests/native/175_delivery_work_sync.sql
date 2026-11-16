@@ -122,18 +122,19 @@ begin
   perform pg_temp.act_as_admin();
   assert (select count(*) from public.deliveries where sales_order_id = orders) = 2, 'refused delivery left nothing behind';
 
-  -- Without a receiver phone the delivery is assigned but no work item is made (the delivery page asks for it).
+  -- Without a receiver phone the delivery is assigned and (since 20261116210000, D79 fix) the job is made at once; adding the
+  -- receiver later keeps the same job.
   perform pg_temp.act_as('10000000-0000-4000-8000-000000000001');
   result := public.create_delivery_for_order(other_order, w1, jsonb_build_array(jsonb_build_object('sales_order_line_id', other_line, 'quantity', '1')),
     start_at + interval '3 hours', jsonb_build_object('employee_id', driver, 'vehicle_id', truck), '7f179000-0000-4000-8000-000000000003');
   perform pg_temp.act_as_admin();
   assert (select execution_state from public.deliveries where id = (result->>'delivery_id')::uuid) = 'ASSIGNED', 'assigned without receiver phone';
-  assert not exists (select 1 from public.work_items where delivery_id = (result->>'delivery_id')::uuid), 'no work item without receiver phone';
-  -- Adding the receiver on the delivery page puts the job on the portal.
+  assert (select execution_state from public.work_items where delivery_id = (result->>'delivery_id')::uuid) = 'CLAIMED', 'work item without receiver phone';
   perform pg_temp.act_as('10000000-0000-4000-8000-000000000001');
   perform public.update_delivery_receiver((result->>'delivery_id')::uuid, 'Chị Nhận', '0902000175', 'Bổ sung người nhận',
     (select version from public.deliveries where id = (result->>'delivery_id')::uuid), '7f179000-0000-4000-8000-000000000004');
   perform pg_temp.act_as_admin();
-  assert (select execution_state from public.work_items where delivery_id = (result->>'delivery_id')::uuid) = 'CLAIMED', 'work item after receiver is added';
+  assert (select count(*) from public.work_items where delivery_id = (result->>'delivery_id')::uuid) = 1
+    and (select execution_state from public.work_items where delivery_id = (result->>'delivery_id')::uuid) = 'CLAIMED', 'same single job after receiver is added';
 end
 $test$;
