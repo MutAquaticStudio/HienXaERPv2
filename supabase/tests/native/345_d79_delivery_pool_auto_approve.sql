@@ -163,6 +163,15 @@ begin
   assert public.worker_delivery_pool_count() = 1, 'no phone, receiver or address: still listed';
   pool := public.worker_delivery_pool();
   assert jsonb_array_length(pool) = 1 and pool->0->>'id' = d2::text and coalesce(pool->0->>'address', '') = '', format('listed without an address %s', pool);
+  -- 20261116210000: taking it also works without those details (a job is created); probed and rolled back.
+  begin
+    result := public.claim_delivery(d2, v2, (pool->0->>'version')::integer, '7f345000-0000-4000-8000-0000000000d9');
+    assert (result->>'work_item_id') is not null and exists (select 1 from public.work_items w where w.id = (result->>'work_item_id')::uuid),
+      format('claimed without receiver details %s', result);
+    raise exception 'probe_ok';
+  exception when others then
+    if sqlerrm <> 'probe_ok' then raise; end if;
+  end;
   perform pg_temp.act_as_admin();
   update public.deliveries set receiver_phone_snapshot = '0901345000', receiver_name_snapshot = 'Người nhận 345', delivery_address_snapshot = 'Địa chỉ 345'
     where id = d2;
