@@ -82,27 +82,33 @@ function remainingText(remaining: number, next: Announcement | undefined) {
 export function UpdatePopup({ items, surface, home }: { items: Announcement[]; surface: AnnouncementSurface; home: string }) {
   const pathname = usePathname();
   const [done, setDone] = useState<ReadonlySet<string>>(() => new Set());
-  const [closed, setClosed] = useState(false);
-  const queue = items.filter((item) => !done.has(item.id));
+  // D92: "Đóng" leaves the ones pending at that moment for the next open; one that arrives later (the page refreshes when a
+  // push comes in) still shows.
+  const [closedIds, setClosedIds] = useState<ReadonlySet<string>>(() => new Set());
+  const shownItems = items.filter((item) => !closedIds.has(item.id));
+  const queue = shownItems.filter((item) => !done.has(item.id));
   const current = queue[0];
-  const visible = !closed && pathname === home && Boolean(current);
+  const visible = pathname === home && Boolean(current);
 
   function seen(item: Announcement) {
     setDone((before) => new Set(before).add(item.id));
     void markAnnouncementsSeenAction({ ids: [item.id], operationId: crypto.randomUUID() }).catch(() => false);
   }
   const acknowledge = () => { if (current) seen(current); };
-  const close = () => { if (current) seen(current); setClosed(true); };
+  const close = () => {
+    if (current) seen(current);
+    setClosedIds((before) => new Set([...before, ...items.map((item) => item.id)]));
+  };
 
   if (!visible || !current) return null;
-  const index = items.indexOf(current) + 1;
+  const index = shownItems.indexOf(current) + 1;
   const remaining = queue.length - 1;
   const link = linkLabel(surface, current.link);
-  const footNote = remainingText(remaining, queue[1]) ?? (items.length > 1 ? "Đây là thông báo cuối" : null);
+  const footNote = remainingText(remaining, queue[1]) ?? (shownItems.length > 1 ? "Đây là thông báo cuối" : null);
 
   if (surface === "OFFICE") {
     const label = current.kind === "PRICE" ? "Cập nhật giá" : LABEL_NAMES[current.label ?? "NEWS"];
-    const eyebrow = [label, items.length > 1 ? `${index}/${items.length}` : null, formatBusinessDateTime(current.updated_at ?? current.created_at)].filter(Boolean).join(" · ");
+    const eyebrow = [label, shownItems.length > 1 ? `${index}/${shownItems.length}` : null, formatBusinessDateTime(current.updated_at ?? current.created_at)].filter(Boolean).join(" · ");
     return <Dialog title={current.title} eyebrow={eyebrow} onClose={close} size={current.lines.length ? "lg" : "md"} initialFocusId="update-popup-ok">
       <div className={`form-stack ${styles.scope}`}>
         {current.body && <p className={styles.manualBody}>{current.body}</p>}
@@ -116,7 +122,7 @@ export function UpdatePopup({ items, surface, home }: { items: Announcement[]; s
       </div>
     </Dialog>;
   }
-  return <PortalSheet key={current.id} item={current} index={index} total={items.length} link={link} footNote={footNote} onAcknowledge={acknowledge} onClose={close} />;
+  return <PortalSheet key={current.id} item={current} index={index} total={shownItems.length} link={link} footNote={footNote} onAcknowledge={acknowledge} onClose={close} />;
 }
 
 function PortalSheet({ item, index, total, link, footNote, onAcknowledge, onClose }: {

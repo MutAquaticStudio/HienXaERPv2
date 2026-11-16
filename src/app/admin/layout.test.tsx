@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({ access: vi.fn(), state: vi.fn() }));
 vi.mock("@/components/announcements/pending-updates", () => ({
   PendingUpdates: ({ surface, home }: { surface: string; home: string }) => <p data-testid="updates">{surface} {home}</p>,
 }));
+vi.mock("@/components/notifications/live-refresh", () => ({ LiveRefresh: () => null }));
 vi.mock("@/lib/access/context", () => ({ requireInternalAccess: mocks.access }));
 vi.mock("@/modules/operations/server", () => ({ readOperationalState: mocks.state }));
 vi.mock("@/components/app-shell", () => ({ AppShell: ({ children }: { children: React.ReactNode }) => <main>{children}</main> }));

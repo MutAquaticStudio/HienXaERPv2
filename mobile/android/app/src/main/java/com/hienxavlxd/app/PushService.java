@@ -36,5 +36,7 @@ public class PushService extends FirebaseMessagingService {
         String id = data.get("id");
         int notificationId = (id != null ? id : String.valueOf(message.getSentTime())).hashCode();
         Push.show(this, title, body == null ? "" : body, data.get(Push.EXTRA_LINK), notificationId);
+        // D92: the open screen refreshes at once (new jobs, counts, the announcement popup) without a tap.
+        MainActivity.pushArrived(data.get("kind"), id);
     }
 }

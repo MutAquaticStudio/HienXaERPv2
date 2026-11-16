@@ -53,6 +53,7 @@ import androidx.core.view.WindowInsetsControllerCompat;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -67,6 +68,8 @@ import java.util.Set;
  * downloads (PDFs open when done; files the page builds itself are saved too), Back, and a "no connection" screen.
  * D86: push notifications through Firebase (Push, PushService): the page reads and asks through the bridge, a tapped
  * notification opens its page here, and Android 13+ is asked for notifications on the first signed-in page.
+ * D92 (2.3.1): a push that arrives while the app is open, and coming back to the app, fire 'hx-push' on the page, which then
+ * re-reads its data (new jobs, counts, the announcement popup) without a tap.
  */
 public class MainActivity extends Activity {
     private static final int REQUEST_FILE = 10;
@@ -90,7 +93,11 @@ public class MainActivity extends Activity {
             + "if(a)window.__hxName=a.getAttribute('download');},true);"
             + "var r=URL.revokeObjectURL;URL.revokeObjectURL=function(u){setTimeout(function(){r.call(URL,u);},60000);};})();";
 
+    /** D92: the open screen, for PushService (another thread); weak, so a finished screen is never kept alive. */
+    private static volatile WeakReference<MainActivity> liveScreen = new WeakReference<>(null);
+
     private WebView web;
+    private boolean resumedOnce;
     private ProgressBar progress;
     private View offline;
     private boolean mainFrameFailed;
@@ -163,6 +170,7 @@ public class MainActivity extends Activity {
         cleanCameraFiles();
         Push.ensureChannel(this);
         Push.prefs(this).registerOnSharedPreferenceChangeListener(tokenListener);
+        liveScreen = new WeakReference<>(this);
         // Warm the token up, so the page finds it at once (a changed token reaches the page through tokenListener).
         Push.fetchToken(this, token -> { });
 
@@ -589,6 +597,20 @@ public class MainActivity extends Activity {
         web.evaluateJavascript("window.dispatchEvent(new CustomEvent('" + Push.EVENT + "',{detail:" + jsString(token) + "}));", null);
     }
 
+    /** D92: PushService just showed a notification: the open page (if any) refreshes. Safe from any thread. */
+    static void pushArrived(String kind, String id) {
+        MainActivity activity = liveScreen.get();
+        if (activity == null || activity.isFinishing() || activity.isDestroyed()) return;
+        activity.runOnUiThread(() -> activity.sendPushToPage(kind, id));
+    }
+
+    /** D92: the page's 'hx-push' event (LiveRefresh re-reads the page); only the message's kind and id, never its text. */
+    private void sendPushToPage(String kind, String id) {
+        if (web == null) return;
+        web.evaluateJavascript("window.dispatchEvent(new CustomEvent('" + Push.EVENT_ARRIVED + "',{detail:{kind:" + jsString(kind)
+                + ",id:" + jsString(id) + "}}));", null);
+    }
+
     private void refreshTokenForPage() {
         Push.fetchToken(this, this::sendTokenToPage);
     }
@@ -779,6 +801,10 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         if (web != null) web.onResume();
+        liveScreen = new WeakReference<>(this);
+        // D92: back in the app (from another app, the lock screen or a notification): the page re-reads its data.
+        if (resumedOnce) sendPushToPage("resume", "");
+        resumedOnce = true;
         // Back from Android settings with notifications switched on or off: the page updates and registers or drops the phone.
         String permission = Push.configured(this) ? Push.permission(this) : "";
         if (lastPushPermission != null && !permission.equals(lastPushPermission)) refreshTokenForPage();
@@ -797,6 +823,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         Push.prefs(this).unregisterOnSharedPreferenceChangeListener(tokenListener);
+        if (liveScreen.get() == this) liveScreen = new WeakReference<>(null);
         if (downloadReceiver != null) {
             try {
                 unregisterReceiver(downloadReceiver);
