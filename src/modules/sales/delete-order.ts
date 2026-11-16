@@ -1,5 +1,5 @@
 /** The delivery states of a delivery that has not run yet (D90): it is deleted together with the order. */
-const UNRUN_DELIVERY_STATES = new Set(["PLANNED", "ASSIGNED", "CANCELLED"]);
+export const UNRUN_DELIVERY_STATES: ReadonlySet<string> = new Set(["PLANNED", "ASSIGNED", "CANCELLED"]);
 
 export type DeleteOrderDelivery = { number: string; state: string };
 
