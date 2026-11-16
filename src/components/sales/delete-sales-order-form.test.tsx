@@ -44,3 +44,8 @@ it("says in Vietnamese that the delete is permanent and points to cancelling to 
   expect(screen.getByText(/Không khôi phục được/)).toBeInTheDocument();
   expect(screen.getByText(/dùng “Hủy đơn”/)).toBeInTheDocument();
 });
+
+it("D90: says the order's deliveries that never ran are deleted too", () => {
+  mount();
+  expect(screen.getByText(/các phiếu giao chưa chạy của đơn \(kể cả phiếu đã hủy\)/)).toBeInTheDocument();
+});

@@ -19,6 +19,11 @@ export function commandError(message: string, confirmingOrder = false) {
   if (message.includes("sales_order_has_no_remaining")) return "Đơn không còn số lượng chưa giao để đóng.";
   if (message.includes("sales_order_not_closeable")) return "Đơn không còn ở trạng thái có thể đóng phần còn lại. Hãy tải lại.";
   // D72: refusals of "Xóa đơn bán".
+  // D90: a delivery of the order already ran (loaded, on the road, delivered, verified, stock moved or the job started).
+  if (message.includes("sales_order_delivery_started")) {
+    const number = /sales_order_delivery_started:\s*([A-Za-z0-9._-]+)/.exec(message)?.[1];
+    return `Phiếu giao ${number ?? "của đơn"} đã chạy (đã lên hàng, đang giao, đã giao, đã xác nhận hoặc đã xuất kho) nên không xóa được đơn. Hãy dùng trả hàng hoặc “Đóng phần còn lại” thay cho xóa đơn.`;
+  }
   if (message.includes("sales_order_has_delivery")) return "Đơn đã có phiếu giao (kể cả phiếu đã hủy). Hệ thống giữ lịch sử phiếu giao nên không xóa được đơn này.";
   if (message.includes("sales_order_has_credit_override")) return "Đơn đã được duyệt vượt hạn mức tín dụng và lịch sử đó được giữ nguyên, nên không xóa được.";
   if (message.includes("sales_order_has_purchase")) return "Đơn có đơn mua nhà cung cấp liên quan. Hủy hoặc xử lý đơn mua trước khi xóa đơn bán.";
