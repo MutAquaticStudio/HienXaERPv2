@@ -4,7 +4,7 @@ import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { requireInternalPermission } from "@/lib/access/context";
 import { loadComposerOptions, loadSentAnnouncements } from "@/modules/announcements/server";
 
-export const metadata: Metadata = { title: "Soạn thông báo cập nhật · Thông báo" };
+export const metadata: Metadata = { title: "Soạn thông báo cập nhật · Cài đặt" };
 
 /** D83 (Owner: "owner nhé"): only the owner composes announcements for customers, workers and office staff. */
 export default async function AnnouncementComposerPage() {
@@ -12,7 +12,7 @@ export default async function AnnouncementComposerPage() {
   const [options, sent] = await Promise.all([loadComposerOptions(access.branchId), loadSentAnnouncements(access.branchId)]);
   const readAt = new Date().getTime();
   return <div className="page-stack">
-    <Breadcrumb parent={{ href: "/admin/notifications", label: "Thông báo" }} current="Thông báo cập nhật" />
+    <Breadcrumb parent={{ href: "/admin/settings", label: "Cài đặt" }} current="Soạn thông báo cập nhật" />
     <header className="page-heading"><div><h1>Soạn thông báo cập nhật</h1>
       <p className="lede">Hiện một lần cho từng người ở lần mở app tiếp theo, trên trang chủ, kèm thông báo đẩy về máy đã bật. Thông báo giá và đơn giá công được tạo tự động khi lưu; ở đây soạn các tin khác: tính năng mới, quy định, lịch nghỉ.</p></div></header>
     {options ? <AnnouncementComposer options={options} sent={sent} now={readAt} />
