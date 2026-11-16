@@ -1,6 +1,6 @@
 -- D91: Zalo OA is removed. Its tables, functions, triggers, schedules and the customer's switch are gone; confirming an order,
 -- verifying a delivery or posting a payment queues nothing for Zalo; the queue refuses a ZALO job; PUSH (Web Push + FCM),
--- TELEGRAM, EMAIL and WEBHOOK are still sent as before. The manual "Gửi NCC qua Zalo" record is kept.
+-- WEBHOOK and PUSH are still sent as before (TELEGRAM/EMAIL removed by D93). The manual "Gửi NCC qua Zalo" record is kept.
 -- pg_net and Vault are stubbed here, as in 215_automation / 350_d86_app_push.
 create schema if not exists net;
 create table net._http_response(id bigint primary key, status_code integer, error_msg text, content text, created timestamptz not null default now());
@@ -106,20 +106,7 @@ begin
     or payload->>'event' in ('ORDER_CONFIRMED', 'DELIVERY_DONE', 'PAYMENT_RECEIVED', 'DEBT_REMINDER')), 'nothing queued for Zalo';
   assert (select count(*) from public.outbound_jobs) = before_jobs, 'no job at all without a rule or a device';
 
-  -- 4. TELEGRAM, EMAIL, WEBHOOK and PUSH (Web Push + FCM) are sent as before.
-  perform private.enqueue_outbound_job(branch, null, null, 'TELEGRAM', '-100354', '{"title": "Đơn mới", "body": "SO-354", "link": "/admin/orders"}'::jsonb, 'nt354:tg');
-  select * into job from public.outbound_jobs where dedupe_key = 'nt354:tg';
-  select * into sent from net.sent where id = job.request_id;
-  assert job.state = 'SENDING' and sent.url = 'https://api.telegram.org/botbot354/sendMessage' and sent.body->>'chat_id' = '-100354'
-    and sent.body->>'text' = E'Đơn mới\nSO-354\nhttps://app.example.test/admin/orders' and sent.headers = '{"Content-Type": "application/json"}'::jsonb,
-    format('telegram %s', sent.body);
-
-  perform private.enqueue_outbound_job(branch, null, null, 'EMAIL', 'ketoan@example.test', '{"title": "Nợ quá hạn"}'::jsonb, 'nt354:mail');
-  select * into job from public.outbound_jobs where dedupe_key = 'nt354:mail';
-  select * into sent from net.sent where id = job.request_id;
-  data := (sent.body->>'data')::jsonb;
-  assert job.state = 'SENDING' and sent.url = 'https://app.example.test/api/automation/deliver' and data->>'channel' = 'EMAIL' and data->>'to' = 'ketoan@example.test'
-    and sent.body->>'signature' = encode(extensions.hmac(sent.body->>'data', 'k1', 'sha256'), 'hex'), format('email %s', data);
+  -- 4. WEBHOOK and PUSH (Web Push + FCM) are sent as before (TELEGRAM / EMAIL were removed later by D93).
 
   perform private.enqueue_outbound_job(branch, null, null, 'WEBHOOK', 'https://hook.example.test/354', '{"title": "Phiếu giao"}'::jsonb, 'nt354:hook');
   select * into job from public.outbound_jobs where dedupe_key = 'nt354:hook';
@@ -143,11 +130,11 @@ begin
 
   -- The answers are settled as before: 2xx sent, 410 for a push removes the device, an error is retried.
   insert into net._http_response(id, status_code, content)
-    select request_id, 200, '{"ok":true}' from public.outbound_jobs where dedupe_key in ('nt354:tg', 'nt354:mail', 'nt354:web');
+    select request_id, 200, '{"ok":true}' from public.outbound_jobs where dedupe_key in ('nt354:web');
   insert into net._http_response(id, status_code, content) select request_id, 410, '{}' from public.outbound_jobs where dedupe_key = 'nt354:fcm';
   insert into net._http_response(id, status_code, content) select request_id, 500, 'boom' from public.outbound_jobs where dedupe_key = 'nt354:hook';
   perform private.process_outbound_jobs(50);
-  foreach dedupe in array array['nt354:tg', 'nt354:mail', 'nt354:web'] loop
+  foreach dedupe in array array['nt354:web'] loop
     assert (select state = 'SENT' and sent_at is not null from public.outbound_jobs where dedupe_key = dedupe), format('%s sent', dedupe);
   end loop;
   assert (select last_success_at is not null from public.push_subscriptions where id = web_id), 'web device marked reached';
