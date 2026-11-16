@@ -50,5 +50,7 @@ export function securityHeaders(options: { supabaseUrl?: string; dev?: boolean; 
     { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
     // Location is used by drivers' GPS and attendance; photos come from the file picker, which needs no camera permission.
     { key: "Permissions-Policy", value: "geolocation=(self), camera=(), microphone=(), payment=(), usb=()" },
+    // D97 (G-5): browsers only reach the app over https for two years, subdomains included. Not in development (http).
+    ...(options.dev ? [] : [{ key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" }]),
   ];
 }
