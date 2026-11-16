@@ -2258,13 +2258,6 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 .split-result { display: grid; gap: 6px; margin: 0 0 12px; padding-left: 18px; }
 @media (max-width: 560px) { .split-form td input { width: 5.5rem; } }
 
-/* D47: Cài đặt → Zalo OA — one block per event template. */
-.zalo-notify { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
-.zalo-template-list { display: grid; gap: 12px; }
-.zalo-template { display: grid; gap: 6px; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius); }
-.zalo-template p { margin: 0; }
-.zalo-params code { margin-right: 6px; padding: 1px 6px; border-radius: 6px; background: var(--surface-sunken); font-size: var(--font-size-caption); }
-
 /* Motion polish (UX-UI-R1-001 timings; all of it is switched off by prefers-reduced-motion). */
 /* The row arrow turns as the row opens or closes (the icon is swapped on open, so it turns in). */
 @keyframes chevron-open { from { transform: rotate(-90deg); } to { transform: none; } }
@@ -2452,15 +2445,6 @@ a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: 
 /* Automation channel checks: tokens, so the "ok" rows read in dark mode too. */
 .automation-checks li.ok { border-color: color-mix(in srgb, var(--success) 35%, transparent); background: var(--success-soft); color: var(--text); }
 .automation-checks li.warn { color: var(--text); }
-/* Zalo templates: rows of one list, not cards inside a card. */
-.zalo-templates > summary { display: flex; align-items: baseline; gap: 4px; cursor: pointer; list-style: none; }
-.zalo-templates > summary::-webkit-details-marker { display: none; }
-.zalo-templates > summary h2 { margin: 0; }
-.zalo-templates > summary::after { content: ""; width: 8px; height: 8px; margin-left: auto; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); transition: transform 160ms ease-out; }
-.zalo-templates[open] > summary::after { transform: rotate(-135deg); }
-.zalo-templates[open] > summary { margin-bottom: 8px; }
-.zalo-template-list { gap: 0; }
-.zalo-template { padding: 14px 0; border: 0; border-top: 1px solid var(--border); border-radius: 0; }
 @media (max-width: 760px) {
   .settings-index-group a { min-height: 56px; }
   .row-actions { flex-wrap: wrap; }
