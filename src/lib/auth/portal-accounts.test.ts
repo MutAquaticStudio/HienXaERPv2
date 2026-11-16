@@ -235,6 +235,20 @@ it("registers a customer: the record is made right away when signed in, or after
   expect((await registerCustomerAccountAction(undefined, form(values)))?.message).toContain("chưa mở tự đăng ký");
 });
 
+it("an email that already has a login is told so instead of \"Mở email…\" (Supabase sends nothing then)", async () => {
+  const values = { name: "Thuận", phone: "0912345678", address: "Hà Nội", email: "thuan@example.test", password: "matkhau123", confirm: "matkhau123" };
+  m.signUp.mockResolvedValue({ data: { user: { id: userId, identities: [] }, session: null }, error: null });
+  const answer = await registerCustomerAccountAction(undefined, form(values));
+  expect(answer?.success).toBeFalsy();
+  expect(answer?.message).toContain("Email này đã có tài khoản");
+  expect(answer?.message).toContain("Quên mật khẩu");
+  expect(answer && "fieldErrors" in answer ? answer.fieldErrors : undefined).toEqual({ email: "Email này đã có tài khoản." });
+  expect(m.rpc).not.toHaveBeenCalled();
+  // A new email (one identity) still gets "Mở email…".
+  m.signUp.mockResolvedValue({ data: { user: { id: userId, identities: [{ id: "i1" }] }, session: null }, error: null });
+  expect((await registerCustomerAccountAction(undefined, form(values)))?.message).toContain("Mở email gửi tới thuan@example.test");
+});
+
 // ---- D71: "Tạo tài khoản hàng loạt" ------------------------------------------------------------------------------------
 const batchCustomers = [
   { id: "11111111-1111-4111-8111-1111111111a1", code: "KH001", display_name: "Khách một", phone: "0912345678", active: true },
