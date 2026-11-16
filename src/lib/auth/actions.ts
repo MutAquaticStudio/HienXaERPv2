@@ -482,22 +482,30 @@ export async function createCustomerPortalAccountsBatchAction(customerIds: strin
   return { results };
 }
 
+/** Why the database refused a portal password reset (D97), in words for the manager. */
+function portalResetRefusal(code: string | undefined) {
+  if (code?.includes("portal_user_other_branch")) return "Tài khoản này còn dùng cho khách ở chi nhánh bạn không quản lý. Nhờ quản lý chi nhánh đó đặt lại mật khẩu.";
+  if (code?.includes("portal_user_is_employee")) return "Đây là tài khoản nhân viên. Đặt lại mật khẩu ở trang Nhân viên.";
+  if (code?.includes("forbidden")) return "Bạn không có quyền quản lý khách hàng này.";
+  return "Không tìm thấy tài khoản đang hoạt động của khách này.";
+}
+
 /** "Đặt lại mật khẩu" for a customer login of this customer: a new temporary password, changed at the next sign-in. */
 export async function resetCustomerPortalPasswordAction(_: PortalAccountState, formData: FormData): Promise<PortalAccountState> {
   const parsed = z.object({ customerId: z.guid(), membershipId: z.guid(), password: z.string().min(8).max(72) }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { message: "Mật khẩu tạm từ 8 ký tự." };
   await requireInternalPermission("customers.manage");
   const supabase = await createServerSupabase();
-  const { data: accounts, error } = await supabase.rpc("customer_portal_accounts", { target_customer_id: parsed.data.customerId });
-  const account = ((accounts ?? []) as { membership_id: string; auth_user_id: string; email: string; active: boolean }[])
-    .find((row) => row.membership_id === parsed.data.membershipId && row.active);
-  if (error || !account) return { message: "Không tìm thấy tài khoản đang hoạt động của khách này." };
+  // D97 (TB-1): the database decides whose password may be reset — the caller must manage every customer of that login.
+  const { data: authUserId, error } = await supabase.rpc("authorize_portal_password_reset", { target_customer_id: parsed.data.customerId,
+    target_membership_id: parsed.data.membershipId });
+  if (error || typeof authUserId !== "string") return { message: portalResetRefusal(error?.message) };
   const admin = authAdminClient();
   if (!admin) return { message: "Dịch vụ tài khoản chưa được cấu hình. Vui lòng liên hệ quản trị viên." };
-  const { error: updateError } = await admin.updateUserById(account.auth_user_id, { password: parsed.data.password, app_metadata: { hx_must_change_password: true } });
-  if (updateError) return { message: "Không đặt lại được mật khẩu. Thử lại sau." };
+  const { data: account, error: updateError } = await admin.updateUserById(authUserId, { password: parsed.data.password, app_metadata: { hx_must_change_password: true } });
+  if (updateError || !account.user?.email) return { message: "Không đặt lại được mật khẩu. Thử lại sau." };
   revalidatePath(`/admin/customers/${parsed.data.customerId}`);
-  return { success: true, message: "Đã đặt mật khẩu tạm mới. Gửi cho khách qua Zalo.", shareText: await portalShareText(account.email, parsed.data.password) };
+  return { success: true, message: "Đã đặt mật khẩu tạm mới. Gửi cho khách qua Zalo.", shareText: await portalShareText(account.user.email, parsed.data.password) };
 }
 
 /** First sign-in with a temporary password (customer or field staff): choose a new one, then continue. */

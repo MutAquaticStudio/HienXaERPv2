@@ -177,15 +177,23 @@ it("does not create a login for a customer outside the managed branch or for an 
   expect(m.createUser).not.toHaveBeenCalled();
 });
 
-it("resets only an active login of that customer and asks for a new change at the next sign-in", async () => {
-  m.rpc.mockResolvedValue({ data: [{ membership_id: membershipId, auth_user_id: userId, email: "0912345678@sdt.hienxavlxd.com", active: true }], error: null });
+it("resets only a login the database allows (D97) and asks for a new change at the next sign-in", async () => {
+  m.rpc.mockResolvedValue({ data: userId, error: null });
+  m.updateUserById.mockResolvedValue({ data: { user: { id: userId, email: "0912345678@sdt.hienxavlxd.com" } }, error: null });
   const result = await resetCustomerPortalPasswordAction(undefined, form({ customerId, membershipId, password: "MoiTam123" }));
+  expect(m.rpc).toHaveBeenCalledWith("authorize_portal_password_reset", { target_customer_id: customerId, target_membership_id: membershipId });
   expect(m.updateUserById).toHaveBeenCalledWith(userId, { password: "MoiTam123", app_metadata: { hx_must_change_password: true } });
   expect(result?.shareText).toContain("Mật khẩu tạm: MoiTam123");
-  m.rpc.mockResolvedValue({ data: [{ membership_id: membershipId, auth_user_id: userId, email: "x@example.test", active: false }], error: null });
-  m.updateUserById.mockClear();
-  expect((await resetCustomerPortalPasswordAction(undefined, form({ customerId, membershipId, password: "MoiTam123" })))?.success).not.toBe(true);
-  expect(m.updateUserById).not.toHaveBeenCalled();
+  expect(result?.shareText).toContain("0912345678");
+  for (const [code, text] of [["portal_user_other_branch", "chi nhánh bạn không quản lý"], ["forbidden", "không có quyền"],
+    ["portal_account_missing", "Không tìm thấy tài khoản"], ["portal_user_is_employee", "tài khoản nhân viên"]]) {
+    m.rpc.mockResolvedValue({ data: null, error: { code: "42501", message: code } });
+    m.updateUserById.mockClear();
+    const refused = await resetCustomerPortalPasswordAction(undefined, form({ customerId, membershipId, password: "MoiTam123" }));
+    expect(refused?.success).not.toBe(true);
+    expect(refused?.message).toContain(text);
+    expect(m.updateUserById).not.toHaveBeenCalled();
+  }
 });
 
 it("changes the temporary password, clears the flag and opens the portal", async () => {
