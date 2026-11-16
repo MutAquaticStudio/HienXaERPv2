@@ -88,6 +88,8 @@ describe("blue menu bar (D29)", () => {
     expect(hrefs).toContain("/admin/invoices");
     expect(hrefs).toContain("/admin/access");
     expect(hrefs).toContain("/admin/settings");
+    // D89: the update composer is under Cài đặt, not a menu item of its own.
+    expect(hrefs).not.toContain("/admin/notifications/updates");
   });
 
   it("hides quotations even for actors who still hold quotation permissions (owner decision D1)", () => {

@@ -79,6 +79,7 @@ export default async function SettingsPage() {
       ...(canAi ? [{ href: "/admin/settings/ai", title: "Trợ lý AI", detail: "Khóa API Claude của doanh nghiệp.",
         status: aiStatus ? { text: aiStatus.in_app ? "Đã có khóa" : "Chưa có khóa riêng", tone: (aiStatus.in_app ? "ok" : "muted") as Tone } : undefined }] : []),
       { href: "/admin/settings/automation", title: "Quy tắc tự động", detail: "Báo việc về điện thoại, Telegram, email." },
+      { href: "/admin/notifications/updates", title: "Soạn thông báo cập nhật", detail: "Tin cho khách, thợ, nhân viên: hiện ở trang chủ và báo về điện thoại." },
     ] },
     { title: "Nhân viên, quyền & dữ liệu", entries: [
       { href: "/admin/access", title: "Nhân viên & phân quyền", detail: "Tài khoản, vai trò, chi nhánh được vào." },

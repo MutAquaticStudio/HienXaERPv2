@@ -52,7 +52,7 @@ export function ClaimDeliveryCard({ delivery }: { delivery: WorkerPoolDelivery }
       <h2>{delivery.site_name ?? delivery.customer_name ?? delivery.number}</h2>
       <div className={styles.meta}>
         <span>{delivery.number}</span>
-        <span>{delivery.address ?? "Địa điểm sẽ cập nhật"}</span>
+        <span>{delivery.address?.trim() || "Địa điểm sẽ cập nhật"}</span>
       </div>
       <ul className={styles.claimLines} aria-label="Hàng cần giao">
         {delivery.lines.map((line, index) => <li key={index}><span>{line.material_name}</span><strong>{quantity(line.quantity)} {line.unit}</strong></li>)}
