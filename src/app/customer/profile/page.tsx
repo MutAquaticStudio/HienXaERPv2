@@ -2,8 +2,6 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { AnnouncementHistory } from "@/components/announcements/announcement-history";
 import { PushToggle } from "@/components/notifications/push-toggle";
-import { ZaloNotifyToggle } from "@/components/zalo/zalo-notify-toggle";
-import { isZaloPhone } from "@/modules/zalo/phone";
 import { redirect } from "next/navigation";
 import { roleLabel } from "@/components/access/presentation";
 import { PortalAppearance } from "@/components/portal/portal-appearance";
@@ -27,8 +25,6 @@ export default async function CustomerAccountPage() {
   const account = await portalRpc<CustomerPortalAccount>(context.supabase, "customer_portal_account", { target_customer_id: null });
   const { customer, sites } = account;
   const login = context.user.email ?? "";
-  const canZalo = account.membership_role === "OWNER" || account.membership_role === "FINANCE_CONTACT";
-  const zalo = canZalo ? await context.supabase.rpc("customer_zalo_notify", { target_customer_id: customer.id }) : null;
   const [inApp, appWithoutPush] = await Promise.all([openedInNativeApp(), openedInAppWithoutPush()]);
   const appearance = parseAppearance((await cookies()).get(APPEARANCE_COOKIE)?.value);
   const announcements = await loadAnnouncementHistory("CUSTOMER");
@@ -60,10 +56,6 @@ export default async function CustomerAccountPage() {
         {customer.payment_terms_days != null && <Row label="Hạn thanh toán" value={customer.payment_terms_days ? `${customer.payment_terms_days} ngày sau khi giao` : "Thanh toán khi nhận hàng"} />}
         <p className={styles.hint}>Cần sửa thông tin? <Link href="/customer/messages">Nhắn cửa hàng</Link> để được cập nhật.</p>
       </section>
-      {typeof zalo?.data === "boolean" && <section className={styles.card} aria-labelledby="account-zalo">
-        <h2 id="account-zalo">Thông báo Zalo</h2>
-        <ZaloNotifyToggle customerId={customer.id} enabled={zalo.data} canChange phoneUsable={isZaloPhone(customer.phone)} />
-      </section>}
       <section className={styles.card} aria-labelledby="account-announcements">
         <h2 id="account-announcements">Thông báo từ cửa hàng</h2>
         <AnnouncementHistory items={announcements} surface="CUSTOMER" emptyText="Chưa có thông báo nào. Khi cửa hàng đổi giá hàng bạn hay mua hoặc có tin mới, thông báo sẽ hiện ở đây." />

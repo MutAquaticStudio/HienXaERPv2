@@ -11,7 +11,6 @@ import { APPEARANCE_COOKIE, parseAppearance } from "@/lib/appearance";
 import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { loadCompanyLogo, loadCompanyProfile } from "@/lib/company/profile";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { ZALO_STATE_LABEL, type ZaloStatus } from "@/modules/zalo/presentation";
 
 export const metadata: Metadata = { title: "Cài đặt" };
 
@@ -38,13 +37,12 @@ export default async function SettingsPage() {
   const access = await requireInternalPermission("roles.manage");
   const supabase = await createServerSupabase();
   const canAi = access.permissions.has("ai.manage");
-  const [profile, logo, cookieStore, operation, warehouses, portal, branches, zalo, ai, operationChange, portalChange] = await Promise.all([
+  const [profile, logo, cookieStore, operation, warehouses, portal, branches, ai, operationChange, portalChange] = await Promise.all([
     loadCompanyProfile(supabase), loadCompanyLogo(supabase), cookies(),
     supabase.from("branch_operation_settings").select("stop_minutes, version, default_warehouse_id, auto_source_enabled, trip_cost_vnd::text, dispatch_mode, work_day_start, work_day_end").eq("branch_id", access.branchId).maybeSingle(),
     supabase.from("warehouses").select("id, name").eq("branch_id", access.branchId).eq("active", true).order("name").limit(100),
     supabase.from("company_profile").select("portal_branch_id").limit(1).maybeSingle(),
     supabase.from("branches").select("id, name").eq("active", true).order("name").limit(50),
-    supabase.rpc("zalo_status"),
     canAi ? supabase.rpc("ai_api_key_status") : Promise.resolve({ data: null }),
     lastChange(supabase, access.branchId, "branch_operation_settings.saved"),
     lastChange(supabase, access.branchId, "company.portal_branch_set"),
@@ -53,7 +51,6 @@ export default async function SettingsPage() {
   const portalBranchId = (portal.data as { portal_branch_id?: string | null } | null)?.portal_branch_id ?? null;
   const branchList = branches.data ?? [];
   const portalBranch = branchList.find((branch) => branch.id === portalBranchId)?.name;
-  const zaloState = (zalo.data as ZaloStatus | null)?.state;
   const aiStatus = ai.data as { in_app?: boolean } | null;
 
   const groups: Group[] = [
@@ -74,8 +71,6 @@ export default async function SettingsPage() {
       { href: "/admin/dispatch/resources", title: "Xe & tài xế", detail: "Xe, tài xế mặc định và trạng thái xe." },
     ] },
     { title: "Kết nối & tự động", entries: [
-      { href: "/admin/settings/zalo", title: "Zalo OA", detail: "Tin Zalo tự động cho khách.",
-        status: zaloState ? { text: ZALO_STATE_LABEL[zaloState], tone: zaloState === "CONNECTED" ? "ok" : "warn" } : undefined },
       ...(canAi ? [{ href: "/admin/settings/ai", title: "Trợ lý AI", detail: "Khóa API Claude của doanh nghiệp.",
         status: aiStatus ? { text: aiStatus.in_app ? "Đã có khóa" : "Chưa có khóa riêng", tone: (aiStatus.in_app ? "ok" : "muted") as Tone } : undefined }] : []),
       { href: "/admin/settings/automation", title: "Quy tắc tự động", detail: "Báo việc về điện thoại, Telegram, email." },

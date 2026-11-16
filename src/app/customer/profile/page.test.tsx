@@ -7,7 +7,6 @@ vi.mock("@/components/notifications/push-toggle", () => ({ PushToggle: () => <bu
 vi.mock("@/lib/app-shell/server", () => ({ openedInNativeApp: m.inApp, openedInAppWithoutPush: m.oldApp }));
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: (name: string) => name === "hx-appearance" && m.appearance ? { value: m.appearance } : undefined }) }));
 vi.mock("@/modules/portal/server", () => ({ authenticatedPortalClient: m.client, portalRpc: m.rpc }));
-vi.mock("@/modules/zalo/notify-actions", () => ({ setCustomerZaloNotifyAction: vi.fn() }));
 vi.mock("next/navigation", () => ({ redirect: (path: string) => { throw new Error(`redirect:${path}`); } }));
 import CustomerAccountPage from "./page";
 
@@ -47,9 +46,10 @@ it("sends a signed-out visitor to the customer sign-in", async () => {
   await expect(CustomerAccountPage()).rejects.toThrow("redirect:/customer/login");
 });
 
-it("D47: the customer's owner can switch Zalo notifications off", async () => {
+it("D91: Zalo OA was removed, so the account page has no Zalo notification switch", async () => {
   render(await CustomerAccountPage());
-  expect(screen.getByRole("checkbox", { name: "Nhận thông báo qua Zalo" })).toBeChecked();
+  expect(screen.queryByRole("checkbox", { name: "Nhận thông báo qua Zalo" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("region", { name: "Thông báo Zalo" })).not.toBeInTheDocument();
 });
 
 it("D84: Tài khoản has Giao diện with this device's saved choice", async () => {

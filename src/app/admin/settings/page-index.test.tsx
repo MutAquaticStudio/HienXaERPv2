@@ -22,7 +22,7 @@ vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({
     query.then = (resolve: (value: unknown) => unknown) => resolve(result);
     return query;
   },
-  rpc: async (name: string) => ({ data: name === "zalo_status" ? { state: "DISCONNECTED" } : null, error: null }),
+  rpc: async () => ({ data: null, error: null }),
 }) }));
 vi.mock("@/modules/settings/company-actions", () => ({ saveCompanyProfileAction: vi.fn(), saveCompanyLogoAction: vi.fn() }));
 vi.mock("@/modules/settings/operation-actions", () => ({ saveOperationSettingsAction: vi.fn() }));
@@ -40,7 +40,9 @@ it("opens on a grouped index that says how each setting stands (D59)", async () 
   expect(within(index).getByRole("link", { name: /Chính sách giá/ })).toHaveAttribute("href", "/admin/settings/pricing");
   expect(within(index).getByRole("link", { name: /Nhật ký hoạt động/ })).toHaveAttribute("href", "/admin/audit");
   expect(within(index).getByRole("link", { name: /Khách tự đăng ký/ })).toHaveTextContent("Chưa chọn — đang đóng");
-  expect(within(index).getByRole("link", { name: /Zalo OA/ })).toHaveTextContent("Chưa kết nối");
+  // D91: Zalo OA was removed; automation rules stay.
+  expect(within(index).queryByRole("link", { name: /Zalo OA/ })).not.toBeInTheDocument();
+  expect(within(index).getByRole("link", { name: /Quy tắc tự động/ })).toHaveAttribute("href", "/admin/settings/automation");
   expect(within(index).getByRole("link", { name: /Vận hành giao hàng/ })).toHaveTextContent("Gợi ý điều phối");
   expect(within(index).getByRole("link", { name: /Thông tin doanh nghiệp/ })).toHaveTextContent("Chưa nhập");
   // The delivery form wakes its save button only on a change (version 2 is saved).
