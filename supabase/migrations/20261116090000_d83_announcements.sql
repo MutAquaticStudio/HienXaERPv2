@@ -418,6 +418,7 @@ create or replace function private.announcement_finish(ids uuid[]) returns uuid[
 language plpgsql security definer set search_path = '' as $$
 declare emptied uuid[];
 begin
+  -- Lines are always looked up per announcement through the (announcement, item) key, however many old lines the table holds.
   select coalesce(array_agg(a.id), '{}') into emptied from public.announcements a
   where a.id = any(ids) and not exists (select 1 from public.announcement_lines l where l.announcement_id = a.id);
   perform private.announcement_cancel_push(a.id, a.branch_id, a.created_at) from public.announcements a where a.id = any(emptied);
@@ -439,8 +440,8 @@ begin
             and cardinality(a.price_rule_ids) > 0 and x.price_rule_ids && a.price_rule_ids having count(*) > 0))
       else 'Văn phòng đổi ' || c.n || ' đơn giá công lúc ' || to_char(now() at time zone 'Asia/Ho_Chi_Minh', 'HH24:MI, DD/MM/YYYY') || '. Phiếu lương đã chốt giữ nguyên.' end,
     updated_at = now(), expires_at = now() + interval '30 days'
-  from (select l.announcement_id id, count(*) n from public.announcement_lines l where l.announcement_id = any(ids) group by 1) c
-  where a.id = c.id;
+  from (select x.id, (select count(*) from public.announcement_lines l where l.announcement_id = x.id) n from unnest(ids) x(id)) c
+  where a.id = c.id and c.n > 0;
   return array(select x from unnest(ids) x where x <> all(emptied));
 end $$;
 revoke all on function private.announcement_finish(uuid[]) from public, anon, authenticated, service_role;
@@ -463,6 +464,8 @@ begin
     and a.withdrawn_at is null and a.expires_at > now()
     and not exists (select 1 from public.announcement_seen s where s.announcement_id = a.id)
   order by a.created_at desc limit 1 for update;
+  -- Seen (or gone) while we waited for the lock: make a new one instead.
+  if target.id is not null and (private.announcement_lock_foldable(array[target.id]))[1] is null then target := null; end if;
   if target.id is null then
     insert into public.announcements(branch_id, group_id, audience, kind, customer_id, title, effective_at, price_rule_ids, created_by, expires_at)
     values (b, flush_group, a_audience, a_kind, a_customer, 'Thông báo cập nhật', case when a_kind = 'PRICE' then at_time end, rules, actor,
@@ -505,19 +508,35 @@ begin
 end $$;
 revoke all on function private.merge_announcement(uuid, text, text, uuid, timestamptz, jsonb, uuid[], uuid, uuid) from public, anon, authenticated, service_role;
 
+-- The announcements to fold into, locked first and checked again after the lock (another commit may have deleted one, or someone
+-- may have seen it, in between): those no longer foldable come back as null, in the same order, and get a new announcement instead.
+create or replace function private.announcement_lock_foldable(ids uuid[]) returns uuid[]
+language plpgsql security definer set search_path = '' as $$
+begin
+  perform 1 from public.announcements a where a.id = any(ids) order by a.id for update;
+  -- A new statement, so a new snapshot: it sees what the commits we waited for did.
+  return array(
+    select case when exists (select 1 from public.announcements a where a.id = x.id and a.withdrawn_at is null and a.expires_at > now())
+      and not exists (select 1 from public.announcement_seen s where s.announcement_id = x.id) then x.id end
+    from unnest(ids) with ordinality x(id, n) order by x.n);
+end $$;
+revoke all on function private.announcement_lock_foldable(uuid[]) from public, anon, authenticated, service_role;
+
 -- Every customer's price announcement of one save in a few set-based statements (a full price list for hundreds of customers):
 -- one per customer and day the new prices start, folded into that customer's unseen one of the same day, or new and pushed.
 -- ch_*: the customers' changed lines (customer, item, unit, day, old, new), as private.announcement_price_changes gives them.
+-- Plans are made for the actual array sizes (force_custom_plan), so lines of the announcements being folded are reached through
+-- their index however many old lines the table holds; JIT is off because compiling these large statements costs more than it saves.
 create or replace function private.announce_customer_prices(b uuid, ch_c uuid[], ch_m uuid[], ch_u uuid[], ch_at timestamptz[], ch_old bigint[],
   ch_new bigint[], rules uuid[], flush_group uuid, actor uuid) returns void
-language plpgsql security definer set search_path = '' set enable_nestloop = off set jit = off as $$
+language plpgsql security definer set search_path = '' set plan_cache_mode = force_custom_plan set jit = off as $$
 declare
   g_c uuid[]; g_d date[]; g_at timestamptz[]; g_t uuid[];
   made uuid[];
   kept uuid[];
   a uuid;
 begin
-  -- 1. The announcement of each customer and day: the newest unseen one to fold into (locked), or none yet.
+  -- 1. The announcement of each customer and day: the newest unseen one to fold into, or none yet.
   select array_agg(g.c order by g.c, g.d), array_agg(g.d order by g.c, g.d), array_agg(g.at order by g.c, g.d), array_agg(t.id order by g.c, g.d)
   into g_c, g_d, g_at, g_t
   from (select x.c, (x.at at time zone 'Asia/Ho_Chi_Minh')::date d, min(x.at) at from unnest(ch_c, ch_at) x(c, at) where x.c is not null group by 1, 2) g
@@ -529,7 +548,7 @@ begin
     ) o order by o.customer_id, o.d, o.created_at desc
   ) t on t.customer_id = g.c and t.d = g.d;
   if g_c is null then return; end if;
-  perform 1 from public.announcements x where x.id = any(g_t) order by x.id for update;
+  g_t := private.announcement_lock_foldable(g_t);
   update public.announcements x set price_rule_ids = (select coalesce(array_agg(distinct r), '{}') from unnest(x.price_rule_ids || rules) r)
   where x.id = any(g_t);
   -- 2. New announcements for the others.
@@ -539,7 +558,8 @@ begin
     from unnest(g_c, g_at, g_t) g(c, at, t) where g.t is null
     returning id
   ) select coalesce(array_agg(ins.id), '{}') into made from ins;
-  -- 3. All lines at once: added, changed (the price first told stays the old one), or dropped when back to that price.
+  -- 3. All lines at once: added, changed (the price first told stays the old one), or dropped when back to that price. Only the
+  -- announcements being folded have lines already; those are read and changed through the (announcement, item) key.
   with targets as materialized (
     select g.c, g.d, coalesce(g.t, n.id) aid from unnest(g_c, g_d, g_t) g(c, d, t)
     left join (select x.id, x.customer_id, (x.effective_at at time zone 'Asia/Ho_Chi_Minh')::date d from public.announcements x where x.id = any(made)) n
@@ -553,16 +573,19 @@ begin
     join public.materials m on m.id = x.m join public.units_of_measure u on u.id = x.u
     where x.old is distinct from x.new
   ), existing as materialized (
-    select l.announcement_id, l.item_key, l.old_value, l.old_kind from public.announcement_lines l where l.announcement_id = any(g_t)
+    select l.announcement_id, l.item_key, l.old_value, l.old_kind
+    -- one index lookup per folded announcement (offset 0 keeps the planner from turning this into a scan of every line)
+    from unnest(g_t) t(id) cross join lateral (select l.* from public.announcement_lines l where l.announcement_id = t.id offset 0) l
+  ), meet as materialized (
+    select i.*, (e.old_value, e.old_kind) is not distinct from (i.new_value, i.new_kind) back
+    from existing e join incoming i on i.announcement_id = e.announcement_id and i.item_key = e.item_key
   ), gone as (
-    delete from public.announcement_lines l using incoming i, existing e
-    where l.announcement_id = i.announcement_id and l.item_key = i.item_key and e.announcement_id = i.announcement_id and e.item_key = i.item_key
-      and (e.old_value, e.old_kind) is not distinct from (i.new_value, i.new_kind)
+    delete from public.announcement_lines l using meet d
+    where d.back and l.announcement_id = d.announcement_id and l.item_key = d.item_key
   ), moved as (
-    update public.announcement_lines l set new_value = i.new_value, new_kind = i.new_kind, item_name = i.item_name, unit_name = i.unit_name,
-      item_code = coalesce(i.item_code, l.item_code)
-    from incoming i join existing e on e.announcement_id = i.announcement_id and e.item_key = i.item_key
-    where l.announcement_id = i.announcement_id and l.item_key = i.item_key and (e.old_value, e.old_kind) is distinct from (i.new_value, i.new_kind)
+    update public.announcement_lines l set new_value = d.new_value, new_kind = d.new_kind, item_name = d.item_name, unit_name = d.unit_name,
+      item_code = coalesce(d.item_code, l.item_code)
+    from meet d where not d.back and l.announcement_id = d.announcement_id and l.item_key = d.item_key
   )
   insert into public.announcement_lines(announcement_id, item_key, item_code, item_name, unit_name, old_value, old_kind, new_value, new_kind)
   select i.announcement_id, i.item_key, i.item_code, i.item_name, i.unit_name, i.old_value, i.old_kind, i.new_value, i.new_kind
@@ -617,11 +640,8 @@ begin
     into ch_c, ch_m, ch_u, ch_at, ch_old, ch_new
     from private.announcement_price_changes(tx, branch, cids, ctiers, km, ku, ka, kg) p;
     continue when ch_c is null;
-    -- 1. The customers. Commit time grows with customers × changed items (about 1.5 s per 150 000 lines); far beyond that the commit
-    -- could pass the statement time limit and undo the save itself, so the customers are then not told (the office still is).
-    if (select count(*) from unnest(ch_c) x where x is not null) > 200000 then
-      raise warning 'announcement_too_large: % customer lines, customers not told', (select count(*) from unnest(ch_c) x where x is not null);
-    else begin
+    -- 1. The customers.
+    begin
       perform private.announce_customer_prices(branch, ch_c, ch_m, ch_u, ch_at, ch_old, ch_new, rules, flush_group, actor);
     exception when others then
       raise warning 'announcement_failed: %', sqlerrm;
@@ -638,7 +658,7 @@ begin
           raise warning 'announcement_failed: %', sqlerrm;
         end;
       end loop;
-    end; end if;
+    end;
     -- 2. The office: the common price (after the customers, so it can say how many were told).
     for grp in
       select min(x.at) at, jsonb_agg(jsonb_build_object('key', 'price:' || x.m || ':' || x.u, 'code', m.code, 'name', m.name, 'unit', u.name,
@@ -896,6 +916,29 @@ begin
 end $$;
 revoke all on function public.sent_announcements(uuid) from public, anon;
 grant execute on function public.sent_announcements(uuid) to authenticated;
+
+-- ===== housekeeping =====
+-- Announcements that ran out more than 90 days ago are no longer shown anywhere useful: they go with their lines (statement trigger)
+-- and "seen" marks (cascade). A bounded batch each hour (pg_cron, as the outbound queue), so no run is long.
+create or replace function private.announcement_cleanup(batch_size integer default 500) returns integer
+language plpgsql security definer set search_path = '' as $$
+declare removed integer;
+begin
+  delete from public.announcements a where a.id in (select x.id from public.announcements x where x.expires_at < now() - interval '90 days'
+    order by x.expires_at limit greatest(1, least(coalesce(batch_size, 500), 5000)));
+  get diagnostics removed = row_count;
+  return removed;
+end $$;
+revoke all on function private.announcement_cleanup(integer) from public, anon, authenticated, service_role;
+create index announcements_expiry_idx on public.announcements(expires_at);
+
+do $cron$
+begin
+  if exists (select 1 from pg_extension where extname = 'pg_cron') then
+    perform cron.schedule('hx-announcements-cleanup', '41 * * * *', 'select private.announcement_cleanup(500)');
+  end if;
+end
+$cron$;
 
 notify pgrst, 'reload schema';
 commit;
