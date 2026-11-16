@@ -93,6 +93,8 @@ function errorMessage(message: string, confirmingOrder = false) {
   if (quantityError) return quantityError;
   if (message.includes("purchase_price_priority_mismatch")) return "Bảng giá mua đã thay đổi. Tải lại và xem trước giá mua, hoặc nhập giá mua thủ công.";
   if (message.includes("purchase_price_priority_ambiguous")) return "Có nhiều bảng giá mua cùng phiên bản ưu tiên. Cần đối chiếu bảng giá trước khi lưu.";
+  // D95: the sales order this purchase buys for was cancelled.
+  if (message.includes("purchase_linked_sales_order_cancelled")) return "Đơn bán của đơn mua này đã hủy nên không xác nhận, nhận hàng hay ghi NCC giao được nữa. Hủy đơn mua hoặc liên hệ NCC.";
   if (message.includes("purchase_order_not_confirmable")) return "Đơn mua không còn ở trạng thái có thể xác nhận. Hãy tải lại để kiểm tra.";
   if (message.includes("purchase_lines_required")) return "Vui lòng thêm ít nhất một dòng vật tư cho đơn mua.";
   if (message.includes("warehouse_address_required")) return warehouseAddressRequired;
@@ -340,6 +342,7 @@ export async function createSupplierDirectDeliveryAction(formData: FormData) {
   if (error || !data) {
     const message = error?.message.includes("nothing_to_deliver") ? "Đơn mua này đã có phiếu giao cho toàn bộ lượng."
       : error?.message.includes("purchase_order_not_direct") ? "Chỉ đơn mua NCC giao thẳng đã duyệt mới lập phiếu giao từ đây."
+      : error?.message.includes("purchase_linked_sales_order_cancelled") ? errorMessage(error.message)
       : error?.code === "42501" ? "Cần quyền lập phiếu giao và phân giao để lập phiếu NCC giao thẳng."
       : "Không thể lập phiếu NCC giao thẳng. Không có thay đổi nào được ghi.";
     redirect(`${destination}?error=${encodeURIComponent(message)}`);

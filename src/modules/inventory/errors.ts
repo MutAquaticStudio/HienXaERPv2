@@ -6,6 +6,8 @@ export function inventoryCommandMessage(value?: string) {
   if (postingError) return postingError;
   const quantityError = quantityInputError(value);
   if (quantityError) return quantityError;
+  // D95: the sales order this purchase buys for was cancelled.
+  if (value?.includes("purchase_linked_sales_order_cancelled")) return "Đơn bán của đơn mua này đã hủy nên không xác nhận, nhận hàng hay ghi NCC giao được nữa. Hủy đơn mua hoặc liên hệ NCC.";
   if (value?.includes("stock_count_cutoff_stale") || value?.includes("stock_count_basis_changed_recount_required")) return "Kho đã có biến động làm căn cứ đếm không còn hợp lệ. Giữ hồ sơ chênh lệch, đối chiếu biến động và kiểm kê lại tại mốc mới trước khi duyệt.";
   if (value?.includes("stock_count_adjustment_below_reserved_or_on_hand")) return "Chưa thể duyệt: lượng sau điều chỉnh thấp hơn lượng đang giữ chỗ hoặc làm tồn kho âm. Hãy đối chiếu hàng và các phiếu giữ chỗ.";
   if (value?.includes("stock_count_inventory_value_inconsistent")) return "Chưa thể duyệt: lượng và giá trị tồn sau điều chỉnh không khớp. Hãy kiểm tra căn cứ giá vốn.";
