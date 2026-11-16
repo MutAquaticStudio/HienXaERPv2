@@ -2,6 +2,7 @@
 export const AUTOMATION_EVENTS = [
   { value: "order.portal_submitted", label: "Đơn mới khách tự đặt", amount: true },
   { value: "order.portal_cancelled", label: "Khách hủy đơn", amount: true },
+  { value: "order.portal_auto_approved", label: "Đơn khách tự duyệt khi kho có hàng", amount: true },
   { value: "customer.self_registered", label: "Khách tự đăng ký tài khoản" },
   { value: "purchase.draft_ready", label: "Đơn mua nháp cần duyệt", amount: true },
   { value: "sales_order.needs_purchase", label: "Đơn bán cần đặt NCC (không tự tạo được đơn mua)", amount: true },

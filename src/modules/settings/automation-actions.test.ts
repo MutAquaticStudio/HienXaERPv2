@@ -29,6 +29,11 @@ it("rejects unknown events or channels and explains database refusals", async ()
   expect((await saveAutomationRuleAction(rule)).message).toContain("người khác sửa");
 });
 
+it("accepts the D88 event for portal orders approved when stock arrives", async () => {
+  expect(await saveAutomationRuleAction({ ...rule, event: "order.portal_auto_approved", channel: "PUSH" })).toEqual({ ok: true, message: "Đã lưu quy tắc." });
+  expect(m.rpc.mock.calls[0][1].rule.event).toBe("order.portal_auto_approved");
+});
+
 it("tells the manager to turn on push on this device when a push test reaches nobody", async () => {
   m.rpc.mockResolvedValue({ data: 0, error: null });
   expect((await testAutomationRuleAction("22222222-2222-4222-8222-222222222222")).message).toContain("chưa bật thông báo");
