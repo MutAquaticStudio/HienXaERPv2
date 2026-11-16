@@ -117,6 +117,14 @@ begin
     from public.outbound_jobs where rule_id = rule and target = moved::text), 'waits with the reason';
   assert (select last_success_at is not null from public.push_subscriptions where id = moved), 'sent';
 
+  -- 5b. A 404 from the route itself (missing deployment, wrong hx_app_url) is retried; it never deletes the device.
+  select * into job from public.outbound_jobs where rule_id = rule and target = web_id::text;
+  assert job.id is not null and job.request_id is not null, 'the rule also reached the web subscription';
+  insert into net._http_response(id, status_code, content) values (job.request_id, 404, 'Not Found');
+  perform private.process_outbound_jobs(50);
+  assert exists (select 1 from public.push_subscriptions where id = web_id), 'a 404 from the route keeps the device';
+  assert (select state from public.outbound_jobs where id = job.id) = 'FAILED', 'and retries';
+
   -- 6. Signing out of the app deletes the phone's token (only the owner's, only the app's).
   perform pg_temp.act_as(reader);
   perform public.delete_app_push_token(phone);

@@ -47,7 +47,7 @@ it("sends title, text and the link to the phone, and reuses the access token unt
   expect(sendInit.headers).toEqual({ Authorization: "Bearer ya29.test-access-token", "Content-Type": "application/json" });
   expect(JSON.parse(sendInit.body)).toEqual({ message: { token: device, notification: { title: "Việc mới: giao 20 bao", body: "Công trình 350" },
     data: { link: "https://app.example.test/work/jobs/1", kind: "work.assigned", id: "22222222-2222-4222-8222-222222222222" },
-    android: { priority: "HIGH", ttl: "86400s", notification: { channel_id: ANDROID_CHANNEL_ID, default_sound: true, notification_priority: "PRIORITY_HIGH" } } } });
+    android: { priority: "HIGH", ttl: "86400s", notification: { channel_id: ANDROID_CHANNEL_ID, default_sound: true, notification_priority: "PRIORITY_HIGH", tag: `hx-${item.jobId}` } } } });
 
   // 50 minutes later: same access token. 56 minutes later (under 5 minutes left): a new one.
   expect(await sendFcm(item, env("k-send"), fetch, now + 50 * 60_000)).toEqual({ status: 200 });
@@ -100,4 +100,17 @@ it("without FIREBASE_SERVICE_ACCOUNT (or with a bad one) nothing is sent and the
   expect(await sendFcm(item, env("k-revoked"), fetch, now)).toEqual({ status: 200 });
   expect(fetch.mock.calls.filter(([url]) => url === "https://oauth2.googleapis.com/token")).toHaveLength(3);
   expect(JSON.stringify(warn.mock.calls)).not.toContain("PRIVATE KEY");
+});
+
+it("review fix: a bare 404 (wrong Firebase project) or an unusable key never deletes phones; retried jobs share one notification tag", async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(granted());
+  fetch.mockResolvedValueOnce(fcmError(404, "NOT_FOUND", [], "Requested entity was not found."));
+  expect(await sendFcm(item, env("k-project"), fetch, now)).toEqual({ status: 503, error: "fcm_auth_failed" });
+  fetch.mockResolvedValueOnce(new Response("<html>Not Found</html>", { status: 404, headers: { "content-type": "text/html" } }));
+  expect(await sendFcm(item, env("k-project"), fetch, now)).toEqual({ status: 503, error: "fcm_auth_failed" });
+  const broken = JSON.stringify({ ...JSON.parse(env("k-broken").FIREBASE_SERVICE_ACCOUNT!), private_key: "-----BEGIN PRIVATE KEY-----\nkhong-dung\n-----END PRIVATE KEY-----\n" });
+  expect(await sendFcm(item, { FIREBASE_SERVICE_ACCOUNT: broken }, vi.fn(), now)).toEqual({ status: 503, error: "fcm_auth_failed" });
+  const ok = vi.fn().mockResolvedValueOnce(granted()).mockResolvedValueOnce(new Response("{}", { status: 200 }));
+  expect(await sendFcm(item, env("k-tag"), ok, now)).toEqual({ status: 200 });
+  expect(JSON.parse(ok.mock.calls.at(-1)![1].body).message.android.notification.tag).toBe(`hx-${item.jobId}`);
 });

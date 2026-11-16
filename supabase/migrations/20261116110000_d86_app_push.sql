@@ -23,7 +23,7 @@ alter table public.push_subscriptions add constraint push_subscriptions_kind_che
   (kind = 'WEB' and endpoint is not null and p256dh is not null and auth_secret is not null and token is null and platform is null)
   or (kind = 'FCM' and token is not null and platform = 'ANDROID' and endpoint is null and p256dh is null and auth_secret is null));
 alter table public.push_subscriptions add constraint push_subscriptions_token_check
-  check (token is null or (char_length(token) between 20 and 4096 and token ~ '^[A-Za-z0-9_:.-]+$'));
+  check (token is null or (char_length(token) between 20 and 1024 and token ~ '^[A-Za-z0-9_:.-]+$'));
 alter table public.push_subscriptions add constraint push_subscriptions_token_key unique (token);
 
 -- 2. "Bật thông báo trên máy này" in the app, and the silent registration when the app already may notify.
@@ -145,7 +145,8 @@ $function$;
 revoke all on function private.dispatch_outbound_job(uuid) from public, anon, authenticated, service_role;
 
 -- 5. The queue's settler (D47 version): a failed hand-over to the app route keeps the route's reason. Otherwise unchanged
--- (404 / 410 for a push still removes the device: a web subscription gone or an app token Firebase no longer knows).
+-- (410 for a push removes the device: a web subscription gone or an app token Firebase no longer knows; a 404 from the
+-- route being missing retries instead of deleting).
 create or replace function private.process_outbound_jobs(batch_size integer default 50) returns jsonb
 language plpgsql security definer set search_path = '' as $function$
 declare
@@ -171,7 +172,9 @@ begin
       elsif status between 200 and 299 then
         update public.outbound_jobs set state = 'SENT', sent_at = now(), request_id = null, lease_until = null where id = job.id;
         if job.channel = 'PUSH' then update public.push_subscriptions set last_success_at = now() where id::text = job.target; end if;
-      elsif job.channel = 'PUSH' and status in (404, 410) then
+      -- Only 410 removes a device: the route answers 410 for a web subscription or app token that is really gone. A 404 here
+      -- means the route itself was not found (wrong hx_app_url, missing deployment) and must not wipe every device.
+      elsif job.channel = 'PUSH' and status = 410 then
         update public.outbound_jobs set state = 'DEAD', last_error_safe = 'Thiết bị đã tắt nhận thông báo', request_id = null where id = job.id;
         delete from public.push_subscriptions where id::text = job.target;
       elsif job.channel in ('PUSH', 'EMAIL') then

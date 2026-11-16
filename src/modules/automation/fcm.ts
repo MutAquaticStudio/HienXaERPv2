@@ -54,16 +54,27 @@ export function signServiceAccountJwt(account: ServiceAccount, nowSeconds: numbe
 
 class FcmAuthError extends Error {}
 
+/** pg_net stops waiting after 8 s; give up before that so a slow Google answer is retried, not doubled. */
+const FETCH_TIMEOUT_MS = 6000;
+
 let cached: { key: string; token: string; expiresAt: number } | null = null;
 let pending: { key: string; promise: Promise<string> } | null = null;
 
 async function requestAccessToken(account: ServiceAccount, key: string, fetchImpl: Fetch, now: number): Promise<string> {
+  let assertion: string;
+  try {
+    assertion = signServiceAccountJwt(account, Math.floor(now / 1000));
+  } catch {
+    // An unusable private_key in FIREBASE_SERVICE_ACCOUNT: a configuration problem, not the network.
+    throw new FcmAuthError("bad_private_key");
+  }
   let response: Response;
   try {
     response = await fetchImpl(TOKEN_URL, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer", assertion: signServiceAccountJwt(account, Math.floor(now / 1000)) }),
+      body: new URLSearchParams({ grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer", assertion }),
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
   } catch {
     throw new Error("token_unreachable");
@@ -94,10 +105,14 @@ async function readError(response: Response): Promise<FcmError> {
   return body?.error ?? {};
 }
 
-/** Firebase no longer knows this phone's token (app removed, data cleared, token replaced): the device is deleted. */
+/**
+ * Firebase no longer knows this phone's token (app removed, data cleared, token replaced): the device is deleted. Only
+ * the explicit UNREGISTERED code (or INVALID_ARGUMENT naming the token) counts: a bare 404 / NOT_FOUND means the send
+ * URL's project is wrong (FIREBASE_SERVICE_ACCOUNT from another project) and must never wipe working phones.
+ */
 function tokenGone(httpStatus: number, error: FcmError): boolean {
   const codes = (error.details ?? []).map((detail) => detail.errorCode).filter(Boolean);
-  if (codes.includes("UNREGISTERED") || httpStatus === 404 || error.status === "NOT_FOUND") return true;
+  if (codes.includes("UNREGISTERED")) return true;
   if (httpStatus !== 400 && error.status !== "INVALID_ARGUMENT") return false;
   // INVALID_ARGUMENT is also answered for a bad message; only a bad token removes the device.
   const fields = (error.details ?? []).flatMap((detail) => detail.fieldViolations ?? []).map((violation) => violation.field);
@@ -112,7 +127,9 @@ function messageFor(item: FcmMessage) {
       notification: { title: item.title, ...(item.body ? { body: item.body } : {}) },
       ...(Object.keys(data).length ? { data } : {}),
       android: { priority: "HIGH", ttl: "86400s",
-        notification: { channel_id: ANDROID_CHANNEL_ID, default_sound: true, notification_priority: "PRIORITY_HIGH" } },
+        notification: { channel_id: ANDROID_CHANNEL_ID, default_sound: true, notification_priority: "PRIORITY_HIGH",
+          // Same tag for a retried job: Android replaces the notification instead of showing it twice.
+          ...(item.jobId ? { tag: `hx-${item.jobId}` } : {}) } },
     },
   };
 }
@@ -139,6 +156,7 @@ export async function sendFcm(item: FcmMessage, env: Env = process.env, fetchImp
       method: "POST",
       headers: { Authorization: `Bearer ${bearer}`, "Content-Type": "application/json" },
       body: JSON.stringify(messageFor(item)),
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
   } catch {
     return { status: 502, error: "push_failed" };
@@ -146,6 +164,10 @@ export async function sendFcm(item: FcmMessage, env: Env = process.env, fetchImp
   if (response.ok) return { status: 200 };
   const error = await readError(response);
   if (tokenGone(response.status, error)) return { status: 410, error: "subscription_gone" };
+  if (response.status === 404 || error.status === "NOT_FOUND") {
+    console.warn("fcm_project_not_found", { job: item.jobId, project: account.project_id });
+    return { status: 503, error: "fcm_auth_failed" };
+  }
   if (response.status === 401) {
     // The access token was not accepted (revoked key): ask for a new one next time.
     cached = null;
