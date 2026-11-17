@@ -7,6 +7,8 @@ const m = vi.hoisted(() => ({
   redirect: vi.fn((url: string) => { throw new Error(`REDIRECT:${url}`); }),
   send: vi.fn(async () => ({ status: 200 })),
   cookieSet: vi.fn(), cookieDelete: vi.fn(), serverOptions: vi.fn(),
+  limit: vi.fn(async (): Promise<{ data: boolean | null; error: { message: string } | null }> => ({ data: true, error: null })),
+  forwardedFor: "203.0.113.7, 10.0.0.1",
 }));
 // D62: the welcome email is sent after the response; here the callback runs at once so the test sees it.
 vi.mock("next/server", () => ({ after: (callback: () => unknown) => { void callback(); } }));
@@ -20,16 +22,17 @@ vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async (options?:
     auth: { signInWithPassword: m.signIn, signOut: m.signOut, signUp: m.signUp, getUser: m.getUser, updateUser: m.updateUser, refreshSession: m.refresh } };
 } }));
 vi.mock("@/lib/supabase/config", () => ({ getSupabaseConfig: () => ({ url: "https://qa.example.test" }) }));
-vi.mock("@supabase/supabase-js", () => ({ createClient: () => ({ auth: { admin: { createUser: m.createUser, deleteUser: m.deleteUser, updateUserById: m.updateUserById } } }) }));
+vi.mock("@supabase/supabase-js", () => ({ createClient: () => ({ rpc: m.limit, auth: { admin: { createUser: m.createUser, deleteUser: m.deleteUser, updateUserById: m.updateUserById } } }) }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
-vi.mock("next/headers", () => ({ cookies: vi.fn(async () => ({ set: m.cookieSet, delete: m.cookieDelete, get: () => undefined })), headers: vi.fn(async () => new Headers({ host: "erp.example.test", "x-forwarded-proto": "https" })) }));
+vi.mock("next/headers", () => ({ cookies: vi.fn(async () => ({ set: m.cookieSet, delete: m.cookieDelete, get: () => undefined })), headers: vi.fn(async () => new Headers({ host: "erp.example.test", "x-forwarded-proto": "https", "x-forwarded-for": m.forwardedFor })) }));
 vi.mock("server-only", () => ({}));
 vi.mock("./account-portals", async (original) => ({ ...(await original<typeof import("./account-portals")>()), accountPortals: m.portals }));
 vi.mock("next/navigation", () => ({ redirect: m.redirect }));
 vi.mock("./portal-registration", () => ({ portalRegistrationOpen: m.open }));
 vi.mock("@/modules/portal/server", () => ({ portalRpc: vi.fn(), deterministicUuid: (seed: string) => `uuid(${seed})` }));
 import { PORTAL_LINK_PENDING_MESSAGE, PORTAL_LINK_REJECTED_MESSAGE } from "./portal-link";
-import { changeOwnPasswordAction, createCustomerPortalAccountAction, createCustomerPortalAccountsBatchAction, loginAction, registerCustomerAccountAction, resetCustomerPortalPasswordAction } from "./actions";
+import { createHash } from "node:crypto";
+import { changeOwnPasswordAction, createCustomerPortalAccountAction, createCustomerPortalAccountsBatchAction, loginAction, recoveryAction, registerCustomerAccountAction, resetCustomerPortalPasswordAction } from "./actions";
 
 const customerId = "11111111-1111-4111-8111-111111111111";
 const membershipId = "22222222-2222-4222-8222-222222222222";
@@ -296,4 +299,41 @@ it("refuses more than 10 customers per call and a customer that is no longer eli
   const outcome = await createCustomerPortalAccountsBatchAction([batchCustomers[0].id]);
   expect(outcome.results[0]).toMatchObject({ status: "SKIPPED", message: "Không tìm thấy khách trong chi nhánh đang quản lý." });
   expect(m.createUser).not.toHaveBeenCalled();
+});
+
+const limitKey = (bucket: string, value: string) => createHash("sha256").update(`hx-rate:${bucket}:${value}`).digest("hex");
+
+it("D97 (TB-2): sign-in counts the caller's address and the sign-in name, hashed, and stops after the limit", async () => {
+  m.signIn.mockResolvedValue({ data: { user: { id: userId, user_metadata: {} } }, error: null });
+  await expect(loginAction(undefined, form({ email: "0912 345 678", password: "matkhau123", surface: "work" }))).rejects.toThrow("REDIRECT:/");
+  expect(m.limit).toHaveBeenNthCalledWith(1, "hit_rate_limit", { bucket: "login_ip", key_hash: limitKey("login_ip", "203.0.113.7"), max_hits: 30, window_seconds: 900 });
+  expect(m.limit).toHaveBeenNthCalledWith(2, "hit_rate_limit", { bucket: "login_id", key_hash: limitKey("login_id", "0912345678@sdt.hienxavlxd.com"), max_hits: 10, window_seconds: 900 });
+  m.signIn.mockClear();
+  m.limit.mockResolvedValueOnce({ data: true, error: null }).mockResolvedValueOnce({ data: false, error: null });
+  expect(await loginAction(undefined, form({ email: "0912 345 678", password: "matkhau123", surface: "customer" }))).toEqual({ message: "Thử quá nhiều lần. Chờ 15 phút rồi thử lại." });
+  expect(m.signIn).not.toHaveBeenCalled();
+});
+
+it("D97 (TB-2): an unreachable limiter never blocks the sign-in", async () => {
+  m.signIn.mockResolvedValue({ data: { user: { id: userId, user_metadata: {} } }, error: null });
+  m.limit.mockResolvedValue({ data: null, error: { message: "fetch failed" } });
+  await expect(loginAction(undefined, form({ email: "0912 345 678", password: "matkhau123", surface: "work" }))).rejects.toThrow("REDIRECT:/");
+  m.limit.mockRejectedValue(new Error("network"));
+  await expect(loginAction(undefined, form({ email: "0912 345 678", password: "matkhau123", surface: "work" }))).rejects.toThrow("REDIRECT:/");
+  expect(m.signIn).toHaveBeenCalledTimes(2);
+  m.limit.mockReset();
+  m.limit.mockResolvedValue({ data: true, error: null });
+});
+
+it("D97 (TB-2): registration (5 an hour per address) and recovery (5 an hour per email) stop after the limit", async () => {
+  m.limit.mockResolvedValueOnce({ data: false, error: null });
+  const refused = await registerCustomerAccountAction(undefined, form({ name: "Anh Ba", phone: "0912345678", address: "12 Lê Lợi, Huế",
+    email: "ba@example.test", password: "MatKhau123", confirm: "MatKhau123" }));
+  expect(refused?.message).toBe("Thử quá nhiều lần. Chờ 1 giờ rồi thử lại.");
+  expect(refused?.fields?.email).toBe("ba@example.test");
+  expect(m.signUp).not.toHaveBeenCalled();
+  expect(m.limit).toHaveBeenCalledWith("hit_rate_limit", { bucket: "register_ip", key_hash: limitKey("register_ip", "203.0.113.7"), max_hits: 5, window_seconds: 3600 });
+  m.limit.mockResolvedValueOnce({ data: true, error: null }).mockResolvedValueOnce({ data: false, error: null });
+  expect(await recoveryAction(undefined, form({ email: "Ba@Example.test", surface: "customer" }))).toEqual({ message: "Thử quá nhiều lần. Chờ 1 giờ rồi thử lại." });
+  expect(m.limit).toHaveBeenLastCalledWith("hit_rate_limit", { bucket: "recovery_id", key_hash: limitKey("recovery_id", "ba@example.test"), max_hits: 5, window_seconds: 3600 });
 });

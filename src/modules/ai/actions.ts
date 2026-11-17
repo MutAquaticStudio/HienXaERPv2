@@ -14,6 +14,7 @@ import { storeAttachments } from "@/modules/ai/attachment-store";
 import { AI_EFFORT_IDS, AI_MODEL_IDS, DEFAULT_AI_EFFORT, DEFAULT_AI_MODEL } from "@/modules/ai/models";
 import { listAiActionsAction, type AiActionCard } from "@/modules/ai/agent/actions";
 import { loadAiChat, type AiChatTurn } from "@/modules/ai/chat-history";
+import { AI_LIMIT_MESSAGE, aiHourlyLimitReached } from "@/modules/ai/rate-limit";
 
 const askSchema = z.object({ question: z.string().trim().min(2).max(2000), model: z.enum(AI_MODEL_IDS).default(DEFAULT_AI_MODEL),
   effort: z.enum(AI_EFFORT_IDS).default(DEFAULT_AI_EFFORT) });
@@ -32,6 +33,9 @@ export async function askAiAction(input: unknown): Promise<AiChatAnswer> {
   const parsed = askSchema.safeParse(form ? { question: form.get("question"), model: form.get("model") || undefined, effort: form.get("effort") || undefined } : input);
   if (!parsed.success) return { outcome: "ERROR", text: "Câu hỏi cần từ 2 đến 2.000 ký tự.", proposals: 0, actions: [] };
   const access = await requireInternalPermission("ai.use");
+  const supabase = await createServerSupabase();
+  // D97 (TB-2): at most AI_QUESTIONS_PER_HOUR questions per person per hour, so the API key cannot be spent without end.
+  if (await aiHourlyLimitReached(supabase, access.authUserId)) return { outcome: "ERROR", text: AI_LIMIT_MESSAGE, proposals: 0, actions: [] };
   const files = form ? form.getAll("files").filter((value): value is File => value instanceof File && value.name !== "") : [];
   let attachments: AiContentBlock[] = [];
   let attachedNames: string[] = [];
@@ -43,7 +47,6 @@ export async function askAiAction(input: unknown): Promise<AiChatAnswer> {
     attachedNames = read.names;
     attachedFiles = read.files;
   }
-  const supabase = await createServerSupabase();
   const today = new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", dateStyle: "full" }).format(new Date());
   // The API needs alternating turns that start with the person: keep the last 20 stored turns from a question on.
   const stored = (await loadAiChat(supabase, access.branchId, 20, false)).map(({ role, text }) => ({ role, text }));

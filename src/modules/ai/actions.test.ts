@@ -1,11 +1,16 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ rpc: vi.fn(), ask: vi.fn(), history: vi.fn(), upload: vi.fn() }));
+const mocks = vi.hoisted(() => ({ rpc: vi.fn(), ask: vi.fn(), history: vi.fn(), upload: vi.fn(), usage: vi.fn(), usageFilters: [] as unknown[][] }));
 vi.mock("server-only", () => ({}));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/lib/access/context", () => ({ requireInternalPermission: async () => ({ branchId: "branch-a", authUserId: "user-1", permissions: new Set(["ai.use", "orders.read"]) }) }));
-vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({ rpc: mocks.rpc, storage: { from: () => ({ upload: mocks.upload }) } }) }));
+vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => {
+  const query = { select: (...args: unknown[]) => { mocks.usageFilters.push(["select", ...args]); return query; },
+    eq: (...args: unknown[]) => { mocks.usageFilters.push(["eq", ...args]); return query; },
+    gte: (...args: unknown[]) => { mocks.usageFilters.push(["gte", ...args]); return mocks.usage(); } };
+  return { rpc: mocks.rpc, from: (table: string) => { mocks.usageFilters.push(["from", table]); return query; }, storage: { from: () => ({ upload: mocks.upload }) } };
+} }));
 vi.mock("@/modules/ai/assistant", () => ({ askAssistant: mocks.ask }));
 vi.mock("@/modules/ai/chat-history", () => ({ loadAiChat: mocks.history }));
 vi.mock("@/modules/ai/agent/actions", () => ({ listAiActionsAction: async ({ ids }: { ids: string[] }) => ids.map((id) => ({ id, title: "Thẻ", summary: [], state: "PENDING", link: null, message: null })) }));
@@ -13,7 +18,22 @@ vi.mock("@/modules/ai/agent/actions", () => ({ listAiActionsAction: async ({ ids
 import { askAiAction, newAiChatAction } from "./actions";
 
 describe("chatbot conversation (D36)", () => {
-  beforeEach(() => { vi.clearAllMocks(); mocks.rpc.mockResolvedValue({ data: "id", error: null }); mocks.upload.mockResolvedValue({ error: null }); });
+  beforeEach(() => { vi.clearAllMocks(); mocks.usageFilters = []; mocks.rpc.mockResolvedValue({ data: "id", error: null }); mocks.upload.mockResolvedValue({ error: null });
+    mocks.usage.mockResolvedValue({ count: 3, error: null }); });
+
+  it("D97 (TB-2): a person who already asked 60 questions in the last hour waits; the assistant is not called", async () => {
+    mocks.history.mockResolvedValue([]);
+    mocks.usage.mockResolvedValue({ count: 60, error: null });
+    const answer = await askAiAction({ question: "Đơn hôm nay?" });
+    expect(answer).toMatchObject({ outcome: "ERROR", proposals: 0, actions: [] });
+    expect(answer.text).toContain("60 lần trong 1 giờ");
+    expect(mocks.ask).not.toHaveBeenCalled();
+    expect(mocks.usageFilters).toEqual(expect.arrayContaining([["from", "ai_usage_log"], ["eq", "user_id", "user-1"]]));
+    // A count that cannot be read never blocks the question.
+    mocks.usage.mockResolvedValue({ count: null, error: { message: "network" } });
+    mocks.ask.mockResolvedValue({ outcome: "OK", text: "3 đơn.", proposals: 0 });
+    expect((await askAiAction({ question: "Đơn hôm nay?" })).outcome).toBe("OK");
+  });
 
   it("sends the stored turns from the first question, with the person's permissions, and keeps the answered turn", async () => {
     mocks.history.mockResolvedValue([{ id: "1", role: "assistant", text: "Chào" }, { id: "2", role: "user", text: "Đơn hôm nay?" }, { id: "3", role: "assistant", text: "3 đơn." }]);
