@@ -95,6 +95,11 @@ function errorMessage(message: string, confirmingOrder = false) {
   if (message.includes("purchase_price_priority_ambiguous")) return "Có nhiều bảng giá mua cùng phiên bản ưu tiên. Cần đối chiếu bảng giá trước khi lưu.";
   // D95: the sales order this purchase buys for was cancelled.
   if (message.includes("purchase_linked_sales_order_cancelled")) return "Đơn bán của đơn mua này đã hủy nên không xác nhận, nhận hàng hay ghi NCC giao được nữa. Hủy đơn mua hoặc liên hệ NCC.";
+  // D95: "Đóng phần còn lại" of a purchase order received in part.
+  if (message.includes("purchase_order_nothing_received")) return "Đơn mua chưa nhận được hàng nào. Dùng “Hủy đơn mua” thay cho đóng phần còn lại.";
+  if (message.includes("purchase_order_has_no_remaining")) return "Đơn mua đã nhận đủ, không còn phần nào để đóng. Hãy tải lại.";
+  if (message.includes("purchase_order_not_closeable")) return "Đơn mua không còn ở trạng thái có thể đóng phần còn lại. Hãy tải lại.";
+  if (message.includes("close_reason_required")) return "Vui lòng nhập lý do đóng phần còn lại (từ 3 đến 500 ký tự).";
   if (message.includes("purchase_order_not_confirmable")) return "Đơn mua không còn ở trạng thái có thể xác nhận. Hãy tải lại để kiểm tra.";
   if (message.includes("purchase_lines_required")) return "Vui lòng thêm ít nhất một dòng vật tư cho đơn mua.";
   if (message.includes("warehouse_address_required")) return warehouseAddressRequired;
@@ -361,6 +366,25 @@ export async function cancelPurchaseOrderAction(formData: FormData) {
   if (error) redirect(`${destination}?error=${encodeURIComponent(errorMessage(error.message))}`);
   revalidatePath("/admin/purchase-orders");
   redirect(`${destination}?notice=cancelled`);
+}
+
+/**
+ * D95 "Đóng phần còn lại": a confirmed purchase order the supplier delivered only in part is closed with a reason; what arrived and
+ * its payable stay, the sales lines' sources shrink to what arrived. The database re-checks state, permission and quantities.
+ */
+export async function closePurchaseOrderRemainingAction(formData: FormData) {
+  const ids = z.object({ entityId: z.guid(), operationId: z.guid() }).safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId") });
+  if (!ids.success) redirect("/admin/purchase-orders?error=invalid-command");
+  const destination = `/admin/purchase-orders/${ids.data.entityId}`;
+  const reason = z.string().trim().min(3).max(500).safeParse(formData.get("reason"));
+  if (!reason.success) redirect(`${destination}?error=${encodeURIComponent(errorMessage("close_reason_required"))}`);
+  await requireInternalPermission("purchasing.cancel");
+  const supabase = await createServerSupabase();
+  const { error } = await supabase.rpc("close_purchase_order_remaining", { target_purchase_order_id: ids.data.entityId, close_reason: reason.data, operation_id: ids.data.operationId });
+  if (error) redirect(`${destination}?error=${encodeURIComponent(errorMessage(error.message))}`);
+  revalidatePath("/admin/purchase-orders");
+  revalidatePath(destination);
+  redirect(`${destination}?notice=purchase-remaining-closed`);
 }
 
 export async function createSupplierQuickAction(_: PurchaseActionState, formData: FormData): Promise<PurchaseActionState> {
