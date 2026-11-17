@@ -127,7 +127,7 @@ export function OrderedReportView({ period, today, result, dayResult }: {
           <span className={styles.kn}>{report.cancelled_count > 0 ? `${report.cancelled_count} đơn đã hủy, không tính` : "không có đơn hủy"}</span></dd></div>
         <div className={styles.kpi}><dt>Số loại hàng</dt><dd><span className={styles.kv}>{report.material_kinds}</span><span className={styles.kn}>gộp theo từng loại hàng</span></dd></div>
         <div className={styles.kpi}><dt>Đã giao</dt><dd><span className={styles.kv}>{report.delivered_kinds}/{report.material_kinds}</span><span className={styles.kn}>loại đã giao đủ</span></dd></div>
-        {money && report.total_vnd !== undefined && <div className={styles.kpi}><dt>Tổng tiền</dt><dd><span className={styles.kv}>{formatPortalMoney(report.total_vnd)}</span>
+        {money && report.total_vnd !== undefined && <div className={styles.kpi}><dt>Tổng tiền</dt><dd><span className={styles.kv}>{formatPortalMoney(report.total_vnd).replace(" ", " ")}</span>
           <span className={styles.kn}>{totalNote}</span></dd></div>}
       </dl>
 
