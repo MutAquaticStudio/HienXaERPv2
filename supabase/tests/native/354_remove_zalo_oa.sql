@@ -116,14 +116,14 @@ begin
     and sent.body->>'signature' = encode(extensions.hmac(sent.body->>'data', 'w354', 'sha256'), 'hex'), format('webhook %s', data);
 
   perform pg_temp.act_as(reader);
-  web_id := public.save_push_subscription('https://push.example.test/r354', repeat('p', 40), repeat('a', 16), 'Chrome');
+  web_id := public.save_push_subscription('https://fcm.googleapis.com/fcm/send/r354', repeat('p', 40), repeat('a', 16), 'Chrome');
   fcm_id := public.save_app_push_token('fcmToken354:APA91b' || repeat('z', 60), 'ANDROID', null);
   perform pg_temp.act_as_admin();
   perform private.enqueue_outbound_job(branch, null, null, 'PUSH', web_id::text, '{"kind": "automation.test", "title": "Thử web"}'::jsonb, 'nt354:web');
   perform private.enqueue_outbound_job(branch, null, null, 'PUSH', fcm_id::text, '{"kind": "automation.test", "title": "Thử app"}'::jsonb, 'nt354:fcm');
   select * into sent from net.sent where id = (select request_id from public.outbound_jobs where dedupe_key = 'nt354:web');
   data := (sent.body->>'data')::jsonb;
-  assert data->>'channel' = 'PUSH' and data->'subscription'->>'endpoint' = 'https://push.example.test/r354' and data->'fcm' = 'null'::jsonb, format('web push %s', data);
+  assert data->>'channel' = 'PUSH' and data->'subscription'->>'endpoint' = 'https://fcm.googleapis.com/fcm/send/r354' and data->'fcm' = 'null'::jsonb, format('web push %s', data);
   select * into sent from net.sent where id = (select request_id from public.outbound_jobs where dedupe_key = 'nt354:fcm');
   data := (sent.body->>'data')::jsonb;
   assert data->'fcm'->>'token' like 'fcmToken354:%' and data->'subscription' = 'null'::jsonb and data->>'kind' = 'automation.test', format('fcm %s', data);

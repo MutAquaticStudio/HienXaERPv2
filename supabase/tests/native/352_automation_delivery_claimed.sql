@@ -26,9 +26,9 @@ declare
   failed boolean;
 begin
   perform pg_temp.act_as(office);
-  office_device := public.save_push_subscription('https://push.example.test/o352', repeat('p', 40), repeat('a', 16), 'Chrome');
+  office_device := public.save_push_subscription('https://fcm.googleapis.com/fcm/send/o352', repeat('p', 40), repeat('a', 16), 'Chrome');
   perform pg_temp.act_as(reader);
-  reader_device := public.save_push_subscription('https://push.example.test/r352', repeat('q', 40), repeat('b', 16), 'Chrome');
+  reader_device := public.save_push_subscription('https://fcm.googleapis.com/fcm/send/r352', repeat('q', 40), repeat('b', 16), 'Chrome');
 
   -- The rule is saved from Cài đặt › Quy tắc tự động like any other event.
   perform pg_temp.act_as(office);
