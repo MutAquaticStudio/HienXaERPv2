@@ -13,6 +13,13 @@ describe("security headers (security scan P2)", () => {
     expect(headers["Permissions-Policy"]).toContain("geolocation=(self)");
     expect(headers["Permissions-Policy"]).toContain("camera=()");
     expect(headers["Content-Security-Policy"]).toContain("frame-ancestors 'none'");
+    expect(headers["Strict-Transport-Security"]).toBe("max-age=63072000; includeSubDomains");
+  });
+
+  it("D97: sends HSTS everywhere but development (plain http)", () => {
+    const keys = (dev: boolean) => securityHeaders({ supabaseUrl: URL, dev }).map(({ key }) => key);
+    expect(keys(false)).toContain("Strict-Transport-Security");
+    expect(keys(true)).not.toContain("Strict-Transport-Security");
   });
 
   it("lets the browser reach only the app and its Supabase project (https + realtime)", () => {

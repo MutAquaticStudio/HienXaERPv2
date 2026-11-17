@@ -54,11 +54,11 @@ insert into public.pricing_rules(branch_id, scope_type, customer_id, material_id
 select set_config('request.jwt.claim.sub', '', true);
 -- Devices: customer 1's owner has two, its receiver one, worker A one, customer 3's owner one.
 insert into public.push_subscriptions(id, auth_user_id, endpoint, p256dh, auth_secret) values
-  ('7f348000-0000-4000-8000-0000000000f1', '7f348000-0000-4000-8000-0000000000b1', 'https://push.example.test/348-1', repeat('a', 30), repeat('k', 10)),
-  ('7f348000-0000-4000-8000-0000000000f2', '7f348000-0000-4000-8000-0000000000b1', 'https://push.example.test/348-2', repeat('b', 30), repeat('k', 10)),
-  ('7f348000-0000-4000-8000-0000000000f3', '7f348000-0000-4000-8000-0000000000b3', 'https://push.example.test/348-3', repeat('c', 30), repeat('k', 10)),
-  ('7f348000-0000-4000-8000-0000000000f4', '7f348000-0000-4000-8000-0000000000a2', 'https://push.example.test/348-4', repeat('d', 30), repeat('k', 10)),
-  ('7f348000-0000-4000-8000-0000000000f6', '7f348000-0000-4000-8000-0000000000b5', 'https://push.example.test/348-6', repeat('f', 30), repeat('k', 10));
+  ('7f348000-0000-4000-8000-0000000000f1', '7f348000-0000-4000-8000-0000000000b1', 'https://fcm.googleapis.com/fcm/send/348-1', repeat('a', 30), repeat('k', 10)),
+  ('7f348000-0000-4000-8000-0000000000f2', '7f348000-0000-4000-8000-0000000000b1', 'https://fcm.googleapis.com/fcm/send/348-2', repeat('b', 30), repeat('k', 10)),
+  ('7f348000-0000-4000-8000-0000000000f3', '7f348000-0000-4000-8000-0000000000b3', 'https://fcm.googleapis.com/fcm/send/348-3', repeat('c', 30), repeat('k', 10)),
+  ('7f348000-0000-4000-8000-0000000000f4', '7f348000-0000-4000-8000-0000000000a2', 'https://fcm.googleapis.com/fcm/send/348-4', repeat('d', 30), repeat('k', 10)),
+  ('7f348000-0000-4000-8000-0000000000f6', '7f348000-0000-4000-8000-0000000000b5', 'https://fcm.googleapis.com/fcm/send/348-6', repeat('f', 30), repeat('k', 10));
 
 do $test$
 declare
@@ -326,7 +326,7 @@ begin
   assert failed, 'only the portal''s own pages';
   -- A customer login switches push on for its phone ("Thông báo trên điện thoại" on the account page).
   perform pg_temp.act_as(c2_owner);
-  assert public.save_push_subscription('https://push.example.test/348-5', repeat('e', 30), repeat('k', 10), 'Điện thoại thử') is not null, 'customer saves a device';
+  assert public.save_push_subscription('https://fcm.googleapis.com/fcm/send/348-5', repeat('e', 30), repeat('k', 10), 'Điện thoại thử') is not null, 'customer saves a device';
   perform pg_temp.act_as(owner);
   manual_a := public.create_announcement(branch, 'CUSTOMER', 'FEATURE', 'Mới: đặt dịch vụ ngay trên app', 'Bấm nút Đặt ở giữa thanh dưới.',
     '/customer/services/new', null, '7f348000-0000-4000-8000-000000000503');

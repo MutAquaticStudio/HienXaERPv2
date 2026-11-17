@@ -3,9 +3,10 @@
 import { z } from "zod";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { appPushToken } from "./app-push-token";
+import { isPushServiceEndpoint } from "./push-endpoint";
 
 const subscription = z.object({
-  endpoint: z.url().max(1000).refine((value) => value.startsWith("https://")),
+  endpoint: z.url().max(1000).refine(isPushServiceEndpoint),
   keys: z.object({ p256dh: z.string().min(20).max(200), auth: z.string().min(8).max(100) }),
   userAgent: z.string().max(300).optional(),
 });

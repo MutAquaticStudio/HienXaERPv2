@@ -1,6 +1,7 @@
 "use server";
 import { operationalPostingError } from "@/lib/core/errors";
 import { deliveryCommandMessage as message } from "./errors";
+import { DELIVERY_PROOF_REFUSED, deliveryProofAccepted } from "./evidence-type";
 
 
 import { createHash } from "node:crypto";
@@ -255,6 +256,7 @@ export async function uploadDeliveryEvidenceAction(formData: FormData) {
   const parsed = z.object({ deliveryId: z.guid() }).safeParse(Object.fromEntries(formData));
   const destination = parsed.success ? `/admin/deliveries/${parsed.data.deliveryId}` : "/admin/deliveries";
   if (!parsed.success || !(candidate instanceof File) || candidate.size <= 0) redirect(`${destination}?error=invalid-evidence`);
+  if (!deliveryProofAccepted(candidate)) redirect(`${destination}?error=${encodeURIComponent(DELIVERY_PROOF_REFUSED)}`);
 
   const access = await requireInternalPermission("evidence.manage");
   const supabase = await createServerSupabase();
@@ -277,7 +279,7 @@ export async function uploadDeliveryEvidenceAction(formData: FormData) {
   });
   if (createError || !evidenceId) redirect(`${destination}?error=${encodeURIComponent(message(createError?.message ?? "evidence_create_failed"))}`);
 
-  const { error: uploadError } = await supabase.storage.from(bucketName).upload(objectPath, candidate, { contentType: candidate.type || "application/octet-stream", upsert: false });
+  const { error: uploadError } = await supabase.storage.from(bucketName).upload(objectPath, candidate, { contentType: candidate.type, upsert: false });
   if (uploadError) redirect(`${destination}?error=${encodeURIComponent(message(uploadError.message))}`);
 
   // FB10: a user session cannot finalize stored evidence; check the stored bytes, then finalize on the server.

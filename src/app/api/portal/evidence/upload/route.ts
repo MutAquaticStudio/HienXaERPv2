@@ -10,10 +10,13 @@ import {
   deterministicUuid,
   portalRpc,
 } from "@/modules/portal/server";
+import { crossOriginRefusal } from "@/lib/core/request-origin";
 
 type CreatedEvidence = { id: string; bucket_id: string; object_path: string; state: string };
 
 export async function POST(request: Request) {
+  const refused = crossOriginRefusal(request);
+  if (refused) return refused;
   const context = await authenticatedPortalClient();
   if (!context) return NextResponse.json({ error: "Phiên đăng nhập đã hết hạn" }, { status: 401 });
   try {

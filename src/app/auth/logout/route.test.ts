@@ -40,3 +40,14 @@ it("D86: signed out in the Android app, the phone's push token leaves the login 
   expect(m.signOut).toHaveBeenCalledTimes(2);
   expect(again.status).toBe(303);
 });
+
+it("D97 (G-6): a sign-out posted by another site is refused and the session stays", async () => {
+  const response = await POST(new NextRequest("https://app.example.test/auth/logout", { method: "POST",
+    headers: { host: "app.example.test", origin: "https://shop.example.test" } }));
+  expect(response.status).toBe(403);
+  expect(m.signOut).not.toHaveBeenCalled();
+  const same = await POST(new NextRequest("https://app.example.test/auth/logout", { method: "POST",
+    headers: { host: "app.example.test", origin: "https://app.example.test" } }));
+  expect(same.status).toBe(303);
+  expect(m.signOut).toHaveBeenCalledTimes(1);
+});

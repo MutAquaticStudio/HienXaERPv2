@@ -42,3 +42,13 @@ it("shows a Vietnamese message when server finalization fails", async () => {
   m.finalize.mockRejectedValue(new Error("x"));
   await expect(uploadDeliveryEvidenceAction(form())).rejects.toThrow(encodeURIComponent("Không thể xác minh ảnh đã lưu. Hãy thử lại."));
 });
+
+it("D97 (T-3): refuses a file the bucket would not take before creating any evidence record", async () => {
+  for (const file of [new File([bytes], "trang.html", { type: "text/html" }), new File([bytes], "khong-ro", { type: "" }),
+    new File([new Uint8Array(10 * 1024 * 1024 + 1)], "lon.jpg", { type: "image/jpeg" })]) {
+    const data = form(); data.set("file", file);
+    await expect(uploadDeliveryEvidenceAction(data)).rejects.toThrow(encodeURIComponent("Chỉ nhận ảnh (JPG, PNG, WEBP, HEIC) hoặc PDF, tối đa 10 MB."));
+  }
+  expect(m.rpc).not.toHaveBeenCalled();
+  expect(m.upload).not.toHaveBeenCalled();
+});

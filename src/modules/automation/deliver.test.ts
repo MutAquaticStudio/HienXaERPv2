@@ -9,7 +9,7 @@ vi.mock("web-push", () => {
   return { default: { sendNotification: m.sendNotification }, WebPushError };
 });
 import { WebPushError } from "web-push";
-import { deliverEmail, deliverPush, signDelivery, verifyDelivery } from "./deliver";
+import { claimDelivery, deliverEmail, deliverPush, settleDelivery, signDelivery, verifyDelivery } from "./deliver";
 
 const secret = "test-secret-not-real-123";
 const now = Date.parse("2026-10-18T03:00:00Z");
@@ -24,6 +24,25 @@ it("accepts only fresh messages signed with the shared secret", () => {
   expect(verifyDelivery(envelope({ ...base, channel: "EMAIL", sent_at: "2026-10-18T02:00:00Z" }), secret, now)).toBeNull();
   expect(verifyDelivery(envelope({ ...base, channel: "SMS" }), secret, now)).toBeNull();
   expect(verifyDelivery({ data: "x", signature: "nothex" }, secret, now)).toBeNull();
+});
+
+it("D97 (T-6): a signed message is valid for 5 minutes only (and at most 1 minute early)", () => {
+  const at = (sent: string) => verifyDelivery(envelope({ ...base, channel: "EMAIL", to: "boss@example.test", sent_at: sent }), secret, now);
+  expect(at("2026-10-18T02:55:30Z")).not.toBeNull();
+  expect(at("2026-10-18T02:54:59Z")).toBeNull();
+  expect(at("2026-10-18T03:00:59Z")).not.toBeNull();
+  expect(at("2026-10-18T03:01:30Z")).toBeNull();
+});
+
+it("D97 (T-6): a job is sent once while its messages are valid; a failed one is free again", () => {
+  const job = "22222222-2222-4222-8222-222222222222";
+  expect(claimDelivery(job, now)).toBe("NEW");
+  expect(claimDelivery(job, now)).toBe("SENDING");
+  settleDelivery(job, false, now);
+  expect(claimDelivery(job, now)).toBe("NEW");
+  settleDelivery(job, true, now);
+  expect(claimDelivery(job, now + 60_000)).toBe("DELIVERED");
+  expect(claimDelivery(job, now + 7 * 60_000)).toBe("NEW");
 });
 
 it("sends email over SMTP only when configured", async () => {
