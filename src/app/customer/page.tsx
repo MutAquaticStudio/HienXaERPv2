@@ -3,13 +3,15 @@ import { portalOrderProgress, portalOrderStateLabel, salesStateLabel } from "@/m
 import { randomUUID } from "node:crypto";
 
 import Link from "next/link";
-import { ChevronRight, CreditCard, Plus, Truck, Wrench } from "lucide-react";
-import { formatBusinessDate } from "@/lib/core/business-time";
+import { ChartColumn, ChevronRight, CreditCard, Plus, Truck, Wrench } from "lucide-react";
+import { businessDay, formatBusinessDate, shiftBusinessDay } from "@/lib/core/business-time";
 import { formatQuantity } from "@/lib/core/quantity";
 import { QUOTATIONS_ENABLED } from "@/lib/features";
 
+import reportStyles from "@/components/portal/ordered-report.module.css";
 import styles from "@/components/portal/portal.module.css";
-import { getCustomerPortalSnapshot, requestQuotationChangeAction } from "@/modules/portal/actions";
+import { getCustomerPortalSnapshot, loadOrderedReport, requestQuotationChangeAction } from "@/modules/portal/actions";
+import { goodsSummary, orderedReportHref } from "@/modules/portal/ordered-report";
 import { quickReorders, type QuickReorder } from "@/modules/portal/quick-reorder";
 import { getCustomerServiceRequests } from "@/modules/portal/service-actions";
 import { isOpenStage, requestTitle, serviceStageLabel, serviceStageTone, wishText } from "@/modules/portal/service-request";
@@ -25,7 +27,14 @@ export default async function CustomerHomePage({ searchParams }: { searchParams:
   const notice = notices[(await searchParams).notice ?? ""];
   const snapshot = await getCustomerPortalSnapshot();
   // D75: the customer's service requests; a failure here must not take the home page down.
-  const serviceRequests = (await getCustomerServiceRequests().catch(() => null))?.requests ?? [];
+  // D98: what the customer ordered yesterday, in one line; unreadable or empty → no line, the page is never held up by it.
+  const yesterday = shiftBusinessDay(businessDay(), -1);
+  const [requestsResult, yesterdayResult] = await Promise.all([
+    getCustomerServiceRequests().catch(() => null),
+    loadOrderedReport({ customerId: snapshot.customer.id, from: yesterday, to: yesterday }).catch(() => null),
+  ]);
+  const serviceRequests = requestsResult?.requests ?? [];
+  const yesterdayReport = yesterdayResult?.status === "ok" && yesterdayResult.report.order_count > 0 ? yesterdayResult.report : null;
   const openServices = serviceRequests.filter((request) => isOpenStage(request.stage));
   const firstService = openServices[0];
   // FB10: only the account owner orders; the accountant follows orders, debts and payments.
@@ -66,6 +75,13 @@ export default async function CustomerHomePage({ searchParams }: { searchParams:
           <span className={styles.reqChip} data-tone={serviceStageTone(firstService.stage)}>{serviceStageLabel(firstService.stage)}</span></span>
         <span className={styles.svcHomeMain}><span className={styles.svcHomeIcon}><Wrench aria-hidden size={24} /></span>
           <span><strong>{requestTitle(firstService)}</strong><small>{[firstService.stage === "SUBMITTED" ? wishText(firstService) : null, firstService.site_name].filter(Boolean).join(" · ")}</small></span></span>
+      </Link>}
+      {yesterdayReport && <Link className={reportStyles.homeRow} href={orderedReportHref({ from: yesterday, to: yesterday })}>
+        <span className={reportStyles.homeIcon}><ChartColumn aria-hidden size={22} /></span>
+        <span><strong>Hôm qua anh/chị đặt {yesterdayReport.material_kinds} món</strong>
+          <small>{goodsSummary(yesterdayReport)}{yesterdayReport.show_money && yesterdayReport.total_vnd !== undefined ? ` · Tổng ${money(yesterdayReport.total_vnd)}` : ""}</small>
+          <small className={reportStyles.homeLink}>Xem báo cáo</small></span>
+        <ChevronRight aria-hidden size={18} />
       </Link>}
       {canOrder && <div className={styles.shortcutGrid}>
         <Link className={styles.shortcutGoods} href="/customer/orders/new"><Plus aria-hidden size={20} strokeWidth={2.4} />Đặt hàng</Link>
