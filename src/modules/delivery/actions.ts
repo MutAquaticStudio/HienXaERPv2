@@ -12,6 +12,7 @@ import { requireInternalPermission } from "@/lib/access/context";
 import { parseBusinessDateTime } from "@/lib/core/business-time";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { reasonOrDefault } from "@/lib/core/reason";
+import { OFFICE_REPORTED_ARRIVAL_NOTE } from "./internal-reasons";
 import { derivedOperationId } from "@/modules/sales/auto-sourcing";
 import { finalizeVerifiedEvidence } from "@/modules/portal/evidence-storage";
 
@@ -183,7 +184,7 @@ export async function markDeliveryArrivedAction(formData: FormData) {
 }
 
 export async function submitDeliveryResultAction(formData: FormData) {
-  const parsed = z.object({ deliveryId: z.guid(), resultKind: z.enum(["FULL", "PARTIAL", "FAILED"]), receiverName: z.string().trim().max(120).optional(), note: z.string().trim().max(500).optional(), missingArrivalReason: z.string().trim().max(500).optional(), evidenceId: z.union([z.guid(), z.literal("")]).optional(), version: z.coerce.number().int().positive(), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
+  const parsed = z.object({ deliveryId: z.guid(), resultKind: z.enum(["FULL", "PARTIAL", "FAILED"]), receiverName: z.string().trim().max(120).optional(), note: z.string().trim().max(500).optional(), missingArrivalReason: z.string().trim().max(500).optional(), deliveryState: z.string().max(40).optional(), evidenceId: z.union([z.guid(), z.literal("")]).optional(), version: z.coerce.number().int().positive(), operationId: z.guid() }).safeParse(Object.fromEntries(formData));
   const lines = quantityLines(formData, "deliveryLineId", "actualQuantity", "delivery_line_id", "actual_base_quantity", false, nonNegative);
   if (!parsed.success || !lines) {
     const deliveryId = z.guid().safeParse(formData.get("deliveryId"));
@@ -199,7 +200,10 @@ export async function submitDeliveryResultAction(formData: FormData) {
     result_lines: lines,
     receiver_name: parsed.data.receiverName || "",
     note: parsed.data.note || "",
-    missing_arrival_reason: reasonOrDefault(parsed.data.missingArrivalReason, "Nhân viên báo giao thay thợ"),
+    // D96 (D4): the internal note is written only where the database needs a reason (no "Đã tới nơi" step); it never reaches
+    // the customer, who reads only a reason typed for them.
+    missing_arrival_reason: parsed.data.missingArrivalReason
+      || (parsed.data.deliveryState === "ARRIVED" ? "" : OFFICE_REPORTED_ARRIVAL_NOTE),
     target_evidence_id: parsed.data.evidenceId || null,
     expected_version: parsed.data.version,
     operation_id: parsed.data.operationId,
