@@ -82,11 +82,11 @@ begin
 
   -- Devices.
   perform pg_temp.act_as('10000000-0000-4000-8000-000000000001');
-  sub1 := public.save_push_subscription('https://push.example.test/e1', repeat('p', 40), repeat('a', 16), 'Thử 1');
+  sub1 := public.save_push_subscription('https://fcm.googleapis.com/fcm/send/e1', repeat('p', 40), repeat('a', 16), 'Thử 1');
   perform pg_temp.act_as('10000000-0000-4000-8000-000000000002');
-  perform public.save_push_subscription('https://push.example.test/e2', repeat('p', 40), repeat('a', 16), 'Thử 2');
+  perform public.save_push_subscription('https://fcm.googleapis.com/fcm/send/e2', repeat('p', 40), repeat('a', 16), 'Thử 2');
   perform pg_temp.act_as('10000000-0000-4000-8000-000000000003');
-  sub3 := public.save_push_subscription('https://push.example.test/e3', repeat('p', 40), repeat('a', 16), 'Thử 3');
+  sub3 := public.save_push_subscription('https://fcm.googleapis.com/fcm/send/e3', repeat('p', 40), repeat('a', 16), 'Thử 3');
   assert (select count(*) from public.push_subscriptions) = 1, 'own devices only';
 
   -- Small order: below the amount, nothing. Big order: one webhook job handed to pg_net with the notification.
@@ -111,7 +111,7 @@ begin
   select * into job from public.outbound_jobs where rule_id = push;
   select * into sent from net.sent where id = job.request_id;
   data := (sent.body->>'data')::jsonb;
-  assert sent.url = 'https://app.example.test/api/automation/deliver' and data->>'channel' = 'PUSH' and data->'subscription'->>'endpoint' = 'https://push.example.test/e1'
+  assert sent.url = 'https://app.example.test/api/automation/deliver' and data->>'channel' = 'PUSH' and data->'subscription'->>'endpoint' = 'https://fcm.googleapis.com/fcm/send/e1'
     and data->>'link' = 'https://app.example.test/work' and sent.body->>'signature' = encode(extensions.hmac(sent.body->>'data', 'k1', 'sha256'), 'hex'), format('push %s', to_jsonb(sent));
 
   -- problems_only: a delivery that is not a short or failed one does not fire.
@@ -147,7 +147,7 @@ begin
   -- Missing app setup waits with the reason.
   delete from vault.decrypted_secrets where name = 'hx_automation_secret';
   perform pg_temp.act_as('10000000-0000-4000-8000-000000000001');
-  perform public.save_push_subscription('https://push.example.test/e1b', repeat('p', 40), repeat('a', 16), 'Thử 1b');
+  perform public.save_push_subscription('https://fcm.googleapis.com/fcm/send/e1b', repeat('p', 40), repeat('a', 16), 'Thử 1b');
   assert public.test_automation_rule(webhook, '7f215000-0000-4000-8000-0000000000b2') = 1, 'own device';
   perform pg_temp.act_as_admin();
   assert (select state = 'FAILED' and channel = 'PUSH' and last_error_safe like 'Chưa cấu hình gửi qua ứng dụng%' from public.outbound_jobs
@@ -174,17 +174,17 @@ begin
   assert failed, 'reader overview';
   failed := false; begin perform public.delete_automation_rule(push, gen_random_uuid()); exception when insufficient_privilege then failed := true; end;
   assert failed, 'reader delete';
-  -- The same browser signed in by another login belongs to that login now.
-  perform public.save_push_subscription('https://push.example.test/e2', repeat('q', 40), repeat('b', 16), 'Máy chung');
+  -- The same browser (its push keys) signed in by another login belongs to that login now (D97: never another browser).
+  perform public.save_push_subscription('https://fcm.googleapis.com/fcm/send/e2', repeat('p', 40), repeat('a', 16), 'Máy chung');
   perform pg_temp.act_as_admin();
-  assert (select auth_user_id = '10000000-0000-4000-8000-000000000003' from public.push_subscriptions where endpoint = 'https://push.example.test/e2'), 'device moved';
+  assert (select auth_user_id = '10000000-0000-4000-8000-000000000003' from public.push_subscriptions where endpoint = 'https://fcm.googleapis.com/fcm/send/e2'), 'device moved';
   perform pg_temp.act_as('10000000-0000-4000-8000-000000000001');
   perform public.delete_automation_rule(push, gen_random_uuid());
   assert not exists (select 1 from public.automation_rules where id = push), 'deleted';
 
   perform pg_temp.act_as_admin();
   set local role anon;
-  failed := false; begin perform public.save_push_subscription('https://push.example.test/x', repeat('p', 40), repeat('a', 16), null); exception when insufficient_privilege then failed := true; end;
+  failed := false; begin perform public.save_push_subscription('https://fcm.googleapis.com/fcm/send/x', repeat('p', 40), repeat('a', 16), null); exception when insufficient_privilege then failed := true; end;
   assert failed, 'anon';
   reset role;
 end

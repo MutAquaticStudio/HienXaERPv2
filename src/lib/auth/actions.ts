@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { accountPortals, wrongPortalMessage } from "./account-portals";
 import { deterministicUuid, portalRpc } from "@/modules/portal/server";
-import { randomInt, randomUUID } from "node:crypto";
+import { createHash, randomInt, randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { requireInternalPermission } from "@/lib/access/context";
 import { reasonOrDefault } from "@/lib/core/reason";
@@ -18,7 +18,7 @@ import { loadBulkPortalPlan } from "@/lib/auth/bulk-portal";
 import { PORTAL_LINK_PENDING_MESSAGE, PORTAL_LINK_REJECTED_MESSAGE } from "@/lib/auth/portal-link";
 import { sendEmail } from "@/lib/email/send";
 import { welcomeEmail } from "@/modules/portal/welcome-email";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
@@ -53,6 +53,10 @@ export async function loginAction(_: AuthFormState, formData: FormData): Promise
     surface: formData.get("surface"),
   });
   if (!parsed.success) return { message: "Nhập email hoặc số điện thoại và mật khẩu (ít nhất 8 ký tự)." };
+  // D97: 30 tries per address and 10 per sign-in name in 15 minutes (all three tabs).
+  const address = await clientAddress();
+  if (await tooManyTries([{ bucket: "login_ip", value: address, max: 30, windowSeconds: QUARTER_HOUR },
+    { bucket: "login_id", value: parsed.data.email.toLowerCase(), max: 10, windowSeconds: QUARTER_HOUR }])) return { message: TOO_MANY_TRIES };
 
   let registeredNow = false;
   let welcome: WelcomeUser | null = null;
@@ -97,12 +101,53 @@ async function rememberLoginChoice(sessionOnly: boolean) {
   else cookieStore.delete(SESSION_ONLY_COOKIE);
 }
 
+// ---- D97 (TB-2) limits on sign-in, registration and recovery tries ---------------------------------------------------------
+
+const TOO_MANY_TRIES = "Thử quá nhiều lần. Chờ 15 phút rồi thử lại.";
+const TOO_MANY_TRIES_HOUR = "Thử quá nhiều lần. Chờ 1 giờ rồi thử lại.";
+const QUARTER_HOUR = 15 * 60;
+const HOUR = 60 * 60;
+type TryLimit = { bucket: string; value: string; max: number; windowSeconds: number };
+
+/** The caller's address: the first hop of x-forwarded-for (set by Vercel), else x-real-ip. */
+async function clientAddress() {
+  try {
+    const list = await headers();
+    return list.get("x-forwarded-for")?.split(",")[0]?.trim() || list.get("x-real-ip")?.trim() || "unknown";
+  } catch {
+    return "unknown";
+  }
+}
+
+/**
+ * True when one of the limits is already reached (public.hit_rate_limit, service role only: there is no signed-in user yet).
+ * The address and the sign-in name reach the database only as SHA-256 keys. A limiter that cannot be reached (no secret key,
+ * network) never blocks the try; Supabase Auth's own limits still apply.
+ */
+async function tooManyTries(limits: TryLimit[]): Promise<boolean> {
+  const secretKey = process.env.SUPABASE_SECRET_KEY;
+  if (!secretKey) return false;
+  try {
+    const service = createClient(getSupabaseConfig().url, secretKey, { auth: { autoRefreshToken: false, persistSession: false } });
+    for (const limit of limits) {
+      const { data, error } = await service.rpc("hit_rate_limit", { bucket: limit.bucket,
+        key_hash: createHash("sha256").update(`hx-rate:${limit.bucket}:${limit.value}`, "utf8").digest("hex"),
+        max_hits: limit.max, window_seconds: limit.windowSeconds });
+      if (!error && data === false) return true;
+    }
+  } catch { /* the limiter is unreachable: the try goes on */ }
+  return false;
+}
+
 export async function recoveryAction(_: AuthFormState, formData: FormData): Promise<AuthFormState> {
   if (normalizePhone(String(formData.get("email") ?? ""))) {
     return { message: "Tài khoản đăng nhập bằng số điện thoại không nhận được email. Nhờ quản lý cửa hàng đặt lại mật khẩu cho bạn." };
   }
   const parsed = recoverySchema.safeParse({ email: formData.get("email"), surface: formData.get("surface") });
   if (!parsed.success) return { message: "Vui lòng nhập địa chỉ thư điện tử hợp lệ." };
+  // D97: 5 recovery emails per address in an hour, and 20 per caller address.
+  if (await tooManyTries([{ bucket: "recovery_ip", value: await clientAddress(), max: 20, windowSeconds: HOUR },
+    { bucket: "recovery_id", value: parsed.data.email.toLowerCase(), max: 5, windowSeconds: HOUR }])) return { message: TOO_MANY_TRIES_HOUR };
   try {
     const supabase = await createServerSupabase();
     await supabase.auth.resetPasswordForEmail(parsed.data.email, { redirectTo: await passwordSetupUrl(parsed.data.surface) });
@@ -482,22 +527,30 @@ export async function createCustomerPortalAccountsBatchAction(customerIds: strin
   return { results };
 }
 
+/** Why the database refused a portal password reset (D97), in words for the manager. */
+function portalResetRefusal(code: string | undefined) {
+  if (code?.includes("portal_user_other_branch")) return "Tài khoản này còn dùng cho khách ở chi nhánh bạn không quản lý. Nhờ quản lý chi nhánh đó đặt lại mật khẩu.";
+  if (code?.includes("portal_user_is_employee")) return "Đây là tài khoản nhân viên. Đặt lại mật khẩu ở trang Nhân viên.";
+  if (code?.includes("forbidden")) return "Bạn không có quyền quản lý khách hàng này.";
+  return "Không tìm thấy tài khoản đang hoạt động của khách này.";
+}
+
 /** "Đặt lại mật khẩu" for a customer login of this customer: a new temporary password, changed at the next sign-in. */
 export async function resetCustomerPortalPasswordAction(_: PortalAccountState, formData: FormData): Promise<PortalAccountState> {
   const parsed = z.object({ customerId: z.guid(), membershipId: z.guid(), password: z.string().min(8).max(72) }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { message: "Mật khẩu tạm từ 8 ký tự." };
   await requireInternalPermission("customers.manage");
   const supabase = await createServerSupabase();
-  const { data: accounts, error } = await supabase.rpc("customer_portal_accounts", { target_customer_id: parsed.data.customerId });
-  const account = ((accounts ?? []) as { membership_id: string; auth_user_id: string; email: string; active: boolean }[])
-    .find((row) => row.membership_id === parsed.data.membershipId && row.active);
-  if (error || !account) return { message: "Không tìm thấy tài khoản đang hoạt động của khách này." };
+  // D97 (TB-1): the database decides whose password may be reset — the caller must manage every customer of that login.
+  const { data: authUserId, error } = await supabase.rpc("authorize_portal_password_reset", { target_customer_id: parsed.data.customerId,
+    target_membership_id: parsed.data.membershipId });
+  if (error || typeof authUserId !== "string") return { message: portalResetRefusal(error?.message) };
   const admin = authAdminClient();
   if (!admin) return { message: "Dịch vụ tài khoản chưa được cấu hình. Vui lòng liên hệ quản trị viên." };
-  const { error: updateError } = await admin.updateUserById(account.auth_user_id, { password: parsed.data.password, app_metadata: { hx_must_change_password: true } });
-  if (updateError) return { message: "Không đặt lại được mật khẩu. Thử lại sau." };
+  const { data: account, error: updateError } = await admin.updateUserById(authUserId, { password: parsed.data.password, app_metadata: { hx_must_change_password: true } });
+  if (updateError || !account.user?.email) return { message: "Không đặt lại được mật khẩu. Thử lại sau." };
   revalidatePath(`/admin/customers/${parsed.data.customerId}`);
-  return { success: true, message: "Đã đặt mật khẩu tạm mới. Gửi cho khách qua Zalo.", shareText: await portalShareText(account.email, parsed.data.password) };
+  return { success: true, message: "Đã đặt mật khẩu tạm mới. Gửi cho khách qua Zalo.", shareText: await portalShareText(account.user.email, parsed.data.password) };
 }
 
 /** First sign-in with a temporary password (customer or field staff): choose a new one, then continue. */
@@ -610,6 +663,8 @@ export async function registerCustomerAccountAction(_: AuthFormState, formData: 
   if (!phone) return answer("Kiểm tra lại các ô được đánh dấu bên trên.", { phone: "Số điện thoại chưa đúng (ví dụ 0912345678)." });
   const supabase = await createServerSupabase();
   if (!await portalRegistrationOpen(supabase)) return answer("Cửa hàng chưa mở tự đăng ký. Gọi cửa hàng để được tạo tài khoản.");
+  // D97: 5 registrations per caller address in an hour.
+  if (await tooManyTries([{ bucket: "register_ip", value: await clientAddress(), max: 5, windowSeconds: HOUR }])) return answer(TOO_MANY_TRIES_HOUR);
   const registration = { name: parsed.data.name, phone, address: parsed.data.address };
   const { data, error } = await supabase.auth.signUp({ email: parsed.data.email.toLowerCase(), password: parsed.data.password,
     options: { data: { hx_registration: registration }, emailRedirectTo: `${await appOrigin()}/customer/login?confirmed=1` } });

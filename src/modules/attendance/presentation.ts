@@ -99,6 +99,9 @@ export function vietnamInstant(day: string, time: string, after?: string) {
 /** Vietnamese message of an attendance command error; unknown errors stay generic, never a technical code. */
 export function attendanceError(message: string | null | undefined) {
   const text = message ?? "";
+  // D96 (N1): shifts clocked in and never out block "Chốt chấm công".
+  const open = /attendance_period_open_shifts:(\d+)/.exec(text);
+  if (open) return `Còn ${open[1]} ca chưa ra ca trong kỳ. Sửa chấm công trước khi chốt.`;
   const known: Array<[string, string]> = [
     ["attendance_already_in", "Bạn đang trong ca. Bấm “Ra ca” khi kết thúc."],
     ["attendance_not_in", "Bạn chưa vào ca nên chưa ra ca được."],

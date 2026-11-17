@@ -17,3 +17,11 @@ it("cancels a planned delivery without a note and records a plain description (F
   await expect(cancelPlannedDeliveryAction(form("Khách dời ngày"))).rejects.toThrow("notice=cancelled");
   expect(m.rpc).toHaveBeenLastCalledWith("cancel_planned_delivery", expect.objectContaining({ cancellation_reason: "Khách dời ngày" }));
 });
+
+it("explains a started job of an assigned delivery in Vietnamese (D95)", async () => {
+  m.rpc.mockResolvedValue({ data: null, error: { message: "delivery_cancel_work_started" } });
+  const error = await cancelPlannedDeliveryAction(form("")).then(() => Error("no redirect"), (thrown: Error) => thrown);
+  const message = decodeURIComponent(String(error.message).split("?error=")[1]);
+  expect(message).toContain("Thợ đã bắt đầu việc");
+  expect(message).not.toContain("delivery_");
+});

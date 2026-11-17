@@ -75,7 +75,7 @@ begin
 
   -- 4. Every push path reaches the app: the D80 built-in worker push and a PUSH rule. The app route gets the token, kind and id.
   perform pg_temp.act_as(reader);
-  web_id := public.save_push_subscription('https://push.example.test/r1', repeat('p', 40), repeat('a', 16), 'Chrome');
+  web_id := public.save_push_subscription('https://fcm.googleapis.com/fcm/send/r1', repeat('p', 40), repeat('a', 16), 'Chrome');
   perform pg_temp.act_as_admin();
   note := private.notify(branch, 'work.assigned', 'work_item', gen_random_uuid(), 'Việc mới: giao 20 bao', 'Công trình 350', '/work/jobs/350', 'work.read',
     reader_employee, 'nt350:work');
@@ -89,7 +89,7 @@ begin
     and sent.body->>'signature' = encode(extensions.hmac(sent.body->>'data', 'k1', 'sha256'), 'hex'), format('fcm hand-over %s', data);
   select * into sent from net.sent where id = (select request_id from public.outbound_jobs where notification_id = note and target = web_id::text);
   data := (sent.body->>'data')::jsonb;
-  assert data->'subscription'->>'endpoint' = 'https://push.example.test/r1' and data->'fcm' = 'null'::jsonb, format('web push unchanged %s', data);
+  assert data->'subscription'->>'endpoint' = 'https://fcm.googleapis.com/fcm/send/r1' and data->'fcm' = 'null'::jsonb, format('web push unchanged %s', data);
 
   perform pg_temp.act_as(office);
   perform public.save_app_push_token(other_phone, 'ANDROID', null);

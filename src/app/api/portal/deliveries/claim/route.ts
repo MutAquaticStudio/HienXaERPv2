@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { authenticatedPortalClient, PortalRpcError, portalRpc } from "@/modules/portal/server";
 import { workCommandHttpStatus } from "@/modules/portal/work-command-status";
+import { crossOriginRefusal } from "@/lib/core/request-origin";
 
 const schema = z.object({ deliveryId: z.guid(), vehicleId: z.guid(), version: z.number().int().positive(), operationId: z.guid() });
 
@@ -17,6 +18,8 @@ export function claimDeliveryMessage(raw: string) {
 
 /** D79 "Nhận phiếu giao": a worker takes a delivery waiting for dispatch, with the truck he picked. */
 export async function POST(request: Request) {
+  const refused = crossOriginRefusal(request);
+  if (refused) return refused;
   const context = await authenticatedPortalClient();
   if (!context) return NextResponse.json({ error: "Phiên đăng nhập đã hết hạn. Đăng nhập lại." }, { status: 401 });
   const parsed = schema.safeParse(await request.json().catch(() => null));

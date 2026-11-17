@@ -1,4 +1,5 @@
 // @vitest-environment node
+import { createHmac } from "node:crypto";
 import { beforeEach, expect, it, vi } from "vitest";
 
 const m = vi.hoisted(() => ({ rpc: vi.fn(), createClient: vi.fn() }));
@@ -8,7 +9,8 @@ vi.mock("@/lib/supabase/config", () => ({ getSupabaseConfig: () => ({ url: "http
 import { POST } from "./route";
 
 const body = JSON.stringify({ id: 92704, transferType: "in", transferAmount: 5000000, accountNumber: "0071000315", content: "SO2026031501 KH315" });
-const post = (headers: Record<string, string> = { "x-sepay-signature": "sha256=abc", "x-sepay-timestamp": "1700000000" }, payload = body) =>
+const SIG = `sha256=${"ab".repeat(32)}`;
+const post = (headers: Record<string, string> = { "x-sepay-signature": SIG, "x-sepay-timestamp": "1700000000" }, payload = body) =>
   POST(new Request("http://localhost/api/payments/sepay", { method: "POST", body: payload, headers }));
 
 beforeEach(() => {
@@ -22,7 +24,7 @@ it("hands the raw body and SePay signature headers to the database and answers e
   const response = await post();
   expect(response.status).toBe(200);
   expect(await response.json()).toEqual({ success: true });
-  expect(m.rpc).toHaveBeenCalledWith("ingest_sepay_webhook", { raw_body: body, signature: "sha256=abc", sent_at: "1700000000" });
+  expect(m.rpc).toHaveBeenCalledWith("ingest_sepay_webhook", { raw_body: body, signature: SIG, sent_at: "1700000000" });
   expect(m.createClient).toHaveBeenCalledWith("http://127.0.0.1:54321", "sk-test", expect.objectContaining({ auth: expect.objectContaining({ persistSession: false }) }));
 });
 
@@ -33,7 +35,9 @@ it("a replayed transaction is still a success, so SePay stops retrying", async (
 
 it("refuses unsigned requests before the database", async () => {
   expect((await post({})).status).toBe(400);
-  expect((await post({ "x-sepay-signature": "sha256=abc", "x-sepay-timestamp": "1" }, "")).status).toBe(400);
+  expect((await post({ "x-sepay-signature": SIG, "x-sepay-timestamp": "1" }, "")).status).toBe(400);
+  expect((await post({ "x-sepay-signature": "sha256=abc", "x-sepay-timestamp": "1700000000" })).status).toBe(400);
+  expect((await post({ "x-sepay-signature": SIG, "x-sepay-timestamp": "soon" })).status).toBe(400);
   expect(m.rpc).not.toHaveBeenCalled();
 });
 
@@ -52,4 +56,21 @@ it("without the service key nothing is called and SePay retries later", async ()
   vi.stubEnv("SUPABASE_SECRET_KEY", "");
   expect((await post()).status).toBe(503);
   expect(m.rpc).not.toHaveBeenCalled();
+});
+
+it("D97 (T-5): refuses a body declared too large before reading it", async () => {
+  const response = await POST(new Request("http://localhost/api/payments/sepay", { method: "POST", body: "{}",
+    headers: { "x-sepay-signature": SIG, "x-sepay-timestamp": "1700000000", "content-length": "5000000" } }));
+  expect(response.status).toBe(413);
+  expect(m.rpc).not.toHaveBeenCalled();
+});
+
+it("D97 (T-5): with SEPAY_WEBHOOK_SECRET set, a forged signature never reaches the database; a true one does", async () => {
+  vi.stubEnv("SEPAY_WEBHOOK_SECRET", "whsec-test");
+  expect((await post()).status).toBe(401);
+  expect(m.rpc).not.toHaveBeenCalled();
+  const good = `sha256=${createHmac("sha256", "whsec-test").update(`1700000000.${body}`).digest("hex")}`;
+  expect((await post({ "x-sepay-signature": good, "x-sepay-timestamp": "1700000000" })).status).toBe(200);
+  expect(m.rpc).toHaveBeenCalledWith("ingest_sepay_webhook", { raw_body: body, signature: good, sent_at: "1700000000" });
+  vi.stubEnv("SEPAY_WEBHOOK_SECRET", "");
 });

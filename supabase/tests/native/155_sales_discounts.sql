@@ -75,8 +75,8 @@ begin
     from public.sales_order_lines where sales_order_id = order_id and line_number = 2), 'line 2 with its order share';
 
   -- Confirming holds the customer's credit for the amount after discount.
-  perform public.confirm_sales_order(plain_id, '7e000000-0000-4000-8000-0000000000e3');
-  perform public.confirm_sales_order(order_id, '7e000000-0000-4000-8000-0000000000e4');
+  perform public.confirm_sales_order(plain_id, 1, '7e000000-0000-4000-8000-0000000000e3');
+  perform public.confirm_sales_order(order_id, 1, '7e000000-0000-4000-8000-0000000000e4');
   perform pg_temp.act_as_admin();
   assert (select amount_vnd from public.credit_commitments where sales_order_id = order_id) = 465000, 'credit held after discount';
 end

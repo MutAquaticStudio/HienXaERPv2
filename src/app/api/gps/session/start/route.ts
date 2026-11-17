@@ -2,8 +2,11 @@ import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { GPS_DEVICE_AVAILABLE, GPS_DEVICE_UNAVAILABLE_MESSAGE } from "@/modules/routing/device-availability";
 import { userFacingError } from "@/lib/core/errors";
+import { crossOriginRefusal } from "@/lib/core/request-origin";
 
 export async function POST(request: Request) {
+  const refused = crossOriginRefusal(request);
+  if (refused) return refused;
   if (!GPS_DEVICE_AVAILABLE) return NextResponse.json({ error: GPS_DEVICE_UNAVAILABLE_MESSAGE }, { status: 501 });
   const body = await request.json().catch(() => null) as { deliveryId?: string; assignmentVersion?: number; operationId?: string } | null;
   if (!body?.deliveryId || !Number.isInteger(body.assignmentVersion) || !body.operationId) {

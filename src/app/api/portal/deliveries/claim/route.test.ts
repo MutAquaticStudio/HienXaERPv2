@@ -44,3 +44,12 @@ it("explains a delivery someone else took, a busy truck and an unknown outcome i
   expect(response.status).toBe(503);
   expect((await response.json()).unknown).toBe(true);
 });
+
+it("D97 (G-6): a claim posted by a page of another site is refused before any session or database work", async () => {
+  const response = await POST(new Request("https://app.example.test/api/portal/deliveries/claim", { method: "POST", body: JSON.stringify(valid),
+    headers: { host: "app.example.test", origin: "https://other.example.test" } }));
+  expect(response.status).toBe(403);
+  expect((await response.json()).error).toBe("Nguồn yêu cầu không hợp lệ.");
+  expect(m.client).not.toHaveBeenCalled();
+  expect(m.rpc).not.toHaveBeenCalled();
+});

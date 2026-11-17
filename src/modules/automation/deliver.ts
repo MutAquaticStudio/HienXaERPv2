@@ -13,7 +13,9 @@ import { sendFcm } from "./fcm";
  * (HX_AUTOMATION_SECRET). The app only sends; it never reads or writes the database here, so no privileged database key is
  * involved. A device that is gone answers 410, and the database removes it.
  */
-const MAX_AGE_MS = 15 * 60 * 1000;
+const MAX_AGE_MS = 5 * 60 * 1000;
+const MAX_SKEW_MS = 60_000;
+const MAX_REMEMBERED = 10_000;
 
 const message = z.object({
   job_id: z.guid(),
@@ -47,7 +49,29 @@ export function verifyDelivery(raw: unknown, secret: string, now = Date.now()): 
   const result = message.safeParse(parsed);
   if (!result.success) return null;
   const age = now - new Date(result.data.sent_at).getTime();
-  return Number.isFinite(age) && age >= -60_000 && age <= MAX_AGE_MS ? result.data : null;
+  return Number.isFinite(age) && age >= -MAX_SKEW_MS && age <= MAX_AGE_MS ? result.data : null;
+}
+
+/**
+ * D97 (T-6): a signed message is valid for 5 minutes, and the same job is sent at most once while its messages are valid:
+ * a copy that arrives again (a replay, or the database retrying a job whose first answer it never got) is answered as done
+ * without sending; one that arrives while the first is still being sent waits (409, retried by the database). A job that
+ * failed may be sent again. Kept by this server instance only, for as long as a message stays valid.
+ */
+const handled = new Map<string, { delivered: boolean; until: number }>();
+
+export function claimDelivery(jobId: string, now = Date.now()): "NEW" | "SENDING" | "DELIVERED" {
+  for (const [id, entry] of handled) if (entry.until <= now) handled.delete(id);
+  const entry = handled.get(jobId);
+  if (entry) return entry.delivered ? "DELIVERED" : "SENDING";
+  if (handled.size >= MAX_REMEMBERED) handled.delete(handled.keys().next().value as string);
+  handled.set(jobId, { delivered: false, until: now + MAX_AGE_MS + MAX_SKEW_MS });
+  return "NEW";
+}
+
+export function settleDelivery(jobId: string, delivered: boolean, now = Date.now()) {
+  if (delivered) handled.set(jobId, { delivered: true, until: now + MAX_AGE_MS + MAX_SKEW_MS });
+  else handled.delete(jobId);
 }
 
 export type DeliveryResult = { status: 200 | 410 | 422 | 502 | 503; error?: string };

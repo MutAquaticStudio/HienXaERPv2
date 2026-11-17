@@ -53,7 +53,7 @@ it("creates the draft then confirms it, each with its own operation ID", async (
   // D19: the confirmed order is then sourced with an operation derived from the confirmation (retry = same sourcing).
   expect(rpcNames()).toEqual(["create_sales_order_draft", "confirm_sales_order", "auto_source_sales_order"]);
   expect(m.rpc.mock.calls[0][1]).toMatchObject({ operation_id: draftOperation });
-  expect(m.rpc.mock.calls[1][1]).toEqual({ target_order_id: order, operation_id: confirmOperation });
+  expect(m.rpc.mock.calls[1][1]).toEqual({ target_order_id: order, expected_draft_version: 1, operation_id: confirmOperation });
   expect(m.rpc.mock.calls[2][1]).toEqual({ target_sales_order_id: order, operation_id: derivedOperationId(confirmOperation, "auto-source") });
   expect(derivedOperationId(confirmOperation, "auto-source")).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
 });
