@@ -118,7 +118,9 @@ begin
       where p.id = private.preferred_commercial_price_rule(branch, a.customer_id, case when l.item_name = 'Thép 348' then steel else cement end, bao))),
     'new price = the resolver''s price';
   select id into a3 from public.announcements where customer_id = c3;
-  assert (select count(*) from public.outbound_jobs where dedupe_key = 'announcement:' || a3 || ':7f348000-0000-4000-8000-0000000000f6' and state = 'PENDING') = 1,
+  assert (select count(*) from public.outbound_jobs where dedupe_key = 'announcement:' || a3 || ':7f348000-0000-4000-8000-0000000000f6'
+    -- D96: without pg_net here, the immediate send attempt counts and the job waits as FAILED for its retry.
+    and state in ('PENDING', 'FAILED')) = 1,
     'customer 3 owner phone';
   assert (select title from public.announcements where id = a1) = 'Giá mới từ ' || private.announcement_day(now()), 'title with the day';
   select id into office_a from public.announcements where audience = 'OFFICE' and kind = 'PRICE';

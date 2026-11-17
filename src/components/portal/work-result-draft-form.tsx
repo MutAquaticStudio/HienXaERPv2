@@ -16,9 +16,10 @@ import {
   type SafeWorkDraft,
 } from "@/modules/portal/draft";
 import type { WorkerJob } from "@/modules/portal/types";
+import { WORKER_MISSING_ARRIVAL_NOTE } from "@/modules/delivery/internal-reasons";
 
-/** Kept when a result is sent before "Đã tới nơi" was pressed and no note was written. */
-export const MISSING_ARRIVAL_NOTE = "Thợ chưa bấm Đã tới nơi";
+/** Kept when a result is sent before "Đã tới nơi" was pressed and no note was written (office history only, D96). */
+export const MISSING_ARRIVAL_NOTE = WORKER_MISSING_ARRIVAL_NOTE;
 
 export function WorkResultDraftForm({
   workItemId,

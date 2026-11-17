@@ -39,6 +39,7 @@ describe("attendance presentation", () => {
   it("never shows a technical code", () => {
     expect(attendanceError("attendance_period_closed")).toContain("đã chốt");
     expect(attendanceError('duplicate key value violates unique constraint "work_shifts_branch_id_code_key"')).toContain("Mã ca đã có");
+    expect(attendanceError("attendance_period_open_shifts:3")).toBe("Còn 3 ca chưa ra ca trong kỳ. Sửa chấm công trước khi chốt.");
     expect(attendanceError("something odd")).toBe("Chưa lưu được. Kiểm tra kết nối rồi thử lại.");
   });
 
