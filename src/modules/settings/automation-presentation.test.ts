@@ -29,6 +29,11 @@ it("lists every kind once: a rule replaces its app-only row, built-ins stay, a P
   expect(groups.indexOf("customer")).toBeGreaterThan(groups.lastIndexOf("worker"));
 });
 
+it("lists the D98 morning summary for customers with its label and hint", () => {
+  const item = BUILTIN_PUSHES.find((push) => push.value === "customer.daily_summary");
+  expect(item).toMatchObject({ group: "customer", audience: "customer", label: "Tóm tắt hàng đã đặt hôm trước (cho khách)", detail: "08:46 mỗi sáng, cho khách có đơn hôm trước" });
+});
+
 it("reads and writes quiet-hour times", () => {
   expect(minuteToTime(390)).toBe("06:30");
   expect(timeToMinute("21:00")).toBe(1260);
