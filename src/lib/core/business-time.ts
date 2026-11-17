@@ -43,3 +43,36 @@ export function businessInputValue(value: string | Date) {
     timeZone: BUSINESS_TIME_ZONE, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
   }).format(date).replace(" ", "T");
 }
+
+/** The business day ("YYYY-MM-DD", Vietnam time) an instant falls on; "now" by default. */
+export function businessDay(value: Date | string = new Date()) {
+  const date = typeof value === "string" ? new Date(value) : value;
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat("en-CA", { timeZone: BUSINESS_TIME_ZONE, year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
+}
+
+/** True for a real calendar day written "YYYY-MM-DD" (2026-02-30 is not). */
+export function isBusinessDay(value: string) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return false;
+  const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+  return date.getUTCFullYear() === Number(match[1]) && date.getUTCMonth() === Number(match[2]) - 1 && date.getUTCDate() === Number(match[3]);
+}
+
+function dayParts(day: string) {
+  const [year, month, date] = day.split("-").map(Number);
+  return { year, month, date };
+}
+
+/** A business day moved by whole calendar days (negative = earlier); pure calendar arithmetic, no time zone involved. */
+export function shiftBusinessDay(day: string, delta: number) {
+  const { year, month, date } = dayParts(day);
+  return new Date(Date.UTC(year, month - 1, date + delta)).toISOString().slice(0, 10);
+}
+
+/** Whole calendar days from one business day to another (to − from). */
+export function businessDaysBetween(from: string, to: string) {
+  const a = dayParts(from);
+  const b = dayParts(to);
+  return Math.round((Date.UTC(b.year, b.month - 1, b.date) - Date.UTC(a.year, a.month - 1, a.date)) / 86_400_000);
+}
