@@ -7,6 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BriefcaseBusiness,
+  ChartColumn,
   CircleDollarSign,
   Clock3,
   ClipboardList,
@@ -25,7 +26,7 @@ import fieldDispatch from "@/components/portal/field-dispatch.module.css";
 import styles from "@/components/portal/portal.module.css";
 import { QUOTATIONS_ENABLED } from "@/lib/features";
 
-// FB18: the phone menu keeps four (worker) or five (customer) places; the rest sit one tap away ("Tôi", the chat icon).
+// FB18: the phone menu keeps four (worker) or four to six (customer: six with Báo cáo and Công nợ, D98) places; the rest sit one tap away ("Tôi", the chat icon).
 const workerLinks = [
   { href: "/work", label: "Hôm nay", icon: House, bottom: true },
   { href: "/work/pool", label: "Nhận việc", icon: Compass, bottom: true },
@@ -45,6 +46,8 @@ const customerLinks = [
   // D75: "Đặt" opens the sheet "Hàng hóa / Dịch vụ"; its href is the goods form, which is also where the menu highlights it.
   { href: "/customer/orders/new", label: "Đặt", icon: Plus, bottom: true, raised: true },
   ...(QUOTATIONS_ENABLED ? [{ href: "/customer/quotations", label: "Báo giá", icon: ClipboardList, bottom: false }] : []),
+  // D98: "Báo cáo hàng đã đặt" — for every role, so the receiver's bar is Trang chủ · Đơn hàng · Báo cáo · Tôi.
+  { href: "/customer/reports/ordered", label: "Báo cáo", icon: ChartColumn, bottom: true },
   { href: "/customer/debts", label: "Công nợ", icon: CircleDollarSign, bottom: true },
   { href: "/customer/messages", label: "Tin nhắn", icon: MessageSquare, bottom: false },
   { href: "/customer/profile", label: "Tôi", icon: UserRound, bottom: true },

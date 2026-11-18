@@ -210,3 +210,8 @@ export type CustomerPortalAccount = {
   membership_role: string;
   sites: { id: string; name: string; address_text?: string; receiver_name?: string; receiver_phone?: string }[];
 };
+
+/** D98 "Báo cáo hàng đã đặt" (customer_portal_ordered_report); the shapes are checked in ordered-report-schema.ts. */
+export type {
+  OrderedReport, OrderedReportDay, OrderedReportGood, OrderedReportResult, OrderedReportService, OrderedReportSourceOrder,
+} from "@/modules/portal/ordered-report-schema";

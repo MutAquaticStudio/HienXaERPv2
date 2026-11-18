@@ -43,6 +43,12 @@ it("accepts the D88 event for portal orders approved when stock arrives", async 
   expect(m.rpc.mock.calls[0][1].rule.event).toBe("order.portal_auto_approved");
 });
 
+it("accepts the D98 built-in push for the customers' morning summary and rejects unknown keys", async () => {
+  expect(await setBuiltinPushAction({ key: "customer.daily_summary", enabled: false })).toEqual({ ok: true, message: "Đã tắt báo về điện thoại. Thông báo trong app vẫn hiện." });
+  expect(m.rpc).toHaveBeenLastCalledWith("set_builtin_push", expect.objectContaining({ target_key: "customer.daily_summary", enabled: false }));
+  expect((await setBuiltinPushAction({ key: "customer.daily_sumary" as never, enabled: true })).ok).toBe(false);
+});
+
 it("tests only on the caller's own devices and says when this device is not switched on", async () => {
   m.rpc.mockResolvedValue({ data: 0, error: null });
   expect((await testAutomationRuleAction("22222222-2222-4222-8222-222222222222")).message).toContain("chưa bật thông báo");

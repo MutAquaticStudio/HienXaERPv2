@@ -1,8 +1,10 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { PortalShell } from "./portal-shell";
 vi.mock("@/components/messaging/chat-dock", () => ({ ChatDock: () => null }));
-vi.mock("next/navigation", () => ({ usePathname: () => "/work" }));
+const nav = vi.hoisted(() => ({ path: "/work" }));
+vi.mock("next/navigation", () => ({ usePathname: () => nav.path }));
+afterEach(() => { nav.path = "/work"; });
 describe("portal logout", () => {
   for (const audience of ["worker", "customer"] as const) {
     it(`submits POST for ${audience} shared-device logout`, () => {
@@ -34,8 +36,8 @@ it("keeps four places in the worker's phone menu and raises Đặt hàng for cus
   const customer = render(<PortalShell audience="customer" canOrder canViewDebt>QA</PortalShell>);
   const menu = [...customer.container.querySelectorAll("nav")].at(-1) as HTMLElement;
   // D75: five places; the green "Đặt" between them is a button that opens the sheet, not a link.
-  expect([...menu.querySelectorAll("a, button")].map((item) => item.textContent)).toEqual(["Trang chủ", "Đơn hàng", "Đặt", "Công nợ", "Tôi"]);
-  expect([...menu.querySelectorAll("a")].map((link) => link.textContent)).toEqual(["Trang chủ", "Đơn hàng", "Công nợ", "Tôi"]);
+  expect([...menu.querySelectorAll("a, button")].map((item) => item.textContent)).toEqual(["Trang chủ", "Đơn hàng", "Đặt", "Báo cáo", "Công nợ", "Tôi"]);
+  expect([...menu.querySelectorAll("a")].map((link) => link.textContent)).toEqual(["Trang chủ", "Đơn hàng", "Báo cáo", "Công nợ", "Tôi"]);
   customer.unmount();
 });
 
@@ -71,8 +73,25 @@ it("marks both portal shells so the dark palette covers them (D84)", () => {
 it("shows no order button to accountants and receivers (D75, FB10)", () => {
   const { container, unmount } = render(<PortalShell audience="customer" canViewDebt>QA</PortalShell>);
   const menu = [...container.querySelectorAll("nav")].at(-1) as HTMLElement;
-  expect([...menu.querySelectorAll("a, button")].map((item) => item.textContent)).toEqual(["Trang chủ", "Đơn hàng", "Công nợ", "Tôi"]);
+  expect([...menu.querySelectorAll("a, button")].map((item) => item.textContent)).toEqual(["Trang chủ", "Đơn hàng", "Báo cáo", "Công nợ", "Tôi"]);
   expect(screen.queryByRole("button", { name: "Đặt" })).not.toBeInTheDocument();
+  unmount();
+});
+
+it("keeps four places for a receiver — Trang chủ, Đơn hàng, Báo cáo, Tôi — and links Báo cáo to the report (D98)", () => {
+  const { container, unmount } = render(<PortalShell audience="customer">QA</PortalShell>);
+  const menu = [...container.querySelectorAll("nav")].at(-1) as HTMLElement;
+  expect([...menu.querySelectorAll("a, button")].map((item) => item.textContent)).toEqual(["Trang chủ", "Đơn hàng", "Báo cáo", "Tôi"]);
+  expect(within(menu).getByRole("link", { name: "Báo cáo" })).toHaveAttribute("href", "/customer/reports/ordered");
+  unmount();
+});
+
+it("marks Báo cáo as the current place on the report, in the side and the bottom menu, and nothing else (D98)", () => {
+  nav.path = "/customer/reports/ordered";
+  const { unmount } = render(<PortalShell audience="customer" canOrder canViewDebt>QA</PortalShell>);
+  const current = screen.getAllByRole("link", { current: "page" });
+  expect(current).toHaveLength(2);
+  expect(current.every((link) => link.textContent === "Báo cáo")).toBe(true);
   unmount();
 });
 

@@ -102,6 +102,8 @@ export const BUILTIN_PUSHES = [
     audience: "customer", permission: null, money: true },
   { kind: "builtin", value: "customer.debt_reminder", group: "customer", label: "Nhắc nợ đến hạn", detail: "08:30 mỗi sáng, nợ đến hạn trong 3 ngày; một tin mỗi khách",
     who: "Chủ tài khoản và Kế toán của khách", audience: "customer", permission: null, money: true },
+  { kind: "builtin", value: "customer.daily_summary", group: "customer", label: "Tóm tắt hàng đã đặt hôm trước (cho khách)", detail: "08:46 mỗi sáng, cho khách có đơn hôm trước",
+    who: "Tài khoản cổng của khách; Chủ tài khoản và Kế toán thấy thêm tổng tiền", audience: "customer", permission: null },
   { kind: "builtin", value: "announcement.customer_price", group: "customer", label: "Giá của khách đổi", detail: "Lưu giá bán làm giá của khách đó đổi",
     who: "Chủ tài khoản và Kế toán của khách", audience: "customer", permission: null, popup: true, money: true },
   { kind: "builtin", value: "announcement.office_price", group: "updates", label: "Giá chung đổi", detail: "Lưu giá chung (giá lẻ)", who: "Nhân viên xem được giá bán",

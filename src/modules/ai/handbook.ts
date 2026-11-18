@@ -119,9 +119,10 @@ Dùng sổ tay này để hiểu hệ thống và hướng dẫn người dùng:
 - Công cụ: soan_cham_cong (chấm hộ một ngày), soan_cong_tru_luong (cộng / trừ tay trên bảng lương tạm tính gần nhất).
 
 ## Cổng khách /customer
-- Menu: Trang chủ, Đơn hàng, Đặt (nút xanh giữa, mở tờ chọn Hàng hóa / Dịch vụ), Công nợ, Tin nhắn, Tôi. Chỉ "Chủ tài khoản" đặt hàng và đặt dịch vụ; "Người nhận hàng" không xem công nợ.
+- Menu: Trang chủ, Đơn hàng, Đặt (nút xanh giữa, mở tờ chọn Hàng hóa / Dịch vụ), Báo cáo, Công nợ, Tin nhắn, Tôi. Chỉ "Chủ tài khoản" đặt hàng và đặt dịch vụ; "Người nhận hàng" không xem công nợ.
 - Đặt hàng /customer/orders/new: tìm hàng, "Giao tới", "Muốn nhận lúc", ghi chú → "Xem & gửi đơn" → "Gửi đơn". Giá theo bảng giá của khách; đơn chờ cửa hàng duyệt, chưa giữ hàng. Khách "Hủy đơn" được khi chưa duyệt; "Đặt lại" đơn cũ. Đơn đã duyệt chưa giao hiện "Đã duyệt".
 - Đặt dịch vụ /customer/services/new (D75): chọn dịch vụ (gộp theo tên, chọn đơn vị như xe cn nhỏ / xe cn to) → chi tiết (công trình, số lượng, ngày + buổi MONG MUỐN, người liên hệ, ghi chú) → "Gửi yêu cầu". Khách chưa bị tính tiền, "Tạm tính" chỉ là đơn giá mặc định × số lượng (loại chưa có giá hiện "Cửa hàng báo giá"). Khách theo dõi ở tab Đơn hàng → "Dịch vụ" (Chờ xác nhận → Đã xếp lịch → Đang thực hiện → Chờ xác nhận khối lượng → Hoàn tất, ghi công nợ) và "Hủy yêu cầu" được khi cửa hàng chưa xếp lịch. Loại dịch vụ chỉ hiện cho khách khi bật "Hiện cho khách đặt trên cổng khách" ở /admin/service-jobs/types.
+- Báo cáo hàng đã đặt /customer/reports/ordered (D98, tab Báo cáo): chọn Hôm nay / Hôm qua / 7 ngày / Tháng này hoặc gõ Từ ngày – Đến ngày (dd/mm/yyyy, tự áp dụng); hàng khách đặt cộng theo từng loại (Đặt / Đã giao / Còn lại), bấm một loại để xem đơn nguồn, kỳ nhiều ngày có "Theo ngày" để lọc, có "Xuất Excel" / "Xuất CSV". Tính cả đơn cửa hàng ghi từ Zalo / điện thoại, không tính đơn đã hủy. Chủ tài khoản và Kế toán thấy tiền, Người nhận hàng chỉ thấy hàng và số lượng. 08:46 sáng hôm sau khách nhận thông báo tóm tắt hôm trước (tắt được ở Cài đặt → Quy tắc tự động).
 - Công nợ /customer/debts: chọn khoản cần trả → "Chuyển khoản bằng mã QR" (không sửa nội dung chuyển khoản) hoặc "Trả tiền mặt tại cửa hàng".
 
 ## Khác

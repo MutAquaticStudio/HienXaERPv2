@@ -283,8 +283,9 @@
   inset: auto 0 0;
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  padding: 0 max(0.25rem, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(0.25rem, env(safe-area-inset-left));
+  /* D98: six places fit a 360 px phone — a cell may shrink below its label (minmax 0) and the side padding is small. */
+  grid-auto-columns: minmax(0, 1fr);
+  padding: 0 max(2px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(2px, env(safe-area-inset-left));
   background: var(--portal-surface);
   border-top: 1px solid var(--portal-border);
   box-shadow: 0 -6px 20px rgb(var(--portal-shadow-rgb) / 8%);
@@ -292,6 +293,9 @@
 
 .navLink {
   position: relative;
+  min-width: 0;
+  padding: 0 1px;
+  white-space: nowrap;
   min-height: 64px;
   display: grid;
   place-items: center;

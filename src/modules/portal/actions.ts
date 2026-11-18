@@ -7,6 +7,8 @@ import { redirect } from "next/navigation";
 
 import { PAYMENT_NOTICES_ENABLED, QUOTATIONS_ENABLED } from "@/lib/features";
 
+import { fetchOrderedReport } from "@/modules/portal/ordered-report-server";
+import type { OrderedReportResult } from "@/modules/portal/ordered-report-schema";
 import { authenticatedPortalClient, portalRpc, PortalRpcError } from "@/modules/portal/server";
 import type {
   CustomerOrder,
@@ -68,6 +70,12 @@ export async function getCustomerPortalSnapshot(customerId?: string) {
     } : null;
   }
   return snapshot;
+}
+
+/** D98: the customer's "Báo cáo hàng đã đặt" for a period; the page words a refusal or a failure, it never sees a code. */
+export async function loadOrderedReport(request: { customerId: string; from: string; to: string }): Promise<OrderedReportResult> {
+  const supabase = await portalClientOrRedirect("/customer/login");
+  return fetchOrderedReport(supabase, request);
 }
 
 export async function getCustomerPortalOrder(id: string) {
