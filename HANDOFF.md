@@ -1,6 +1,45 @@
-# HANDOFF — Hiền Xa ERP V2 (cập nhật 03/11/2026)
+# HANDOFF — Hiền Xa ERP V2 (cập nhật 19/11/2026, theo `main` @ `e53aaed` — PR #134)
 
-Tài liệu bàn giao cho phiên làm việc tiếp theo (Claude Code hoặc người). Đọc kèm `CLAUDE.md` (quy tắc bắt buộc), `Spec.md` (D1–D53), `tasks.md`, `implementation.md` (nhật ký, rất dài — grep theo mã D/FB hoặc ngày).
+Tài liệu bàn giao cho phiên làm việc tiếp theo (Claude Code hoặc người). Đọc kèm `CLAUDE.md` (quy tắc bắt buộc), `Spec.md` (D1–D98), `tasks.md`, `implementation.md` (nhật ký, rất dài — grep theo mã D/FB hoặc ngày).
+
+## 00. Phiên 04–18/11/2026 (PR #103–#134, D57–D98, tất cả đã lên QA + Production)
+
+`implementation.md` chỉ ghi tới 04/11; chi tiết các quyết định sau đó nằm trong `Spec.md` (grep `**D57**` … `**D98**`) và mô tả từng PR.
+
+| PR | Ngày | Nội dung |
+|---|---|---|
+| #103 | 04/11 | **D57** báo cáo: một khung chung, xuất Excel/CSV đúng số |
+| #104 | 04/11 | **D58** khách tự đăng ký không kẹt "có đăng nhập, không có hồ sơ"; **D59** Cài đặt có mục lục, cài đặt rủi ro có cảnh báo |
+| #105 | 04/11 | **D60** Nhật ký hoạt động hiện số chứng từ / tên thay mã nội bộ |
+| #106, #108, #110 | 04/11 | **D61** Bảng giá mua theo nhà cung cấp, gán vật tư cho NCC (cả gán nhanh nhiều vật tư), mục "Giá mua" trong menu Mua hàng |
+| #107 | 04/11 | Bảo mật: header bảo mật, cookie đăng nhập Secure, không trả lỗi DB thô |
+| #109 | 04/11 | **D62** mẫu email Hiền Xa cho Supabase + email chào mừng khách tự đăng ký |
+| #111–#114 | 05–06/11 | Trợ lý AI: **D63** lưu/đọc ảnh (OCR), tạo nhiều khách từ Excel/ảnh; **D64** thẻ nhiều dòng (giá mua, vật tư, NCC, đơn mua, phiếu thu, đơn bán); **D65** thẻ mở form điền sẵn; **D66** đề xuất nằm trong khung chat, bỏ trang `/admin/ai` |
+| #115 | 06/11 | **D67** link email xác nhận / đặt lại mật khẩu dùng tên miền Hiền Xa |
+| #116 | 08/11 | **D68** lịch tuần thợ hiện giờ chấm thực tế; tự khép ca quên "Ra ca" và báo văn phòng |
+| #117 | 08/11 | **D69** vá lỗ hổng gói (Next 16.4.5, nodemailer 10, zod) + tối ưu database (index) |
+| #118 | 09/11 | **D70** lương thợ theo chuyến, đơn giá khác nhau theo xe chở |
+| #119 | 11/11 | **D71** tạo tài khoản cổng khách hàng loạt bằng số điện thoại |
+| #120 | 13/11 | **D72** nút "Xóa đơn bán" trong chi tiết đơn |
+| #121 | 14/11 | **D74** cột "Ngày giao" + lọc ngày tạo / ngày giao ở danh sách đơn bán |
+| #122 | 14/11 | **D75** đặt dịch vụ trên cổng khách; **D76** lương theo đơn giá công việc; **D77** ghi nhớ đăng nhập nhiều thiết bị; **D78** khách đăng ký trùng SĐT đã có → chờ văn phòng duyệt |
+| #123 | 15/11 | Xếp danh sách theo mã chứng từ khi trùng giờ tạo; quy trình nhập sổ bán hàng hằng ngày |
+| #124 | 15/11 | **D79** thợ tự nhận phiếu giao chờ điều phối; đơn khách tự duyệt khi an toàn |
+| #125 | 15/11 | **D80** thông báo đẩy (Web Push) về điện thoại thợ khi có việc / phiếu chờ nhận |
+| #126–#128 | 16/11 | App điện thoại "Hiền Xa": **D81** (TWA + cài từ Safari, `/tai-app`), **D82** app Android native 2.1.0, **D83** thông báo cập nhật (popup + đẩy), **D84** nền sáng/tối cổng thợ/khách, **D85** thợ chính điều phối hiện trường, **D86** thông báo đẩy trong app (FCM, `FIREBASE_SERVICE_ACCOUNT`), **D87** trang `/tai-ve` |
+| #129 | 16/11 | Đơn nháp không còn báo "còn thiếu" ở cột Phân nguồn khi kho đủ |
+| #130 | 16/11 | **D89** báo điều phối khi thợ tự nhận phiếu; "Soạn thông báo cập nhật" trong Cài đặt; sửa đăng ký email trùng |
+| #131 | 16/11 | **D88** tự duyệt lại đơn khách chờ khi kho có hàng; **D90** xóa đơn xóa luôn phiếu giao chưa chạy; **D91** **gỡ hẳn Zalo OA** (D47); **D92** màn hình tự cập nhật khi có thông báo mới; **D93** quy tắc gửi thông báo theo vai trò / người; **D94** hủy đơn hủy luôn phiếu giao chưa chạy; Nhân viên & quyền; lọc đơn mua; app 2.3.1 |
+| #132 | 16/11 | Phiếu giao thiếu SĐT người nhận vẫn tạo việc cho thợ |
+| #133 | 17/11 | Sửa theo rà soát 16/11: **D95** hủy đơn & phiếu kẹt, **D96** tiền, hạn mức, ngày theo giờ Việt Nam, **D97** làm cứng bảo mật (rate limit, push endpoint, bucket chứng từ, bỏ extension `http`, anon execute) |
+| #134 | 18/11 | **D98** cổng khách: "Báo cáo hàng đã đặt" (`/customer/reports/ordered`), tab "Báo cáo", xuất Excel/CSV, tiền theo vai trò, thông báo tóm tắt 08:46 (pg_cron `hx-customer-ordered-summary`, khóa `customer.daily_summary`) |
+
+47 migration mới (từ `20261104160000_d58_portal_self_registration` tới `20261117140000_d98_ordered_report`), mỗi cái kèm test native. Owner 19/11 xác nhận đã áp đủ lên **QA và Production** (D98: lịch pg_cron + bản ghi `schema_migrations`). Kiểm gián tiếp 19/11: `customer_portal_ordered_report` có trên cả hai DB và từ chối `anon` (42501).
+
+Ghi chú cho phiên sau:
+- Phiên agent 19/11 **không có quyền Supabase MCP** (execute_sql / list_migrations báo "You do not have permission"): kiểm DB phải nhờ Owner chạy SQL, hoặc kiểm gián tiếp qua REST công khai (RPC có thật → 42501 với anon; không có → PGRST202).
+- Owner hiện tự áp migration và tự deploy; agent kiểm `GET https://app.hienxavlxd.com/api/health` → `buildSha`.
+- Squash-merge làm commit message của PR dính cả lịch sử nhánh cũ: đọc mô tả PR trên GitHub thay vì commit message.
 
 ## 0. Phiên 03/11/2026 (PR #94–#99, tất cả đã lên Production)
 
@@ -32,17 +71,17 @@ Ghi chú cho phiên sau:
 
 **04/11 — D56** (PR #102, đã lên QA + Production 04/11): Tổng quan mới (Cần xử lý hôm nay, so kỳ trước, cột Thu/Chi, giao hàng hôm nay, nhóm hàng, tuổi nợ, quỹ), ô tìm chung Ctrl K (migration `20261104100000_d56_global_search` — đã áp QA + Production), bỏ nhãn nhỏ trên tiêu đề + breadcrumb. Concept: Artifact "Concept giao diện Hiền Xa".
 
-## 1. Trạng thái phát hành (03/11/2026)
+## 1. Trạng thái phát hành (19/11/2026)
 
 | Môi trường | Địa chỉ | Supabase | Code | Migration mới nhất |
 |---|---|---|---|---|
-| Production | https://app.hienxavlxd.com (đã xác minh; tên cũ https://hien-xa-erp-v2-nu.vercel.app vẫn chạy) | `nbwynrwkdbtfsitafsxa` | `main` @ `bad6954` (PR #102: D55 + D56), deploy `dpl_26S2P9NFPVzf45psQMzgk4hb48Pe` | `20261104100000_d56_global_search` |
-| QA (nghiệm thu) | Preview từ `main` @ `bad6954` (04/11): `dpl_9DVqShgPDVtB95Qzzv8QVU8qEB6L` (https://hien-xa-erp-v2-co59grgds-hienxa.vercel.app, cần đăng nhập Vercel). Owner 03/11: **không cần** tên miền `qa.hienxavlxd.com` nữa | `ffrwiglcrlumfvhubaxg` | `main` @ `bad6954` | `20261104100000_d56_global_search` |
+| Production | https://app.hienxavlxd.com (tên cũ https://hien-xa-erp-v2-nu.vercel.app vẫn chạy) | `nbwynrwkdbtfsitafsxa` | `main` @ `e53aaed` (PR #134, D98), deploy `dpl_EgoZv3SW4WJmTSgD3KpUc2Bxoe4W` (18/11) | `20261117140000_d98_ordered_report` |
+| QA (nghiệm thu) | Preview từ `main` @ `e53aaed`: `dpl_AVKbUpmvHzGC3WDcjxGFnHzDLtra` (https://hien-xa-erp-v2-al6p3lpj5-hienxa.vercel.app, cần đăng nhập Vercel). Không dùng tên miền `qa.` (Owner 03/11) | `ffrwiglcrlumfvhubaxg` | `main` @ `e53aaed` | `20261117140000_d98_ordered_report` |
 
 - Kiểm phiên bản: `GET /api/health` → `buildSha` (dùng `web_fetch_vercel_url` cho bản preview có bảo vệ).
 - Vercel: team `team_9qd9uzBYBc6WtzJVu7wGP7uC`, project `prj_o6ya9YI1b3fTFC8nxiOtjHiwaS3W`. Auto-deploy tắt (`vercel.json`); deploy bằng `create_deployment` (gitSource `{type: github, org: MutAquaticStudio, repo: HienXaERPv2, ref: main, sha}`; `target: production` cho Production, bỏ `target` cho bản QA preview).
-- Preview dùng env QA (`HX_QA_PROJECT_REF`…). Preview **chưa có** `SUPABASE_SECRET_KEY` của QA → thợ không tải được ảnh trên QA (luồng giao hàng – xác nhận giao – công nợ chưa thử được trên QA). Preview cũng chưa có SMTP / `HX_AUTOMATION_SECRET`.
-- Lịch sử `schema_migrations`: 10 migration của 01–03/11 khớp repo (version + sha256) trên cả hai DB. Lệch **cũ** (tháng 9–10, đã ghi trong `implementation.md` 16/10): Production thiếu tên riêng của 9 version cũ vì đã áp gộp trong `pr44_reviewed_schema187_compact_forward_20261013`, `operational_role_presets` mang version `20261013121739`, có bản dọn `owner_authorized_uat_cleanup_20261013`; QA ghi `retire_opening_pending_rule` dưới `20261014074344` (repo `20261012155947`) và có bản vá riêng `20261002114730`. Chỉ lệch số hiệu/tên ghi lại, không thiếu nội dung. Muốn khớp từng dòng thì thêm bản ghi đối chiếu (ghi Production cần Owner đồng ý).
+- Env Vercel (19/11, chỉ xem tên): **Production** có Supabase URL/publishable/secret, `NEXT_PUBLIC_APP_URL=https://app.hienxavlxd.com`, `SMTP_*`, `HX_AUTOMATION_SECRET`, `NEXT_PUBLIC_VAPID_PUBLIC_KEY` + `VAPID_PRIVATE_KEY` + `VAPID_SUBJECT`, `FIREBASE_SERVICE_ACCOUNT` (D86), bản đồ CARTO. Khóa Claude nằm ở Cài đặt → Trợ lý AI (Vault, D50), không cần `ANTHROPIC_API_KEY`. **Preview (QA)** dùng env QA (`HX_QA_PROJECT_REF`…), có VAPID public + Firebase nhưng **chưa có** `SUPABASE_SECRET_KEY`, SMTP, `HX_AUTOMATION_SECRET`, `VAPID_PRIVATE_KEY` → trên QA thợ không tải được ảnh, không gửi email/đẩy.
+- Lịch sử `schema_migrations` (kiểm 03/11, chưa kiểm lại 19/11 vì không có quyền MCP): 10 migration của 01–03/11 khớp repo (version + sha256) trên cả hai DB. Lệch **cũ** (tháng 9–10, đã ghi trong `implementation.md` 16/10): Production thiếu tên riêng của 9 version cũ vì đã áp gộp trong `pr44_reviewed_schema187_compact_forward_20261013`, `operational_role_presets` mang version `20261013121739`, có bản dọn `owner_authorized_uat_cleanup_20261013`; QA ghi `retire_opening_pending_rule` dưới `20261014074344` (repo `20261012155947`) và có bản vá riêng `20261002114730`. Chỉ lệch số hiệu/tên ghi lại, không thiếu nội dung. Muốn khớp từng dòng thì thêm bản ghi đối chiếu (ghi Production cần Owner đồng ý).
 
 ## 2. Đã làm trong phiên 01–02/11 (PR #77–#93, tất cả đã lên QA + Production)
 
@@ -84,12 +123,15 @@ Chi tiết quyết định: `Spec.md` D44–D49. Kế hoạch: `docs/handoff/ke-
 | 2 | ✅ 03/11 Owner đã đổi + deploy lại. Cũ: Sau DNS: Vercel env `NEXT_PUBLIC_APP_URL` Production → `https://app.hienxavlxd.com` (cần cho callback Zalo); redeploy | Agent làm |
 | 3 | ✅ 03/11 Owner báo đã xong. Cũ: Supabase Auth → URL Configuration (Production + QA): Site URL + Redirect URLs tên miền mới (`/**`) | Owner làm trong dashboard |
 | 4 | ⏸ 03/11 Owner: tạm thời chưa. **SePay Production** (QR tự xác nhận, D42/D44): webhook `https://<tên miền>/api/payments/sepay` + Vault `hx_sepay_webhook_secret` + Sổ quỹ: quỹ ngân hàng "Hiện cho khách" + "Tự ghi tiền về (SePay)". Chưa cấu hình thì khách chỉ thấy "Trả tiền mặt tại cửa hàng" (D45 dùng được ngay) | Owner chọn để sau |
-| 5 | ⏸ 03/11 Owner chọn **D51** (nhân viên bấm "Gửi qua Zalo", miễn phí) thay tin mẫu ZBS tốn phí; kết nối ZBS chỉ cần nếu sau này muốn tự động. Cũ: 🔄 03/11 Owner đang kiểm tra kết nối (`NEXT_PUBLIC_APP_URL` = `https://app.hienxavlxd.com` đã đúng; lỗi nào → đọc `src/modules/zalo/presentation.ts`). **Zalo OA giai đoạn 0** (D47): Zalo App (App ID; Secret Key → Vault `hx_zalo_app_secret`; Callback URL `https://<tên miền>/api/zalo/oauth/callback`), tiện ích `http` đã bật sẵn trên QA/Production, ví ZBS, đăng ký 4 mẫu tin đúng tên tham số → Cài đặt → Zalo OA → Kết nối → nhập mã mẫu → Gửi thử → chuyển "Khách thật" | Hướng dẫn: `docs/handoff/ke-hoach-zalo-oa.md` mục 6 |
-| 6 | ⏳ 03/11 chưa làm. Thêm `SUPABASE_SECRET_KEY` **của QA** vào Vercel env **Preview** (Sensitive) → redeploy QA | Để thử luồng thợ chụp ảnh – giao – xác nhận trên QA |
+| 5 | ✅ 16/11 **D91 đã gỡ hẳn Zalo OA** (code + DB). Còn: Owner tự xóa trong Supabase → Vault các khóa không còn dùng `hx_zalo_app_secret`, `hx_zalo_access_token`, `hx_zalo_refresh_token` (nếu có). Báo khách qua Zalo bằng nút "Gửi qua Zalo" (D51). Cũ: ⏸ 03/11 Owner chọn **D51** (nhân viên bấm "Gửi qua Zalo", miễn phí) thay tin mẫu ZBS tốn phí; kết nối ZBS chỉ cần nếu sau này muốn tự động. Cũ: 🔄 03/11 Owner đang kiểm tra kết nối (`NEXT_PUBLIC_APP_URL` = `https://app.hienxavlxd.com` đã đúng; lỗi nào → đọc `src/modules/zalo/presentation.ts`). **Zalo OA giai đoạn 0** (D47): Zalo App (App ID; Secret Key → Vault `hx_zalo_app_secret`; Callback URL `https://<tên miền>/api/zalo/oauth/callback`), tiện ích `http` đã bật sẵn trên QA/Production, ví ZBS, đăng ký 4 mẫu tin đúng tên tham số → Cài đặt → Zalo OA → Kết nối → nhập mã mẫu → Gửi thử → chuyển "Khách thật" | Hướng dẫn: `docs/handoff/ke-hoach-zalo-oa.md` mục 6 |
+| 6 | ⏳ 19/11 vẫn chưa có. Thêm `SUPABASE_SECRET_KEY` **của QA** vào Vercel env **Preview** (Sensitive) → redeploy QA | Để thử luồng thợ chụp ảnh – giao – xác nhận trên QA |
 | 7 | ✅ 03/11 trợ lý chạy được. Từ D50 khóa đổi ở Cài đặt → Trợ lý AI (không cần Vercel) | |
 | 8 | ✅ 03/11 **Danh mục vật tư Production dựng lại theo bảng giá Owner gửi**: 54 vật tư (8 nhóm biến thể: Xi măng, Gạch, Sắt cây, Sắt cuộn, Đinh, Kê bê tông, Cát, Đá), 73 quy đổi, 68 giá bán chung chi nhánh HX; đã xóa 59 vật tư cũ + đơn/phiếu giao/kiểm kho test 03/11 (sao lưu `hx_cleanup_backup_20261103`, chi tiết `implementation.md` 03/11). **Còn thiếu**: giá mua NCC, tồn đầu (phiếu kiểm kho). Cũ: 🔄 03/11 Owner đang chuẩn bị bảng giá (mã vật tư, giá bán chung, ĐVT, giá mua + NCC); agent đối chiếu 59 vật tư trước, chỉ ghi Production khi Owner đồng ý. **Dữ liệu Production chưa đủ**: 59 vật tư chưa có giá bán chung (cổng khách trống), chưa có giá mua NCC; 01/11 đã dọn sạch giao dịch thử (tồn = 0) → cần nhập tồn đầu thật bằng phiếu kiểm kho. Sao lưu ở schema `hx_cleanup_backup_20261101`, `…_20261101b`, `…_20261103` (xóa khi Owner đồng ý) | Owner nhập hoặc gửi bảng giá để agent nhập (cần đồng ý) |
 | 9 | ⏸ 03/11 Owner: tạm để sau. Quyết định "Giá vốn bình quân" trên trang chi tiết vật tư | Xem §6 |
-| 10 | ⏸ 03/11 Owner: kiểm tra Zalo OA (mục 5) trước. Quyết định cách cho **webhook Zalo** (báo "khách đã nhận tin", khách nhắn lại) gọi vào hệ thống — bộ kiểm bảo mật cấm `anon` gọi hàm SECURITY DEFINER; SePay dùng khóa service (D42) | Giai đoạn 2 Zalo |
+| 10 | ✖ Không còn cần (Zalo OA đã gỡ, D91). Cũ: ⏸ 03/11 Owner: kiểm tra Zalo OA (mục 5) trước. Quyết định cách cho **webhook Zalo** (báo "khách đã nhận tin", khách nhắn lại) gọi vào hệ thống — bộ kiểm bảo mật cấm `anon` gọi hàm SECURITY DEFINER; SePay dùng khóa service (D42) | Giai đoạn 2 Zalo |
+| 11 | ⏳ App điện thoại (D81–D87): bản Android 2.3.1 tải ở `/tai-ve`; **chưa** đưa lên Google Play / App Store / TestFlight (cần tài khoản nhà phát triển) | Owner quyết khi muốn phát hành qua chợ ứng dụng |
+| 12 | ⏳ Dữ liệu Production: giá mua NCC nhập ở Mua hàng → Giá mua (D61); tồn đầu bằng phiếu kiểm kho; đặt tài xế mặc định cho xe (tự điều phối / thợ tự nhận phiếu D79 cần) | Owner nhập |
+| 13 | 🔎 Theo dõi D98: sáng sau mỗi ngày có đơn, khách nhận thông báo "Hàng anh/chị đặt ngày DD/MM" lúc 08:46 (giờ yên lặng có thể dời) | Lịch pg_cron chưa chạy thử ở máy local |
 
 ## 5. QA cho khách nghiệm thu
 
@@ -101,9 +143,10 @@ Chi tiết quyết định: `Spec.md` D44–D49. Kế hoạch: `docs/handoff/ke-
 
 ## 6. Việc dở / đề xuất tiếp theo
 
-- **QA preview** vẫn ở `57b4bff` (DB QA đã có migration D50): deploy preview từ `main` mới khi cần nghiệm thu D50 trên QA (preview chưa có khóa Claude → dùng Cài đặt → Trợ lý AI để nhập khóa thử).
 - **Giá vốn bình quân trên trang chi tiết vật tư** — chưa merge, chờ Owner. Patch `docs/handoff/wip-gia-von-binh-quan.patch` (`git apply …`); chưa chạy `pnpm check` toàn bộ.
-- **Zalo giai đoạn 2**: webhook (sau quyết định §4.10), chat hai chiều qua OA, gửi QR/yêu cầu thanh toán D44 qua Zalo.
+- Zalo OA tự động đã gỡ (D91); báo khách qua nút "Gửi qua Zalo" (D51). Không còn kế hoạch Zalo giai đoạn 2 (`docs/handoff/ke-hoach-zalo-oa.md` chỉ còn là lịch sử).
+- **Việc sau đã ghi trong Spec**: D75 ảnh hiện trường khi đặt dịch vụ + báo khách khi xếp lịch; D72 xóa dòng phiếu giao đã chạy (cần đổi nguyên tắc chỉ-thêm); D81/D82 phát hành chợ ứng dụng, kéo xuống để tải lại trong app.
+- `implementation.md` dừng ở 04/11: phiên sau nên bổ sung nhật ký 04–18/11 từ mô tả PR #103–#134 nếu cần tra cứu.
 - Kiểm tra bố cục lần sau: skill Stageshow (`benjitaylor/skills`) chỉ cài trong phiên (02/11, 03/11), không có trong repo. Cài lại: `git clone --depth 1 https://github.com/benjitaylor/skills` → chép `skills/stageshow` vào `~/.claude/skills/`; chạy `auditLayout` cần `ln -s /opt/node-tools/node_modules/playwright-core <skill>/node_modules/playwright-core` và `CHROME_PATH=/opt/pw-browsers/chromium-1243/chrome-linux64/chrome node scripts/layout.mjs <url> --width 390`. Hoặc dùng `scripts/qa/system-qa/layout.mjs`.
 - Trợ lý AI: chưa có công cụ tổng hợp (đếm / cộng / nhóm) — `doc_du_lieu` tối đa 50 dòng nên câu "tổng doanh thu tháng" có thể thiếu; chưa có công cụ tìm chung theo tên / mã và bộ câu hỏi chấm điểm (Owner 03/11 chỉ chọn sổ tay nghiệp vụ trước).
 - UX nhỏ: cửa sổ QR D44 nên gộp các dòng "Số dư đầu kỳ"; dòng "Đã gửi Zalo · đã nhận" trên chứng từ (cần webhook).
