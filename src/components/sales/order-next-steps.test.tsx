@@ -18,8 +18,11 @@ it("says what the system already did after confirming and offers the next moves"
   expect(within(card).getByRole("link", { name: "Duyệt đơn mua" })).toHaveAttribute("href", "/admin/purchase-orders/p1");
   expect(within(card).queryByText("PO-2")).not.toBeInTheDocument();
   expect(within(card).getByText("700.000 ₫")).toBeInTheDocument();
+  expect(within(card).getByText(/vào Công nợ khi phiếu giao được xác nhận đã giao/)).toBeInTheDocument();
   expect(within(card).getByRole("link", { name: "Thu tiền" })).toHaveAttribute("href", "/admin/receivables?customer=c1");
-  expect(within(card).getByRole("link", { name: "In đơn" })).toHaveAttribute("href", "/api/orders/o1/pdf");
+  // One print menu (A4 PDF and the 80 mm receipt) instead of a button per paper size.
+  expect(within(card).getByRole("link", { name: "Đơn bán khổ A4 (PDF)" })).toHaveAttribute("href", "/api/orders/o1/pdf");
+  expect(within(card).getByRole("link", { name: "Hóa đơn in nhiệt K80" })).toHaveAttribute("href", "/api/orders/o1/pdf?kho=k80");
   expect(within(card).getByRole("link", { name: "Tạo đơn mới cho khách này" })).toHaveAttribute("href", "/admin/orders/new?customer=c1&site=s1");
 });
 
@@ -36,7 +39,7 @@ it("stays on later visits and follows the worker: on the way, delivered (FB7)", 
   const { rerender } = render(<OrderNextSteps orderId="o1" orderNumber="SO-7" customerId="c1" siteId="s1" remainingVnd="0" can={all} purchases={[]}
     deliveries={[{ ...delivery, id: "d1", number: "GH-1", state: "DISPATCHED" }]} />);
   expect(screen.getByRole("region", { name: "Tiến độ đơn SO-7" })).toHaveTextContent("xe 29C-12345 · tài xế Anh Tài — thợ đang giao");
-  expect(screen.getByRole("link", { name: "In đơn" })).toBeInTheDocument();
+  expect(screen.getByText("In", { selector: "summary" })).toBeInTheDocument();
   rerender(<OrderNextSteps orderId="o1" orderNumber="SO-7" customerId="c1" siteId="s1" remainingVnd="0" can={all} purchases={[]} delivered
     deliveries={[{ ...delivery, id: "d1", number: "GH-1", state: "VERIFIED" }]} />);
   expect(screen.getByRole("region", { name: "SO-7 đã giao xong" })).toHaveTextContent("đã giao xong");

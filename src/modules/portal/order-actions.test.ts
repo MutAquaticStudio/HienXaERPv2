@@ -20,6 +20,14 @@ it("submits the lines with the business-time delivery wish and returns the new o
     requested_delivery_at: "2026-10-20T01:00:00.000Z", operation_id: ids.op, order_lines: [{ material_id: ids.material, ordered_uom_id: ids.uom, quantity: "2.5" }] }));
 });
 
+it("D79: says so when the order was approved at once", async () => {
+  m.rpc.mockResolvedValueOnce({ data: ids.order, error: null }).mockResolvedValueOnce({ data: { id: ids.order, state: "CONFIRMED" }, error: null });
+  expect((await submitPortalOrderAction(input)).message).toBe("Đã gửi và duyệt đơn. Cửa hàng đang xếp xe giao.");
+  expect(m.rpc).toHaveBeenLastCalledWith("customer_portal_order", { target_order_id: ids.order });
+  m.rpc.mockResolvedValueOnce({ data: ids.order, error: null }).mockResolvedValueOnce({ data: { id: ids.order, state: "DRAFT" }, error: null });
+  expect((await submitPortalOrderAction(input)).message).toBe("Đã gửi đơn. Cửa hàng sẽ duyệt và báo ngày giao.");
+});
+
 it("rejects bad input before calling the database", async () => {
   expect((await submitPortalOrderAction({ ...input, lines: [] })).status).toBe("FAILED");
   expect((await submitPortalOrderAction({ ...input, lines: [{ ...input.lines[0], quantity: "1,5" }] })).status).toBe("FAILED");

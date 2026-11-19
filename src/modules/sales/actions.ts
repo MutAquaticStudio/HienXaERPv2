@@ -42,6 +42,8 @@ const previewLineSchema = z.object({ materialId: z.guid(), orderedUomId: z.guid(
 export type PricePreviewLine = z.infer<typeof previewLineSchema>;
 export type PricePreviewResult = { success: boolean; message: string; lines?: PricePreviewLine[]; totalVnd?: string };
 const commandSchema = z.object({ entityId: z.guid(), operationId: z.guid() });
+/** D96 (S5): "Xác nhận" confirms the draft version the screen showed. */
+const confirmSchema = commandSchema.extend({ expectedVersion: z.coerce.number().int().positive() });
 
 function toIso(value?: string) {
   if (!value) return null;
@@ -263,7 +265,9 @@ async function saveDocument(kind: "order" | "quote", mode: "create" | "edit", fo
   const prepaymentProblem = [sellerProblem, paymentProblem].filter(Boolean).join(" ") || null;
   const prepaymentQuery = prepaymentProblem ? `&error=${encodeURIComponent(prepaymentProblem)}` : "";
   if (confirmOperationId) {
-    const confirmed = await supabase.rpc("confirm_sales_order", { target_order_id: result.data, operation_id: confirmOperationId });
+    // D96 (S5): the draft just written is version 1, or the edited version + 1.
+    const confirmed = await supabase.rpc("confirm_sales_order", { target_order_id: result.data,
+      expected_draft_version: edit?.success ? edit.data.expectedVersion + 1 : 1, operation_id: confirmOperationId });
     revalidatePath(`/admin/orders/${result.data}`);
     // FB8: stopped by credit → the draft is saved and the order page opens the credit popup.
     const block = creditBlockOf(confirmed.error?.message);
@@ -294,12 +298,13 @@ async function internalCommand(permission: string, rpc: string, args: Record<str
 }
 
 export async function confirmSalesOrderAction(formData: FormData) {
-  const parsed = commandSchema.safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId") });
+  const parsed = confirmSchema.safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId"), expectedVersion: formData.get("expectedVersion") });
   if (!parsed.success) redirect("/admin/orders?error=invalid-command");
   const access = await requireInternalPermission("orders.confirm");
   const supabase = await createServerSupabase();
   const destination = `/admin/orders/${parsed.data.entityId}`;
-  const { error } = await supabase.rpc("confirm_sales_order", { target_order_id: parsed.data.entityId, operation_id: parsed.data.operationId });
+  const { error } = await supabase.rpc("confirm_sales_order", { target_order_id: parsed.data.entityId,
+    expected_draft_version: parsed.data.expectedVersion, operation_id: parsed.data.operationId });
   const block = creditBlockOf(error?.message);
   if (block) redirect(`${destination}?credit=${block}`);
   if (error) redirect(`${destination}?error=${encodeURIComponent(commandError(error.message, true))}`);
@@ -328,6 +333,29 @@ export async function cancelSalesOrderAction(formData: FormData) {
   const parsed = commandSchema.extend({ reason: z.string().trim().max(500).nullish() }).safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId"), reason: formData.get("reason") });
   if (!parsed.success) redirect("/admin/orders?error=invalid-command");
   return internalCommand("orders.cancel", "cancel_sales_order", { target_order_id: parsed.data.entityId, cancel_reason: reasonOrDefault(parsed.data.reason, "Hủy đơn"), operation_id: parsed.data.operationId }, `/admin/orders/${parsed.data.entityId}`, "cancelled");
+}
+
+/**
+ * D72 (Owner 13/11/2026): "Xóa đơn bán" removes an order that has produced nothing yet (no money, purchase or credit override);
+ * D90 (16/11/2026): its deliveries that never ran are deleted with it, a delivery that ran refuses. The person types the order number as a second confirmation; the database re-checks every condition and audits the delete.
+ */
+export async function deleteSalesOrderAction(formData: FormData) {
+  const ids = commandSchema.safeParse({ entityId: formData.get("entityId"), operationId: formData.get("operationId") });
+  if (!ids.success) redirect("/admin/orders?error=invalid-command");
+  const page = `/admin/orders/${ids.data.entityId}`;
+  const reason = z.string().trim().min(3).max(300).safeParse(formData.get("reason"));
+  if (!reason.success) redirect(`${page}?error=${encodeURIComponent("Vui lòng nhập lý do xóa đơn (từ 3 đến 300 ký tự).")}`);
+  const access = await requireInternalPermission("orders.cancel");
+  const supabase = await createServerSupabase();
+  const { data: order } = await supabase.from("sales_order_read").select("order_number").eq("id", ids.data.entityId).eq("branch_id", access.branchId).maybeSingle();
+  if (!order) redirect("/admin/orders?error=invalid-command");
+  if (String(formData.get("confirmNumber") ?? "").trim().toUpperCase() !== String((order as { order_number: string }).order_number).toUpperCase()) {
+    redirect(`${page}?error=${encodeURIComponent("Mã đơn gõ chưa khớp. Gõ đúng mã đơn để xác nhận xóa.")}`);
+  }
+  const { error } = await supabase.rpc("delete_sales_order", { target_order_id: ids.data.entityId, delete_reason: reason.data, operation_id: ids.data.operationId });
+  if (error) redirect(`${page}?error=${encodeURIComponent(commandError(error.message))}`);
+  revalidatePath("/admin/orders");
+  redirect("/admin/orders?notice=order-deleted");
 }
 
 export async function closeSalesOrderRemainingAction(formData: FormData) {

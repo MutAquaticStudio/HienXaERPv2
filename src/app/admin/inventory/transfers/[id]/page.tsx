@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { randomUUID } from "node:crypto";
 import Decimal from "decimal.js";
@@ -11,6 +10,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { TransferEventForm } from "@/modules/inventory/transfer-forms";
 import { quickTransferStepAction } from "@/modules/inventory/transfer-actions";
 import { transferEventLabel, transferStatus } from "@/modules/inventory/transfer-presentation";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 const Exact = Decimal.clone({ precision: 50 });
 const NOTICE: Record<string, string> = { shipped: "Đã xuất kho.", received: "Đã nhận đủ hàng vào kho." };
@@ -43,7 +43,7 @@ export default async function WarehouseTransferDetail({ params, searchParams }: 
  if (can.adjust) kinds.push("APPROVE_LOSS");
  const canRecord = (kind: keyof typeof transferEventLabel) => kind === "DISPATCH" ? !t.dispatch_closed && new Exact(t.shipped_base_quantity).lt(t.planned_base_quantity) : kind === "CLOSE_DISPATCH" ? !t.dispatch_closed : kind === "APPROVE_LOSS" ? issues.length > 0 : lots.length > 0;
  const oneTap = status.step === "DISPATCH_ALL" && can.ship ? "Xuất kho" : status.step === "RECEIVE_ALL" && can.receive ? "Nhận đủ" : null;
- return <><header className="page-heading"><div><p className="eyebrow"><Link href="/admin/inventory/transfers">Chuyển kho</Link></p><h1>{t.transfer_number}</h1><p className="lede">{t.from_warehouse_name} → {t.to_warehouse_name}</p></div>
+ return <><header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/inventory/transfers", label: "Chuyển kho" }} /><h1>{t.transfer_number}</h1><p className="lede">{t.from_warehouse_name} → {t.to_warehouse_name}</p></div>
    <div className="action-cluster"><StatusBadge tone={status.tone}>{status.label}</StatusBadge>{oneTap && <form action={quickTransferStepAction}><input type="hidden" name="transferId" value={id} /><input type="hidden" name="step" value={status.step!} /><input type="hidden" name="operationId" value={randomUUID()} /><button className="button button-primary" type="submit">{oneTap}</button></form>}</div></header>
   {query.notice && NOTICE[query.notice] && <p className="form-message success" role="status">{NOTICE[query.notice]}</p>}
   {query.error && <p className="form-message" role="alert">{query.error}</p>}

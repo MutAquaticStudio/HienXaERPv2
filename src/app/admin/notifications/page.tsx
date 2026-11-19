@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
+import { AnnouncementHistory } from "@/components/announcements/announcement-history";
 import { NotificationList } from "@/components/notifications/notification-bell";
 import { PushToggle } from "@/components/notifications/push-toggle";
 import { requireInternalAccess } from "@/lib/access/context";
+import { loadAnnouncementHistory } from "@/modules/announcements/server";
 import { getNotificationFeedAction, markNotificationsReadAction } from "@/modules/notifications/actions";
 
 const PAGE = 50;
@@ -17,16 +19,22 @@ export default async function NotificationsPage({ searchParams }: { searchParams
   const access = await requireInternalAccess();
   const query = await searchParams;
   const before = query.before && !Number.isNaN(Date.parse(query.before)) ? new Date(query.before).toISOString() : null;
-  const feed = await getNotificationFeedAction({ limit: PAGE, before });
+  const [feed, announcements] = await Promise.all([getNotificationFeedAction({ limit: PAGE, before }), before ? Promise.resolve(null) : loadAnnouncementHistory("OFFICE")]);
   const items = feed?.items ?? [];
   const last = items.at(-1);
   return <>
-    <header className="page-heading"><div><p className="eyebrow">Thông báo</p><h1>Thông báo của chi nhánh</h1>
+    <header className="page-heading"><div><h1>Thông báo của chi nhánh</h1>
       <p className="lede">Việc cần xử lý theo quyền của bạn: đơn mua chờ duyệt, phiếu giao chờ xác minh, đơn khách mới…</p></div>
       {feed && feed.unread > 0 && <form action={markAllRead}><button className="button button-secondary" type="submit">Đánh dấu đã đọc hết ({feed.unread})</button></form>}</header>
+    {!before && <section className="card card-pad" aria-labelledby="office-announcements">
+      <div className="section-head flush"><h2 id="office-announcements">Thông báo cập nhật</h2>
+        {access.permissions.has("roles.manage") && <Link className="button button-secondary" href="/admin/notifications/updates">Soạn thông báo</Link>}</div>
+      <AnnouncementHistory items={announcements} surface="OFFICE" first={3}
+        emptyText="Chưa có thông báo cập nhật. Giá chung đổi, tính năng mới hay quy định mới sẽ hiện ở đây và ở lần mở trang chủ tiếp theo." />
+    </section>}
     <section className="card card-pad"><h2>Thông báo trên điện thoại</h2>
       <PushToggle />
-      {access.permissions.has("roles.manage") && <p className="muted">Chọn việc nào gửi về điện thoại, Telegram hay email ở <Link className="code-link" href="/admin/settings/automation">Quy tắc tự động</Link>.</p>}
+      {access.permissions.has("roles.manage") && <p className="muted">Chọn thông báo nào báo về điện thoại, ai nhận và giờ yên lặng ở <Link className="code-link" href="/admin/settings/automation">Quy tắc tự động</Link>.</p>}
     </section>
     <section className="card card-pad">
       {feed ? <NotificationList items={items} /> : <p className="form-message" role="alert">Chưa tải được thông báo. Hãy tải lại trang.</p>}

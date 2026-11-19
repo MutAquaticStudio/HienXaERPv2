@@ -1,14 +1,18 @@
 import { jobStateLabel, directionsHref, telHref } from "@/modules/portal/presentation";
 import Link from "next/link";
-import { ChevronRight, Clock3, Navigation, Phone, PlusCircle } from "lucide-react";
+import { ChevronRight, Clock3, Navigation, Phone, PlusCircle, UsersRound } from "lucide-react";
 
+import { PushToggle } from "@/components/notifications/push-toggle";
+import fd from "@/components/portal/field-dispatch.module.css";
 import { JobSteps } from "@/components/portal/job-steps";
 import styles from "@/components/portal/portal.module.css";
 import { requireInternalAccess } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { ClockPanel } from "@/modules/attendance/forms";
-import { formatClock, formatShiftTime } from "@/modules/attendance/presentation";
-import { getWorkerPortalSnapshot } from "@/modules/portal/actions";
+import { formatClock, formatShiftTime, openShiftHeading } from "@/modules/attendance/presentation";
+import { getWorkerDeliveryPoolCount, getWorkerPortalSnapshot } from "@/modules/portal/actions";
+import { summaryLine } from "@/modules/portal/field-dispatch";
+import { loadFieldDispatchSummary } from "@/modules/portal/field-dispatch-server";
 import type { WorkerJob } from "@/modules/portal/types";
 
 const zone = { timeZone: "Asia/Ho_Chi_Minh" } as const;
@@ -21,16 +25,21 @@ async function todayShift(day: string) {
   try {
     const access = await requireInternalAccess("/work/login");
     const supabase = await createServerSupabase();
-    const [records, assignments, settings] = await Promise.all([
-      supabase.from("attendance_records").select("clock_in_at, clock_out_at").eq("employee_id", access.employeeId).gte("work_date", day).order("work_date", { ascending: false }).limit(3),
+    // The open record may be from an earlier day (a shift never clocked out): clock_attendance refuses "Vào ca" until it is
+    // closed and "Ra ca" closes it, so look for it on any day — the same record "Chấm công" shows.
+    const [openRecords, records, assignments, settings] = await Promise.all([
+      supabase.from("attendance_records").select("work_date, clock_in_at").eq("employee_id", access.employeeId).not("clock_in_at", "is", null)
+        .is("clock_out_at", null).order("clock_in_at", { ascending: false }).limit(1),
+      supabase.from("attendance_records").select("clock_in_at, clock_out_at").eq("employee_id", access.employeeId).eq("work_date", day).not("clock_out_at", "is", null)
+        .order("clock_out_at", { ascending: false }).limit(1),
       supabase.from("shift_assignments").select("work_shifts(name, start_time, end_time)").eq("employee_id", access.employeeId).eq("branch_id", access.branchId).eq("work_date", day).is("cancelled_at", null).limit(1),
       supabase.from("attendance_settings").select("require_location").eq("branch_id", access.branchId).maybeSingle(),
     ]);
-    const open = (records.data ?? []).find((row) => row.clock_in_at && !row.clock_out_at);
+    const open = (openRecords.data ?? [])[0] as { work_date: string; clock_in_at: string } | undefined;
     const done = (records.data ?? []).find((row) => row.clock_in_at && row.clock_out_at);
     const shiftRow = assignments.data?.[0]?.work_shifts as unknown as { name: string; start_time: string; end_time: string } | { name: string; start_time: string; end_time: string }[] | null;
     const shift = Array.isArray(shiftRow) ? shiftRow[0] : shiftRow;
-    return { open: open?.clock_in_at ?? null, done: done ? { in: done.clock_in_at!, out: done.clock_out_at! } : null,
+    return { open: open ?? null, done: done ? { in: done.clock_in_at!, out: done.clock_out_at! } : null,
       shift: shift ? `${shift.name} ${formatShiftTime(shift.start_time)} – ${formatShiftTime(shift.end_time)}` : null,
       requireLocation: Boolean(settings.data?.require_location) };
   } catch {
@@ -48,8 +57,9 @@ function NextJob({ job }: { job: WorkerJob }) {
 
 /** FB18: "Hôm nay" — the shift card, the job in hand with its steps and one-tap call / directions, then what comes next. */
 export default async function WorkHomePage({ searchParams }: { searchParams: Promise<{ notice?: string }> }) {
-  const snapshot = await getWorkerPortalSnapshot();
+  const [snapshot, deliveryCount, dispatch] = await Promise.all([getWorkerPortalSnapshot(), getWorkerDeliveryPoolCount(), loadFieldDispatchSummary()]);
   const query = await searchParams;
+  const poolCount = snapshot.pool.length + deliveryCount;
   const now = new Date();
   const today = dayKey(now.toISOString());
   const shift = await todayShift(today);
@@ -75,10 +85,10 @@ export default async function WorkHomePage({ searchParams }: { searchParams: Pro
       {shift && <section className={`${styles.card} ${styles.shiftCard}`} aria-label="Ca làm hôm nay">
         <span className={styles.shiftIcon}><Clock3 aria-hidden size={18} /></span>
         <div>
-          <strong>{shift.open ? `Đã vào ca lúc ${formatClock(shift.open)}` : shift.done ? `Đã ra ca lúc ${formatClock(shift.done.out)}` : "Chưa vào ca"}</strong>
-          <small>{shift.shift ?? "Không theo ca"}</small>
+          <strong>{shift.open ? openShiftHeading(shift.open, today) : shift.done ? `Đã ra ca lúc ${formatClock(shift.done.out)}` : "Chưa vào ca"}</strong>
+          <small>{shift.open && shift.open.work_date !== today ? "Bấm “Ra ca” để kết thúc ca cũ trước khi vào ca mới." : shift.shift ?? "Không theo ca"}</small>
         </div>
-        {!shift.done && <ClockPanel clockedIn={Boolean(shift.open)} requireLocation={shift.requireLocation} compact />}
+        {(!shift.done || shift.open) && <ClockPanel clockedIn={Boolean(shift.open)} requireLocation={shift.requireLocation} compact />}
       </section>}
 
       {current ? <section className={styles.currentJob} aria-label="Việc đang làm">
@@ -103,7 +113,20 @@ export default async function WorkHomePage({ searchParams }: { searchParams: Pro
         <ul className={styles.timeline}>{later.map((job) => <NextJob key={job.id} job={job} />)}</ul>
       </section>}
 
-      {snapshot.pool.length > 0 && <Link className={styles.poolHint} href="/work/pool"><PlusCircle aria-hidden size={18} /><span>Có {snapshot.pool.length} việc mới có thể nhận</span>Xem</Link>}
+      {/* D85: a lead worker sees the branch's whole day here, in place of the "Nhận việc" hint. */}
+      {dispatch && <Link className={fd.todayCard} href="/work/dispatch" aria-label={`Điều phối hôm nay: ${summaryLine(dispatch)}`}>
+        <span className={fd.todayMain}><span className={fd.todayIcon}><UsersRound aria-hidden size={20} /></span>
+          <span><strong>Điều phối hôm nay</strong><small>{summaryLine(dispatch)}</small></span><ChevronRight aria-hidden size={18} color="var(--muted)" /></span>
+        {(dispatch.declined > 0 || dispatch.short > 0) && <span className={fd.chips}>
+          {dispatch.declined > 0 && <span className={fd.chip} data-tone="warn">{dispatch.declined} thợ từ chối</span>}
+          {dispatch.short > 0 && <span className={fd.chip} data-tone="warn">{dispatch.short} giao thiếu</span>}
+        </span>}
+      </Link>}
+
+      {!dispatch && poolCount > 0 && <Link className={styles.poolHint} href="/work/pool"><PlusCircle aria-hidden size={18} /><span>{deliveryCount > 0 ? `Có ${deliveryCount} phiếu giao chờ người nhận${snapshot.pool.length ? ` và ${snapshot.pool.length} việc khác` : ""}` : `Có ${snapshot.pool.length} việc mới có thể nhận`}</span>Xem</Link>}
+
+      <PushToggle prompt={{ title: "Báo việc mới về điện thoại", className: styles.card,
+        text: "Bật để điện thoại báo ngay khi có việc giao cho bạn hoặc phiếu giao chờ người nhận." }} />
     </div>
   );
 }

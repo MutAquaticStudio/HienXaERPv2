@@ -1,10 +1,16 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ rpc: vi.fn(), ask: vi.fn(), history: vi.fn() }));
+const mocks = vi.hoisted(() => ({ rpc: vi.fn(), ask: vi.fn(), history: vi.fn(), upload: vi.fn(), usage: vi.fn(), usageFilters: [] as unknown[][] }));
+vi.mock("server-only", () => ({}));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
-vi.mock("@/lib/access/context", () => ({ requireInternalPermission: async () => ({ branchId: "branch-a", permissions: new Set(["ai.use", "orders.read"]) }) }));
-vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({ rpc: mocks.rpc }) }));
+vi.mock("@/lib/access/context", () => ({ requireInternalPermission: async () => ({ branchId: "branch-a", authUserId: "user-1", permissions: new Set(["ai.use", "orders.read"]) }) }));
+vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => {
+  const query = { select: (...args: unknown[]) => { mocks.usageFilters.push(["select", ...args]); return query; },
+    eq: (...args: unknown[]) => { mocks.usageFilters.push(["eq", ...args]); return query; },
+    gte: (...args: unknown[]) => { mocks.usageFilters.push(["gte", ...args]); return mocks.usage(); } };
+  return { rpc: mocks.rpc, from: (table: string) => { mocks.usageFilters.push(["from", table]); return query; }, storage: { from: () => ({ upload: mocks.upload }) } };
+} }));
 vi.mock("@/modules/ai/assistant", () => ({ askAssistant: mocks.ask }));
 vi.mock("@/modules/ai/chat-history", () => ({ loadAiChat: mocks.history }));
 vi.mock("@/modules/ai/agent/actions", () => ({ listAiActionsAction: async ({ ids }: { ids: string[] }) => ids.map((id) => ({ id, title: "Thẻ", summary: [], state: "PENDING", link: null, message: null })) }));
@@ -12,7 +18,22 @@ vi.mock("@/modules/ai/agent/actions", () => ({ listAiActionsAction: async ({ ids
 import { askAiAction, newAiChatAction } from "./actions";
 
 describe("chatbot conversation (D36)", () => {
-  beforeEach(() => { vi.clearAllMocks(); mocks.rpc.mockResolvedValue({ data: "id", error: null }); });
+  beforeEach(() => { vi.clearAllMocks(); mocks.usageFilters = []; mocks.rpc.mockResolvedValue({ data: "id", error: null }); mocks.upload.mockResolvedValue({ error: null });
+    mocks.usage.mockResolvedValue({ count: 3, error: null }); });
+
+  it("D97 (TB-2): a person who already asked 60 questions in the last hour waits; the assistant is not called", async () => {
+    mocks.history.mockResolvedValue([]);
+    mocks.usage.mockResolvedValue({ count: 60, error: null });
+    const answer = await askAiAction({ question: "Đơn hôm nay?" });
+    expect(answer).toMatchObject({ outcome: "ERROR", proposals: 0, actions: [] });
+    expect(answer.text).toContain("60 lần trong 1 giờ");
+    expect(mocks.ask).not.toHaveBeenCalled();
+    expect(mocks.usageFilters).toEqual(expect.arrayContaining([["from", "ai_usage_log"], ["eq", "user_id", "user-1"]]));
+    // A count that cannot be read never blocks the question.
+    mocks.usage.mockResolvedValue({ count: null, error: { message: "network" } });
+    mocks.ask.mockResolvedValue({ outcome: "OK", text: "3 đơn.", proposals: 0 });
+    expect((await askAiAction({ question: "Đơn hôm nay?" })).outcome).toBe("OK");
+  });
 
   it("sends the stored turns from the first question, with the person's permissions, and keeps the answered turn", async () => {
     mocks.history.mockResolvedValue([{ id: "1", role: "assistant", text: "Chào" }, { id: "2", role: "user", text: "Đơn hôm nay?" }, { id: "3", role: "assistant", text: "3 đơn." }]);
@@ -29,6 +50,47 @@ describe("chatbot conversation (D36)", () => {
     mocks.ask.mockResolvedValue({ outcome: "OK", text: "Đã soạn đơn, chờ bạn xác nhận.", proposals: 0, actionIds: ["a1"] });
     const answer = await askAiAction({ question: "Tạo đơn bán" });
     expect(answer.actions.map((card) => card.id)).toEqual(["a1"]);
+  });
+
+  it("sends the picked model and the attached files; the question names them and (D63) the files are kept in the person's folder", async () => {
+    mocks.history.mockResolvedValue([]);
+    mocks.ask.mockResolvedValue({ outcome: "OK", text: "Bảng giá có 1 mặt hàng.", proposals: 0 });
+    const form = new FormData();
+    form.set("question", "Đọc giúp bảng này");
+    form.set("model", "claude-opus-5-5");
+    form.set("effort", "high");
+    form.append("files", new File(["ma,gia\nXM01,95000"], "gia.csv", { type: "text/csv" }));
+    await askAiAction(form);
+    const call = mocks.ask.mock.calls[0][0];
+    expect(call.model).toBe("claude-opus-5-5");
+    expect(call.effort).toBe("high");
+    expect(call.attachments).toEqual([{ type: "document", title: "gia.csv", source: { type: "text", media_type: "text/plain", data: "ma,gia\nXM01,95000" } }]);
+    const saved = mocks.rpc.mock.calls.find((item) => item[0] === "save_ai_chat_turn")![1];
+    expect(saved).toMatchObject({ question: "Đọc giúp bảng này\n📎 gia.csv", attachments: [{ path: `user-1/${saved.operation_id}/1-gia.csv`, name: "gia.csv", mime: "text/csv", size: 17 }] });
+    expect(mocks.upload).toHaveBeenCalledWith(`user-1/${saved.operation_id}/1-gia.csv`, expect.any(Uint8Array), { contentType: "text/csv", upsert: false });
+  });
+
+  it("D63: a file that cannot be kept is only named, and the answered turn is still saved", async () => {
+    mocks.history.mockResolvedValue([]);
+    mocks.ask.mockResolvedValue({ outcome: "OK", text: "Đã đọc.", proposals: 0 });
+    mocks.upload.mockResolvedValue({ error: { message: "storage down" } });
+    const form = new FormData();
+    form.set("question", "Đọc giúp ảnh");
+    form.append("files", new File([new Uint8Array([0xff, 0xd8, 0xff, 0xe0])], "anh.jpg", { type: "image/jpeg" }));
+    expect((await askAiAction(form)).outcome).toBe("OK");
+    expect(mocks.rpc).toHaveBeenCalledWith("save_ai_chat_turn", expect.objectContaining({ question: "Đọc giúp ảnh\n📎 anh.jpg", attachments: [] }));
+  });
+
+  it("refuses an unknown model or an unreadable file before asking", async () => {
+    const badModel = new FormData();
+    badModel.set("question", "Xin chào");
+    badModel.set("model", "gpt-9");
+    expect((await askAiAction(badModel)).outcome).toBe("ERROR");
+    const badFile = new FormData();
+    badFile.set("question", "Đọc tệp");
+    badFile.append("files", new File(["MZ"], "a.exe"));
+    expect((await askAiAction(badFile)).text).toMatch(/Chưa đọc được tệp "a.exe"/);
+    expect(mocks.ask).not.toHaveBeenCalled();
   });
 
   it("does not keep a failed turn, and starts a new chat", async () => {

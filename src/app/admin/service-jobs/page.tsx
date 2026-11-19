@@ -21,6 +21,7 @@ import { ListFilterGroup } from "@/components/lists/list-filter-group";
 import { FormDialog } from "@/components/ui/form-dialog";
 import { ServiceJobTimeFields } from "@/components/workforce/service-job-time-fields";
 import { loadSalesStaffOptions } from "@/modules/workforce/sales-staff";
+import { vehicleName } from "@/modules/catalog/vehicle-label";
 
 type Job = { id: string; job_number: string; customer_name: string; site_name: string; service_type: string; scheduled_start: string; scheduled_end?: string | null; description?: string | null; planned_quantity: string | null; unit_label: string; operator_name: string | null; execution_state: string };
 const STATES = ["SCHEDULED", "IN_PROGRESS", "RESULT_SUBMITTED", "VERIFIED", "CANCELLED"] as const;
@@ -36,7 +37,7 @@ export default async function ServiceJobsPage({ searchParams }: { searchParams: 
     if (error instanceof AppError && error.code === "FORBIDDEN") return null;
     throw error;
   });
-  if (!access) return <section className="empty-state" role="alert"><div><p className="eyebrow">Không có quyền truy cập</p><h1>Không thể xem công việc dịch vụ</h1><p className="lede">Tài khoản của bạn chưa được cấp quyền xem công việc dịch vụ trong chi nhánh này.</p><Link className="button button-secondary" href="/">Về trang đầu</Link></div></section>;
+  if (!access) return <section className="empty-state" role="alert"><div><h1>Không thể xem công việc dịch vụ</h1><p className="lede">Tài khoản của bạn chưa được cấp quyền xem công việc dịch vụ trong chi nhánh này.</p><Link className="button button-secondary" href="/">Về trang đầu</Link></div></section>;
   const branchId = access.branchId;
   const query = await searchParams;
   const list = parseCoreListQuery(query);
@@ -48,7 +49,7 @@ export default async function ServiceJobsPage({ searchParams }: { searchParams: 
         .eq("branch_id", branchId)
         .or(`job_number.ilike.${ilikePattern(list.q)},customer_name.ilike.${ilikePattern(list.q)},site_name.ilike.${ilikePattern(list.q)},service_type.ilike.${ilikePattern(list.q)},operator_name.ilike.${ilikePattern(list.q)}`);
       if (list.state) request = request.eq("execution_state", list.state);
-      const { data, error, count } = await request.order("scheduled_start", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1);
+      const { data, error, count } = await request.order("scheduled_start", { ascending: false }).order("job_number", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1);
       if (error) throw new Error("Không thể tải công việc dịch vụ.");
       const rows = (data ?? []) as Job[];
       return { jobs: rows.slice(0, CORE_LIST_PAGE_SIZE), hasNext: rows.length > CORE_LIST_PAGE_SIZE, total: count ?? undefined };
@@ -57,7 +58,7 @@ export default async function ServiceJobsPage({ searchParams }: { searchParams: 
     let request = supabase.from("service_jobs").select("id, job_number, service_type, scheduled_start, scheduled_end, description, planned_quantity, unit_label, execution_state", { count: "exact" })
       .eq("branch_id", branchId);
     if (list.state) request = request.eq("execution_state", list.state);
-    const { data, error, count } = await request.order("scheduled_start", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1);
+    const { data, error, count } = await request.order("scheduled_start", { ascending: false }).order("job_number", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1);
     if (error) throw new Error("Không thể tải công việc dịch vụ.");
     const pageRows = data ?? [];
     const total = count ?? undefined;
@@ -90,6 +91,9 @@ export default async function ServiceJobsPage({ searchParams }: { searchParams: 
     ...STATES.map(countOf),
   ]);
   const serviceTypes = (typeResult.data ?? []) as ServiceTypeOption[];
+  // D75: requests the customers sent from the portal and the store has not answered yet (shown up to 99).
+  const requestResult = await supabase.from("service_requests").select("id").eq("branch_id", branchId).eq("state", "SUBMITTED").limit(100);
+  const openRequests = requestResult.data?.length ? (requestResult.data.length > 99 ? "99+" : requestResult.data.length) : 0;
   const jobs = jobResult.jobs;
   // Started from an order or a customer ("Tạo dịch vụ", D9): the location is chosen already.
   const uuid = /^[0-9a-f-]{36}$/i;
@@ -100,25 +104,26 @@ export default async function ServiceJobsPage({ searchParams }: { searchParams: 
   const stateFilter = STATES.includes(list.state as typeof STATES[number]) ? list.state : "";
   const filterOptions = [{ value: "", label: "Tất cả" }, ...STATES.map((state, index) => ({ value: state, label: serviceStateLabel(state), count: shown(counts[index]) }))];
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Điều phối dịch vụ</p><h1>Đơn dịch vụ</h1>
+    <header className="page-heading"><div><h1>Đơn dịch vụ</h1>
       <p className="lede">Chở hàng theo chuyến, máy theo giờ, bốc xếp theo công. Chưa biết số lượng thì để trống: thợ bấm số thực tế khi hoàn tất, văn phòng xác minh và ghi công nợ.</p></div>
-      {canManage && <div className="action-cluster">
-        <FormDialog label="+ Tạo đơn dịch vụ" title="Tạo đơn dịch vụ" size="lg" buttonClassName="button button-primary" defaultOpen={!!startCustomer.data}
+      <div className="action-cluster">
+        <Link className="button button-secondary" href="/admin/service-jobs/requests">Yêu cầu từ khách{openRequests ? ` (${openRequests})` : ""}</Link>
+        {canManage && <FormDialog label="+ Tạo đơn dịch vụ" title="Tạo đơn dịch vụ" size="lg" buttonClassName="button button-primary" defaultOpen={!!startCustomer.data}
           description="Chọn khách, công trình và loại dịch vụ. Số lượng có thể để trống nếu chưa biết.">
           <form className="command-panel service-job-form" action={createServiceJobAction}><input type="hidden" name="operationId" value={randomUUID()} />
             <fieldset className="form-section"><legend>Khách & công trình</legend>
               <ServiceJobLocationFields initialCustomers={customerResult.data ?? []} initialCustomer={startCustomer.data ?? undefined} initialSite={startSite.data ?? undefined} /></fieldset>
             <fieldset className="form-section"><legend>Dịch vụ</legend>
               <ServiceTypeFields types={serviceTypes} scope={catalogEditorScope(access, "service_types")}
-                vehicleField={<ServiceJobResourceField kind="vehicle" label="Xe" name="vehicleId" initialOptions={(vehicleResult.data ?? []).map((item) => ({ id: item.id, label: `${item.code} · ${item.plate_number}` }))} />}
+                vehicleField={<ServiceJobResourceField kind="vehicle" label="Xe" name="vehicleId" initialOptions={(vehicleResult.data ?? []).map((item) => ({ id: item.id, label: vehicleName(item) }))} />}
                 machineField={<ServiceJobResourceField kind="machine" label="Máy" name="machineId" initialOptions={(machineResult.data ?? []).map((item) => ({ id: item.id, label: `${item.code} · ${item.name}` }))} />} /></fieldset>
             <fieldset className="form-section"><legend>Thời gian</legend><ServiceJobTimeFields defaultStart={localNow()} /></fieldset>
             <fieldset className="form-section"><legend>Thêm (không bắt buộc)</legend>
               <ServiceJobResourceField kind="sales" label="Nhân viên kinh doanh phụ trách" name="salesEmployeeId" initialOptions={salesStaff} />
               <div className="field field-full"><label htmlFor="service-description">Ghi chú công việc</label><textarea id="service-description" name="description" maxLength={500} placeholder="VD: chở cát từ bãi A lên công trình, đường hẹp" /></div></fieldset>
             <button className="button button-primary" type="submit">Tạo đơn dịch vụ</button></form>
-        </FormDialog>
-        <Link className="button button-secondary" href="/admin/service-jobs/types">Loại dịch vụ</Link></div>}
+        </FormDialog>}
+        {canManage && <Link className="button button-secondary" href="/admin/service-jobs/types">Loại dịch vụ</Link>}</div>
     </header>
     <ActionNotice notice={query.notice} error={query.error} />
     <div className="list-layout">

@@ -3,12 +3,13 @@ import Link from "next/link";
 import { permissionLabel, roleDisplayName } from "@/components/access/presentation";
 import { InviteEmployeeForm } from "@/components/access/invite-employee-form";
 import { ActivationLinkForm } from "@/components/access/activation-link";
-import { ExplicitPermissionForm, ManageAccessForm, ReactivateAccessForm, RemoveEmployeeForm, RestoreEmployeeForm, RevokeAccessForm } from "@/components/access/manage-access-form";
+import { ExplicitPermissionForm, ManageAccessForm, ReactivateAccessForm, RemoveEmployeeForm, RestoreEmployeeForm, RevokeAccessForm, type AssignmentSummary } from "@/components/access/manage-access-form";
 import { RoleEditorButton, type EditorPermission, type EditorRole } from "@/components/access/role-editor";
 import { AutoFilterForm } from "@/components/ui/auto-filter-form";
 import { DetailTabs } from "@/components/ui/detail-tabs";
 import { FormDialog } from "@/components/ui/form-dialog";
 import { ListPager } from "@/components/ui/list-pager";
+import { RowActionsMenu, RowActionsSeparator } from "@/components/ui/row-actions-menu";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { requireInternalPermission } from "@/lib/access/context";
 import { OWNER_ONLY_PERMISSIONS } from "@/lib/access/permission-groups";
@@ -21,6 +22,16 @@ type Employee = { id: string; code: string; display_name: string; active: boolea
 type RoleRow = { id: string; code: string; name: string; system_role: boolean; role_permissions: { permission_code: string }[] };
 type PermissionRow = { code: string; name: string };
 type GrantRow = { employee_id: string; branch_id: string; permission_code: string };
+
+/** "Quyền bổ sung" in a row: two chips and "+N"; the whole list is the hover text and is read out in full. */
+function PermissionChips({ names }: { names: string[] }) {
+  if (!names.length) return <span className="muted">Không có</span>;
+  const rest = names.slice(2);
+  return <ul className="permission-chips" title={names.join(", ")}>
+    {names.slice(0, 2).map((name) => <li key={name} className="permission-chip">{name}</li>)}
+    {rest.length > 0 && <li className="permission-chip permission-chip-more"><span aria-hidden="true">+{rest.length}</span><span className="sr-only">và {rest.length} quyền khác: {rest.join(", ")}</span></li>}
+  </ul>;
+}
 
 /**
  * Nhân viên & quyền (FB2 Đợt 7, KiotViet style): an employee table whose actions open in popups, and a Vai trò tab where the
@@ -47,7 +58,8 @@ export default async function AccessManagementPage({ searchParams }: { searchPar
   const roleRows = roles.data as unknown as RoleRow[];
   const permissionRows = permissions.data as PermissionRow[];
   const grantRows = grants.data as GrantRow[];
-  const permissionName = (code: string) => permissionLabel(permissionRows.find((item) => item.code === code)?.name ?? code);
+  const permissionByCode = new Map(permissionRows.map((item) => [item.code, item]));
+  const permissionName = (code: string) => permissionLabel(permissionByCode.get(code)?.name ?? code);
   const assignableRoles = roleRows.filter((role) => role.role_permissions.every((permission) => actor.permissions.has(permission.permission_code)));
   const roleOptions = assignableRoles.map((role) => ({ id: role.id, name: role.name, label: roleDisplayName(role) }));
   const permissionOptions = permissionRows.filter((permission) => actor.permissions.has(permission.code));
@@ -63,7 +75,7 @@ export default async function AccessManagementPage({ searchParams }: { searchPar
   const tabs = [{ id: "employees", label: "Nhân viên", count: employees.count ?? undefined }, { id: "roles", label: "Vai trò", count: roleRows.length }];
 
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Quản trị truy cập</p><h1>Nhân viên & quyền</h1><p className="lede">Đang quản lý {actor.branchName}. Chuyển chi nhánh để quản lý phạm vi khác; không tự thay đổi quyền của chính mình.</p></div>
+    <header className="page-heading"><div><h1>Nhân viên & quyền</h1><p className="lede">Đang quản lý {actor.branchName}. Chuyển chi nhánh để quản lý phạm vi khác; không tự thay đổi quyền của chính mình.</p></div>
       <div className="action-cluster">
         <FormDialog label="Mời nhân viên" title="Mời nhân viên" buttonClassName={tab === "employees" ? "button button-primary" : "button button-secondary"}
           description="Tạo link kích hoạt (gửi qua Zalo) hoặc thư mời để nhân viên tự đặt mật khẩu; vai trò áp dụng tại chi nhánh đang chọn."><InviteEmployeeForm branches={branches.data} roles={roleOptions} /></FormDialog>
@@ -75,37 +87,47 @@ export default async function AccessManagementPage({ searchParams }: { searchPar
     {tab === "employees" ? <>
       <AutoFilterForm aria-label="Tìm nhân viên"><label>Tìm nhân viên<input type="search" name="q" defaultValue={list.q} placeholder="Mã hoặc tên nhân viên" /></label>{list.q && <Link className="code-link" href="/admin/access">Xóa lọc</Link>}</AutoFilterForm>
       <section className="card list-main"><div className="section-head"><h2>{employees.count ?? 0} nhân viên</h2><span className="scope-chip">{CORE_LIST_PAGE_SIZE} / trang</span></div>
-        <div className="table-wrap"><table className="access-table">
-          <thead><tr><th scope="col">Nhân viên</th><th scope="col">Vai trò tại {actor.branchName}</th><th scope="col">Quyền bổ sung</th><th scope="col">Trạng thái</th><th scope="col">Thao tác</th></tr></thead>
+        <div className="table-wrap"><table className="access-table card-table">
+          <thead><tr><th scope="col">Nhân viên</th><th scope="col">Vai trò tại {actor.branchName}</th><th scope="col">Quyền bổ sung</th><th scope="col">Trạng thái</th><th scope="col" className="table-actions">Thao tác</th></tr></thead>
           <tbody>{employeeRows.map((employee) => {
             const current = employee.employee_branch_access.find((assignment) => assignment.branch_id === actor.branchId && assignment.active)
               ?? employee.employee_branch_access.find((assignment) => assignment.branch_id === actor.branchId);
             const elsewhere = employee.employee_branch_access.filter((assignment) => assignment.branch_id !== actor.branchId && assignment.active);
             const explicit = current ? grantRows.filter((grant) => grant.employee_id === employee.id && grant.branch_id === current.branch_id).map((grant) => grant.permission_code) : [];
             const baseline = new Set(current?.roles?.role_permissions.map((permission) => permission.permission_code) ?? []);
+            const inherited = [...baseline].flatMap((code) => permissionByCode.get(code) ?? []);
+            const assignments: AssignmentSummary[] = [...(current ? [current] : []), ...elsewhere].map((assignment) => ({ branchId: assignment.branch_id, branchName: assignment.branches?.name ?? "Chi nhánh",
+              roleId: assignment.roles?.id ?? null, roleLabel: assignment.roles ? roleDisplayName(assignment.roles) : "Vai trò ẩn", active: assignment.active }));
             const canAct = employee.active && employee.id !== actor.employeeId;
+            const roleVerb = current?.active ? "Đổi vai trò" : "Cấp vai trò";
             return <tr key={employee.id} className={employee.active ? undefined : "row-muted"}>
               <td data-label="Nhân viên"><strong>{employee.display_name}</strong><small className="table-subline mono">{employee.code}</small>
                 {elsewhere.length > 0 && <small className="table-subline">Chi nhánh khác: {elsewhere.map((assignment) => `${assignment.branches?.name ?? "Chi nhánh"} (${assignment.roles ? roleDisplayName(assignment.roles) : "vai trò ẩn"})`).join(", ")}</small>}</td>
               <td data-label="Vai trò">{current?.roles ? roleDisplayName(current.roles) : <span className="muted">Chưa có</span>}</td>
-              <td data-label="Quyền bổ sung">{explicit.length ? explicit.map(permissionName).join(", ") : <span className="muted">Không có</span>}</td>
+              <td data-label="Quyền bổ sung"><PermissionChips names={explicit.map(permissionName)} /></td>
               <td data-label="Trạng thái"><StatusBadge tone={!employee.active ? "danger" : current?.active ? "success" : "warning"}>{!employee.active ? "Ngừng làm việc" : current?.active ? "Đang có hiệu lực" : current ? "Đã thu hồi" : "Chưa cấp quyền"}</StatusBadge></td>
-              <td className="table-actions" data-label="Thao tác">{canAct && <div className="action-cluster">
-                <FormDialog label={current?.active ? "Đổi vai trò" : "Cấp vai trò"} title={`${current?.active ? "Đổi vai trò" : "Cấp vai trò"} · ${employee.display_name}`} buttonClassName="button button-secondary button-compact" triggerData={{ "employee-id": employee.id, action: "role" }}>
-                  <ManageAccessForm operationId={randomUUID()} employeeId={employee.id} branches={branches.data} roles={roleOptions} /></FormDialog>
-                {current?.active && <FormDialog label="Quyền riêng" title={`Quyền riêng · ${employee.display_name}`} buttonClassName="button button-secondary button-compact" triggerData={{ "employee-id": employee.id, action: "explicit" }}
-                  description="Quyền cộng thêm ngoài vai trò, chỉ tại chi nhánh đang chọn."><ExplicitPermissionForm employeeId={employee.id} branchId={current.branch_id} permissions={permissionOptions.filter((permission) => !baseline.has(permission.code))} selected={explicit} /></FormDialog>}
-                {current?.active && <FormDialog label="Link kích hoạt" title={`Link kích hoạt · ${employee.display_name}`} buttonClassName="button button-secondary button-compact" triggerData={{ "employee-id": employee.id, action: "activation" }}
-                  description="Cho nhân viên chưa đặt mật khẩu hoặc quên mật khẩu."><ActivationLinkForm employeeId={employee.id} /></FormDialog>}
-                {current?.active && <FormDialog label="Thu hồi" title={`Thu hồi quyền · ${employee.display_name}`} buttonClassName="button button-danger button-compact" triggerData={{ "access-id": current.id, action: "revoke" }}
-                  description="Nhân viên mất quyền tại chi nhánh này ngay cả khi đang đăng nhập."><RevokeAccessForm accessId={current.id} /></FormDialog>}
+              <td className="table-actions" data-label="Thao tác">{canAct ? <div className="row-actions">
+                <FormDialog label={roleVerb} title={`${roleVerb} · ${employee.display_name}`} buttonClassName="button button-secondary button-compact" triggerData={{ "employee-id": employee.id, action: "role" }}>
+                  <ManageAccessForm operationId={randomUUID()} employeeId={employee.id} branches={branches.data} roles={roleOptions} assignments={assignments} /></FormDialog>
+                {current?.active && <FormDialog label="Quyền riêng" title={`Quyền riêng · ${employee.display_name}`} size="lg" buttonClassName="button button-secondary button-compact" triggerData={{ "employee-id": employee.id, action: "explicit" }}
+                  description="Quyền cộng thêm ngoài vai trò, chỉ tại chi nhánh đang chọn."><ExplicitPermissionForm employeeId={employee.id} branchId={current.branch_id} permissions={permissionOptions.filter((permission) => !baseline.has(permission.code))} selected={explicit}
+                    inherited={inherited} roleName={current.roles ? roleDisplayName(current.roles) : undefined} /></FormDialog>}
                 {current && !current.active && <FormDialog label="Kích hoạt lại" title={`Kích hoạt lại · ${employee.display_name}`} buttonClassName="button button-secondary button-compact" triggerData={{ "access-id": current.id, action: "reactivate" }}>
                   <ReactivateAccessForm accessId={current.id} /></FormDialog>}
-                <FormDialog label="Xóa" title={`Xóa nhân viên · ${employee.display_name}`} buttonClassName="button button-danger button-compact" triggerData={{ "employee-id": employee.id, action: "remove" }}>
-                  <RemoveEmployeeForm employeeId={employee.id} name={employee.display_name} /></FormDialog>
-              </div>}
-              {!employee.active && employee.id !== actor.employeeId && <FormDialog label="Dùng lại" title={`Dùng lại · ${employee.display_name}`} buttonClassName="button button-secondary button-compact" triggerData={{ "employee-id": employee.id, action: "restore" }}>
-                <RestoreEmployeeForm employeeId={employee.id} /></FormDialog>}</td>
+                {/* Less used and destructive actions wait behind "Thêm", the destructive ones last and in red. */}
+                <RowActionsMenu accessibleLabel={`Thêm thao tác · ${employee.display_name}`} triggerData={{ "employee-id": employee.id, ...(current ? { "access-id": current.id } : {}), action: "more" }}>
+                  {current?.active && <FormDialog label="Link kích hoạt" title={`Link kích hoạt · ${employee.display_name}`} buttonClassName="more-actions-item" triggerRole="menuitem" triggerData={{ "employee-id": employee.id, action: "activation" }}
+                    description="Cho nhân viên chưa đặt mật khẩu hoặc quên mật khẩu."><ActivationLinkForm employeeId={employee.id} /></FormDialog>}
+                  {current?.active && <RowActionsSeparator />}
+                  {current?.active && <FormDialog label="Thu hồi" title={`Thu hồi quyền · ${employee.display_name}`} buttonClassName="more-actions-item more-actions-danger" triggerRole="menuitem" triggerData={{ "access-id": current.id, action: "revoke" }}
+                    description="Nhân viên mất quyền tại chi nhánh này ngay cả khi đang đăng nhập."><RevokeAccessForm accessId={current.id} /></FormDialog>}
+                  <FormDialog label="Xóa" title={`Xóa nhân viên · ${employee.display_name}`} buttonClassName="more-actions-item more-actions-danger" triggerRole="menuitem" triggerData={{ "employee-id": employee.id, action: "remove" }}>
+                    <RemoveEmployeeForm employeeId={employee.id} name={employee.display_name} /></FormDialog>
+                </RowActionsMenu>
+              </div>
+              : !employee.active && employee.id !== actor.employeeId ? <FormDialog label="Dùng lại" title={`Dùng lại · ${employee.display_name}`} buttonClassName="button button-secondary button-compact" triggerData={{ "employee-id": employee.id, action: "restore" }}>
+                <RestoreEmployeeForm employeeId={employee.id} /></FormDialog>
+              : employee.id === actor.employeeId ? <span className="muted">Tài khoản của bạn</span> : null}</td>
             </tr>;
           })}</tbody>
         </table>{!employeeRows.length && <p className="empty-inline">Không có nhân viên phù hợp trong phạm vi bạn được xem.</p>}</div>

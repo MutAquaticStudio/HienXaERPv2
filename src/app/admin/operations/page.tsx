@@ -13,7 +13,7 @@ export default async function OperationsPage({ searchParams }: { searchParams: P
  if (!access) return <section className="card card-pad"><h1>Không có quyền truy cập</h1><p>Bạn cần quyền quản trị để xem trang này.</p><Link className="button button-secondary" href="/">Về trang chính</Link></section>;
  const state = await readOperationalState(access.branchId);
  const query = await searchParams;
- return <><header className="page-heading"><div><p className="eyebrow">{access.branchName}</p>
+ return <><header className="page-heading"><div>
   <h1>Phạm vi dữ liệu</h1><p className="lede">Giao dịch mới và dữ liệu lịch sử được ghi nhận theo nguồn riêng.</p></div></header>
   {query.error && <p role="alert">Chưa thể xử lý hồ sơ lịch sử. Kiểm tra quyền, nguồn đối chiếu và phiên bản hệ thống.</p>}
   <section className="card card-pad"><h2>Giao dịch mới</h2>

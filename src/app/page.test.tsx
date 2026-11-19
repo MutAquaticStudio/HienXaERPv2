@@ -1,12 +1,15 @@
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
-const m = vi.hoisted(() => ({ access: vi.fn(), redirect: vi.fn((path: string) => { throw new Error(`redirect:${path}`); }) }));
+const m = vi.hoisted(() => ({ inApp: vi.fn(async () => false), access: vi.fn(), portals: vi.fn(), user: vi.fn(), redirect: vi.fn((path: string) => { throw new Error(`redirect:${path}`); }) }));
 vi.mock("next/navigation", () => ({ redirect: m.redirect }));
 vi.mock("@/lib/access/context", () => ({ resolveInternalAccess: m.access }));
 vi.mock("@/lib/access/landing", () => ({ internalLandingPath: () => "/admin" }));
 vi.mock("@/lib/auth/actions", () => ({ loginAction: vi.fn() }));
 vi.mock("@/lib/company/sign-in-logo", () => ({ loadSignInLogoUrl: async () => null }));
+vi.mock("@/lib/auth/account-portals", () => ({ accountPortals: m.portals }));
+vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({ auth: { getUser: m.user } }) }));
+vi.mock("@/lib/app-shell/server", () => ({ openedInNativeApp: m.inApp }));
 import { AppError } from "@/lib/core/errors";
 import Home from "./page";
 
@@ -35,4 +38,28 @@ it("FB9: after signing out of a portal, opens on that portal's tab", async () =>
   m.access.mockRejectedValue(new AppError({ code: "UNAUTHENTICATED", message: "Chưa đăng nhập", status: 401 }));
   render(await Home(params({ portal: "work" })));
   expect(screen.getByRole("tab", { name: "Thợ & tài xế" })).toHaveAttribute("aria-selected", "true");
+});
+
+it("D81: a customer still signed in (the app reopened) goes straight to the customer portal", async () => {
+  m.access.mockRejectedValue(new AppError({ code: "FORBIDDEN", message: "Không phải nhân viên", status: 403 }));
+  m.user.mockResolvedValue({ data: { user: { id: "u1" } } });
+  m.portals.mockResolvedValue({ admin: false, work: false, customer: true });
+  await expect(Home(params())).rejects.toThrow("redirect:/customer");
+  m.portals.mockResolvedValue({ admin: false, work: false, customer: false });
+  render(await Home(params()));
+  expect(screen.getByRole("heading", { level: 1, name: "Đăng nhập" })).toBeInTheDocument();
+});
+
+it("D87: the sign-in screen shows \"Tải về\" (top bar + panel) to /tai-ve, except inside the Android app", async () => {
+  m.access.mockRejectedValue(new AppError({ code: "UNAUTHENTICATED", message: "Chưa đăng nhập", status: 401 }));
+  render(await Home(params()));
+  const links = screen.getAllByRole("link", { name: "Tải về" });
+  expect(links).toHaveLength(2);
+  links.forEach((link) => expect(link).toHaveAttribute("href", "/tai-ve"));
+  expect(screen.getByRole("complementary", { name: "Tải app Hiền Xa về điện thoại" })).toBeInTheDocument();
+  cleanup();
+  m.inApp.mockResolvedValueOnce(true);
+  render(await Home(params()));
+  expect(screen.queryByRole("link", { name: "Tải về" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("complementary", { name: "Tải app Hiền Xa về điện thoại" })).not.toBeInTheDocument();
 });

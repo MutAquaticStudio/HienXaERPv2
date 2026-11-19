@@ -19,3 +19,16 @@ reports/document-pdf-forms/qa/
 
 # Claude Code: per-user local settings
 .claude/settings.local.json
+
+__pycache__/
+
+# D81/D82 Android app build output and signing keys (never commit keys)
+mobile/android/build/
+mobile/android/app/build/
+mobile/android/.gradle/
+mobile/android/local.properties
+# D86: the Owner's Firebase config for the app (scripts/mobile/build-android.mjs copies it from HX_GOOGLE_SERVICES_JSON)
+mobile/android/app/google-services.json
+google-services.json
+*.keystore
+*.jks

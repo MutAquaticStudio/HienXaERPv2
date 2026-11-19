@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.hienxavlxd.app",
+      "sha256_cert_fingerprints": ["E8:12:14:F4:94:75:0A:55:B8:23:66:9E:BF:E0:0F:CB:1B:D9:C6:39:F9:85:FD:55:11:9D:D4:F4:37:E4:02:7A"]
+    }
+  }
+]

@@ -1,0 +1,6 @@
+// D82: app Android "Hiền Xa" — native shell (WebView của chính app) mở https://app.hienxavlxd.com.
+plugins {
+    id 'com.android.application' version '8.9.1' apply false
+    // D86: Firebase Cloud Messaging (push). Applied by app/build.gradle only when app/google-services.json is there.
+    id 'com.google.gms.google-services' version '4.5.0' apply false
+}

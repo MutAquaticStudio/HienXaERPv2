@@ -2,8 +2,12 @@ import { NextResponse } from "next/server";
 
 import { authenticatedPortalClient, portalRpc } from "@/modules/portal/server";
 import { workCommandHttpStatus } from "@/modules/portal/work-command-status";
+import { userFacingError } from "@/lib/core/errors";
+import { crossOriginRefusal } from "@/lib/core/request-origin";
 
 export async function POST(request: Request) {
+  const refused = crossOriginRefusal(request);
+  if (refused) return refused;
   const context = await authenticatedPortalClient();
   if (!context) return NextResponse.json({ error: "Phiên đăng nhập đã hết hạn" }, { status: 401 });
   try {
@@ -22,7 +26,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ workItemId: startedId });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Không thể bắt đầu công việc" },
+      { error: userFacingError(error instanceof Error ? error.message : null, "Không thể bắt đầu công việc") },
       { status: workCommandHttpStatus(error) },
     );
   }

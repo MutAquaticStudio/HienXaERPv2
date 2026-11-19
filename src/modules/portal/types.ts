@@ -47,6 +47,20 @@ export type WorkerJob = {
   };
 };
 
+/** D79: a delivery waiting for dispatch that the worker may take, with the trucks free for him and when. */
+export type WorkerPoolDelivery = {
+  id: string;
+  number: string;
+  version: number;
+  requested_at?: string;
+  customer_name?: string;
+  site_name?: string;
+  address?: string;
+  lines: { material_name: string; quantity: string; unit: string }[];
+  vehicles: { vehicle_id: string; code: string; plate_number?: string; start_at: string; end_at: string }[];
+  suggested_vehicle_id?: string | null;
+};
+
 export type WorkerEarning = {
   id: string;
   type?: string;
@@ -196,3 +210,8 @@ export type CustomerPortalAccount = {
   membership_role: string;
   sites: { id: string; name: string; address_text?: string; receiver_name?: string; receiver_phone?: string }[];
 };
+
+/** D98 "Báo cáo hàng đã đặt" (customer_portal_ordered_report); the shapes are checked in ordered-report-schema.ts. */
+export type {
+  OrderedReport, OrderedReportDay, OrderedReportGood, OrderedReportResult, OrderedReportService, OrderedReportSourceOrder,
+} from "@/modules/portal/ordered-report-schema";

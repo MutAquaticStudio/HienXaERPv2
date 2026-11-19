@@ -15,6 +15,21 @@ export function roleDisplayName(role: { name: string; system_role?: boolean | nu
   return custom ? role.name : roleLabel(role.name);
 }
 
+/** What a permission opens, under its box in "Quyền riêng" — for the ones whose name alone does not say it. */
+export const PERMISSION_HINTS: Record<string, string> = {
+  // D85: the lead worker ("thợ chính").
+  "work.field_dispatch": "Mở tab Điều phối ở cổng thợ: giao phiếu giao và việc dịch vụ cho thợ của chi nhánh, đổi người trước khi hàng lên xe. Không mở trang văn phòng, không đụng tới tiền hay giá.",
+};
+
+/** Lower case without Vietnamese marks, so "giao hang" finds "Giao hàng" in the "Tìm quyền" box. */
+export function foldSearchText(value: string) {
+  return value.normalize("NFD").replace(/\p{M}/gu, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+export function permissionHint(code: string) {
+  return Object.hasOwn(PERMISSION_HINTS, code) ? PERMISSION_HINTS[code] : null;
+}
+
 export function permissionLabel(value: string) {
   return value
     .replace("Owner Master Data Access", "Quản lý danh mục cơ bản")

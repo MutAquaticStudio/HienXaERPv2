@@ -65,8 +65,22 @@ function DraftStock({ line }: { line: SourcingLine }) {
     <small className="muted">Khi xác nhận, phần thiếu đặt NCC giao thẳng.</small></span>;
 }
 
+/**
+ * D32(d) for the order lines table: a draft line has nothing sourced yet, so its "Phân nguồn" cell shows the same forecast
+ * from today's stock as the panel, never "… còn thiếu" (which read as a stock shortage on drafts with plenty in stock).
+ */
+export function DraftLineSource({ line }: { line: SourcingLine }) {
+  if (line.available === undefined || line.available === null) return <p className="muted">Chưa phân nguồn: xác nhận đơn để hệ thống lấy kho.</p>;
+  return <DraftStock line={line} />;
+}
+
 /** Reasons of the latest run per line, from the stored plan. */
+/** The sourcing reason says "Kho " + the warehouse name, which often starts with "Kho" itself: "Kho Kho chính" → "Kho chính". */
+export function tidyWarehouseReason(text: string) {
+  return text.replace(/\b([Kk]ho) (?=Kho\b)/g, "");
+}
+
 export function sourcingRun(row: { created_at: string; plan: { lines?: { line_id: string; reason?: string }[] } } | null): SourcingRun | null {
   if (!row) return null;
-  return { createdAt: row.created_at, reasons: Object.fromEntries((row.plan.lines ?? []).filter((line) => line.reason).map((line) => [line.line_id, line.reason!])) };
+  return { createdAt: row.created_at, reasons: Object.fromEntries((row.plan.lines ?? []).filter((line) => line.reason).map((line) => [line.line_id, tidyWarehouseReason(line.reason!)])) };
 }

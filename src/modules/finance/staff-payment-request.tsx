@@ -8,7 +8,8 @@ import { RequestQr } from "@/components/portal/debt-payment";
 import { CopyButton } from "@/components/portal/copy-button";
 import { formatPortalMoney as money } from "@/modules/portal/money";
 import { cancelPaymentRequestAction, confirmCashPaymentAction, createPaymentRequestAction } from "./payment-request-actions";
-import { PAYMENT_REQUEST_STATE_LABEL, selectedTotal, vietQrImageUrl, type DebtPaymentOptions, type PaymentRequest } from "./sepay";
+import { PAYMENT_REQUEST_STATE_LABEL, selectedTotal, vietQrImageUrl } from "./payment-target";
+import type { DebtPaymentOptions, PaymentRequest } from "./sepay";
 
 export type PaymentRequestRow = { id: string; code: string; method: PaymentRequest["method"]; state: PaymentRequest["state"]; amount_vnd: string;
   received_amount_vnd: string; created_via: string; created_at: string };

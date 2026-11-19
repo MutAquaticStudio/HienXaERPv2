@@ -71,3 +71,14 @@ it("lists only the periods with figures, with the whole period first (FB18)", ()
   expect(rows.map((row) => (row as HTMLTableRowElement).cells[0].textContent)).toEqual(["Cả kỳ", "Ngày 01/10/2026", "Ngày 03/10/2026"]);
   expect(rows[0]).toHaveTextContent("3.000.000");
 });
+
+it("draws Thu and Chi as paired columns on Tổng quan, profit only in the tooltip (D56)", () => {
+  const { container } = render(<ProfitLineChart series={series} bars />);
+  expect(container.querySelectorAll("svg path")).toHaveLength(0);
+  // Day 1: Thu + Chi; day 2: Thu is 0 and Chi incomplete (no bar); day 3: Thu + Chi.
+  expect(container.querySelectorAll("svg rect[rx]")).toHaveLength(4);
+  expect(screen.getByRole("list", { name: "Chú giải" })).not.toHaveTextContent("Lợi nhuận");
+  const chart = screen.getByRole("img");
+  fireEvent.focus(chart);
+  expect(screen.getByRole("status")).toHaveTextContent("Lợi nhuận: -500.000");
+});

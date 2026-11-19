@@ -9,6 +9,8 @@ export type Match<T> = { found: T; how: MatchHow } | { found: null; candidates: 
 const digits = (value: string) => value.replace(/\D/g, "");
 /** Phone numbers compare on their last 9 digits, so "0901 234 567", "+84901234567" and an Excel number 901234567 match. */
 const samePhone = (left: string, right: string) => { const a = digits(left), b = digits(right); return a.length >= 9 && b.length >= 9 && a.slice(-9) === b.slice(-9); };
+/** The part of a phone number that is compared (its last 9 digits), or null when it is too short to be one. */
+export const phoneKey = (value: string | null | undefined) => { const all = digits(value ?? ""); return all.length >= 9 ? all.slice(-9) : null; };
 
 export function matchRecord<T>(rows: readonly T[], ref: string, keys: { code(row: T): string; name(row: T): string; phone?(row: T): string | null | undefined }): Match<T> {
   const wanted = normalizeRef(ref);

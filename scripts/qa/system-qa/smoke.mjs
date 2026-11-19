@@ -7,7 +7,7 @@ const ADMIN = ['/admin', '/admin/orders', '/admin/orders/new', '/admin/quotation
   '/admin/service-jobs', '/admin/service-jobs/types', '/admin/receivables', '/admin/payables', '/admin/debts', '/admin/cashbook', '/admin/expenses',
   '/admin/payment-notices', '/admin/invoices', '/admin/reports', '/admin/workforce', '/admin/attendance', '/admin/payroll', '/admin/compensation',
   '/admin/access', '/admin/settings', '/admin/settings/automation', '/admin/settings/branches', '/admin/settings/pricing', '/admin/notifications',
-  '/admin/messages', '/admin/audit', '/admin/ai', '/admin/operations', '/admin/catalog', '/admin/orders/import', '/admin/dashboard/obligations'];
+  '/admin/messages', '/admin/audit', '/admin/settings/ai', '/admin/operations', '/admin/catalog', '/admin/orders/import', '/admin/dashboard/obligations'];
 const WORK = ['/work', '/work/pool', '/work/attendance', '/work/earnings', '/work/messages', '/work/profile', '/work/tracking'];
 const CUSTOMER = ['/customer', '/customer/orders', '/customer/orders/new', '/customer/debts', '/customer/quotations', '/customer/messages', '/customer/profile'];
 

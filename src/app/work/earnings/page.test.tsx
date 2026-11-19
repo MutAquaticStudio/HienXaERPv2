@@ -57,3 +57,13 @@ it("shows this month's estimate split like the concept, the week strip and paid 
   // September's trip is not part of this month's list.
   expect(within(screen.getByRole("region", { name: "Các khoản tháng này" })).getAllByRole("listitem")).toHaveLength(3);
 });
+
+it("names the vehicle and the number of trips on a payslip line (D70)", async () => {
+  (tables.payroll_lines[0] as { details: unknown[] }).details = [
+    { code: "XE-NHO", name: "Tiền chuyến Xe cn nhỏ", kind: "BONUS", method: "PER_TRIP", quantity: 2, amount_vnd: "60000" },
+    { code: "XE-OTO", name: "Tiền chuyến Ô tô", kind: "BONUS", method: "PER_TRIP", quantity: 1, amount_vnd: "50000" },
+  ];
+  render(await WorkEarningsPage());
+  expect(screen.getByText("Thưởng: Tiền chuyến Xe cn nhỏ (2 chuyến)")).toBeTruthy();
+  expect(screen.getByText("Thưởng: Tiền chuyến Ô tô (1 chuyến)")).toBeTruthy();
+});

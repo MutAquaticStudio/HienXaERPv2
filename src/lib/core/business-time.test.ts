@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatBusinessDate, formatBusinessDateTime, parseBusinessDateTime } from "./business-time";
+import { businessDay, businessDaysBetween, formatBusinessDate, formatBusinessDateTime, isBusinessDay, parseBusinessDateTime, shiftBusinessDay } from "./business-time";
 import { formatQuantity } from "./quantity";
 
 describe("business document display", () => {
@@ -42,6 +42,21 @@ describe("business document display", () => {
     expect(formatBusinessDate("invalid")).toBe("Chưa có dữ liệu");
     expect(formatBusinessDateTime("invalid")).toBe("Chưa có dữ liệu");
     expect(formatBusinessDateTime("2026-01-01T17:00:00Z")).toBe("02/01/2026 00:00");
+  });
+  it("tells the Vietnam business day of an instant, whatever the server clock says", () => {
+    expect(businessDay("2026-11-16T17:30:00Z")).toBe("2026-11-17");
+    expect(businessDay("2026-11-17T16:59:00Z")).toBe("2026-11-17");
+    expect(businessDay("invalid")).toBe("");
+  });
+  it("does calendar arithmetic on business days", () => {
+    expect(shiftBusinessDay("2026-11-17", -1)).toBe("2026-11-16");
+    expect(shiftBusinessDay("2026-03-01", -1)).toBe("2026-02-28");
+    expect(shiftBusinessDay("2024-03-01", -1)).toBe("2024-02-29");
+    expect(shiftBusinessDay("2026-12-31", 1)).toBe("2027-01-01");
+    expect(businessDaysBetween("2026-11-11", "2026-11-17")).toBe(6);
+    expect(isBusinessDay("2026-02-28")).toBe(true);
+    expect(isBusinessDay("2026-02-30")).toBe(false);
+    expect(isBusinessDay("17/11/2026")).toBe(false);
   });
   it("removes database quantity padding without rounding away stored precision", () => {
     expect(formatQuantity("1.000000")).toBe("1");

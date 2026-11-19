@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { GPS_DEVICE_AVAILABLE, GPS_DEVICE_UNAVAILABLE_MESSAGE } from "@/modules/routing/device-availability";
+import { userFacingError } from "@/lib/core/errors";
+import { crossOriginRefusal } from "@/lib/core/request-origin";
 
 export async function POST(request: Request) {
+  const refused = crossOriginRefusal(request);
+  if (refused) return refused;
   if (!GPS_DEVICE_AVAILABLE) return NextResponse.json({ error: GPS_DEVICE_UNAVAILABLE_MESSAGE }, { status: 501 });
   const body = await request.json().catch(() => null) as { deliveryId?: string; assignmentVersion?: number; operationId?: string } | null;
   if (!body?.deliveryId || !Number.isInteger(body.assignmentVersion) || !body.operationId) {
@@ -14,7 +18,7 @@ export async function POST(request: Request) {
     target_assignment_version: body.assignmentVersion,
     operation_id: body.operationId,
   });
-  if (error) return NextResponse.json({ error: error.message }, { status: error.code === "42501" ? 403 : 409 });
+  if (error) return NextResponse.json({ error: userFacingError(error.message, "Không thể bắt đầu chia sẻ vị trí.") }, { status: error.code === "42501" ? 403 : 409 });
   const progress = await supabase.from("gps_tracking_sessions").select("last_sequence").eq("id", data).maybeSingle();
   const lastSequence = Number(progress.data?.last_sequence);
   if (progress.error || !progress.data || !Number.isSafeInteger(lastSequence) || lastSequence < 0) {

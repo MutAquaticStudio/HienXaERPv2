@@ -70,13 +70,16 @@ export default async function DispatchPage({ searchParams }: { searchParams: Pro
   // D22: the day board (today by default, Vietnam time).
   const requestedDay = firstValue(query.day);
   const day = /^\d{4}-\d{2}-\d{2}$/.test(requestedDay) ? requestedDay : businessInputValue(new Date()).slice(0, 10);
-  const [{ data: dayData }, fleet] = await Promise.all([
+  const [{ data: dayData }, fleet, { data: fieldLabels }] = await Promise.all([
     supabase.rpc("dispatch_day", { target_branch_id: access.branchId, target_day: day }),
     // FB18 (D40): where the workers on shift are, refreshed by the map itself every 15 s.
     loadFleetSnapshot().catch(() => []),
+    // D85: deliveries a lead worker gave or moved from the worker portal ("Thợ chính Tuấn giao").
+    supabase.rpc("field_dispatch_labels", { target_branch_id: access.branchId, target_day: day }),
   ]);
   // "Gán" on a waiting delivery: who may take delivery work, the trucks, each delivery's version and the stop length.
   const waitingIds = ((dayData as DispatchDay | null)?.waiting ?? []).map((item) => item.id);
+  const waitingSet = new Set(waitingIds);
   let assign: DispatchAssignOptions | undefined;
   if (access.permissions.has("delivery.assign") && waitingIds.length) {
     const [employees, vehicleResult, versionResult, settingsResult] = await Promise.all([
@@ -94,17 +97,23 @@ export default async function DispatchPage({ searchParams }: { searchParams: Pro
     };
   }
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Điều phối</p><h1>Bảng phân giao</h1><p className="lede">Phân công và theo dõi tiến độ giao hàng.</p></div>{access.permissions.has("roles.manage") && <div className="action-cluster"><Link className="button button-secondary" href="/admin/dispatch/resources?kind=vehicles">Xe</Link><Link className="button button-secondary" href="/admin/dispatch/resources?kind=machines">Máy / thiết bị</Link></div>}</header>
-    {dayData ? <DispatchDayBoard day={day} board={dayData as DispatchDay} canAssign={access.permissions.has("delivery.assign")} assign={assign}
+    <header className="page-heading"><div><h1>Điều phối giao hàng</h1><p className="lede">Phân công và theo dõi tiến độ giao hàng.</p></div>{access.permissions.has("roles.manage") && <div className="action-cluster"><Link className="button button-secondary" href="/admin/dispatch/resources?kind=vehicles">Xe</Link><Link className="button button-secondary" href="/admin/dispatch/resources?kind=machines">Máy / thiết bị</Link></div>}</header>
+    {dayData ? <DispatchDayBoard day={day} board={dayData as DispatchDay} canAssign={access.permissions.has("delivery.assign")} assign={assign} fieldLabels={(fieldLabels as Record<string, string> | null) ?? undefined}
       notice={firstValue(query.dispatched) || undefined} error={firstValue(query.error) || undefined} />
       : <p className="form-message" role="alert">Chưa tải được lịch giao theo tài xế. Hãy tải lại trang.</p>}
     <FleetMap initial={fleet as FleetPosition[]} />
     <form action="/admin/dispatch" method="get" className="filter-bar"><label>Tìm kiếm<input name="q" defaultValue={firstValue(query.q)} maxLength={80} placeholder="Mã phiếu, khách hàng, công trình" /></label><button className="button button-secondary" type="submit">Tìm</button>{firstValue(query.q) && <Link className="code-link" href="/admin/dispatch">Xóa tìm kiếm</Link>}</form>
-    <section className="dispatch-board">{columns.map((column) => <div className="dispatch-column" key={column.title}>
+    <section className="dispatch-board">{columns.map((column) => {
+      // The day board above already lists what waits for a truck today, with "Gán": the board column does not repeat
+      // those cards (only while not searching), it points to them and keeps the rest (later days, supplier-direct).
+      const shownAbove = column.bucket === "planned" && !firstValue(query.q) ? column.rows.filter((row) => waitingSet.has(row.id)) : [];
+      const rows = shownAbove.length ? column.rows.filter((row) => !waitingSet.has(row.id)) : column.rows;
+      return <div className="dispatch-column" key={column.title}>
       <div className="dispatch-column-head"><h2>{column.title}</h2><span>{column.rows.length}{column.hasNext ? "+" : ""}</span></div>
-      {column.rows.map((row) => <Link className="dispatch-ticket" href={`/admin/deliveries/${row.id}`} key={row.id}><strong className="mono">{row.delivery_number}</strong><span>{row.customer_name_snapshot}</span><small>{row.site_name_snapshot}</small><StatusBadge tone={deliveryStateTone(row.execution_state)}>{deliveryStateLabel(row.execution_state)}</StatusBadge></Link>)}
+      {shownAbove.length > 0 && <a className="dispatch-above-note" href="#dispatch-waiting">{shownAbove.length} phiếu cần giao đến hôm nay ở khung “Chờ điều phối” phía trên</a>}
+      {rows.map((row) => <Link className="dispatch-ticket" href={`/admin/deliveries/${row.id}`} key={row.id}><strong className="mono">{row.delivery_number}</strong><span>{row.customer_name_snapshot}</span><small>{row.site_name_snapshot}</small><StatusBadge tone={deliveryStateTone(row.execution_state)}>{deliveryStateLabel(row.execution_state)}</StatusBadge></Link>)}
       {column.rows.length === 0 && <p className="muted dispatch-empty">Không có phiếu.</p>}
       <nav className="list-pagination" aria-label={`Phân trang ${column.title}`}><span className="muted">Trang {column.page}</span><div className="action-cluster">{column.page > 1 && <Link className="button button-secondary" href={pageHref(query, column.pageKey, column.page - 1)}>Trước</Link>}{column.hasNext && <Link className="button button-secondary" href={pageHref(query, column.pageKey, column.page + 1)}>Tiếp</Link>}</div></nav>
-    </div>)}</section>
+    </div>; })}</section>
   </div>;
 }

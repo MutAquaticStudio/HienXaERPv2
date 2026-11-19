@@ -26,6 +26,12 @@ it("counts an extra grant as an operations permission", async () => {
   expect(portals.admin).toBe(true);
 });
 
+it("keeps a lead worker (D85 Điều phối hiện trường) on Thợ & tài xế only", async () => {
+  const portals = await accountPortals(client({ employees: { id: "e1" }, employee_branch_access: roles("work.read", "work.claim"),
+    employee_permission_grants: [{ permission_code: "work.field_dispatch" }], customer_portal_memberships: [] }), "u1");
+  expect(portals).toEqual({ admin: false, work: true, customer: false });
+});
+
 it("puts a customer on Khách hàng only", async () => {
   const portals = await accountPortals(client({ employees: null, customer_portal_memberships: [{ id: "m1" }] }), "u1");
   expect(portals).toEqual({ admin: false, work: false, customer: true });

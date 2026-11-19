@@ -6,6 +6,7 @@ import { businessInputValue } from "@/lib/core/business-time";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { listAssignmentEmployees } from "@/modules/delivery/assignment-options";
 import { deliveryStateLabel, vehicleStatusLabel } from "@/modules/delivery/presentation";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 type Props = { params: Promise<{ id: string }> };
 type Line = { id: string; material_name_snapshot: string; source_mode: string; planned_base_quantity: string | number; base_uom_symbol: string };
@@ -32,7 +33,7 @@ export default async function SplitDeliveryPage({ params }: Props) {
   const isDirect = lines.length > 0 && lines.every((line) => line.source_mode === "SUPPLIER_DIRECT");
 
   return <>
-    <header className="page-heading"><div><p className="eyebrow">Điều phối giao hàng</p><h1>Tách phiếu giao {delivery.delivery_number}</h1>
+    <header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/deliveries", label: "Phiếu giao" }} /><h1>Tách phiếu giao {delivery.delivery_number}</h1>
       <p className="lede">{delivery.customer_name_snapshot} · {delivery.site_name_snapshot}</p></div></header>
     {canSplit ? <>
       <SplitDeliveryForm intro={<section className="card card-pad">

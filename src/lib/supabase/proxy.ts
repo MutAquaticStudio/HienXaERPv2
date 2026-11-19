@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
+import { AUTH_COOKIE_OPTIONS, authCookieWriteOptions, isSessionOnly } from "./cookie-options";
 import { getSupabaseConfig } from "./config";
 
 /** Pages a login with a temporary password may still open (D14/C1: the first sign-in must change it). */
@@ -17,12 +18,15 @@ export async function refreshAuthSession(request: NextRequest) {
   let response = NextResponse.next({ request });
   const { url, publishableKey } = getSupabaseConfig();
   const supabase = createServerClient(url, publishableKey, {
+    cookieOptions: AUTH_COOKIE_OPTIONS,
     cookies: {
       getAll: () => request.cookies.getAll(),
       setAll: (cookiesToSet) => {
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
         response = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+        // D77: a login kept only until the browser closes stays that way when its session is refreshed.
+        const browserSession = isSessionOnly((name) => request.cookies.get(name)?.value);
+        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, authCookieWriteOptions(options, browserSession)));
       },
     },
   });

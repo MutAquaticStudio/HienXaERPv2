@@ -37,7 +37,7 @@ async function impliedUnitPrices(db:Db,branch:string,rule:{supplier:string;mater
  const symbol=(id:string)=>((symbols.data??[]) as {id:string;symbol:string}[]).find(u=>u.id===id)?.symbol??"đơn vị";
  return prices.map(([uomId,price])=>({uomId,symbol:symbol(uomId),priceVnd:price.toString()}));
 }
-function revalidate(){revalidatePath("/admin/suppliers/pricing");revalidatePath("/admin/products");revalidatePath("/admin/purchase-orders");}
+function revalidate(){revalidatePath("/admin/suppliers/pricing");revalidatePath("/admin/suppliers/pricing/history");revalidatePath("/admin/products");revalidatePath("/admin/purchase-orders");}
 function validDay(v:string){const d=new Date(v+"T12:00:00Z");return /^\d{4}-\d{2}-\d{2}$/.test(v)&&!v.startsWith("0000")&&Number.isFinite(d.getTime())&&d.toISOString().slice(0,10)===v;}
 export async function savePurchasePricingRuleAction(_:PricingState|undefined,form:FormData):Promise<PricingState>{
  const access=await requireInternalPermission("purchasing.price.manage");

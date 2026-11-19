@@ -33,6 +33,7 @@ type DetailItem = { source_kind: string; label: string; amount_vnd: string | num
 
 const instant = (date: string) => `${date}T00:00:00+07:00`;
 const endOfDay = (date: string) => `${date}T23:59:59.999+07:00`;
+const nextDay = (date: string) => new Date(Date.parse(`${date}T00:00:00Z`) + 86_400_000).toISOString().slice(0, 10);
 
 export function availableReportKinds(permissions: ReadonlySet<string>) {
   const kinds: ReportKind[] = [];
@@ -70,7 +71,8 @@ export async function loadFixedReport(access: Access, filters: ReportFilters): P
   const cutoff = filters.cutoff ?? new Date().toISOString();
   const isExpense = filters.report === "expenses";
   const from = isExpense ? instant(filters.from) : "2000-01-01T00:00:00+07:00";
-  const to = isExpense ? instant(filters.to) : endOfDay(filters.asOf);
+  // D57: "Đến ngày" includes that day, the same as every other report.
+  const to = isExpense ? instant(nextDay(filters.to)) : endOfDay(filters.asOf);
   const dashboardArgs = {
     target_branch_id: access.branchId,
     from_inclusive: from,
@@ -100,7 +102,7 @@ export async function loadFixedReport(access: Access, filters: ReportFilters): P
       quality,
       rows,
       chart: rows.slice(0, 8).map((row) => ({ label: row.label, amountVnd: row.amountVnd })),
-      scopeText: `Kỳ ${formatBusinessDate(filters.from)} đến trước ${formatBusinessDate(filters.to)} · ${recordingScopeText(snapshot.scope?.historical_quality)}`,
+      scopeText: `Kỳ ${formatBusinessDate(instant(filters.from))} – ${formatBusinessDate(instant(filters.to))} · ${recordingScopeText(snapshot.scope?.historical_quality)}`,
       hasNext: false,
       cutoff,
     };

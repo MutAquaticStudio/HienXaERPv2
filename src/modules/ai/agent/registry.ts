@@ -11,15 +11,29 @@ import { matchRecord } from "@/modules/sales/order-match";
 import { assignSellerAfterCreate, canChooseSeller, loadSellers } from "@/modules/sales/seller";
 import { buildWarehouseLines } from "@/modules/purchasing/warehouse-lines";
 import { vietnamInstant } from "@/modules/attendance/presentation";
+import { deliveryCommandMessage } from "@/modules/delivery/errors";
+import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { formatVnd, vnd } from "@/lib/core/money";
+import { vehicleName } from "@/modules/catalog/vehicle-label";
 import {
-  findAccount, findCustomer, findDocument, findEmployee, findMaterial, findSite, findSupplier, findUnit, findWarehouse, ResolveError, type Supabase,
+  findAccount, findCustomer, findDelivery, findDocument, findEmployee, findMaterial, findSite, findSupplier, findUnit, findVehicle, findWarehouse, ResolveError, type Supabase,
 } from "./resolve";
+import { createCustomers } from "./batch-customers";
+import { createMaterials, createSuppliers } from "./batch-catalog";
+import { createMaterial, createSupplier } from "./single-catalog";
+import { updatePurchasePrices } from "./batch-prices";
+import { salesOrdersFromList } from "./batch-orders";
+import { purchaseFromDocument } from "./batch-purchase";
+import { receiptsFromTransfers } from "./batch-receipts";
 
 export type AgentContext = { supabase: Supabase; branchId: string; permissions: ReadonlySet<string> };
 export type SummaryLine = { label: string; value: string };
 export type Prepared = { title: string; summary: SummaryLine[]; payload: Record<string, unknown> };
 export type Executed = { link?: string; message: string };
+/** D63/D64: a list card shows every row of a batch, each "CREATE" (will be done) or "SKIP" with why; the person unticks rows. */
+export type ListRowView = { n: number; cells: string[]; status: "CREATE" | "SKIP"; reason?: string };
+/** `columns` follow the first (name) column; the card adds the tick box, "#" and "Trạng thái" itself. */
+export type ListView = { columns: string[]; verb: string; noun: string; okLabel: string; rows: ListRowView[] };
 export type AgentAction = {
   kind: string;
   area: "Bán hàng" | "Mua hàng & kho" | "Tài chính" | "Nhân sự";
@@ -27,7 +41,12 @@ export type AgentAction = {
   description: string;
   properties: Record<string, unknown>;
   prepare(context: AgentContext, input: unknown): Promise<Prepared>;
-  execute(context: AgentContext, payload: Record<string, unknown>, actionId: string): Promise<Executed>;
+  /** D65: the real catalog form this action opens on the card ("Xem và sửa"); `initial` is what the form starts with (strings, "" = unticked). */
+  catalog?: { kind: string; initial(payload: Record<string, unknown>): Record<string, string>; site?(payload: Record<string, unknown>, customerId: string): Record<string, string> | null };
+  /** The rows of a list card, from the stored payload (D64); absent for ordinary one-record actions. */
+  view?(payload: Record<string, unknown>): ListView | null;
+  /** `options.exclude`: rows of a list card (D63) the person unticked before confirming. */
+  execute(context: AgentContext, payload: Record<string, unknown>, actionId: string, options?: { exclude?: readonly number[] }): Promise<Executed>;
 };
 
 const money = (value: string | bigint) => formatVnd(vnd(String(value)));
@@ -88,6 +107,9 @@ const createCustomer: AgentAction = {
     }
     return { link: `/admin/customers/${actionId}`, message: "Đã tạo khách hàng." };
   },
+  catalog: { kind: "customers",
+    initial: (payload) => ({ code: String(payload.code ?? ""), display_name: String(payload.ten ?? ""), customer_type: String(payload.loai ?? "BUSINESS"), phone: String(payload.dien_thoai ?? ""), address_text: String(payload.dia_chi_giao ?? "") }),
+    site: (payload, customerId) => payload.dia_chi_giao ? { customer_id: customerId, code: "CT1", name: `Công trình ${String(payload.ten ?? "").slice(0, 140)}`, address_text: String(payload.dia_chi_giao), receiver_phone: String(payload.dien_thoai ?? "") } : null },
 };
 
 const createSalesOrder: AgentAction = {
@@ -130,7 +152,7 @@ const createSalesOrder: AgentAction = {
       siteId: String(payload.siteId), chosen: (payload.sellerId as string | null) ?? null, operationId: actionId });
     if (!payload.confirm) return { link: `/admin/orders/${orderId}`, message: "Đã tạo đơn bán nháp." };
     const confirmId = derivedOperationId(actionId, "confirm");
-    const { error } = await context.supabase.rpc("confirm_sales_order", { target_order_id: orderId, operation_id: confirmId });
+    const { error } = await context.supabase.rpc("confirm_sales_order", { target_order_id: orderId, expected_draft_version: 1, operation_id: confirmId });
     if (error) return { link: `/admin/orders/${orderId}`, message: "Đã tạo đơn nháp nhưng chưa xác nhận được (vượt hạn mức hoặc thiếu điều kiện). Mở đơn để xử lý." };
     await autoSourceConfirmedOrder(context.supabase, context.branchId, orderId, derivedOperationId(confirmId, "auto-source"), { onlyIfEnabled: true }).catch(() => null);
     return { link: `/admin/orders/${orderId}`, message: "Đã tạo và xác nhận đơn bán." };
@@ -145,11 +167,13 @@ const confirmSalesOrder: AgentAction = {
     const value = z.object({ ma_don: z.string().min(1) }).parse(input);
     const order = await findDocument(context.supabase, context.branchId, "sales_order_read", "order_number", value.ma_don, "đơn bán");
     if (order.commercial_state !== "DRAFT") throw new ResolveError(`Đơn ${order.order_number} không còn là bản nháp.`);
-    return { title: `Xác nhận đơn bán ${order.order_number}`, payload: { orderId: order.id },
+    // D96 (S5): approving confirms the draft as it was shown here.
+    const { data: draft } = await context.supabase.from("sales_orders").select("draft_version").eq("id", order.id).maybeSingle();
+    return { title: `Xác nhận đơn bán ${order.order_number}`, payload: { orderId: order.id, draftVersion: (draft as { draft_version?: number } | null)?.draft_version ?? null },
       summary: [{ label: "Khách hàng", value: String(order.customer_name_snapshot) }, { label: "Tổng tiền", value: money(String(order.total_vnd)) }] };
   },
   async execute(context, payload, actionId) {
-    await rpc(context, "confirm_sales_order", { target_order_id: payload.orderId, operation_id: actionId });
+    await rpc(context, "confirm_sales_order", { target_order_id: payload.orderId, expected_draft_version: payload.draftVersion ?? null, operation_id: actionId });
     await autoSourceConfirmedOrder(context.supabase, context.branchId, String(payload.orderId), derivedOperationId(actionId, "auto-source"), { onlyIfEnabled: true }).catch(() => null);
     return { link: `/admin/orders/${payload.orderId}`, message: "Đã xác nhận đơn bán." };
   },
@@ -183,6 +207,65 @@ const createDelivery: AgentAction = {
     const result = await rpc(context, "create_delivery_for_order", { target_sales_order_id: payload.orderId, target_warehouse_id: payload.warehouseId,
       delivery_lines: payload.lines, scheduled_at: new Date().toISOString(), assignment: null, operation_id: actionId }) as { delivery_id?: string } | null;
     return { link: result?.delivery_id ? `/admin/deliveries/${result.delivery_id}` : `/admin/orders/${payload.orderId}`, message: "Đã lập phiếu giao." };
+  },
+};
+
+// D50: "Gán phiếu giao" — the same command as "Gán nhanh" on the dispatch board and "Phân giao" on the delivery, with all its
+// checks (rights, truck capacity, clashes, the worker's account, the delivery's version).
+const assignDelivery: AgentAction = {
+  kind: "soan_gan_phieu_giao", area: "Bán hàng", permissions: ["delivery.assign"],
+  description: "Soạn gán người giao + xe + khung giờ cho một phiếu giao đang \"Chờ phân giao\" (hoặc đổi người / xe khi thợ chưa bắt đầu), hoặc giao cho đơn vị vận chuyển ngoài (khi đó để trống người và xe).",
+  properties: {
+    ma_phieu: str("Mã phiếu giao, ví dụ DL-041."),
+    nguoi_giao: str("Mã hoặc tên nhân viên giao; trống nếu thuê ngoài."),
+    xe: str("Tên / mã xe (hoặc biển số nếu có); trống nếu thuê ngoài."),
+    don_vi_ngoai: str("Tên đơn vị vận chuyển ngoài; trống nếu dùng người và xe của cửa hàng."),
+    sdt_don_vi_ngoai: str("Số điện thoại đơn vị ngoài; có thể trống."),
+    ngay: str("Ngày giao yyyy-mm-dd; trống = hôm nay."),
+    gio_bat_dau: str("Giờ bắt đầu HH:MM."),
+    gio_ket_thuc: str("Giờ kết thúc HH:MM; trống = sau giờ bắt đầu 2 tiếng."),
+  },
+  async prepare(context, input) {
+    const time = z.string().trim().refine((value) => !value || /^([01]\d|2[0-3]):[0-5]\d$/.test(value), "Giờ dạng HH:MM.");
+    const value = z.object({ ma_phieu: z.string().trim().min(1), nguoi_giao: z.string().trim(), xe: z.string().trim(), don_vi_ngoai: z.string().trim().max(160),
+      sdt_don_vi_ngoai: z.string().trim().max(30), ngay: dateText, gio_bat_dau: time.refine((text) => text.length > 0, "Cần giờ bắt đầu."), gio_ket_thuc: time }).parse(input);
+    const delivery = await findDelivery(context.supabase, context.branchId, value.ma_phieu);
+    if (!["PLANNED", "ASSIGNED"].includes(delivery.execution_state)) {
+      throw new ResolveError(`Phiếu ${delivery.delivery_number} không còn ở bước phân giao (đã giao, đang giao hoặc đã hủy).`);
+    }
+    const external = value.don_vi_ngoai;
+    if (external && (value.nguoi_giao || value.xe)) throw new ResolveError("Chọn một trong hai: người + xe của cửa hàng, hoặc đơn vị vận chuyển ngoài.");
+    if (!external && (!value.nguoi_giao || !value.xe)) throw new ResolveError("Cần cả người giao và xe (hoặc tên đơn vị vận chuyển ngoài).");
+    const employee = external ? null : await findEmployee(context.supabase, context.branchId, value.nguoi_giao);
+    const vehicle = external ? null : await findVehicle(context.supabase, context.branchId, value.xe);
+    const day = value.ngay || today();
+    const start = vietnamInstant(day, value.gio_bat_dau);
+    const end = value.gio_ket_thuc ? vietnamInstant(day, value.gio_ket_thuc) : new Date(Date.parse(start) + 2 * 3_600_000).toISOString();
+    if (Date.parse(end) <= Date.parse(start)) throw new ResolveError("Giờ kết thúc phải sau giờ bắt đầu.");
+    return {
+      title: `Gán phiếu giao ${delivery.delivery_number}`,
+      payload: { deliveryId: delivery.id, version: delivery.version, employeeId: employee?.id ?? null, vehicleId: vehicle?.id ?? null,
+        externalName: external, externalPhone: value.sdt_don_vi_ngoai, start, end },
+      summary: [
+        { label: "Khách / công trình", value: `${delivery.customer_name_snapshot} · ${delivery.site_name_snapshot}` },
+        ...(external ? [{ label: "Đơn vị vận chuyển ngoài", value: `${external}${value.sdt_don_vi_ngoai ? ` · ${value.sdt_don_vi_ngoai}` : ""}` }]
+          : [{ label: "Người giao", value: employee!.display_name }, { label: "Xe", value: vehicleName(vehicle!) }]),
+        { label: "Giờ giao", value: `${formatBusinessDateTime(start)} – ${formatBusinessDateTime(end)}` },
+        ...(delivery.execution_state === "ASSIGNED" ? [{ label: "Lưu ý", value: "Phiếu đã được gán; xác nhận sẽ thay người / xe / giờ cũ." }] : []),
+      ],
+    };
+  },
+  async execute(context, payload, actionId) {
+    const { error } = await context.supabase.rpc("assign_delivery_scheduled", {
+      target_delivery_id: payload.deliveryId, target_employee_id: payload.employeeId, target_vehicle_id: payload.vehicleId,
+      external_carrier_name: payload.externalName ?? "", external_carrier_phone: payload.externalPhone ?? "",
+      scheduled_start: payload.start, scheduled_end: payload.end, expected_version: payload.version, operation_id: actionId,
+    });
+    if (error) {
+      throw new ResolveError(error.message.includes("delivery_assignment_version_conflict")
+        ? "Phiếu giao vừa thay đổi (đã được gán hoặc đã chạy). Hỏi lại trợ lý để soạn thẻ mới." : deliveryCommandMessage(error.message, error.hint));
+    }
+    return { link: `/admin/deliveries/${payload.deliveryId}`, message: "Đã gán người, xe và giờ giao." };
   },
 };
 
@@ -387,7 +470,7 @@ const sendMessage: AgentAction = {
   },
 };
 
-export const AGENT_ACTIONS: readonly AgentAction[] = [createCustomer, createSalesOrder, confirmSalesOrder, createDelivery, createPurchaseOrder,
+export const AGENT_ACTIONS: readonly AgentAction[] = [createCustomer, createCustomers, createSupplier, createMaterial, createMaterials, createSuppliers, updatePurchasePrices, purchaseFromDocument, receiptsFromTransfers, salesOrdersFromList, createSalesOrder, confirmSalesOrder, createDelivery, assignDelivery, createPurchaseOrder,
   receivePurchaseOrder, transferStock, receivePayment, recordExpense, saveAttendance, adjustPayroll, sendMessage];
 
 export const agentActionOf = (kind: string) => AGENT_ACTIONS.find((action) => action.kind === kind);

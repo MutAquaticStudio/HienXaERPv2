@@ -4,8 +4,6 @@ import { deliveryStateLabel, deliveryStateTone } from "@/modules/delivery/presen
 import { financeStateLabel, financeSourceLabel } from "@/modules/finance/presentation";
 import { priceSourceLabel } from "@/modules/pricing/presentation";
 import Link from "next/link";
-import { ZaloNotifyToggle } from "@/components/zalo/zalo-notify-toggle";
-import { isZaloPhone } from "@/modules/zalo/phone";
 import { activeTab, DetailTabs, type DetailTab } from "@/components/ui/detail-tabs";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { requireInternalPermission } from "@/lib/access/context";
@@ -16,8 +14,14 @@ import { QUOTATIONS_ENABLED } from "@/lib/features";
 import { CatalogCreateButton, CatalogEditButton } from "@/modules/catalog/catalog-dialog";
 import { catalogChildRecordsProps, catalogCreateProps, catalogRecordProps } from "@/modules/catalog/editor-data";
 import { PortalAccountsCard, type PortalAccount } from "@/components/customers/portal-accounts-card";
+import { PortalLinkRequestsCard, type PortalLinkRequest } from "@/components/customers/portal-link-requests-card";
 import { StaffPaymentRequestPanel, type CashAccount, type PaymentRequestRow } from "@/modules/finance/staff-payment-request";
 import { debtPaymentOptionsSchema } from "@/modules/finance/sepay";
+import { loadCompanyProfile } from "@/lib/company/profile";
+import { SendToCustomerZalo } from "@/components/zalo/send-to-customer";
+import { debtReminderMessage, paymentReceivedMessage, zaloChatLink } from "@/modules/zalo/customer-messages";
+import { bankTransferNote } from "@/modules/finance/transfer-note";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 type CustomerProfile = { id: string; code: string; display_name: string; customer_type: string; phone: string | null; email: string | null; address_text: string | null; tax_code: string | null; tier_code: string | null; payment_terms_days: number; active: boolean; source?: string };
 type SiteRow = { id: string; code: string; name: string; address_text: string; receiver_name: string | null; receiver_phone: string | null; access_note: string | null; active: boolean };
@@ -94,12 +98,12 @@ export default async function CustomerDetailPage({ params, searchParams }: PageP
       siteEdit: can.manage ? await catalogChildRecordsProps("sites", "customer_id", id, access, supabase) : null })
     : tab === "orders" ? await OrdersTab({ customerId: id, branchId: access.branchId, supabase })
     : tab === "deliveries" ? await DeliveriesTab({ customerId: id, branchId: access.branchId, supabase })
-    : tab === "debts" ? await DebtsTab({ customerId: id, branchId: access.branchId, supabase, canPostPayment })
+    : tab === "debts" ? await DebtsTab({ customerId: id, branchId: access.branchId, supabase, canPostPayment, customer })
     : tab === "prices" ? await PricesTab({ customerId: id, branchId: access.branchId, supabase, canManage: access.permissions.has("pricing.manage") })
     : await DocumentsTab({ customerId: id, branchId: access.branchId, supabase, can: { quotes: QUOTATIONS_ENABLED && access.permissions.has("quotation.read"), deliveries: can.deliveries, finance: can.finance } });
 
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Khách hàng · {customer.code}{selfRegistered && <> · <span className="scope-chip">Tự đăng ký</span></>}</p><h1>{customer.display_name}</h1>
+    <header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/customers", label: "Khách hàng" }} current={customer.code} /><h1>{customer.display_name}{selfRegistered && <span className="scope-chip heading-chip">Tự đăng ký</span>}</h1>
       <p className="lede">{customer.phone ?? "Chưa có điện thoại"} · {customer.address_text ?? "Chưa có địa chỉ chính"} · {customer.tier_code ? `Nhóm giá ${(groupResult.data as { name: string } | null)?.name ?? customer.tier_code}` : "Giá chung"}</p></div>
       <div className="form-actions">
         {can.createOrder && customer.active && <Link className="button button-primary" href={`/admin/orders/new?customer=${customer.id}`}>Tạo đơn</Link>}
@@ -130,11 +134,14 @@ type Supabase = Awaited<ReturnType<typeof createServerSupabase>>;
 type SiteEdit = Awaited<ReturnType<typeof catalogChildRecordsProps>>;
 
 async function InfoTab({ customer, note, can, supabase, siteEdit }: { customer: CustomerProfile; note: string | null | undefined; can: { createOrder: boolean; service: boolean; manage: boolean }; supabase: Supabase; siteEdit: SiteEdit | null }) {
-  const [{ data }, accountsResult, zaloResult] = await Promise.all([
+  const [{ data }, accountsResult, linkResult] = await Promise.all([
     supabase.from("customer_sites").select("id, code, name, address_text, receiver_name, receiver_phone, access_note, active").eq("customer_id", customer.id).order("active", { ascending: false }).order("name").limit(100),
     supabase.rpc("customer_portal_accounts", { target_customer_id: customer.id }),
-    supabase.rpc("customer_zalo_notify", { target_customer_id: customer.id }),
+    // D78: self-registrations with this customer's phone number, waiting for the office (only customers.manage reads them).
+    can.manage ? supabase.from("portal_link_requests").select("id, display_name, phone, address_text, email, created_at")
+      .eq("matched_customer_id", customer.id).eq("state", "PENDING").order("created_at").limit(20) : Promise.resolve({ data: [] }),
   ]);
+  const linkRequests = (linkResult.data ?? []) as PortalLinkRequest[];
   const sites = (data ?? []) as unknown as SiteRow[];
   const accounts = accountsResult.error ? null : ((accountsResult.data ?? []) as PortalAccount[]);
   return <div className="two-column">
@@ -157,8 +164,8 @@ async function InfoTab({ customer, note, can, supabase, siteEdit }: { customer: 
       <div className="detail-item"><dt>Mã số thuế</dt><dd>{customer.tax_code ?? "Chưa có"}</dd></div>
       {note !== undefined && <div className="detail-item field-full"><dt>Ghi chú nội bộ</dt><dd>{note ?? "Chưa có"}</dd></div>}
     </dl>
-      {typeof zaloResult?.data === "boolean" && <ZaloNotifyToggle className="zalo-notify" customerId={customer.id} enabled={zaloResult.data} canChange={can.manage} phoneUsable={isZaloPhone(customer.phone)} />}
     </section>
+    {can.manage && <PortalLinkRequestsCard customerId={customer.id} customerName={customer.display_name} requests={linkRequests} />}
     {accounts && <PortalAccountsCard customerId={customer.id} customerPhone={customer.phone} accounts={accounts} canManage={can.manage} />}</div>
   </div>;
 }
@@ -201,8 +208,8 @@ async function DeliveriesTab({ customerId, branchId, supabase }: { customerId: s
   </section>;
 }
 
-async function DebtsTab({ customerId, branchId, supabase, canPostPayment }: { customerId: string; branchId: string; supabase: Supabase; canPostPayment: boolean }) {
-  const [receivableResult, paymentResult, optionsResult, requestsResult, cashResult] = await Promise.all([
+async function DebtsTab({ customerId, branchId, supabase, canPostPayment, customer }: { customerId: string; branchId: string; supabase: Supabase; canPostPayment: boolean; customer: CustomerProfile }) {
+  const [receivableResult, paymentResult, optionsResult, requestsResult, cashResult, company, bankResult] = await Promise.all([
     supabase.from("receivable_read").select("id, source_label, site_name, due_date, original_amount_vnd::text, outstanding_amount_vnd::text, state, recorded_at").eq("branch_id", branchId).eq("customer_id", customerId).order("recorded_at", { ascending: false }).limit(50),
     supabase.from("payment_read").select("id, payment_number, direction, amount_vnd::text, effective_at, posting_state, reconciliation_state").eq("branch_id", branchId).eq("customer_id", customerId).order("effective_at", { ascending: false }).limit(50),
     // D44: what can be paid by QR now, and the payment requests already made for this customer.
@@ -210,12 +217,20 @@ async function DebtsTab({ customerId, branchId, supabase, canPostPayment }: { cu
     supabase.from("payment_requests").select("id, code, method, state, amount_vnd::text, received_amount_vnd::text, created_via, created_at").eq("customer_id", customerId).order("created_at", { ascending: false }).limit(10),
     // D45: cash funds for "Thu tiền mặt" / "Xác nhận đã thu".
     canPostPayment ? supabase.from("finance_accounts").select("id, name").eq("branch_id", branchId).eq("account_kind", "CASH").eq("active", true).order("name") : Promise.resolve({ data: [] }),
+    // D51: "Nhắc nợ qua Zalo" names the shop and the bank account shown to customers (with "TT <mã khách>", which SePay matches).
+    loadCompanyProfile(supabase).catch(() => null),
+    supabase.from("finance_accounts").select("bank_name, bank_account_number, bank_account_holder, bank_qr_note_prefix").eq("branch_id", branchId).eq("shown_to_customers", true).eq("active", true).maybeSingle(),
   ]);
+  const bank = bankResult.data as { bank_name: string; bank_account_number: string; bank_account_holder: string; bank_qr_note_prefix: string | null } | null;
+  const zaloUrl = zaloChatLink(customer.phone);
+  const companyName = company?.legal_name ?? null;
   const cashAccounts = (cashResult.data ?? []) as CashAccount[];
   const qrOptions = optionsResult.error || optionsResult.data === null ? null : debtPaymentOptionsSchema.safeParse(optionsResult.data);
   const requests = (requestsResult.data ?? []) as unknown as PaymentRequestRow[];
   const receivables = (receivableResult.data ?? []) as unknown as ReceivableRow[];
   const payments = (paymentResult.data ?? []) as unknown as PaymentRow[];
+  const open = receivables.filter((row) => row.state !== "SETTLED" && BigInt(row.outstanding_amount_vnd) > 0n);
+  const outstandingVnd = open.reduce((sum, row) => sum + BigInt(row.outstanding_amount_vnd), 0n).toString();
   return <div className="page-stack">
     <section className="card list-main"><div className="section-head"><h2>Khoản phải thu</h2><div className="inline-actions">
       <Link className="code-link" href={`/api/customers/${customerId}/debt-statement/pdf`}>Tải bảng đối chiếu công nợ</Link>
@@ -231,12 +246,18 @@ async function DebtsTab({ customerId, branchId, supabase, canPostPayment }: { cu
           <td data-label="Trạng thái"><StatusBadge tone={row.state === "OVERDUE" ? "danger" : row.state === "SETTLED" ? "success" : "info"}>{financeStateLabel(row.state)}</StatusBadge></td>
         </tr>)}</tbody>
       </table></div> : <p className="empty-inline">Chưa có khoản phải thu.</p>}
+      {open.length > 0 && <div className="card-pad-x zalo-send-row"><SendToCustomerZalo label="Nhắc nợ qua Zalo" zaloUrl={zaloUrl}
+        pdfUrl={`/api/customers/${customerId}/debt-statement/pdf`} pdfName={`doi-chieu-cong-no-${customer.code}.pdf`}
+        text={debtReminderMessage({ company: companyName, customerName: customer.display_name, transferNote: bank ? bankTransferNote(bank.bank_qr_note_prefix, null, customer.code) : null,
+          bank: bank ? { bankName: bank.bank_name, accountNumber: bank.bank_account_number, holder: bank.bank_account_holder } : null,
+          items: open.map((row) => ({ label: `${financeSourceLabel(row.source_label)}${row.site_name ? ` · ${row.site_name}` : ""}`, dueDate: row.due_date,
+            outstandingVnd: row.outstanding_amount_vnd, overdue: row.state === "OVERDUE" })) })} /></div>}
     </section>
     <StaffPaymentRequestPanel customerId={customerId} options={qrOptions?.success ? qrOptions.data : null} requests={requests}
       canPostPayment={canPostPayment} cashAccounts={cashAccounts} />
     <section className="card list-main"><div className="section-head"><h2>Thanh toán</h2><span className="scope-chip">50 gần nhất</span></div>
       {payments.length ? <div className="table-wrap"><table>
-        <thead><tr><th scope="col">Phiếu</th><th scope="col">Loại</th><th scope="col" className="numeric">Số tiền</th><th scope="col">Ngày</th><th scope="col">Ghi sổ</th><th scope="col">Đối soát</th></tr></thead>
+        <thead><tr><th scope="col">Phiếu</th><th scope="col">Loại</th><th scope="col" className="numeric">Số tiền</th><th scope="col">Ngày</th><th scope="col">Ghi sổ</th><th scope="col">Đối soát</th><th scope="col">Báo khách</th></tr></thead>
         <tbody>{payments.map((row) => <tr key={row.id}>
           <td className="mono" data-label="Phiếu">{row.payment_number}</td>
           <td data-label="Loại">{row.direction === "RECEIPT" ? "Thu" : "Chi"}</td>
@@ -244,6 +265,11 @@ async function DebtsTab({ customerId, branchId, supabase, canPostPayment }: { cu
           <td data-label="Ngày">{date(row.effective_at)}</td>
           <td data-label="Ghi sổ">{financeStateLabel(row.posting_state)}</td>
           <td data-label="Đối soát">{financeStateLabel(row.reconciliation_state)}</td>
+          <td data-label="Báo khách">{row.direction === "RECEIPT" && row.posting_state === "POSTED"
+            ? <details className="zalo-send-inline"><summary className="code-link">Gửi Zalo</summary><SendToCustomerZalo label="Gửi xác nhận đã nhận tiền" zaloUrl={zaloUrl}
+              pdfUrl={`/api/payments/${row.id}/voucher/pdf`} pdfName={`${row.payment_number}.pdf`}
+              text={paymentReceivedMessage({ company: companyName, paymentNumber: row.payment_number, customerName: customer.display_name, amountVnd: row.amount_vnd,
+                paidAt: row.effective_at, outstandingVnd })} /></details> : "—"}</td>
         </tr>)}</tbody>
       </table></div> : <p className="empty-inline">Chưa có thanh toán.</p>}
     </section>

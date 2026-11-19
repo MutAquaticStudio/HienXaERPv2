@@ -29,7 +29,7 @@ export default async function DeliveriesPage({ searchParams }: { searchParams: P
   };
   const [{ data, error, count: total }, ...counts] = await Promise.all([
     scoped(list.state, "id, sales_order_id, delivery_number, customer_name_snapshot, site_name_snapshot, execution_state, result_kind, scheduled_at, external_carrier_name, vehicle_id, created_at", true)
-      .order("created_at", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1),
+      .order("created_at", { ascending: false }).order("delivery_number", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to + 1),
     ...STATES.map((state) => scoped(state, "id").limit(100)),
   ]);
   if (error) throw new Error("Không thể tải giao hàng.");
@@ -39,17 +39,17 @@ export default async function DeliveriesPage({ searchParams }: { searchParams: P
   const ids = deliveries.map((row) => row.id);
   const vehicleIds = [...new Set(deliveries.map((row) => row.vehicle_id).filter((id): id is string => Boolean(id)))];
   const [vehicleResult, lineResult] = await Promise.all([
-    vehicleIds.length ? supabase.from("vehicles").select("id, plate_number").eq("branch_id", access.branchId).in("id", vehicleIds) : Promise.resolve({ data: [] }),
+    vehicleIds.length ? supabase.from("vehicles").select("id, code, plate_number").eq("branch_id", access.branchId).in("id", vehicleIds) : Promise.resolve({ data: [] }),
     ids.length ? supabase.from("delivery_line_read").select("id, delivery_id, material_name_snapshot, planned_base_quantity, actual_base_quantity, base_uom_symbol").in("delivery_id", ids).order("id").limit(500) : Promise.resolve({ data: [] }),
   ]);
-  const vehicleMap = new Map(((vehicleResult.data ?? []) as { id: string; plate_number: string }[]).map((row) => [row.id, row.plate_number]));
+  const vehicleMap = new Map(((vehicleResult.data ?? []) as { id: string; code: string; plate_number: string | null }[]).map((row) => [row.id, row.plate_number ?? row.code]));
   const lines = (lineResult.data ?? []) as DeliveryLine[];
   const canCancel = access.permissions.has("delivery.exception");
   const canSplit = access.permissions.has("delivery.assign") && access.permissions.has("delivery.create");
   const who = (row: Delivery) => row.external_carrier_name ?? (row.vehicle_id ? vehicleMap.get(row.vehicle_id) ?? "Đã phân xe" : "Chưa phân");
   const isFiltered = Boolean(list.q || list.state);
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Giao hàng</p><h1>Phiếu giao</h1><p className="lede">Kế hoạch, thực giao và kết quả của từng phiếu. Mũi tên để xem nhanh hàng trên phiếu.</p></div></header>
+    <header className="page-heading"><div><h1>Phiếu giao</h1><p className="lede">Kế hoạch, thực giao và kết quả của từng phiếu. Mũi tên để xem nhanh hàng trên phiếu.</p></div></header>
     <div className="list-layout">
       <AutoFilterForm className="card card-pad list-filters" aria-label="Bộ lọc phiếu giao">
         <label className="list-filters-search">Tìm kiếm<input type="search" name="q" defaultValue={list.q} placeholder="Mã phiếu, khách, công trình, đầu mối" /></label>
@@ -80,7 +80,7 @@ export default async function DeliveriesPage({ searchParams }: { searchParams: P
                 <section><h3>Giao nhận</h3><ul className="clean-list"><li>Lịch: {row.scheduled_at ? formatBusinessDateTime(row.scheduled_at) : "Chưa hẹn"}</li><li>Người/xe: {who(row)}</li></ul></section>
                 <section className="row-expansion-actions"><Link className="button button-primary" href={href}>Mở phiếu giao</Link><Link className="button button-secondary" href={`/admin/orders/${row.sales_order_id}`}>Mở đơn bán</Link>
                   {["PLANNED", "ASSIGNED"].includes(row.execution_state) && canSplit && deliveryLines.length > 0 && <Link className="button button-secondary" href={`/admin/deliveries/${row.id}/split`}>Tách phiếu</Link>}
-                  {row.execution_state === "PLANNED" && canCancel && <Link className="button button-danger" href={`/admin/deliveries/${row.id}/cancel`}>Hủy kế hoạch</Link>}</section>
+                  {["PLANNED", "ASSIGNED"].includes(row.execution_state) && canCancel && <Link className="button button-danger" href={`/admin/deliveries/${row.id}/cancel`}>Hủy kế hoạch</Link>}</section>
               </div> };
           })} />
         </table>{!deliveries.length && <p className="empty-inline">{isFiltered ? "Không có phiếu giao phù hợp." : "Chưa có phiếu giao."}</p>}</div>

@@ -42,7 +42,7 @@ export default async function StockCountsPage({ searchParams }: { searchParams: 
   const filtered = Boolean(list.q || state || warehouse);
 
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Kho hàng</p><h1>Kiểm kho</h1><p className="lede">Đếm thực tế, xem chênh lệch và cân bằng kho. Mỗi phiếu chỉ điều chỉnh các vật tư đã đếm.</p></div>
+    <header className="page-heading"><div><h1>Kiểm kho</h1><p className="lede">Đếm thực tế, xem chênh lệch và cân bằng kho. Mỗi phiếu chỉ điều chỉnh các vật tư đã đếm.</p></div>
       <div className="action-cluster">{access.permissions.has("inventory.count") && <OpenStockCountButton warehouses={[...warehouses].map(([id, name]) => ({ id, name }))} defaultWarehouseId={warehouse || undefined} />}
         <Link className="button button-secondary" href="/admin/inventory">Tồn kho</Link></div>
     </header>

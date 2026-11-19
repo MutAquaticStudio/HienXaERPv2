@@ -5,13 +5,15 @@ const m = vi.hoisted(() => ({ profile: null as unknown, logo: null as unknown, c
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: m.refresh }) }));
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => m.cookie === undefined ? undefined : { value: m.cookie } }) }));
 vi.mock("@/lib/access/context", () => ({ requireInternalPermission: async () => ({ branchId: "b", branchName: "Chi nhánh Đông Anh", permissions: new Set(["roles.manage"]) }) }));
-vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({ from: () => {
-  const chain = { select: () => chain, eq: () => chain, order: () => chain, limit: () => chain, maybeSingle: async () => ({ data: m.operation, error: null }),
+vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => ({ rpc: async () => ({ data: null, error: null }), from: (table: string) => {
+  const chain = { select: () => chain, eq: () => chain, order: () => chain, limit: () => chain,
+    maybeSingle: async () => ({ data: table === "branch_operation_settings" ? m.operation : null, error: null }),
     then: (resolve: (value: { data: { id: string; name: string }[]; error: null }) => unknown) => Promise.resolve({ data: [{ id: "w1", name: "Kho chính" }], error: null }).then(resolve) };
   return chain;
 } }) }));
 vi.mock("@/modules/settings/operation-actions", () => ({ saveOperationSettingsAction: m.saveOperation }));
 vi.mock("@/lib/company/profile", async (original) => ({ ...(await original<typeof import("@/lib/company/profile")>()), loadCompanyProfile: async () => m.profile, loadCompanyLogo: async () => m.logo }));
+vi.mock("@/modules/settings/portal-branch-actions", () => ({ setPortalBranchAction: vi.fn() }));
 vi.mock("@/modules/settings/company-actions", () => ({ saveCompanyProfileAction: m.save, saveCompanyLogoAction: m.saveLogo }));
 
 import Page from "./page";
@@ -28,7 +30,7 @@ it("fills in the company profile with a live preview of the document heading", a
   render(await Page());
   const preview = screen.getByLabelText("Xem trước tiêu đề chứng từ");
   expect(within(preview).getByText("Hiền Xa ERP")).toBeInTheDocument();
-  fireEvent.change(screen.getByLabelText("Tên doanh nghiệp *"), { target: { value: "Công ty TNHH Hiền Xa" } });
+  fireEvent.change(screen.getByLabelText("Tên doanh nghiệp (bắt buộc)"), { target: { value: "Công ty TNHH Hiền Xa" } });
   fireEvent.change(screen.getByLabelText("Mã số thuế"), { target: { value: "0101234567" } });
   expect(within(preview).getByText("Công ty TNHH Hiền Xa")).toBeInTheDocument();
   expect(within(preview).getByText("MST: 0101234567")).toBeInTheDocument();
@@ -42,6 +44,10 @@ it("edits the saved profile against its version and keeps an unknown outcome on 
   m.save.mockResolvedValue({ status: "UNKNOWN", message: "Chưa xác định được kết quả. Bấm lại đúng thao tác này để kiểm tra." });
   render(await Page());
   expect(screen.getByLabelText("Địa chỉ")).toHaveValue("Hà Nội");
+  // D59: nothing changed yet — nothing to save.
+  expect(screen.getByRole("button", { name: "Lưu thông tin doanh nghiệp" })).toBeDisabled();
+  fireEvent.change(screen.getByLabelText("Địa chỉ"), { target: { value: "Hà Nội, Đông Anh" } });
+  expect(screen.getByText("Có thay đổi chưa lưu")).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "Lưu thông tin doanh nghiệp" }));
   const retry = await screen.findByRole("button", { name: "Lưu lại đúng thao tác" });
   fireEvent.click(retry);

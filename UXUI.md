@@ -1417,9 +1417,19 @@ Touch target >=48px; primary ~56px.
 ```text
 TRANG CHỦ
 ĐƠN HÀNG
-CÔNG NỢ
+[ĐẶT]        nút xanh nổi giữa, chỉ Chủ tài khoản
+BÁO CÁO      D98 — Báo cáo hàng đã đặt, mọi vai trò
+CÔNG NỢ      chỉ vai trò xem được công nợ
 TÔI
 ```
+
+Thanh dưới trên điện thoại có tối đa **6 mục**, giữ chữ đầy đủ ("Trang chủ", "Đơn hàng", "Đặt", "Báo cáo", "Công nợ", "Tôi"), mỗi vùng bấm
+≥ 44 px; ô tab co được (không đặt chiều rộng tối thiểu theo chữ) để 6 mục vừa ở 390 px và 360 px, không tràn ngang. Menu trái ở màn rộng có cùng các mục.
+
+- Chủ tài khoản và Kế toán (người lo tiền): Trang chủ · Đơn hàng · [Đặt, chỉ Chủ tài khoản] · Báo cáo · Công nợ · Tôi.
+- **Người nhận hàng**: Trang chủ · Đơn hàng · Báo cáo · Tôi (không có Đặt, không có Công nợ).
+- "Báo cáo" mở `/customer/reports/ordered` và sáng lên ở trang đó; biểu tượng biểu đồ cột cùng kiểu nét với các tab khác. Trang "Đơn hàng"
+  giữ nguyên hai thẻ Hàng hóa / Dịch vụ, không thêm tab.
 
 Tài liệu/hóa đơn có thể truy cập từ context/detail.
 
@@ -1503,6 +1513,40 @@ Không render:
   tiền), câu "Cửa hàng duyệt đơn rồi báo ngày giao; chưa giữ hàng cho tới khi duyệt" → **Gửi đơn** / "Sửa đơn". Gửi xong mở chi tiết đơn với "Đã gửi
   đơn". Kết quả chưa rõ (mất mạng) → báo bấm gửi lại, không tạo đơn trùng.
 - Không có mặt hàng nào có giá cho khách: "Cửa hàng chưa mở bán mặt hàng nào cho tài khoản của bạn. Liên hệ cửa hàng để được báo giá."
+
+## UX-CUST-010 — Báo cáo hàng đã đặt (D98, 17/11/2026 — yêu cầu mới của Owner)
+
+Khách muốn cuối ngày xem hôm đó mình đã đặt những gì, dù đơn do khách tự đặt trên cổng hay do cửa hàng ghi từ Zalo / điện thoại. Là **một trang báo cáo
+trong cổng khách** (khung và giao diện cổng khách, không phải giao diện quản trị), giống báo cáo "vật tư đã nhập trong ngày" bên văn phòng.
+
+- Đường dẫn `/customer/reports/ordered`, mở từ tab **Báo cáo** (UX-CUST-001), từ dòng "Hôm qua anh/chị đặt N món · Xem báo cáo" ở trang chủ và từ
+  thông báo 08:46 sáng hôm sau (thông báo đã mang sẵn kỳ). Có nút quay lại **"‹ Đơn hàng"**, tiêu đề "Báo cáo hàng đã đặt", mô tả "Hàng anh/chị đã
+  đặt, cộng theo từng loại trong kỳ." Một cột; ở màn rộng là cột nội dung căn giữa như các trang cổng khác.
+- **Chọn kỳ**: bốn nút **Hôm nay · Hôm qua · 7 ngày · Tháng này** (mặc định Hôm nay; "7 ngày" là hôm nay và sáu ngày trước; ngày theo giờ Việt Nam) và hai
+  ô **Từ ngày / Đến ngày** nhập dạng dd/mm/yyyy. Ô nhập **tự áp dụng** khi cả hai ngày đã gõ đủ và hợp lệ, không có nút "Áp dụng". Kỳ nằm trên đường dẫn
+  (`?from=YYYY-MM-DD&to=YYYY-MM-DD`, một ngày của kỳ dài là `&day=`). Dòng nhỏ dưới ô nhập: "Ngày 17/11/2026" hoặc "Kỳ 11/11/2026 – 17/11/2026 · tự áp dụng
+  khi anh/chị chọn xong". Kỳ sai hoặc thiếu thì hiện **hôm nay** kèm một câu đơn giản ("Ngày chưa đúng. Nhập theo dạng ngày/tháng/năm… Đang hiện hôm nay."),
+  ô nhập giữ nguyên giá trị đã gõ. Gõ ngày sai, ngày bắt đầu sau ngày kết thúc hoặc kỳ dài quá 92 ngày: báo ngay dưới ô nhập, chưa áp dụng.
+- **Bốn ô số**: **Số đơn** (dòng phụ "N đơn đã hủy, không tính", hoặc "không có đơn hủy"), **Số loại hàng** ("gộp theo từng loại hàng"), **Đã giao** dạng
+  "x/y" ("loại đã giao đủ"), **Tổng tiền** (ẩn với người nhận hàng; dòng phụ tách "hàng … · dịch vụ …" khi có dịch vụ). Điện thoại: hai ô mỗi hàng.
+- **Hàng đã đặt**: mỗi **loại hàng một thẻ** (gộp theo vật tư và đơn vị đặt): tên, tiền (chỉ khi được xem tiền), và ba số **Đặt** (kèm đơn vị) · **Đã giao** ·
+  **Còn lại**. "Còn lại" ghi **"0 · đủ"** (xanh) khi giao đủ, màu cảnh báo khi mới giao một phần, màu nhạt khi chưa giao. Số lượng hiện đúng giá trị lưu, không làm tròn.
+  **Bấm thẻ** để mở **"Nằm trong N đơn"**: mỗi đơn một dòng (số đơn, "Đặt dd/mm/yyyy · số lượng", trạng thái bằng chữ tiếng Việt, mũi tên) bấm sang `/customer/orders/<id>`.
+  Cuối khung là dòng **Tổng cộng** ("N loại hàng · M đơn"; kèm tổng tiền hàng khi được xem tiền).
+- **Theo ngày** (chỉ khi kỳ dài hơn một ngày): mỗi ngày một dòng "Thứ Hai, 16/11 · 5 đơn · 5 loại hàng" kèm tiền; bấm một ngày để **chỉ xem hàng của ngày đó**
+  (dòng được chọn tô nền), khung "Hàng đã đặt" hiện thanh **"Đang xem ngày Thứ Hai, 16/11 · Bỏ lọc ngày"**. Bấm lại ngày đó hoặc "Bỏ lọc ngày" để xem cả kỳ.
+- **Dịch vụ** (khi trong kỳ có việc dịch vụ của khách): mỗi việc một dòng "Máy xúc · 1 ca", ngày, tiền (chỉ khi được xem tiền).
+- **Chân trang**: hai nút **"Xuất Excel"** và **"Xuất CSV"** (đúng kỳ, hoặc đúng ngày đang lọc; file có khối tiêu đề với tên khách và kỳ, cột Hàng hóa · ĐVT · Đặt · Đã giao ·
+  Còn lại và Tiền nếu được xem tiền) và dòng **"Cập nhật đến 08:46 ngày 17/11/2026. Đơn đã hủy không tính."**
+- **Trạng thái trống**: "Chưa có đơn trong khoảng này." kèm "Đơn đặt qua Zalo, điện thoại hay trên app đều hiện ở đây theo ngày đặt." và nút **"Chọn ngày khác"**
+  (đưa con trỏ vào ô Từ ngày). **Trạng thái lỗi**: "Chưa tải được." kèm "Mạng chập chờn hoặc máy chủ bận. Đơn của anh/chị vẫn còn nguyên." và nút **"Thử lại"**.
+  Không bao giờ hiện mã kỹ thuật; chưa có quyền thì "Tài khoản này chưa xem được báo cáo."
+- **Tiền theo vai trò như hiện nay**: Chủ tài khoản và người lo tiền (Kế toán) thấy tiền; **Người nhận hàng chỉ thấy hàng và số lượng** — không có ô Tổng tiền, không có tiền trong thẻ,
+  "Theo ngày", "Dịch vụ", thông báo hay file xuất. Cổng không tự suy ra quyền: có hiện tiền hay không do cơ sở dữ liệu trả về.
+- **390 px**: một cột, không tràn ngang, vùng bấm ≥ 44 px (nút kỳ, ô ngày, thẻ hàng, dòng ngày, dòng đơn, nút xuất), chữ đầy đủ; sáng và tối theo giao diện đã chọn của thiết bị.
+- Trang chủ khách có dòng **"Hôm qua anh/chị đặt N món"** (N = số loại hàng, kèm vài món đầu và "Xem báo cáo"), chỉ hiện khi hôm qua có ít nhất một đơn chưa hủy; không đọc được báo cáo thì
+  dòng này biến mất, không làm hỏng trang chủ.
+
 ---
 
 # UX-800 — Responsive
@@ -2243,7 +2287,7 @@ Forward candidate: 20261009224842_supplier_purchase_price_commands.sql. SHA256 0
 - **Lộ trình**: bản đồ OpenStreetMap cao 440 px + danh sách xe bên phải; chấm xanh = đang chia sẻ, xám = mất tín hiệu; bấm xe để xem vệt đường.
 - **Thu tiền**: ô số tiền tự điền vào các khoản (cũ nhất trước), "Tự phân bổ lại" khi đã sửa tay; phần dư phải tích "ghi là tiền ứng trước".
 - **Thu nhập**: nút "Tính lương tháng" (chọn tháng), "Hoa hồng tự động"; không còn "Phê duyệt ghi nhận tự động theo sự kiện".
-- **Báo cáo**: cột trái nhóm báo cáo (Cuối ngày, Bán hàng, Hàng hóa, Khách hàng, Nhà cung cấp, Giao hàng, Tài chính, Tài chính chi tiết); thanh kỳ chọn nhanh (Hôm nay, Hôm qua, 7 ngày, Tháng này, Tháng trước) + từ / đến ngày (+ kho với Xuất nhập tồn); thẻ số liệu chính, biểu đồ thanh, bảng, "Xuất CSV".
+- **Báo cáo** (D57): cột trái nhóm báo cáo (Cuối ngày, Bán hàng, Hàng hóa, Khách hàng, Nhà cung cấp, Giao hàng, Tài chính, Tài chính chi tiết — Phải thu / Phải trả / Chi phí vận hành cùng khung); trên điện thoại là ô "Đổi báo cáo"; thanh kỳ chọn nhanh (Hôm nay, Hôm qua, 7 ngày, Tháng này, Tháng trước) + từ / đến ngày gồm cả ngày cuối (+ kho với Xuất nhập tồn; số dư "đến hết ngày" một ô ngày); thẻ số liệu chính so với kỳ trước, biểu đồ khi có từ 3 dòng, bảng căn phải cột số có dòng Tổng cộng, "Xuất Excel" và "Xuất CSV".
 
 # UX-D43-001 — Menu theo vai trò Bán hàng / Kế toán
 

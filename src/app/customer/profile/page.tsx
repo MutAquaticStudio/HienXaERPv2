@@ -1,11 +1,16 @@
+import { cookies } from "next/headers";
 import Link from "next/link";
-import { ZaloNotifyToggle } from "@/components/zalo/zalo-notify-toggle";
-import { isZaloPhone } from "@/modules/zalo/phone";
+import { AnnouncementHistory } from "@/components/announcements/announcement-history";
+import { PushToggle } from "@/components/notifications/push-toggle";
 import { redirect } from "next/navigation";
 import { roleLabel } from "@/components/access/presentation";
+import { PortalAppearance } from "@/components/portal/portal-appearance";
 import styles from "@/components/portal/portal.module.css";
+import { openedInAppWithoutPush, openedInNativeApp } from "@/lib/app-shell/server";
+import { APPEARANCE_COOKIE, parseAppearance } from "@/lib/appearance";
 import { displayLogin, isPhoneLogin } from "@/lib/auth/login-identifier";
 import { formatBusinessDateTime } from "@/lib/core/business-time";
+import { loadAnnouncementHistory } from "@/modules/announcements/server";
 import { catalogChoiceLabel } from "@/modules/catalog/presentation";
 import { authenticatedPortalClient, portalRpc } from "@/modules/portal/server";
 import type { CustomerPortalAccount } from "@/modules/portal/types";
@@ -20,8 +25,9 @@ export default async function CustomerAccountPage() {
   const account = await portalRpc<CustomerPortalAccount>(context.supabase, "customer_portal_account", { target_customer_id: null });
   const { customer, sites } = account;
   const login = context.user.email ?? "";
-  const canZalo = account.membership_role === "OWNER" || account.membership_role === "FINANCE_CONTACT";
-  const zalo = canZalo ? await context.supabase.rpc("customer_zalo_notify", { target_customer_id: customer.id }) : null;
+  const [inApp, appWithoutPush] = await Promise.all([openedInNativeApp(), openedInAppWithoutPush()]);
+  const appearance = parseAppearance((await cookies()).get(APPEARANCE_COOKIE)?.value);
+  const announcements = await loadAnnouncementHistory("CUSTOMER");
   return (
     <div className={styles.page}>
       <header className={styles.sectionHead}>
@@ -36,6 +42,7 @@ export default async function CustomerAccountPage() {
           <Link className={styles.buttonSecondary} href="/customer/change-password?from=account">Đổi mật khẩu</Link>
           <form action="/auth/logout" method="post"><input type="hidden" name="surface" value="customer" /><button className={styles.buttonSecondary} type="submit">Đăng xuất</button></form>
         </div>
+        {!inApp && <p className={styles.hint}>Đặt hàng nhanh hơn trên điện thoại: <Link href="/tai-ve">Tải app Hiền Xa</Link>.</p>}
       </section>
       <section className={styles.card} aria-labelledby="account-customer">
         <h2 id="account-customer">Thông tin khách hàng</h2>
@@ -49,9 +56,14 @@ export default async function CustomerAccountPage() {
         {customer.payment_terms_days != null && <Row label="Hạn thanh toán" value={customer.payment_terms_days ? `${customer.payment_terms_days} ngày sau khi giao` : "Thanh toán khi nhận hàng"} />}
         <p className={styles.hint}>Cần sửa thông tin? <Link href="/customer/messages">Nhắn cửa hàng</Link> để được cập nhật.</p>
       </section>
-      {typeof zalo?.data === "boolean" && <section className={styles.card} aria-labelledby="account-zalo">
-        <h2 id="account-zalo">Thông báo Zalo</h2>
-        <ZaloNotifyToggle customerId={customer.id} enabled={zalo.data} canChange phoneUsable={isZaloPhone(customer.phone)} />
+      <section className={styles.card} aria-labelledby="account-announcements">
+        <h2 id="account-announcements">Thông báo từ cửa hàng</h2>
+        <AnnouncementHistory items={announcements} surface="CUSTOMER" emptyText="Chưa có thông báo nào. Khi cửa hàng đổi giá hàng bạn hay mua hoặc có tin mới, thông báo sẽ hiện ở đây." />
+      </section>
+      {/* D83: the announcements also come as a push to this phone. D86: also inside the Android app 2.3.0+ (an older app cannot). */}
+      {!appWithoutPush && <section className={styles.card} aria-labelledby="account-push">
+        <h2 id="account-push">Thông báo trên điện thoại</h2>
+        <PushToggle onText="Đã bật. Điện thoại sẽ báo khi cửa hàng có thông báo mới." />
       </section>}
       <section className={styles.card} aria-labelledby="account-sites">
         <h2 id="account-sites">Địa chỉ giao hàng ({sites.length})</h2>
@@ -61,6 +73,7 @@ export default async function CustomerAccountPage() {
         </article>) : <p className={styles.empty}>Chưa có địa chỉ giao hàng.</p>}
         <p className={styles.hint}>Thêm địa chỉ mới ngay khi đặt hàng: chọn “+ Địa chỉ giao mới” ở mục Giao tới.</p>
       </section>
+      <PortalAppearance initial={appearance} />
     </div>
   );
 }

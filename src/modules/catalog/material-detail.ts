@@ -42,7 +42,7 @@ export async function loadMaterialDetail(materialId: string) {
     siblings: ((siblingResult.data ?? []) as { id: string; code: string; name: string; variant_attributes: Record<string, string> | null; active: boolean }[])
       .map((row) => ({ id: row.id, code: row.code, name: row.name, attributes: row.variant_attributes ?? {}, active: row.active })),
   } : null;
-  const [unitResult, groupResult, conversionResult, salesResult, purchaseResult, stockResult, warehouseResult, supplierResult, movementResult] = await Promise.all([
+  const [unitResult, groupResult, conversionResult, salesResult, purchaseResult, stockResult, warehouseResult, supplierResult, movementResult, assignmentResult] = await Promise.all([
     supabase.from("units_of_measure").select("id,name,symbol,decimal_scale").order("name").limit(1000),
     supabase.from("material_groups").select("id,name").eq("id", material.group_id).maybeSingle(),
     supabase.from("material_uom_conversions").select("id,material_id,from_uom_id,to_uom_id,numerator::text,denominator::text,conversion_type,settlement_allowed,rounding_scale,rounding_mode,active,source_note").or(`material_id.eq.${materialId},material_id.is.null`).limit(200),
@@ -52,8 +52,10 @@ export async function loadMaterialDetail(materialId: string) {
     capabilities.inventory ? supabase.from("warehouses").select("id,name,active").eq("branch_id", access.branchId).order("name").limit(200) : noRows,
     capabilities.purchasePrice && capabilities.suppliers ? supabase.from("suppliers").select("id,name").eq("branch_id", access.branchId).order("name").limit(200) : noRows,
     capabilities.inventory ? supabase.from("inventory_movement_read").select("id,warehouse_id,delivery_id,base_uom_id,movement_type,base_quantity_delta,occurred_at").eq("branch_id", access.branchId).eq("material_id", materialId).order("occurred_at", { ascending: false }).order("id").limit(20) : noRows,
+    // D61: the suppliers this material is assigned to (Nhà cung cấp), in the unit it is bought from each.
+    capabilities.purchasePrice ? supabase.from("supplier_materials").select("supplier_id,purchase_uom_id").eq("branch_id", access.branchId).eq("material_id", materialId).eq("active", true).limit(200) : noRows,
   ]);
-  if ([unitResult, groupResult, conversionResult, salesResult, purchaseResult, stockResult, warehouseResult, supplierResult, movementResult].some(result => result.error)) throw new Error("Không thể tải thông tin vật tư trong phạm vi được phép.");
+  if ([unitResult, groupResult, conversionResult, salesResult, purchaseResult, stockResult, warehouseResult, supplierResult, movementResult, assignmentResult].some(result => result.error)) throw new Error("Không thể tải thông tin vật tư trong phạm vi được phép.");
   return {
     access, material, capabilities, variant, asOf: Date.now(),
     units: (unitResult.data ?? []) as { id: string; name: string; symbol: string; decimal_scale: number }[],
@@ -65,5 +67,6 @@ export async function loadMaterialDetail(materialId: string) {
     positions: (stockResult.data ?? []) as unknown as MaterialPosition[],
     warehouses: (warehouseResult.data ?? []) as { id: string; name: string; active: boolean }[],
     suppliers: (supplierResult.data ?? []) as { id: string; name: string }[],
+    assignments: (assignmentResult.data ?? []) as { supplier_id: string; purchase_uom_id: string }[],
   };
 }

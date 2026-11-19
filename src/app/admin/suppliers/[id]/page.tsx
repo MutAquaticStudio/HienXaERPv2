@@ -12,6 +12,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { CatalogEditButton } from "@/modules/catalog/catalog-dialog";
 import { catalogRecordProps } from "@/modules/catalog/editor-data";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 type Supplier = { id: string; code: string; name: string; phone: string | null; email: string | null; tax_code: string | null; address_text: string | null; payment_terms_days: number; active: boolean };
 type PurchaseRow = { id: string; purchase_order_number: string; state: string; destination_type: string; destination_name_snapshot: string; total_cost_vnd?: string; expected_at: string | null; created_at: string };
@@ -74,7 +75,7 @@ export default async function SupplierDetailPage({ params, searchParams }: PageP
     : await InfoTab({ supplier, supabase });
 
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Nhà cung cấp · {supplier.code}</p><h1>{supplier.name}</h1>
+    <header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/suppliers", label: "Nhà cung cấp" }} current={supplier.code} /><h1>{supplier.name}</h1>
       <p className="lede">{supplier.phone ?? "Chưa có điện thoại"} · {supplier.address_text ?? "Chưa có địa chỉ"}{supplier.tax_code ? ` · MST ${supplier.tax_code}` : ""}</p></div>
       <div className="form-actions">
         {can.createPurchase && supplier.active && <Link className="button button-primary" href={`/admin/purchase-orders/new?supplier=${supplier.id}`}>Tạo đơn mua</Link>}

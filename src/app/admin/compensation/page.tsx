@@ -54,7 +54,7 @@ export default async function CompensationPage({ searchParams }: { searchParams:
   const canApprove = access.permissions.has("compensation.approve");
   const canPay = access.permissions.has("finance.payment.post");
   return <>
-    <header className="page-heading"><div><p className="eyebrow">Nhân công</p><h1>Thu nhập đã ghi</h1><p className="lede">Tiền chuyến, tiền việc và hoa hồng nay tính trong Bảng lương. Trang này giữ các khoản thu nhập đã ghi (kể cả lương đã chốt) và chi trả phần còn nợ.</p></div>
+    <header className="page-heading"><div><h1>Thu nhập đã ghi</h1><p className="lede">Tiền chuyến, tiền việc và hoa hồng nay tính trong Bảng lương. Trang này giữ các khoản thu nhập đã ghi (kể cả lương đã chốt) và chi trả phần còn nợ.</p></div>
       <div className="action-cluster"><Link className="button button-primary" href="/admin/payroll">Bảng lương</Link></div>
     </header>
     <ActionNotice notice={query.notice} error={query.error} />

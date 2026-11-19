@@ -19,7 +19,7 @@ export default async function RoutesPage({ searchParams }: { searchParams: Promi
   const selected = workspace.selectedPlan;
   return (
     <div className="page-stack">
-      <header className="page-heading"><div><p className="eyebrow">Điều phối</p><h1>Lộ trình &amp; vị trí</h1><p className="lede">Lộ trình là bản đề xuất. Phân công chỉ thay đổi sau khi bạn bấm Áp dụng và phân giao.</p></div>
+      <header className="page-heading"><div><h1>Lộ trình &amp; vị trí</h1><p className="lede">Lộ trình là bản đề xuất. Phân công chỉ thay đổi sau khi bạn bấm Áp dụng và phân giao.</p></div>
         {canAssign && <div className="action-cluster"><a className="button button-primary" href="#tao-lo-trinh">Tạo lộ trình</a></div>}</header>
 
       {selected && <section className="card card-pad" aria-label="Lộ trình đang xem"><div className="section-head flush"><div><h2>Lộ trình · {routePlanStateLabel(selected.status)}</h2>

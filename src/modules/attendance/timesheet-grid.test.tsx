@@ -35,4 +35,13 @@ describe("TimesheetGrid", () => {
     expect(screen.queryByRole("button", { name: /Thợ A/ })).toBeNull();
     expect(screen.getByTitle("07:20–11:30")).toHaveTextContent("✓");
   });
+
+  it("D68: a shift the system closed because the worker forgot \"Ra ca\" is flagged for the office", () => {
+    const forgotten = [{ ...records[0], auto_closed_at: "2026-10-08T01:00:00Z" }];
+    render(<TimesheetGrid days={["2026-10-01"]} people={people} records={forgotten} plans={[]} shifts={[shift]} lockedDays={[]} today="2026-10-09" canManage />);
+    const button = screen.getByRole("button", { name: /Thợ A ngày 01\/10: Quên ra ca/ });
+    expect(button).toHaveTextContent("!");
+    fireEvent.click(button);
+    expect(screen.getByRole("dialog")).toHaveTextContent("quên ra ca, hệ thống đã khép ca");
+  });
 });

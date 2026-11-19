@@ -24,7 +24,11 @@ function metricText(metric: MoneyMetric) {
   return value === null ? `— (${qualityReason(metric.quality)})` : formatVnd(vnd(value.toString()));
 }
 
-export function ProfitLineChart({ series }: { series: ProfitSeries }) {
+/**
+ * Thu / Chi / Lợi nhuận over the period. `bars` (D56, Tổng quan): Thu and Chi as paired columns per period on one axis,
+ * Lợi nhuận in the tooltip and the table; the default is the three lines.
+ */
+export function ProfitLineChart({ series, bars = false }: { series: ProfitSeries; bars?: boolean }) {
   const titleId = useId();
   const points = series.points;
   const [active, setActive] = useState<number | null>(null);
@@ -40,7 +44,7 @@ export function ProfitLineChart({ series }: { series: ProfitSeries }) {
   const HEIGHT = WIDTH < 560 ? 200 : 240;
   const PLOT_W = WIDTH - PAD.left - PAD.right;
   const PLOT_H = HEIGHT - PAD.top - PAD.bottom;
-  const visible = PROFIT_SERIES.filter((item) => hiddenReason(points, item.key) === null);
+  const visible = PROFIT_SERIES.filter((item) => hiddenReason(points, item.key) === null && (!bars || item.key !== "net_profit"));
   const hidden = PROFIT_SERIES.flatMap((item) => {
     const reason = hiddenReason(points, item.key);
     return reason ? [{ ...item, reason }] : [];
@@ -52,10 +56,13 @@ export function ProfitLineChart({ series }: { series: ProfitSeries }) {
     const value = readyValue(point[item.key]);
     return value === null ? [] : [value];
   }));
-  const ticks = valueTicks(drawn);
+  const ticks = valueTicks(bars ? [...drawn, 0n] : drawn);
   const low = ticks[0];
   const span = Number(ticks[ticks.length - 1] - low) || 1;
-  const x = (index: number) => PAD.left + (points.length === 1 ? PLOT_W / 2 : (index * PLOT_W) / (points.length - 1));
+  const band = PLOT_W / points.length;
+  const x = (index: number) => bars ? PAD.left + band * (index + 0.5)
+    : PAD.left + (points.length === 1 ? PLOT_W / 2 : (index * PLOT_W) / (points.length - 1));
+  const barWidth = Math.max(3, Math.min(20, band * 0.34));
   const y = (value: bigint) => PAD.top + PLOT_H - (Number(value - low) / span) * PLOT_H;
   const labelEvery = Math.max(1, Math.ceil(points.length / Math.max(2, Math.floor(PLOT_W / 72))));
   // The table lists only the periods with figures (a month by day was 31 rows of 0 đ), totals first.
@@ -72,7 +79,8 @@ export function ProfitLineChart({ series }: { series: ProfitSeries }) {
   function track(event: PointerEvent<SVGSVGElement>) {
     const box = event.currentTarget.getBoundingClientRect();
     const position = ((event.clientX - box.left) / box.width) * WIDTH;
-    const index = points.length === 1 ? 0 : Math.round(((position - PAD.left) / PLOT_W) * (points.length - 1));
+    const index = bars ? Math.floor((position - PAD.left) / band)
+      : points.length === 1 ? 0 : Math.round(((position - PAD.left) / PLOT_W) * (points.length - 1));
     setActive(Math.min(points.length - 1, Math.max(0, index)));
   }
 
@@ -97,7 +105,8 @@ export function ProfitLineChart({ series }: { series: ProfitSeries }) {
         onPointerMove={track} onPointerLeave={() => setActive(null)} onFocus={() => setActive((current) => current ?? points.length - 1)}
         onBlur={() => setActive(null)} onKeyDown={keyboard}>
         {/* A single string: React renders a <title> with several children empty on the server (hydration mismatch). */}
-        <title id={titleId}>{`Biểu đồ đường Thu, Chi và Lợi nhuận ${granularityLabel(series.granularity).toLowerCase()}. Dùng phím mũi tên để xem từng kỳ.`}</title>
+        <title id={titleId}>{bars ? `Biểu đồ cột Thu và Chi ${granularityLabel(series.granularity).toLowerCase()}. Dùng phím mũi tên để xem từng kỳ.`
+          : `Biểu đồ đường Thu, Chi và Lợi nhuận ${granularityLabel(series.granularity).toLowerCase()}. Dùng phím mũi tên để xem từng kỳ.`}</title>
         {ticks.map((tick) => <g key={tick.toString()}>
           <line className={tick === 0n ? "profit-chart-zero" : "profit-chart-grid"} x1={PAD.left} x2={WIDTH - PAD.right} y1={y(tick)} y2={y(tick)} />
           <text className="profit-chart-axis" x={PAD.left - 8} y={y(tick)} textAnchor="end" dominantBaseline="middle">{compactVnd(tick)}</text>
@@ -105,9 +114,18 @@ export function ProfitLineChart({ series }: { series: ProfitSeries }) {
         {points.map((item, index) => index % labelEvery === 0 || (index === points.length - 1 && index % labelEvery >= Math.ceil(labelEvery / 2))
           ? <text key={item.start} className="profit-chart-axis" x={x(index)} y={HEIGHT - 10} textAnchor="middle">{bucketLabel(item, series.granularity)}</text>
           : null)}
-        {active !== null && <line className="profit-chart-crosshair" x1={x(active)} x2={x(active)} y1={PAD.top} y2={PAD.top + PLOT_H} />}
-        {visible.map((item) => <path key={item.key} d={path(item.key)} fill="none" stroke={item.color} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />)}
-        {visible.map((item) => {
+        {bars && active !== null && <rect className="profit-chart-band" x={PAD.left + band * active} y={PAD.top} width={band} height={PLOT_H} />}
+        {!bars && active !== null && <line className="profit-chart-crosshair" x1={x(active)} x2={x(active)} y1={PAD.top} y2={PAD.top + PLOT_H} />}
+        {bars && points.map((item, index) => visible.map((column, order) => {
+          const value = readyValue(item[column.key]);
+          if (value === null || value <= 0n) return null;
+          const top = y(value), base = y(0n);
+          // Rounded top, square foot on the baseline: the rect runs past the axis and is clipped there.
+          return <rect key={`${item.start}-${column.key}`} x={x(index) + (order === 0 ? -barWidth - 1 : 1)} y={top} width={barWidth}
+            height={Math.max(0, base - top) + 4} rx={4} fill={column.color} style={{ clipPath: "inset(0 0 4px 0)" }} />;
+        }))}
+        {!bars && visible.map((item) => <path key={item.key} d={path(item.key)} fill="none" stroke={item.color} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />)}
+        {!bars && visible.map((item) => {
           const index = active ?? points.length - 1;
           const value = readyValue(points[index][item.key]);
           return value === null ? null : <circle key={item.key} cx={x(index)} cy={y(value)} r={4} fill={item.color} stroke="var(--surface)" strokeWidth={2} />;

@@ -5,6 +5,7 @@ import { CommercialDocumentForm, type ExistingCommercialDraft } from "@/componen
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { loadSalesFormOptions } from "@/modules/sales/form-options";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 /** "5.00" → "5", "2.50" → "2,5", "3000.00" → "3000": how the discount boxes expect it. */
 function editableDiscount(value: string) {
@@ -37,6 +38,6 @@ export default async function EditOrderPage({ params }: { params: Promise<{ id: 
     orderDiscount: order.order_discount_mode === "AMOUNT" || order.order_discount_mode === "PERCENT"
       ? { mode: order.order_discount_mode, value: editableDiscount(order.order_discount_value ?? "") } : null,
   };
-  return <><header className="page-heading"><div><p className="eyebrow">Đơn bán · Bản nháp</p><h1>Sửa {order.order_number}</h1><p className="lede">Sửa dòng hàng, ngày giao và điều khoản. Giá được kiểm lại trước khi lưu.</p></div><Link className="button button-secondary" href={`/admin/orders/${id}`}>Về đơn bán</Link></header>
+  return <><header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/orders", label: "Đơn bán" }} /><h1>Sửa {order.order_number}</h1><p className="lede">Sửa dòng hàng, ngày giao và điều khoản. Giá được kiểm lại trước khi lưu.</p></div><Link className="button button-secondary" href={`/admin/orders/${id}`}>Về đơn bán</Link></header>
     <CommercialDocumentForm kind="order" options={options} operationId={randomUUID()} canManagePrice={access.permissions.has("pricing.manage")} canManageCustomers={false} existing={existing} /></>;
 }

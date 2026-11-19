@@ -16,12 +16,36 @@ export function commandError(message: string, confirmingOrder = false) {
   if (message.includes("invalid_discount")) return "Giảm giá không hợp lệ: phải nhỏ hơn đơn giá, phần trăm dưới 100%. Kiểm tra lại từng dòng.";
   if (confirmingOrder && message.includes("forbidden")) return "Bạn không có quyền xác nhận đơn bán tại chi nhánh này.";
   if (message.includes("sales_order_unresolved_execution")) return "Còn giao hàng, việc hoặc hàng đang vận chuyển chưa xử lý. Hãy hoàn tất trước khi đóng phần còn lại.";
-  if (message.includes("sales_order_has_no_remaining")) return "Đơn không còn số lượng chưa giao để đóng.";
+  if (message.includes("sales_order_has_no_remaining")) return "Đơn không còn số lượng chưa giao hay hạn mức đang giữ để đóng.";
   if (message.includes("sales_order_not_closeable")) return "Đơn không còn ở trạng thái có thể đóng phần còn lại. Hãy tải lại.";
+  // D94: "Hủy đơn" when a delivery of the order already ran; the unrun ones are cancelled with the order.
+  if (message.includes("sales_order_cancel_delivery_started")) {
+    const number = /sales_order_cancel_delivery_started:\s*([A-Za-z0-9._-]+)/.exec(message)?.[1];
+    return `Phiếu giao ${number ?? "của đơn"} đã chạy (đã lên hàng, đang giao, đã giao, đã xác nhận hoặc đã xuất kho) nên không hủy được đơn. Hãy dùng trả hàng hoặc “Đóng phần còn lại”.`;
+  }
+  if (message.includes("Sales order with delivery history cannot be cancelled")) return "Đơn còn phiếu giao đang chạy hoặc đã giao nên không hủy được. Hãy dùng trả hàng hoặc “Đóng phần còn lại”.";
+  // D95: a purchase order of the order was sent to the supplier, received or verified (a draft one is cancelled with the order).
+  if (message.includes("sales_order_cancel_has_purchase")) return "Đơn đã có đơn mua gửi NCC / NCC đã giao. Hủy hoặc xử lý đơn mua trước.";
+  if (message.includes("sales_order_not_cancellable")) return "Đơn không còn ở trạng thái có thể hủy. Hãy tải lại để kiểm tra.";
+  // D72: refusals of "Xóa đơn bán".
+  // D90: a delivery of the order already ran (loaded, on the road, delivered, verified, stock moved or the job started).
+  if (message.includes("sales_order_delivery_started")) {
+    const number = /sales_order_delivery_started:\s*([A-Za-z0-9._-]+)/.exec(message)?.[1];
+    return `Phiếu giao ${number ?? "của đơn"} đã chạy (đã lên hàng, đang giao, đã giao, đã xác nhận hoặc đã xuất kho) nên không xóa được đơn. Hãy dùng trả hàng hoặc “Đóng phần còn lại” thay cho xóa đơn.`;
+  }
+  if (message.includes("sales_order_has_delivery")) return "Đơn đã có phiếu giao (kể cả phiếu đã hủy). Hệ thống giữ lịch sử phiếu giao nên không xóa được đơn này.";
+  if (message.includes("sales_order_has_credit_override")) return "Đơn đã được duyệt vượt hạn mức tín dụng và lịch sử đó được giữ nguyên, nên không xóa được.";
+  if (message.includes("sales_order_has_purchase")) return "Đơn có đơn mua nhà cung cấp liên quan. Hủy hoặc xử lý đơn mua trước khi xóa đơn bán.";
+  if (message.includes("sales_order_has_prepayment")) return "Đơn đã có khoản khách trả trước. Đảo phiếu thu trước khi xóa đơn.";
+  if (message.includes("sales_order_has_ledger_records")) return "Đơn đã phát sinh sổ sách (doanh thu, chi phí hoặc tiền). Không xóa được.";
+  if (message.includes("sales_order_not_deletable")) return "Đơn đã đóng, đã ghi doanh thu và công nợ nên không xóa được.";
+  if (message.includes("delete_reason_required")) return "Vui lòng nhập lý do xóa đơn (từ 3 đến 300 ký tự).";
   if (message.includes("credit_limit_exceeded")) return "Hạn mức tín dụng không đủ để xác nhận đơn.";
   if (message.includes("credit_limit_not_approved")) return "Khách hàng chưa có hạn mức tín dụng được duyệt.";
   if (message.includes("overdue_receivable_blocks_credit")) return "Khách hàng có công nợ quá hạn; chưa thể xác nhận đơn.";
   if (message.includes("operation_payload_conflict")) return "Mã thao tác đã được dùng với dữ liệu khác. Hãy tải lại màn hình.";
+  // D96 (S5): the draft changed after the screen was loaded.
+  if (message.includes("sales_order_confirm_stale_version")) return "Đơn vừa được người khác sửa. Tải lại để xem bản mới.";
   if (message.includes("draft_version_conflict")) return "Bản nháp đã được người khác sửa. Hãy tải lại trước khi tiếp tục.";
   if (message.includes("not_editable")) return "Chứng từ không còn là bản nháp có thể sửa. Hãy tải lại màn hình.";
   if (message.includes("not_acceptable")) return "Phiên bản báo giá này không còn có thể chấp nhận.";

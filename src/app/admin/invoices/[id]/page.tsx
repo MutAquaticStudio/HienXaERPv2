@@ -9,6 +9,7 @@ import { notFound } from "next/navigation";
 import { InvoiceCommand } from "@/components/invoicing/invoice-command";
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 export default async function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -26,7 +27,7 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
   const existing = new Set((adjustments ?? []).map((row) => row.receivable_adjustment_id));
   const money = (value: string | number) => formatVnd(vnd(String(value)));
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Hồ sơ lập hóa đơn · chưa phát hành</p><h1>{invoice.customer_name_snapshot}</h1><p className="lede">Mã {invoice.id} · nguồn {financeSourceLabel(invoice.source_type)}</p></div><Link className="button button-secondary" href="/admin/invoices">Về danh sách</Link></header>
+    <header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/invoices", label: "Hóa đơn" }} /><h1>{invoice.customer_name_snapshot}</h1><p className="lede">Mã {invoice.id} · nguồn {financeSourceLabel(invoice.source_type)}</p></div><Link className="button button-secondary" href="/admin/invoices">Về danh sách</Link></header>
     <section className="card card-pad"><div className="section-head flush"><div><h2>Rà soát nguồn</h2><p className="muted">Không phải hóa đơn điện tử. Không ghi nhận thêm công nợ phải thu hoặc doanh thu.</p></div><a className="button button-secondary" href={`/api/invoices/${id}/review/pdf`}>Tải phiếu rà soát PDF</a></div>
       <div className="detail-grid"><div className="detail-item"><dt>Số tiền nguồn</dt><dd>{money(invoice.source_amount_vnd)}</dd></div><div className="detail-item"><dt>Xác minh nghiệp vụ</dt><dd>{formatBusinessDateTime(invoice.billing_verified_at)}</dd></div><div className="detail-item"><dt>Hạn lập hóa đơn</dt><dd>{invoice.invoice_due_at ? formatBusinessDateTime(invoice.invoice_due_at) : "Chờ xác nhận chính sách phát hành"}</dd></div><div className="detail-item"><dt>Trạng thái</dt><dd>{invoice.status === "BUSINESS_APPROVED" ? "Đã duyệt nguồn · chờ cấu hình phát hành" : invoice.status === "CANCELLED" ? "Đã hủy" : "Nháp rà soát"}</dd></div><div className="detail-item"><dt>Dịch vụ phát hành</dt><dd>Chưa cấu hình</dd></div><div className="detail-item"><dt>Hóa đơn pháp lý</dt><dd>Chưa phát hành</dd></div></div>
       <div className="table-wrap"><table><thead><tr><th>Dòng</th><th>Mô tả nguồn</th><th>Số lượng</th><th>Giá trị nguồn</th></tr></thead><tbody>{(lines ?? []).map((line) => <tr key={line.id}><td>{line.line_number}</td><td>{line.description_snapshot}</td><td>{formatQuantity(String(line.quantity_snapshot))}</td><td>{money(line.source_amount_vnd)}</td></tr>)}</tbody></table></div>

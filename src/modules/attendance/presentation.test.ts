@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  addDays, attendanceError, attendanceMark, formatMinutes, isoWeekday, monthDays, shiftMonth, vietnamInstant, weekStart,
+  addDays, attendanceError, attendanceMark, formatMinutes, isoWeekday, monthDays, openShiftHeading, shiftMonth, vietnamInstant, weekDayCell, weekStart,
 } from "./presentation";
 
 const cell = { status: "WORKED", clock_in_at: "2026-10-29T00:30:00Z", clock_out_at: "2026-10-29T10:00:00Z", late_minutes: 0, early_minutes: 0, overtime_minutes: 0 };
@@ -39,6 +39,24 @@ describe("attendance presentation", () => {
   it("never shows a technical code", () => {
     expect(attendanceError("attendance_period_closed")).toContain("đã chốt");
     expect(attendanceError('duplicate key value violates unique constraint "work_shifts_branch_id_code_key"')).toContain("Mã ca đã có");
+    expect(attendanceError("attendance_period_open_shifts:3")).toBe("Còn 3 ca chưa ra ca trong kỳ. Sửa chấm công trước khi chốt.");
     expect(attendanceError("something odd")).toBe("Chưa lưu được. Kiểm tra kết nối rồi thử lại.");
+  });
+
+  it("names a shift left open on an earlier day instead of saying not clocked in", () => {
+    const open = { work_date: "2026-11-02", clock_in_at: "2026-11-02T04:49:00Z" };
+    expect(openShiftHeading(open, "2026-11-02")).toBe("Đã vào ca lúc 11:49");
+    expect(openShiftHeading(open, "2026-11-04")).toBe("Ca 02/11 chưa ra ca (vào lúc 11:49)");
+  });
+
+  it("D68: a day of the week says what was clocked, and \"Chưa xếp ca\" instead of a false \"Nghỉ\"", () => {
+    const worked = { status: "WORKED", clock_in_at: "2026-11-07T03:55:00Z", clock_out_at: "2026-11-07T09:33:00Z" };
+    expect(weekDayCell([], [])).toBe("Chưa xếp ca");
+    expect(weekDayCell([], [worked])).toBe("Ngoài ca · 10:55 – 16:33");
+    expect(weekDayCell(["Ca sáng · 07:00–11:00"], [])).toBe("Ca sáng · 07:00–11:00");
+    expect(weekDayCell(["Ca sáng · 07:00–11:00"], [worked])).toBe("Ca sáng · 07:00–11:00 · 10:55 – 16:33");
+    expect(weekDayCell([], [{ ...worked, clock_out_at: null }])).toBe("Ngoài ca · 10:55 – đang làm");
+    expect(weekDayCell([], [{ status: "LEAVE_PAID", clock_in_at: null, clock_out_at: null }])).toBe("Nghỉ có phép");
+    expect(weekDayCell([], [{ status: "ABSENT", clock_in_at: null, clock_out_at: null }])).toBe("Vắng");
   });
 });

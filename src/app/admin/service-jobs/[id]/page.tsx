@@ -19,6 +19,7 @@ import { ServiceBillingFields } from "@/components/workforce/service-billing-fie
 import { ServiceJobProgress } from "@/components/workforce/service-job-progress";
 import { QuantityStepper } from "@/components/ui/quantity-stepper";
 import { FormDialog } from "@/components/ui/form-dialog";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 type Job = {
   id: string; job_number: string; customer_name: string; site_name: string; service_type: string;
@@ -46,6 +47,8 @@ export default async function ServiceJobDetail({ params, searchParams }: { param
   ]);
   if (!data) notFound();
   const job = data as Job;
+  // D75: the job came from a request the customer sent on the portal.
+  const { data: origin } = await supabase.from("service_requests").select("id, request_number").eq("service_job_id", id).maybeSingle();
   const unitPrice = (pricing as { unit_price_vnd: string | null } | null)?.unit_price_vnd ?? null;
   const canManage = access.permissions.has("work.manage");
   const canClaim = access.permissions.has("work.claim");
@@ -59,7 +62,7 @@ export default async function ServiceJobDetail({ params, searchParams }: { param
   const countForEstimate = job.actual_quantity ?? job.planned_quantity;
   const estimate = unitPrice && countForEstimate ? new Decimal(countForEstimate).mul(unitPrice).toDecimalPlaces(0, Decimal.ROUND_HALF_UP).toFixed(0) : null;
   return <>
-    <header className="page-heading"><div><p className="eyebrow">Đơn dịch vụ · {job.job_number}</p><h1>{job.service_type}</h1><p className="lede">{job.customer_name} · {job.site_name}</p></div>
+    <header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/service-jobs", label: "Dịch vụ" }} current={job.job_number} /><h1>{job.service_type}</h1><p className="lede">{job.customer_name} · {job.site_name}{origin && <> · <Link className="code-link" href={`/admin/service-jobs/requests/${origin.id}`}>Từ yêu cầu của khách {origin.request_number}</Link></>}</p></div>
       <div className="action-cluster"><StatusBadge tone={job.execution_state === "VERIFIED" ? "success" : job.execution_state === "CANCELLED" ? "danger" : job.execution_state === "RESULT_SUBMITTED" ? "warning" : "info"}>{serviceStateLabel(job.execution_state)}</StatusBadge>
         <Link className="button button-secondary" href="/admin/service-jobs">Về danh sách</Link></div></header>
     <ActionNotice notice={query.notice} error={query.error} />

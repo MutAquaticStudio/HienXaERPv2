@@ -24,4 +24,7 @@ describe("close remaining UI contract", () => {
   it("hides when all quantity was fulfilled", () => {
     expect(renderToStaticMarkup(<CloseRemainingForm {...props} fulfillmentState="FULFILLED" />)).toBe("");
   });
+  it("shows on a fulfilled order that still holds credit (D96)", () => {
+    expect(renderToStaticMarkup(<CloseRemainingForm {...props} fulfillmentState="FULFILLED" creditHeld />)).toContain(props.orderId);
+  });
 });

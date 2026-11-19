@@ -14,7 +14,7 @@ import {
 export type TimesheetRecord = {
   id: string; employee_id: string; work_date: string; shift_id: string | null; status: string;
   clock_in_at: string | null; clock_out_at: string | null; worked_minutes: number; late_minutes: number;
-  early_minutes: number; overtime_minutes: number; note: string | null; source: string;
+  early_minutes: number; overtime_minutes: number; note: string | null; source: string; auto_closed_at?: string | null;
 };
 export type TimesheetPlan = { employee_id: string; work_date: string; shift_id: string };
 
@@ -71,12 +71,13 @@ export function TimesheetGrid({ days, people, records, plans, shifts, lockedDays
             {days.map((day) => {
               const cell = byCell.get(`${person.id}|${day}`) ?? [];
               const plan = planned.get(`${person.id}|${day}`) ?? [];
+              const forgot = cell.some((record) => record.auto_closed_at);
               const mark = cell[0] ? attendanceMark(cell[0]) : null;
-              const title = cell.length
+              const title = (forgot ? "Quên ra ca, hệ thống đã khép ca. " : "") + (cell.length
                 ? cell.map((record) => record.status === "WORKED" ? `${formatClock(record.clock_in_at)}–${record.clock_out_at ? formatClock(record.clock_out_at) : "…"}` : attendanceStatusLabel(record.status)).join(", ")
-                : plan.length ? `Đã xếp: ${plan.map((item) => shiftById.get(item.shift_id)?.name ?? "ca").join(", ")}` : "Chưa có lịch";
-              const content = mark ? mark.mark : plan.length ? "·" : "";
-              const className = `attendance-cell${mark ? ` tone-${mark.tone}` : plan.length ? " tone-planned" : ""}${locked.has(day) ? " is-locked" : ""}`;
+                : plan.length ? `Đã xếp: ${plan.map((item) => shiftById.get(item.shift_id)?.name ?? "ca").join(", ")}` : "Chưa có lịch");
+              const content = forgot ? "!" : mark ? mark.mark : plan.length ? "·" : "";
+              const className = `attendance-cell${forgot ? " tone-warn" : mark ? ` tone-${mark.tone}` : plan.length ? " tone-planned" : ""}${locked.has(day) ? " is-locked" : ""}`;
               return <td key={day} className={className}>
                 {canManage && !locked.has(day)
                   ? <button type="button" title={title} aria-label={`${person.display_name} ngày ${day.slice(8, 10)}/${day.slice(5, 7)}: ${title}`} onClick={() => open(person, day)}>{content}</button>
@@ -92,7 +93,7 @@ export function TimesheetGrid({ days, people, records, plans, shifts, lockedDays
       </table>
     </div>
     <p className="attendance-legend muted">
-      <span className="tone-ok">✓</span> Đủ công · <span className="tone-warn">✓</span> Muộn / về sớm · <span className="tone-open">Đang làm</span> ·
+      <span className="tone-ok">✓</span> Đủ công · <span className="tone-warn">✓</span> Muộn / về sớm · <span className="tone-open">Đang làm</span> · <span className="tone-warn">!</span> Quên ra ca, văn phòng kiểm tra ·
       {" "}<span className="tone-leave">P</span> Nghỉ có phép · <span className="tone-off">KP</span> Nghỉ không phép · <span className="tone-off">V</span> Vắng ·
       {" "}<span className="tone-planned">·</span> Đã xếp ca, chưa chấm{canManage ? " · Bấm vào ô để chấm hộ hoặc sửa công." : ""}
     </p>
@@ -103,6 +104,7 @@ export function TimesheetGrid({ days, people, records, plans, shifts, lockedDays
         {editing.detail.early_minutes ? ` · về sớm ${formatMinutes(editing.detail.early_minutes)}` : ""}
         {editing.detail.overtime_minutes ? ` · làm thêm ${formatMinutes(editing.detail.overtime_minutes)}` : ""}
         {editing.detail.worked_minutes ? ` · làm ${formatMinutes(editing.detail.worked_minutes)}` : ""}
+        {editing.detail.auto_closed_at ? " · quên ra ca, hệ thống đã khép ca: kiểm tra giờ ra rồi lưu" : ""}
       </> : "Chưa có chấm công ngày này."}
       onClose={() => setEditing(null)}>
       <AttendanceCellForm key={`${editing.draft.employeeId}-${editing.draft.day}`} draft={editing.draft} shifts={shifts} onSaved={() => setEditing(null)} />

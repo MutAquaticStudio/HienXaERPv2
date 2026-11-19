@@ -31,7 +31,7 @@ export default async function WorkforcePage({ searchParams }: { searchParams: Pr
   const canManage = access.permissions.has("work.manage");
   const canClaim = access.permissions.has("work.claim");
   return <>
-    <header className="page-heading"><div><p className="eyebrow">Điều phối nhân sự</p><h1>Nhân sự và công việc</h1><p className="lede">Theo dõi phân công nhân sự, xe và máy cho công việc giao hàng và dịch vụ.</p></div></header>
+    <header className="page-heading"><div><h1>Nhân sự và công việc</h1><p className="lede">Theo dõi phân công nhân sự, xe và máy cho công việc giao hàng và dịch vụ.</p></div></header>
     <ActionNotice notice={query.notice} error={query.error} />
     <div className="two-column">
       <section className="card"><div className="section-head"><h2>Nhân sự theo chi nhánh</h2><span className="scope-chip">Không hiển thị lương</span></div>

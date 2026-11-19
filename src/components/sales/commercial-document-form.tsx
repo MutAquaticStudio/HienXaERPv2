@@ -9,6 +9,7 @@ import { MaterialSearchBox, type MaterialSearchHandle } from "@/components/docum
 import type { EditorLine, EditorMaterial, EntityOption } from "@/components/documents/editor/types";
 import { useAutoPricePreview } from "@/components/documents/editor/use-auto-price-preview";
 
+import { ChevronDown } from "lucide-react";
 import { startTransition, useActionState, useCallback, useEffect, useId, useMemo, useRef, useState, type FormEvent } from "react";
 import { DiscountField, LinePriceDialog, draftDiscount, type DiscountDraft } from "@/components/sales/discount-controls";
 import { applySalesDiscounts, discountLabel } from "@/modules/sales/discounts";
@@ -155,6 +156,9 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
   const startSite = startCustomer?.sites.find((item) => item.id === (existing?.siteId ?? initialSiteId));
   const [site, setSite] = useState<EntityOption | null>(startSite ? siteOption(startSite) : null);
   const sites = customer ? sitesByCustomer[customer.id] ?? [] : [];
+  // Below 1440px the total panel is pinned to the bottom of the screen: discount and prepayment fold away behind one
+  // button so the pinned part stays one row (total + buttons) and does not cover the customer/site fields on a phone.
+  const [moreOpen, setMoreOpen] = useState(false);
   const [terms, setTerms] = useState(existing?.terms ?? "");
   const [effectiveAt, setEffectiveAt] = useState(localDateTime(existing?.effectiveAt ?? null));
   const [lookupMessage, setLookupMessage] = useState("");
@@ -313,7 +317,7 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
       {lookupMessage && <p className="form-message" role="status">{lookupMessage}</p>}
     </aside>
 
-    <div className="card card-pad doc-editor-footer" role="group" aria-label="Tổng tiền và lưu đơn">
+    <div className={`card card-pad doc-editor-footer${moreOpen ? " more-open" : ""}`} role="group" aria-label="Tổng tiền và lưu đơn">
       {preview && !preview.success && <p role="status" className="form-message">{userFacingError(preview.message)}</p>}
       {state?.message && <p className={`form-message${state.success ? " success" : ""}`} role="status">{userFacingError(state.message)}</p>}
       <div className="doc-editor-totals"><dl className="doc-editor-summary">
@@ -323,6 +327,12 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
           <div><dt>Giảm giá</dt><dd>−{formatVnd(vnd(discountedOk.discountTotalVnd))}</dd></div>
           <div className="doc-editor-total"><dt>Khách cần trả</dt><dd>{formatVnd(vnd(discountedOk.netTotalVnd))}</dd></div></>}
       </dl>
+      {(discounts || prepaying) && <button type="button" className="doc-editor-more-toggle" aria-expanded={moreOpen} aria-controls="doc-editor-more" onClick={() => setMoreOpen((open) => !open)}>
+        {moreOpen ? "Thu gọn"
+          : prepaidVnd.replace(/\D/g, "").replace(/^0+/, "") ? `Đã nhập trả trước ${formatVnd(vnd(prepaidVnd.replace(/\D/g, "")))} · Sửa`
+          : `Thêm ${[discounts && "giảm giá", prepaying && "tiền trả trước"].filter(Boolean).join(" / ")}`}
+        <ChevronDown aria-hidden size={16} /></button>}
+      <div id="doc-editor-more" className="doc-editor-more">
       {discounts && <DiscountField id="order-discount" label="Giảm giá đơn" draft={orderDiscount} onChange={(next) => { needPrice(); setOrderDiscount(next); }}
         hint={discountedOk && discountedOk.orderRequestedVnd !== discountedOk.orderAppliedVnd
           ? `Giảm được ${formatVnd(vnd(discountedOk.orderAppliedVnd))} (lệch ${formatVnd(vnd((BigInt(discountedOk.orderRequestedVnd) - BigInt(discountedOk.orderAppliedVnd)).toString()))} vì giá mỗi đơn vị phải là số đồng nguyên).`
@@ -342,7 +352,7 @@ export function CommercialDocumentForm({ kind, options, operationId, confirmOper
           <input type="hidden" name="prepaymentAt" value={prepayment!.at} />
           {remainingVnd !== null && <p className="muted">Còn phải trả {formatVnd(vnd(remainingVnd))}. Ghi vào Sổ quỹ là khoản khách ứng trước; trừ vào công nợ khi giao hàng.</p>}
         </> : <p className="muted">Chưa có tài khoản tiền. Tạo ở Sổ quỹ để ghi tiền khách trả trước.</p>}
-      </fieldset>}</div>
+      </fieldset>}</div></div>
       <div className="doc-editor-actions">
         <button className={confirmable ? "button button-secondary doc-editor-draft" : "button button-primary"} type="submit" name="intent" value="draft" disabled={!ready}>{pending && !confirmable ? "Đang lưu..." : existing ? "Lưu thay đổi bản nháp" : "Lưu nháp"}</button>
         {confirmable && <button className="button button-commerce doc-editor-confirm" type="button" disabled={!ready} onClick={() => setReviewOpen(true)}>{pending ? "Đang lưu..." : "Xác nhận đơn"}</button>}

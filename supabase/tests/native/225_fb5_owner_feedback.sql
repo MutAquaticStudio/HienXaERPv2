@@ -1,4 +1,4 @@
--- FB5 (Owner 18/10): a truck's capacity is read through the conversions both ways (4 tấn carries 80 bao when 1 tấn = 20 bao),
+-- FB5 (Owner 18/10) → D53 (Owner 03/11: capacity only for reference): a truck's capacity is read through the conversions both ways (4 tấn carries 80 bao when 1 tấn = 20 bao),
 -- a truck is saved without a capacity evidence note, the order popup learns how much of each line a truck carries, and one
 -- purchase price is saved together with the prices it implies for other units, all or nothing.
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);
@@ -85,39 +85,34 @@ begin
   assert (select capacity_in_line_unit from public.vehicle_capacity_by_order(sale) where vehicle_id = truck and sales_order_line_id = line) = 80,
     'truck of 4 tấn carries 80 bao';
 
-  -- 81 bao do not fit the 4 tấn truck; 80 bao do.
-  failed := null;
-  begin
-    perform public.create_delivery_for_order(sale, wh, jsonb_build_array(jsonb_build_object('sales_order_line_id', line, 'quantity', '81')), start_at,
-      jsonb_build_object('employee_id', driver, 'vehicle_id', truck), '7f225600-0000-4000-8000-000000000002');
-  exception when others then failed := sqlerrm; end;
-  assert failed = 'vehicle_capacity_exceeded', format('81 bao must exceed the 4 tấn truck, got %s', failed);
-  result := public.create_delivery_for_order(sale, wh, jsonb_build_array(jsonb_build_object('sales_order_line_id', line, 'quantity', '80')), start_at,
+  -- D53 (Owner 03/11): a vehicle's capacity is for reference only — 81 bao on the 4 tấn truck is assigned.
+  result := public.create_delivery_for_order(sale, wh, jsonb_build_array(jsonb_build_object('sales_order_line_id', line, 'quantity', '81')), start_at,
     jsonb_build_object('employee_id', driver, 'vehicle_id', truck), '7f225600-0000-4000-8000-000000000003');
-  assert result->>'assignment_id' is not null, 'the 80 bao delivery is assigned to the 4 tấn truck';
-  -- The route planner reads the same load in the truck's unit: 80 bao = 4 tấn.
-  assert public.vehicle_load_for_deliveries(truck, array[(result->>'delivery_id')::uuid]) = 4, 'route load of 80 bao is 4 tấn';
+  assert result->>'assignment_id' is not null, 'D53: 81 bao are assigned to the 4 tấn truck (no capacity limit)';
+  -- The route planner still reads the load in the truck's unit for reference: 81 bao = 4,05 tấn.
+  assert public.vehicle_load_for_deliveries(truck, array[(result->>'delivery_id')::uuid]) = 4.05, 'route load of 81 bao is 4,05 tấn';
 
-  -- Loading on the truck uses the same reading: 80 bao fit, 81 do not.
+  -- D53: loading is not checked against the capacity either, nor against a unit the goods cannot be converted to.
   perform pg_temp.act_as_admin();
-  perform private.assert_vehicle_actual_load((result->>'delivery_id')::uuid, (select jsonb_agg(jsonb_build_object('delivery_line_id', l.id, 'loaded_base_quantity', 80))
+  perform private.assert_vehicle_actual_load((result->>'delivery_id')::uuid, (select jsonb_agg(jsonb_build_object('delivery_line_id', l.id, 'loaded_base_quantity', 81))
     from public.delivery_lines l where l.delivery_id = (result->>'delivery_id')::uuid), now());
-  failed := null;
-  begin
-    perform private.assert_vehicle_actual_load((result->>'delivery_id')::uuid, (select jsonb_agg(jsonb_build_object('delivery_line_id', l.id, 'loaded_base_quantity', 81))
-      from public.delivery_lines l where l.delivery_id = (result->>'delivery_id')::uuid), now());
-  exception when others then failed := sqlerrm; end;
-  assert failed = 'vehicle_actual_cargo_capacity_exceeded', format('81 bao loaded must exceed, got %s', failed);
-
-  -- A truck counted in a unit the goods cannot be converted to is refused with the material named.
   update public.vehicles set capacity_uom_id = cay where id = truck;
-  failed := null;
-  begin
-    perform private.assert_vehicle_actual_load((result->>'delivery_id')::uuid, (select jsonb_agg(jsonb_build_object('delivery_line_id', l.id, 'loaded_base_quantity', 80))
-      from public.delivery_lines l where l.delivery_id = (result->>'delivery_id')::uuid), now());
-  exception when others then failed := sqlerrm; end;
-  assert failed = 'vehicle_capacity_conversion_missing', format('no conversion to cây must be named, got %s', failed);
+  perform private.assert_vehicle_actual_load((result->>'delivery_id')::uuid, (select jsonb_agg(jsonb_build_object('delivery_line_id', l.id, 'loaded_base_quantity', 81))
+    from public.delivery_lines l where l.delivery_id = (result->>'delivery_id')::uuid), now());
   update public.vehicles set capacity_uom_id = tan where id = truck;
+
+  -- D53: a truck saved without any capacity is assigned and offered by auto-dispatch.
+  perform pg_temp.act_as('10000000-0000-4000-8000-000000000001');
+  perform public.save_catalog_record('vehicles', '7f225500-0000-4000-8000-000000000002', branch,
+    jsonb_build_object('code', 'NT_XE225B', 'plate_number', '99C-225.02', 'capacity_quantity', null, 'capacity_uom_id', null, 'default_driver_employee_id', driver),
+    null, 'Xe không ghi sức chở', '7f225600-0000-4000-8000-000000000004');
+  assert (select capacity_quantity is null and capacity_verified_at is null from public.vehicles where id = '7f225500-0000-4000-8000-000000000002'), 'truck saved without capacity';
+  result := public.create_delivery_for_order(sale, wh, jsonb_build_array(jsonb_build_object('sales_order_line_id', line, 'quantity', '20')), start_at + interval '5 hours',
+    jsonb_build_object('employee_id', driver, 'vehicle_id', '7f225500-0000-4000-8000-000000000002'), '7f225600-0000-4000-8000-000000000005');
+  assert result->>'assignment_id' is not null, 'D53: a truck without capacity is assigned';
+  perform pg_temp.act_as_admin();
+  assert exists (select 1 from private.dispatch_pairs((result->>'delivery_id')::uuid) x where x.vehicle_id = '7f225500-0000-4000-8000-000000000002'),
+    'D53: auto-dispatch offers a truck without capacity';
 
   -- One purchase price and the price it implies for tấn are saved together; a replay returns the same rules.
   perform pg_temp.act_as('10000000-0000-4000-8000-000000000003');

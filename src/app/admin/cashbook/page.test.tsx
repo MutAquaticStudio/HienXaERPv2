@@ -100,7 +100,7 @@ it("switches money accounts by tab, picks quick periods and exports the period (
   await page({ from: "2026-10-01", to: "2026-10-31" });
   const tabs = screen.getByRole("navigation", { name: "Quỹ" });
   expect(within(tabs).getByRole("link", { name: "Tổng quỹ" })).toHaveAttribute("aria-current", "page");
-  expect(within(tabs).getByRole("link", { name: "Tiền mặt · Tiền mặt" })).toHaveAttribute("href",
+  expect(within(tabs).getByRole("link", { name: "Tiền mặt" })).toHaveAttribute("href",
     "/admin/cashbook?from=2026-10-01&to=2026-10-31&account=11111111-1111-4111-8111-111111111111");
   const presets = screen.getByRole("group", { name: "Chọn nhanh kỳ" });
   expect(within(presets).getAllByRole("link").map((link) => link.textContent)).toEqual(["Hôm nay", "Tuần này", "Tháng này", "Tháng trước"]);

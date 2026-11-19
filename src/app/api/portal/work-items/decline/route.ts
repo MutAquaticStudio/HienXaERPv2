@@ -4,6 +4,7 @@ import { z } from "zod";
 import { reasonOrDefault } from "@/lib/core/reason";
 import { authenticatedPortalClient, PortalRpcError, portalRpc } from "@/modules/portal/server";
 import { workCommandHttpStatus } from "@/modules/portal/work-command-status";
+import { crossOriginRefusal } from "@/lib/core/request-origin";
 
 const schema = z.object({ workItemId: z.guid(), version: z.number().int().positive(), operationId: z.guid(), reason: z.string().trim().max(300).optional() });
 
@@ -19,6 +20,8 @@ export function declineMessage(raw: string) {
 
 /** C2 "Từ chối việc": the assigned worker hands an unstarted delivery job back to dispatch, with an optional note (FB7). */
 export async function POST(request: Request) {
+  const refused = crossOriginRefusal(request);
+  if (refused) return refused;
   const context = await authenticatedPortalClient();
   if (!context) return NextResponse.json({ error: "Phiên đăng nhập đã hết hạn. Đăng nhập lại." }, { status: 401 });
   const parsed = schema.safeParse(await request.json().catch(() => null));

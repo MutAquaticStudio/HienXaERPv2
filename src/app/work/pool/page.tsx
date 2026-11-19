@@ -1,22 +1,29 @@
 import { workKindLabel } from "@/modules/portal/presentation";
 import Link from "next/link";
 
+import { ClaimDeliveryCard } from "@/components/portal/claim-delivery-card";
 import { ClaimJobButton } from "@/components/portal/claim-job-button";
 import styles from "@/components/portal/portal.module.css";
-import { getWorkerPortalSnapshot } from "@/modules/portal/actions";
+import { getWorkerDeliveryPool, getWorkerPortalSnapshot } from "@/modules/portal/actions";
 
 export default async function WorkPoolPage() {
-  const snapshot = await getWorkerPortalSnapshot();
+  const [snapshot, deliveries] = await Promise.all([getWorkerPortalSnapshot(), getWorkerDeliveryPool()]);
+  const empty = !snapshot.pool.length && !deliveries.length;
   return (
     <div className={styles.page}>
       <header className={styles.sectionHead}>
         <div>
           <h1>Kho việc có thể nhận</h1>
-          <p>Chỉ hiển thị việc ở chi nhánh bạn đang có quyền active.</p>
+          <p>Chỉ hiện việc ở chi nhánh bạn đang làm. Ai bấm nhận trước thì được việc.</p>
         </div>
       </header>
-      <div className={styles.grid}>
-        {snapshot.pool.length ? snapshot.pool.map((job) => (
+      {deliveries.length > 0 && <section aria-labelledby="pool-deliveries" className={styles.grid}>
+        <h2 id="pool-deliveries" className={styles.claimLabel}>Phiếu giao chờ người nhận ({deliveries.length})</h2>
+        {deliveries.map((delivery) => <ClaimDeliveryCard delivery={delivery} key={delivery.id} />)}
+      </section>}
+      {snapshot.pool.length > 0 && <section aria-labelledby="pool-jobs" className={styles.grid}>
+        {deliveries.length > 0 && <h2 id="pool-jobs" className={styles.claimLabel}>Việc dịch vụ ({snapshot.pool.length})</h2>}
+        {snapshot.pool.map((job) => (
           <article className={styles.card + " " + styles.cardAccent} key={job.id}>
             <span className={styles.badge + " " + styles.badgeWarm}>{workKindLabel(job.kind)}</span>
             <h2>{job.title ?? job.number}</h2>
@@ -29,8 +36,9 @@ export default async function WorkPoolPage() {
               <ClaimJobButton version={job.version} workItemId={job.id} />
             </div>
           </article>
-        )) : <p className={styles.empty}>Hiện chưa có công việc phù hợp để nhận.</p>}
-      </div>
+        ))}
+      </section>}
+      {empty && <p className={styles.empty}>Hiện chưa có công việc phù hợp để nhận.</p>}
     </div>
   );
 }

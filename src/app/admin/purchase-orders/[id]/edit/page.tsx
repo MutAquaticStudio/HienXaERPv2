@@ -5,6 +5,7 @@ import { PurchaseOrderForm, type ExistingPurchaseDraft } from "@/components/purc
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { loadPurchaseFormOptions, loadSalesOrderPurchaseLines } from "@/modules/purchasing/form-options";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 export default async function EditPurchaseOrderPage({ params }: { params: Promise<{ id: string }> }) {
   const access = await requireInternalPermission("purchasing.create");
@@ -38,6 +39,6 @@ export default async function EditPurchaseOrderPage({ params }: { params: Promis
       quantity: String(line.quantity), manualCostVnd: line.price_source_type === "MANUAL_APPROVED" ? String(line.unit_cost_vnd) : "",
       manualCostReason: line.price_source_type === "MANUAL_APPROVED" ? line.override_reason ?? "" : "" })),
   };
-  return <><header className="page-heading"><div><p className="eyebrow">Đơn mua · Bản nháp</p><h1>Sửa {order.purchase_order_number}</h1><p className="lede">Sửa nhiều dòng, ngày và điều khoản; giá mua được kiểm lại khi lưu.</p></div><Link className="button button-secondary" href={`/admin/purchase-orders/${id}`}>Về đơn mua</Link></header>
+  return <><header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/purchase-orders", label: "Đơn mua" }} /><h1>Sửa {order.purchase_order_number}</h1><p className="lede">Sửa nhiều dòng, ngày và điều khoản; giá mua được kiểm lại khi lưu.</p></div><Link className="button button-secondary" href={`/admin/purchase-orders/${id}`}>Về đơn mua</Link></header>
     <PurchaseOrderForm options={options} sourceLines={sourceLines} operationId={randomUUID()} canManageWarehouse={access.permissions.has("roles.manage")} canCreateSales={false} canManagePrice={access.permissions.has("purchasing.price.manage")} canReadPrice={true} existing={existing} /></>;
 }

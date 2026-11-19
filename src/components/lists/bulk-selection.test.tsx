@@ -1,7 +1,8 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const m = vi.hoisted(() => ({ bulk: vi.fn(), exportCsv: vi.fn(), refresh: vi.fn() }));
+const m = vi.hoisted(() => ({ bulk: vi.fn(), exportCsv: vi.fn(), refresh: vi.fn(), assign: vi.fn() }));
+vi.mock("@/modules/pricing/purchase-book-actions", () => ({ assignSupplierToMaterialsAction: m.assign }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: m.refresh }) }));
 vi.mock("@/modules/catalog/bulk-actions", () => ({ bulkCatalogAction: m.bulk, exportCatalogCsvAction: m.exportCsv }));
 
@@ -82,4 +83,38 @@ describe("bulk selection on a list", () => {
     await waitFor(() => expect(m.exportCsv).toHaveBeenCalledWith({ kind: "customers", ids: ["b"] }));
     await waitFor(() => expect(createObjectURL).toHaveBeenCalled());
   });
+});
+
+it("D61: assigns one supplier to the chosen materials after a confirmation, and keeps the operation when the outcome is unclear", async () => {
+  m.assign.mockResolvedValueOnce({ status: "FAILED", outcomeUnknown: true, message: "Chưa xác định kết quả.", changed: 0, unchanged: 0, failed: [] })
+    .mockResolvedValueOnce({ status: "PARTIAL", message: "Đã gán 1 vật tư cho Phú Thành. 1 vật tư bỏ qua.", changed: 1, unchanged: 0, failed: [{ code: "DV", reason: "không cho phép mua" }] });
+  render(<BulkSelection>
+    <BulkActionBar kind="materials" pageIds={pageIds} total={2} fields={[]} activeLabels={{ stop: "Ngừng dùng", restart: "Dùng lại" }} assignSuppliers={[{ id: "pt", name: "Phú Thành" }]} />
+    <BulkPageCheckbox ids={pageIds} />
+  </BulkSelection>);
+  fireEvent.click(screen.getByRole("checkbox", { name: "Chọn tất cả trên trang này" }));
+  const bar = screen.getByRole("region", { name: "Thao tác với các dòng đã chọn" });
+  fireEvent.change(within(bar).getByLabelText("Thao tác"), { target: { value: "assign-supplier" } });
+  fireEvent.click(within(bar).getByRole("button", { name: "Áp dụng" }));
+  expect(within(bar).getByRole("alert")).toHaveTextContent("Chọn nhà cung cấp.");
+  fireEvent.change(within(bar).getByLabelText("Nhà cung cấp"), { target: { value: "pt" } });
+  fireEvent.click(within(bar).getByRole("button", { name: "Áp dụng" }));
+  expect(within(bar).getByRole("alertdialog")).toHaveTextContent("Gán 2 vật tư cho Phú Thành?");
+  fireEvent.click(within(bar).getByRole("button", { name: "Xác nhận" }));
+  await waitFor(() => expect(m.assign).toHaveBeenCalledTimes(1));
+  const first = m.assign.mock.calls[0][0];
+  expect(first).toMatchObject({ supplierId: "pt", materialIds: ["a", "b"] });
+  fireEvent.click(await within(bar).findByRole("button", { name: "Xác nhận" }));
+  await waitFor(() => expect(m.assign).toHaveBeenCalledTimes(2));
+  expect(m.assign.mock.calls[1][0].operationId).toBe(first.operationId);
+  expect(await screen.findByText("Đã gán 1 vật tư cho Phú Thành. 1 vật tư bỏ qua.")).toBeInTheDocument();
+  expect(screen.getByText("DV")).toBeInTheDocument();
+  expect(m.refresh).toHaveBeenCalled();
+  expect(m.bulk).not.toHaveBeenCalled();
+});
+
+it("offers no supplier assignment without the purchase price permission", () => {
+  list();
+  fireEvent.click(screen.getByRole("checkbox", { name: "Chọn tất cả trên trang này" }));
+  expect(screen.queryByRole("option", { name: "Gán nhà cung cấp" })).not.toBeInTheDocument();
 });

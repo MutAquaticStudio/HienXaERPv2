@@ -2,8 +2,12 @@ import { NextResponse } from "next/server";
 
 import { PAYMENT_NOTICES_ENABLED } from "@/lib/features";
 import { authenticatedPortalClient, portalRpc } from "@/modules/portal/server";
+import { userFacingError } from "@/lib/core/errors";
+import { crossOriginRefusal } from "@/lib/core/request-origin";
 
 export async function POST(request: Request) {
+  const refused = crossOriginRefusal(request);
+  if (refused) return refused;
   if (!PAYMENT_NOTICES_ENABLED) return NextResponse.json({ error: "Không tìm thấy." }, { status: 404 });
   const context = await authenticatedPortalClient();
   if (!context) return NextResponse.json({ error: "Phiên đăng nhập đã hết hạn" }, { status: 401 });
@@ -31,6 +35,6 @@ export async function POST(request: Request) {
     });
     return NextResponse.json({ noticeId });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Gửi thông báo thất bại" }, { status: 409 });
+    return NextResponse.json({ error: userFacingError(error instanceof Error ? error.message : null, "Gửi thông báo thất bại") }, { status: 409 });
   }
 }

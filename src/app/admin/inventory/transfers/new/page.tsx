@@ -1,10 +1,10 @@
-import Link from "next/link";
 import { randomUUID } from "node:crypto";
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { formatQuantity } from "@/lib/core/quantity";
 import type { EditorMaterial } from "@/components/documents/editor/types";
 import { TransferCreateForm } from "@/modules/inventory/transfer-create-form";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 type Conversion = { material_id: string | null; from_uom_id: string; to_uom_id: string; numerator: string; denominator: string };
 
@@ -32,7 +32,7 @@ export default async function NewTransferPage() {
  });
  const baseSymbol = new Map((materials.data ?? []).map(material => [material.id, symbol.get(material.base_uom_id) ?? ""]));
  const available = Object.fromEntries((stock.data ?? []).map(row => [`${row.warehouse_id}:${row.material_id}`, `${formatQuantity(row.available_base_quantity)} ${baseSymbol.get(row.material_id) ?? ""}`.trim()]));
- return <><header className="page-heading"><div><p className="eyebrow"><Link href="/admin/inventory/transfers">Chuyển kho</Link></p><h1>Tạo phiếu chuyển hàng</h1>
+ return <><header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/inventory/transfers", label: "Chuyển kho" }} /><h1>Tạo phiếu chuyển hàng</h1>
   <p className="lede">Chọn kho chuyển, kho nhận, thêm hàng (F3) và số lượng theo đơn vị quen dùng. Bỏ chọn “Xuất kho ngay” nếu hàng chưa đi.</p></div></header>
   {(warehouses.data ?? []).length < 2 ? <p className="form-message">Cần ít nhất hai kho đang dùng để chuyển hàng.</p>
    : <TransferCreateForm warehouses={(warehouses.data ?? []).map(item => ({ id: item.id, label: item.name }))} materials={editorMaterials} operationId={randomUUID()} stock={available} />}

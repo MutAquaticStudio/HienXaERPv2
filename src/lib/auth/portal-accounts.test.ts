@@ -2,24 +2,37 @@ import { beforeEach, expect, it, vi } from "vitest";
 
 const m = vi.hoisted(() => ({
   access: vi.fn(), rpc: vi.fn(), customer: vi.fn(), signIn: vi.fn(), signUp: vi.fn(), getUser: vi.fn(), updateUser: vi.fn(), refresh: vi.fn(),
-  createUser: vi.fn(), deleteUser: vi.fn(), updateUserById: vi.fn(), signOut: vi.fn(), portals: vi.fn(),
+  createUser: vi.fn(), deleteUser: vi.fn(), updateUserById: vi.fn(), signOut: vi.fn(), portals: vi.fn(), open: vi.fn(async () => true),
+  list: vi.fn((): { data: { id: string }[]; error: null } => ({ data: [], error: null })),
   redirect: vi.fn((url: string) => { throw new Error(`REDIRECT:${url}`); }),
+  send: vi.fn(async () => ({ status: 200 })),
+  cookieSet: vi.fn(), cookieDelete: vi.fn(), serverOptions: vi.fn(),
+  limit: vi.fn(async (): Promise<{ data: boolean | null; error: { message: string } | null }> => ({ data: true, error: null })),
+  forwardedFor: "203.0.113.7, 10.0.0.1",
 }));
+// D62: the welcome email is sent after the response; here the callback runs at once so the test sees it.
+vi.mock("next/server", () => ({ after: (callback: () => unknown) => { void callback(); } }));
+vi.mock("@/lib/email/send", () => ({ sendEmail: m.send }));
 vi.mock("@/lib/access/context", () => ({ requireInternalPermission: m.access }));
-vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => {
-  const query = { select: () => query, eq: () => query, maybeSingle: m.customer };
+vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async (options?: unknown) => {
+  m.serverOptions(options);
+  const query: Record<string, unknown> = { select: () => query, eq: () => query, limit: () => query, maybeSingle: m.customer,
+    then: (resolve: (value: unknown) => unknown) => resolve(m.list()) };
   return { from: () => query, rpc: m.rpc,
     auth: { signInWithPassword: m.signIn, signOut: m.signOut, signUp: m.signUp, getUser: m.getUser, updateUser: m.updateUser, refreshSession: m.refresh } };
 } }));
 vi.mock("@/lib/supabase/config", () => ({ getSupabaseConfig: () => ({ url: "https://qa.example.test" }) }));
-vi.mock("@supabase/supabase-js", () => ({ createClient: () => ({ auth: { admin: { createUser: m.createUser, deleteUser: m.deleteUser, updateUserById: m.updateUserById } } }) }));
+vi.mock("@supabase/supabase-js", () => ({ createClient: () => ({ rpc: m.limit, auth: { admin: { createUser: m.createUser, deleteUser: m.deleteUser, updateUserById: m.updateUserById } } }) }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
-vi.mock("next/headers", () => ({ cookies: vi.fn(), headers: vi.fn(async () => new Headers({ host: "erp.example.test", "x-forwarded-proto": "https" })) }));
+vi.mock("next/headers", () => ({ cookies: vi.fn(async () => ({ set: m.cookieSet, delete: m.cookieDelete, get: () => undefined })), headers: vi.fn(async () => new Headers({ host: "erp.example.test", "x-forwarded-proto": "https", "x-forwarded-for": m.forwardedFor })) }));
 vi.mock("server-only", () => ({}));
 vi.mock("./account-portals", async (original) => ({ ...(await original<typeof import("./account-portals")>()), accountPortals: m.portals }));
 vi.mock("next/navigation", () => ({ redirect: m.redirect }));
+vi.mock("./portal-registration", () => ({ portalRegistrationOpen: m.open }));
 vi.mock("@/modules/portal/server", () => ({ portalRpc: vi.fn(), deterministicUuid: (seed: string) => `uuid(${seed})` }));
-import { changeOwnPasswordAction, createCustomerPortalAccountAction, loginAction, registerCustomerAccountAction, resetCustomerPortalPasswordAction } from "./actions";
+import { PORTAL_LINK_PENDING_MESSAGE, PORTAL_LINK_REJECTED_MESSAGE } from "./portal-link";
+import { createHash } from "node:crypto";
+import { changeOwnPasswordAction, createCustomerPortalAccountAction, createCustomerPortalAccountsBatchAction, loginAction, recoveryAction, registerCustomerAccountAction, resetCustomerPortalPasswordAction } from "./actions";
 
 const customerId = "11111111-1111-4111-8111-111111111111";
 const membershipId = "22222222-2222-4222-8222-222222222222";
@@ -31,7 +44,7 @@ beforeEach(() => {
   vi.stubEnv("SUPABASE_SECRET_KEY", "test-only-not-a-credential");
   m.access.mockResolvedValue({ branchId: "b1", permissions: new Set(["customers.manage"]) });
   m.customer.mockResolvedValue({ data: { id: customerId }, error: null });
-  m.rpc.mockResolvedValue({ data: null, error: null });
+  m.rpc.mockResolvedValue({ data: customerId, error: null });
   m.createUser.mockResolvedValue({ data: { user: { id: userId } }, error: null });
   m.updateUserById.mockResolvedValue({ data: {}, error: null });
   m.updateUser.mockResolvedValue({ data: {}, error: null });
@@ -45,6 +58,22 @@ it("signs in with a phone number as the internal phone login", async () => {
   await expect(loginAction(undefined, form({ email: "0912 345 678", password: "matkhau123", surface: "work" }))).rejects.toThrow("REDIRECT:/");
   expect(m.signIn).toHaveBeenCalledWith({ email: "0912345678@sdt.hienxavlxd.com", password: "matkhau123" });
   expect(m.rpc).not.toHaveBeenCalled();
+});
+
+it("keeps a remembered login on this device and ends one that is not when the browser closes (D77)", async () => {
+  m.signIn.mockResolvedValue({ data: { user: { id: userId, user_metadata: {} } }, error: null });
+  await expect(loginAction(undefined, form({ email: "0912345678", password: "matkhau123", surface: "work", remember: "on" }))).rejects.toThrow("REDIRECT:/");
+  expect(m.serverOptions).toHaveBeenLastCalledWith({ sessionOnly: false });
+  expect(m.cookieDelete).toHaveBeenCalledWith("hx_session_only");
+  expect(m.cookieSet).not.toHaveBeenCalled();
+  vi.clearAllMocks();
+  m.portals.mockResolvedValue({ admin: false, work: true, customer: false });
+  m.signIn.mockResolvedValue({ data: { user: { id: userId, user_metadata: {} } }, error: null });
+  await expect(loginAction(undefined, form({ email: "0912345678", password: "matkhau123", surface: "work" }))).rejects.toThrow("REDIRECT:/");
+  expect(m.serverOptions).toHaveBeenLastCalledWith({ sessionOnly: true });
+  expect(m.cookieSet).toHaveBeenCalledWith("hx_session_only", "1", expect.not.objectContaining({ maxAge: expect.anything() }));
+  // Signing in here never signs the person out of their other devices.
+  expect(m.signOut).not.toHaveBeenCalled();
 });
 
 it.each([
@@ -71,10 +100,58 @@ it("FB9: lets staff with operations permissions in on Vận hành", async () => 
 });
 
 it("finishes a pending self-registration at the first customer sign-in with one operation id per login", async () => {
-  m.signIn.mockResolvedValue({ data: { user: { id: userId, user_metadata: { hx_registration: { name: "Anh Tư", phone: "0912345678", address: "12 Lê Lợi, Huế" } } } }, error: null });
-  await expect(loginAction(undefined, form({ email: "tu@example.test", password: "matkhau123", surface: "customer" }))).rejects.toThrow("REDIRECT:/customer");
+  m.signIn.mockResolvedValue({ data: { user: { id: userId, email: "tu@example.test", user_metadata: { hx_registration: { name: "Anh Tư", phone: "0912345678", address: "12 Lê Lợi, Huế" } } } }, error: null });
+  await expect(loginAction(undefined, form({ email: "tu@example.test", password: "matkhau123", surface: "customer" }))).rejects.toThrow("REDIRECT:/customer?notice=registered");
   expect(m.rpc).toHaveBeenCalledWith("register_portal_customer", { display_name: "Anh Tư", phone: "0912345678", address_text: "12 Lê Lợi, Huế",
     operation_id: `uuid(register_portal_customer:${userId})` });
+  // D62: the welcome email goes out once, to the customer, with their name and the portal link.
+  expect(m.send).toHaveBeenCalledTimes(1);
+  expect(m.send).toHaveBeenCalledWith(expect.objectContaining({ to: "tu@example.test", subject: "Chào mừng bạn đến với Hiền Xa",
+    html: expect.stringContaining("Chào Anh Tư, tài khoản của bạn đã sẵn sàng"), text: expect.stringContaining("https://erp.example.test/customer") }));
+});
+
+it("D62: no welcome email unless the customer record was just made, and a mail failure never blocks signing in", async () => {
+  const registered = { data: { user: { id: userId, email: "tu@example.test", user_metadata: { hx_registration: { name: "Anh Tư", phone: "0912345678", address: "12 Lê Lợi, Huế" } } } }, error: null };
+  m.signIn.mockResolvedValue(registered);
+  m.list.mockReturnValueOnce({ data: [{ id: "membership" }], error: null });
+  await expect(loginAction(undefined, form({ email: "tu@example.test", password: "matkhau123", surface: "customer" }))).rejects.toThrow(/^REDIRECT:\/customer$/);
+  m.rpc.mockResolvedValueOnce({ data: null, error: { code: "P0001", message: "portal_already_registered" } });
+  await expect(loginAction(undefined, form({ email: "tu@example.test", password: "matkhau123", surface: "customer" }))).rejects.toThrow(/^REDIRECT:\/customer$/);
+  m.rpc.mockResolvedValueOnce({ data: null, error: { code: "23514", message: "portal_branch_not_configured" } });
+  await loginAction(undefined, form({ email: "tu@example.test", password: "matkhau123", surface: "customer" }));
+  expect(m.send).not.toHaveBeenCalled();
+  m.send.mockResolvedValueOnce({ status: 503, error: "smtp_not_configured" } as never);
+  const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+  await expect(loginAction(undefined, form({ email: "tu@example.test", password: "matkhau123", surface: "customer" }))).rejects.toThrow("REDIRECT:/customer?notice=registered");
+  await vi.waitFor(() => expect(warn).toHaveBeenCalledWith("welcome_email_not_sent", "smtp_not_configured"));
+  warn.mockRestore();
+});
+
+it("D58: tells a registered customer why the portal is not open yet instead of a bare refusal, and signs them out", async () => {
+  m.signIn.mockResolvedValue({ data: { user: { id: userId, user_metadata: { hx_registration: { name: "Anh Tư", phone: "0912345678", address: "12 Lê Lợi, Huế" } } } }, error: null });
+  m.rpc.mockResolvedValueOnce({ data: null, error: { code: "23514", message: "portal_branch_not_configured" } });
+  const closed = await loginAction(undefined, form({ email: "tu@example.test", password: "matkhau123", surface: "customer" }));
+  expect(closed?.message).toContain("cửa hàng chưa mở nhận khách tự đăng ký");
+  expect(m.signOut).toHaveBeenCalled();
+  // Already a customer: nothing to finish, straight in.
+  m.list.mockReturnValueOnce({ data: [{ id: "membership" }], error: null });
+  m.rpc.mockClear();
+  await expect(loginAction(undefined, form({ email: "tu@example.test", password: "matkhau123", surface: "customer" }))).rejects.toThrow(/^REDIRECT:\/customer$/);
+  expect(m.rpc).not.toHaveBeenCalled();
+});
+
+it("D58: a refused registration names the wrong box, keeps what was typed (not the passwords) and makes no login while closed", async () => {
+  const values = { name: "Cửa hàng Minh", phone: "12345", address: "5 Trần Phú, Đà Nẵng", email: "minh@example", password: "matkhau123", confirm: "khac12345" };
+  const refused = await registerCustomerAccountAction(undefined, form(values));
+  expect(refused?.fieldErrors).toEqual({ email: "Email chưa đúng (ví dụ ten@gmail.com).", confirm: "Nhập lại mật khẩu chưa giống." });
+  expect(refused?.fields).toEqual({ name: "Cửa hàng Minh", phone: "12345", address: "5 Trần Phú, Đà Nẵng", email: "minh@example" });
+  const badPhone = await registerCustomerAccountAction(undefined, form({ ...values, email: "minh@example.test", confirm: "matkhau123" }));
+  expect(badPhone?.fieldErrors).toEqual({ phone: "Số điện thoại chưa đúng (ví dụ 0912345678)." });
+  expect(m.signUp).not.toHaveBeenCalled();
+  m.open.mockResolvedValueOnce(false);
+  const closed = await registerCustomerAccountAction(undefined, form({ ...values, phone: "0912345678", email: "minh@example.test", confirm: "matkhau123" }));
+  expect(closed?.message).toContain("chưa mở tự đăng ký");
+  expect(m.signUp).not.toHaveBeenCalled();
 });
 
 it("creates a customer login with a temporary password, links it and returns the text to send over Zalo", async () => {
@@ -103,15 +180,23 @@ it("does not create a login for a customer outside the managed branch or for an 
   expect(m.createUser).not.toHaveBeenCalled();
 });
 
-it("resets only an active login of that customer and asks for a new change at the next sign-in", async () => {
-  m.rpc.mockResolvedValue({ data: [{ membership_id: membershipId, auth_user_id: userId, email: "0912345678@sdt.hienxavlxd.com", active: true }], error: null });
+it("resets only a login the database allows (D97) and asks for a new change at the next sign-in", async () => {
+  m.rpc.mockResolvedValue({ data: userId, error: null });
+  m.updateUserById.mockResolvedValue({ data: { user: { id: userId, email: "0912345678@sdt.hienxavlxd.com" } }, error: null });
   const result = await resetCustomerPortalPasswordAction(undefined, form({ customerId, membershipId, password: "MoiTam123" }));
+  expect(m.rpc).toHaveBeenCalledWith("authorize_portal_password_reset", { target_customer_id: customerId, target_membership_id: membershipId });
   expect(m.updateUserById).toHaveBeenCalledWith(userId, { password: "MoiTam123", app_metadata: { hx_must_change_password: true } });
   expect(result?.shareText).toContain("Mật khẩu tạm: MoiTam123");
-  m.rpc.mockResolvedValue({ data: [{ membership_id: membershipId, auth_user_id: userId, email: "x@example.test", active: false }], error: null });
-  m.updateUserById.mockClear();
-  expect((await resetCustomerPortalPasswordAction(undefined, form({ customerId, membershipId, password: "MoiTam123" })))?.success).not.toBe(true);
-  expect(m.updateUserById).not.toHaveBeenCalled();
+  expect(result?.shareText).toContain("0912345678");
+  for (const [code, text] of [["portal_user_other_branch", "chi nhánh bạn không quản lý"], ["forbidden", "không có quyền"],
+    ["portal_account_missing", "Không tìm thấy tài khoản"], ["portal_user_is_employee", "tài khoản nhân viên"]]) {
+    m.rpc.mockResolvedValue({ data: null, error: { code: "42501", message: code } });
+    m.updateUserById.mockClear();
+    const refused = await resetCustomerPortalPasswordAction(undefined, form({ customerId, membershipId, password: "MoiTam123" }));
+    expect(refused?.success).not.toBe(true);
+    expect(refused?.message).toContain(text);
+    expect(m.updateUserById).not.toHaveBeenCalled();
+  }
 });
 
 it("changes the temporary password, clears the flag and opens the portal", async () => {
@@ -123,6 +208,25 @@ it("changes the temporary password, clears the flag and opens the portal", async
   expect(m.refresh).toHaveBeenCalled();
 });
 
+it("D78: a registration with a phone number the store already has waits for the office, at sign-up and at every sign-in", async () => {
+  const registration = { hx_registration: { name: "Vang", phone: "0972964332", address: "Vang con bà Hiền, Khoang" } };
+  m.signIn.mockResolvedValue({ data: { user: { id: userId, email: "vang@example.test", user_metadata: registration } }, error: null });
+  m.rpc.mockResolvedValueOnce({ data: null, error: null });
+  const waiting = await loginAction(undefined, form({ email: "vang@example.test", password: "matkhau123", surface: "customer" }));
+  expect(waiting?.message).toBe(PORTAL_LINK_PENDING_MESSAGE);
+  expect(m.signOut).toHaveBeenCalledWith({ scope: "local" });
+  expect(m.send).not.toHaveBeenCalled();
+
+  m.rpc.mockResolvedValueOnce({ data: null, error: { code: "23514", message: "portal_link_rejected" } });
+  expect((await loginAction(undefined, form({ email: "vang@example.test", password: "matkhau123", surface: "customer" })))?.message).toBe(PORTAL_LINK_REJECTED_MESSAGE);
+
+  const values = { name: "Vang", phone: "0972964332", address: "Vang con bà Hiền, Khoang", email: "vang@example.test", password: "matkhau123", confirm: "matkhau123" };
+  m.signUp.mockResolvedValue({ data: { user: { id: userId, email: "vang@example.test", user_metadata: registration }, session: { access_token: "t" } }, error: null });
+  m.rpc.mockResolvedValueOnce({ data: null, error: null });
+  expect(await registerCustomerAccountAction(undefined, form(values))).toEqual({ success: true, message: PORTAL_LINK_PENDING_MESSAGE });
+  expect(m.send).not.toHaveBeenCalled();
+});
+
 it("registers a customer: the record is made right away when signed in, or after the email is confirmed", async () => {
   const values = { name: "Cửa hàng Minh", phone: "+84 912 345 678", address: "5 Trần Phú, Đà Nẵng", email: "Minh@Example.test", password: "matkhau123", confirm: "matkhau123" };
   m.signUp.mockResolvedValue({ data: { user: { id: userId }, session: null }, error: null });
@@ -131,11 +235,105 @@ it("registers a customer: the record is made right away when signed in, or after
   expect(m.signUp).toHaveBeenCalledWith(expect.objectContaining({ email: "minh@example.test",
     options: { data: { hx_registration: { name: "Cửa hàng Minh", phone: "0912345678", address: "5 Trần Phú, Đà Nẵng" } }, emailRedirectTo: "https://erp.example.test/customer/login?confirmed=1" } }));
   expect(m.rpc).not.toHaveBeenCalled();
+  expect(m.send).not.toHaveBeenCalled();
 
-  m.signUp.mockResolvedValue({ data: { user: { id: userId }, session: { access_token: "t" } }, error: null });
+  m.signUp.mockResolvedValue({ data: { user: { id: userId, email: "minh@example.test", user_metadata: { hx_registration: { name: "Cửa hàng Minh", phone: "0912345678", address: "5 Trần Phú, Đà Nẵng" } } }, session: { access_token: "t" } }, error: null });
   await expect(registerCustomerAccountAction(undefined, form(values))).rejects.toThrow("REDIRECT:/customer?notice=registered");
+  expect(m.send).toHaveBeenCalledWith(expect.objectContaining({ to: "minh@example.test", html: expect.stringContaining("Chào Cửa hàng Minh") }));
   expect(m.rpc).toHaveBeenCalledWith("register_portal_customer", expect.objectContaining({ phone: "0912345678", operation_id: `uuid(register_portal_customer:${userId})` }));
 
   m.signUp.mockResolvedValue({ data: { user: null, session: null }, error: { message: "Signups not allowed for this instance" } });
   expect((await registerCustomerAccountAction(undefined, form(values)))?.message).toContain("chưa mở tự đăng ký");
+});
+
+it("an email that already has a login is told so instead of \"Mở email…\" (Supabase sends nothing then)", async () => {
+  const values = { name: "Thuận", phone: "0912345678", address: "Hà Nội", email: "thuan@example.test", password: "matkhau123", confirm: "matkhau123" };
+  m.signUp.mockResolvedValue({ data: { user: { id: userId, identities: [] }, session: null }, error: null });
+  const answer = await registerCustomerAccountAction(undefined, form(values));
+  expect(answer?.success).toBeFalsy();
+  expect(answer?.message).toContain("Email này đã có tài khoản");
+  expect(answer?.message).toContain("Quên mật khẩu");
+  expect(answer && "fieldErrors" in answer ? answer.fieldErrors : undefined).toEqual({ email: "Email này đã có tài khoản." });
+  expect(m.rpc).not.toHaveBeenCalled();
+  // A new email (one identity) still gets "Mở email…".
+  m.signUp.mockResolvedValue({ data: { user: { id: userId, identities: [{ id: "i1" }] }, session: null }, error: null });
+  expect((await registerCustomerAccountAction(undefined, form(values)))?.message).toContain("Mở email gửi tới thuan@example.test");
+});
+
+// ---- D71: "Tạo tài khoản hàng loạt" ------------------------------------------------------------------------------------
+const batchCustomers = [
+  { id: "11111111-1111-4111-8111-1111111111a1", code: "KH001", display_name: "Khách một", phone: "0912345678", active: true },
+  { id: "11111111-1111-4111-8111-1111111111a2", code: "KH002", display_name: "Khách hai", phone: null, active: true },
+  { id: "11111111-1111-4111-8111-1111111111a3", code: "KH003", display_name: "Khách ba", phone: "0987654321", active: true },
+];
+const batchPlanTables = (customers = batchCustomers) => m.list.mockReturnValueOnce({ data: customers as never, error: null }).mockReturnValueOnce({ data: [] as never, error: null });
+
+it("creates a login per eligible customer with the phone as the sign-in and a random temporary password, once (D71)", async () => {
+  batchPlanTables();
+  m.createUser.mockResolvedValueOnce({ data: { user: { id: "u1" } }, error: null }).mockResolvedValueOnce({ data: { user: { id: "u3" } }, error: null });
+  const outcome = await createCustomerPortalAccountsBatchAction(batchCustomers.map((customer) => customer.id));
+  expect(outcome.results.map((result) => [result.code, result.status])).toEqual([["KH001", "CREATED"], ["KH002", "SKIPPED"], ["KH003", "CREATED"]]);
+  expect(outcome.results[1].message).toBe("Chưa có số điện thoại");
+  const [first, third] = [outcome.results[0], outcome.results[2]];
+  expect(first.password).toMatch(/^[a-km-zA-HJ-NP-Z2-9]{10}$/);
+  expect(third.password).not.toBe(first.password);
+  expect(m.createUser).toHaveBeenCalledWith(expect.objectContaining({ email: "0912345678@sdt.hienxavlxd.com", password: first.password, email_confirm: true,
+    app_metadata: { hx_must_change_password: true } }));
+  expect(m.rpc).toHaveBeenCalledWith("grant_customer_portal_access", expect.objectContaining({ target_customer_id: batchCustomers[0].id, target_auth_user_id: "u1", membership_role: "OWNER" }));
+});
+
+it("undoes a login that could not be linked and reports an existing phone login as skipped (D71)", async () => {
+  batchPlanTables([batchCustomers[0], batchCustomers[2]]);
+  m.createUser.mockResolvedValueOnce({ data: { user: { id: "u1" } }, error: null }).mockResolvedValueOnce({ data: { user: null }, error: { message: "User already registered" } });
+  m.rpc.mockResolvedValueOnce({ data: null, error: { message: "boom" } });
+  const outcome = await createCustomerPortalAccountsBatchAction([batchCustomers[0].id, batchCustomers[2].id]);
+  expect(m.deleteUser).toHaveBeenCalledWith("u1");
+  expect(outcome.results.map((result) => [result.code, result.status, result.password])).toEqual([["KH001", "FAILED", undefined], ["KH003", "SKIPPED", undefined]]);
+});
+
+it("refuses more than 10 customers per call and a customer that is no longer eligible (D71)", async () => {
+  expect((await createCustomerPortalAccountsBatchAction(Array.from({ length: 11 }, (_, index) => `11111111-1111-4111-8111-${String(index).padStart(12, "0")}`))).message)
+    .toBe("Mỗi lượt tạo tối đa 10 khách.");
+  expect(m.createUser).not.toHaveBeenCalled();
+  batchPlanTables([]);
+  const outcome = await createCustomerPortalAccountsBatchAction([batchCustomers[0].id]);
+  expect(outcome.results[0]).toMatchObject({ status: "SKIPPED", message: "Không tìm thấy khách trong chi nhánh đang quản lý." });
+  expect(m.createUser).not.toHaveBeenCalled();
+});
+
+const limitKey = (bucket: string, value: string) => createHash("sha256").update(`hx-rate:${bucket}:${value}`).digest("hex");
+
+it("D97 (TB-2): sign-in counts the caller's address and the sign-in name, hashed, and stops after the limit", async () => {
+  m.signIn.mockResolvedValue({ data: { user: { id: userId, user_metadata: {} } }, error: null });
+  await expect(loginAction(undefined, form({ email: "0912 345 678", password: "matkhau123", surface: "work" }))).rejects.toThrow("REDIRECT:/");
+  expect(m.limit).toHaveBeenNthCalledWith(1, "hit_rate_limit", { bucket: "login_ip", key_hash: limitKey("login_ip", "203.0.113.7"), max_hits: 30, window_seconds: 900 });
+  expect(m.limit).toHaveBeenNthCalledWith(2, "hit_rate_limit", { bucket: "login_id", key_hash: limitKey("login_id", "0912345678@sdt.hienxavlxd.com"), max_hits: 10, window_seconds: 900 });
+  m.signIn.mockClear();
+  m.limit.mockResolvedValueOnce({ data: true, error: null }).mockResolvedValueOnce({ data: false, error: null });
+  expect(await loginAction(undefined, form({ email: "0912 345 678", password: "matkhau123", surface: "customer" }))).toEqual({ message: "Thử quá nhiều lần. Chờ 15 phút rồi thử lại." });
+  expect(m.signIn).not.toHaveBeenCalled();
+});
+
+it("D97 (TB-2): an unreachable limiter never blocks the sign-in", async () => {
+  m.signIn.mockResolvedValue({ data: { user: { id: userId, user_metadata: {} } }, error: null });
+  m.limit.mockResolvedValue({ data: null, error: { message: "fetch failed" } });
+  await expect(loginAction(undefined, form({ email: "0912 345 678", password: "matkhau123", surface: "work" }))).rejects.toThrow("REDIRECT:/");
+  m.limit.mockRejectedValue(new Error("network"));
+  await expect(loginAction(undefined, form({ email: "0912 345 678", password: "matkhau123", surface: "work" }))).rejects.toThrow("REDIRECT:/");
+  expect(m.signIn).toHaveBeenCalledTimes(2);
+  m.limit.mockReset();
+  m.limit.mockResolvedValue({ data: true, error: null });
+});
+
+it("D97 (TB-2): registration (5 an hour per address) and recovery (5 an hour per email) stop after the limit", async () => {
+  m.limit.mockResolvedValueOnce({ data: false, error: null });
+  const refused = await registerCustomerAccountAction(undefined, form({ name: "Anh Ba", phone: "0912345678", address: "12 Lê Lợi, Huế",
+    email: "ba@example.test", password: "MatKhau123", confirm: "MatKhau123" }));
+  expect(refused?.message).toBe("Thử quá nhiều lần. Chờ 1 giờ rồi thử lại.");
+  expect(refused?.fields?.email).toBe("ba@example.test");
+  expect(m.signUp).not.toHaveBeenCalled();
+  expect(m.limit).toHaveBeenCalledWith("hit_rate_limit", { bucket: "register_ip", key_hash: limitKey("register_ip", "203.0.113.7"), max_hits: 5, window_seconds: 3600 });
+  m.limit.mockResolvedValueOnce({ data: true, error: null }).mockResolvedValueOnce({ data: false, error: null });
+  expect(await recoveryAction(undefined, form({ email: "Ba@Example.test", surface: "customer" }))).toEqual({ message: "Thử quá nhiều lần. Chờ 1 giờ rồi thử lại." });
+  expect(m.limit).toHaveBeenLastCalledWith("hit_rate_limit", { bucket: "recovery_id", key_hash: limitKey("recovery_id", "ba@example.test"), max_hits: 5, window_seconds: 3600 });
 });

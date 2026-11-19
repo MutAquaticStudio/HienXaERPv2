@@ -3,16 +3,20 @@ import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { createPortalEvidenceStorage, finalizeVerifiedEvidence } from "@/modules/portal/evidence-storage";
 
+import { userFacingError } from "@/lib/core/errors";
 import {
   authenticatedPortalClient,
   detectEvidenceMime,
   deterministicUuid,
   portalRpc,
 } from "@/modules/portal/server";
+import { crossOriginRefusal } from "@/lib/core/request-origin";
 
 type CreatedEvidence = { id: string; bucket_id: string; object_path: string; state: string };
 
 export async function POST(request: Request) {
+  const refused = crossOriginRefusal(request);
+  if (refused) return refused;
   const context = await authenticatedPortalClient();
   if (!context) return NextResponse.json({ error: "Phiên đăng nhập đã hết hạn" }, { status: 401 });
   try {
@@ -57,6 +61,6 @@ export async function POST(request: Request) {
     });
     return NextResponse.json({ evidenceId: evidence.id });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Tải minh chứng thất bại" }, { status: 400 });
+    return NextResponse.json({ error: userFacingError(error instanceof Error ? error.message : null, "Tải minh chứng thất bại") }, { status: 400 });
   }
 }

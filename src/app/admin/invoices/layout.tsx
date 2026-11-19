@@ -7,7 +7,7 @@ export default async function InvoicesLayout({ children }: { children: ReactNode
   if (E_INVOICES_ENABLED) return children;
   await requireInternalAccess();
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Tài chính</p><h1>Hóa đơn điện tử (tạm ngừng)</h1>
+    <header className="page-heading"><div><h1>Hóa đơn điện tử (tạm ngừng)</h1>
       <p className="lede">{E_INVOICES_PAUSED_MESSAGE}</p></div></header>
     <section className="card card-pad">
       <h2>Trong thời gian tạm ngừng</h2>

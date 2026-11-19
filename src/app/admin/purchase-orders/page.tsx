@@ -13,11 +13,13 @@ import { formatVnd, vnd } from "@/lib/core/money";
 import { formatQuantity } from "@/lib/core/quantity";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { purchaseStateLabel, purchaseStateTone } from "@/modules/purchasing/presentation";
+import { applyDayRange, hasOrderDateFilter, parseOrderDateFilters } from "@/modules/sales/order-list-dates";
 import { AutoFilterForm } from "@/components/ui/auto-filter-form";
 
 type PurchaseOrder = { id: string; purchase_order_number: string; supplier_name_snapshot: string; destination_type: string; destination_name_snapshot: string; source_sales_order_id: string | null; state: string; expected_at: string | null; total_cost_vnd?: string | null; created_at: string };
 type PurchaseLine = { purchase_order_id: string; id: string; material_name_snapshot: string; quantity: string; ordered_uom_id: string; line_total_cost_vnd?: string | null };
-type Query = { notice?: string; error?: string; q?: string; state?: string; page?: string };
+type SupplierOption = { id: string; name: string; active: boolean };
+type Query = { notice?: string; error?: string; q?: string; state?: string; page?: string; supplier?: string; createdFrom?: string; createdTo?: string; deliveryFrom?: string; deliveryTo?: string };
 
 const STATES = [
   { value: "", label: "Đang làm việc" },
@@ -35,13 +37,25 @@ export default async function PurchaseOrdersPage({ searchParams }: { searchParam
   const canReadPrice = access.permissions.has("purchasing.price.read");
   const fields = `id, purchase_order_number, supplier_name_snapshot, destination_type, destination_name_snapshot, source_sales_order_id, state, expected_at, created_at${canReadPrice ? ", total_cost_vnd::text" : ""}`;
   const supabase = await createServerSupabase();
+  // "Nhà cung cấp" filter, the purchase side of "NV bán hàng" on the sales list: the branch's suppliers by name, a stopped one
+  // marked "(ngừng)" so its past orders can still be found. Any other value in the address is ignored.
+  const { data: supplierData } = await supabase.from("suppliers").select("id, name, active").eq("branch_id", access.branchId).order("name").order("id").limit(500);
+  const suppliers = (supplierData ?? []) as SupplierOption[];
+  const supplier = suppliers.some((item) => item.id === query.supplier) ? query.supplier! : "";
+  // "Ngày tạo" and "Ngày nhận" (the expected day, column "Dự kiến"): the day ranges of the sales list (D74), read from the same
+  // address keys — "Ngày nhận" is the supplier's delivery day, so it keeps deliveryFrom / deliveryTo.
+  const dates = parseOrderDateFilters(query);
+  const dateParams = { createdFrom: dates.createdFrom || undefined, createdTo: dates.createdTo || undefined, deliveryFrom: dates.deliveryFrom || undefined, deliveryTo: dates.deliveryTo || undefined };
   const scoped = (state: string, select: string, count?: "exact") => {
     let request = supabase.from("purchase_order_read").select(select, count ? { count } : undefined).eq("branch_id", access.branchId);
+    if (supplier) request = request.eq("supplier_id", supplier);
+    request = applyDayRange(request, "created_at", dates.createdFrom, dates.createdTo);
+    request = applyDayRange(request, "expected_at", dates.deliveryFrom, dates.deliveryTo);
     if (list.q) request = request.or(`purchase_order_number.ilike.${ilikePattern(list.q)},supplier_name_snapshot.ilike.${ilikePattern(list.q)},destination_name_snapshot.ilike.${ilikePattern(list.q)}`);
     return applyDocumentListScope(request, "state", state);
   };
   const [{ data, error, count }, ...counts] = await Promise.all([
-    scoped(list.state, fields, "exact").order("created_at", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to),
+    scoped(list.state, fields, "exact").order("created_at", { ascending: false }).order("purchase_order_number", { ascending: false }).order("id", { ascending: false }).range(list.from, list.to),
     ...STATES.map((state) => scoped(state.value, "id").limit(100)),
   ]);
   if (error) throw new Error("Không thể tải đơn mua.");
@@ -63,14 +77,22 @@ export default async function PurchaseOrdersPage({ searchParams }: { searchParam
     if (order.state !== "CONFIRMED") return <span className="muted">—</span>;
     return sent ? <span>Đã gửi {formatBusinessDateTime(sent.sent_at)} · {sent.channel === "ZALO" ? "Zalo" : sent.channel === "EMAIL" ? "Email" : "Khác"}</span> : <StatusBadge tone="warning">Chưa gửi</StatusBadge>;
   };
-  const isFiltered = Boolean(list.q || list.state);
+  const isFiltered = Boolean(list.q || list.state || supplier || hasOrderDateFilter(dates));
   return <div className="page-stack">
-    <header className="page-heading"><div><p className="eyebrow">Mua hàng</p><h1>Đơn mua</h1><p className="lede">Nguồn hàng giữ liên kết về nhu cầu bán. Mũi tên để xem nhanh hàng hóa của đơn.</p></div>
+    <header className="page-heading"><div><h1>Đơn mua</h1><p className="lede">Nguồn hàng giữ liên kết về nhu cầu bán. Mũi tên để xem nhanh hàng hóa của đơn.</p></div>
       <div className="action-cluster"><Link className="button button-secondary" href="/admin/purchases/returns">Trả hàng nhập</Link>{access.permissions.has("purchasing.create") && <ButtonLink href="/admin/purchase-orders/new">+ Tạo đơn mua</ButtonLink>}</div></header>
     <ActionNotice notice={query.notice} error={query.error} />
     <div className="list-layout">
       <AutoFilterForm className="card card-pad list-filters" aria-label="Bộ lọc đơn mua">
         <label className="list-filters-search">Tìm kiếm<input type="search" name="q" defaultValue={list.q} placeholder="Mã đơn mua, NCC, điểm đến" /></label>
+        <label className="list-filters-search">Nhà cung cấp<select name="supplier" defaultValue={supplier}>
+          <option value="">Tất cả</option>
+          {suppliers.map((item) => <option key={item.id} value={item.id}>{item.active ? item.name : `${item.name} (ngừng)`}</option>)}
+        </select></label>
+        <label>Ngày tạo từ<input type="date" name="createdFrom" defaultValue={dates.createdFrom} /></label>
+        <label>Ngày tạo đến<input type="date" name="createdTo" defaultValue={dates.createdTo} /></label>
+        <label>Ngày nhận từ<input type="date" name="deliveryFrom" defaultValue={dates.deliveryFrom} /></label>
+        <label>Ngày nhận đến<input type="date" name="deliveryTo" defaultValue={dates.deliveryTo} /></label>
         <ListFilterGroup key={list.state} legend="Trạng thái" name="state" value={list.state} options={STATES.map((state, index) => ({ ...state, count: countText(counts[index].data) }))} />
         {isFiltered && <Link className="code-link" href="/admin/purchase-orders">Xóa lọc</Link>}
       </AutoFilterForm>
@@ -100,7 +122,7 @@ export default async function PurchaseOrdersPage({ searchParams }: { searchParam
               </div> };
           })} />
         </table>{!rows.length && <p className="empty-inline">{isFiltered ? "Không có đơn mua phù hợp." : "Chưa có đơn mua trong chi nhánh này."}</p>}</div>
-        <ListPager page={list.page} total={count ?? 0} params={{ q: list.q, state: list.state }} />
+        <ListPager page={list.page} total={count ?? 0} params={{ q: list.q, state: list.state, supplier: supplier || undefined, ...dateParams }} />
       </section>
     </div>
   </div>;

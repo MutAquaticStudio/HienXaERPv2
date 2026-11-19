@@ -2,6 +2,10 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ access: vi.fn(), state: vi.fn() }));
+vi.mock("@/components/announcements/pending-updates", () => ({
+  PendingUpdates: ({ surface, home }: { surface: string; home: string }) => <p data-testid="updates">{surface} {home}</p>,
+}));
+vi.mock("@/components/notifications/live-refresh", () => ({ LiveRefresh: () => null }));
 vi.mock("@/lib/access/context", () => ({ requireInternalAccess: mocks.access }));
 vi.mock("@/modules/operations/server", () => ({ readOperationalState: mocks.state }));
 vi.mock("@/components/app-shell", () => ({ AppShell: ({ children }: { children: React.ReactNode }) => <main>{children}</main> }));
@@ -26,6 +30,15 @@ it("opens routine modules without reading or displaying setup reminders", async 
   }
   expect(mocks.state).not.toHaveBeenCalled();
   expect(mocks.access).toHaveBeenCalledTimes(4);
+});
+
+it("D83: the office popup waits for this person's own home page", async () => {
+  render(await AdminLayout({ children: <h1>Đơn bán</h1> }));
+  expect(screen.getByTestId("updates")).toHaveTextContent("OFFICE /admin/orders");
+  cleanup();
+  mocks.access.mockResolvedValue({ branchId: "branch", branchName: "Hiền Xa", employeeName: "Chủ", permissions: new Set(["dashboard.read", "roles.manage"]) });
+  render(await AdminLayout({ children: <h1>Tổng quan</h1> }));
+  expect(screen.getByTestId("updates")).toHaveTextContent("OFFICE /admin");
 });
 
 it("keeps authentication and branch access required", async () => {

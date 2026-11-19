@@ -2,7 +2,7 @@ import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 
 vi.mock("@/modules/sales/actions", () => ({ autoSourceOrderAction: vi.fn() }));
-import { OrderSourcingPanel, sourcingRun } from "./order-sourcing-panel";
+import { DraftLineSource, OrderSourcingPanel, sourcingRun, tidyWarehouseReason } from "./order-sourcing-panel";
 
 afterEach(cleanup);
 const lines = [
@@ -52,4 +52,24 @@ it("FB9: a draft shows today's stock per line, not \"Thiếu\" on every line", (
   expect(within(sand).getByText("Kho có 2 · thiếu 3 m³")).toBeInTheDocument();
   expect(sand).toHaveTextContent("phần thiếu đặt NCC giao thẳng");
   expect(screen.getByText("Đá").closest("li")).not.toHaveTextContent(/Thiếu|thiếu|Kho đủ/);
+});
+
+it("a draft line in the order table shows today's stock, never \"còn thiếu\" (SO-2026-000400: 0,7 khối, kho 988,3)", () => {
+  const sand = { id: "l1", name: "Cát đen", required: "0.7", baseSymbol: "Khối" };
+  const { container, rerender } = render(<DraftLineSource line={{ ...sand, available: "988.3" }} />);
+  expect(screen.getByText("Kho đủ hàng")).toBeInTheDocument();
+  expect(container).toHaveTextContent("Có thể bán 988,3 Khối");
+  expect(container).not.toHaveTextContent(/thiếu/i);
+  rerender(<DraftLineSource line={{ ...sand, available: "0.5" }} />);
+  expect(screen.getByText("Kho có 0,5 · thiếu 0,2 Khối")).toBeInTheDocument();
+  rerender(<DraftLineSource line={{ ...sand, available: null }} />);
+  expect(container).toHaveTextContent("Chưa phân nguồn: xác nhận đơn để hệ thống lấy kho.");
+  expect(container).not.toHaveTextContent(/còn thiếu/);
+});
+
+it("does not repeat the word Kho when the warehouse name already starts with it", () => {
+  expect(tidyWarehouseReason("Kho Kho chính đủ hàng.")).toBe("Kho chính đủ hàng.");
+  expect(tidyWarehouseReason("Kho chính thiếu; kho Kho HX2 đủ hàng.")).toBe("Kho chính thiếu; Kho HX2 đủ hàng.");
+  expect(tidyWarehouseReason("Kho Bến Lức có 5 bao")).toBe("Kho Bến Lức có 5 bao");
+  expect(sourcingRun({ created_at: "2026-11-02T08:37:00Z", plan: { lines: [{ line_id: "l1", reason: "Kho Kho chính đủ hàng." }] } })?.reasons.l1).toBe("Kho chính đủ hàng.");
 });
