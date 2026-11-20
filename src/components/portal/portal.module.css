@@ -1624,3 +1624,20 @@ a.card:active { transform: scale(0.985); }
 .choiceTrack label:has(input[value="sm"]) { font-size: 0.8125rem; }
 .choiceTrack label:has(input[value="md"]) { font-size: 0.9375rem; }
 .choiceTrack label:has(input[value="lg"]) { font-size: 1.0625rem; }
+
+/* Kiểu giao diện Astryx (Đợt 3–4): cổng khách và cổng thợ — thẻ bo lớn, nhãn menu dưới đủ cỡ, nút chính cao 52 px. */
+:global(html[data-skin="astryx"]) .card { border-radius: 18px; box-shadow: 0 1px 2px rgb(var(--portal-shadow-rgb) / 6%), 0 8px 20px rgb(var(--portal-shadow-rgb) / 8%); }
+:global(html[data-skin="astryx"]) .bottomNav { box-shadow: 0 -8px 24px rgb(var(--portal-shadow-rgb) / 10%); }
+:global(html[data-skin="astryx"]) .navLink { font-size: 0.8125rem; }
+:global(html[data-skin="astryx"]) .button,
+:global(html[data-skin="astryx"]) .buttonSecondary { min-height: 52px; border-radius: 14px; font-weight: 700; }
+:global(html[data-skin="astryx"]) .status { border-radius: 14px; }
+:global(html[data-skin="astryx"]) .field input,
+:global(html[data-skin="astryx"]) .field select,
+:global(html[data-skin="astryx"]) .field textarea { min-height: 48px; border-radius: 12px; font-size: 1rem; }
+:global(html[data-skin="astryx"]) .badge { padding-inline: 0.7rem; font-size: 0.8125rem; }
+@media (min-width: 800px) {
+  /* Máy tính: nội dung rộng hơn và thẻ chia hai cột, theo UX-800. */
+  :global(html[data-skin="astryx"]) .page { max-width: 1180px; margin-inline: auto; }
+  :global(html[data-skin="astryx"]) .gridTwo { gap: 20px; }
+}
