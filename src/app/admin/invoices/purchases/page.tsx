@@ -7,6 +7,8 @@ import { InvoiceCommand } from "@/components/invoicing/invoice-command";
 import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { InvoiceTabs } from "@/components/finance/finance-tabs";
+import { AstryxPurchaseInvoicesView } from "./astryx-view";
+import { currentSkin } from "@/lib/skin";
 
 export default async function PurchaseInvoiceRegistryPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const { page: rawPage } = await searchParams;
@@ -18,6 +20,15 @@ export default async function PurchaseInvoiceRegistryPage({ searchParams }: { se
     supabase.rpc("purchase_invoice_eligible_sources_exact", { target_branch_id: access.branchId, page_size: 25 }),
   ]);
   if (error || eligibleError) throw error ?? eligibleError;
+  // Kiểu giao diện Astryx: cùng dữ liệu; thông báo khôi phục lệnh và nút ghi nguồn là thành phần Classic hiện có.
+  if ((await currentSkin()) === "astryx") {
+    return <AstryxPurchaseInvoicesView permissions={access.permissions} total={count ?? 0} page={page}
+      rows={(data ?? []).map((row) => ({ id: row.id, supplier: row.supplier_name_snapshot, source: `${financeSourceLabel(row.source_type)} · ${row.source_id.slice(0, 8)}`, value: formatVnd(vnd(String(row.source_amount_vnd))), reference: row.supplier_document_number ?? "Chưa có",
+        recovery: <CommandRecoveryNotice command="register_purchase_invoice_source" scope={`${access.authUserId}:${access.branchId}:invoice:purchase:${row.payable_obligation_id}`} />,
+        state: row.document_state === "PENDING_DOCUMENT" ? "Chờ chứng từ" : "Đã gắn minh chứng nguồn · chưa xác thực pháp lý" }))}
+      eligible={(eligible ?? []).map((row: { obligation_id: string; supplier_name: string; source_type: string; source_id: string; source_amount_vnd: string }) => ({ id: row.obligation_id, supplier: row.supplier_name, source: `${financeSourceLabel(row.source_type)} · ${row.source_id.slice(0, 8)}`, value: formatVnd(vnd(String(row.source_amount_vnd))),
+        action: access.permissions.has("finance.ap.adjust") ? <InvoiceCommand kind="purchase" sourceId={row.obligation_id} operationId={randomUUID()} scope={`${access.authUserId}:${access.branchId}:invoice:purchase:${row.obligation_id}`} /> : "Không có quyền ghi nguồn" }))} />;
+  }
   return <div className="page-stack">
     <header className="page-heading"><div><h1>Sổ chứng từ nhà cung cấp</h1><p className="lede">Đối chiếu nguồn mua và chứng từ; chưa xác thực pháp lý.</p></div></header><InvoiceTabs active="/admin/invoices/purchases" permissions={access.permissions} />
 <Link className="button button-secondary" href="/admin/invoices/purchases/matching">Đối chiếu lượng, giá và giá trị</Link>

@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { ActionNotice } from "@/components/sales/action-notice";
 import { AxButtonLink, AxPageHead, AxStatus, toneOf } from "@/components/astryx/ax-kit";
-import { AxBar, AxDetails, AxFacts, AxLegacy, AxPanel, AxSteps, AxTable, AxTwoCol } from "@/components/astryx/buystock-kit";
+import { AxBar, AxDetails, AxFacts, AxLegacy, AxPanel, AxSteps, AxTwoCol } from "@/components/astryx/buystock-kit";
 import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { formatQuantity } from "@/lib/core/quantity";

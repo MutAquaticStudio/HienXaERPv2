@@ -9,6 +9,8 @@ import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { formatQuantity } from "@/lib/core/quantity";
 import { quickTransferStepAction } from "@/modules/inventory/transfer-actions";
 import { transferStatus } from "@/modules/inventory/transfer-presentation";
+import { AstryxTransfersView } from "./astryx-view";
+import { currentSkin } from "@/lib/skin";
 
 const NOTICE: Record<string, string> = { created: "Đã tạo phiếu chuyển kho.", shipped: "Đã tạo phiếu và xuất kho. Kho nhận bấm “Nhận đủ” khi hàng tới." };
 
@@ -23,6 +25,14 @@ export default async function WarehouseTransfersPage({ searchParams }: { searchP
  if (transfers.error) throw new Error("Không thể tải phiếu chuyển kho.");
  const symbol = new Map((units.data ?? []).map(unit => [unit.id, unit.symbol]));
  const rows = (transfers.data ?? []).slice(0, CORE_LIST_PAGE_SIZE);
+ // Kiểu giao diện Astryx: cùng dữ liệu; nút một chạm vẫn là form Classic (server action + operationId).
+ if ((await currentSkin()) === "astryx") {
+  return <AstryxTransfersView canManage={manage} notice={query.notice ? NOTICE[query.notice] : undefined} hasNext={(transfers.data ?? []).length > CORE_LIST_PAGE_SIZE} page={list.page}
+   rows={rows.map(item => { const unit = symbol.get(item.base_uom_id) ?? "", status = transferStatus(item); const canShip = manage && status.step === "DISPATCH_ALL", canReceive = receive && status.step === "RECEIVE_ALL";
+    return { id: item.id, number: item.transfer_number, at: formatBusinessDateTime(item.created_at), from: item.from_warehouse_name, to: item.to_warehouse_name, material: item.material_name, code: item.material_code,
+     planned: `${formatQuantity(item.planned_base_quantity)} ${unit}`, received: `${formatQuantity(item.received_base_quantity)} ${unit}`, statusLabel: status.label, tone: status.tone,
+     stepForm: (canShip || canReceive) ? <form action={quickTransferStepAction}><input type="hidden" name="transferId" value={item.id} /><input type="hidden" name="step" value={status.step!} /><input type="hidden" name="operationId" value={randomUUID()} /><button className="hx-btn sm" type="submit">{canShip ? "Xuất kho" : "Nhận đủ"}</button></form> : null }; })} />;
+ }
  return <><header className="page-heading"><div><h1>Chuyển kho</h1><p className="lede">Chuyển hàng giữa các kho: tạo phiếu (xuất ngay), kho nhận bấm “Nhận đủ” khi hàng tới.</p></div>
    <div className="action-cluster">{manage && <Link className="button button-primary" href="/admin/inventory/transfers/new">+ Chuyển hàng</Link>}<Link className="button button-secondary" href="/admin/inventory">Tồn kho</Link></div></header>
   {query.notice && NOTICE[query.notice] && <p className="form-message success" role="status">{NOTICE[query.notice]}</p>}

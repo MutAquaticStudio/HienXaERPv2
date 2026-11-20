@@ -5,6 +5,8 @@ import { formatQuantity } from "@/lib/core/quantity";
 import type { EditorMaterial } from "@/components/documents/editor/types";
 import { TransferCreateForm } from "@/modules/inventory/transfer-create-form";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { AxFormFrame } from "@/components/astryx/buystock-kit";
+import { currentSkin } from "@/lib/skin";
 
 type Conversion = { material_id: string | null; from_uom_id: string; to_uom_id: string; numerator: string; denominator: string };
 
@@ -32,6 +34,13 @@ export default async function NewTransferPage() {
  });
  const baseSymbol = new Map((materials.data ?? []).map(material => [material.id, symbol.get(material.base_uom_id) ?? ""]));
  const available = Object.fromEntries((stock.data ?? []).map(row => [`${row.warehouse_id}:${row.material_id}`, `${formatQuantity(row.available_base_quantity)} ${baseSymbol.get(row.material_id) ?? ""}`.trim()]));
+ // Kiểu giao diện Astryx: tiêu đề dựng lại, form tạo phiếu chuyển Classic giữ nguyên bên trong.
+ if ((await currentSkin()) === "astryx") {
+  return <AxFormFrame crumbs={["Kho hàng", "Chuyển kho", "Tạo phiếu"]} title="Tạo phiếu chuyển hàng" lede="Chọn kho chuyển, kho nhận, thêm hàng (F3) và số lượng theo đơn vị quen dùng. Bỏ chọn “Xuất kho ngay” nếu hàng chưa đi.">
+   {(warehouses.data ?? []).length < 2 ? <p className="form-message">Cần ít nhất hai kho đang dùng để chuyển hàng.</p>
+    : <TransferCreateForm warehouses={(warehouses.data ?? []).map(item => ({ id: item.id, label: item.name }))} materials={editorMaterials} operationId={randomUUID()} stock={available} />}
+  </AxFormFrame>;
+ }
  return <><header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/inventory/transfers", label: "Chuyển kho" }} /><h1>Tạo phiếu chuyển hàng</h1>
   <p className="lede">Chọn kho chuyển, kho nhận, thêm hàng (F3) và số lượng theo đơn vị quen dùng. Bỏ chọn “Xuất kho ngay” nếu hàng chưa đi.</p></div></header>
   {(warehouses.data ?? []).length < 2 ? <p className="form-message">Cần ít nhất hai kho đang dùng để chuyển hàng.</p>

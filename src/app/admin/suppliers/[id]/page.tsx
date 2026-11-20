@@ -13,6 +13,9 @@ import { notFound } from "next/navigation";
 import { CatalogEditButton } from "@/modules/catalog/catalog-dialog";
 import { catalogRecordProps } from "@/modules/catalog/editor-data";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { AxDetailFrame } from "@/components/astryx/buystock-kit";
+import { AxStatus } from "@/components/astryx/ax-kit";
+import { currentSkin } from "@/lib/skin";
 
 type Supplier = { id: string; code: string; name: string; phone: string | null; email: string | null; tax_code: string | null; address_text: string | null; payment_terms_days: number; active: boolean };
 type PurchaseRow = { id: string; purchase_order_number: string; state: string; destination_type: string; destination_name_snapshot: string; total_cost_vnd?: string; expected_at: string | null; created_at: string };
@@ -74,6 +77,21 @@ export default async function SupplierDetailPage({ params, searchParams }: PageP
     : tab === "prices" ? await PricesTab({ supplierId: id, branchId: access.branchId, supabase, canManage: can.managePrice })
     : await InfoTab({ supplier, supabase });
 
+  // Kiểu giao diện Astryx: tiêu đề, chỉ số và tab dựng lại; nội dung từng tab (bảng đọc) và nút Sửa (hộp thoại danh mục) là thành phần hiện có.
+  if ((await currentSkin()) === "astryx") {
+    return <AxDetailFrame crumbs={["Mua hàng", "Nhà cung cấp", supplier.code]} title={supplier.name} badge={<AxStatus tone={supplier.active ? "success" : "danger"}>{supplier.active ? "Đang giao dịch" : "Ngừng giao dịch"}</AxStatus>}
+      sub={`${supplier.phone ?? "Chưa có điện thoại"} · ${supplier.address_text ?? "Chưa có địa chỉ"}${supplier.tax_code ? ` · MST ${supplier.tax_code}` : ""}`}
+      actions={<>
+        {canPostPayment && <Link className="hx-btn" href={`/admin/payables?supplier=${supplier.id}`}>Ghi chi</Link>}
+        {editProps && <CatalogEditButton {...editProps} label="Sửa" />}
+        {can.createPurchase && supplier.active && <Link className="hx-btn g" href={`/admin/purchase-orders/new?supplier=${supplier.id}`}>Tạo đơn mua</Link>}
+      </>}
+      kpis={[
+        { label: "Còn phải trả", value: can.finance ? money(owed) : "—" }, { label: "Quá hạn", value: can.finance ? money(overdue) : "—", tone: overdue > 0n ? "neg" : undefined },
+        { label: "Tổng mua (đơn đã xác nhận)", value: can.purchasing && can.price ? money(totalPurchased) : "—" }, { label: "Đơn mua đang mở", value: can.purchasing ? openPurchases : "—" }, { label: "Điều khoản", value: `${supplier.payment_terms_days} ngày` },
+      ]}
+      tabs={tabs.map((item) => ({ ...item, href: `/admin/suppliers/${supplier.id}?tab=${item.id}`, active: item.id === tab }))}>{body}</AxDetailFrame>;
+  }
   return <div className="page-stack">
     <header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/suppliers", label: "Nhà cung cấp" }} current={supplier.code} /><h1>{supplier.name}</h1>
       <p className="lede">{supplier.phone ?? "Chưa có điện thoại"} · {supplier.address_text ?? "Chưa có địa chỉ"}{supplier.tax_code ? ` · MST ${supplier.tax_code}` : ""}</p></div>

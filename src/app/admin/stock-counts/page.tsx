@@ -10,6 +10,8 @@ import { formatBusinessDateTime } from "@/lib/core/business-time";
 import { ilikePattern, parseCoreListQuery } from "@/lib/core-list";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { stockCountStateLabel, stockCountTone } from "@/modules/inventory/presentation";
+import { AstryxStockCountsView } from "./astryx-view";
+import { currentSkin } from "@/lib/skin";
 
 type Count = { id: string; warehouse_id: string; count_number: string; state: string; cutoff_at: string; line_count: number; variance_count: number };
 type Line = { stock_count_id: string; expected_base_quantity: string; counted_base_quantity: string };
@@ -41,6 +43,13 @@ export default async function StockCountsPage({ searchParams }: { searchParams: 
   const warehouses = new Map((warehouseResult.data ?? []).map((row) => [row.id, row.name]));
   const filtered = Boolean(list.q || state || warehouse);
 
+  // Kiểu giao diện Astryx: cùng dữ liệu; nút tạo phiếu kiểm là thành phần Classic hiện có.
+  if ((await currentSkin()) === "astryx") {
+    return <AstryxStockCountsView rows={counts.map((row) => ({ id: row.id, number: row.count_number, warehouse: warehouses.get(row.warehouse_id) ?? "Kho", cutoff: formatBusinessDateTime(row.cutoff_at), lineCount: row.line_count,
+        up: direction(row.id, true), down: direction(row.id, false), stateLabel: stockCountStateLabel(row.state), tone: stockCountTone(row.state) }))}
+      total={countResult.count ?? 0} page={list.page} query={list.q} state={state} warehouse={warehouse} warehouses={[...warehouses].map(([id, name]) => ({ id, name }))} states={STATES.map((value) => ({ value, label: stockCountStateLabel(value) }))}
+      openButton={access.permissions.has("inventory.count") ? <OpenStockCountButton warehouses={[...warehouses].map(([id, name]) => ({ id, name }))} defaultWarehouseId={warehouse || undefined} /> : null} notice={query.notice} error={query.error} />;
+  }
   return <div className="page-stack">
     <header className="page-heading"><div><h1>Kiểm kho</h1><p className="lede">Đếm thực tế, xem chênh lệch và cân bằng kho. Mỗi phiếu chỉ điều chỉnh các vật tư đã đếm.</p></div>
       <div className="action-cluster">{access.permissions.has("inventory.count") && <OpenStockCountButton warehouses={[...warehouses].map(([id, name]) => ({ id, name }))} defaultWarehouseId={warehouse || undefined} />}

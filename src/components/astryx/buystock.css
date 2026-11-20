@@ -49,3 +49,8 @@
 .ax-root .bs-foot{padding:12px 16px;border-top:1px solid var(--hx-line);font-size:13.5px;color:var(--hx-ink-2);background:var(--hx-surface-2)}
 @media (max-width:1100px){.ax-root .bs-layout{flex-direction:column}.ax-root .bs-layout .hx-side{width:100%}.ax-root .bs-two,.ax-root .bs-two.wide{grid-template-columns:1fr}}
 .ax-root .bs-formwrap{max-width:1180px}
+.ax-root .bs-tabs{display:flex;gap:4px;border-bottom:1px solid var(--hx-line-2);margin-bottom:16px;flex-wrap:wrap}
+.ax-root .bs-tabs a{padding:10px 16px;font-weight:600;font-size:14.5px;color:var(--hx-ink-2);border-radius:10px 10px 0 0;margin-bottom:-1px;border:1px solid transparent;display:flex;gap:8px;align-items:center;text-decoration:none}
+.ax-root .bs-tabs a[aria-current="page"]{background:#fff;color:var(--hx-blue-t);border-color:var(--hx-line-2);border-bottom-color:#fff;font-weight:700}
+.ax-root .bs-tabs em{font-style:normal;font-size:13px;background:#F1F4F8;padding:0 7px;border-radius:99px;color:var(--hx-ink-2)}
+.ax-root .bs-searchbar{margin-bottom:16px}

@@ -8,6 +8,8 @@ import { formatVnd, vnd } from "@/lib/core/money";
 import { SupplierDocumentForm, type DocumentSource } from "@/modules/invoicing/supplier-document-forms";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { InvoiceTabs } from "@/components/finance/finance-tabs";
+import { AstryxMatchingView } from "./astryx-view";
+import { currentSkin } from "@/lib/skin";
 
 export default async function SupplierDocumentMatchingPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
  const access = await requireInternalPermission("finance.ap.read"), db = await createServerSupabase(), list = parseCoreListQuery(await searchParams);
@@ -22,6 +24,13 @@ export default async function SupplierDocumentMatchingPage({ searchParams }: { s
  const contextByKey = new Map((context.data ?? []).map(c => [`${c.source_kind}:${c.source_id}`, c]));
  const documentSources = (sources.data ?? []).map(s => ({ ...s, ...contextByKey.get(`${s.source_kind}:${s.source_id}`) })) as DocumentSource[];
  const today = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+ // Kiểu giao diện Astryx: cùng dữ liệu; form tạo đối chiếu là thành phần Classic hiện có.
+ if ((await currentSkin()) === "astryx") {
+  return <AstryxMatchingView permissions={access.permissions} hasNext={(documents.data ?? []).length > CORE_LIST_PAGE_SIZE} page={list.page}
+   rows={(documents.data ?? []).slice(0, CORE_LIST_PAGE_SIZE).map(d => ({ id: d.id, number: d.document_number, supplier: d.supplier_name, kind: d.document_kind === "CREDIT_NOTE" ? "Chứng từ giảm" : "Chứng từ mua", value: formatVnd(vnd(d.declared_value_vnd)), matched: d.match_state === "MATCHED",
+    business: d.business_state === "BUSINESS_APPROVED" ? "Đã duyệt nội bộ" : d.business_state === "CANCELLED" ? "Đã hủy bản nháp" : "Chờ rà soát" }))}
+   createForm={access.permissions.has("finance.ap.adjust") ? <SupplierDocumentForm sources={documentSources} operationId={randomUUID()} scope={`${access.authUserId}:${access.branchId}:supplier-document-create`} today={today} /> : null} />;
+ }
  return <><header className="page-heading"><div><h1>Đối chiếu hóa đơn nhà cung cấp</h1><p className="lede">Nhập hóa đơn của nhà cung cấp và so với đơn mua, phiếu nhập: số lượng đặt, đã nhận, trên hóa đơn và giá. Dòng lệch được tô màu.</p></div></header><InvoiceTabs active="/admin/invoices/purchases/matching" permissions={access.permissions} />
   <p className="quality-callout">Duyệt nội bộ và xuất bảng đối chiếu được hỗ trợ. Chưa có kết nối dịch vụ hóa đơn để phát hành hoặc xác minh pháp lý; không báo đã phát hành.</p>
   {access.permissions.has("finance.ap.adjust") && <details className="card card-pad"><summary>+ Đối chiếu hóa đơn mới</summary><SupplierDocumentForm sources={documentSources} operationId={randomUUID()} scope={`${access.authUserId}:${access.branchId}:supplier-document-create`} today={today} /></details>}

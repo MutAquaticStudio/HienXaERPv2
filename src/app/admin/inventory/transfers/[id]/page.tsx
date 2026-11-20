@@ -11,6 +11,8 @@ import { TransferEventForm } from "@/modules/inventory/transfer-forms";
 import { quickTransferStepAction } from "@/modules/inventory/transfer-actions";
 import { transferEventLabel, transferStatus } from "@/modules/inventory/transfer-presentation";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { AstryxTransferDetail } from "./astryx-view";
+import { currentSkin } from "@/lib/skin";
 
 const Exact = Decimal.clone({ precision: 50 });
 const NOTICE: Record<string, string> = { shipped: "Đã xuất kho.", received: "Đã nhận đủ hàng vào kho." };
@@ -43,6 +45,17 @@ export default async function WarehouseTransferDetail({ params, searchParams }: 
  if (can.adjust) kinds.push("APPROVE_LOSS");
  const canRecord = (kind: keyof typeof transferEventLabel) => kind === "DISPATCH" ? !t.dispatch_closed && new Exact(t.shipped_base_quantity).lt(t.planned_base_quantity) : kind === "CLOSE_DISPATCH" ? !t.dispatch_closed : kind === "APPROVE_LOSS" ? issues.length > 0 : lots.length > 0;
  const oneTap = status.step === "DISPATCH_ALL" && can.ship ? "Xuất kho" : status.step === "RECEIVE_ALL" && can.receive ? "Nhận đủ" : null;
+ // Kiểu giao diện Astryx: cùng dữ liệu; nút một chạm và các form sự kiện chuyển kho là thành phần Classic hiện có.
+ if ((await currentSkin()) === "astryx") {
+  const lost = new Exact(t.loss_base_quantity).gt(0) || short.gt(0) ? qty(new Exact(t.loss_base_quantity).plus(short.gt(0) ? short : 0).toFixed()) : "—";
+  return <AstryxTransferDetail number={t.transfer_number} from={t.from_warehouse_name} to={t.to_warehouse_name} createdAt={formatBusinessDateTime(t.created_at)} createdBy={people.get(t.created_by) ?? "—"} reason={t.reason}
+   status={status.label} tone={status.tone} material={t.material_name} code={t.material_code} quantities={{ planned: qty(t.planned_base_quantity), shipped: qty(t.shipped_base_quantity), received: qty(t.received_base_quantity), inTransit: qty(t.in_transit_base_quantity), lost }}
+   inTransitValue={t.in_transit_value_vnd !== null ? formatVnd(vnd(t.in_transit_value_vnd)) : null} showValue={access.permissions.has("inventory.cost.read")}
+   oneTap={oneTap ? <form action={quickTransferStepAction}><input type="hidden" name="transferId" value={id} /><input type="hidden" name="step" value={status.step!} /><input type="hidden" name="operationId" value={randomUUID()} /><button className="hx-btn p" type="submit">{oneTap}</button></form> : null}
+   eventForms={kinds.map(kind => ({ kind, title: transferEventLabel[kind], node: <TransferEventForm transferId={id} version={t.version} kind={kind} operationId={randomUUID()} scope={`${access.authUserId}:${access.branchId}:transfer:${id}:${kind}`} lots={lots} issues={issues} canRecord={canRecord(kind)} /> }))}
+   history={events.map(e => ({ id: e.id, at: formatBusinessDateTime(e.recorded_at), who: people.get(e.recorded_by) ?? "—", action: transferEventLabel[e.event_kind as keyof typeof transferEventLabel], qty: qty(e.base_quantity), value: e.value_vnd === null ? null : formatVnd(vnd(e.value_vnd)), reason: e.reason }))}
+   notice={query.notice ? NOTICE[query.notice] : undefined} error={query.error} />;
+ }
  return <><header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/inventory/transfers", label: "Chuyển kho" }} /><h1>{t.transfer_number}</h1><p className="lede">{t.from_warehouse_name} → {t.to_warehouse_name}</p></div>
    <div className="action-cluster"><StatusBadge tone={status.tone}>{status.label}</StatusBadge>{oneTap && <form action={quickTransferStepAction}><input type="hidden" name="transferId" value={id} /><input type="hidden" name="step" value={status.step!} /><input type="hidden" name="operationId" value={randomUUID()} /><button className="button button-primary" type="submit">{oneTap}</button></form>}</div></header>
   {query.notice && NOTICE[query.notice] && <p className="form-message success" role="status">{NOTICE[query.notice]}</p>}

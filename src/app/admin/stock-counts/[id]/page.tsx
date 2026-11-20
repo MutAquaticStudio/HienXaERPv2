@@ -9,6 +9,8 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { stockCountStateLabel, stockCountTone } from "@/modules/inventory/presentation";
 import type { SheetRow } from "@/modules/inventory/stock-count-sheet";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { AstryxStockCountDetail } from "./astryx-view";
+import { currentSkin } from "@/lib/skin";
 
 type Count = { id: string; warehouse_id: string; count_number: string; state: string; cutoff_at: string; version: number; line_count: number; variance_count: number; approved_at: string | null };
 type CountLine = { material_id: string; expected_base_quantity: string; counted_base_quantity: string; reason: string | null; adjustment_unit_cost_vnd: string | null };
@@ -59,6 +61,12 @@ export default async function StockCountDetailPage({ params, searchParams }: { p
   const extraMaterials = ((activeResult.data ?? []) as Material[]).filter((row) => !ids.includes(row.id)).map((row) => ({ id: row.id, code: row.code, name: row.name, symbol: symbol(row) }));
   const query = await searchParams;
 
+  // Kiểu giao diện Astryx: tiêu đề và ghi chú dựng lại; bảng nhập số đếm Classic (StockCountSheet) giữ nguyên.
+  if ((await currentSkin()) === "astryx") {
+    return <AstryxStockCountDetail number={count.count_number} warehouse={warehouseResult.data?.name ?? "Kho"} cutoff={formatBusinessDateTime(count.cutoff_at)} approvedAt={count.approved_at ? formatBusinessDateTime(count.approved_at) : null}
+      state={count.state} stateLabel={stockCountStateLabel(count.state)} tone={stockCountTone(count.state)} notice={query.notice} error={query.error}
+      sheet={<StockCountSheet countId={count.id} version={count.version} open={open} rows={rows} extraMaterials={extraMaterials} can={can} />} />;
+  }
   return <div className="page-stack">
     <header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/stock-counts", label: "Kiểm kho" }} /><h1>{count.count_number}</h1>
       <p className="lede">{warehouseResult.data?.name ?? "Kho"} · chốt sổ lúc {formatBusinessDateTime(count.cutoff_at)}{count.approved_at && ` · cân bằng lúc ${formatBusinessDateTime(count.approved_at)}`}</p></div>

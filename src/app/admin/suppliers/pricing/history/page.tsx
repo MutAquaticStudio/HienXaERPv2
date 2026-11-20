@@ -12,6 +12,10 @@ import { PricingRuleList, type PriceRuleRow } from "@/modules/pricing/rule-list"
 import { formatVnd,vnd } from "@/lib/core/money";
 import { AutoFilterForm } from "@/components/ui/auto-filter-form";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { AxFormFrame, AxField, AxSelectField, AxFilterBar } from "@/components/astryx/buystock-kit";
+import { AxButtonLink } from "@/components/astryx/ax-kit";
+import { currentSkin } from "@/lib/skin";
+
 /** Base unit and settlement conversions of each material, so "Đơn vị giá" only offers units the material is counted in. */
 async function materialUnits(db:Awaited<ReturnType<typeof createServerSupabase>>,ids:string[]):Promise<Record<string,string[]>|undefined>{
  const [materials,conversions]=await Promise.all([
@@ -55,6 +59,17 @@ export default async function PurchasePricingPage({searchParams}:{searchParams:P
  const tableRows:PriceRuleRow[]=shown.map(rule=>{const state=effectivePriceState(rule,now);const party=label(labels.suppliers,rule.supplier_id),target=label(labels.materials,rule.material_id),uom=label(labels.units,rule.purchase_uom_id);
   return {id:rule.id,party,target,uom,price:formatVnd(vnd(rule.unit_cost_vnd)),source:priceSourceLabel(rule.source_type),period:"Từ "+formatBusinessDate(rule.effective_from)+(rule.effective_to?" đến trước "+formatBusinessDate(rule.effective_to):""),
    version:rule.version,state:effectivePriceLabels[state],stateTone:effectivePriceTones[state],editable:manage&&rule.active,purchaseRule:rule,scopeLabel:[party,target,uom].join(" · ")};});
+ // Kiểu giao diện Astryx: tiêu đề và bộ lọc dựng lại; danh sách phiên bản giá và hộp thoại tạo/sửa giá (PricingRuleList) giữ nguyên.
+ if((await currentSkin())==="astryx")return <AxFormFrame crumbs={["Mua hàng","Nhà cung cấp","Giá mua","Lịch sử giá mua"]} title="Lịch sử giá mua" lede="Mọi phiên bản giá mua theo nhà cung cấp. Đổi giá bằng phiên bản mới; đơn mua đã chốt giữ nguyên giá cũ. Sửa nhanh nhiều giá ở Bảng giá mua." actions={<AxButtonLink href="/admin/suppliers/pricing">Bảng giá mua</AxButtonLink>}>
+  <AxFilterBar action="/admin/suppliers/pricing/history" label="Bộ lọc lịch sử giá mua" showClear={Boolean(query.q||query.state)} clearHref="/admin/suppliers/pricing/history">
+   <AxField label="Tìm NCC / vật tư" name="q" defaultValue={query.q}/>
+   <AxSelectField label="Trạng thái" name="state" defaultValue={query.state??""} options={[{value:"",label:"Tất cả / lịch sử"},{value:"ACTIVE",label:"Đang hiệu lực"},{value:"FUTURE",label:"Chưa có hiệu lực"},{value:"EXPIRED",label:"Hết hiệu lực"},{value:"INACTIVE",label:"Đã ngừng"}]}/>
+   {query.supplier&&<input type="hidden" name="supplier" value={query.supplier}/>}
+  </AxFilterBar>
+  {!read&&<p className="muted">Quyền quản lý không tự cấp quyền đọc chi phí. Chỉ tạo giá từ dữ liệu được cung cấp.</p>}
+  <PricingRuleList purchase rows={tableRows} options={options} canManage={manage} partyLabel="Nhà cung cấp" createLabel="+ Tạo giá mua"/>
+  <p className="hx-muted">Tối đa 100 phiên bản mới nhất trong chi nhánh.</p>
+ </AxFormFrame>;
  return <div className="page-stack"><Breadcrumb parent={{href:"/admin/suppliers/pricing",label:"Giá mua"}} current="Lịch sử giá mua"/><header className="page-heading"><div><h1 tabIndex={-1}>Lịch sử giá mua</h1><p className="lede">Mọi phiên bản giá mua theo nhà cung cấp. Đổi giá bằng phiên bản mới; đơn mua đã chốt giữ nguyên giá cũ. Sửa nhanh nhiều giá ở Bảng giá mua.</p></div><Link href="/admin/suppliers/pricing" className="button button-secondary">Bảng giá mua</Link></header>
  <AutoFilterForm><label>Tìm NCC / vật tư<input name="q" defaultValue={query.q}/></label><label>Trạng thái<select name="state" defaultValue={query.state??""}><option value="">Tất cả / lịch sử</option><option value="ACTIVE">Đang hiệu lực</option><option value="FUTURE">Chưa có hiệu lực</option><option value="EXPIRED">Hết hiệu lực</option><option value="INACTIVE">Đã ngừng</option></select></label>{query.supplier&&<input type="hidden" name="supplier" value={query.supplier}/>}</AutoFilterForm>
  {!read&&<p className="muted">Quyền quản lý không tự cấp quyền đọc chi phí. Chỉ tạo giá từ dữ liệu được cung cấp.</p>}

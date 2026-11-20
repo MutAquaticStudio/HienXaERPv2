@@ -10,6 +10,8 @@ import { SupplierReturnCreateForm } from "@/modules/purchasing/supplier-return-f
 import { formatBusinessDate } from "@/lib/core/business-time";
 import { formatVnd, vnd } from "@/lib/core/money";
 import { formatQuantity } from "@/lib/core/quantity";
+import { AstryxReturnsView } from "./astryx-view";
+import { currentSkin } from "@/lib/skin";
 
 export default async function SupplierReturnsPage({ searchParams }: { searchParams: Promise<{ page?: string; notice?: string }> }) {
  const access = await requireInternalAccess(), db = await createServerSupabase(), query = await searchParams, list = parseCoreListQuery(query);
@@ -23,6 +25,13 @@ export default async function SupplierReturnsPage({ searchParams }: { searchPara
  const options = (sources.data ?? []).map(item => ({ id: `${item.source_receipt_line_id || ""}|${item.source_fulfillment_line_id || ""}|${item.source_return_case_id || ""}`, label: `${item.source_number} · ${item.material_name} · ${item.source_return_case_id ? `giao thẳng / ${item.warehouse_id ? "đã nhận thực về kho" : "trả thẳng NCC"} / còn ${item.custody_base_quantity}` : `nhận kho / nguồn ${item.source_base_quantity}`}` }));
  const status = (c: { requested_base_quantity: string; supplier_accepted_base_quantity: string; dispatch_closed: boolean }) =>
   new Decimal(c.supplier_accepted_base_quantity).gte(c.requested_base_quantity) || c.dispatch_closed ? <StatusBadge tone="success">Hoàn thành</StatusBadge> : <StatusBadge tone="warning">Đang xử lý</StatusBadge>;
+ // Kiểu giao diện Astryx: cùng dữ liệu; form nhiều bước Classic giữ nguyên bên trong.
+ if ((await currentSkin()) === "astryx") {
+  return <AstryxReturnsView canCreate={create} returned={query.notice === "returned"} hasNext={(cases.data ?? []).length > CORE_LIST_PAGE_SIZE} page={list.page}
+   rows={(cases.data ?? []).slice(0, CORE_LIST_PAGE_SIZE).map(c => ({ id: c.id, number: c.return_number, date: formatBusinessDate(c.created_at), supplier: c.supplier_name, material: c.material_name, direct: !c.source_receipt_line_id,
+    quantity: formatQuantity(c.requested_base_quantity), value: c.source_value_vnd ? formatVnd(vnd(c.source_value_vnd)) : null, done: new Decimal(c.supplier_accepted_base_quantity).gte(c.requested_base_quantity) || c.dispatch_closed }))}
+   directForm={create && options.length > 0 ? <SupplierReturnCreateForm operationId={randomUUID()} scope={`${access.authUserId}:${access.branchId}:supplier-return-create`} sources={options} /> : null} />;
+ }
  return <><header className="page-heading"><div><h1>Trả hàng nhập</h1><p className="lede">Trả lại nhà cung cấp hàng đã nhập kho: chọn phiếu nhập, nhập số lượng trả, bấm Hoàn thành.</p></div>
    <div className="action-cluster">{create && <Link className="button button-primary" href="/admin/purchases/returns/new">+ Trả hàng nhập</Link>}<Link className="button button-secondary" href="/admin/purchase-orders">Đơn mua</Link></div></header>
   {query.notice === "returned" && <p className="form-message success">Đã trả hàng nhập: hàng đã xuất khỏi kho và công nợ nhà cung cấp đã giảm.</p>}

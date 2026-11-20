@@ -5,6 +5,8 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { formatBusinessDate } from "@/lib/core/business-time";
 import { SupplierReturnCompleteForm, type ReturnLine } from "@/modules/purchasing/supplier-return-complete-form";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { AstryxReturnForm, AstryxReturnPicker } from "../astryx-view";
+import { currentSkin } from "@/lib/skin";
 
 type Row = { purchase_receipt_id: string; receipt_number: string; received_at: string; purchase_order_number: string; supplier_name: string; receipt_line_id: string;
  material_code: string; material_name: string; warehouse_name: string; uom_symbol: string; received_quantity: string; returnable_quantity: string; unit_cost_vnd: string | number };
@@ -15,6 +17,7 @@ export default async function NewSupplierReturnPage({ searchParams }: { searchPa
  const access = await requireInternalAccess(), query = await searchParams, db = await createServerSupabase();
  if (!access.permissions.has("purchasing.create")) return <p>Bạn cần quyền mua hàng để trả hàng nhập.</p>;
  const receiptId = /^[0-9a-f-]{36}$/i.test(query.receipt ?? "") ? query.receipt! : null;
+ const astryx = (await currentSkin()) === "astryx";
  const heading = <header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/purchases/returns", label: "Trả hàng nhà cung cấp" }} /><h1>Tạo phiếu trả hàng nhập</h1>
   <p className="lede">Chọn phiếu nhập, nhập số lượng trả theo đơn vị đã mua rồi bấm Hoàn thành. Hàng xuất khỏi kho và công nợ nhà cung cấp giảm ngay.</p></div></header>;
 
@@ -26,6 +29,8 @@ export default async function NewSupplierReturnPage({ searchParams }: { searchPa
   if (error) throw new Error("Không thể tải phiếu nhập.");
   const receipts = new Map<string, { row: Row; items: string[] }>();
   for (const row of (data ?? []) as Row[]) { const entry = receipts.get(row.purchase_receipt_id) ?? { row, items: [] }; entry.items.push(row.material_name); receipts.set(row.purchase_receipt_id, entry); }
+  // Kiểu giao diện Astryx: bảng chọn phiếu nhập dựng lại.
+  if (astryx) return <AstryxReturnPicker q={q} receipts={[...receipts.values()].map(({ row, items }) => ({ id: row.purchase_receipt_id, number: row.receipt_number, po: row.purchase_order_number, date: formatBusinessDate(row.received_at), supplier: row.supplier_name, items: `${items.slice(0, 3).join(", ")}${items.length > 3 ? ` +${items.length - 3}` : ""}` }))} />;
   return <>{heading}
    <section className="card"><div className="section-head"><h2>Chọn phiếu nhập hàng</h2>
     <form className="filter-bar" action="/admin/purchases/returns/new"><input name="q" defaultValue={q} placeholder="Tìm NCC, mã phiếu nhập, đơn mua, hàng" aria-label="Tìm phiếu nhập" /><button className="button button-secondary" type="submit">Tìm</button></form></div>
@@ -49,6 +54,9 @@ export default async function NewSupplierReturnPage({ searchParams }: { searchPa
  const first = rows[0];
  const returnLines: ReturnLine[] = rows.map(row => ({ id: row.receipt_line_id, materialCode: row.material_code, materialName: row.material_name, unit: row.uom_symbol,
   received: row.received_quantity, returnable: row.returnable_quantity, unitCost: String(row.unit_cost_vnd), warehouse: row.warehouse_name }));
+ // Kiểu giao diện Astryx: thông tin phiếu nhập dựng lại; form hoàn thành trả hàng Classic giữ nguyên.
+ if (astryx) return <AstryxReturnForm supplier={first.supplier_name} receipt={first.receipt_number} date={formatBusinessDate(first.received_at)} po={first.purchase_order_number}
+  form={<SupplierReturnCompleteForm receiptId={receiptId} operationId={randomUUID()} lines={returnLines} canRefund={canRefund} accounts={(accounts.data ?? []).map(account => ({ id: account.id, label: `${account.name} (${account.code})` }))} />} />;
  return <>{heading}
   <section className="card card-pad"><dl className="detail-grid">
    <div><dt>Nhà cung cấp</dt><dd><strong>{first.supplier_name}</strong></dd></div>

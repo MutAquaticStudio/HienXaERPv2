@@ -12,6 +12,8 @@ import { formatQuantity } from "@/lib/core/quantity";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { inventoryMovementLabel } from "@/modules/inventory/presentation";
 import { inUnit, largestUnit, stockCard, type CardMovement, type DisplayUnit } from "@/modules/inventory/stock-view";
+import { AstryxInventoryView, type AxStockRow } from "./astryx-view";
+import { currentSkin } from "@/lib/skin";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const STOCK = ["in", "out", "low"] as const;
@@ -120,6 +122,35 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
   const filtered = Boolean(list.q || warehouseId || group || stockFilter || only);
   const columns = 6 + (can.cost ? 1 : 0);
 
+  // Kiểu giao diện Astryx: cùng số liệu (chỉ đọc); nút ngưỡng cảnh báo là thành phần Classic hiện có.
+  if ((await currentSkin()) === "astryx") {
+    const axRows: AxStockRow[] = pageRows.map((material) => {
+      const rows = byMaterial.get(material.id) ?? [];
+      const symbol = symbols.get(material.base_uom_id) ?? "đơn vị";
+      const unit: DisplayUnit | null = largeUnit ? largestUnit(conversions, material.id, material.base_uom_id, symbols) : null;
+      const qty = (value: Decimal) => unit ? { main: inUnit(value.toFixed(), unit), sub: `${formatQuantity(value.toFixed())} ${symbol}` } : { main: `${formatQuantity(value.toFixed())} ${symbol}` };
+      const value = can.cost && rows.length && rows.every((row) => row.inventory_value_vnd != null) ? rows.reduce((total, row) => total + BigInt(row.inventory_value_vnd!), 0n) : null;
+      const settings: ThresholdSetting[] = thresholds.filter((row) => row.material_id === material.id).map((row) => ({ warehouseId: row.warehouse_id, threshold: String(row.threshold_base_quantity), active: row.active }));
+      const low = alerts.filter((row) => row.material_id === material.id);
+      const opened = cardId === material.id;
+      return { id: material.id, name: material.name, code: material.code, group: groups.get(material.group_id) ?? "Chưa phân nhóm", href: href({ card: opened ? undefined : material.id }), opened,
+        onHand: qty(sum(rows, "on_hand_base_quantity")), reserved: qty(sum(rows, "reserved_base_quantity")), promised: qty(sum(rows, "promised_base_quantity")), available: qty(sum(rows, "available_base_quantity")),
+        value: value === null ? null : formatVnd(vnd(value)), lowCount: low.length,
+        thresholdText: warehouseId && settings[0] ? (settings[0].active ? `${formatQuantity(settings[0].threshold)} ${symbol}` : "Đã tắt") : null,
+        thresholdNode: can.adjust && warehouses.length > 0 ? <ThresholdButton material={{ id: material.id, name: material.name, symbol }} warehouses={warehouses} settings={settings} defaultWarehouseId={warehouseId || undefined} back={back} /> : null,
+        purchaseHref: low.length > 0 && can.purchase ? `/admin/purchase-orders/new?warehouse=${low[0].warehouse_id}&material=${material.id}` : null,
+        perWarehouse: rows.map((row) => ({ key: row.warehouse_id, name: warehouseName.get(row.warehouse_id) ?? "Kho", text: `Tồn ${formatQuantity(row.on_hand_base_quantity)} · chờ xuất giao ${formatQuantity(row.reserved_base_quantity)} · đã hứa ${formatQuantity(row.promised_base_quantity ?? "0")} · có thể bán ${formatQuantity(row.available_base_quantity)} ${symbol}` })),
+        hasReserved: sum(rows, "reserved_base_quantity").gt(0),
+        card: opened ? card.map((row) => ({ id: row.id, at: formatBusinessDateTime(row.occurred_at), type: inventoryMovementLabel(row.movement_type), where: row.warehouse_id ? warehouseName.get(row.warehouse_id) ?? "Kho" : "Đang giao",
+          delta: `${new Decimal(row.base_quantity_delta).gt(0) ? "+" : ""}${formatQuantity(row.base_quantity_delta)}`, positive: new Decimal(row.base_quantity_delta).gt(0), balance: row.balanceAfter === null ? "—" : formatQuantity(row.balanceAfter), deliveryId: row.delivery_id })) : [],
+        cardFull: opened && card.length === 50 };
+    });
+    return <AstryxInventoryView rows={axRows} kpis={{ inStock, out: materials.length - inStock, low: lowIds.size, value: totalValue === null ? "—" : formatVnd(vnd(totalValue)),
+        hrefIn: href({ stock: "in", page: undefined, card: undefined }), hrefOut: href({ stock: "out", page: undefined, card: undefined }), hrefLow: href({ stock: "low", page: undefined, card: undefined }) }}
+      filters={{ q: list.q, warehouse: warehouseId, group, stock: stockFilter, large: largeUnit, only }} canCost={can.cost} canCount={can.count} canManageWarehouses={access.permissions.has("roles.manage")}
+      total={inScope.length} page={list.page} params={params} scopeLabel={warehouseId ? warehouseName.get(warehouseId) ?? "Kho" : "Tất cả kho"} capped={materials.length >= MATERIAL_LIMIT} limit={MATERIAL_LIMIT}
+      notice={query.notice} error={query.error} filtered={filtered} warehouses={warehouses} groups={[...groups].map(([id, name]) => ({ id, name }))} />;
+  }
   return <div className="page-stack">
     <header className="page-heading"><div><h1>Tồn kho</h1><p className="lede">Có thể bán = Tồn kho − Chờ xuất giao (đã lên phiếu giao, chưa lấy lên xe) − Đã hứa cho đơn (đơn đã xác nhận lấy từ kho, chưa lập phiếu giao). Bấm một dòng để xem thẻ kho.</p></div>
       <div className="action-cluster">

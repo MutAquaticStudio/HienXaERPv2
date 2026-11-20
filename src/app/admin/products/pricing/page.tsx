@@ -8,6 +8,10 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { currentBookPrice, latestBookRule, stockSummary, type ListPosition, type ListPriceRule } from "@/modules/catalog/material-list";
 import { loadPriceGroups } from "@/modules/pricing/price-groups";
 import { readPricingClock } from "@/modules/pricing/request-clock";
+import { AxFormFrame, AxField, AxSelectField, AxFilterBar } from "@/components/astryx/buystock-kit";
+import { AxButtonLink } from "@/components/astryx/ax-kit";
+import { currentSkin } from "@/lib/skin";
+
 
 const PRICE_BOOK_LIMIT = 500;
 type MaterialRow = { id: string; code: string; name: string; group_id: string; base_uom_id: string };
@@ -72,6 +76,19 @@ export default async function PriceBookPage({ searchParams }: { searchParams: Pr
   });
   const total = materialResult.count ?? rows.length;
 
+  // Kiểu giao diện Astryx: tiêu đề và bộ lọc dựng lại; bảng sửa giá bán (PriceBookEditor: lưu một lần, lịch sử không xóa) giữ nguyên.
+  if ((await currentSkin()) === "astryx") {
+    return <AxFormFrame crumbs={["Kho hàng", "Vật tư", "Giá bán"]} title="Giá bán" actions={<AxButtonLink href="/admin/settings/pricing">Giá theo khách & lịch sử</AxButtonLink>}
+      lede={`${book ? `Giá cho nhóm khách “${book.name}”: khách trong nhóm được giá này thay cho giá chung.` : "Giá bán chung (giá lẻ) theo đơn vị gốc."} Sửa trực tiếp hoặc tăng/giảm hàng loạt, rồi lưu một lần.`}>
+      <AxFilterBar action="/admin/products/pricing" label="Bộ lọc bảng giá" showClear={Boolean(q || group || book)} clearHref="/admin/products/pricing">
+        <AxSelectField label="Bảng giá" name="book" defaultValue={book?.code ?? ""} options={[{ value: "", label: "Giá chung (giá lẻ)" }, ...priceGroups.filter((item) => item.active).map((item) => ({ value: item.code, label: `Nhóm ${item.name}` }))]} />
+        <AxField label="Tìm vật tư" name="q" type="search" defaultValue={q} placeholder="Mã hoặc tên" />
+        <AxSelectField label="Nhóm vật tư" name="group" defaultValue={group} options={[{ value: "", label: "Tất cả" }, ...[...groups].map(([id, name]) => ({ value: id, label: name }))]} />
+      </AxFilterBar>
+      {total > rows.length && <p className="quality-callout">Đang hiện {rows.length}/{total} vật tư. Lọc theo nhóm hoặc tên để sửa phần còn lại (mỗi lần lưu tối đa {PRICE_BOOK_LIMIT} dòng).</p>}
+      <PriceBookEditor key={book?.code ?? "general"} rows={rows} operationId={randomUUID()} today={businessToday()} canManage={canManage} showCost={showCost} tierCode={book?.code} />
+    </AxFormFrame>;
+  }
   return <div className="page-stack">
     <header className="page-heading"><div><h1>Giá bán</h1><p className="lede">{book ? `Giá cho nhóm khách “${book.name}”: khách trong nhóm được giá này thay cho giá chung.` : "Giá bán chung (giá lẻ) theo đơn vị gốc."} Sửa trực tiếp hoặc tăng/giảm hàng loạt, rồi lưu một lần.</p></div>
       <div className="action-cluster"><Link className="button button-secondary" href="/admin/settings/pricing">Giá theo khách & lịch sử</Link></div>

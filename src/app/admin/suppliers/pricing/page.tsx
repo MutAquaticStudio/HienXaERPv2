@@ -10,6 +10,10 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import type { ListPriceRule } from "@/modules/catalog/material-list";
 import { purchaseBookRows, type BookAssignment, type BookMaterial, type BookPurchaseRule } from "@/modules/pricing/purchase-book";
 import { readPricingClock } from "@/modules/pricing/request-clock";
+import { AxFormFrame, AxField, AxSelectField, AxFilterBar, AxCheckField } from "@/components/astryx/buystock-kit";
+import { AxButtonLink } from "@/components/astryx/ax-kit";
+import { currentSkin } from "@/lib/skin";
+
 
 export const metadata: Metadata = { title: "Giá mua" };
 
@@ -92,6 +96,20 @@ export default async function PurchasePriceBookPage({ searchParams }: { searchPa
   const shown = rows.slice(0, BOOK_LIMIT);
   const supplierRows = chosen ? purchaseBookRows({ assignments: allAssignments, materials: (materialResult.data ?? []) as BookMaterial[], rules: (ruleResult.data ?? []) as unknown as BookPurchaseRule[], saleRules: null, suppliers, units, groups, now }) : [];
 
+  // Kiểu giao diện Astryx: tiêu đề và bộ lọc dựng lại; bảng sửa giá mua (PurchasePriceBookEditor: lưu một lần, lịch sử không xóa) giữ nguyên.
+  if ((await currentSkin()) === "astryx") {
+    return <AxFormFrame crumbs={["Mua hàng", "Nhà cung cấp", "Giá mua"]} title="Giá mua" lede="Giá mua theo nhà cung cấp và đơn vị mua. Chọn nhà cung cấp để sửa nhanh giá hôm nay, hoặc xem tổng quan mọi nhà cung cấp; lưu một lần." actions={<AxButtonLink href="/admin/suppliers/pricing/history">Lịch sử giá mua</AxButtonLink>}>
+      <AxFilterBar action="/admin/suppliers/pricing" label="Bộ lọc bảng giá mua" showClear={Boolean(chosen || q || group || missingOnly)} clearHref="/admin/suppliers/pricing">
+        <AxSelectField label="Nhà cung cấp" name="supplier" defaultValue={chosen} options={[{ value: "", label: "Tất cả nhà cung cấp (tổng quan)" }, ...supplierList.map((row) => ({ value: row.id, label: row.name }))]} />
+        <AxField label="Tìm vật tư" name="q" type="search" defaultValue={q} placeholder="Mã hoặc tên" />
+        <AxSelectField label="Nhóm vật tư" name="group" defaultValue={group} options={[{ value: "", label: "Tất cả" }, ...[...groups].map(([id, name]) => ({ value: id, label: name }))]} />
+        <AxCheckField label="Chỉ dòng chưa có giá" name="missing" value="1" defaultChecked={missingOnly} />
+      </AxFilterBar>
+      {rows.length > shown.length && <p className="quality-callout">Đang hiện {shown.length}/{rows.length} dòng. Chọn nhà cung cấp hoặc lọc theo nhóm để sửa phần còn lại (mỗi lần lưu tối đa {BOOK_LIMIT} dòng).</p>}
+      <PurchasePriceBookEditor key={chosen || "all"} rows={shown} operationId={randomUUID()} today={businessToday()} canManage={canManage} showSale={showSale}
+        supplier={chosen ? { id: chosen, name: suppliers.get(chosen)!, assigned: allAssignments.length, missing: supplierRows.filter((row) => row.currentVnd === null).length } : undefined} candidates={candidates} />
+    </AxFormFrame>;
+  }
   return <div className="page-stack">
     {header}
     <AutoFilterForm className="card card-pad price-book-filters" aria-label="Bộ lọc bảng giá mua">

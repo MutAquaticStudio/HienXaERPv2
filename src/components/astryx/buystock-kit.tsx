@@ -100,3 +100,28 @@ export function AxFormFrame({ crumbs, title, lede, actions, children }: { crumbs
     <div className="bs-formwrap">{children}</div>
   </>;
 }
+
+/** Khung trang chi tiết có chỉ số + tab dạng liên kết; phần nội dung tab là thành phần hiện có (children). */
+export function AxDetailFrame({ crumbs, title, sub, badge, actions, kpis, tabs, children }: {
+  crumbs: string[]; title: string; sub?: string; badge?: ReactNode; actions?: ReactNode;
+  kpis?: { label: string; value: ReactNode; tone?: "neg" }[]; tabs?: { id: string; label: string; count?: number | string; href: string; active: boolean }[]; children: ReactNode;
+}) {
+  return <>
+    <div className="hx-head"><div>
+      <div className="hx-crumbs">{crumbs.map((c, i) => <span key={c + i}>{i > 0 ? " / " : ""}{i === crumbs.length - 1 ? <b>{c}</b> : c}</span>)}</div>
+      <h1 className="hx-title">{title}{badge}</h1>{sub && <p className="hx-muted" style={{ margin: "6px 0 0" }}>{sub}</p>}</div>{actions && <div className="hx-acts">{actions}</div>}</div>
+    {kpis && <section className="bs-facts" aria-label="Chỉ số">{kpis.map((item) => <div key={item.label} className="hx-card bs-fact"><span className="hx-label">{item.label}</span><b className={item.tone === "neg" ? "hx-neg" : undefined}>{item.value}</b></div>)}</section>}
+    {tabs && tabs.length > 1 && <nav className="bs-tabs" aria-label="Nội dung">{tabs.map((tab) => <Link key={tab.id} href={tab.href} scroll={false} aria-current={tab.active ? "page" : undefined}>{tab.label}{tab.count !== undefined && <em>{tab.count}</em>}</Link>)}</nav>}
+    <div className="bs-formwrap" style={{ maxWidth: "none" }}>{children}</div>
+  </>;
+}
+
+/** Thanh lọc ngang (GET) cho các trang bảng giá: ô nhập tuỳ ý (AxField/AxSelectField hoặc ô ẩn) + nút Lọc + liên kết Xóa lọc. */
+export function AxFilterBar({ action, label, children, clearHref, showClear }: { action: string; label: string; children: ReactNode; clearHref: string; showClear?: boolean }) {
+  return <form method="get" action={action} className="hx-card hx-pad bs-searchbar" aria-label={label}>
+    {children}<button type="submit" className="hx-btn p">Lọc</button>{showClear && <Link href={clearHref} style={{ color: "var(--hx-blue-t)", fontWeight: 600 }}>Xóa lọc</Link>}
+  </form>;
+}
+export function AxCheckField({ label, name, value, defaultChecked }: { label: string; name: string; value: string; defaultChecked?: boolean }) {
+  return <label className="hx-label" style={{ display: "flex", gap: 8, alignItems: "center" }}><input type="checkbox" name={name} value={value} defaultChecked={defaultChecked} />{label}</label>;
+}
