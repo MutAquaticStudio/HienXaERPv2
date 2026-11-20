@@ -1,6 +1,8 @@
 import { formatBusinessDate } from "@/lib/core/business-time";
 import { financeStateLabel } from "@/modules/finance/presentation";
 import Link from "next/link";
+import { AstryxPayableDetailView } from "./astryx-view";
+import { currentSkin } from "@/lib/skin";
 import { randomUUID } from "node:crypto";
 import { notFound } from "next/navigation";
 import { ActionNotice } from "@/components/sales/action-notice";
@@ -25,6 +27,12 @@ export default async function PayableDetailPage({ params, searchParams }: { para
   if (!data) notFound();
   const row = data as Row;
   const query = await searchParams;
+  // Kiểu giao diện Astryx: cùng dữ liệu, quyền và action điều chỉnh; giao diện dựng lại, Classic giữ nguyên bên dưới.
+  if ((await currentSkin()) === "astryx") {
+    return <AstryxPayableDetailView row={row} allocations={(allocations ?? []).map((item) => ({ id: item.id, payment_id: item.payment_id, amount_delta_vnd: String(item.amount_delta_vnd), allocated_at: item.allocated_at }))}
+      adjustments={(adjustments ?? []).map((item) => ({ id: item.id, amount_delta_vnd: String(item.amount_delta_vnd), reason: item.reason, evidence_object_id: item.evidence_object_id }))}
+      canAdjust={access.permissions.has("finance.ap.adjust")} adjustAction={recordPayableAdjustmentAction} operationId={randomUUID()} notice={<ActionNotice notice={query.notice} error={query.error} />} />;
+  }
   return <><header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/payables", label: "Công nợ phải trả" }} /><h1>{row.supplier_name}</h1><p className="lede">{row.source_label}; Công nợ phải trả được theo dõi riêng với chi phí trong kỳ.</p></div><Link className="button button-secondary" href="/admin/payables">Về danh sách</Link></header><ActionNotice notice={query.notice} error={query.error} />
     <section className="metric-grid"><article className="card metric-card"><span className="metric-label">Gốc</span><strong className="metric-value">{formatVnd(vnd(String(row.original_amount_vnd)))}</strong></article><article className="card metric-card"><span className="metric-label">Điều chỉnh</span><strong className="metric-value">{formatVnd(vnd(String(row.adjustment_amount_vnd)))}</strong></article><article className="card metric-card"><span className="metric-label">Đã phân bổ</span><strong className="metric-value">{formatVnd(vnd(String(row.allocated_amount_vnd)))}</strong></article><article className="card metric-card"><span className="metric-label">Còn lại</span><strong className="metric-value">{formatVnd(vnd(String(row.outstanding_amount_vnd)))}</strong></article></section>
     <div className="two-column"><section className="card card-pad"><h2>Nguồn và lịch sử</h2><dl className="detail-grid"><div className="detail-item"><dt>Hạn trả</dt><dd>{formatBusinessDate(row.due_date)}</dd></div><div className="detail-item"><dt>Trạng thái</dt><dd>{financeStateLabel(row.state)}</dd></div><div className="detail-item field-full"><dt>Nguồn chính xác</dt><dd>{row.purchase_order_id ? <Link className="code-link" href={`/admin/purchase-orders/${row.purchase_order_id}`}>Mở đơn mua và tình trạng nhận hàng</Link> : row.expense_id ? <Link className="code-link" href={`/admin/expenses?focus=${row.expense_id}`}>Mở chi phí đã duyệt</Link> : <span className="mono">{row.source_id}</span>}</dd></div></dl><h3>Phân bổ thanh toán</h3><ul className="clean-list">{(allocations ?? []).map((item) => <li key={item.id}><strong>{formatVnd(vnd(String(item.amount_delta_vnd)))}</strong><small>Phiếu thu/chi <span className="mono">{item.payment_id}</span> · {formatBusinessDate(item.allocated_at)}</small></li>)}</ul><h3>Điều chỉnh</h3><ul className="clean-list">{(adjustments ?? []).map((item) => <li key={item.id}><strong>{formatVnd(vnd(String(item.amount_delta_vnd)))}</strong><small>{item.reason} · {item.evidence_object_id ? "Có minh chứng" : "Chưa có minh chứng"}</small></li>)}</ul></section>

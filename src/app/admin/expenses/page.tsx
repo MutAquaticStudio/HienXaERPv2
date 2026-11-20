@@ -1,5 +1,7 @@
 import { activityKindLabel } from "@/modules/finance/presentation";
 import Link from "next/link";
+import { AstryxExpensesView } from "./astryx-view";
+import { currentSkin } from "@/lib/skin";
 import { randomUUID } from "node:crypto";
 import { ActionNotice } from "@/components/sales/action-notice";
 import { ListPager } from "@/components/ui/list-pager";
@@ -73,23 +75,46 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
   const assignments = (assignmentResult.data ?? []).map(item => ({ id: item.assignment_id, version: item.delivery_version, label: `${item.delivery_number} · lần ${item.assignment_version} · ${item.plate_number || item.external_carrier_name} · ${item.execution_state}` }));
   const assignmentLabels = new Map(assignments.map(item => [item.id, item.label]));
   const tabs = [{ id: "all", label: "Tất cả" }, { id: "DRAFT", label: "Chờ duyệt", count: shown(draftCount) }, { id: "APPROVED", label: "Đã duyệt", count: shown(approvedCount) }];
-  return <div className="page-stack"><header className="page-heading"><div><h1>Chi phí vận hành</h1><p className="lede">Ghi khoản chi như KiotViet: trả ngay từ quỹ (vào Sổ quỹ) hoặc ghi nợ nhà cung cấp.</p></div>
-      {canManage && <div className="action-cluster">
-        <FormDialog label="Ghi chi phí" title="Ghi chi phí" size="lg" buttonClassName="button button-primary" defaultOpen={query.new === "1"}
+  // Các hộp thoại có server action: dựng một lần, dùng chung cho Classic và Astryx.
+  const createDialog = canManage ? (
+<FormDialog label="Ghi chi phí" title="Ghi chi phí" size="lg" buttonClassName="button button-primary" defaultOpen={query.new === "1"}
           description="Chi phí vào sổ ngay. Đã trả ngay thì thành phiếu chi trong Sổ quỹ; ghi nợ thì thành công nợ nhà cung cấp.">
           <ExpenseCreateChooser general={<OperatingExpenseForm action={recordOperatingExpenseAction} canPay={canPay} now={localNow()} accounts={accounts} employees={employees}
             types={(categories ?? []).map((item) => item.name)} suppliers={(suppliers ?? []).map((item) => ({ id: item.id, label: `${item.code} · ${item.name}` }))} />} trip={<DeliveryExpenseForm operationId={randomUUID()} scope={`${access.authUserId}:${access.branchId}:trip-expense`} assignments={assignments} categories={(categories ?? []).map(item => ({ id: item.id, label: `${item.code} · ${item.name}` }))} suppliers={(suppliers ?? []).map(item => ({ id: item.id, label: `${item.code} · ${item.name}` }))} now={localNow()} today={localDate()} />} />
         </FormDialog>
-        <FormDialog label="Nhóm chi phí" title="Nhóm chi phí">
+  ) : null;
+  const categoriesDialog = canManage ? (
+<FormDialog label="Nhóm chi phí" title="Nhóm chi phí">
           {(categories ?? []).length > 0 && <ul className="clean-list expense-categories">{(categories ?? []).map((item) => <li key={item.id}><span className="mono">{item.code}</span> · {item.name}</li>)}</ul>}
           <form className="command-panel" action={createExpenseCategoryAction}><input type="hidden" name="operationId" value={randomUUID()} /><div className="field"><label>Mã nhóm</label><input name="code" required /></div><div className="field"><label>Tên nhóm</label><input name="name" required /></div><button className="button button-secondary" type="submit">Tạo nhóm</button></form>
         </FormDialog>
+  ) : null;
+  const approveDialog = (item: Expense) => (
+<FormDialog label="Duyệt" title={`Duyệt chi phí ${item.expense_number}`} buttonClassName="button button-secondary button-compact" defaultOpen={focusId === item.id}
+            description={<>{item.category_name} · {item.payee_display ?? item.supplier_name} · <strong>{formatVnd(vnd(String(item.amount_vnd)))}</strong>. Sau khi duyệt, chi phí vào sổ và thành khoản phải trả nhà cung cấp; không sửa lại được.</>}>
+            <ExpenseApprovalForm expenseId={item.id} version={item.version} operationId={randomUUID()} scope={`${access.authUserId}:${access.branchId}:expense:${item.id}`} /></FormDialog>
+  );
+  // Kiểu giao diện Astryx: cùng dữ liệu, quyền và hộp thoại có server action; giao diện dựng lại, Classic giữ nguyên bên dưới.
+  if ((await currentSkin()) === "astryx") {
+    return <AstryxExpensesView notice={<ActionNotice notice={query.notice} error={query.error} />} actions={canManage ? <>{createDialog}{categoriesDialog}</> : null}
+      tabs={tabs.map((tab) => ({ href: `/admin/expenses${tab.id === "all" ? (list.q ? `?q=${encodeURIComponent(list.q)}` : "") : `?state=${tab.id}${list.q ? `&q=${encodeURIComponent(list.q)}` : ""}`}`, label: tab.label, count: "count" in tab ? tab.count : undefined, active: (state || "all") === tab.id }))}
+      q={list.q} state={state} focusId={focusId} pinned={Boolean(pinned)} visibleCount={visibleRows.length} page={list.page} total={total} hasNext={hasNext}
+      rows={rows.map((item) => {
+        const source = sources.get(item.id);
+        return { id: item.id, number: item.expense_number, dateText: formatBusinessDate(item.effective_at), category: item.category_name, description: item.description, payee: item.payee_display ?? item.supplier_name ?? "",
+          settlementText: `${expenseSettlementLabel(item.settlement)}${item.counts_in_profit === false ? " · không tính lợi nhuận" : ""}`, activity: activityKindLabel(item.activity_kind),
+          sourceText: source ? `${source.cost_scope === "DIRECT_DELIVERY" ? "Trực tiếp" : "Chi phí chung"} · ${assignmentLabels.get(source.assignment_id) || source.assignment_id} · ${source.supplier_reference}` : null,
+          amountText: formatVnd(vnd(String(item.amount_vnd))), approved: item.approval_state === "APPROVED", approve: item.approval_state === "DRAFT" && canManage ? approveDialog(item) : null };
+      })} />;
+  }
+  return <div className="page-stack"><header className="page-heading"><div><h1>Chi phí vận hành</h1><p className="lede">Ghi khoản chi như KiotViet: trả ngay từ quỹ (vào Sổ quỹ) hoặc ghi nợ nhà cung cấp.</p></div>
+      {canManage && <div className="action-cluster">
+        {createDialog}
+        {categoriesDialog}
       </div>}
     </header><ActionNotice notice={query.notice} error={query.error} />
     <DetailTabs tabs={tabs} active={state || "all"} label="Trạng thái chi phí" href={(tab) => `/admin/expenses${tab === "all" ? (list.q ? `?q=${encodeURIComponent(list.q)}` : "") : `?state=${tab}${list.q ? `&q=${encodeURIComponent(list.q)}` : ""}`}`} />
     <AutoFilterForm>{state && <input type="hidden" name="state" value={state} />}<label>Tìm kiếm<input name="q" defaultValue={list.q} placeholder="Mã, loại chi, người nhận, ghi chú" /></label>{(list.q || state) && <Link className="code-link" href="/admin/expenses">Xóa lọc</Link>}</AutoFilterForm>
-    <section className="card"><div className="section-head"><h2>{visibleRows.length} khoản chi phí trên trang này{pinned ? " + 1 khoản được ghim" : ""}</h2><span className="scope-chip">Chỉ tính chi phí đã duyệt</span></div><div className="table-wrap"><table><thead><tr><th>Mã</th><th>Ngày</th><th>Loại chi / ghi chú</th><th>Người nhận</th><th>Phạm vi</th><th>Số tiền</th><th>Trạng thái</th><th></th></tr></thead><tbody>{rows.map((item) => <tr className={focusId === item.id ? "row-focus" : undefined} key={item.id}><td className="mono">{item.expense_number}{focusId === item.id && <small className="table-subline">Được ghim</small>}</td><td>{formatBusinessDate(item.effective_at)}</td><td>{item.category_name}<small className="table-subline">{item.description}</small></td><td>{item.payee_display ?? item.supplier_name}<small className="table-subline">{expenseSettlementLabel(item.settlement)}{item.counts_in_profit === false ? " · không tính lợi nhuận" : ""}</small></td><td>{activityKindLabel(item.activity_kind)}{sources.get(item.id) && <small className="table-subline">{sources.get(item.id)?.cost_scope === "DIRECT_DELIVERY" ? "Trực tiếp" : "Chi phí chung"} · {assignmentLabels.get(sources.get(item.id)!.assignment_id) || sources.get(item.id)?.assignment_id} · {sources.get(item.id)?.supplier_reference}</small>}</td><td className="mono">{formatVnd(vnd(String(item.amount_vnd)))}</td><td><StatusBadge tone={item.approval_state === "APPROVED" ? "success" : "warning"}>{item.approval_state === "APPROVED" ? "Đã duyệt" : "Chờ duyệt"}</StatusBadge></td><td className="table-actions">{item.approval_state === "DRAFT" && canManage && <FormDialog label="Duyệt" title={`Duyệt chi phí ${item.expense_number}`} buttonClassName="button button-secondary button-compact" defaultOpen={focusId === item.id}
-            description={<>{item.category_name} · {item.payee_display ?? item.supplier_name} · <strong>{formatVnd(vnd(String(item.amount_vnd)))}</strong>. Sau khi duyệt, chi phí vào sổ và thành khoản phải trả nhà cung cấp; không sửa lại được.</>}>
-            <ExpenseApprovalForm expenseId={item.id} version={item.version} operationId={randomUUID()} scope={`${access.authUserId}:${access.branchId}:expense:${item.id}`} /></FormDialog>}</td></tr>)}</tbody></table>{!rows.length && <p className="empty-inline">Chưa có chi phí.</p>}</div><ListPager page={list.page} total={total} hasNext={hasNext} params={{ q: list.q, state }} /></section>
+    <section className="card"><div className="section-head"><h2>{visibleRows.length} khoản chi phí trên trang này{pinned ? " + 1 khoản được ghim" : ""}</h2><span className="scope-chip">Chỉ tính chi phí đã duyệt</span></div><div className="table-wrap"><table><thead><tr><th>Mã</th><th>Ngày</th><th>Loại chi / ghi chú</th><th>Người nhận</th><th>Phạm vi</th><th>Số tiền</th><th>Trạng thái</th><th></th></tr></thead><tbody>{rows.map((item) => <tr className={focusId === item.id ? "row-focus" : undefined} key={item.id}><td className="mono">{item.expense_number}{focusId === item.id && <small className="table-subline">Được ghim</small>}</td><td>{formatBusinessDate(item.effective_at)}</td><td>{item.category_name}<small className="table-subline">{item.description}</small></td><td>{item.payee_display ?? item.supplier_name}<small className="table-subline">{expenseSettlementLabel(item.settlement)}{item.counts_in_profit === false ? " · không tính lợi nhuận" : ""}</small></td><td>{activityKindLabel(item.activity_kind)}{sources.get(item.id) && <small className="table-subline">{sources.get(item.id)?.cost_scope === "DIRECT_DELIVERY" ? "Trực tiếp" : "Chi phí chung"} · {assignmentLabels.get(sources.get(item.id)!.assignment_id) || sources.get(item.id)?.assignment_id} · {sources.get(item.id)?.supplier_reference}</small>}</td><td className="mono">{formatVnd(vnd(String(item.amount_vnd)))}</td><td><StatusBadge tone={item.approval_state === "APPROVED" ? "success" : "warning"}>{item.approval_state === "APPROVED" ? "Đã duyệt" : "Chờ duyệt"}</StatusBadge></td><td className="table-actions">{item.approval_state === "DRAFT" && canManage && approveDialog(item)}</td></tr>)}</tbody></table>{!rows.length && <p className="empty-inline">Chưa có chi phí.</p>}</div><ListPager page={list.page} total={total} hasNext={hasNext} params={{ q: list.q, state }} /></section>
   </div>;
 }

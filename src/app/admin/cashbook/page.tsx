@@ -2,6 +2,8 @@ import { formatBusinessDate, parseBusinessDateTime } from "@/lib/core/business-t
 import { financeStateLabel } from "@/modules/finance/presentation";
 import { randomUUID } from "node:crypto";
 import Link from "next/link";
+import { AstryxCashbookView } from "./astryx-view";
+import { currentSkin } from "@/lib/skin";
 import { PartyPaymentLauncher } from "@/components/finance/party-payment-launcher";
 import { ActionNotice } from "@/components/sales/action-notice";
 import { AutoFilterForm } from "@/components/ui/auto-filter-form";
@@ -145,17 +147,90 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
     account: item.account_code, amount: `${item.direction === "RECEIPT" ? "" : "-"}${item.amount_vnd}`, state: financeStateLabel(item.reconciliation_state),
   })), [["number", "Mã phiếu"], ["date", "Ngày"], ["kind", "Loại"], ["party", "Người nộp / nhận"], ["account", "Tài khoản"], ["amount", "Số tiền (đ)"], ["state", "Đối soát"]]);
 
+  // Các hộp thoại có server action: dựng một lần, dùng chung cho Classic và Astryx để nghiệp vụ không lệch nhau.
+  const createAccountDialog = access.permissions.has("finance.account.manage") ? (
+<FormDialog label="Tạo tài khoản tiền" title="Tạo tài khoản tiền">
+          <form className="form-grid" action={createFinanceAccountAction}><input type="hidden" name="operationId" value={randomUUID()} />
+            <label className="field">Mã<input name="code" required /></label><label className="field">Tên<input name="name" required /></label>
+            <label className="field">Loại<select name="kind"><option value="BANK">Ngân hàng</option><option value="CASH">Tiền mặt</option></select></label>
+            <div className="form-actions"><button className="button button-primary" type="submit">Tạo tài khoản</button></div></form>
+</FormDialog>
+  ) : null;
+  const bankDetailsDialog = selectedBank && access.permissions.has("finance.account.manage") ? (
+<FormDialog label="Sửa thông tin chuyển khoản" title={`Thông tin chuyển khoản · ${selectedBank.name}`}>
+        <form className="form-grid" action={setBankDetailsAction}><input type="hidden" name="operationId" value={randomUUID()} /><input type="hidden" name="accountId" value={selectedBank.id} />
+          <label className="field">Ngân hàng<input name="bank" defaultValue={selectedBank.bank_name ?? ""} placeholder="Vietcombank" maxLength={120} /></label>
+          <label className="field">Số tài khoản<input name="number" defaultValue={selectedBank.bank_account_number ?? ""} inputMode="numeric" maxLength={40} /></label>
+          <label className="field field-full">Chủ tài khoản<input name="holder" defaultValue={selectedBank.bank_account_holder ?? ""} maxLength={120} /></label>
+          <label className="check-inline field-full"><input type="checkbox" name="show" defaultChecked={selectedBank.shown_to_customers} />Hiện cho khách ở mục Công nợ của cổng khách (chỉ một tài khoản)</label>
+          <div className="form-actions"><button className="button button-primary" type="submit">Lưu</button></div></form>
+</FormDialog>
+  ) : null;
+  const bankFeedDialog = selectedBank && access.permissions.has("finance.account.manage") && can.post ? (
+<FormDialog label="Tự ghi tiền về (SePay)" title={`Tự ghi tiền về qua SePay · ${selectedBank.name}`}
+        description="Khi SePay báo tiền vào tài khoản này, hệ thống tự lập phiếu thu, trừ công nợ theo mã đơn / mã khách trong nội dung và đối soát. Phiếu ghi tên người bật.">
+        <form className="form-grid" action={setBankFeedAction}><input type="hidden" name="operationId" value={randomUUID()} /><input type="hidden" name="accountId" value={selectedBank.id} />
+          <label className="check-inline field-full"><input type="checkbox" name="enabled" defaultChecked={selectedBank.bank_feed_enabled} />Bật tự ghi tiền về và nút Thanh toán bằng QR ở cổng khách</label>
+          <label className="field field-full">Tiền tố nội dung (không bắt buộc)<input name="prefix" defaultValue={selectedBank.bank_qr_note_prefix ?? ""} maxLength={20} placeholder="SEVQR" />
+            <small className="muted">Chỉ điền khi ngân hàng yêu cầu, ví dụ VietinBank cá nhân cần SEVQR, tài khoản ảo theo nội dung cần TKP + mã.</small></label>
+          <div className="form-actions"><button className="button button-primary" type="submit">Lưu</button></div></form>
+</FormDialog>
+  ) : null;
+  const cashConfirm = (row: CashWaiting) => (
+        <CashConfirmButton request={row} customerId={row.customer_id}
+          accounts={accounts.filter((account) => account.account_kind === "CASH" && account.active).map((account) => ({ id: account.id, name: account.name }))}
+          defaultAmountVnd={(BigInt(row.amount_vnd) > BigInt(row.received_amount_vnd) ? BigInt(row.amount_vnd) - BigInt(row.received_amount_vnd) : BigInt(row.amount_vnd)).toString()} />
+  );
+  const resolveDialog = (line: BankLine) => (
+<FormDialog label="Xử lý" title="Ghi khoản tiền về" buttonClassName="button button-secondary button-compact" description={<>{money(line.amount_vnd)} · {line.content || "Không có nội dung"}</>}>
+          <form className="mini-command" action={resolveBankTransactionAction}><h3>Ghi phiếu thu cho khách</h3><input type="hidden" name="transactionId" value={line.id} /><input type="hidden" name="operationId" value={randomUUID()} />
+            <label className="field">Khách hàng<select name="customerId" required defaultValue={line.customer_id ?? ""}><option value="" disabled>Chọn khách hàng</option>{customers.map((customer) => <option key={customer.id} value={customer.id}>{customer.code} · {customer.name}</option>)}</select></label>
+            <button className="button button-primary" type="submit">Ghi phiếu thu</button></form>
+          <form className="mini-command" action={dismissBankTransactionAction}><h3>Không phải tiền khách trả</h3><input type="hidden" name="transactionId" value={line.id} /><input type="hidden" name="operationId" value={randomUUID()} />
+            <button className="button button-secondary" type="submit">Bỏ qua, không ghi sổ</button></form>
+        </FormDialog>
+  );
+  const handleDialog = (item: Payment) => (
+<FormDialog label="Xử lý" title={`Xử lý ${item.payment_number}`} buttonClassName="button button-secondary button-compact"
+              description={<>{item.counterparty_name} · {money(String(item.amount_vnd))} · {formatBusinessDate(item.effective_at)}</>}>
+              {can.reconcile && item.reconciliation_state !== "MATCHED" && <form className="mini-command" action={reconcilePaymentAction}><h3>Đối soát ngân hàng</h3><input type="hidden" name="paymentId" value={item.id} /><input type="hidden" name="operationId" value={randomUUID()} /><label className="field" htmlFor={`reconcile-amount-${item.id}`}>Số tiền đối soát (VND)<MoneyInput id={`reconcile-amount-${item.id}`} name="amount" placeholder="Số tiền đối soát" required /></label><label className="field" htmlFor={`reconcile-time-${item.id}`}>Thời điểm đối soát<input id={`reconcile-time-${item.id}`} type="datetime-local" name="effectiveAt" defaultValue={localNow()} required /></label><label className="field" htmlFor={`reconcile-reference-${item.id}`}>Mã dòng ngân hàng<input id={`reconcile-reference-${item.id}`} name="reference" placeholder="Mã dòng ngân hàng" required /></label><button className="button button-secondary" type="submit">Ghi đối soát</button></form>}
+              {can.reverse && <form className="mini-command" action={reversePaymentAction}><h3>Đảo giao dịch</h3><p className="muted">Ghi một giao dịch ngược chiều cùng số tiền; giao dịch gốc giữ nguyên trong sổ.</p><input type="hidden" name="paymentId" value={item.id} /><input type="hidden" name="operationId" value={randomUUID()} /><label className="field" htmlFor={`reverse-reason-${item.id}`}>Ghi chú (không bắt buộc)<input id={`reverse-reason-${item.id}`} name="reason" maxLength={500} placeholder="Ví dụ: Ghi nhầm số tiền" /></label><button className="button button-danger" type="submit">Đảo giao dịch</button></form>}
+</FormDialog>
+  );
+  // Kiểu giao diện Astryx: cùng dữ liệu, quyền và hộp thoại có server action; giao diện dựng lại, Classic giữ nguyên bên dưới.
+  if ((await currentSkin()) === "astryx") {
+    const headerActions = <>
+      {can.post && <PartyPaymentLauncher label="Lập phiếu thu" title="Lập phiếu thu · chọn khách hàng" partyLabel="khách hàng" parties={customers} hrefPrefix="/admin/receivables?customer=" className="hx-btn g" />}
+      {can.post && can.payables && <PartyPaymentLauncher label="Lập phiếu chi" title="Lập phiếu chi · chọn nhà cung cấp" partyLabel="nhà cung cấp" parties={suppliers} hrefPrefix="/admin/payables?supplier=" className="hx-btn" />}
+      {can.post && can.expense && <Link className="hx-btn" href="/admin/expenses?new=1">Chi phí khác</Link>}
+      {createAccountDialog}</>;
+    return <AstryxCashbookView notice={<ActionNotice notice={query.notice} error={query.error} />} headerActions={headerActions}
+      totals={{ opening: money(totals.opening_vnd), openingNote: `Trước ${formatBusinessDate(range.fromAt)}`, receipts: money(totals.receipts_vnd), disbursements: money(totals.disbursements_vnd),
+        closing: money(totals.closing_vnd), closingNote: `Đến hết ${formatBusinessDate(`${range.to}T12:00:00+07:00`)}`, net: money(String(summary.net_cash_vnd)), unmatched: summary.unmatched_count, accounts: accounts.length, advances: (advances ?? []).length }}
+      tabs={[{ href: href({ account: undefined }), label: "Tổng quỹ", active: !accountId }, ...accounts.filter((row) => row.active || row.id === accountId).map((row) => ({ href: href({ account: row.id }), label: accountTabLabel(row.account_kind, row.name), active: row.id === accountId }))]}
+      bank={selectedBank ? { name: selectedBank.name, bank_name: selectedBank.bank_name, number: selectedBank.bank_account_number, holder: selectedBank.bank_account_holder, shown: Boolean(selectedBank.shown_to_customers), feed: Boolean(selectedBank.bank_feed_enabled) } : null}
+      bankDialogs={<>{bankDetailsDialog}{bankFeedDialog}</>}
+      cashWaiting={cashWaiting.map((row) => ({ id: row.id, code: row.code, customerId: row.customer_id, customerName: row.customer?.display_name ?? "—", customerCode: row.customer?.code ?? "", createdText: formatBusinessDate(row.created_at), amountText: money(row.amount_vnd), receivedText: money(row.received_amount_vnd), confirm: cashConfirm(row) }))}
+      bankLines={bankLines.map((line) => ({ id: line.id, dateText: formatBusinessDate(line.transaction_at), gateway: `${line.gateway ?? "Ngân hàng"}${line.reference_code ? ` · ${line.reference_code}` : ""}`, content: line.content || "—",
+        requestCode: line.payment_request?.code ?? null, amountText: money(line.amount_vnd), reason: BANK_REASON[line.reason] ?? "Cần kiểm tra", resolve: resolveDialog(line) }))}
+      presets={presets.map((preset) => ({ href: href({ from: preset.from, to: preset.to }), label: preset.label, active: range.from === preset.from && range.to === preset.to }))}
+      filter={{ from: range.from, to: range.to, account: accountId, direction, accounts: accounts.map((row) => ({ id: row.id, label: `${row.code} · ${row.name}${row.active ? "" : " (ngừng)"}` })) }}
+      payments={rows.map((item) => {
+        const canHandle = item.posting_state === "POSTED" && !item.reversal_of_payment_id && ((can.reconcile && item.reconciliation_state !== "MATCHED") || can.reverse);
+        return { id: item.id, payment_number: item.payment_number, direction: item.direction, counterparty_name: item.counterparty_name, account_code: item.account_code, amountText: money(String(item.amount_vnd)), dateText: formatBusinessDate(item.effective_at),
+          reversalOf: Boolean(item.reversal_of_payment_id), reversed: item.posting_state === "REVERSED", reconciliationLabel: financeStateLabel(item.reconciliation_state), differenceText: money(String(item.reconciliation_difference_vnd)), actions: canHandle ? handleDialog(item) : null };
+      })}
+      paymentCount={totals.payment_count} pager={{ page: list.page, total, hasNext, params }}
+      exportButton={exportRows.length > 0 ? <CsvDownloadButton csv={csv} filename={`so-quy-${range.from}-${range.to}.csv`} label="Xuất file" /> : null}
+      nonCash={nonCash.map((item) => ({ id: item.id, number: item.expense_number, dateText: formatBusinessDate(item.effective_at), category: item.category_name, description: item.description, amountText: money(item.amount_vnd) }))}
+      nonCashTotal={money(String(nonCashTotal))} filtered={filtered} />;
+  }
   return <div className="page-stack"><header className="page-heading"><div><h1>Sổ quỹ</h1><p className="lede">Thu chi đã ghi sổ theo kỳ và tài khoản, đối soát ngân hàng và giao dịch đảo.</p></div>
       <div className="action-cluster">
         {can.post && <PartyPaymentLauncher label="Lập phiếu thu" title="Lập phiếu thu · chọn khách hàng" partyLabel="khách hàng" parties={customers} hrefPrefix="/admin/receivables?customer=" className="button button-primary" />}
         {can.post && can.payables && <PartyPaymentLauncher label="Lập phiếu chi" title="Lập phiếu chi · chọn nhà cung cấp" partyLabel="nhà cung cấp" parties={suppliers} hrefPrefix="/admin/payables?supplier=" />}
         {can.post && can.expense && <Link className="button button-secondary" href="/admin/expenses?new=1">Chi phí khác</Link>}
-        {access.permissions.has("finance.account.manage") && <FormDialog label="Tạo tài khoản tiền" title="Tạo tài khoản tiền">
-          <form className="form-grid" action={createFinanceAccountAction}><input type="hidden" name="operationId" value={randomUUID()} />
-            <label className="field">Mã<input name="code" required /></label><label className="field">Tên<input name="name" required /></label>
-            <label className="field">Loại<select name="kind"><option value="BANK">Ngân hàng</option><option value="CASH">Tiền mặt</option></select></label>
-            <div className="form-actions"><button className="button button-primary" type="submit">Tạo tài khoản</button></div></form>
-        </FormDialog>}
+        {createAccountDialog}
       </div>
     </header><ActionNotice notice={query.notice} error={query.error} />
 
@@ -176,22 +251,8 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
         <p>{selectedBank.bank_account_number ? <><strong>{selectedBank.bank_name}</strong> · <span className="mono">{selectedBank.bank_account_number}</span> · {selectedBank.bank_account_holder}</> : <span className="muted">Chưa nhập số tài khoản.</span>}
           {selectedBank.shown_to_customers && <span className="status status-success bank-shown">Hiện cho khách</span>}
           {selectedBank.bank_feed_enabled && <span className="status status-info bank-shown">Tự ghi tiền về (SePay)</span>}</p></div>
-      {access.permissions.has("finance.account.manage") && <FormDialog label="Sửa thông tin chuyển khoản" title={`Thông tin chuyển khoản · ${selectedBank.name}`}>
-        <form className="form-grid" action={setBankDetailsAction}><input type="hidden" name="operationId" value={randomUUID()} /><input type="hidden" name="accountId" value={selectedBank.id} />
-          <label className="field">Ngân hàng<input name="bank" defaultValue={selectedBank.bank_name ?? ""} placeholder="Vietcombank" maxLength={120} /></label>
-          <label className="field">Số tài khoản<input name="number" defaultValue={selectedBank.bank_account_number ?? ""} inputMode="numeric" maxLength={40} /></label>
-          <label className="field field-full">Chủ tài khoản<input name="holder" defaultValue={selectedBank.bank_account_holder ?? ""} maxLength={120} /></label>
-          <label className="check-inline field-full"><input type="checkbox" name="show" defaultChecked={selectedBank.shown_to_customers} />Hiện cho khách ở mục Công nợ của cổng khách (chỉ một tài khoản)</label>
-          <div className="form-actions"><button className="button button-primary" type="submit">Lưu</button></div></form>
-      </FormDialog>}
-      {access.permissions.has("finance.account.manage") && can.post && <FormDialog label="Tự ghi tiền về (SePay)" title={`Tự ghi tiền về qua SePay · ${selectedBank.name}`}
-        description="Khi SePay báo tiền vào tài khoản này, hệ thống tự lập phiếu thu, trừ công nợ theo mã đơn / mã khách trong nội dung và đối soát. Phiếu ghi tên người bật.">
-        <form className="form-grid" action={setBankFeedAction}><input type="hidden" name="operationId" value={randomUUID()} /><input type="hidden" name="accountId" value={selectedBank.id} />
-          <label className="check-inline field-full"><input type="checkbox" name="enabled" defaultChecked={selectedBank.bank_feed_enabled} />Bật tự ghi tiền về và nút Thanh toán bằng QR ở cổng khách</label>
-          <label className="field field-full">Tiền tố nội dung (không bắt buộc)<input name="prefix" defaultValue={selectedBank.bank_qr_note_prefix ?? ""} maxLength={20} placeholder="SEVQR" />
-            <small className="muted">Chỉ điền khi ngân hàng yêu cầu, ví dụ VietinBank cá nhân cần SEVQR, tài khoản ảo theo nội dung cần TKP + mã.</small></label>
-          <div className="form-actions"><button className="button button-primary" type="submit">Lưu</button></div></form>
-      </FormDialog>}
+      {bankDetailsDialog}
+      {bankFeedDialog}
     </section>}
     {cashWaiting.length > 0 && <section className="card" id="cash-requests" aria-label="Chờ thu tiền mặt"><div className="section-head"><h2>Chờ thu tiền mặt</h2><span className="scope-chip">{cashWaiting.length} yêu cầu</span></div>
       <p className="muted card-pad">Khách chọn trả tiền mặt tại cửa hàng. Đếm tiền, đối chiếu mã khách đưa, rồi bấm “Xác nhận đã thu” — lúc đó mới ghi phiếu thu và trừ công nợ.</p>
@@ -200,9 +261,7 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
         <td data-label="Khách hàng"><Link className="code-link" href={`/admin/customers/${row.customer_id}?tab=debts`}>{row.customer?.display_name ?? "—"}</Link><small className="table-subline">{row.customer?.code}</small></td>
         <td data-label="Tạo lúc">{formatBusinessDate(row.created_at)}</td>
         <td className="numeric mono" data-label="Cần thu">{money(row.amount_vnd)}</td><td className="numeric mono" data-label="Đã nhận">{money(row.received_amount_vnd)}</td>
-        <td className="table-actions"><CashConfirmButton request={row} customerId={row.customer_id}
-          accounts={accounts.filter((account) => account.account_kind === "CASH" && account.active).map((account) => ({ id: account.id, name: account.name }))}
-          defaultAmountVnd={(BigInt(row.amount_vnd) > BigInt(row.received_amount_vnd) ? BigInt(row.amount_vnd) - BigInt(row.received_amount_vnd) : BigInt(row.amount_vnd)).toString()} /></td>
+        <td className="table-actions">{cashConfirm(row)}</td>
       </tr>)}</tbody></table></div>
     </section>}
     {bankLines.length > 0 && <section className="card" id="bank" aria-label="Giao dịch ngân hàng chờ xử lý"><div className="section-head"><h2>Giao dịch ngân hàng chờ xử lý</h2><span className="scope-chip">{bankLines.length} khoản</span></div>
@@ -210,13 +269,7 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
       <div className="table-wrap"><table className="card-table"><thead><tr><th>Thời gian</th><th>Nội dung chuyển khoản</th><th className="numeric">Số tiền</th><th>Lý do chờ</th><th>Thao tác</th></tr></thead><tbody>{bankLines.map((line) => <tr key={line.id}>
         <td>{formatBusinessDate(line.transaction_at)}<small className="table-subline">{line.gateway ?? "Ngân hàng"}{line.reference_code ? ` · ${line.reference_code}` : ""}</small></td>
         <td className="cell-wrap" data-label="Nội dung chuyển khoản">{line.content || "—"}{line.payment_request && <small className="table-subline">Yêu cầu thanh toán {line.payment_request.code}</small>}</td><td className="numeric mono text-success" data-label="Số tiền">+{money(line.amount_vnd)}</td><td className="cell-wrap" data-label="Lý do chờ">{BANK_REASON[line.reason] ?? "Cần kiểm tra"}</td>
-        <td className="table-actions"><FormDialog label="Xử lý" title="Ghi khoản tiền về" buttonClassName="button button-secondary button-compact" description={<>{money(line.amount_vnd)} · {line.content || "Không có nội dung"}</>}>
-          <form className="mini-command" action={resolveBankTransactionAction}><h3>Ghi phiếu thu cho khách</h3><input type="hidden" name="transactionId" value={line.id} /><input type="hidden" name="operationId" value={randomUUID()} />
-            <label className="field">Khách hàng<select name="customerId" required defaultValue={line.customer_id ?? ""}><option value="" disabled>Chọn khách hàng</option>{customers.map((customer) => <option key={customer.id} value={customer.id}>{customer.code} · {customer.name}</option>)}</select></label>
-            <button className="button button-primary" type="submit">Ghi phiếu thu</button></form>
-          <form className="mini-command" action={dismissBankTransactionAction}><h3>Không phải tiền khách trả</h3><input type="hidden" name="transactionId" value={line.id} /><input type="hidden" name="operationId" value={randomUUID()} />
-            <button className="button button-secondary" type="submit">Bỏ qua, không ghi sổ</button></form>
-        </FormDialog></td></tr>)}</tbody></table></div></section>}
+        <td className="table-actions">{resolveDialog(line)}</td></tr>)}</tbody></table></div></section>}
     <div className="list-layout">
       <AutoFilterForm className="card card-pad list-filters" aria-label="Bộ lọc sổ quỹ">
         <div className="period-presets" role="group" aria-label="Chọn nhanh kỳ">{presets.map((preset) => <Link key={preset.label}
@@ -234,11 +287,7 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
           <td data-label="Số tiền" className={`numeric mono${item.direction === "RECEIPT" ? " text-success" : ""}`}>{item.direction === "RECEIPT" ? "+" : "−"}{money(String(item.amount_vnd))}</td>
           <td data-label="Đối soát"><strong>{financeStateLabel(item.reconciliation_state)}</strong><small className="table-subline">Lệch {money(String(item.reconciliation_difference_vnd))}</small></td>
           <td className="table-actions"><Link className="code-link" href={`/api/payments/${item.id}/voucher/pdf`}>In {item.direction === "RECEIPT" ? "phiếu thu" : "phiếu chi"}</Link><Link className="code-link" href={`/api/payments/${item.id}/voucher/pdf?kho=k80`} aria-label={`In ${item.direction === "RECEIPT" ? "phiếu thu" : "phiếu chi"} khổ K80`}>K80</Link>
-            {canHandle && <FormDialog label="Xử lý" title={`Xử lý ${item.payment_number}`} buttonClassName="button button-secondary button-compact"
-              description={<>{item.counterparty_name} · {money(String(item.amount_vnd))} · {formatBusinessDate(item.effective_at)}</>}>
-              {can.reconcile && item.reconciliation_state !== "MATCHED" && <form className="mini-command" action={reconcilePaymentAction}><h3>Đối soát ngân hàng</h3><input type="hidden" name="paymentId" value={item.id} /><input type="hidden" name="operationId" value={randomUUID()} /><label className="field" htmlFor={`reconcile-amount-${item.id}`}>Số tiền đối soát (VND)<MoneyInput id={`reconcile-amount-${item.id}`} name="amount" placeholder="Số tiền đối soát" required /></label><label className="field" htmlFor={`reconcile-time-${item.id}`}>Thời điểm đối soát<input id={`reconcile-time-${item.id}`} type="datetime-local" name="effectiveAt" defaultValue={localNow()} required /></label><label className="field" htmlFor={`reconcile-reference-${item.id}`}>Mã dòng ngân hàng<input id={`reconcile-reference-${item.id}`} name="reference" placeholder="Mã dòng ngân hàng" required /></label><button className="button button-secondary" type="submit">Ghi đối soát</button></form>}
-              {can.reverse && <form className="mini-command" action={reversePaymentAction}><h3>Đảo giao dịch</h3><p className="muted">Ghi một giao dịch ngược chiều cùng số tiền; giao dịch gốc giữ nguyên trong sổ.</p><input type="hidden" name="paymentId" value={item.id} /><input type="hidden" name="operationId" value={randomUUID()} /><label className="field" htmlFor={`reverse-reason-${item.id}`}>Ghi chú (không bắt buộc)<input id={`reverse-reason-${item.id}`} name="reason" maxLength={500} placeholder="Ví dụ: Ghi nhầm số tiền" /></label><button className="button button-danger" type="submit">Đảo giao dịch</button></form>}
-            </FormDialog>}</td></tr>;
+            {canHandle && handleDialog(item)}</td></tr>;
       })}</tbody></table>{!rows.length && <p className="empty-inline">{filtered ? "Không có giao dịch phù hợp bộ lọc." : "Chưa có giao dịch tiền trong kỳ này."}</p>}</div>
       <ListPager page={list.page} total={total} hasNext={hasNext} params={params} /></section>
       {nonCash.length > 0 && <section className="card list-span" aria-label="Chi phí không dùng tiền"><div className="section-head"><h2>Chi phí không dùng tiền trong kỳ (hao hụt kho)</h2><span className="scope-chip">Tổng {money(String(nonCashTotal))}</span></div>
