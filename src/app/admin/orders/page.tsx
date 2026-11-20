@@ -1,3 +1,5 @@
+import { AstryxOrdersView } from "./astryx-view";
+import { currentSkin } from "@/lib/skin";
 import { applyDocumentListScope } from "@/lib/document-list-scope";
 import { formatBusinessDate, formatBusinessDateTime } from "@/lib/core/business-time";
 import { formatQuantity } from "@/lib/core/quantity";
@@ -82,6 +84,13 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   const sellerName = (id: string | null) => sellers.find((item) => item.id === id)?.name;
   const canCreate = access.permissions.has("orders.create");
   const currentLabel = STATES.find((state) => state.value === list.state)?.label ?? "Đang làm việc";
+  // Kiểu giao diện Astryx: cùng dữ liệu, giao diện dựng lại; Classic giữ nguyên bên dưới.
+  if ((await currentSkin()) === "astryx") {
+    return <AstryxOrdersView rows={rows} lines={lines.map((line) => ({ sales_order_id: line.sales_order_id, line_number: line.line_number, material_name_snapshot: line.material_name_snapshot, quantity: line.quantity, line_total_vnd: line.line_total_vnd, symbol: symbol(line.units_of_measure) }))}
+      states={STATES} current={list.state} counts={STATES.map((_, index) => String(countText(counts[index].data) ?? ""))} query={list.q} sellers={sellers} sellerValue={sellerParam ?? ""}
+      dates={{ createdFrom: dates.createdFrom, createdTo: dates.createdTo, deliveryFrom: dates.deliveryFrom, deliveryTo: dates.deliveryTo }}
+      canCreate={canCreate} notice={query.notice} error={query.error} sellerName={sellerName} isFiltered={isFiltered} />;
+  }
   return <div className="page-stack">
     <header className="page-heading">
       <div><h1>Đơn bán</h1><p className="lede">Bấm một dòng để mở đơn; mũi tên để xem nhanh hàng hóa ngay trong danh sách.</p></div>

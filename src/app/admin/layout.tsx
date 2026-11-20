@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { PendingUpdates } from "@/components/announcements/pending-updates";
 import { LiveRefresh } from "@/components/notifications/live-refresh";
 import { AppShell } from "@/components/app-shell";
+import { AstryxAppShell } from "@/components/astryx/astryx-app-shell";
+import { currentSkin } from "@/lib/skin";
 import { NO_EMPLOYEE_MESSAGE, resolveInternalAccess, requireInternalAccess } from "@/lib/access/context";
 import { internalLandingPath } from "@/lib/access/landing";
 import { AppError } from "@/lib/core/errors";
@@ -25,6 +27,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // D83: the office popup waits for this person's own home page (the page "/" opens for them).
   let home = "/admin";
   try { home = internalLandingPath(access.permissions, access.roleName); } catch { /* no landing page: keep /admin */ }
+  const extras = <><PendingUpdates surface="OFFICE" home={home} /><LiveRefresh /></>;
+  // Kiểu giao diện Astryx dùng khung riêng; Classic giữ nguyên khung cũ.
+  if ((await currentSkin()) === "astryx") return <AstryxAppShell permissions={[...access.permissions]} actorName={access.employeeName} branchName={access.branchName} branchId={access.branchId}
+    branches={access.branches} logoUrl={logoUrl}>{children}{extras}</AstryxAppShell>;
   return <AppShell surface="admin" permissions={[...access.permissions]} actorName={access.employeeName} branchName={access.branchName} branchId={access.branchId}
-    branches={access.branches} logoUrl={logoUrl}>{children}<PendingUpdates surface="OFFICE" home={home} /><LiveRefresh /></AppShell>;
+    branches={access.branches} logoUrl={logoUrl}>{children}{extras}</AppShell>;
 }

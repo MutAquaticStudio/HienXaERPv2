@@ -18,11 +18,11 @@ import { CASHBOOK_PERMISSIONS } from "@/lib/access/policy";
 
 type Surface = "admin" | "work" | "customer";
 
-type NavigationItem = { href: string; label: string; icon: LucideIcon; exact?: boolean; permission?: string; permissionsAny?: readonly string[]; group?: string; managementPermission?: string; managementHref?: string;
+export type NavigationItem = { href: string; label: string; icon: LucideIcon; exact?: boolean; permission?: string; permissionsAny?: readonly string[]; group?: string; managementPermission?: string; managementHref?: string;
   /** Other sections shown under this one, e.g. "Công nợ" covers the receivable and payable pages. */
   activePrefixes?: readonly string[] };
 
-const adminGroups = [
+export const adminGroups = [
   { id: "sales", label: "Bán hàng", icon: ShoppingCart },
   { id: "purchasing", label: "Mua hàng", icon: PackageSearch },
   { id: "inventory", label: "Kho hàng", icon: Warehouse },
@@ -32,7 +32,7 @@ const adminGroups = [
   { id: "administration", label: "Quản trị", icon: Settings2 },
 ] as const;
 
-const navigation: Record<Surface, readonly NavigationItem[]> = {
+export const navigation: Record<Surface, readonly NavigationItem[]> = {
   admin: [
     { href: "/admin", label: "Tổng quan", icon: LayoutDashboard, exact: true, permission: "dashboard.read" },
     { href: "/admin/orders", label: "Đơn bán", icon: ShoppingCart, permission: "orders.read", group: "sales" },
