@@ -41,3 +41,28 @@ html[data-skin="astryx"]:not([data-color="dark"]) .button-commerce { background:
 html[data-skin="astryx"] .button { border-radius: var(--radius-sm); }
 html[data-skin="astryx"] .field input, html[data-skin="astryx"] .field select, html[data-skin="astryx"] .field textarea { border-color: #c7d2df; }
 html[data-skin="astryx"] .list-filters { border-radius: var(--radius); }
+
+/* ---- Đợt 2: danh sách, tạo/sửa chứng từ, chi tiết ---- */
+html[data-skin="astryx"] .page-heading h1 { font-size: clamp(24px, 2.6vw, 28px); }
+/* Danh sách: khung lọc trái là một thẻ, bảng bên phải bo góc có đổ bóng, hàng chọn có vạch xanh. */
+html[data-skin="astryx"] .list-layout { gap: 20px; }
+html[data-skin="astryx"] .list-filters { padding: 16px; border: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow-sm); }
+html[data-skin="astryx"] .list-layout > :not(.list-filters):not(.list-span) { border-radius: var(--radius); }
+html[data-skin="astryx"] .list-filters input, html[data-skin="astryx"] .list-filters select { border-color: #c7d2df; min-height: 40px; }
+html[data-skin="astryx"] tbody tr[aria-selected="true"], html[data-skin="astryx"] tbody tr.selected { background: var(--primary-soft); box-shadow: inset 3px 0 0 var(--primary); }
+html[data-skin="astryx"] td:first-child a, html[data-skin="astryx"] td a.code { font-weight: 600; }
+/* Tạo/sửa chứng từ (đơn bán, đơn mua, chuyển kho…): bảng dòng hàng là một thẻ, cột phải nổi bật, tổng tiền lớn. */
+html[data-skin="astryx"] .doc-editor { gap: 20px; }
+html[data-skin="astryx"] .doc-editor-main { border-radius: var(--radius); box-shadow: var(--shadow); }
+html[data-skin="astryx"] .doc-editor-rail > * { border-radius: var(--radius); box-shadow: var(--shadow); }
+html[data-skin="astryx"] .doc-editor-listbox { border-radius: var(--radius-sm); box-shadow: var(--shadow-lg); }
+html[data-skin="astryx"] .doc-editor-totals { font-variant-numeric: tabular-nums; }
+html[data-skin="astryx"] .doc-editor-actions .button { min-height: 46px; font-weight: 700; }
+/* Chi tiết: tab dưới tiêu đề rõ hơn, các ô thông tin có nền nhẹ. */
+html[data-skin="astryx"] .detail-tabs a { min-height: 44px; font-weight: 500; }
+html[data-skin="astryx"] .detail-tabs a[aria-current="page"] { border-bottom-width: 3px; }
+html[data-skin="astryx"] .detail-grid { gap: 14px 24px; }
+html[data-skin="astryx"] .detail-item { padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-sunken); }
+html[data-skin="astryx"] .detail-item dd { font-variant-numeric: tabular-nums; }
+/* Số tiền, số lượng: chữ số đều, căn phải đã có sẵn ở bảng. */
+html[data-skin="astryx"] td, html[data-skin="astryx"] th { font-variant-numeric: tabular-nums; }
