@@ -19,6 +19,9 @@ importers:
       '@astryxdesign/core':
         specifier: ^0.7.16
         version: 0.7.16(@stylexjs/stylex@0.19.2)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@astryxdesign/theme-neutral':
+        specifier: ^0.7.16
+        version: 0.7.16(@astryxdesign/core@0.7.16(@stylexjs/stylex@0.19.2)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@types/react@19.3.0)(react@19.2.8)
       '@fontsource/be-vietnam-pro':
         specifier: 5.3.0
         version: 5.3.0
@@ -28,6 +31,9 @@ importers:
       '@pdf-lib/fontkit':
         specifier: 1.1.1
         version: 1.1.1
+      '@stylexjs/stylex':
+        specifier: ^0.19.2
+        version: 0.19.2
       '@supabase/ssr':
         specifier: 0.12.7
         version: 0.12.7(@supabase/supabase-js@2.116.0(@opentelemetry/api@1.10.0))
@@ -160,6 +166,12 @@ packages:
       '@stylexjs/stylex': ^0.19.0
       react: '>=19.0.0'
       react-dom: '>=19.0.0'
+
+  '@astryxdesign/theme-neutral@0.7.16':
+    resolution: {integrity: sha512-4tjVvrL9VM2jpfTceORnYWnR9fiSj93ssAUo786YmODlOHoZIs1b/aCcmClxr0VUdGVha4y33DpCqoutmwF8DQ==}
+    peerDependencies:
+      '@astryxdesign/core': 0.7.16
+      react: '>=19'
 
   '@babel/code-frame@7.29.7':
     resolution: {integrity: sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw==}
@@ -2224,6 +2236,15 @@ packages:
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
+  lucide-react@1.77.0:
+    resolution: {integrity: sha512-VS6sOi8ZUH1qm6swBL/tpI4xAhB6pFTdHvw3pfCJD+DaTJwpyynVzfOS6mdyMZ+OCdY/GMSQbqinOMOPbNSrQA==}
+    peerDependencies:
+      '@types/react': '*'
+      react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+
   lz-string@1.5.0:
     resolution: {integrity: sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==}
     hasBin: true
@@ -3078,6 +3099,14 @@ snapshots:
       intl-messageformat: 11.2.15
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
+
+  '@astryxdesign/theme-neutral@0.7.16(@astryxdesign/core@0.7.16(@stylexjs/stylex@0.19.2)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@types/react@19.3.0)(react@19.2.8)':
+    dependencies:
+      '@astryxdesign/core': 0.7.16(@stylexjs/stylex@0.19.2)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      lucide-react: 1.77.0(@types/react@19.3.0)(react@19.2.8)
+      react: 19.2.8
+    transitivePeerDependencies:
+      - '@types/react'
 
   '@babel/code-frame@7.29.7':
     dependencies:
@@ -5220,6 +5249,12 @@ snapshots:
   lucide-react@1.44.0(react@19.2.8):
     dependencies:
       react: 19.2.8
+
+  lucide-react@1.77.0(@types/react@19.3.0)(react@19.2.8):
+    dependencies:
+      react: 19.2.8
+    optionalDependencies:
+      '@types/react': 19.3.0
 
   lz-string@1.5.0: {}
 

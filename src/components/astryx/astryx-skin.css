@@ -1,0 +1,14 @@
+/*
+ * Kiểu giao diện "Astryx": màu và chữ Hiền Xa đặt lên theme Neutral của Astryx (UX-UI-R1-001 / D29).
+ * Chỉ có tác dụng bên trong [data-astryx-theme], nên giao diện Classic không bị ảnh hưởng.
+ */
+body > [data-astryx-theme] { display: contents; }
+[data-astryx-theme] {
+  --color-accent: #0B63C6; --color-text-accent: #0B5CB8; --color-info: #0B63C6;
+  --color-success: #12804A; --color-warning: #E8890C; --color-error: #B4291F;
+  --color-background-body: #F2F5F9; --color-text-primary: #10223A; --color-text-secondary: #5A6B82;
+  --color-border: #E3E9F1; --color-border-emphasized: #C7D2DF;
+  --font-family-body: "Be Vietnam Pro", "Noto Sans", system-ui, sans-serif;
+  --font-family-heading: "Be Vietnam Pro", "Noto Sans", system-ui, sans-serif;
+}
+html[data-skin="astryx"][data-color="dark"] { color-scheme: dark; }

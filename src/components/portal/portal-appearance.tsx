@@ -10,7 +10,7 @@ export function PortalAppearance({ initial }: { initial: Appearance }) {
   return (
     <section className={styles.card} aria-labelledby="portal-appearance-title">
       <h2 id="portal-appearance-title">Giao diện</h2>
-      <AppearanceForm initial={initial} choices={["theme", "fontSize"]}
+      <AppearanceForm initial={initial} choices={["theme", "skin", "fontSize"]}
         classes={{ root: styles.appearance, group: styles.choiceGroup, options: styles.choiceTrack }} />
     </section>
   );

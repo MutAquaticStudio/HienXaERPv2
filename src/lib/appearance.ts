@@ -10,24 +10,31 @@ export const FONT_SIZES = [{ value: "sm", label: "Nhỏ" }, { value: "md", label
 // D29: Be Vietnam Pro is the default face; Noto Sans stays for whoever prefers it.
 export const FONTS = [{ value: "be-vietnam", label: "Be Vietnam Pro" }, { value: "noto", label: "Noto Sans" }] as const;
 
-export type Appearance = { theme: (typeof THEMES)[number]["value"]; fontSize: (typeof FONT_SIZES)[number]["value"]; font: (typeof FONTS)[number]["value"] };
-export const DEFAULT_APPEARANCE: Appearance = { theme: "light", fontSize: "md", font: "be-vietnam" };
+// Kiểu giao diện: "Classic" is the interface the shop uses today; "Astryx" is the new one built on the Astryx design system.
+// It is a theme chosen per device like the colour mode, and Classic stays the default until the Owner switches it.
+export const SKINS = [{ value: "classic", label: "Classic" }, { value: "astryx", label: "Astryx" }] as const;
+
+export type Appearance = { theme: (typeof THEMES)[number]["value"]; fontSize: (typeof FONT_SIZES)[number]["value"]; font: (typeof FONTS)[number]["value"]; skin: (typeof SKINS)[number]["value"] };
+export const DEFAULT_APPEARANCE: Appearance = { theme: "light", fontSize: "md", font: "be-vietnam", skin: "classic" };
 
 const pick = <T extends string>(options: readonly { value: T }[], value: string | undefined, fallback: T): T =>
   options.some((option) => option.value === value) ? value as T : fallback;
 
-/** "theme.fontSize.font", e.g. "dark.lg.be-vietnam"; anything unknown falls back to the default. */
+/** "theme.fontSize.font[.skin]", e.g. "dark.lg.be-vietnam" or "dark.lg.be-vietnam.astryx"; anything unknown falls back to the default. */
 export function parseAppearance(value: string | undefined | null): Appearance {
-  const [theme, fontSize, font] = (value ?? "").split(".");
+  const [theme, fontSize, font, skin] = (value ?? "").split(".");
   return {
     theme: pick(THEMES, theme, DEFAULT_APPEARANCE.theme),
     fontSize: pick(FONT_SIZES, fontSize, DEFAULT_APPEARANCE.fontSize),
     font: pick(FONTS, font, DEFAULT_APPEARANCE.font),
+    skin: pick(SKINS, skin, DEFAULT_APPEARANCE.skin),
   };
 }
 
+/** Classic keeps the original three-part cookie, so devices that never chose a skin are unchanged. */
 export function serializeAppearance(appearance: Appearance) {
-  return `${appearance.theme}.${appearance.fontSize}.${appearance.font}`;
+  const base = `${appearance.theme}.${appearance.fontSize}.${appearance.font}`;
+  return appearance.skin === "classic" ? base : `${base}.${appearance.skin}`;
 }
 
 /** Attributes for <html>; data-color is the resolved scheme ("system" is resolved by APPEARANCE_SCRIPT before paint). */
@@ -36,6 +43,7 @@ export function appearanceAttributes(appearance: Appearance) {
     "data-theme": appearance.theme,
     "data-font-size": appearance.fontSize,
     "data-font": appearance.font,
+    "data-skin": appearance.skin,
     ...(appearance.theme === "system" ? {} : { "data-color": appearance.theme }),
   };
 }

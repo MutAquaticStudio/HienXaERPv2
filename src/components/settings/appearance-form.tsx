@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { applyAppearance, FONT_SIZES, FONTS, THEMES, type Appearance } from "@/lib/appearance";
+import { applyAppearance, FONT_SIZES, FONTS, SKINS, THEMES, type Appearance } from "@/lib/appearance";
 
 type Choice = keyof Appearance;
-const ALL_CHOICES: readonly Choice[] = ["theme", "fontSize", "font"];
+const ALL_CHOICES: readonly Choice[] = ["theme", "skin", "fontSize", "font"];
 
 /**
  * "Giao diện" (owner decision D10): applies at once on this device only; other devices keep their own choice.
@@ -33,7 +33,7 @@ export function AppearanceForm({ initial, choices = ALL_CHOICES, classes }: {
       {classes?.options ? <div className={classes.options}>{items}</div> : items}
     </fieldset>;
   };
-  const groups = { theme: () => group("theme", "Chế độ màu", THEMES), fontSize: () => group("fontSize", "Cỡ chữ", FONT_SIZES), font: () => group("font", "Phông chữ", FONTS) };
+  const groups = { theme: () => group("theme", "Chế độ màu", THEMES), skin: () => group("skin", "Kiểu giao diện", SKINS), fontSize: () => group("fontSize", "Cỡ chữ", FONT_SIZES), font: () => group("font", "Phông chữ", FONTS) };
   return <div className={classes?.root ?? "appearance-options"}>
     {choices.map((choice) => groups[choice]())}
     <p className="muted" role="status">{saved ? "Đã áp dụng trên thiết bị này." : "Chỉ áp dụng trên thiết bị đang dùng; không ảnh hưởng người khác."}</p>
