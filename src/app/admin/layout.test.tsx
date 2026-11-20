@@ -9,6 +9,8 @@ vi.mock("@/components/notifications/live-refresh", () => ({ LiveRefresh: () => n
 vi.mock("@/lib/access/context", () => ({ requireInternalAccess: mocks.access }));
 vi.mock("@/modules/operations/server", () => ({ readOperationalState: mocks.state }));
 vi.mock("@/components/app-shell", () => ({ AppShell: ({ children }: { children: React.ReactNode }) => <main>{children}</main> }));
+vi.mock("@/components/astryx/astryx-app-shell", () => ({ AstryxAppShell: ({ children }: { children: React.ReactNode }) => <main data-skin="astryx">{children}</main> }));
+vi.mock("@/lib/skin", () => ({ currentSkin: vi.fn(async () => "classic") }));
 vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: vi.fn(async () => ({})) }));
 vi.mock("@/lib/company/profile", () => ({ loadCompanyLogoUrl: vi.fn(async () => null) }));
 import AdminLayout from "./layout";
