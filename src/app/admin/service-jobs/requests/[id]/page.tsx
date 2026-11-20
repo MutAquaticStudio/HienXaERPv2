@@ -19,6 +19,10 @@ import { estimateVnd, shortDate, slotText } from "@/modules/portal/service-reque
 import { serviceRequestStateLabel } from "@/modules/workforce/presentation";
 import { rejectServiceRequestAction, scheduleServiceRequestAction } from "@/modules/workforce/service-request-actions";
 import { loadSalesStaffOptions } from "@/modules/workforce/sales-staff";
+import { currentSkin } from "@/lib/skin";
+import { AxDialogClose } from "@/components/astryx/sales-dialog";
+import { AxSubmit } from "@/components/astryx/sales-dialogs";
+import { AstryxServiceRequestDetailView } from "./astryx-view";
 
 type Request = {
   id: string; request_number: string; state: "SUBMITTED" | "SCHEDULED" | "CANCELLED" | "REJECTED"; version: number; customer_id: string; customer_name_snapshot: string;
@@ -54,6 +58,35 @@ export default async function ServiceRequestDetailPage({ params, searchParams }:
     request.service_job_id ? supabase.from("service_jobs").select("id, job_number").eq("id", request.service_job_id).maybeSingle() : Promise.resolve({ data: null }),
   ]);
   const estimate = estimateVnd(String(request.quantity), request.unit_price_snapshot_vnd);
+  // Form "Xếp lịch" (tạo đơn dịch vụ từ yêu cầu): dùng chung cho Classic và Astryx.
+  const scheduleForm = open && canManage && <form className="command-panel service-job-form" action={scheduleServiceRequestAction}>
+          <input type="hidden" name="requestId" value={request.id} /><input type="hidden" name="version" value={request.version} /><input type="hidden" name="operationId" value={randomUUID()} />
+          <fieldset className="form-section"><legend>Dịch vụ</legend>
+            <ServiceTypeFields types={(typeResult.data ?? []) as ServiceTypeOption[]} scope={catalogEditorScope(access, "service_types")} defaultTypeId={request.service_type_id} defaultQuantity={String(request.quantity)}
+              vehicleField={<ServiceJobResourceField kind="vehicle" label="Xe" name="vehicleId" initialOptions={(vehicleResult.data ?? []).map((item) => ({ id: item.id, label: vehicleName(item) }))} />}
+              machineField={<ServiceJobResourceField kind="machine" label="Máy" name="machineId" initialOptions={(machineResult.data ?? []).map((item) => ({ id: item.id, label: `${item.code} · ${item.name}` }))} />} /></fieldset>
+          <fieldset className="form-section"><legend>Thời gian</legend><ServiceJobTimeFields defaultStart={wishedStart(request)} /></fieldset>
+          <fieldset className="form-section"><legend>Thêm (không bắt buộc)</legend>
+            <ServiceJobResourceField kind="sales" label="Nhân viên kinh doanh phụ trách" name="salesEmployeeId" initialOptions={salesStaff} />
+            <div className="field field-full"><label htmlFor="service-description">Ghi chú công việc</label>
+              <textarea id="service-description" name="description" maxLength={500} defaultValue={request.note ?? ""} placeholder="VD: chạc gạch vỡ, đường hẹp" /></div></fieldset>
+          <button className="button button-primary" type="submit">Xếp lịch</button>
+        </form>;
+  // Kiểu giao diện Astryx: cùng dữ liệu, quyền và form; "Từ chối" mở hộp thoại, "Xếp lịch" giữ form nhiều trường ngay trong trang.
+  if ((await currentSkin()) === "astryx") return <AstryxServiceRequestDetailView title={`${request.service_name_snapshot} · ${formatQuantity(String(request.quantity))} ${request.unit_label_snapshot}`}
+    number={request.request_number} customer={request.customer_name_snapshot} site={request.site_name_snapshot} stateLabel={serviceRequestStateLabel(request.state)} stateTone={tone(request.state)}
+    notice={query.notice} error={query.error} canSchedule={open && canManage} readOnlyOpen={open && !canManage}
+    info={{ sentAt: formatBusinessDateTime(request.created_at), siteAddress: `${request.site_name_snapshot} — ${request.site_address_snapshot}`, wish: `${shortDate(request.preferred_date)}, ${slotText(request.preferred_slot, request.preferred_time?.slice(0, 5))}`,
+      contactName: request.contact_name, contactPhone: request.contact_phone, note: request.note,
+      estimate: estimate !== null && request.unit_price_snapshot_vnd ? `${formatVnd(vnd(estimate))} (${formatQuantity(String(request.quantity))} × ${formatVnd(vnd(request.unit_price_snapshot_vnd))})` : "Chưa có giá: cửa hàng báo giá",
+      cancelled: request.state === "CANCELLED" ? `${request.decision_reason ?? ""} · ${request.decided_at ? formatBusinessDateTime(request.decided_at) : ""}` : null, rejected: request.state === "REJECTED" ? request.decision_reason : null,
+      job: job.data ? { id: job.data.id, number: job.data.job_number } : null }}
+    scheduleForm={scheduleForm}
+    rejectForm={open && canManage && <form action={rejectServiceRequestAction} className="sx-dlg-body">
+      <input type="hidden" name="requestId" value={request.id} /><input type="hidden" name="version" value={request.version} /><input type="hidden" name="operationId" value={randomUUID()} />
+      <p>Dùng khi cửa hàng không nhận được yêu cầu này (hết xe, ngoài vùng…). Lý do hiện cho khách trên cổng khách; khách vẫn đặt lại được.</p>
+      <label className="sx-field" htmlFor="reject-reason">Lý do cho khách<textarea id="reject-reason" name="reason" required minLength={3} maxLength={300} rows={3} placeholder="VD: hết máy trong ngày, mời anh chọn ngày khác" /></label>
+      <div className="sx-dlg-foot"><AxDialogClose label="Không từ chối" /><AxSubmit label="Từ chối yêu cầu" pendingLabel="Đang gửi..." danger /></div></form>} />;
   return <div className="page-stack">
     <Breadcrumb parent={{ href: "/admin/service-jobs/requests", label: "Yêu cầu từ khách" }} current={request.request_number} />
     <header className="page-heading"><div>
@@ -79,19 +112,7 @@ export default async function ServiceRequestDetailPage({ params, searchParams }:
       <section className="card card-pad" aria-labelledby="request-schedule">
         <h2 id="request-schedule">Xếp lịch</h2>
         <p className="muted">Tạo đơn dịch vụ từ yêu cầu này: chọn giờ, xe hoặc máy, nhân viên phụ trách. Sau đó giao việc cho thợ như mọi đơn dịch vụ. Khách thấy lịch trên cổng khách.</p>
-        <form className="command-panel service-job-form" action={scheduleServiceRequestAction}>
-          <input type="hidden" name="requestId" value={request.id} /><input type="hidden" name="version" value={request.version} /><input type="hidden" name="operationId" value={randomUUID()} />
-          <fieldset className="form-section"><legend>Dịch vụ</legend>
-            <ServiceTypeFields types={(typeResult.data ?? []) as ServiceTypeOption[]} scope={catalogEditorScope(access, "service_types")} defaultTypeId={request.service_type_id} defaultQuantity={String(request.quantity)}
-              vehicleField={<ServiceJobResourceField kind="vehicle" label="Xe" name="vehicleId" initialOptions={(vehicleResult.data ?? []).map((item) => ({ id: item.id, label: vehicleName(item) }))} />}
-              machineField={<ServiceJobResourceField kind="machine" label="Máy" name="machineId" initialOptions={(machineResult.data ?? []).map((item) => ({ id: item.id, label: `${item.code} · ${item.name}` }))} />} /></fieldset>
-          <fieldset className="form-section"><legend>Thời gian</legend><ServiceJobTimeFields defaultStart={wishedStart(request)} /></fieldset>
-          <fieldset className="form-section"><legend>Thêm (không bắt buộc)</legend>
-            <ServiceJobResourceField kind="sales" label="Nhân viên kinh doanh phụ trách" name="salesEmployeeId" initialOptions={salesStaff} />
-            <div className="field field-full"><label htmlFor="service-description">Ghi chú công việc</label>
-              <textarea id="service-description" name="description" maxLength={500} defaultValue={request.note ?? ""} placeholder="VD: chạc gạch vỡ, đường hẹp" /></div></fieldset>
-          <button className="button button-primary" type="submit">Xếp lịch</button>
-        </form>
+        {scheduleForm}
       </section>
       <section className="card card-pad" aria-labelledby="request-reject">
         <h2 id="request-reject">Từ chối</h2>

@@ -41,6 +41,10 @@ import { SendToCustomerZalo } from "@/components/zalo/send-to-customer";
 import { orderConfirmedMessage, zaloChatLink } from "@/modules/zalo/customer-messages";
 import { vehicleName } from "@/modules/catalog/vehicle-label";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { currentSkin } from "@/lib/skin";
+import { AxButtonLink, toneOf } from "@/components/astryx/ax-kit";
+import { AxCancelDocumentDialog, AxDeleteOrderDialog } from "@/components/astryx/sales-dialogs";
+import { AstryxOrderDetailView, orderFlow } from "./astryx-view";
 
 type Order = { id: string; customer_id: string; site_id: string; order_number: string; commercial_state: string; fulfillment_state: string; payment_state: string; customer_name_snapshot: string; site_name_snapshot: string; delivery_address_snapshot: string; total_vnd: string; requested_delivery_at: string | null; quotation_revision_id: string | null; created_at: string };
 type Line = { id: string; material_id: string; base_uom_id: string; line_number: number; material_name_snapshot: string; quantity: string; unit_price_vnd: string; line_total_vnd: string; list_unit_price_vnd: string | null; discount_mode: string | null; discount_value: string | null; price_source_type: string; units_of_measure: { symbol: string } | { symbol: string }[] | null; base_units: { symbol: string } | { symbol: string }[] | null };
@@ -159,10 +163,8 @@ export default async function OrderDetailPage({ params, searchParams }: { params
           address: order.delivery_address_snapshot, totalVnd: order.total_vnd ?? "0", prepaidVnd: prepaid.paidVnd.toString(), deliveryAt: order.requested_delivery_at,
           lines: lines.map((line) => ({ name: line.material_name_snapshot, quantity: formatQuantity(line.quantity), unit: relation(line.units_of_measure)?.symbol ?? "" })) })} />;
   const railClosedNote = ["CANCELLED", "CLOSED"].includes(order.commercial_state) && <p className="muted">Phần thương mại đã đóng; theo dõi giao hàng, thanh toán và ngoại lệ theo nguồn ở trên.</p>;
-  return <div className="page-stack">
-    <header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/orders", label: "Đơn bán" }} /><h1>{order.order_number}</h1><p className="lede">{order.customer_name_snapshot} · {order.site_name_snapshot}</p></div><div className="inline-actions">{!names && <OrderPrintMenu orderId={order.id} />}<ButtonLink href="/admin/orders" variant="secondary">Về danh sách</ButtonLink></div></header>
-    {fromPortal && <p className="form-message warning" role="note"><strong>Đơn khách tự đặt trên cổng khách{order.commercial_state === "DRAFT" ? " — chờ duyệt" : ""}.</strong>{order.commercial_state === "DRAFT" ? " Kiểm tra hàng, giá và ngày giao (sửa bản nháp nếu cần), rồi bấm “Duyệt đơn” để giữ hạn mức và tự phân nguồn (đơn chờ vì kho chưa đủ hàng và đặt trong 7 ngày thì hệ thống tự duyệt lại khi kho có hàng, nếu khách trong hạn mức); hoặc hủy đơn — khách thấy ghi chú hủy nếu có." : ""}{channel?.portal_note ? ` Ghi chú của khách: “${channel.portal_note}”.` : ""}</p>}
-    <SalesOrderCreditOverride orderId={id} blocked={parseCreditBlock(query.credit)} />
+  // Giữa trang: thông báo, bước tiếp theo, đóng phần còn lại, hoàn tất vận hành, nguồn hàng. Dùng chung cho Classic và Astryx.
+  const flowSections = <>
     <ActionNotice notice={query.notice} error={query.error} />
     {names && <OrderNextSteps orderId={order.id} orderNumber={order.order_number} customerId={order.customer_id} siteId={order.site_id}
       justConfirmed={!!query.notice?.startsWith("confirmed")} delivered={["FULFILLED", "CLOSED_REMAINDER"].includes(order.fulfillment_state ?? "")}
@@ -183,6 +185,50 @@ export default async function OrderDetailPage({ params, searchParams }: { params
         warehouseName: warehouses.find((warehouse) => warehouse.id === allocation.warehouse_id)?.name ?? null,
         purchaseOrder: (() => { const purchase = relation(allocation.purchase_order_lines?.purchase_orders ?? null); return purchase ? { id: purchase.id, number: purchase.purchase_order_number, state: purchase.state } : null; })() }))}
       run={sourcingRun(runResult.data as { created_at: string; plan: { lines?: { line_id: string; reason?: string }[] } } | null)} />}
+  </>;
+  // Kiểu giao diện Astryx: cùng dữ liệu, quyền và form (server action, operationId, expectedVersion); chỉ khác lớp trình bày.
+  if ((await currentSkin()) === "astryx") {
+    const draft = order.commercial_state === "DRAFT";
+    const waiting = fromPortal && draft;
+    const canCancel = access.permissions.has("orders.cancel");
+    const confirmLabel = fromPortal ? "Duyệt đơn (giữ hạn mức, tự phân nguồn)" : "Xác nhận & giữ hạn mức";
+    const axConfirm = draft && access.permissions.has("orders.confirm") && <form action={confirmSalesOrderAction}><input type="hidden" name="entityId" value={order.id} /><input type="hidden" name="expectedVersion" value={channel?.draft_version ?? ""} /><input type="hidden" name="operationId" value={randomUUID()} /><button className="hx-btn g" type="submit">{confirmLabel}</button></form>;
+    const axCancel = canCancel && (cancelView.canCancel
+      ? <AxCancelDocumentDialog entityId={order.id} operationId={randomUUID()} state={order.commercial_state} label="Hủy đơn" action={cancelSalesOrderAction} note={cancelView.note} kind={waiting ? "danger" : "secondary"} wide={!waiting} />
+      : cancelView.note && <p className="sx-note" role="note">{cancelView.note}</p>);
+    const axDelete = canCancel && <AxDeleteOrderDialog entityId={order.id} operationId={randomUUID()} orderNumber={order.order_number} action={deleteSalesOrderAction}
+      blockedNote={deleteBlockedNote(order.commercial_state, deliveries.map((delivery) => ({ number: delivery.delivery_number, state: delivery.execution_state })))} />;
+    const flow = orderFlow(order.commercial_state, order.fulfillment_state, fromPortal);
+    return <div className="sx-legacy">
+      <AstryxOrderDetailView id={order.id} number={order.order_number} customer={order.customer_name_snapshot} site={order.site_name_snapshot} address={order.delivery_address_snapshot}
+        requestedAt={order.requested_delivery_at ? formatBusinessDateTime(order.requested_delivery_at) : "Chưa hẹn"} quotationRevisionId={order.quotation_revision_id}
+        commercial={{ label: salesStateLabel(order.commercial_state), tone: toneOf(salesStateTone(order.commercial_state)) }} fulfillmentLabel={salesDeliveryStateLabel(order.fulfillment_state)} paymentLabel={salesStateLabel(order.payment_state)}
+        flow={flow} fromPortal={fromPortal} isDraft={draft} portalNote={channel?.portal_note ?? null}
+        seller={<>{sellerName}{canChooseSeller(access.permissions) && <SellerChangeForm orderId={order.id} currentId={sellerId} operationId={randomUUID()} sellers={sellers.filter((seller) => seller.assignable)} />}</>}
+        discount={discountVnd > 0n ? formatVnd(vnd(discountVnd.toString())) : null} totalLabel={discountVnd > 0n ? "Khách cần trả" : "Tổng đơn"} total={formatVnd(vnd(order.total_vnd))}
+        prepaid={prepaid.paidVnd > 0n ? { paid: formatVnd(vnd(prepaid.paidVnd.toString())), receipts: prepaid.receipts.map((receipt) => [receipt.number, receipt.method].filter(Boolean).join(" · ")).join(", "), remaining: formatVnd(vnd(prepaid.remainingVnd.toString())) } : null}
+        lines={lines.map((line) => ({ id: line.id, name: line.material_name_snapshot, quantity: `${formatQuantity(line.quantity)} ${relation(line.units_of_measure)?.symbol ?? ""}`.trim(), unitPrice: formatVnd(vnd(line.unit_price_vnd)),
+          listNote: line.list_unit_price_vnd ? `Giá gốc ${formatVnd(vnd(line.list_unit_price_vnd))}${line.discount_mode === "PERCENT" && line.discount_value ? ` · giảm ${Number(line.discount_value).toLocaleString("vi-VN")}%` : ""}` : null,
+          total: formatVnd(vnd(line.line_total_vnd)), priceSource: priceSourceLabel(line.price_source_type), source: sourceCell(line, supplies.get(line.id)?.remaining_base_quantity ?? null) }))}
+        deliveries={deliveries.map((delivery) => ({ id: delivery.id, number: delivery.delivery_number, stateLabel: deliveryStateLabel(delivery.execution_state) }))}
+        slots={{
+          print: !names && <OrderPrintMenu orderId={order.id} />,
+          notices: <><SalesOrderCreditOverride orderId={id} blocked={parseCreditBlock(query.credit)} variant="astryx" />{flowSections}</>,
+          photos: deliveries.length > 0 && <OrderDeliveryPhotos orderId={order.id} canView={access.permissions.has("evidence.manage") || access.permissions.has("delivery.verify")} canViewInternal={access.permissions.has("evidence.manage")} />,
+          approve: axConfirm, cancelBanner: axCancel,
+          primary: [draft && access.permissions.has("orders.create") && <AxButtonLink href={`/admin/orders/${order.id}/edit`} kind="primary">Sửa bản nháp</AxButtonLink>, !waiting && axConfirm, railDelivery,
+            order.commercial_state === "CONFIRMED" && access.permissions.has("service.manage") && <AxButtonLink href={`/admin/service-jobs?customerId=${order.customer_id}&siteId=${order.site_id}`}>Tạo dịch vụ</AxButtonLink>],
+          secondary: [railByAllocation, railZalo],
+          danger: [!waiting && axCancel, axDelete],
+          notes: [railQuote, railNoSource, railClosedNote],
+        }} />
+    </div>;
+  }
+  return <div className="page-stack">
+    <header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/orders", label: "Đơn bán" }} /><h1>{order.order_number}</h1><p className="lede">{order.customer_name_snapshot} · {order.site_name_snapshot}</p></div><div className="inline-actions">{!names && <OrderPrintMenu orderId={order.id} />}<ButtonLink href="/admin/orders" variant="secondary">Về danh sách</ButtonLink></div></header>
+    {fromPortal && <p className="form-message warning" role="note"><strong>Đơn khách tự đặt trên cổng khách{order.commercial_state === "DRAFT" ? " — chờ duyệt" : ""}.</strong>{order.commercial_state === "DRAFT" ? " Kiểm tra hàng, giá và ngày giao (sửa bản nháp nếu cần), rồi bấm “Duyệt đơn” để giữ hạn mức và tự phân nguồn (đơn chờ vì kho chưa đủ hàng và đặt trong 7 ngày thì hệ thống tự duyệt lại khi kho có hàng, nếu khách trong hạn mức); hoặc hủy đơn — khách thấy ghi chú hủy nếu có." : ""}{channel?.portal_note ? ` Ghi chú của khách: “${channel.portal_note}”.` : ""}</p>}
+    <SalesOrderCreditOverride orderId={id} blocked={parseCreditBlock(query.credit)} />
+    {flowSections}
     <section className="axis-grid"><article className="card axis-card"><span>Thương mại</span><StatusBadge tone={salesStateTone(order.commercial_state)}>{salesStateLabel(order.commercial_state)}</StatusBadge></article><article className="card axis-card"><span>Thực hiện</span><strong>{salesDeliveryStateLabel(order.fulfillment_state)}</strong></article><article className="card axis-card"><span>Thanh toán</span><strong>{salesStateLabel(order.payment_state)}</strong></article></section>
     <div className={`two-column ${styles.layout}`}><section className="card card-pad"><h2>Thông tin & dòng hàng</h2><dl className="detail-grid"><div className="detail-item"><dt>Khách hàng</dt><dd>{order.customer_name_snapshot}</dd></div><div className="detail-item"><dt>Công trình</dt><dd>{order.site_name_snapshot}</dd></div><div className="detail-item"><dt>NV bán hàng</dt><dd>{sellerName}{canChooseSeller(access.permissions) && <SellerChangeForm orderId={order.id} currentId={sellerId} operationId={randomUUID()} sellers={sellers.filter((seller) => seller.assignable)} />}</dd></div><div className="detail-item field-full"><dt>Địa chỉ giao đã lưu</dt><dd>{order.delivery_address_snapshot}</dd></div><div className="detail-item"><dt>Giao dự kiến</dt><dd>{order.requested_delivery_at ? formatBusinessDateTime(order.requested_delivery_at) : "Chưa hẹn"}</dd></div>{discountVnd > 0n && <div className="detail-item"><dt>Giảm giá</dt><dd className="mono">−{formatVnd(vnd(discountVnd.toString()))}</dd></div>}<div className="detail-item"><dt>{discountVnd > 0n ? "Khách cần trả" : "Tổng đơn"}</dt><dd className="mono">{formatVnd(vnd(order.total_vnd))}</dd></div>{prepaid.paidVnd > 0n && <><div className="detail-item"><dt>Khách đã trả trước</dt><dd><span className="mono">{formatVnd(vnd(prepaid.paidVnd.toString()))}</span><small className="table-subline">{prepaid.receipts.map((receipt) => [receipt.number, receipt.method].filter(Boolean).join(" · ")).join(", ")} · <Link className="code-link" href="/admin/cashbook">Sổ quỹ</Link></small></dd></div><div className="detail-item"><dt>Còn phải trả</dt><dd className="mono">{formatVnd(vnd(prepaid.remainingVnd.toString()))}</dd></div></>}</dl><div className="table-wrap"><table role="table"><thead role="rowgroup"><tr role="row"><th scope="col">Vật tư</th><th scope="col">Số lượng</th><th scope="col">Đơn giá</th><th scope="col">Thành tiền</th><th scope="col">Nguồn giá</th><th scope="col">Phân nguồn</th></tr></thead><tbody role="rowgroup">{lines.map((line) => { const supply = supplies.get(line.id); const remaining = supply?.remaining_base_quantity ?? null; return <tr role="row" key={line.id}><td role="cell" data-label="Vật tư">{line.material_name_snapshot}</td><td role="cell" data-label="Số lượng">{formatQuantity(line.quantity)} {relation(line.units_of_measure)?.symbol}</td><td role="cell" data-label="Đơn giá" className="mono">{formatVnd(vnd(line.unit_price_vnd))}{line.list_unit_price_vnd && <small className="table-subline">Giá gốc {formatVnd(vnd(line.list_unit_price_vnd))}{line.discount_mode === "PERCENT" && line.discount_value ? ` · giảm ${Number(line.discount_value).toLocaleString("vi-VN")}%` : ""}</small>}</td><td role="cell" data-label="Thành tiền" className="mono">{formatVnd(vnd(line.line_total_vnd))}</td><td role="cell" data-label="Nguồn giá">{priceSourceLabel(line.price_source_type)}</td><td role="cell" data-label="Phân nguồn">{sourceCell(line, remaining)}</td></tr>; })}</tbody></table></div>{deliveries.length > 0 && <div className="source-history"><h3>Phiếu giao</h3>{deliveries.map((delivery) => <p key={delivery.id}><Link className="code-link mono" href={`/admin/deliveries/${delivery.id}`}>{delivery.delivery_number}</Link><span>{deliveryStateLabel(delivery.execution_state)}</span></p>)}</div>}</section><aside className="card card-pad command-panel"><h2>Hành động tiếp theo</h2>
       {railQuote}

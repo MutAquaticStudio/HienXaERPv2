@@ -22,6 +22,8 @@ import { SendToCustomerZalo } from "@/components/zalo/send-to-customer";
 import { debtReminderMessage, paymentReceivedMessage, zaloChatLink } from "@/modules/zalo/customer-messages";
 import { bankTransferNote } from "@/modules/finance/transfer-note";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { currentSkin } from "@/lib/skin";
+import { AstryxCustomerInfo, AstryxCustomerOrders, AstryxCustomerView } from "./astryx-view";
 
 type CustomerProfile = { id: string; code: string; display_name: string; customer_type: string; phone: string | null; email: string | null; address_text: string | null; tax_code: string | null; tier_code: string | null; payment_terms_days: number; active: boolean; source?: string };
 type SiteRow = { id: string; code: string; name: string; address_text: string; receiver_name: string | null; receiver_phone: string | null; access_note: string | null; active: boolean };
@@ -93,8 +95,16 @@ export default async function CustomerDetailPage({ params, searchParams }: PageP
   const [editProps, siteProps] = can.manage
     ? await Promise.all([catalogRecordProps("customers", id, access, supabase), catalogCreateProps("sites", access, supabase)]) : [null, null];
 
+  const ax = (await currentSkin()) === "astryx";
+  const priceGroupLabel = customer.tier_code ? `Nhóm giá ${(groupResult.data as { name: string } | null)?.name ?? customer.tier_code}` : "Giá chung";
+  const axCredit = credit && can.finance ? { debt: money(credit.receivable_vnd), overdue: money(credit.overdue_vnd), limit: credit.credit_limit_vnd !== null ? money(credit.credit_limit_vnd) : null,
+    available: credit.available_vnd !== null ? money(credit.available_vnd) : null,
+    percent: credit.credit_limit_vnd !== null && BigInt(String(credit.credit_limit_vnd)) > 0n ? Number((BigInt(String(credit.receivable_vnd)) * 10000n) / BigInt(String(credit.credit_limit_vnd))) / 100 : null } : null;
   // Only the open tab is read; awaited here so the page streams as one piece.
-  const body = tab === "info" ? await InfoTab({ customer, note: can.manage ? privateRow?.internal_note ?? null : undefined, can, supabase,
+  const body = ax && tab === "info" ? await InfoTabAx({ customer, note: can.manage ? privateRow?.internal_note ?? null : undefined, can, supabase, credit: axCredit, priceGroup: priceGroupLabel,
+      siteEdit: can.manage ? await catalogChildRecordsProps("sites", "customer_id", id, access, supabase) : null })
+    : ax && tab === "orders" ? await OrdersTabAx({ customerId: id, branchId: access.branchId, supabase })
+    : tab === "info" ? await InfoTab({ customer, note: can.manage ? privateRow?.internal_note ?? null : undefined, can, supabase,
       siteEdit: can.manage ? await catalogChildRecordsProps("sites", "customer_id", id, access, supabase) : null })
     : tab === "orders" ? await OrdersTab({ customerId: id, branchId: access.branchId, supabase })
     : tab === "deliveries" ? await DeliveriesTab({ customerId: id, branchId: access.branchId, supabase })
@@ -102,6 +112,13 @@ export default async function CustomerDetailPage({ params, searchParams }: PageP
     : tab === "prices" ? await PricesTab({ customerId: id, branchId: access.branchId, supabase, canManage: access.permissions.has("pricing.manage") })
     : await DocumentsTab({ customerId: id, branchId: access.branchId, supabase, can: { quotes: QUOTATIONS_ENABLED && access.permissions.has("quotation.read"), deliveries: can.deliveries, finance: can.finance } });
 
+  if (ax) return <AstryxCustomerView header={{ id: customer.id, code: customer.code, name: customer.display_name, active: customer.active, selfRegistered, phone: customer.phone, address: customer.address_text, priceGroup: priceGroupLabel,
+    samePhone: samePhone.map((row) => ({ id: row.id, code: row.code, name: row.display_name })),
+    metrics: { debt: credit ? money(credit.receivable_vnd) : null, overdue: credit ? money(credit.overdue_vnd) : null, overdueAlert: !!credit && BigInt(String(credit.overdue_vnd)) > 0n,
+      totalSales: can.orders ? money(totalSales) : null, openOrders: can.orders ? openOrders : null, available: credit ? credit.available_vnd === null ? "Chưa duyệt" : money(credit.available_vnd) : null,
+      limit: credit && credit.credit_limit_vnd !== null ? money(credit.credit_limit_vnd) : null },
+    tabs, tab, actions: { createOrder: can.createOrder && customer.active, collect: canPostPayment, service: can.service && customer.active, quote: can.createQuote },
+    extraActions: <>{editProps && <CatalogEditButton {...editProps} label="Sửa" className="hx-btn" />}{siteProps && <CatalogCreateButton {...siteProps} initial={{ customer_id: customer.id }} label="+ Công trình" className="hx-btn" />}</> }}>{body}</AstryxCustomerView>;
   return <div className="page-stack">
     <header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/customers", label: "Khách hàng" }} current={customer.code} /><h1>{customer.display_name}{selfRegistered && <span className="scope-chip heading-chip">Tự đăng ký</span>}</h1>
       <p className="lede">{customer.phone ?? "Chưa có điện thoại"} · {customer.address_text ?? "Chưa có địa chỉ chính"} · {customer.tier_code ? `Nhóm giá ${(groupResult.data as { name: string } | null)?.name ?? customer.tier_code}` : "Giá chung"}</p></div>
@@ -168,6 +185,32 @@ async function InfoTab({ customer, note, can, supabase, siteEdit }: { customer: 
     {can.manage && <PortalLinkRequestsCard customerId={customer.id} customerName={customer.display_name} requests={linkRequests} />}
     {accounts && <PortalAccountsCard customerId={customer.id} customerPhone={customer.phone} accounts={accounts} canManage={can.manage} />}</div>
   </div>;
+}
+
+async function InfoTabAx({ customer, note, can, supabase, siteEdit, credit, priceGroup }: { customer: CustomerProfile; note: string | null | undefined; can: { createOrder: boolean; service: boolean; manage: boolean }; supabase: Supabase; siteEdit: SiteEdit | null;
+  credit: { debt: string; overdue: string; limit: string | null; available: string | null; percent: number | null } | null; priceGroup: string }) {
+  const [{ data }, accountsResult, linkResult] = await Promise.all([
+    supabase.from("customer_sites").select("id, code, name, address_text, receiver_name, receiver_phone, access_note, active").eq("customer_id", customer.id).order("active", { ascending: false }).order("name").limit(100),
+    supabase.rpc("customer_portal_accounts", { target_customer_id: customer.id }),
+    can.manage ? supabase.from("portal_link_requests").select("id, display_name, phone, address_text, email, created_at")
+      .eq("matched_customer_id", customer.id).eq("state", "PENDING").order("created_at").limit(20) : Promise.resolve({ data: [] }),
+  ]);
+  const linkRequests = (linkResult.data ?? []) as PortalLinkRequest[];
+  const sites = (data ?? []) as unknown as SiteRow[];
+  const accounts = accountsResult.error ? null : ((accountsResult.data ?? []) as PortalAccount[]);
+  return <AstryxCustomerInfo customerId={customer.id} canCreateOrder={can.createOrder} canService={can.service} credit={credit} priceGroup={priceGroup}
+    sites={sites.map((site) => ({ id: site.id, name: site.name, address: site.address_text, receiverName: site.receiver_name, receiverPhone: site.receiver_phone, accessNote: site.access_note, active: site.active,
+      edit: siteEdit?.records.has(site.id) ? <CatalogEditButton kind={siteEdit.kind} options={siteEdit.options} permissions={siteEdit.permissions} {...siteEdit.records.get(site.id)!} label="Sửa" className="hx-btn sm" /> : null }))}
+    profile={{ type: customer.customer_type === "BUSINESS" ? "Doanh nghiệp" : "Cá nhân", terms: `${customer.payment_terms_days} ngày`, email: customer.email ?? "Chưa có", taxCode: customer.tax_code ?? "Chưa có", note }}
+    linkRequests={can.manage && <PortalLinkRequestsCard customerId={customer.id} customerName={customer.display_name} requests={linkRequests} />}
+    accounts={accounts && <PortalAccountsCard customerId={customer.id} customerPhone={customer.phone} accounts={accounts} canManage={can.manage} variant="astryx" />} />;
+}
+
+async function OrdersTabAx({ customerId, branchId, supabase }: { customerId: string; branchId: string; supabase: Supabase }) {
+  const { data } = await supabase.from("sales_order_read").select("id, order_number, commercial_state, fulfillment_state, payment_state, total_vnd::text, site_name_snapshot, created_at")
+    .eq("branch_id", branchId).eq("customer_id", customerId).order("created_at", { ascending: false }).limit(50);
+  return <AstryxCustomerOrders rows={((data ?? []) as unknown as OrderRow[]).map((row) => ({ id: row.id, number: row.order_number, site: row.site_name_snapshot, stateLabel: salesStateLabel(row.commercial_state), stateTone: salesStateTone(row.commercial_state),
+    deliveryLabel: salesDeliveryStateLabel(row.fulfillment_state), paymentLabel: salesStateLabel(row.payment_state), total: money(row.total_vnd), createdAt: date(row.created_at) }))} />;
 }
 
 async function OrdersTab({ customerId, branchId, supabase }: { customerId: string; branchId: string; supabase: Supabase }) {

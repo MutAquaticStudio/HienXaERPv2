@@ -6,6 +6,9 @@ import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { loadSalesFormOptions } from "@/modules/sales/form-options";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { currentSkin } from "@/lib/skin";
+import { AxButtonLink } from "@/components/astryx/ax-kit";
+import { AxFormPage } from "@/components/astryx/sales-kit";
 
 /** "5.00" → "5", "2.50" → "2,5", "3000.00" → "3000": how the discount boxes expect it. */
 function editableDiscount(value: string) {
@@ -38,6 +41,9 @@ export default async function EditOrderPage({ params }: { params: Promise<{ id: 
     orderDiscount: order.order_discount_mode === "AMOUNT" || order.order_discount_mode === "PERCENT"
       ? { mode: order.order_discount_mode, value: editableDiscount(order.order_discount_value ?? "") } : null,
   };
+  const form = <CommercialDocumentForm kind="order" options={options} operationId={randomUUID()} canManagePrice={access.permissions.has("pricing.manage")} canManageCustomers={false} existing={existing} />;
+  if ((await currentSkin()) === "astryx") return <AxFormPage crumbs={["Bán hàng", "Đơn bán", order.order_number, "Sửa"]} title={`Sửa ${order.order_number}`} lede="Sửa dòng hàng, ngày giao và điều khoản. Giá được kiểm lại trước khi lưu."
+    actions={<AxButtonLink href={`/admin/orders/${id}`}>Về đơn bán</AxButtonLink>}>{form}</AxFormPage>;
   return <><header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/orders", label: "Đơn bán" }} /><h1>Sửa {order.order_number}</h1><p className="lede">Sửa dòng hàng, ngày giao và điều khoản. Giá được kiểm lại trước khi lưu.</p></div><Link className="button button-secondary" href={`/admin/orders/${id}`}>Về đơn bán</Link></header>
-    <CommercialDocumentForm kind="order" options={options} operationId={randomUUID()} canManagePrice={access.permissions.has("pricing.manage")} canManageCustomers={false} existing={existing} /></>;
+    {form}</>;
 }

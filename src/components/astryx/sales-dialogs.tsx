@@ -7,7 +7,8 @@ import { AxDialogButton, AxDialogClose } from "./sales-dialog";
 
 type Action = (data: FormData) => void | Promise<void>;
 
-function Submit({ label, pendingLabel, disabled, danger }: { label: string; pendingLabel: string; disabled?: boolean; danger?: boolean }) {
+/** Nút gửi form trong hộp thoại: hiện "đang..." khi form đang xử lý và khóa để không gửi hai lần. */
+export function AxSubmit({ label, pendingLabel, disabled, danger }: { label: string; pendingLabel: string; disabled?: boolean; danger?: boolean }) {
   const { pending } = useFormStatus();
   return <Button type="submit" variant={danger ? "destructive" : "primary"} label={pending ? pendingLabel : label} isDisabled={disabled || pending} />;
 }
@@ -25,7 +26,7 @@ export function AxCancelDocumentDialog({ entityId, operationId, state, label, ac
       {note && <p className="sx-note" role="note">{note}</p>}
       <label className="sx-field" htmlFor={reasonId}>Ghi chú (không bắt buộc)<input id={reasonId} name="reason" maxLength={500} /></label>
       <label style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 14 }}><input type="checkbox" required /> Tôi xác nhận hủy chứng từ này và giữ lịch sử</label>
-      <div className="sx-dlg-foot"><AxDialogClose label="Không hủy" /><Submit danger label={draft ? "Xóa nháp (hủy có lịch sử)" : label} pendingLabel="Đang hủy..." /></div>
+      <div className="sx-dlg-foot"><AxDialogClose label="Không hủy" /><AxSubmit danger label={draft ? "Xóa nháp (hủy có lịch sử)" : label} pendingLabel="Đang hủy..." /></div>
     </form>
   </AxDialogButton>;
 }
@@ -44,7 +45,7 @@ export function AxDeleteOrderDialog({ entityId, operationId, orderNumber, action
       {blockedNote && <p className="sx-note" role="note">{blockedNote}</p>}
       <label className="sx-field" htmlFor={reasonId}>Lý do xóa<input id={reasonId} name="reason" required minLength={3} maxLength={300} value={reason} onChange={(event) => setReason(event.target.value)} /></label>
       <label className="sx-field" htmlFor={numberId}>Gõ mã đơn {orderNumber} để xác nhận<input id={numberId} name="confirmNumber" autoComplete="off" required value={typed} onChange={(event) => setTyped(event.target.value)} /></label>
-      <div className="sx-dlg-foot"><AxDialogClose label="Không xóa" /><Submit danger label="Xóa đơn bán" pendingLabel="Đang xóa..." disabled={!ready} /></div>
+      <div className="sx-dlg-foot"><AxDialogClose label="Không xóa" /><AxSubmit danger label="Xóa đơn bán" pendingLabel="Đang xóa..." disabled={!ready} /></div>
     </form>
   </AxDialogButton>;
 }

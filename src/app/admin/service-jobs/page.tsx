@@ -22,6 +22,8 @@ import { FormDialog } from "@/components/ui/form-dialog";
 import { ServiceJobTimeFields } from "@/components/workforce/service-job-time-fields";
 import { loadSalesStaffOptions } from "@/modules/workforce/sales-staff";
 import { vehicleName } from "@/modules/catalog/vehicle-label";
+import { currentSkin } from "@/lib/skin";
+import { AstryxServiceJobsView } from "./astryx-view";
 
 type Job = { id: string; job_number: string; customer_name: string; site_name: string; service_type: string; scheduled_start: string; scheduled_end?: string | null; description?: string | null; planned_quantity: string | null; unit_label: string; operator_name: string | null; execution_state: string };
 const STATES = ["SCHEDULED", "IN_PROGRESS", "RESULT_SUBMITTED", "VERIFIED", "CANCELLED"] as const;
@@ -101,16 +103,7 @@ export default async function ServiceJobsPage({ searchParams }: { searchParams: 
     supabase.from("customers").select("id, code, display_name").eq("branch_id", branchId).eq("id", query.customerId!).maybeSingle(),
     uuid.test(query.siteId ?? "") ? supabase.from("customer_sites").select("id, customer_id, name").eq("customer_id", query.customerId!).eq("id", query.siteId!).maybeSingle() : Promise.resolve({ data: null, error: null }),
   ]) : [{ data: null }, { data: null }];
-  const stateFilter = STATES.includes(list.state as typeof STATES[number]) ? list.state : "";
-  const filterOptions = [{ value: "", label: "Tất cả" }, ...STATES.map((state, index) => ({ value: state, label: serviceStateLabel(state), count: shown(counts[index]) }))];
-  return <div className="page-stack">
-    <header className="page-heading"><div><h1>Đơn dịch vụ</h1>
-      <p className="lede">Chở hàng theo chuyến, máy theo giờ, bốc xếp theo công. Chưa biết số lượng thì để trống: thợ bấm số thực tế khi hoàn tất, văn phòng xác minh và ghi công nợ.</p></div>
-      <div className="action-cluster">
-        <Link className="button button-secondary" href="/admin/service-jobs/requests">Yêu cầu từ khách{openRequests ? ` (${openRequests})` : ""}</Link>
-        {canManage && <FormDialog label="+ Tạo đơn dịch vụ" title="Tạo đơn dịch vụ" size="lg" buttonClassName="button button-primary" defaultOpen={!!startCustomer.data}
-          description="Chọn khách, công trình và loại dịch vụ. Số lượng có thể để trống nếu chưa biết.">
-          <form className="command-panel service-job-form" action={createServiceJobAction}><input type="hidden" name="operationId" value={randomUUID()} />
+  const createJobForm = canManage && <form className="command-panel service-job-form" action={createServiceJobAction}><input type="hidden" name="operationId" value={randomUUID()} />
             <fieldset className="form-section"><legend>Khách & công trình</legend>
               <ServiceJobLocationFields initialCustomers={customerResult.data ?? []} initialCustomer={startCustomer.data ?? undefined} initialSite={startSite.data ?? undefined} /></fieldset>
             <fieldset className="form-section"><legend>Dịch vụ</legend>
@@ -121,7 +114,25 @@ export default async function ServiceJobsPage({ searchParams }: { searchParams: 
             <fieldset className="form-section"><legend>Thêm (không bắt buộc)</legend>
               <ServiceJobResourceField kind="sales" label="Nhân viên kinh doanh phụ trách" name="salesEmployeeId" initialOptions={salesStaff} />
               <div className="field field-full"><label htmlFor="service-description">Ghi chú công việc</label><textarea id="service-description" name="description" maxLength={500} placeholder="VD: chở cát từ bãi A lên công trình, đường hẹp" /></div></fieldset>
-            <button className="button button-primary" type="submit">Tạo đơn dịch vụ</button></form>
+            <button className="button button-primary" type="submit">Tạo đơn dịch vụ</button></form>;
+  const stateFilter = STATES.includes(list.state as typeof STATES[number]) ? list.state : "";
+  const filterOptions = [{ value: "", label: "Tất cả" }, ...STATES.map((state, index) => ({ value: state, label: serviceStateLabel(state), count: shown(counts[index]) }))];
+  // Kiểu giao diện Astryx: cùng dữ liệu, bộ lọc và form tạo đơn; chỉ khác lớp trình bày.
+  if ((await currentSkin()) === "astryx") return <AstryxServiceJobsView rows={jobs.map((job) => ({ id: job.id, number: job.job_number, customer: job.customer_name, site: job.site_name, serviceType: job.service_type,
+      schedule: formatBusinessDateTime(job.scheduled_start), scheduleEnd: job.scheduled_end ? formatBusinessDateTime(job.scheduled_end) : null, planned: plannedText(job), operator: job.operator_name, description: job.description ?? null,
+      state: job.execution_state, stateLabel: serviceStateLabel(job.execution_state), stateTone: stateTone(job.execution_state) }))}
+    filters={filterOptions} stateFilter={stateFilter} q={list.q} isFiltered={Boolean(list.q || list.state)} openRequests={openRequests} canManage={canManage} notice={query.notice} error={query.error}
+    page={list.page} total={jobResult.total} hasNext={jobResult.hasNext}
+    create={canManage && <FormDialog label="+ Tạo đơn dịch vụ" title="Tạo đơn dịch vụ" size="lg" buttonClassName="hx-btn g" defaultOpen={!!startCustomer.data}
+      description="Chọn khách, công trình và loại dịch vụ. Số lượng có thể để trống nếu chưa biết.">{createJobForm}</FormDialog>} />;
+  return <div className="page-stack">
+    <header className="page-heading"><div><h1>Đơn dịch vụ</h1>
+      <p className="lede">Chở hàng theo chuyến, máy theo giờ, bốc xếp theo công. Chưa biết số lượng thì để trống: thợ bấm số thực tế khi hoàn tất, văn phòng xác minh và ghi công nợ.</p></div>
+      <div className="action-cluster">
+        <Link className="button button-secondary" href="/admin/service-jobs/requests">Yêu cầu từ khách{openRequests ? ` (${openRequests})` : ""}</Link>
+        {canManage && <FormDialog label="+ Tạo đơn dịch vụ" title="Tạo đơn dịch vụ" size="lg" buttonClassName="button button-primary" defaultOpen={!!startCustomer.data}
+          description="Chọn khách, công trình và loại dịch vụ. Số lượng có thể để trống nếu chưa biết.">
+          {createJobForm}
         </FormDialog>}
         {canManage && <Link className="button button-secondary" href="/admin/service-jobs/types">Loại dịch vụ</Link>}</div>
     </header>

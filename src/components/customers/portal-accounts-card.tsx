@@ -30,14 +30,16 @@ type Open = { kind: "create" } | { kind: "reset"; account: PortalAccount } | { k
  * Khách hàng 360 · "Tài khoản cổng khách" (D14/C1): the customer's logins, and for customers.manage a login with an email or a
  * phone number and a temporary password (changed at the first sign-in), a new temporary password, or revoking a login.
  */
-export function PortalAccountsCard({ customerId, customerPhone, accounts, canManage }: {
-  customerId: string; customerPhone: string | null; accounts: PortalAccount[]; canManage: boolean;
+export function PortalAccountsCard({ customerId, customerPhone, accounts, canManage, variant = "classic" }: {
+  customerId: string; customerPhone: string | null; accounts: PortalAccount[]; canManage: boolean; variant?: "classic" | "astryx";
 }) {
+  const ax = variant === "astryx";
   const [open, setOpen] = useState<Open>(null);
   const active = accounts.filter((account) => account.active);
-  return <section className="card card-pad portal-accounts">
-    <div className="section-head"><h2>Tài khoản cổng khách</h2>
-      {canManage && <button type="button" className="button button-secondary" onClick={() => setOpen({ kind: "create" })}>+ Tạo tài khoản</button>}</div>
+  return <section className={ax ? "sx-panel portal-accounts" : "card card-pad portal-accounts"}>
+    <div className={ax ? "sx-ph" : "section-head"}><h2>Tài khoản cổng khách</h2>
+      {canManage && <button type="button" className={ax ? "hx-btn" : "button button-secondary"} onClick={() => setOpen({ kind: "create" })}>+ Tạo tài khoản</button>}</div>
+    <div className={ax ? "sx-pb" : undefined}>
     {accounts.length ? <ul className="portal-account-list">{accounts.map((account) => <li key={account.membership_id} className={account.active ? undefined : "row-muted"}>
       <div><strong>{displayLogin(account.email)}</strong>
         <small className="table-subline">{portalRoleLabel[account.membership_role]}</small>
@@ -49,6 +51,7 @@ export function PortalAccountsCard({ customerId, customerPhone, accounts, canMan
       </div>}
     </li>)}</ul> : <p className="empty-inline">Khách chưa có tài khoản đăng nhập cổng khách{canManage ? ". Bấm “+ Tạo tài khoản” để khách tự đặt hàng và theo dõi đơn." : "."}</p>}
     {!active.length && accounts.length > 0 && <p className="muted">Mọi tài khoản của khách đã bị thu hồi.</p>}
+    </div>
     {open?.kind === "create" && <CreateDialog customerId={customerId} customerPhone={customerPhone} onClose={() => setOpen(null)} />}
     {open?.kind === "reset" && <ResetDialog customerId={customerId} customerPhone={customerPhone} account={open.account} onClose={() => setOpen(null)} />}
     {open?.kind === "revoke" && <RevokeDialog customerId={customerId} account={open.account} onClose={() => setOpen(null)} />}

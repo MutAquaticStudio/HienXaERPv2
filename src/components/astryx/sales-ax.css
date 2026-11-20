@@ -113,3 +113,11 @@
 .sx-dlg-body p{margin:0}
 .sx-dlg-body .sx-note{font-size:14px;color:var(--color-text-secondary,#5A6B82)}
 .sx-dlg-body .form-message{margin:0}
+
+/* Hàng tìm kiếm của trang danh mục và nút Classic nằm trong vùng bọc (cùng dáng nút Astryx) */
+.ax-root .sx-searchrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.ax-root .sx-searchrow .hx-in{min-width:240px}
+.ax-root .sx-legacy .button,.ax-root .hx-acts .button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:38px;padding:0 16px;border-radius:10px;font-weight:600;font-size:14.5px}
+.ax-root .sx-legacy .button-primary,.ax-root .hx-acts .button-primary{background:linear-gradient(180deg,#1A78E0,#0B63C6);border-color:#0A57B0;color:#fff}
+.ax-root .sx-legacy .button-commerce{background:linear-gradient(180deg,#169A5A,#12804A);border-color:#0E6B3D;color:#fff}
+.ax-root .sx-legacy .button-compact{min-height:32px;padding:0 12px;font-size:13.5px;border-radius:8px}

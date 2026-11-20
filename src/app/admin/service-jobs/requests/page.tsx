@@ -9,6 +9,8 @@ import { formatQuantity } from "@/lib/core/quantity";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { shortDate, slotText } from "@/modules/portal/service-request";
 import { serviceRequestStateLabel } from "@/modules/workforce/presentation";
+import { currentSkin } from "@/lib/skin";
+import { AstryxServiceRequestsView } from "./astryx-view";
 
 type Row = {
   id: string; request_number: string; state: string; customer_name_snapshot: string; site_name_snapshot: string; service_name_snapshot: string;
@@ -34,6 +36,10 @@ export default async function ServiceRequestsPage({ searchParams }: { searchPara
   const { data, error } = await request.order(state === "SUBMITTED" ? "preferred_date" : "created_at", { ascending: state === "SUBMITTED" }).order("id").limit(100);
   if (error) throw new Error("Không thể tải yêu cầu từ khách.");
   const rows = (data ?? []) as unknown as Row[];
+  // Kiểu giao diện Astryx: cùng dữ liệu và bộ lọc trạng thái (liên kết GET).
+  if ((await currentSkin()) === "astryx") return <AstryxServiceRequestsView state={state} filters={FILTERS.map((item) => ({ value: item.value, label: item.label }))}
+    rows={rows.map((row) => ({ id: row.id, number: row.request_number, customer: row.customer_name_snapshot, site: row.site_name_snapshot, service: row.service_name_snapshot, quantity: `${formatQuantity(String(row.quantity))} ${row.unit_label_snapshot}`,
+      wish: shortDate(row.preferred_date), slot: slotText(row.preferred_slot, row.preferred_time?.slice(0, 5)), sentAt: formatBusinessDateTime(row.created_at), stateLabel: serviceRequestStateLabel(row.state), stateTone: tone(row.state) }))} />;
   return <div className="page-stack">
     <Breadcrumb parent={{ href: "/admin/service-jobs", label: "Đơn dịch vụ" }} current="Yêu cầu từ khách" />
     <header className="page-heading"><div><h1>Yêu cầu từ khách</h1>

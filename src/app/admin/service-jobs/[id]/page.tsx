@@ -20,6 +20,8 @@ import { ServiceJobProgress } from "@/components/workforce/service-job-progress"
 import { QuantityStepper } from "@/components/ui/quantity-stepper";
 import { FormDialog } from "@/components/ui/form-dialog";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { currentSkin } from "@/lib/skin";
+import { AstryxServiceJobDetailView } from "./astryx-view";
 
 type Job = {
   id: string; job_number: string; customer_name: string; site_name: string; service_type: string;
@@ -61,31 +63,8 @@ export default async function ServiceJobDetail({ params, searchParams }: { param
   // FB8: the amount to bill, estimated from the reported (or planned) count until the job is verified.
   const countForEstimate = job.actual_quantity ?? job.planned_quantity;
   const estimate = unitPrice && countForEstimate ? new Decimal(countForEstimate).mul(unitPrice).toDecimalPlaces(0, Decimal.ROUND_HALF_UP).toFixed(0) : null;
-  return <>
-    <header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/service-jobs", label: "Dịch vụ" }} current={job.job_number} /><h1>{job.service_type}</h1><p className="lede">{job.customer_name} · {job.site_name}{origin && <> · <Link className="code-link" href={`/admin/service-jobs/requests/${origin.id}`}>Từ yêu cầu của khách {origin.request_number}</Link></>}</p></div>
-      <div className="action-cluster"><StatusBadge tone={job.execution_state === "VERIFIED" ? "success" : job.execution_state === "CANCELLED" ? "danger" : job.execution_state === "RESULT_SUBMITTED" ? "warning" : "info"}>{serviceStateLabel(job.execution_state)}</StatusBadge>
-        <Link className="button button-secondary" href="/admin/service-jobs">Về danh sách</Link></div></header>
-    <ActionNotice notice={query.notice} error={query.error} />
-    <ServiceJobProgress state={job.execution_state} workState={job.work_state} operator={job.operator_name} unit={unit} actual={quantityText(job.actual_quantity, "")?.trim() ?? null} />
-    <section className="metric-grid">
-      <article className="card metric-card"><span className="metric-label">Dự kiến</span><strong className="metric-value">{quantityText(job.planned_quantity, unit) ?? "Theo thực tế"}</strong></article>
-      <article className="card metric-card"><span className="metric-label">Thợ báo</span><strong className="metric-value">{quantityText(job.actual_quantity, unit) ?? "Chưa có"}</strong></article>
-      <article className="card metric-card"><span className="metric-label">Tính khách</span><strong className="metric-value">{quantityText(job.billable_quantity, unit) ?? "Chưa xác minh"}</strong></article>
-      <article className="card metric-card"><span className="metric-label">{job.billable_amount_vnd != null ? "Thành tiền" : "Thành tiền tạm tính"}</span><strong className="metric-value">{job.billable_amount_vnd != null ? formatVnd(vnd(String(job.billable_amount_vnd))) : estimate ? formatVnd(vnd(estimate)) : "—"}</strong></article>
-    </section>
-    <div className="two-column">
-      <section className="card card-pad"><div className="section-head"><h2>Thông tin</h2></div>
-        <dl className="detail-grid">
-          <div className="detail-item"><dt>Lịch</dt><dd>{formatServiceSchedule(job.scheduled_start)}</dd></div>
-          <div className="detail-item"><dt>Người làm</dt><dd>{job.operator_name ?? "Chưa giao"}{job.work_number && <small className="table-subline">Phiếu việc {job.work_number}</small>}</dd></div>
-          {(job.plate_number || job.machine_name) && <div className="detail-item"><dt>{job.plate_number ? "Xe" : "Máy"}</dt><dd>{job.plate_number ?? job.machine_name}</dd></div>}
-          <div className="detail-item"><dt>Đơn giá</dt><dd>{unitPrice != null ? `${formatVnd(vnd(unitPrice))}/${unit}` : "Nhập khi xác minh"}</dd></div>
-          <div className="detail-item field-full"><dt>Ghi chú</dt><dd>{job.description}</dd></div>
-          {job.compensable_quantity != null && <div className="detail-item"><dt>Tính công cho thợ</dt><dd>{quantityText(job.compensable_quantity, unit)}</dd></div>}
-          {job.receivable_obligation_id && <div className="detail-item"><dt>Công nợ khách</dt><dd><Link className="code-link" href={"/admin/receivables/" + job.receivable_obligation_id}>Mở khoản phải thu</Link></dd></div>}
-        </dl>
-      </section>
-      <aside className="card card-pad command-panel"><h2>Việc cần làm</h2>
+  // Khối "Việc cần làm" (giao việc, hoàn tất thay thợ, xác minh, hủy...): dựng một lần, dùng chung cho Classic và Astryx.
+  const actionPanel = <>
         {job.execution_state === "SCHEDULED" && !job.work_item_id && canManage && <form className="command-panel" action={publishWorkItemAction}>
           {hidden({ serviceJobId: job.id, operationId: randomUUID() })}
           <fieldset className="segmented-radio"><legend>Giao việc</legend>
@@ -139,6 +118,42 @@ export default async function ServiceJobDetail({ params, searchParams }: { param
           <form className="command-panel" action={cancelScheduledServiceJobAction}>{hidden({ serviceJobId: job.id, version: job.version, operationId: randomUUID() })}
             <div className="field"><label htmlFor="serviceCancelReason">Ghi chú (không bắt buộc)</label><input id="serviceCancelReason" name="reason" maxLength={500} /></div>
             <button className="button button-danger" type="submit">Hủy đơn dịch vụ</button></form></FormDialog>}
+  </>;
+  // Kiểu giao diện Astryx: cùng dữ liệu, quyền và form; chỉ khác lớp trình bày.
+  if ((await currentSkin()) === "astryx") return <AstryxServiceJobDetailView number={job.job_number} title={job.service_type} customer={job.customer_name} site={job.site_name}
+    origin={origin ? { id: origin.id, number: origin.request_number } : null} stateLabel={serviceStateLabel(job.execution_state)} state={job.execution_state} notice={query.notice} error={query.error}
+    progress={<ServiceJobProgress state={job.execution_state} workState={job.work_state} operator={job.operator_name} unit={unit} actual={quantityText(job.actual_quantity, "")?.trim() ?? null} />}
+    metrics={{ planned: quantityText(job.planned_quantity, unit) ?? "Theo thực tế", actual: quantityText(job.actual_quantity, unit) ?? "Chưa có", billable: quantityText(job.billable_quantity, unit) ?? "Chưa xác minh",
+      amountLabel: job.billable_amount_vnd != null ? "Thành tiền" : "Thành tiền tạm tính", amount: job.billable_amount_vnd != null ? formatVnd(vnd(String(job.billable_amount_vnd))) : estimate ? formatVnd(vnd(estimate)) : "—" }}
+    info={{ schedule: formatServiceSchedule(job.scheduled_start), operator: job.operator_name ?? "Chưa giao", workNumber: job.work_number, resourceLabel: job.plate_number ? "Xe" : "Máy", resource: job.plate_number ?? job.machine_name,
+      unitPrice: unitPrice != null ? `${formatVnd(vnd(unitPrice))}/${unit}` : "Nhập khi xác minh", description: job.description, compensable: job.compensable_quantity != null ? quantityText(job.compensable_quantity, unit) : null, receivableId: job.receivable_obligation_id }}
+    actions={actionPanel} />;
+  return <>
+    <header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/service-jobs", label: "Dịch vụ" }} current={job.job_number} /><h1>{job.service_type}</h1><p className="lede">{job.customer_name} · {job.site_name}{origin && <> · <Link className="code-link" href={`/admin/service-jobs/requests/${origin.id}`}>Từ yêu cầu của khách {origin.request_number}</Link></>}</p></div>
+      <div className="action-cluster"><StatusBadge tone={job.execution_state === "VERIFIED" ? "success" : job.execution_state === "CANCELLED" ? "danger" : job.execution_state === "RESULT_SUBMITTED" ? "warning" : "info"}>{serviceStateLabel(job.execution_state)}</StatusBadge>
+        <Link className="button button-secondary" href="/admin/service-jobs">Về danh sách</Link></div></header>
+    <ActionNotice notice={query.notice} error={query.error} />
+    <ServiceJobProgress state={job.execution_state} workState={job.work_state} operator={job.operator_name} unit={unit} actual={quantityText(job.actual_quantity, "")?.trim() ?? null} />
+    <section className="metric-grid">
+      <article className="card metric-card"><span className="metric-label">Dự kiến</span><strong className="metric-value">{quantityText(job.planned_quantity, unit) ?? "Theo thực tế"}</strong></article>
+      <article className="card metric-card"><span className="metric-label">Thợ báo</span><strong className="metric-value">{quantityText(job.actual_quantity, unit) ?? "Chưa có"}</strong></article>
+      <article className="card metric-card"><span className="metric-label">Tính khách</span><strong className="metric-value">{quantityText(job.billable_quantity, unit) ?? "Chưa xác minh"}</strong></article>
+      <article className="card metric-card"><span className="metric-label">{job.billable_amount_vnd != null ? "Thành tiền" : "Thành tiền tạm tính"}</span><strong className="metric-value">{job.billable_amount_vnd != null ? formatVnd(vnd(String(job.billable_amount_vnd))) : estimate ? formatVnd(vnd(estimate)) : "—"}</strong></article>
+    </section>
+    <div className="two-column">
+      <section className="card card-pad"><div className="section-head"><h2>Thông tin</h2></div>
+        <dl className="detail-grid">
+          <div className="detail-item"><dt>Lịch</dt><dd>{formatServiceSchedule(job.scheduled_start)}</dd></div>
+          <div className="detail-item"><dt>Người làm</dt><dd>{job.operator_name ?? "Chưa giao"}{job.work_number && <small className="table-subline">Phiếu việc {job.work_number}</small>}</dd></div>
+          {(job.plate_number || job.machine_name) && <div className="detail-item"><dt>{job.plate_number ? "Xe" : "Máy"}</dt><dd>{job.plate_number ?? job.machine_name}</dd></div>}
+          <div className="detail-item"><dt>Đơn giá</dt><dd>{unitPrice != null ? `${formatVnd(vnd(unitPrice))}/${unit}` : "Nhập khi xác minh"}</dd></div>
+          <div className="detail-item field-full"><dt>Ghi chú</dt><dd>{job.description}</dd></div>
+          {job.compensable_quantity != null && <div className="detail-item"><dt>Tính công cho thợ</dt><dd>{quantityText(job.compensable_quantity, unit)}</dd></div>}
+          {job.receivable_obligation_id && <div className="detail-item"><dt>Công nợ khách</dt><dd><Link className="code-link" href={"/admin/receivables/" + job.receivable_obligation_id}>Mở khoản phải thu</Link></dd></div>}
+        </dl>
+      </section>
+      <aside className="card card-pad command-panel"><h2>Việc cần làm</h2>
+        {actionPanel}
       </aside>
     </div>
   </>;

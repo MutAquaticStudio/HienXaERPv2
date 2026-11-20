@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Banner } from "@astryxdesign/core/Banner";
 import { Step, Stepper } from "@astryxdesign/core/Stepper";
+import { AxPageHead } from "./ax-kit";
 import "./ax.css";
 import "./sales-ax.css";
 
@@ -53,4 +54,13 @@ export function AxBanner({ status, title, description, actions }: { status: "inf
 export function AxTabs({ tabs, active, href, label }: { tabs: { id: string; label: string; count?: number | string }[]; active: string; href: (tab: string) => string; label: string }) {
   return <nav className="sx-tabs" aria-label={label}>{tabs.map((tab) =>
     <Link key={tab.id} href={href(tab.id)} scroll={false} aria-current={tab.id === active ? "page" : undefined}>{tab.label}{tab.count !== undefined && <em>{tab.count}</em>}</Link>)}</nav>;
+}
+
+/** Khung trang form/nhập liệu: tiêu đề kiểu Astryx, câu dẫn, rồi form chức năng (giữ nguyên) trong vùng .sx-form-scope. */
+export function AxFormPage({ crumbs, title, lede, actions, children }: { crumbs: string[]; title: string; lede?: string; actions?: ReactNode; children: ReactNode }) {
+  return <div className="sx-legacy">
+    <AxPageHead crumbs={crumbs} title={title} actions={actions} />
+    {lede && <p className="hx-muted" style={{ margin: "-8px 0 16px" }}>{lede}</p>}
+    <div className="sx-form-scope">{children}</div>
+  </div>;
 }

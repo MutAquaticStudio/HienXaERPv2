@@ -83,8 +83,7 @@ export function AstryxOrderDetailView(props: AxOrderDetailProps) {
           </AxPanel>
           <AxPanel title="Hành động tiếp theo">
             <div className="sx-act">
-              {slots.primary}{slots.secondary}{slots.danger}
-              {slots.notes.map((note, index) => <div key={index}>{note}</div>)}
+              {[...slots.primary, ...slots.secondary, ...slots.danger, ...slots.notes].map((node, index) => node ? <div key={index}>{node}</div> : null)}
               {waiting && <AxTag tone="w">Đơn chờ duyệt: Duyệt hoặc Hủy ở băng phía trên</AxTag>}
             </div>
           </AxPanel>

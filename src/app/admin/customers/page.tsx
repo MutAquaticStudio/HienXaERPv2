@@ -12,6 +12,8 @@ import { BulkPortalAccounts } from "@/components/customers/bulk-portal-accounts"
 import { appOrigin } from "@/lib/auth/app-origin";
 import { loadBulkPortalPlan, type BulkPlan } from "@/lib/auth/bulk-portal";
 import { BulkActionBar, BulkPageCheckbox, BulkRowCheckbox, BulkSelection } from "@/components/lists/bulk-selection";
+import { currentSkin } from "@/lib/skin";
+import { AstryxCustomersView } from "./astryx-view";
 import { BULK_CLEAR, BULK_LIMIT, type BulkFieldChoice } from "@/modules/catalog/bulk";
 
 type CustomerRow = { id: string; code: string; display_name: string; phone: string | null; tier_code: string | null; customer_type: string; active: boolean };
@@ -80,6 +82,17 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
     { field: "payment_terms_days", label: "Hạn thanh toán (ngày)", control: "days" },
   ];
 
+  // Kiểu giao diện Astryx: cùng dữ liệu, bộ lọc và thao tác hàng loạt; chỉ khác lớp trình bày.
+  if ((await currentSkin()) === "astryx") return <AstryxCustomersView rows={rows.map((customer) => {
+      const limit = limits.get(customer.id);
+      const debt = debts.get(customer.id) ?? 0n;
+      return { id: customer.id, code: customer.code, name: customer.display_name, typeLabel: customer.customer_type === "INDIVIDUAL" ? "Cá nhân" : "Doanh nghiệp", phone: customer.phone, tierName: tierName(customer.tier_code),
+        debt: !canReadFinance || !debtComplete ? null : formatVnd(vnd(debt.toString())), debtPositive: debt > 0n, limit: limit == null ? null : formatVnd(vnd(limit)), active: customer.active };
+    })} total={total} branchName={access.branchName} query={{ q: list.q, state: list.state, type, tier }} page={list.page} ids={ids}
+    filters={{ stateOptions: [{ value: "", label: "Tất cả" }, { value: "ACTIVE", label: "Đang hoạt động" }, { value: "INACTIVE", label: "Ngừng giao dịch" }], typeOptions: [{ value: "", label: "Tất cả" }, { value: "BUSINESS", label: "Doanh nghiệp" }, { value: "INDIVIDUAL", label: "Cá nhân" }] }}
+    tiers={tiers} canManage={canManage} canReadFinance={canReadFinance} debtComplete={debtComplete}
+    create={create && <CatalogCreateButton {...create} label="+ Khách hàng" className="hx-btn g" />} bulkPortal={bulkPlan && <BulkPortalAccounts plan={bulkPlan} origin={origin} />}
+    bulkBar={<BulkActionBar kind="customers" pageIds={ids} matchingIds={matchingIds} total={total} fields={bulkFields} activeLabels={{ stop: "Ngừng giao dịch", restart: "Giao dịch lại" }} />} />;
   return <div className="page-stack">
     <header className="page-heading"><div><h1>Khách hàng</h1><p className="lede">Hồ sơ khách hàng tại {access.branchName}. Bấm vào một dòng để xem chi tiết.</p></div>
       {create && <div className="action-cluster"><CatalogCreateButton {...create} label="+ Khách hàng" />{bulkPlan && <BulkPortalAccounts plan={bulkPlan} origin={origin} />}<Link className="button button-secondary" href="/admin/customers/manage?kind=sites">Công trình</Link></div>}

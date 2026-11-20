@@ -53,7 +53,8 @@ async function creditPeople(supabase: Awaited<ReturnType<typeof createServerSupa
  * FB8: an order over the customer's credit is explained in a popup. It opens by itself when "Xác nhận" was stopped by
  * credit (`blocked`); people who may approve see the figures and approve there, others see who can approve it.
  */
-export async function SalesOrderCreditOverride({ orderId, blocked = null }: { orderId: string; blocked?: CreditBlock | null }) {
+export async function SalesOrderCreditOverride({ orderId, blocked = null, variant = "classic" }: { orderId: string; blocked?: CreditBlock | null; variant?: "classic" | "astryx" }) {
+  const ax = variant === "astryx";
   const context = await requireInternalPermission("orders.read");
   const canApprove = context.permissions.has("orders.confirm") && context.permissions.has("finance.ar.adjust");
   const supabase = await createServerSupabase();
@@ -96,7 +97,7 @@ export async function SalesOrderCreditOverride({ orderId, blocked = null }: { or
     return <section className="card card-pad credit-override" aria-label="Đơn vượt hạn mức tín dụng">
       <h2 className="credit-heading">Đơn chưa xác nhận được vì tín dụng</h2>
       <p className="muted">{creditBlockText(blocked)} Bản nháp vẫn được giữ.</p>
-      <FormDialog label="Xem người duyệt" title="Cần duyệt vượt hạn mức" defaultOpen buttonClassName="button button-secondary"
+      <FormDialog label="Xem người duyệt" title="Cần duyệt vượt hạn mức" defaultOpen buttonClassName={ax ? "hx-btn" : "button button-secondary"}
         description={creditBlockText(blocked)}>
         <div className="command-panel">
           <p>Bản nháp đã được lưu. Nhờ một trong những người sau duyệt vượt hạn mức cho đơn này:</p>
@@ -127,7 +128,7 @@ export async function SalesOrderCreditOverride({ orderId, blocked = null }: { or
   return <section className="card card-pad credit-override" aria-label="Đơn vượt hạn mức tín dụng">
     <h2 className="credit-heading">Đơn vượt hạn mức tín dụng</h2>
     <p className="muted">{creditBlockText(reason)} Bạn có quyền duyệt vượt hạn mức cho riêng đơn này.</p>
-    <FormDialog label="Duyệt vượt hạn mức" title="Duyệt vượt hạn mức tín dụng" defaultOpen={!!blocked} buttonClassName="button button-primary"
+    <FormDialog label="Duyệt vượt hạn mức" title="Duyệt vượt hạn mức tín dụng" defaultOpen={!!blocked} buttonClassName={ax ? "hx-btn p" : "button button-primary"}
       description={creditBlockText(reason)}>
       <div className="credit-override credit-dialog">
         {limit !== null && <div className="credit-meter">
