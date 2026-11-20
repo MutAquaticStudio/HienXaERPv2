@@ -12,3 +12,32 @@ body > [data-astryx-theme] { display: contents; }
   --font-family-heading: "Be Vietnam Pro", "Noto Sans", system-ui, sans-serif;
 }
 html[data-skin="astryx"][data-color="dark"] { color-scheme: dark; }
+
+/* ---- Đợt 1: khung quản trị và các thành phần dùng chung (đổi lớp hiển thị, giữ nguyên cấu trúc trang) ---- */
+html[data-skin="astryx"] {
+  --radius: 14px;
+  --radius-sm: 10px;
+  --shadow-sm: 0 1px 2px rgba(16, 34, 58, 0.06), 0 1px 1px rgba(16, 34, 58, 0.03);
+  --shadow: 0 1px 2px rgba(16, 34, 58, 0.05), 0 6px 16px rgba(16, 34, 58, 0.07);
+  --focus-ring: 0 0 0 1px var(--primary), 0 0 0 4px rgba(11, 99, 198, 0.22);
+}
+/* Thanh tiện ích cao hơn, đổ bóng mảnh; menu xanh có chiều sâu, mục đang ở như một tab dính trang. */
+html[data-skin="astryx"] .utility-bar { box-shadow: 0 1px 0 var(--border), 0 4px 12px rgba(16, 34, 58, 0.04); }
+html[data-skin="astryx"] .utility-inner { min-height: 56px; }
+html[data-skin="astryx"]:not([data-color="dark"]) .main-menu { background: linear-gradient(180deg, #0d6ad4 0%, #0a5cb8 100%); box-shadow: inset 0 -1px 0 rgba(4, 30, 64, 0.18); }
+html[data-skin="astryx"] .main-menu .nav-list > .nav-link.active,
+html[data-skin="astryx"] .nav-group-toggle.current { border-radius: 12px 12px 0 0; box-shadow: 0 -2px 8px rgba(4, 30, 64, 0.12); }
+html[data-skin="astryx"] .identity-avatar { width: 36px; height: 36px; font-size: 13px; }
+/* Thẻ, bảng, chip trạng thái. */
+html[data-skin="astryx"] .card { box-shadow: var(--shadow); }
+html[data-skin="astryx"] th { font-size: 13px; letter-spacing: 0.02em; text-transform: none; }
+html[data-skin="astryx"] tbody tr { transition: background-color var(--dur-fast) var(--ease-out); }
+html[data-skin="astryx"] tbody tr:hover { background: var(--row-hover); }
+html[data-skin="astryx"] .status { padding: 3px 11px 3px 9px; font-size: 13px; }
+html[data-skin="astryx"] .status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex: none; }
+/* Nút: nổi nhẹ, xanh lá chỉ cho hành động tiền (button-commerce giữ nguyên). */
+html[data-skin="astryx"]:not([data-color="dark"]) .button-primary { background: linear-gradient(180deg, #0d6ad4, #0a5cb8); box-shadow: 0 1px 2px rgba(10, 74, 150, 0.35); }
+html[data-skin="astryx"]:not([data-color="dark"]) .button-commerce { background: linear-gradient(180deg, #158f54, #11783f); box-shadow: 0 1px 2px rgba(14, 107, 61, 0.35); }
+html[data-skin="astryx"] .button { border-radius: var(--radius-sm); }
+html[data-skin="astryx"] .field input, html[data-skin="astryx"] .field select, html[data-skin="astryx"] .field textarea { border-color: #c7d2df; }
+html[data-skin="astryx"] .list-filters { border-radius: var(--radius); }
