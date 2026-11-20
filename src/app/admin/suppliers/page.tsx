@@ -10,6 +10,8 @@ import { CatalogCreateButton } from "@/modules/catalog/catalog-dialog";
 import { catalogCreateProps } from "@/modules/catalog/editor-data";
 import { BulkActionBar, BulkPageCheckbox, BulkRowCheckbox, BulkSelection } from "@/components/lists/bulk-selection";
 import { BULK_LIMIT, type BulkFieldChoice } from "@/modules/catalog/bulk";
+import { AstryxSuppliersView } from "./astryx-view";
+import { currentSkin } from "@/lib/skin";
 
 type SupplierRow = { id: string; code: string; name: string; phone: string | null; tax_code: string | null; payment_terms_days: number; active: boolean };
 type Query = { q?: string; state?: string; page?: string };
@@ -50,6 +52,13 @@ export default async function SuppliersPage({ searchParams }: { searchParams: Pr
   const matchingIds = total <= ids.length ? ids : matchingResult?.data ? (matchingResult.data as unknown as { id: string }[]).map((row) => row.id) : undefined;
   const bulkFields: BulkFieldChoice[] = [{ field: "payment_terms_days", label: "Hạn thanh toán (ngày)", control: "days" }];
 
+  // Kiểu giao diện Astryx: cùng dữ liệu; nút tạo và thanh thao tác hàng loạt là thành phần Classic hiện có.
+  if ((await currentSkin()) === "astryx") {
+    return <AstryxSuppliersView rows={rows} ids={ids} debts={Object.fromEntries([...debts].map(([key, value]) => [key, value.toString()]))} debtComplete={debtComplete} canManage={canManage} canReadPayables={canReadPayables}
+      canSeePricing={access.permissions.has("purchasing.price.read") || access.permissions.has("purchasing.price.manage")} query={list.q} state={list.state} total={total} page={list.page}
+      createButton={create ? <CatalogCreateButton {...create} label="+ Nhà cung cấp" /> : null}
+      bulkBar={<BulkActionBar kind="suppliers" pageIds={ids} matchingIds={matchingIds} total={total} fields={bulkFields} activeLabels={{ stop: "Ngừng giao dịch", restart: "Giao dịch lại" }} />} />;
+  }
   return <div className="page-stack">
     <header className="page-heading"><div><h1>Nhà cung cấp</h1><p className="lede">Danh bạ nguồn hàng tại {access.branchName}. Bấm tên nhà cung cấp để xem chi tiết.</p></div>
       <div className="action-cluster">

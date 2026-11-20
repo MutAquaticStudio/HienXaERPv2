@@ -1,3 +1,5 @@
+import { AstryxReceivablesView } from "./astryx-view";
+import { currentSkin } from "@/lib/skin";
 import { formatBusinessDate } from "@/lib/core/business-time";
 import Link from "next/link";
 import { randomUUID } from "node:crypto";
@@ -64,9 +66,7 @@ export default async function ReceivablesPage({ searchParams }: { searchParams: 
   const pendingReturns = returnFetched.slice(0, CORE_LIST_PAGE_SIZE);
   const accounts = (accountResult.data ?? []) as Account[];
   const selectedName = selected[0]?.customer_name ?? partyResult.data?.display_name;
-  return <div className="page-stack"><header className="page-heading"><div><h1>Công nợ phải thu</h1><p className="lede">Theo dõi số phải thu còn lại sau các khoản điều chỉnh và thanh toán.</p></div><Link className="button button-secondary" href="/admin/cashbook">Mở sổ quỹ</Link></header><DebtTabs active="/admin/receivables" permissions={access.permissions} />
-    <ActionNotice notice={query.notice} error={query.error} reference={query.payment} />
-    <AutoFilterForm>{customerId && <input type="hidden" name="customer" value={customerId} />}<label>Tìm kiếm<input name="q" defaultValue={list.q} placeholder="Khách, công trình, nguồn" /></label><label>Trạng thái<select name="state" defaultValue={list.state}><option value="">Tất cả còn dư</option><option value="OVERDUE">Quá hạn</option></select></label>{(list.q || list.state || customerId) && <Link className="code-link" href="/admin/receivables">Xóa lọc</Link>}</AutoFilterForm>
+  const customerBlocks = <>
     {customerId && <p className="form-message">Đang xem công nợ của {selectedName ?? "khách hàng đã chọn"}. Chọn các khoản cần thanh toán trước khi ghi thu.</p>}
     {customerId && selectedName && canPost && accounts.length > 0 && <FormDialog label="Ghi thu" title="Ghi thu" size="lg" buttonClassName="button button-primary"
       defaultOpen={!query.notice && !query.error && !query.payment && !query.paymentPage && !query.creditPage && !query.returnPage && !query.page}><PaymentForm actorScope={access.authUserId + ":" + access.branchId} direction="RECEIPT" partyId={customerId} partyName={selectedName} accounts={accounts} obligations={selected.map((item): PaymentTarget => ({ id: item.id, sourceLabel: `${item.source_label} · ${item.site_name ?? "Chưa gắn công trình"}`, dueDate: item.due_date, outstandingAmountVnd: item.outstanding_amount_vnd }))} initialHasNext={selectedFetched.length > CORE_LIST_PAGE_SIZE} defaultEffectiveAt={localNow()} redirectTo={`/admin/receivables?customer=${customerId}`} operationId={randomUUID()} /></FormDialog>}
@@ -93,6 +93,16 @@ export default async function ReceivablesPage({ searchParams }: { searchParams: 
           {pager.list.page > 1 && <Link className="button button-secondary" href={`/admin/receivables?customer=${customerId}&${pager.param}=${pager.list.page - 1}`}>Trang trước</Link>}
           {pager.more && <Link className="button button-secondary" href={`/admin/receivables?customer=${customerId}&${pager.param}=${pager.list.page + 1}`}>Trang sau</Link>}
         </div></nav>)}
+  </>;
+  // Kiểu giao diện Astryx: đầu trang, tab, bộ lọc và bảng dựng lại; các biểu mẫu ghi thu / phân bổ / khoản có (server action) giữ nguyên bên trong thẻ Astryx.
+  if ((await currentSkin()) === "astryx") {
+    return <AstryxReceivablesView rows={rows} customerId={customerId} selectedName={selectedName} q={list.q} state={list.state} page={list.page} hasNext={hasNext} permissions={access.permissions}
+      notice={<ActionNotice notice={query.notice} error={query.error} reference={query.payment} />}>{customerBlocks}</AstryxReceivablesView>;
+  }
+  return <div className="page-stack"><header className="page-heading"><div><h1>Công nợ phải thu</h1><p className="lede">Theo dõi số phải thu còn lại sau các khoản điều chỉnh và thanh toán.</p></div><Link className="button button-secondary" href="/admin/cashbook">Mở sổ quỹ</Link></header><DebtTabs active="/admin/receivables" permissions={access.permissions} />
+    <ActionNotice notice={query.notice} error={query.error} reference={query.payment} />
+    <AutoFilterForm>{customerId && <input type="hidden" name="customer" value={customerId} />}<label>Tìm kiếm<input name="q" defaultValue={list.q} placeholder="Khách, công trình, nguồn" /></label><label>Trạng thái<select name="state" defaultValue={list.state}><option value="">Tất cả còn dư</option><option value="OVERDUE">Quá hạn</option></select></label>{(list.q || list.state || customerId) && <Link className="code-link" href="/admin/receivables">Xóa lọc</Link>}</AutoFilterForm>
+    {customerBlocks}
     <section className="card"><div className="section-head"><h2>{rows.length} khoản còn dư trên trang này</h2><span className="scope-chip">25 / trang</span></div><div className="table-wrap"><table><thead><tr><th>Khách / công trình</th><th>Nguồn</th><th>Phát sinh</th><th>Hạn</th><th>Gốc</th><th>Còn lại</th><th></th></tr></thead><tbody>{rows.map((item) => <tr key={item.id}><td>{item.customer_name}<small className="table-subline">{item.site_name ?? "Chưa gắn công trình"}</small></td><td>{item.source_label}</td><td>{formatBusinessDate(item.recorded_at)}</td><td>{formatBusinessDate(item.due_date)}</td><td className="mono">{formatVnd(vnd(item.original_amount_vnd))}</td><td className="mono"><strong>{formatVnd(vnd(item.outstanding_amount_vnd))}</strong><small className="table-subline">{item.state === "OVERDUE" ? "Quá hạn" : "Còn hạn"}</small></td><td><Link className="code-link" href={`/admin/receivables/${item.id}`}>Chi tiết</Link> · <Link className="code-link" href={`/admin/receivables?customer=${item.customer_id}`}>Ghi thu</Link></td></tr>)}</tbody></table>{!rows.length && <p className="empty-inline">Không có khoản phải thu phù hợp.</p>}</div><ListPager page={list.page} hasNext={hasNext} params={{ q: list.q, state: list.state, customer: customerId }} /></section>
   </div>;
 }

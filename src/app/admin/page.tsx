@@ -16,6 +16,8 @@ import { CASHBOOK_PERMISSIONS } from "@/lib/access/policy";
 import { loadTodayFacts, todayItems } from "@/modules/dashboard/today";
 import { changeAgainst, loadAccountBalances, loadDebtAging, loadDeliveryDay, loadSalesByGroup } from "@/modules/dashboard/overview";
 import { shortVnd } from "@/modules/dashboard/format";
+import { currentSkin } from "@/lib/skin";
+import { AstryxDashboard } from "./astryx-dashboard";
 
 type Quality = "READY" | "INCOMPLETE" | "NOT_APPLICABLE" | "FORBIDDEN" | "UNAVAILABLE";
 type Metric = { value_vnd?: string | number | null; value?: string | number | null; quality: Quality };
@@ -275,6 +277,10 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
   const marginText = snapshot.operating_margin_bps.quality === "READY" && snapshot.operating_margin_bps.value != null
     ? `${(Number(snapshot.operating_margin_bps.value) / 100).toLocaleString("vi-VN")}%` : null;
   const keep = { customer: query.customer, site: query.site, sales: query.sales, activity: query.activity, chart: query.chart };
+
+  if ((await currentSkin()) === "astryx") return <AstryxDashboard access={access} query={query} from={from} to={to} quick={quick} snapshot={snapshot} previous={previous}
+    snapshotFailed={Boolean(snapshotResult.error || !snapshotResult.data)} args={dashboardArgs} filterCount={filterCount}
+    filters={<Suspense fallback={<p className="muted">Đang tải bộ lọc...</p>}><DashboardFilters access={access} query={query} from={from} to={to} /></Suspense>} />;
 
   return <>
     <header className="page-heading dash-heading" data-uat-dashboard-request={typeof query.uatTimingNonce === "string" && /^[a-zA-Z0-9-]{1,80}$/.test(query.uatTimingNonce) ? query.uatTimingNonce : ""}>

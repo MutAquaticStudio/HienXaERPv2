@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { AstryxDispatchView } from "./astryx-view";
+import { currentSkin } from "@/lib/skin";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { requireInternalPermission } from "@/lib/access/context";
 import { CORE_LIST_PAGE_SIZE, parseCoreListQuery } from "@/lib/core-list";
@@ -95,6 +97,20 @@ export default async function DispatchPage({ searchParams }: { searchParams: Pro
       versions: Object.fromEntries(((versionResult.data ?? []) as { id: string; version: number }[]).map((row) => [row.id, row.version])),
       stopMinutes: Number((settingsResult.data as { stop_minutes?: number } | null)?.stop_minutes ?? 60) || 60,
     };
+  }
+  // Kiểu giao diện Astryx: cùng dữ liệu và thành phần chức năng, giao diện dựng lại; Classic giữ nguyên bên dưới.
+  if ((await currentSkin()) === "astryx") {
+    const dayBoard = dayData ? <DispatchDayBoard day={day} board={dayData as DispatchDay} canAssign={access.permissions.has("delivery.assign")} assign={assign} fieldLabels={(fieldLabels as Record<string, string> | null) ?? undefined}
+      notice={firstValue(query.dispatched) || undefined} error={firstValue(query.error) || undefined} />
+      : <p className="form-message" role="alert">Chưa tải được lịch giao theo tài xế. Hãy tải lại trang.</p>;
+    return <AstryxDispatchView q={firstValue(query.q)} dayBoard={dayBoard} fleetMap={<FleetMap initial={fleet as FleetPosition[]} />}
+      canManage={access.permissions.has("roles.manage")} canAssign={access.permissions.has("delivery.assign")} waitingCount={waitingIds.length}
+      columns={columns.map((column) => {
+        // Như Classic: phiếu đã có ở khung "Chờ điều phối" phía trên không lặp lại ở cột.
+        const shownAbove = column.bucket === "planned" && !firstValue(query.q) ? column.rows.filter((row) => waitingSet.has(row.id)).length : 0;
+        return { title: column.title, bucket: column.bucket, rows: shownAbove ? column.rows.filter((row) => !waitingSet.has(row.id)) : column.rows, hasNext: column.hasNext, page: column.page,
+          prevHref: column.page > 1 ? pageHref(query, column.pageKey, column.page - 1) : null, nextHref: column.hasNext ? pageHref(query, column.pageKey, column.page + 1) : null, shownAbove };
+      })} />;
   }
   return <div className="page-stack">
     <header className="page-heading"><div><h1>Điều phối giao hàng</h1><p className="lede">Phân công và theo dõi tiến độ giao hàng.</p></div>{access.permissions.has("roles.manage") && <div className="action-cluster"><Link className="button button-secondary" href="/admin/dispatch/resources?kind=vehicles">Xe</Link><Link className="button button-secondary" href="/admin/dispatch/resources?kind=machines">Máy / thiết bị</Link></div>}</header>

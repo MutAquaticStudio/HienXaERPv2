@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { AstryxDeliveryFlowView } from "../../astryx-view";
+import { AxCard } from "@/components/astryx/fin-kit";
+import { currentSkin } from "@/lib/skin";
 import { notFound } from "next/navigation";
 import { SplitDeliveryForm } from "@/components/delivery/split-delivery-form";
 import { requireInternalPermission } from "@/lib/access/context";
@@ -32,6 +35,20 @@ export default async function SplitDeliveryPage({ params }: Props) {
   const canSplit = ["PLANNED", "ASSIGNED"].includes(delivery.execution_state) && lines.length > 0 && access.permissions.has("delivery.create");
   const isDirect = lines.length > 0 && lines.every((line) => line.source_mode === "SUPPLIER_DIRECT");
 
+  // Kiểu giao diện Astryx: khung dựng lại; biểu mẫu tách phiếu (thành phần chức năng) giữ nguyên.
+  if ((await currentSkin()) === "astryx") {
+    return <AstryxDeliveryFlowView number={delivery.delivery_number} title={`Tách phiếu giao ${delivery.delivery_number}`} subtitle={`${delivery.customer_name_snapshot} · ${delivery.site_name_snapshot}`} orderId={delivery.sales_order_id} deliveryId={delivery.id}>
+      {canSplit ? <SplitDeliveryForm intro={<AxCard label="Giới thiệu tách phiếu"><p style={{ margin: 0 }}>Chia hàng của phiếu này cho 2–5 chuyến. Phiếu {delivery.delivery_number} sẽ được hủy, các phiếu mới ghi “Tách từ {delivery.delivery_number}”.</p>
+        <p className="hx-muted">Hàng giữ chỗ trong kho chuyển sang các phiếu mới trong cùng một lần ghi. Đơn bán, công nợ và mã thanh toán không đổi.
+          {delivery.execution_state === "ASSIGNED" && " Phân công hiện tại sẽ được gỡ và người giao nhận thông báo."}</p></AxCard>} deliveryId={delivery.id} version={delivery.version} allowAssign={!isDirect}
+        defaultStart={delivery.scheduled_at ? businessInputValue(delivery.scheduled_at) : ""}
+        lines={lines.map((line) => ({ id: line.id, name: line.material_name_snapshot, planned: String(line.planned_base_quantity), unit: line.base_uom_symbol }))}
+        employees={(employeeResult.data ?? []).map((employee) => ({ id: employee.id, label: employee.display_name }))}
+        vehicles={((vehicleResult.data ?? []) as Vehicle[]).map((vehicle) => ({ id: vehicle.vehicle_id, label: `${vehicle.plate_number}${vehicleStatusLabel(vehicle)}` }))} />
+        : <AxCard title="Không tách được phiếu này"><p style={{ margin: 0 }}>{!access.permissions.has("delivery.create") ? "Bạn cần quyền lập phiếu giao để tách phiếu."
+          : `Phiếu đang ở trạng thái “${deliveryStateLabel(delivery.execution_state)}”. Chỉ tách được phiếu chưa lấy hàng lên xe.`}</p></AxCard>}
+    </AstryxDeliveryFlowView>;
+  }
   return <>
     <header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/deliveries", label: "Phiếu giao" }} /><h1>Tách phiếu giao {delivery.delivery_number}</h1>
       <p className="lede">{delivery.customer_name_snapshot} · {delivery.site_name_snapshot}</p></div></header>

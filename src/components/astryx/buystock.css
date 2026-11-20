@@ -1,0 +1,51 @@
+/* Bộ giao diện Astryx dùng chung cho nhóm Mua hàng, Kho, Vật tư (class bs-*, nằm trong .ax-root, dùng token của ax.css). */
+.ax-root .bs-layout{display:flex;gap:20px;align-items:flex-start}
+.ax-root .bs-main{flex:1;min-width:0}
+.ax-root .bs-filters{display:grid;gap:12px}
+.ax-root .bs-filters .hx-label{display:grid;gap:4px}
+.ax-root .bs-filters .hx-in{width:100%;font-family:inherit}
+.ax-root .bs-scroll{overflow-x:auto}
+.ax-root .bs-table{width:100%;border-collapse:collapse;font-size:14px}
+.ax-root .bs-table th{height:44px;padding:0 16px;text-align:left;background:var(--hx-surface-2);border-bottom:1px solid var(--hx-line);font-size:13px;font-weight:700;color:var(--hx-ink-2);letter-spacing:.01em;white-space:nowrap}
+.ax-root .bs-table td{padding:10px 16px;border-top:1px solid var(--hx-line);vertical-align:middle}
+.ax-root .bs-table tbody tr:first-child td{border-top:0}
+.ax-root .bs-table tbody tr:hover{background:var(--hx-hover)}
+.ax-root .bs-table th.hx-num,.ax-root .bs-table td.hx-num{text-align:right}
+.ax-root .bs-table tr.bs-muted{opacity:.6}
+.ax-root .bs-table tr.bs-group td{background:var(--hx-surface-2);font-weight:700;color:var(--hx-ink)}
+.ax-root .bs-table tfoot td{background:var(--hx-surface-2);font-weight:700;border-top:1px solid var(--hx-line)}
+.ax-root .bs-table a.hx-code{text-decoration:none}
+.ax-root .bs-sub{display:block;font-size:13px;color:var(--hx-ink-2);font-weight:400;line-height:1.3}
+.ax-root .bs-panel{overflow:hidden;margin-bottom:16px}
+.ax-root .bs-panel>.bs-body{padding:16px}
+.ax-root .bs-panel.warn{border-color:#F8DFAE;background:#FFFBF2}
+.ax-root .bs-phead{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--hx-line)}
+.ax-root .bs-phead h2{margin:0;font-size:16px;font-weight:700}
+.ax-root .bs-phead p{margin:2px 0 0;font-size:13px;color:var(--hx-ink-2)}
+.ax-root .bs-facts{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.ax-root .bs-fact{flex:1;min-width:180px;padding:14px 16px}
+.ax-root .bs-fact b{display:block;font-size:15.5px;font-weight:700;margin:3px 0 1px}
+.ax-root .bs-two{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:flex-start}
+.ax-root .bs-two.wide{grid-template-columns:minmax(0,1fr) 400px}
+.ax-root .bs-kv{display:flex;justify-content:space-between;gap:12px;padding:6px 0;font-size:14.5px}
+.ax-root .bs-kv.big{font-size:17px;font-weight:700;border-top:1px solid var(--hx-line);margin-top:6px;padding-top:10px}
+.ax-root .bs-dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px 24px;margin:0}
+.ax-root .bs-dl dt{font-size:13px;font-weight:600;color:var(--hx-ink-2);margin:0}
+.ax-root .bs-dl dd{margin:2px 0 0;font-size:14.5px}
+.ax-root .bs-steps{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
+.ax-root .bs-steps li{display:flex;align-items:center;gap:10px;font-size:14.5px;color:var(--hx-ink-2)}
+.ax-root .bs-steps li i{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--hx-line-2);background:#fff;flex:none}
+.ax-root .bs-steps li.done i{background:var(--hx-blue);border-color:var(--hx-blue)}
+.ax-root .bs-steps li.at{color:var(--hx-ink);font-weight:700}
+.ax-root .bs-steps li.at i{border-color:var(--hx-blue);box-shadow:0 0 0 3px rgba(11,99,198,.18)}
+.ax-root .bs-legacy .field,.ax-root .bs-legacy .command-panel{margin:0}
+.ax-root .bs-legacy{display:flex;flex-direction:column;gap:12px}
+.ax-root .bs-bar{display:grid;gap:4px;min-width:140px}
+.ax-root .bs-bar small{font-size:13px;color:var(--hx-ink-2)}
+.ax-root .bs-inline{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ax-root .bs-searchbar{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px}
+.ax-root .bs-searchbar .hx-label{display:grid;gap:4px}
+.ax-root .bs-searchbar .hx-in{font-family:inherit;min-width:260px}
+.ax-root .bs-foot{padding:12px 16px;border-top:1px solid var(--hx-line);font-size:13.5px;color:var(--hx-ink-2);background:var(--hx-surface-2)}
+@media (max-width:1100px){.ax-root .bs-layout{flex-direction:column}.ax-root .bs-layout .hx-side{width:100%}.ax-root .bs-two,.ax-root .bs-two.wide{grid-template-columns:1fr}}
+.ax-root .bs-formwrap{max-width:1180px}

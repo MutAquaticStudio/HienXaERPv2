@@ -1,3 +1,5 @@
+import { AstryxWorkEarningsView } from "./astryx-view";
+import { currentSkin } from "@/lib/skin";
 import { formatPortalMoney as money } from "@/modules/portal/money";
 import { formatBusinessDate } from "@/lib/core/business-time";
 import { earningStateLabel, earningKindLabel } from "@/modules/portal/presentation";
@@ -47,6 +49,8 @@ export default async function WorkEarningsPage() {
   const week = attendanceWeek(monday, today, (recordsResult.data ?? []) as DayRecord[], ((plannedResult.data ?? []) as Array<{ work_date: string }>).map((row) => row.work_date));
   const lateNotes = week.days.filter((day) => day.note);
   const [year, mon] = today.split("-");
+  if ((await currentSkin()) === "astryx") return <AstryxWorkEarningsView monthLabel={`Tháng ${Number(mon)}/${year}`} month={month} week={week} today={today} notes={lateNotes}
+    payslips={payslips.map((slip) => ({ ...slip, left: slip.earning_event_id ? outstanding.get(slip.earning_event_id) : undefined }))} />;
   return (
     <div className={styles.page}>
       <header className={styles.earningHead}>

@@ -1,3 +1,5 @@
+import { AstryxWorkAttendanceView } from "./astryx-view";
+import { currentSkin } from "@/lib/skin";
 import { requireInternalAccess } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import styles from "@/components/portal/portal.module.css";
@@ -54,6 +56,11 @@ export default async function WorkAttendancePage() {
     return shift ? `${shift.name} · ${formatShiftTime(shift.start_time)}–${formatShiftTime(shift.end_time)}` : "Không theo ca";
   };
 
+  const heading = open ? (open.work_date === day ? `Đang trong ca từ ${formatClock(open.clock_in_at)}` : openShiftHeading(open, day)) : todayShifts.length ? shiftLabel(todayShifts[0].shift_id) : "Hôm nay chưa xếp ca";
+  const hint = open ? (open.work_date === day ? "Bấm “Ra ca” khi kết thúc. Văn phòng duyệt và chốt ngày công cuối kỳ." : "Bấm “Ra ca” để kết thúc ca cũ rồi mới vào ca mới. Giờ ra ca sai thì báo văn phòng sửa.") : "Bấm “Vào ca” khi bắt đầu làm việc. Có thể vào sớm tối đa theo cài đặt của chi nhánh.";
+  if ((await currentSkin()) === "astryx") return <AstryxWorkAttendanceView heading={heading} hint={hint} clockedIn={Boolean(open)} requireLocation={Boolean(settingsResult.data?.require_location)}
+    forgotten={forgotten ?? null} stats={{ workedDays, leaveDays, lateCount, overtime }} today={day} monthRecords={monthRecords}
+    week={Array.from({ length: 7 }, (_, index) => addDays(monday, index)).map((date) => ({ date, planned: assignments.filter((item) => item.work_date === date).map((item) => shiftLabel(item.shift_id)), clocked: records.filter((record) => record.work_date === date) }))} />;
   return (
     <div className={styles.page}>
       <header className={styles.hero}>

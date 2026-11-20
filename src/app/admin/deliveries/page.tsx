@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { AstryxDeliveriesView } from "./astryx-view";
+import { currentSkin } from "@/lib/skin";
 import { ListPager } from "@/components/ui/list-pager";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ExpandableRows } from "@/components/lists/expandable-rows";
@@ -48,6 +50,12 @@ export default async function DeliveriesPage({ searchParams }: { searchParams: P
   const canSplit = access.permissions.has("delivery.assign") && access.permissions.has("delivery.create");
   const who = (row: Delivery) => row.external_carrier_name ?? (row.vehicle_id ? vehicleMap.get(row.vehicle_id) ?? "Đã phân xe" : "Chưa phân");
   const isFiltered = Boolean(list.q || list.state);
+  // Kiểu giao diện Astryx: cùng dữ liệu, giao diện dựng lại; Classic giữ nguyên bên dưới.
+  if ((await currentSkin()) === "astryx") {
+    return <AstryxDeliveriesView rows={deliveries.map((row) => ({ id: row.id, sales_order_id: row.sales_order_id, delivery_number: row.delivery_number, customer_name_snapshot: row.customer_name_snapshot, site_name_snapshot: row.site_name_snapshot,
+      execution_state: row.execution_state, result_kind: row.result_kind, scheduled_at: row.scheduled_at, who: who(row) }))} lines={lines} states={STATES} current={list.state}
+      counts={STATES.map((_, index) => String(countText(counts[index].data) ?? ""))} q={list.q} total={total ?? undefined} page={list.page} hasNext={hasNext} canSplit={canSplit} canCancel={canCancel} isFiltered={isFiltered} />;
+  }
   return <div className="page-stack">
     <header className="page-heading"><div><h1>Phiếu giao</h1><p className="lede">Kế hoạch, thực giao và kết quả của từng phiếu. Mũi tên để xem nhanh hàng trên phiếu.</p></div></header>
     <div className="list-layout">

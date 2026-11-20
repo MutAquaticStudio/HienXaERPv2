@@ -1,3 +1,5 @@
+import { AstryxWorkHomeView } from "./astryx-view";
+import { currentSkin } from "@/lib/skin";
 import { jobStateLabel, directionsHref, telHref } from "@/modules/portal/presentation";
 import Link from "next/link";
 import { ChevronRight, Clock3, Navigation, Phone, PlusCircle, UsersRound } from "lucide-react";
@@ -71,6 +73,17 @@ export default async function WorkHomePage({ searchParams }: { searchParams: Pro
   const initials = snapshot.employee.display_name.trim().split(/\s+/).slice(-2).map((part) => part[0]?.toLocaleUpperCase("vi-VN")).join("");
   const dateLabel = new Intl.DateTimeFormat("vi-VN", { ...zone, weekday: "long", day: "2-digit", month: "2-digit" }).format(now);
 
+  // Kiểu giao diện Astryx: cùng dữ liệu, chỉ khác cách dựng (concept "Hôm nay"); Classic giữ nguyên bên dưới.
+  if ((await currentSkin()) === "astryx") {
+    const heading = shift ? (shift.open ? openShiftHeading(shift.open, today) : shift.done ? `Đã ra ca lúc ${formatClock(shift.done.out)}` : "Chưa vào ca") : "";
+    return <AstryxWorkHomeView notice={query.notice} name={snapshot.employee.display_name}
+      dateLabel={dateLabel.charAt(0).toLocaleUpperCase("vi-VN") + dateLabel.slice(1)}
+      shift={shift ? { heading, sub: shift.open && shift.open.work_date !== today ? "Bấm “Ra ca” để kết thúc ca cũ trước khi vào ca mới." : shift.shift ?? "Không theo ca",
+        clockedIn: Boolean(shift.open), requireLocation: shift.requireLocation, canClock: !shift.done || Boolean(shift.open) } : null}
+      current={current} rest={rest} later={later}
+      dispatch={dispatch ? { summary: summaryLine(dispatch), declined: dispatch.declined, short: dispatch.short } : null}
+      poolHint={poolCount > 0 ? (deliveryCount > 0 ? `Có ${deliveryCount} phiếu giao chờ người nhận${snapshot.pool.length ? ` và ${snapshot.pool.length} việc khác` : ""}` : `Có ${snapshot.pool.length} việc mới có thể nhận`) : null} />;
+  }
   return (
     <div className={styles.page}>
       {query.notice === "work-unavailable" && <p className={styles.status} role="status">Công việc đã chuyển người phụ trách hoặc bạn không còn quyền mở. Hãy dùng danh sách công việc hiện tại hoặc liên hệ điều phối.</p>}

@@ -2,6 +2,8 @@ import type { CSSProperties, ReactNode } from "react";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { cellText, centerTotals, loadCenterReport, previousPeriod, type CenterColumn, type CenterReport, type CenterResult } from "@/modules/reports/center";
 import { reportFileBase } from "@/modules/reports/export-table";
+import { currentSkin } from "@/lib/skin";
+import { AstryxReportCenter } from "./astryx-report-center";
 import { dayText, PeriodFilters, periodLabel, ReportEmpty, ReportFigures, ReportHubShell, reportNavItems, type Period } from "./report-hub";
 
 export { presets } from "./report-hub";
@@ -91,6 +93,9 @@ export async function ReportCenterView({ access, report, filters, today, notice 
   if (filters.warehouse) exportParams.set("warehouse", filters.warehouse);
   const figures = result.kpis.map((kpi) => ({ label: kpi.label, kind: kpi.kind, value: kpi.value, risingIsBad: RISING_IS_BAD.has(kpi.label),
     previous: previous ? previous.kpis.find((item) => item.label === kpi.label)?.value ?? null : undefined }));
+  if ((await currentSkin()) === "astryx") return <AstryxReportCenter report={report} result={result} figures={figures} compareLabel={report.asOfToday ? undefined : periodLabel(before)} navItems={reportNavItems(access.permissions)}
+    period={period} exportHref={`/api/reports/center?${exportParams.toString()}`} fileName={reportFileBase(title, report.asOfToday ? undefined : filters.from, filters.to)} today={today} notice={notice}
+    warehouses={warehouses.data ?? []} warehouse={filters.warehouse} />;
   return <ReportHubShell title={title} hint={report.hint} current={report.key} items={reportNavItems(access.permissions)} period={period}
     exportHref={`/api/reports/center?${exportParams.toString()}`} fileName={reportFileBase(title, report.asOfToday ? undefined : filters.from, filters.to)}
     filters={<PeriodFilters report={report.key} mode={report.asOfToday ? "none" : "range"} period={period} today={today}

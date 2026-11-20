@@ -1,3 +1,5 @@
+import { AstryxWorkPoolView } from "./astryx-view";
+import { currentSkin } from "@/lib/skin";
 import { workKindLabel } from "@/modules/portal/presentation";
 import Link from "next/link";
 
@@ -8,6 +10,7 @@ import { getWorkerDeliveryPool, getWorkerPortalSnapshot } from "@/modules/portal
 
 export default async function WorkPoolPage() {
   const [snapshot, deliveries] = await Promise.all([getWorkerPortalSnapshot(), getWorkerDeliveryPool()]);
+  if ((await currentSkin()) === "astryx") return <AstryxWorkPoolView deliveries={deliveries} jobs={snapshot.pool} />;
   const empty = !snapshot.pool.length && !deliveries.length;
   return (
     <div className={styles.page}>

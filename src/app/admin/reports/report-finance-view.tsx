@@ -10,6 +10,9 @@ import { reportQualityLabel } from "@/modules/finance/presentation";
 import { reportFileBase } from "@/modules/reports/export-table";
 import { financeColumns, FINANCE_REPORTS, type FinanceKind } from "@/modules/reports/finance-table";
 import { loadFixedReport } from "@/modules/reports/server";
+import { currentSkin } from "@/lib/skin";
+import { AstryxFinanceReport } from "./astryx-report-center";
+import { AxPeriodFilters } from "./astryx-report-hub";
 import { PeriodFilters, periodLabel, ReportEmpty, ReportFigures, ReportHubShell, reportNavItems, type Period } from "./report-hub";
 
 type Access = { branchId: string; permissions: ReadonlySet<string> };
@@ -59,6 +62,17 @@ export async function FinanceReportView({ access, kind, period, today, query, no
   const ready = report.quality === "READY";
   const emptyText = kind === "receivables" ? `Không có khoản phải thu nào còn mở đến hết ${formatBusinessDate(asOf)}.`
     : kind === "payables" ? `Không có khoản phải trả nào còn mở đến hết ${formatBusinessDate(asOf)}.` : `Không có chi phí đã duyệt nào từ ${periodLabel(period).replace(" – ", " đến ")}.`;
+
+  if ((await currentSkin()) === "astryx") return <AstryxFinanceReport kind={kind} navItems={reportNavItems(access.permissions)} period={period} today={today}
+    exportHref={`/api/reports/export?${exportParams.toString()}`} fileName={reportFileBase(FINANCE_REPORTS[kind].label, kind === "expenses" ? period.from : undefined, period.to)}
+    filters={<AxPeriodFilters report={kind} mode={kind === "expenses" ? "range" : "asOf"} period={period} today={today}
+      extra={<>{canFilterCustomer && <ReportCustomerFilter key={`${kind}:${customerId ?? ""}:${customerSearch}`} report={kind} initialSearch={customerSearch} initialCustomer={customerId ?? ""} initialOptions={customerOptions} />}
+        {kind === "expenses" && <label>Hoạt động<select name="activity" defaultValue={query.activity ?? ""}><option value="">Tất cả</option>{ACTIVITIES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>}</>}
+      note={notice ? <p className="report-filter-note" role="status">{notice}</p> : undefined} />}
+    scopeText={report.scopeText} qualityNote={ready ? undefined : `${reportQualityLabel(report.quality)}: chưa đủ dữ liệu để tính số tiền trong phạm vi này.`}
+    figure={{ label: report.totalLabel, kind: "money", value: report.totalVnd }} chart={chart} rows={rows} totalVnd={report.totalVnd} allPages={allPages} page={page}
+    emptyText={ready ? emptyText : "Chưa có số liệu sẵn sàng trong phạm vi này."} emptyPeriod={kind === "expenses" ? period : undefined} formatDate={formatBusinessDate}
+    pager={kind !== "expenses" ? <ListPager page={page} hasNext={report.hasNext} params={{ report: kind, from: period.from, to: period.to, customer: customerId, activity: query.activity, cutoff }} /> : null} />;
 
   return <ReportHubShell title={`${FINANCE_REPORTS[kind].label}`} hint={FINANCE_REPORTS[kind].hint} current={kind} items={reportNavItems(access.permissions)} period={period}
     exportHref={`/api/reports/export?${exportParams.toString()}`} fileName={reportFileBase(FINANCE_REPORTS[kind].label, kind === "expenses" ? period.from : undefined, period.to)}

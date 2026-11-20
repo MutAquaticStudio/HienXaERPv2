@@ -1,0 +1,212 @@
+/* ===== Cổng thợ kiểu Astryx (nhóm 6) =====
+   Mọi màu lấy từ biến --portal-* (src/components/portal/portal.module.css) nên bản sáng và bản tối (D84) đổi theo thiết bị.
+   Nút ≥ 52px, chữ ≥ 13px, menu dưới 64px; từ 800px menu dọc bên trái (UX-800). Tiền tố wx- để không đụng Classic. */
+.wx-root { --wx-nav: 64px; display: block; font-family: "Be Vietnam Pro", "Noto Sans", system-ui, sans-serif; font-size: 15px; line-height: 1.4; }
+.wx-root *, .wx-root *::before, .wx-root *::after { box-sizing: border-box; }
+.wx-root h1, .wx-root h2, .wx-root h3, .wx-root p { margin: 0; }
+.wx-root a { color: inherit; text-decoration: none; }
+
+/* ---------- Khung ---------- */
+.wx-side { display: none; }
+.wx-col { min-width: 0; }
+.wx-top { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 58px; padding: env(safe-area-inset-top) 12px 0 16px; margin-top: 0; color: var(--portal-on-bar); background: var(--portal-bar); box-shadow: 0 1px 0 rgb(255 255 255 / 14%), 0 2px 10px rgb(var(--portal-shadow-rgb) / 18%); box-sizing: content-box; }
+.wx-top-id { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.wx-mark { flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; color: var(--portal-bar); background: var(--portal-on-bar); font-weight: 800; font-size: 14px; box-shadow: 0 2px 6px rgb(0 0 0 / 18%); }
+.wx-mark-logo { padding: 3px; object-fit: contain; background: var(--portal-media-backing); }
+.wx-brand { display: grid; line-height: 1.15; min-width: 0; }
+.wx-brand b { font-size: 17px; font-weight: 800; letter-spacing: .02em; }
+.wx-brand small { color: var(--portal-muted); font-size: 13px; font-weight: 500; }
+.wx-top .wx-brand small { color: var(--portal-on-bar-muted); }
+.wx-top-acts { display: flex; align-items: center; gap: 6px; flex: none; }
+.wx-top-ib { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; color: var(--portal-on-bar); }
+.wx-top-ib:hover { background: var(--portal-bar-control); }
+.wx-top-out { display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 12px; border: 1px solid rgb(255 255 255 / 40%); border-radius: 10px; color: var(--portal-on-bar); background: transparent; font: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; }
+.wx-top-out:hover { background: var(--portal-bar-control); }
+.wx-main { width: min(100%, 72rem); margin: 0 auto; padding: 16px 16px calc(var(--wx-nav) + 24px + env(safe-area-inset-bottom)); }
+.wx-main:focus { outline: none; }
+
+.wx-bottom { position: fixed; z-index: 30; inset: auto 0 0; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); height: calc(var(--wx-nav) + env(safe-area-inset-bottom)); padding: 0 max(2px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(2px, env(safe-area-inset-left)); background: var(--portal-surface); border-top: 1px solid var(--portal-border); box-shadow: 0 -6px 20px rgb(var(--portal-shadow-rgb) / 8%); }
+.wx-nav-link { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 0; min-height: 64px; padding: 0 2px; color: var(--portal-muted); font-size: 13px; font-weight: 600; white-space: nowrap; border-radius: 10px; }
+.wx-nav-link.on { color: var(--portal-primary-text); font-weight: 700; }
+.wx-bottom .wx-nav-link.on::before { content: ""; position: absolute; top: -1px; left: 24%; right: 24%; height: 3px; border-radius: 0 0 4px 4px; background: var(--portal-primary); }
+.wx-nav-badge { position: absolute; top: 7px; left: calc(50% + 6px); min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; display: grid; place-items: center; color: #1c1100; background: var(--portal-warning-mark); border: 2px solid var(--portal-surface); box-sizing: content-box; font-size: 12px; font-weight: 800; line-height: 1; }
+
+@media (min-width: 800px) {
+  .wx-root { display: grid; grid-template-columns: 248px minmax(0, 1fr); }
+  .wx-side { position: sticky; top: 0; align-self: start; height: 100dvh; display: flex; flex-direction: column; gap: 16px; padding: 16px 12px; background: var(--portal-surface); border-right: 1px solid var(--portal-border); }
+  .wx-side-brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 12px; border-bottom: 1px solid var(--portal-border); }
+  .wx-side-brand .wx-mark { color: var(--portal-on-primary); background: var(--portal-primary-fill); }
+  .wx-side nav { display: grid; gap: 4px; }
+  .wx-side .wx-nav-link { flex-direction: row; justify-content: flex-start; gap: 12px; min-height: 52px; padding: 0 14px; font-size: 15px; border-radius: 12px; }
+  .wx-side .wx-nav-link:hover { background: var(--portal-surface-soft); }
+  .wx-side .wx-nav-link.on { background: var(--portal-primary-soft); }
+  .wx-side .wx-nav-badge { position: static; margin-left: auto; border: 0; }
+  .wx-bottom { display: none; }
+  .wx-main { padding-bottom: 40px; }
+  /* Màn rộng: hai nút Tin nhắn + Đăng xuất nền trắng viền xám (UX-FB18-001). */
+  .wx-top { margin: 0; padding: 0 24px; color: var(--portal-text); background: var(--portal-surface); box-shadow: 0 1px 0 var(--portal-border); }
+  .wx-top-id { visibility: hidden; }
+  .wx-top-ib, .wx-top-out { color: var(--portal-text); background: var(--portal-surface); border: 1px solid var(--portal-border-strong); }
+  .wx-top-out:hover, .wx-top-ib:hover { background: var(--portal-surface-soft); }
+}
+
+/* ---------- Trang, tiêu đề, thẻ ---------- */
+.wx-page { display: grid; gap: 14px; align-content: start; }
+.wx-page.cols { gap: 14px; }
+@media (min-width: 800px) { .wx-page.cols { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); } .wx-page.cols > .wx-span { grid-column: 1 / -1; } }
+.wx-head { display: flex; align-items: center; gap: 12px; }
+.wx-head > div { flex: 1; min-width: 0; }
+.wx-head h1 { font-size: 22px; font-weight: 800; letter-spacing: -.01em; line-height: 1.2; }
+.wx-head p { margin-top: 2px; color: var(--portal-muted); font-size: 14px; }
+.wx-back { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: var(--portal-text); background: var(--portal-surface); border: 1px solid var(--portal-border); box-shadow: var(--portal-shadow); }
+.wx-card { padding: 16px; border: 1px solid var(--portal-border); border-radius: 16px; color: var(--portal-text); background: var(--portal-surface); box-shadow: var(--portal-shadow); }
+.wx-card.flush { padding: 0; overflow: hidden; }
+.wx-card > h2, .wx-card-head h2 { font-size: 17px; font-weight: 700; letter-spacing: -.005em; }
+.wx-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.wx-card > h2 { margin-bottom: 10px; }
+.wx-hint, .wx-sub { color: var(--portal-muted); font-size: 14px; }
+.wx-lbl { color: var(--portal-muted); font-size: 13px; font-weight: 600; }
+.wx-num { font-variant-numeric: tabular-nums; }
+.wx-notice { display: block; }
+.wx-chip { display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 11px; border-radius: 999px; font-size: 13.5px; font-weight: 700; white-space: nowrap; color: var(--portal-primary-text); background: var(--portal-primary-soft); }
+.wx-chip.s { color: var(--portal-success); background: var(--portal-success-soft); }
+.wx-chip.w { color: var(--portal-warning); background: var(--portal-warning-soft); }
+.wx-chip.e { color: var(--portal-danger); background: var(--portal-danger-soft); }
+.wx-chip.g { color: var(--portal-muted); background: var(--portal-surface-soft); }
+
+/* ---------- Nút (≥ 52px) ---------- */
+.wx-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; padding: 0 18px; border: 1.5px solid transparent; border-radius: 14px; font: inherit; font-size: 16.5px; font-weight: 700; white-space: nowrap; cursor: pointer; text-align: center; }
+.wx-btn.lg { min-height: 56px; font-size: 17.5px; border-radius: 16px; }
+.wx-btn.block { display: flex; width: 100%; }
+.wx-btn.p { color: var(--portal-on-primary); background: var(--portal-primary-fill); box-shadow: 0 6px 14px rgb(var(--portal-glow-primary) / 30%); }
+.wx-btn.g { color: var(--portal-on-primary); background: var(--portal-success-fill); box-shadow: 0 8px 16px rgb(var(--portal-glow-success) / 30%); }
+.wx-btn.o { color: var(--portal-primary-text); background: var(--portal-surface); border-color: var(--portal-border-strong); }
+.wx-btn.d { color: var(--portal-danger); background: var(--portal-surface); border-color: var(--portal-danger-mark); }
+.wx-btn:focus-visible, .wx-nav-link:focus-visible, .wx-top-ib:focus-visible, .wx-top-out:focus-visible { outline: 3px solid var(--portal-primary); outline-offset: 2px; }
+.wx-actions { display: grid; gap: 10px; }
+@media (min-width: 560px) { .wx-actions.row { grid-auto-flow: column; grid-auto-columns: 1fr; } }
+
+/* ---------- Hôm nay ---------- */
+.wx-greet { display: flex; align-items: center; gap: 12px; }
+.wx-greet > div:last-child { flex: 1; min-width: 0; }
+.wx-greet p { color: var(--portal-muted); font-size: 14px; }
+.wx-greet h1 { font-size: 22px; font-weight: 800; letter-spacing: -.01em; }
+.wx-shift { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; }
+.wx-shift > .wx-ico { grid-row: span 1; }
+.wx-shift > div:nth-child(2) { display: grid; gap: 2px; }
+.wx-shift > div:nth-child(2) strong { font-size: 16px; }
+.wx-shift > :nth-child(3) { grid-column: 1 / -1; }
+.wx-ico { display: grid; place-items: center; flex: none; width: 42px; height: 42px; border-radius: 12px; color: var(--portal-primary-text); background: var(--portal-primary-soft); }
+.wx-ico.s { color: var(--portal-success); background: var(--portal-success-soft); }
+.wx-ico.w { color: var(--portal-warning); background: var(--portal-warning-soft); }
+.wx-hero { position: relative; overflow: hidden; display: grid; gap: 14px; padding: 18px; border-radius: 20px; color: var(--portal-on-hero); background: linear-gradient(155deg, var(--portal-hero-from), var(--portal-hero-to)); box-shadow: 0 18px 30px -16px rgb(var(--portal-glow-primary) / 70%); }
+.wx-hero::after { content: ""; position: absolute; right: -30px; bottom: -40px; width: 150px; height: 150px; border-radius: 50%; border: 1px solid rgb(255 255 255 / 12%); box-shadow: 0 0 0 22px rgb(255 255 255 / 4%), 0 0 0 46px rgb(255 255 255 / 2.5%); pointer-events: none; }
+.wx-hero > * { position: relative; z-index: 1; }
+.wx-hero-top { display: flex; justify-content: space-between; gap: 8px; color: var(--portal-on-hero-muted); font-size: 13px; font-weight: 700; letter-spacing: .02em; }
+.wx-hero h2 { color: var(--portal-on-hero); font-size: 22px; font-weight: 800; line-height: 1.25; }
+.wx-hero p { margin-top: 2px; color: var(--portal-on-hero-muted); font-size: 14.5px; }
+.wx-hero-acts { display: flex; gap: 8px; }
+.wx-hbtn { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 52px; padding: 0 10px; border: 1.5px solid rgb(255 255 255 / 38%); border-radius: 14px; color: var(--portal-on-hero); background: rgb(255 255 255 / 12%); font-size: 15.5px; font-weight: 700; white-space: nowrap; }
+.wx-hbtn[aria-disabled="true"] { opacity: .55; }
+.wx-hbtn.main { flex: 1.3; min-height: 56px; color: var(--portal-on-hero-button); background: var(--portal-hero-button); border-color: var(--portal-hero-button); font-size: 17px; box-shadow: 0 6px 14px -6px rgb(0 0 0 / 40%); }
+
+/* Bốn bước: vòng tròn số */
+.wx-steps { display: flex; align-items: flex-start; margin: 0; padding: 0; list-style: none; }
+.wx-steps li { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; text-align: center; font-size: 13px; font-weight: 500; line-height: 1.15; color: var(--portal-muted); }
+.wx-steps li:not(:last-child)::after { content: ""; position: absolute; top: 16px; left: calc(50% + 20px); right: calc(-50% + 20px); height: 3px; border-radius: 2px; background: var(--portal-border); }
+.wx-steps li[data-state="done"]:not(:last-child)::after { background: var(--portal-success-mark, var(--portal-success)); }
+.wx-steps .c { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; font-size: 15px; font-weight: 800; color: var(--portal-muted); background: var(--portal-surface-soft); border: 1.5px solid var(--portal-border-strong); }
+.wx-steps li[data-state="done"] { color: var(--portal-text); font-weight: 700; }
+.wx-steps li[data-state="done"] .c { color: var(--portal-on-primary); background: var(--portal-success-fill); border-color: transparent; }
+.wx-steps li[data-state="current"] { color: var(--portal-text); font-weight: 700; }
+.wx-steps li[data-state="current"] .c { color: var(--portal-on-primary); background: var(--portal-primary-fill); border-color: transparent; box-shadow: 0 0 0 5px rgb(var(--portal-ring-rgb) / 26%); }
+.wx-hero .wx-steps li { color: var(--portal-on-hero-muted); }
+.wx-hero .wx-steps .c { color: var(--portal-on-hero-muted); background: rgb(255 255 255 / 14%); border-color: rgb(255 255 255 / 40%); }
+.wx-hero .wx-steps li:not(:last-child)::after { background: rgb(255 255 255 / 28%); }
+.wx-hero .wx-steps li[data-state="done"], .wx-hero .wx-steps li[data-state="current"] { color: var(--portal-on-hero); }
+.wx-hero .wx-steps li[data-state="done"] .c, .wx-hero .wx-steps li[data-state="current"] .c { color: var(--portal-on-hero-button); background: var(--portal-hero-button); border-color: transparent; }
+.wx-hero .wx-steps li[data-state="done"]:not(:last-child)::after { background: var(--portal-on-hero); }
+
+/* Dòng thời gian / danh sách dòng */
+.wx-tl { display: grid; margin: 0; padding: 0; list-style: none; }
+.wx-tl li + li { border-top: 1px solid var(--portal-border); }
+.wx-tl a { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 0; }
+.wx-tl .t { flex: none; width: 50px; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; color: var(--portal-primary-text); }
+.wx-tl .m { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.wx-tl .m b { font-size: 15.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wx-tl .m small { color: var(--portal-muted); font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wx-link-card { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 14px 16px; border-radius: 16px; border: 1px solid var(--portal-border); background: var(--portal-surface); box-shadow: var(--portal-shadow); }
+.wx-link-card > span:nth-child(2) { flex: 1; min-width: 0; display: grid; }
+.wx-link-card strong { font-size: 15.5px; }
+.wx-link-card small { color: var(--portal-muted); font-size: 13.5px; }
+.wx-link-card.accent { border-color: var(--portal-primary); background: var(--portal-primary-soft); }
+.wx-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* Chi tiết việc */
+.wx-place strong { display: block; font-size: 17px; font-weight: 700; }
+.wx-place small { display: block; margin-top: 2px; color: var(--portal-muted); font-size: 14px; }
+.wx-contact { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.wx-contact .wx-btn { min-height: 52px; font-size: 15.5px; padding: 0 10px; white-space: normal; }
+.wx-goods { display: grid; margin: 0; padding: 0; list-style: none; }
+.wx-goods li { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; padding: 10px 0; }
+.wx-goods li + li { border-top: 1px solid var(--portal-border); }
+.wx-goods li > span { display: grid; gap: 2px; min-width: 0; font-weight: 600; }
+.wx-goods small { color: var(--portal-muted); font-size: 13.5px; font-weight: 400; }
+.wx-goods strong { flex: none; color: var(--portal-success); font-size: 17px; font-variant-numeric: tabular-nums; text-align: right; }
+.wx-kv { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--portal-border); font-size: 15px; }
+.wx-kv span { color: var(--portal-muted); }
+.wx-kv strong { text-align: right; }
+.wx-foot { display: grid; gap: 10px; margin-top: 12px; }
+/* Biểu mẫu Classic đặt trong thẻ Astryx: nút gửi giữ cao ≥ 52px. */
+.wx-card form button[type="submit"], .wx-card form .button { min-height: 52px; }
+
+/* Thống kê, thu nhập, chấm công */
+.wx-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (min-width: 560px) { .wx-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.wx-stat { display: grid; gap: 4px; padding: 14px 16px; border: 1px solid var(--portal-border); border-radius: 16px; background: var(--portal-surface); box-shadow: var(--portal-shadow); }
+.wx-stat span { color: var(--portal-muted); font-size: 13.5px; font-weight: 600; }
+.wx-stat strong { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.wx-money { display: grid; gap: 14px; padding: 18px; border-radius: 20px; color: var(--portal-on-inverse); background: linear-gradient(155deg, var(--portal-inverse-from), var(--portal-inverse-to)); box-shadow: 0 16px 28px -16px rgb(var(--portal-shadow-rgb) / 60%); }
+.wx-money p { color: var(--portal-on-inverse-muted); font-size: 14px; }
+.wx-money > div > strong { display: block; margin-top: 2px; font-size: 32px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.wx-money-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.wx-money-tiles span { display: grid; gap: 2px; padding: 10px; border-radius: 12px; background: rgb(255 255 255 / 9%); }
+.wx-money-tiles small { color: var(--portal-on-inverse-muted); font-size: 13px; line-height: 1.2; }
+.wx-money-tiles b { font-size: 15px; font-variant-numeric: tabular-nums; }
+.wx-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin: 0; padding: 0; list-style: none; text-align: center; font-size: 13px; font-weight: 600; color: var(--portal-muted); }
+.wx-week li { display: grid; gap: 4px; justify-items: center; }
+.wx-week span { display: grid; place-items: center; width: 100%; max-width: 44px; aspect-ratio: 1; border-radius: 50%; border: 1.5px solid transparent; color: var(--portal-text); background: var(--portal-surface-soft); font-size: 15px; font-weight: 700; }
+.wx-week li[data-tone="done"] span { color: var(--portal-success); background: var(--portal-success-soft); }
+.wx-week li[data-tone="late"] span { color: var(--portal-warning); background: var(--portal-warning-soft); text-decoration: underline; }
+.wx-week li[data-tone="open"] span { color: var(--portal-primary-text); background: var(--portal-primary-soft); }
+.wx-week li[data-tone="leave"] span { color: var(--portal-primary-text); background: var(--portal-primary-soft); }
+.wx-week li[data-tone="absent"] span { color: var(--portal-danger); background: var(--portal-danger-soft); }
+.wx-week li[data-tone="planned"] span { background: transparent; border: 1.5px dashed var(--portal-border-strong); }
+.wx-week li[data-tone="off"] span { color: var(--portal-muted); text-decoration: line-through; }
+.wx-week li[aria-current="date"] span { box-shadow: 0 0 0 3px var(--portal-primary); }
+.wx-list { display: grid; margin: 0; padding: 0; list-style: none; }
+.wx-list > li { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; padding: 10px 0; }
+.wx-list > li + li { border-top: 1px solid var(--portal-border); }
+.wx-list .m { display: grid; gap: 2px; min-width: 0; }
+.wx-list .m small { color: var(--portal-muted); font-size: 13.5px; }
+.wx-list strong { font-variant-numeric: tabular-nums; }
+.wx-slip summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; cursor: pointer; list-style: none; }
+.wx-slip summary::-webkit-details-marker { display: none; }
+.wx-slip dl { margin: 0; padding: 4px 0 8px; display: grid; gap: 6px; }
+.wx-slip dl div, .wx-slip dl > dt { display: contents; }
+.wx-slip dt { color: var(--portal-muted); font-size: 14px; }
+.wx-slip dd { margin: 0 0 6px; text-align: right; font-variant-numeric: tabular-nums; }
+.wx-empty { display: grid; justify-items: center; gap: 6px; padding: 28px 16px; border: 1.5px dashed var(--portal-border-strong); border-radius: 16px; color: var(--portal-muted); text-align: center; }
+.wx-empty b { color: var(--portal-text); font-size: 16px; }
+
+/* Nhận việc, hồ sơ */
+.wx-pool { display: grid; gap: 12px; }
+@media (min-width: 800px) { .wx-pool { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.wx-pool > h2 { grid-column: 1 / -1; font-size: 15px; font-weight: 700; color: var(--portal-muted); }
+.wx-menu { display: grid; margin: 0; padding: 0; list-style: none; }
+.wx-menu li + li { border-top: 1px solid var(--portal-border); }
+.wx-menu a { display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 16px; font-weight: 600; font-size: 16px; }
+.wx-menu a > span { flex: 1; }
+.wx-menu a:hover { background: var(--portal-surface-soft); }
+.wx-seg { display: flex; gap: 4px; padding: 4px; border: 1px solid var(--portal-border); border-radius: 14px; background: var(--portal-surface-soft); }
+.wx-seg > * { flex: 1; }

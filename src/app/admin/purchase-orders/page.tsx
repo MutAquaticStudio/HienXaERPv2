@@ -15,6 +15,8 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { purchaseStateLabel, purchaseStateTone } from "@/modules/purchasing/presentation";
 import { applyDayRange, hasOrderDateFilter, parseOrderDateFilters } from "@/modules/sales/order-list-dates";
 import { AutoFilterForm } from "@/components/ui/auto-filter-form";
+import { AstryxPurchaseOrdersView } from "./astryx-view";
+import { currentSkin } from "@/lib/skin";
 
 type PurchaseOrder = { id: string; purchase_order_number: string; supplier_name_snapshot: string; destination_type: string; destination_name_snapshot: string; source_sales_order_id: string | null; state: string; expected_at: string | null; total_cost_vnd?: string | null; created_at: string };
 type PurchaseLine = { purchase_order_id: string; id: string; material_name_snapshot: string; quantity: string; ordered_uom_id: string; line_total_cost_vnd?: string | null };
@@ -78,6 +80,14 @@ export default async function PurchaseOrdersPage({ searchParams }: { searchParam
     return sent ? <span>Đã gửi {formatBusinessDateTime(sent.sent_at)} · {sent.channel === "ZALO" ? "Zalo" : sent.channel === "EMAIL" ? "Email" : "Khác"}</span> : <StatusBadge tone="warning">Chưa gửi</StatusBadge>;
   };
   const isFiltered = Boolean(list.q || list.state || supplier || hasOrderDateFilter(dates));
+  // Kiểu giao diện Astryx: cùng dữ liệu, giao diện dựng lại; Classic giữ nguyên bên dưới.
+  if ((await currentSkin()) === "astryx") {
+    return <AstryxPurchaseOrdersView rows={rows} lines={lines.map((line) => ({ purchase_order_id: line.purchase_order_id, id: line.id, material_name_snapshot: line.material_name_snapshot, quantity: line.quantity, symbol: symbols.get(line.ordered_uom_id) ?? "", line_total_cost_vnd: line.line_total_cost_vnd }))}
+      sent={Object.fromEntries(rows.map((order) => { const info = lastSent.get(order.id); return [order.id, { applicable: order.state === "CONFIRMED", text: info ? `Đã gửi ${formatBusinessDateTime(info.sent_at)} · ${info.channel === "ZALO" ? "Zalo" : info.channel === "EMAIL" ? "Email" : "Khác"}` : "" }]; }))}
+      states={STATES} current={list.state} counts={STATES.map((_, index) => String(countText(counts[index].data) ?? ""))} query={list.q} suppliers={suppliers} supplierValue={supplier}
+      dates={{ createdFrom: dates.createdFrom, createdTo: dates.createdTo, deliveryFrom: dates.deliveryFrom, deliveryTo: dates.deliveryTo }}
+      canCreate={access.permissions.has("purchasing.create")} canReadPrice={canReadPrice} notice={query.notice} error={query.error} isFiltered={isFiltered} page={list.page} total={count ?? 0} />;
+  }
   return <div className="page-stack">
     <header className="page-heading"><div><h1>Đơn mua</h1><p className="lede">Nguồn hàng giữ liên kết về nhu cầu bán. Mũi tên để xem nhanh hàng hóa của đơn.</p></div>
       <div className="action-cluster"><Link className="button button-secondary" href="/admin/purchases/returns">Trả hàng nhập</Link>{access.permissions.has("purchasing.create") && <ButtonLink href="/admin/purchase-orders/new">+ Tạo đơn mua</ButtonLink>}</div></header>

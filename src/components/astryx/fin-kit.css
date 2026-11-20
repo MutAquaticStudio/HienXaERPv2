@@ -1,0 +1,30 @@
+/* Bổ sung cho nhóm Giao hàng & Tài chính (kiểu Astryx). Chỉ có tác dụng trong .ax-root. */
+.ax-root .fk-tabs{display:flex;gap:4px;border-bottom:1px solid var(--hx-line-2);margin-bottom:16px;flex-wrap:wrap}
+.ax-root .fk-tabs a{padding:10px 16px;font-weight:600;font-size:14.5px;color:var(--hx-ink-2);border-radius:10px 10px 0 0;margin-bottom:-1px;border:1px solid transparent;display:flex;gap:8px;align-items:center;text-decoration:none}
+.ax-root .fk-tabs a[aria-selected="true"]{background:#fff;color:var(--hx-blue-t);border-color:var(--hx-line-2);border-bottom-color:#fff;font-weight:700}
+.ax-root .fk-tabs em{font-style:normal;font-size:13px;background:#F1F4F8;padding:0 7px;border-radius:99px;color:var(--hx-ink-2)}
+.ax-root .fk-kpis{display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.ax-root .fk-kpis>*{min-width:200px}
+.ax-root .fk-kv{display:grid;grid-template-columns:150px 1fr;row-gap:12px;font-size:14.5px;margin:0}
+.ax-root .fk-kv dt{color:var(--hx-ink-2)}.ax-root .fk-kv dd{margin:0;font-weight:500}
+.ax-root .fk-cols{display:flex;gap:20px;align-items:flex-start}
+.ax-root .fk-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:16px}
+.ax-root .fk-aside{width:340px;flex:none;display:flex;flex-direction:column;gap:16px}
+.ax-root .fk-kanban{display:flex;gap:12px;align-items:flex-start}
+.ax-root .fk-kcol{flex:1;min-width:0;background:#E9EEF5;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.ax-root .fk-khead{display:flex;align-items:center;gap:8px;padding:2px 4px}
+.ax-root .fk-khead h2{font-size:15.5px;font-weight:700;margin:0;flex:1}
+.ax-root .fk-khead span.n{background:#fff;border-radius:999px;padding:1px 10px;font-weight:700;font-size:13.5px}
+.ax-root .fk-ticket{display:flex;flex-direction:column;gap:6px;background:#fff;border:1px solid var(--hx-line);border-radius:12px;padding:12px;box-shadow:var(--sh-1);color:inherit;text-decoration:none}
+.ax-root .fk-ticket:hover{border-color:var(--hx-blue-bd);box-shadow:var(--sh-2)}
+.ax-root .fk-ticket small{font-size:13px;color:var(--hx-ink-2)}
+.ax-root .fk-note{font-size:13.5px;color:var(--hx-ink-2);padding:0 4px}
+.ax-root .fk-inline-form{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.ax-root .fk-pos{color:var(--hx-green);font-weight:700}
+.ax-root .fk-neg{color:var(--hx-red);font-weight:700}
+.ax-root .fk-classic{padding:16px}
+.ax-root .fk-classic .card{box-shadow:none;border:0;padding:0;background:transparent}
+.ax-root .fk-ul{margin:0;padding-left:18px;display:grid;gap:6px}
+.ax-root .fk-scroll{overflow-x:auto}
+.ax-root .fk-pagerwrap{padding:12px 16px;border-top:1px solid var(--hx-line)}
+@media (max-width:1100px){.ax-root .fk-cols,.ax-root .fk-kanban{flex-direction:column}.ax-root .fk-aside{width:100%}.ax-root .fk-kcol{width:100%}}

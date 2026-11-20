@@ -1,4 +1,6 @@
 import { directionsHref, jobStateLabel, soldQuantityLabel, telHref, workKindLabel } from "@/modules/portal/presentation";
+import { AstryxWorkJobView } from "./astryx-view";
+import { currentSkin } from "@/lib/skin";
 import { JobSteps } from "@/components/portal/job-steps";
 import Link from "next/link";
 import { ChevronLeft, Navigation, Phone } from "lucide-react";
@@ -47,6 +49,8 @@ export default async function WorkJobPage({ params }: { params: Promise<{ id: st
   // FB7: a delivery is loaded ("Đã lấy hàng lên xe") then reported ("Đã giao") by the assigned worker; no "Bắt đầu" step.
   const notMine = !!delivery && job.is_assignee === false && !available;
   const lines = job.delivery?.lines ?? [];
+  if ((await currentSkin()) === "astryx") return <AstryxWorkJobView job={job} dispatcher={dispatcher} notMine={notMine} canSubmitResult={canSubmitResult}
+    statusText={deliveryStatusText(job, notMine, available, claimed)} />;
   // Concept "Thợ · Chi tiết việc giao": back + customer + state chip, the steps, where to go, what is on the truck, then the action.
   return (
     <div className={styles.page}>

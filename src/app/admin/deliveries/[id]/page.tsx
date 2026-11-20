@@ -1,3 +1,5 @@
+import { AstryxDeliveryDetailView } from "./astryx-view";
+import { currentSkin } from "@/lib/skin";
 import { FilePicker } from "@/components/ui/file-picker";
 import { formatQuantity } from "@/lib/core/quantity";
 import { returnCaseKindLabel } from "@/modules/delivery/presentation";
@@ -107,8 +109,7 @@ export default async function DeliveryDetailPage({ params, searchParams }: { par
     && access.permissions.has("delivery.assign") && access.permissions.has("delivery.create");
   const query = await searchParams;
   const driverName = (employeeResult.data ?? []).find((employee) => employee.id === delivery.employee_id)?.display_name ?? "thợ được giao";
-  return <>
-    <header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/deliveries", label: "Phiếu giao" }} /><h1>{delivery.delivery_number}</h1><p className="lede">{delivery.customer_name_snapshot} · {delivery.site_name_snapshot}</p></div><div className="inline-actions"><ButtonLink href={`/api/deliveries/${delivery.id}/note/pdf`}>Tải phiếu giao</ButtonLink><ButtonLink href="/admin/deliveries" variant="secondary">Về danh sách</ButtonLink></div></header>
+  const body = <>
     <DeliveryWorkItemBridge deliveryId={id} /><ActionNotice notice={query.notice} error={query.error} />
     {splitFrom && <p className="command-note" role="status">Tách từ phiếu <Link className="code-link" href={`/admin/deliveries/${splitFrom.id}`}>{splitFrom.delivery_number}</Link>.</p>}
     {(splitInto ?? []).length > 0 && <p className="command-note" role="status">Phiếu đã hủy để tách thành {(splitInto ?? []).map((item, index) => <span key={item.id}>{index > 0 && ", "}<Link className="code-link" href={`/admin/deliveries/${item.id}`}>{item.delivery_number}</Link></span>)}.</p>}
@@ -158,6 +159,16 @@ export default async function DeliveryDetailPage({ params, searchParams }: { par
       {delivery.execution_state === "VERIFIED" && cases.length === 0 && <p className="muted command-note">Đã ghi nhận theo kết quả xác minh. Trả hàng, hàng còn xe và hao hụt phải mở hồ sơ riêng.</p>}
     {canSplit && <div className="command-panel split-entry"><p className="muted">Hàng cần đi nhiều xe hoặc nhiều người? Chia phiếu này thành 2–5 phiếu trước khi lấy hàng.</p>
         <ButtonLink href={`/admin/deliveries/${delivery.id}/split`} variant="secondary">Tách phiếu giao</ButtonLink></div>}</aside></div>
+  </>;
+  // Kiểu giao diện Astryx: đầu trang dựng lại; phần thao tác (biểu mẫu có server action) giữ nguyên bên trong thẻ Astryx.
+  if ((await currentSkin()) === "astryx") {
+    return <AstryxDeliveryDetailView number={delivery.delivery_number} customer={delivery.customer_name_snapshot} site={delivery.site_name_snapshot} orderId={delivery.sales_order_id} deliveryId={delivery.id}
+      stateLabel={deliveryStateLabel(delivery.execution_state)} stateTone={deliveryStateTone(delivery.execution_state)} resultLabel={delivery.result_kind ? deliveryStateLabel(delivery.result_kind) : null}
+      sourceLabels={sourceLabels} canSplit={canSplit} cancellable={["PLANNED", "ASSIGNED"].includes(delivery.execution_state) && access.permissions.has("delivery.exception")}>{body}</AstryxDeliveryDetailView>;
+  }
+  return <>
+    <header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/deliveries", label: "Phiếu giao" }} /><h1>{delivery.delivery_number}</h1><p className="lede">{delivery.customer_name_snapshot} · {delivery.site_name_snapshot}</p></div><div className="inline-actions"><ButtonLink href={`/api/deliveries/${delivery.id}/note/pdf`}>Tải phiếu giao</ButtonLink><ButtonLink href="/admin/deliveries" variant="secondary">Về danh sách</ButtonLink></div></header>
+    {body}
   </>;
 }
 

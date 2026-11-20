@@ -1,0 +1,61 @@
+/* Nhóm Tổng quan · Nhân công · Hệ thống (kiểu Astryx). Chỉ có tác dụng trong .ax-root. */
+.ax-root .n4-card{overflow:hidden}
+.ax-root .n4-card.warn{border-color:#F8DFAE;background:#FFFBF3}
+.ax-root .n4-card.danger{border-color:#F4C5C0}
+.ax-root .n4-h2{margin:0;font-size:17px;font-weight:700}
+.ax-root .n4-right{display:flex;gap:12px;align-items:center;font-size:14px;color:var(--hx-ink-2)}
+.ax-root .n4-right a{color:var(--hx-blue-t);font-weight:600}
+.ax-root .n4-seg{display:inline-flex;padding:3px;border:1px solid var(--hx-line-2);border-radius:10px;background:var(--hx-surface-2);gap:2px;flex-wrap:wrap}
+.ax-root .n4-seg a{padding:6px 14px;border-radius:8px;font-size:14px;font-weight:600;color:var(--hx-ink-2)}
+.ax-root .n4-seg a[aria-current="true"]{background:#fff;color:var(--hx-blue-t);box-shadow:var(--sh-1);font-weight:700}
+.ax-root .n4-delta{font-size:13px;font-weight:600;color:var(--hx-ink-2)}
+.ax-root .n4-delta.good{color:var(--hx-green)}.ax-root .n4-delta.bad{color:var(--hx-red)}
+.ax-root .n4-table{width:100%}
+.ax-root .n4-table .hx-tr{min-height:48px}
+.ax-root .n4-meter{display:grid;gap:6px;font-size:14.5px}
+.ax-root .n4-meter-head{display:flex;justify-content:space-between;gap:12px}
+.ax-root .n4-note{border:1px solid var(--hx-blue-bd);background:var(--hx-blue-bg);border-radius:10px;padding:10px 14px;font-size:14px;color:#0A4A96}
+.ax-root .n4-note.warn{border-color:#F8DFAE;background:#FFF3DC;color:#7A4300}
+.ax-root .n4-note.danger{border-color:#F4C5C0;background:#FDECEA;color:#8A1C13}
+.ax-root .n4-split{display:flex;gap:20px;align-items:flex-start}
+.ax-root .n4-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:16px}
+.ax-root .n4-grid{display:grid;gap:16px}
+.ax-root .n4-grid.c2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.ax-root .n4-grid.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.ax-root .n4-grid.c4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.ax-root .n4-row{display:flex;gap:16px;align-items:flex-start}
+.ax-root .n4-todo{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.ax-root .n4-todo>div{padding:16px 18px;border-left:1px solid var(--hx-line);display:flex;flex-direction:column;gap:10px}
+.ax-root .n4-todo>div:first-child{border-left:0}
+.ax-root .n4-todo .n4-count{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex:none;background:var(--hx-blue-bg);color:#0A4A96}
+.ax-root .n4-todo .n4-count.warning{background:#FFF3DC;color:#7A4300}
+.ax-root .n4-todo .n4-count.danger{background:#FDECEA;color:#8A1C13}
+.ax-root .n4-list{list-style:none;margin:0;padding:0}
+.ax-root .n4-list li{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--hx-line)}
+.ax-root .n4-list li:first-child{border-top:0}
+.ax-root .n4-list li>span{flex:1;min-width:0}
+.ax-root .n4-list small{display:block;font-size:13.5px;color:var(--hx-ink-2)}
+.ax-root .n4-form{display:grid;gap:12px}
+.ax-root .n4-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 16px}
+.ax-root .n4-wrap{padding:16px}
+.ax-root .n4-wrap :where(label){font-size:14px}
+.ax-root .n4-wrap :where(.card,.card-pad){box-shadow:none}
+.ax-root .n4-sticky-total{display:flex;justify-content:space-between;padding:12px 16px;background:var(--hx-surface-2);border-top:2px solid var(--hx-line-2);font-weight:800}
+@media (max-width:1000px){.ax-root .n4-split,.ax-root .n4-row{flex-direction:column}.ax-root .n4-split>.hx-side{width:100%}.ax-root .n4-grid.c3,.ax-root .n4-grid.c4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.ax-root .n4-grid.c2,.ax-root .n4-grid.c3,.ax-root .n4-grid.c4{grid-template-columns:1fr}}
+/* Bộ lọc dạng biểu mẫu GET (báo cáo, danh sách): dùng lưới của bản Classic nhưng khung và màu theo Astryx. */
+.ax-root .n4-filter.filter-bar{margin-bottom:0;border-color:var(--hx-line);border-radius:var(--r-2);background:#fff;box-shadow:var(--sh-1)}
+.ax-root .n4-filter.filter-bar label{color:var(--hx-ink-2);font-size:13px}
+.ax-root .n4-filter.filter-bar input,.ax-root .n4-filter.filter-bar select{border-color:var(--hx-line-2);border-radius:10px;font-size:15px}
+.ax-root .n4-filter .n4-seg{grid-column:1/-1}
+.ax-root .n4-navgroup{margin:0;padding:10px 12px 4px;font-size:13px;font-weight:700;color:var(--hx-ink-2);letter-spacing:.02em}
+.ax-root .n4-navlist{list-style:none;margin:0;padding:0 0 6px 0}
+.ax-root .n4-navlist a{display:block;padding:7px 12px 7px 28px;border-radius:8px;font-size:14.5px;border-left:2px solid transparent;color:var(--hx-ink)}
+.ax-root .n4-navlist a[aria-current="page"]{background:var(--hx-sel);color:#0A4A96;font-weight:700;border-left-color:var(--hx-blue)}
+.ax-root .n4-cols{display:flex;gap:6px;align-items:flex-end;height:180px}
+.ax-root .n4-cols>span{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px}
+.ax-root .n4-cols i{display:block;width:100%;max-width:56px;background:var(--hx-blue);border-radius:6px 6px 0 0;min-height:2px}
+.ax-root .n4-cols small{font-size:13px;color:var(--hx-ink-2)}
+.ax-root .n4-scroll{overflow-x:auto}
+.ax-root .n4-scroll .n4-table{min-width:640px}
+.ax-root .hx-tr.strong{font-weight:700;background:var(--hx-surface-2)}

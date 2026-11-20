@@ -14,6 +14,8 @@ import { BULK_LIMIT, type BulkFieldChoice } from "@/modules/catalog/bulk";
 import { currentDefaultPrice, stockSummary, type ListPosition, type ListPriceRule } from "@/modules/catalog/material-list";
 import { variantLabel } from "@/modules/catalog/variants";
 import { readPricingClock } from "@/modules/pricing/request-clock";
+import { AstryxProductsView } from "./astryx-view";
+import { currentSkin } from "@/lib/skin";
 
 type MaterialRow = { id: string; code: string; name: string; specification: string | null; group_id: string; base_uom_id: string; sale_enabled: boolean; purchase_enabled: boolean; active: boolean; variant_group_id: string | null; variant_attributes: Record<string, string> | null };
 type Query = { q?: string; state?: string; page?: string; group?: string; use?: string; variant?: string };
@@ -107,6 +109,16 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
     { field: "purchase_enabled", label: "Cho phép mua", control: "boolean" },
   ];
 
+  // Kiểu giao diện Astryx: cùng dữ liệu; hộp thoại tạo/sửa và thanh thao tác hàng loạt là thành phần Classic hiện có.
+  if ((await currentSkin()) === "astryx") {
+    return <AstryxProductsView rows={rows} ids={ids} can={can} groups={[...groups].map(([id, name]) => ({ id, name }))} variantOptions={[...variantGroups.values()].filter((row) => row.active || row.id === variant).map((row) => ({ id: row.id, name: row.name }))}
+      group={group} variant={variant} state={list.state} use={use} query={list.q} total={materialResult.count ?? 0} page={list.page}
+      createButton={create ? <CatalogCreateButton {...create} label="+ Vật tư" /> : null} variantButton={can.manage ? <VariantGroupButton label="+ Hàng cùng loại" /> : null}
+      editVariantButton={currentVariant ? <VariantGroupButton label="Sửa hàng cùng loại" groupId={currentVariant.id} className="button button-secondary button-compact" /> : null}
+      currentVariant={currentVariant ? { name: currentVariant.name, attributeNames: currentVariant.attribute_names, active: currentVariant.active } : null}
+      bulkBar={<BulkActionBar kind="materials" pageIds={ids} matchingIds={matchingIds} total={total} fields={bulkFields} activeLabels={{ stop: "Ngừng dùng", restart: "Dùng lại" }}
+        assignSuppliers={can.assignSupplier ? (supplierResult.data ?? []) as { id: string; name: string }[] : undefined} />} />;
+  }
   return <div className="page-stack">
     <header className="page-heading"><div><h1>Vật tư</h1><p className="lede">Danh mục vật tư, giá bán và tồn kho. Bấm vào một dòng để xem chi tiết.</p></div>
       {(can.manage || can.price) && <div className="action-cluster">

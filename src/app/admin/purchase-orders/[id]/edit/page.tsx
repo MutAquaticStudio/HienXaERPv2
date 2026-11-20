@@ -6,6 +6,9 @@ import { requireInternalPermission } from "@/lib/access/context";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { loadPurchaseFormOptions, loadSalesOrderPurchaseLines } from "@/modules/purchasing/form-options";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { AxFormFrame } from "@/components/astryx/buystock-kit";
+import { AxButtonLink } from "@/components/astryx/ax-kit";
+import { currentSkin } from "@/lib/skin";
 
 export default async function EditPurchaseOrderPage({ params }: { params: Promise<{ id: string }> }) {
   const access = await requireInternalPermission("purchasing.create");
@@ -39,6 +42,13 @@ export default async function EditPurchaseOrderPage({ params }: { params: Promis
       quantity: String(line.quantity), manualCostVnd: line.price_source_type === "MANUAL_APPROVED" ? String(line.unit_cost_vnd) : "",
       manualCostReason: line.price_source_type === "MANUAL_APPROVED" ? line.override_reason ?? "" : "" })),
   };
+  // Kiểu giao diện Astryx: tiêu đề dựng lại, form sửa bản nháp Classic (expectedVersion = phiên bản nháp) giữ nguyên bên trong.
+  if ((await currentSkin()) === "astryx") {
+    return <AxFormFrame crumbs={["Mua hàng", "Đơn mua", order.purchase_order_number, "Sửa"]} title={`Sửa ${order.purchase_order_number}`} lede="Sửa nhiều dòng, ngày và điều khoản; giá mua được kiểm lại khi lưu."
+      actions={<AxButtonLink href={`/admin/purchase-orders/${id}`}>Về đơn mua</AxButtonLink>}>
+      <PurchaseOrderForm options={options} sourceLines={sourceLines} operationId={randomUUID()} canManageWarehouse={access.permissions.has("roles.manage")} canCreateSales={false} canManagePrice={access.permissions.has("purchasing.price.manage")} canReadPrice={true} existing={existing} />
+    </AxFormFrame>;
+  }
   return <><header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/purchase-orders", label: "Đơn mua" }} /><h1>Sửa {order.purchase_order_number}</h1><p className="lede">Sửa nhiều dòng, ngày và điều khoản; giá mua được kiểm lại khi lưu.</p></div><Link className="button button-secondary" href={`/admin/purchase-orders/${id}`}>Về đơn mua</Link></header>
     <PurchaseOrderForm options={options} sourceLines={sourceLines} operationId={randomUUID()} canManageWarehouse={access.permissions.has("roles.manage")} canCreateSales={false} canManagePrice={access.permissions.has("purchasing.price.manage")} canReadPrice={true} existing={existing} /></>;
 }

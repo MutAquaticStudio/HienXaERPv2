@@ -4,6 +4,8 @@ import { PurchaseOrderForm } from "@/components/purchasing/purchase-order-form";
 import { requireInternalPermission } from "@/lib/access/context";
 import { loadPurchaseFormOptions, loadSalesLineContext } from "@/modules/purchasing/form-options";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { AxFormFrame } from "@/components/astryx/buystock-kit";
+import { currentSkin } from "@/lib/skin";
 
 export default async function NewPurchaseOrderPage({ searchParams }: { searchParams: Promise<{ salesLineId?: string; supplier?: string; warehouse?: string; material?: string }> }) {
   const access = await requireInternalPermission("purchasing.create");
@@ -13,5 +15,12 @@ export default async function NewPurchaseOrderPage({ searchParams }: { searchPar
     query.salesLineId ? loadSalesLineContext(query.salesLineId, access.branchId) : Promise.resolve(null),
   ]);
   if (query.salesLineId && !salesLine) notFound();
+  // Kiểu giao diện Astryx: tiêu đề dựng lại, form tạo đơn mua Classic giữ nguyên bên trong.
+  if ((await currentSkin()) === "astryx") {
+    return <AxFormFrame crumbs={["Mua hàng", "Đơn mua", salesLine ? "Đặt NCC giao thẳng" : "Tạo mới"]} title={salesLine ? "Đặt NCC giao thẳng" : "Tạo đơn mua"}
+      lede={salesLine ? "Chọn nhiều dòng còn thiếu nguồn của cùng đơn bán; mỗi dòng mua gắn đúng dòng bán." : "Tìm vật tư (F3), nhập số lượng, chọn nhà cung cấp rồi tạo đơn mua."}>
+      <PurchaseOrderForm options={options} operationId={randomUUID()} confirmOperationId={randomUUID()} canConfirm={access.permissions.has("purchasing.confirm")} salesLine={salesLine} canManageWarehouse={access.permissions.has("roles.manage")} canCreateSales={access.permissions.has("orders.create")} canManagePrice={access.permissions.has("purchasing.price.manage")} canReadPrice={access.permissions.has("purchasing.price.read")} canManageSalesPrice={access.permissions.has("pricing.manage")} initialSupplierId={query.supplier} initialWarehouseId={query.warehouse} initialMaterialId={query.material} />
+    </AxFormFrame>;
+  }
   return <><header className="page-heading"><div><Breadcrumb parent={{ href: "/admin/purchase-orders", label: "Đơn mua" }} /><h1>{salesLine ? "Đặt NCC giao thẳng" : "Tạo đơn mua"}</h1><p className="lede">{salesLine ? "Chọn nhiều dòng còn thiếu nguồn của cùng đơn bán; mỗi dòng mua gắn đúng dòng bán." : "Tìm vật tư (F3), nhập số lượng, chọn nhà cung cấp rồi tạo đơn mua."}</p></div></header><PurchaseOrderForm options={options} operationId={randomUUID()} confirmOperationId={randomUUID()} canConfirm={access.permissions.has("purchasing.confirm")} salesLine={salesLine} canManageWarehouse={access.permissions.has("roles.manage")} canCreateSales={access.permissions.has("orders.create")} canManagePrice={access.permissions.has("purchasing.price.manage")} canReadPrice={access.permissions.has("purchasing.price.read")} canManageSalesPrice={access.permissions.has("pricing.manage")} initialSupplierId={query.supplier} initialWarehouseId={query.warehouse} initialMaterialId={query.material} /></>;
 }

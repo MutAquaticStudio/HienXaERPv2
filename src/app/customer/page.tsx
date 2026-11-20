@@ -7,6 +7,8 @@ import { ChartColumn, ChevronRight, CreditCard, Plus, Truck, Wrench } from "luci
 import { businessDay, formatBusinessDate, shiftBusinessDay } from "@/lib/core/business-time";
 import { formatQuantity } from "@/lib/core/quantity";
 import { QUOTATIONS_ENABLED } from "@/lib/features";
+import { currentSkin } from "@/lib/skin";
+import { AstryxCustomerHome } from "./astryx-view";
 
 import reportStyles from "@/components/portal/ordered-report.module.css";
 import styles from "@/components/portal/portal.module.css";
@@ -56,6 +58,27 @@ export default async function CustomerHomePage({ searchParams }: { searchParams:
     serviceRequests.filter((request) => request.stage !== "CANCELLED" && request.stage !== "REJECTED" && request.stage !== "SCHEDULE_CANCELLED")
       .map((request): QuickReorder => ({ key: request.id, kind: "service", at: request.submitted_at, title: requestTitle(request), site: request.site_name, href: `/customer/services/new?from=${request.id}` })),
   );
+  // Kiểu giao diện Astryx: cùng dữ liệu, giao diện dựng lại; Classic giữ nguyên bên dưới.
+  if ((await currentSkin()) === "astryx") {
+    const showDebt = snapshot.can_view_debt && snapshot.debt;
+    return <AstryxCustomerHome data={{
+      notice, customerName: snapshot.customer.display_name, customerCode: snapshot.customer.code, canOrder,
+      tracked: tracked ? { id: tracked.id, number: tracked.number ?? "Đơn hàng", stateLabel: portalOrderStateLabel(tracked),
+        eta: onTheWay?.scheduled_at ? clock(onTheWay.scheduled_at) : null, headline: progress.find((step) => step.state === "current")?.label ?? "Đang xử lý",
+        where: [onTheWay?.number, tracked.site_name ?? "Công trình"].filter(Boolean).join(" · "), percent: progressPercent, steps: progress } : null,
+      service: firstService ? { id: firstService.id, title: requestTitle(firstService), stageLabel: serviceStageLabel(firstService.stage), tone: serviceStageTone(firstService.stage), openCount: openServices.length,
+        sub: [firstService.stage === "SUBMITTED" ? wishText(firstService) : null, firstService.site_name].filter(Boolean).join(" · ") } : null,
+      yesterday: yesterdayReport ? { kinds: yesterdayReport.material_kinds, summary: goodsSummary(yesterdayReport), href: orderedReportHref({ from: yesterday, to: yesterday }),
+        total: yesterdayReport.show_money && yesterdayReport.total_vnd !== undefined ? money(yesterdayReport.total_vnd) : undefined } : null,
+      waiting,
+      quotation: QUOTATIONS_ENABLED && snapshot.quotation ? { id: snapshot.quotation.id, number: snapshot.quotation.number ?? "Báo giá hiện tại", stateLabel: salesStateLabel(snapshot.quotation.state), canRespond: canRespondToQuote } : null,
+      reorders: canOrder ? cards.map((card) => ({ ...card, dateText: card.at ? formatBusinessDate(card.at).slice(0, 5) : "trước" })) : [],
+      debt: showDebt && snapshot.debt ? { outstanding: money(snapshot.debt.outstanding_amount_vnd), overdue: Number(snapshot.debt.overdue_amount_vnd) > 0 ? money(snapshot.debt.overdue_amount_vnd) : null } : null,
+      recent: snapshot.orders.slice(0, 4).map((order) => ({ id: order.id, number: order.number ?? "Đơn mới gửi", site: order.site_name ?? "", label: portalOrderStateLabel(order),
+        date: order.ordered_at ? formatBusinessDate(order.ordered_at).slice(0, 5) : "", total: order.total_amount_vnd ? money(order.total_amount_vnd) : undefined })),
+      orderCount: snapshot.orders.length,
+    }} />;
+  }
   return (
     <div className={styles.page}>
       {notice && <p className={styles.status} role="status">{notice}</p>}
