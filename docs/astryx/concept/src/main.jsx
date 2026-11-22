@@ -1,0 +1,12 @@
+import React from 'react';
+import {createRoot} from 'react-dom/client';
+import '@astryxdesign/core/reset.css';
+import '@astryxdesign/core/astryx.css';
+import '@astryxdesign/theme-neutral/theme.css';
+import './hx.css';
+import {Theme} from '@astryxdesign/core/theme';
+import {neutralTheme} from '@astryxdesign/theme-neutral/built';
+import S,{M} from './screens.jsx';
+window.__M=M.map(m=>({id:m.id,route:m.route,tpl:m.tpl,note:m.note,w:m.w}));
+const id=location.hash.slice(2)||Object.keys(S)[0];const C=S[id];
+createRoot(document.getElementById('root')).render(<Theme theme={neutralTheme}><div id="screen" style={{display:'inline-block'}}>{C?<C/>:'?'}</div></Theme>);

@@ -1,0 +1,1829 @@
+[
+ {
+  "id": "admin-orders",
+  "route": "/admin/orders",
+  "tpl": "Filterable Table",
+  "note": "Khung lọc trái có số đếm khớp số dòng, mũi tên xem nhanh mở rộng một hàng chi tiết, cột Ngày giao (D74), trạng thái chữ tiếng Việt, chip có chấm màu.",
+  "w": 1280
+ },
+ {
+  "id": "admin-customers",
+  "route": "/admin/customers",
+  "tpl": "Searchable Table",
+  "note": "Tìm bỏ dấu theo tên, mã, SĐT; công nợ khớp màn Phải thu (FACTS); nút Quản lý chỉ khi có customers.manage.",
+  "w": 1280
+ },
+ {
+  "id": "admin-service-jobs",
+  "route": "/admin/service-jobs",
+  "tpl": "Filterable Table + Project Status Dashboard",
+  "note": "Đã lên lịch → Đang thực hiện → Chờ xác minh → Đã xác minh → Hoàn tất.",
+  "w": 1280
+ },
+ {
+  "id": "admin-service-requests",
+  "route": "/admin/service-jobs/requests",
+  "tpl": "Inbox Table",
+  "note": "Chờ xác nhận lịch, Đã xếp lịch, Đã từ chối, Khách đã hủy.",
+  "w": 1280
+ },
+ {
+  "id": "admin-service-types",
+  "route": "/admin/service-jobs/types",
+  "tpl": "Searchable Table + Dialog",
+  "note": "Danh mục loại dịch vụ và đơn giá; chưa có đơn giá thì không tính tiền.",
+  "w": 1280
+ },
+ {
+  "id": "admin-purchase-orders",
+  "route": "/admin/purchase-orders",
+  "tpl": "Filterable Table",
+  "note": "Lọc theo NCC và trạng thái; nhận hàng ghi tồn và công nợ phải trả (chỉ phần đã nhận).",
+  "w": 1280
+ },
+ {
+  "id": "admin-suppliers",
+  "route": "/admin/suppliers",
+  "tpl": "Searchable Table",
+  "note": "Hồ sơ, công nợ phải trả (chỉ phần đã nhận hàng), bảng giá từng NCC; tạo và sửa cần purchasing.manage.",
+  "w": 1280
+ },
+ {
+  "id": "admin-purchase-returns",
+  "route": "/admin/purchases/returns",
+  "tpl": "Filterable Table",
+  "note": "Gắn với phiếu nhập đã nhận; xử lý tồn và công nợ phải trả đúng nguồn.",
+  "w": 1280
+ },
+ {
+  "id": "admin-purchase-invoices",
+  "route": "/admin/invoices/purchases",
+  "tpl": "Searchable Table",
+  "note": "Hóa đơn mua và đối chiếu: Có chênh lệch, Chờ duyệt.",
+  "w": 1280
+ },
+ {
+  "id": "admin-products",
+  "route": "/admin/products",
+  "tpl": "Searchable Table + Tree Table",
+  "note": "Nhóm và biến thể; số tồn là tồn kho thật của kho, đơn vị đi kèm; nút Quản lý khi có catalog.manage.",
+  "w": 1280
+ },
+ {
+  "id": "admin-inventory",
+  "route": "/admin/inventory",
+  "tpl": "Grouped Table",
+  "note": "Tồn kho · Chờ xuất giao · Đã hứa cho đơn · Có thể bán (in đậm); mỗi số kèm đơn vị riêng, không cộng lẫn đơn vị; chỉ đọc.",
+  "w": 1280
+ },
+ {
+  "id": "admin-transfers",
+  "route": "/admin/inventory/transfers",
+  "tpl": "Filterable Table",
+  "note": "Xuất chuyển kho, Nhận chuyển kho, Hao hụt chuyển kho đã duyệt.",
+  "w": 1280
+ },
+ {
+  "id": "admin-stock-counts",
+  "route": "/admin/stock-counts",
+  "tpl": "Filterable Table",
+  "note": "Đang kiểm → Đã cân bằng kho (duyệt mới điều chỉnh tồn) / Đã hủy.",
+  "w": 1280
+ },
+ {
+  "id": "admin-catalog",
+  "route": "/admin/catalog",
+  "tpl": "Searchable Table + Dialog",
+  "note": "Nhóm vật tư, đơn vị, danh mục chi; xóa chỉ khi chưa dùng.",
+  "w": 1280
+ },
+ {
+  "id": "admin-deliveries",
+  "route": "/admin/deliveries",
+  "tpl": "Filterable Table",
+  "note": "Nguồn hàng: Từ kho / Nhà cung cấp giao thẳng / giao về kho. Phiếu Chờ xác minh/Đã xác minh không tách/hủy.",
+  "w": 1280
+ },
+ {
+  "id": "admin-receivables",
+  "route": "/admin/receivables",
+  "tpl": "Filterable Table + Grouped Table",
+  "note": "Theo khách, tuổi nợ, hạn; nợ chỉ phát sinh khi phiếu giao được xác minh. Số khớp FACTS: quá hạn 48.800.000 = 30.400.000 + 18.400.000.",
+  "w": 1280
+ },
+ {
+  "id": "admin-payables",
+  "route": "/admin/payables",
+  "tpl": "Filterable Table + Grouped Table",
+  "note": "Chỉ phát sinh khi đơn mua nhận hàng (phần đã nhận); trả tiền có lý do và chứng từ.",
+  "w": 1280
+ },
+ {
+  "id": "admin-payment-notices",
+  "route": "/admin/payment-notices",
+  "tpl": "Inbox Table",
+  "note": "Khách báo chuyển khoản hoặc SePay (D42) báo có tiền; Chờ xác minh rồi mới ghi sổ.",
+  "w": 1280
+ },
+ {
+  "id": "admin-expenses",
+  "route": "/admin/expenses",
+  "tpl": "Filterable Table + Form Wizard",
+  "note": "Phiếu chi theo danh mục, đính kèm ảnh chứng từ; ghi sổ quỹ khi duyệt.",
+  "w": 1280
+ },
+ {
+  "id": "admin-invoices",
+  "route": "/admin/invoices",
+  "tpl": "Filterable Table",
+  "note": "Hóa đơn điện tử đang tạm ngừng (D41): chỉ một khối thông báo, không lập hồ sơ.",
+  "w": 1280
+ },
+ {
+  "id": "admin-attendance",
+  "route": "/admin/attendance",
+  "tpl": "Filterable Table + Calendar",
+  "note": "Ca, giờ vào ra, vị trí; sửa công cần lý do.",
+  "w": 1280
+ },
+ {
+  "id": "admin-compensation",
+  "route": "/admin/compensation",
+  "tpl": "Settings Panels + Searchable Table",
+  "note": "Đơn giá công theo vai trò và loại việc; có ngày hiệu lực.",
+  "w": 1280
+ },
+ {
+  "id": "admin-payroll",
+  "route": "/admin/payroll",
+  "tpl": "Filterable Table",
+  "note": "Kỳ lương theo trạng thái; chỉ vai trò được xem lương mới thấy số tiền.",
+  "w": 1280
+ },
+ {
+  "id": "admin-workforce",
+  "route": "/admin/workforce",
+  "tpl": "Searchable Table + Two-column Form",
+  "note": "Hồ sơ nhân viên, thợ chính, tài khoản cổng thợ; thợ chính điều phối (D85).",
+  "w": 1280
+ },
+ {
+  "id": "admin-access",
+  "route": "/admin/access",
+  "tpl": "Settings Panels + Searchable Table",
+  "note": "Vai trò, quyền, chi nhánh; không tự cấp quyền cao hơn mình.",
+  "w": 1280
+ },
+ {
+  "id": "admin-audit",
+  "route": "/admin/audit",
+  "tpl": "Filterable Table",
+  "note": "Chỉ đọc; ai làm gì, lúc nào, trước và sau; không xóa.",
+  "w": 1280
+ },
+ {
+  "id": "admin-notifications",
+  "route": "/admin/notifications",
+  "tpl": "Inbox Table",
+  "note": "Việc cần xử lý, có loại và nút Mở; mục Cập nhật hiển thị ghi chú phiên bản.",
+  "w": 1280
+ },
+ {
+  "id": "admin-messages",
+  "route": "/admin/messages",
+  "tpl": "Messaging Inbox",
+  "note": "Hộp thư nội bộ 2 khung: danh sách hội thoại với khách và thợ + luồng chat có ô trả lời; theo chi nhánh.",
+  "w": 1280
+ },
+ {
+  "id": "admin-operations",
+  "route": "/admin/operations",
+  "tpl": "Incident Console + Table",
+  "note": "Hàng đợi việc kẹt, lệnh UNKNOWN cần kiểm tra lại; không xử lý ngầm.",
+  "w": 1280
+ },
+ {
+  "id": "admin-quotations",
+  "route": "/admin/quotations",
+  "tpl": "Không dùng",
+  "note": "Báo giá đang tắt theo D1: ẩn khỏi menu và cổng khách; route giữ nguyên; chỉ một khối thông báo.",
+  "w": 1280
+ },
+ {
+  "id": "admin-pricing-history",
+  "route": "/admin/suppliers/pricing/history",
+  "tpl": "Searchable Table",
+  "note": "Chỉ xem lịch sử thay đổi giá mua; không sửa hay xóa bản cũ.",
+  "w": 1280
+ },
+ {
+  "id": "admin-obligations",
+  "route": "/admin/dashboard/obligations",
+  "tpl": "Filterable Table + Grouped Table",
+  "note": "Khoản phải thu và phải trả sắp hoặc quá hạn (khớp Phải thu/Phải trả); bấm mở sang Công nợ.",
+  "w": 1280
+ },
+ {
+  "id": "admin-order-new",
+  "route": "/admin/orders/new",
+  "tpl": "Checkout Form",
+  "note": "Dải xanh tìm hàng F3 + chọn kho xem tồn; giá theo 4 cấp ưu tiên tính lại ở server; Lưu nháp khác Xác nhận đơn (giữ hạn mức, tự phân nguồn).",
+  "w": 1280
+ },
+ {
+  "id": "admin-order-edit",
+  "route": "/admin/orders/:id/edit",
+  "tpl": "Checkout Form",
+  "note": "Chỉ sửa khi còn nháp; gửi kèm expectedVersion, xung đột phiên bản thì khóa Lưu nháp/Xác nhận cho tới khi Tải lại đơn.",
+  "w": 1280
+ },
+ {
+  "id": "admin-order-detail",
+  "route": "/admin/orders/:id",
+  "tpl": "Order Detail",
+  "note": "Một chip trạng thái đơn (Đã xác nhận) khớp tiến trình; Nguồn hàng kho / NCC giao thẳng; Hủy đơn hủy luôn phiếu giao chưa chạy; In A4/K80; Gửi Zalo là nút gửi tay.",
+  "w": 1280
+ },
+ {
+  "id": "admin-order-approve",
+  "route": "/admin/orders/:id (băng Chờ duyệt)",
+  "tpl": "Incident Console + Banner",
+  "note": "Đơn khách đặt ở nháp = Chờ duyệt; Duyệt = xác nhận + tự phân nguồn; Từ chối mở hộp thoại có lý do khách thấy; luôn không tự duyệt khi vượt hạn mức nợ (khóa, không đổi tại đây).",
+  "w": 1280
+ },
+ {
+  "id": "admin-order-import",
+  "route": "/admin/orders/import",
+  "tpl": "Vertical Wizard",
+  "note": "Ba bước Tải file mẫu · Điền đơn · Tải lên và kiểm tra; chỉ tạo đơn sẵn sàng; lỗi báo theo dòng Excel; Xác nhận luôn nếu đủ quyền.",
+  "w": 1280
+ },
+ {
+  "id": "admin-customer-360",
+  "route": "/admin/customers/:id",
+  "tpl": "Collapsible Table + Two-column Form",
+  "note": "Hồ sơ, công trình (nhiều địa chỉ, mở rộng được), tài khoản cổng 3 vai, nhóm giá, hạn mức nợ, công nợ theo tuổi; tiền chỉ hiện với vai trò được xem.",
+  "w": 1280
+ },
+ {
+  "id": "admin-customer-manage",
+  "route": "/admin/customers/manage",
+  "tpl": "Two-column Form",
+  "note": "Tạo và sửa khách (customers.manage); tạo tài khoản cổng hàng loạt bằng số điện thoại; đăng ký trùng số điện thoại chờ văn phòng duyệt.",
+  "w": 1280
+ },
+ {
+  "id": "admin-customer-portal-account",
+  "route": "Popup trong /admin/customers/:id",
+  "tpl": "Dialog Wizard",
+  "note": "Tạo tài khoản/đặt lại mật khẩu: hiện tên đăng nhập và mật khẩu tạm đúng một lần kèm Chép nội dung; mật khẩu tạm bắt đổi lần đầu.",
+  "w": 1280
+ },
+ {
+  "id": "admin-po-new",
+  "route": "/admin/purchase-orders/new",
+  "tpl": "Checkout Form",
+  "note": "Chọn NCC, giá mua gợi ý từ bảng giá mua; dòng có thể liên kết đơn bán (NCC giao thẳng công trình); Lưu nháp khác Xác nhận đặt hàng.",
+  "w": 1280
+ },
+ {
+  "id": "admin-po-edit",
+  "route": "/admin/purchase-orders/:id/edit",
+  "tpl": "Checkout Form",
+  "note": "Chỉ sửa khi chưa nhận hàng; gửi kèm expectedVersion, xung đột phiên bản báo rõ.",
+  "w": 1280
+ },
+ {
+  "id": "admin-po-detail",
+  "route": "/admin/purchase-orders/:id",
+  "tpl": "Order Detail",
+  "note": "Nhận hàng ghi tồn và công nợ phải trả theo phần nhận; NCC giao thẳng thì Ghi nhận đã giao đồng bộ đơn mua và đơn bán; Gửi NCC qua Zalo là nút gửi tay.",
+  "w": 1280
+ },
+ {
+  "id": "admin-supplier-detail",
+  "route": "/admin/suppliers/:id",
+  "tpl": "Collapsible Table + Two-column Form",
+  "note": "Hồ sơ, công nợ phải trả, bảng giá mua của NCC theo nhóm vật tư (mở rộng được); tạo/sửa cần purchasing.manage.",
+  "w": 1280
+ },
+ {
+  "id": "admin-supplier-manage",
+  "route": "/admin/suppliers/manage",
+  "tpl": "Two-column Form",
+  "note": "Tạo và sửa nhà cung cấp (purchasing.manage); gán vật tư cho NCC để đưa vào bảng giá mua.",
+  "w": 1280
+ },
+ {
+  "id": "admin-supplier-pricing",
+  "route": "/admin/suppliers/pricing",
+  "tpl": "Comparison Table",
+  "note": "So sánh giá mua theo từng NCC (ô giá là ô nhập), đánh dấu NCC rẻ nhất, lọc Chỉ dòng chưa có giá; sửa tay thì ghi lịch sử, không xóa bản cũ.",
+  "w": 1280
+ },
+ {
+  "id": "admin-purchase-return-new",
+  "route": "/admin/purchases/returns/new",
+  "tpl": "Form Wizard",
+  "note": "Hai bước: chọn đơn mua đã nhận và lý do, rồi chọn dòng và số lượng trả; xử lý tồn kho và công nợ phải trả đúng nguồn, bắt buộc có lý do.",
+  "w": 1280
+ },
+ {
+  "id": "admin-purchase-return-detail",
+  "route": "/admin/purchases/returns/:id",
+  "tpl": "Order Detail",
+  "note": "Phiếu trả gắn với đơn mua đã nhận; đã ghi giảm tồn kho và công nợ phải trả; có lý do, không sửa sau khi ghi sổ.",
+  "w": 1280
+ },
+ {
+  "id": "admin-matching-list",
+  "route": "/admin/invoices/matching",
+  "tpl": "Searchable Table",
+  "note": "Danh sách hóa đơn mua cần đối chiếu với đơn mua đã nhận: Khớp, Có chênh lệch, Chờ duyệt, Đã duyệt.",
+  "w": 1280
+ },
+ {
+  "id": "admin-matching-detail",
+  "route": "/admin/invoices/matching/:id",
+  "tpl": "Vertical Wizard",
+  "note": "Đối chiếu hóa đơn NCC với đơn mua đã nhận: ô lệch nền vàng, dòng tổng; chỉ gắn minh chứng, không tự sửa số tiền.",
+  "w": 1280
+ },
+ {
+  "id": "admin-product-detail",
+  "route": "/admin/products/:id",
+  "tpl": "Product Detail",
+  "note": "Biến thể, quy đổi đơn vị hai chiều không tự làm tròn, tồn theo kho (Tồn kho · Chờ xuất giao · Đã hứa · Có thể bán), giá chung và giá nhóm giá; giá vốn chỉ khi có quyền.",
+  "w": 1280
+ },
+ {
+  "id": "admin-product-manage",
+  "route": "/admin/products/manage",
+  "tpl": "Two-column Form",
+  "note": "Tạo và sửa vật tư; đơn vị bán và quy đổi hai chiều; xóa chỉ khi chưa phát sinh chứng từ (SPEC-CAT-003).",
+  "w": 1280
+ },
+ {
+  "id": "admin-product-pricing",
+  "route": "/admin/products/pricing",
+  "tpl": "Searchable Table + Comparison Table",
+  "note": "Bảng giá hàng loạt giá chung (DEFAULT) và giá nhóm giá; tối đa 500 dòng, một lý do, ngày hiệu lực từ hôm nay; một dòng sai thì không dòng nào được lưu; giá vốn chỉ khi có quyền.",
+  "w": 1280
+ },
+ {
+  "id": "admin-warehouses",
+  "route": "/admin/inventory/warehouses",
+  "tpl": "Settings Panels",
+  "note": "Kho theo chi nhánh; chỉ roles.manage; bật/tắt kho; chỉ MỘT kho mặc định (chọn bằng nút chọn) cho bán và nhận hàng mua.",
+  "w": 1280
+ },
+ {
+  "id": "admin-transfer-new",
+  "route": "/admin/inventory/transfers/new",
+  "tpl": "Form Wizard",
+  "note": "Ba bước Kho và lý do · Chọn hàng · Xác nhận xuất; chỉ bước 3 mới ghi sổ giảm tồn kho đi đúng một lần (idempotent theo operationId).",
+  "w": 1280
+ },
+ {
+  "id": "admin-transfer-detail",
+  "route": "/admin/inventory/transfers/:id",
+  "tpl": "Order Detail",
+  "note": "Xuất chuyển kho → Nhận chuyển kho → Hao hụt chuyển kho đã duyệt; mỗi bước ghi sổ tồn đúng một lần theo từng vật tư, bấm lại không ghi đúp.",
+  "w": 1280
+ },
+ {
+  "id": "admin-stock-count-detail",
+  "route": "/admin/stock-counts/:id",
+  "tpl": "Filterable Table + Inline Wizard",
+  "note": "Đang kiểm → Đã cân bằng kho (duyệt thì mới điều chỉnh tồn) | Đã hủy; mọi dòng lệch bắt buộc có lý do (ô nhập); chỉ cân bằng khi đã đếm đủ và đủ lý do; không làm tròn số lẻ.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-credit-override",
+  "route": "/admin/orders/:id?credit=limit",
+  "tpl": "Dialog",
+  "note": "Người có orders.confirm + finance.ar.adjust: thấy hạn mức, quá hạn, đã cam kết, giá trị đơn, tổng sau xác nhận; ghi chú không bắt buộc (D28).",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-credit-need-approver",
+  "route": "/admin/orders/:id?credit=no-limit",
+  "tpl": "Dialog",
+  "note": "Người khác thấy danh sách tối đa 10 người duyệt được của chi nhánh: tên + mã + vai trò (D28); không lộ email hay UID.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-cancel-order",
+  "route": "/admin/orders/:id (Hủy đơn)",
+  "tpl": "Dialog",
+  "note": "Hủy đơn bắt buộc lý do; hủy luôn phiếu giao chưa chạy (D94); không gửi thông báo riêng cho thợ.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-delete-order",
+  "route": "/admin/orders/:id (Xóa đơn)",
+  "tpl": "Dialog",
+  "note": "Xóa hẳn đơn (cả đã xác nhận nhưng chưa giao, chưa thu) theo quyền orders.cancel; cần gõ mã đơn để xác nhận (D72, D90).",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-warehouse-pick",
+  "route": "/admin/orders/new (Chọn kho xem tồn)",
+  "tpl": "Dialog",
+  "note": "Chọn kho để xem tồn có thể bán khi tạo đơn; chỉ đổi cột Có thể bán, không đổi nguồn hàng.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-order-quick-view",
+  "route": "/admin/orders (Xem nhanh)",
+  "tpl": "Dialog",
+  "note": "Mũi tên đầu dòng mở xem nhanh đơn: khách, dòng hàng, tiền, trạng thái; không sửa được.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-send-zalo",
+  "route": "/admin/orders/:id (Gửi qua Zalo)",
+  "tpl": "Dialog",
+  "note": "Gửi đơn qua Zalo là nút gửi tay: mở Zalo với nội dung có sẵn, không tự gửi (D51).",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-print-order",
+  "route": "/admin/orders/:id (In A4 / K80)",
+  "tpl": "Dialog",
+  "note": "In đơn bán khổ A4 hoặc K80 (D52): chọn khổ, số bản, xem trước.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-po-receive",
+  "route": "/admin/purchase-orders/:id (Nhận hàng)",
+  "tpl": "Dialog",
+  "note": "Nhận hàng ghi tồn và công nợ phải trả theo phần nhận; nhận đủ hoặc một phần; nhận trên đơn nháp tự xác nhận (D33).",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-po-direct-delivered",
+  "route": "/admin/purchase-orders/:id (Ghi nhận đã giao)",
+  "tpl": "Dialog",
+  "note": "NCC giao thẳng: Ghi nhận đã giao đồng bộ đơn mua và đơn bán trong một lần (FB11).",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-po-zalo",
+  "route": "/admin/purchase-orders/:id (Gửi NCC qua Zalo)",
+  "tpl": "Dialog",
+  "note": "Gửi NCC qua Zalo là nút gửi tay, không tự gửi.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-po-cancel",
+  "route": "/admin/purchase-orders/:id (Hủy đơn mua)",
+  "tpl": "Dialog",
+  "note": "Hủy đơn mua chưa nhận hàng, có lý do.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-supplier-add",
+  "route": "/admin/suppliers (Thêm nhà cung cấp)",
+  "tpl": "Dialog",
+  "note": "Tạo nhà cung cấp cần purchasing.manage.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-supplier-assign",
+  "route": "/admin/suppliers/pricing (Gán vật tư)",
+  "tpl": "Dialog",
+  "note": "Gán vật tư cho NCC để đưa vào bảng giá mua; vật tư mới chưa có giá.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-product-add",
+  "route": "/admin/products (Thêm vật tư)",
+  "tpl": "Dialog",
+  "note": "Thêm vật tư nhanh; chi tiết đơn vị và biến thể bổ sung ở Quản lý vật tư.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-product-group-add",
+  "route": "/admin/products (Thêm nhóm vật tư)",
+  "tpl": "Dialog",
+  "note": "Thêm nhóm vật tư (dùng cho giá Khách + Nhóm vật tư).",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-product-bulk-edit",
+  "route": "/admin/products (Sửa hàng loạt)",
+  "tpl": "Dialog",
+  "note": "Sửa hàng loạt chỉ đổi trường được tích; xác nhận số vật tư bị đổi.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-unit-conversion-add",
+  "route": "/admin/products/manage (Thêm quy đổi)",
+  "tpl": "Dialog",
+  "note": "Quy đổi hai chiều, không tự làm tròn, tối đa 6 chữ số thập phân.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-price-tier-add",
+  "route": "/admin/products/pricing (Thêm nhóm giá)",
+  "tpl": "Dialog",
+  "note": "Tạo nhóm giá khách (tier_code); giá nhóm lưu qua bảng giá hàng loạt.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-price-tier-assign",
+  "route": "/admin/customers/:id (Gán nhóm giá)",
+  "tpl": "Dialog",
+  "note": "Gán một nhóm giá cho khách; đơn mới dùng nhóm này.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-save-price-reason",
+  "route": "/admin/products/pricing (Lưu bảng giá)",
+  "tpl": "Dialog",
+  "note": "Lưu bảng giá: một lý do và ngày hiệu lực cho cả bảng, tối đa 500 dòng; một dòng sai thì không dòng nào được lưu.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-site-add",
+  "route": "/admin/customers/:id (Thêm công trình)",
+  "tpl": "Dialog",
+  "note": "Thêm công trình giao hàng cho khách.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-portal-reset-password",
+  "route": "/admin/customers/:id (Đặt lại mật khẩu)",
+  "tpl": "Dialog",
+  "note": "Đặt lại mật khẩu cổng khách: tạo mật khẩu tạm hiện một lần, bắt đổi ở lần đăng nhập đầu.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-portal-revoke",
+  "route": "/admin/customers/:id (Thu hồi tài khoản cổng)",
+  "tpl": "Dialog",
+  "note": "Thu hồi tài khoản cổng khách bắt buộc lý do.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-warehouse-add",
+  "route": "/admin/inventory/warehouses (Tạo kho)",
+  "tpl": "Dialog",
+  "note": "Tạo kho thuộc chi nhánh; chỉ roles.manage.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-transfer-issue",
+  "route": "/admin/inventory/transfers/new (Xuất chuyển kho)",
+  "tpl": "Dialog",
+  "note": "Xuất chuyển kho ghi sổ giảm tồn kho đi đúng một lần (operationId).",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-transfer-receive",
+  "route": "/admin/inventory/transfers/:id (Nhận chuyển kho)",
+  "tpl": "Dialog",
+  "note": "Nhận chuyển kho: nhập số nhận thực tế; chênh với số xuất thành hao hụt chờ duyệt.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-transfer-loss",
+  "route": "/admin/inventory/transfers/:id (Hao hụt)",
+  "tpl": "Dialog",
+  "note": "Hao hụt chuyển kho cần người có quyền duyệt và lý do.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-stock-count-approve",
+  "route": "/admin/stock-counts/:id (Cân bằng kho)",
+  "tpl": "Dialog",
+  "note": "Cân bằng kho (duyệt) mới điều chỉnh tồn; mỗi dòng lệch có lý do.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-stock-count-cancel",
+  "route": "/admin/stock-counts/:id (Hủy phiếu kiểm)",
+  "tpl": "Dialog",
+  "note": "Hủy phiếu kiểm: không điều chỉnh tồn, có lý do.",
+  "w": 1280
+ },
+ {
+  "id": "admin-dashboard",
+  "route": "/admin",
+  "tpl": "Analytics Dashboard + Incident Console",
+  "note": "Cần xử lý hôm nay đặt trước số liệu; thu xanh lá, chi đỏ so với kỳ trước; nợ quá hạn 48,8 tr khớp Phải thu; chỉ đọc theo quyền dashboard.read.",
+  "w": 1280
+ },
+ {
+  "id": "admin-reports",
+  "route": "/admin/reports",
+  "tpl": "Data Dashboard + Searchable Table",
+  "note": "Một khung báo cáo chung (D57): chọn kỳ nhanh, thẻ so kỳ trước, bảng căn phải có dòng Tổng cộng, Xuất Excel và CSV đúng số.",
+  "w": 1280
+ },
+ {
+  "id": "admin-dispatch",
+  "route": "/admin/dispatch",
+  "tpl": "Kanban Board + Incident Console",
+  "note": "Bốn cột Chờ phân giao đến Chờ xác minh; chỉ một nút chính Gán nhanh (kiểm tra trùng lịch); chưa xác minh thì chưa ghi công nợ; thấy vị trí thợ trong ca.",
+  "w": 1280
+ },
+ {
+  "id": "admin-dispatch-resources",
+  "route": "/admin/dispatch/resources",
+  "tpl": "Settings Panels",
+  "note": "Xe chỉ cần tên, không cần biển số (D54); tài xế mặc định; chỉ người có quyền roles.manage được sửa.",
+  "w": 1280
+ },
+ {
+  "id": "admin-delivery-detail",
+  "route": "/admin/deliveries/:id",
+  "tpl": "Order Detail + Work Item Detail",
+  "note": "Phiếu Chờ xác minh không còn Tách/Hủy; dòng giao có đơn giá, thành tiền; xác minh mới ghi công nợ phải thu; hồ sơ Hàng còn trên xe, Khách trả hàng, Hao hụt khi giao.",
+  "w": 1280
+ },
+ {
+  "id": "admin-delivery-split",
+  "route": "/admin/deliveries/:id/split",
+  "tpl": "Form Wizard",
+  "note": "Chỉ phiếu Chờ phân giao hoặc đã phân giao việc chưa bắt đầu; tách 2–5 phiếu, tổng mỗi dòng đúng, Phiếu 1 giữ phần còn lại tự tính, mỗi phiếu mới có ngày và giờ giao (D46).",
+  "w": 1280
+ },
+ {
+  "id": "admin-delivery-cancel",
+  "route": "/admin/deliveries/:id/cancel",
+  "tpl": "Dialog Wizard",
+  "note": "Hủy phiếu có lý do khi chưa lấy hàng lên xe; giải phóng giữ chỗ tồn; hộp thoại phủ đúng phiếu PG-0120 ở nền mờ.",
+  "w": 1280
+ },
+ {
+  "id": "admin-routes",
+  "route": "/admin/routes",
+  "tpl": "Searchable Table + bản đồ",
+  "note": "Chỉ gợi ý thứ tự điểm giao (OSRM công cộng), tắt được; chấm xanh đang chia sẻ, xám mất tín hiệu; mỗi điểm có mã phiếu để mở.",
+  "w": 1280
+ },
+ {
+  "id": "admin-receivable-detail",
+  "route": "/admin/receivables/:id",
+  "tpl": "Order Detail + Collapsible Table",
+  "note": "Thu tiền: ô số tiền tự phân bổ khoản cũ nhất trước, Tự phân bổ lại khi sửa tay, phần dư phải tích ghi tiền ứng trước; Tiền mặt hoặc QR; mỗi lần thu có operationId.",
+  "w": 1280
+ },
+ {
+  "id": "admin-payable-detail",
+  "route": "/admin/payables/:id",
+  "tpl": "Order Detail + Collapsible Table",
+  "note": "Khoản phải trả chỉ tính phần đơn mua đã nhận hàng (98,1 tr); chi trả có lý do và chứng từ; không sửa số đã ghi, chỉ đảo giao dịch có lý do.",
+  "w": 1280
+ },
+ {
+  "id": "admin-cashbook",
+  "route": "/admin/cashbook",
+  "tpl": "Filterable Table + Data Dashboard",
+  "note": "Tổng thu xanh lá, Tổng chi đỏ theo kỳ là chính, số dư theo quỹ là phụ; giao dịch ngân hàng chờ xử lý (SePay); thông tin chuyển khoản hiện cho khách; sổ chỉ thêm, sai thì đảo.",
+  "w": 1280
+ },
+ {
+  "id": "admin-invoice-detail",
+  "route": "/admin/invoices/:id",
+  "tpl": "Filterable Table + Order Detail",
+  "note": "Chỉ xem và in; số tiền lấy từ phiếu giao đã xác minh, không nhập lại.",
+  "w": 1280
+ },
+ {
+  "id": "admin-payroll-detail",
+  "route": "/admin/payroll/:id",
+  "tpl": "Order Detail + Collapsible Table",
+  "note": "Phiếu lương: tiền chuyến theo xe (D70), khoản theo đơn giá công việc (D76) và mục Chưa có đơn giá, chưa tính tiền; chốt kỳ mới ghi sổ, kỳ đã chốt không sửa.",
+  "w": 1280
+ },
+ {
+  "id": "admin-payroll-income-rules",
+  "route": "/admin/payroll/income",
+  "tpl": "Settings Panels + Searchable Table",
+  "note": "Bảng lương → Thu nhập khác (D35, D70): thẻ Đơn giá chuyến theo xe (mỗi xe một dòng; xe không có đơn giá và không có khoản chung thì không có tiền chuyến) và danh sách khoản thu nhập có cách tính, người áp dụng, hiệu lực.",
+  "w": 1280
+ },
+ {
+  "id": "admin-payroll-component-form",
+  "route": "/admin/payroll/income (hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Tạo/sửa khoản thu nhập: Theo chuyến có ô Áp dụng cho xe (áp dụng mọi nhân viên, mỗi xe một đơn giá); Theo đơn giá công việc không nhập số tiền và chỉ một khoản đang áp dụng mỗi chi nhánh.",
+  "w": 1280
+ },
+ {
+  "id": "admin-payroll-work-rates",
+  "route": "/admin/payroll/work-rates",
+  "tpl": "Settings Panels + Searchable Table",
+  "note": "Tab Đơn giá công việc (D76): đơn giá vận chuyển theo đơn vị đã bán và đơn giá dịch vụ (tiền mỗi đơn vị hoặc % số tiền tính khách); hàng chưa có đơn giá không bị đoán; không hiện cho khách.",
+  "w": 1280
+ },
+ {
+  "id": "admin-service-job-detail",
+  "route": "/admin/service-jobs/:id",
+  "tpl": "Work Item Detail + Project Status",
+  "note": "DV-0043 Chờ xác minh: không còn Hủy việc hay Đổi người; xác minh việc mới tính phí vào công nợ và tiền việc vào bảng lương.",
+  "w": 1280
+ },
+ {
+  "id": "admin-service-request-detail",
+  "route": "/admin/service-jobs/requests/:id",
+  "tpl": "Inbox Table + Work Item Detail",
+  "note": "Chờ xác nhận lịch, Đã xếp lịch, Đã từ chối, Khách đã hủy; xếp lịch tạo việc dịch vụ và báo khách; từ chối phải có lý do.",
+  "w": 1280
+ },
+ {
+  "id": "admin-settings-branches",
+  "route": "/admin/settings/branches",
+  "tpl": "Settings Panels",
+  "note": "Thông tin chi nhánh, kho, chế độ điều phối; tắt hoặc bật chi nhánh phải có lý do.",
+  "w": 1280
+ },
+ {
+  "id": "admin-settings-pricing",
+  "route": "/admin/settings/pricing",
+  "tpl": "Settings Panels",
+  "note": "Cấu hình giá chung, hạn mức nợ mặc định, hạn thanh toán; đổi có ngày hiệu lực từ hôm nay, không đổi đơn đã xác nhận; lý do nằm ngay dưới các ô sửa.",
+  "w": 1280
+ },
+ {
+  "id": "admin-settings-automation",
+  "route": "/admin/settings/automation",
+  "tpl": "Settings Panels",
+  "note": "Bật tắt tự duyệt đơn khách (D79, D88) và các tự động khác; không tự duyệt khi vượt hạn mức nợ; mỗi lần đổi ghi nhật ký.",
+  "w": 1280
+ },
+ {
+  "id": "admin-settings-ai",
+  "route": "/admin/settings/ai",
+  "tpl": "Settings Panels + Form",
+  "note": "Khóa API nằm trong Vault và không bao giờ hiện lại (D50); chọn mô hình, giới hạn chi phí hằng tháng; AI chỉ đọc.",
+  "w": 1280
+ },
+ {
+  "id": "admin-ai",
+  "route": "/admin/ai",
+  "tpl": "AI Chat Conversation",
+  "note": "Chỉ đọc dữ liệu trong quyền người dùng, không tự ghi sổ; mỗi câu trả lời nêu nguồn số liệu (D50 đến D66); đề xuất chỉ là bản nháp chờ người xem.",
+  "w": 1280
+ },
+ {
+  "id": "admin-notification-updates",
+  "route": "/admin/notifications/updates",
+  "tpl": "Inbox Table + Content Page",
+  "note": "Mục Cập nhật hiển thị ghi chú phiên bản bằng tiếng Việt; thông báo việc cần xử lý nằm ở tab bên cạnh.",
+  "w": 1280
+ },
+ {
+  "id": "admin-command-palette",
+  "route": "Ctrl K trên mọi trang /admin",
+  "tpl": "Command Palette",
+  "note": "Ctrl K mở tìm nhanh; chỉ mục đủ quyền mới hiện; phủ trên trang đang mở (mờ đi); nhãn trạng thái đơn đúng bộ admin.",
+  "w": 1280
+ },
+ {
+  "id": "admin-debts",
+  "route": "/admin/debts",
+  "tpl": "Tabs + Filterable Table",
+  "note": "Công nợ gộp Phải thu và Phải trả bằng DebtTabs; chỉ đọc tổng hợp, bấm mở sang chi tiết từng bên.",
+  "w": 1280
+ },
+ {
+  "id": "admin-print-order-a4",
+  "route": "In A4 · Đơn bán",
+  "tpl": "Print Template",
+  "note": "In A4 đơn bán SO-0231: thông tin cửa hàng, khách, bảng hàng căn phải, tổng cộng và chỗ ký; không in giá vốn.",
+  "w": 874
+ },
+ {
+  "id": "admin-print-order-k80",
+  "route": "In K80 · Đơn bán",
+  "tpl": "Print Template",
+  "note": "In K80 (khổ 80 mm) đơn bán SO-0231: một cột, chữ lớn, tên hàng xuống dòng, tổng cộng nổi bật.",
+  "w": 480
+ },
+ {
+  "id": "admin-print-delivery",
+  "route": "In A4 · Phiếu giao",
+  "tpl": "Print Template",
+  "note": "In phiếu giao PG-0112 theo đơn: số cần giao, ô Khách nhận để điền tay, chỗ ký người giao và người nhận; không in giá.",
+  "w": 874
+ },
+ {
+  "id": "admin-print-receipt",
+  "route": "In · Phiếu thu",
+  "tpl": "Print Template",
+  "note": "In phiếu thu PT-0216: số tiền bằng số và bằng chữ, phân bổ vào từng khoản, phần dư ghi tiền ứng trước.",
+  "w": 874
+ },
+ {
+  "id": "admin-print-statement",
+  "route": "In A4 · Sao kê công nợ khách",
+  "tpl": "Print Template",
+  "note": "In sao kê công nợ Anh Nam 01/10–20/11/2026: dư đầu kỳ, phát sinh, đã thu, dư nợ cuối kỳ 30.400.000 ₫ khớp Phải thu; khoản quá hạn nêu rõ.",
+  "w": 874
+ },
+ {
+  "id": "admin-print-purchase",
+  "route": "In A4 · Đơn mua",
+  "tpl": "Print Template",
+  "note": "In đơn mua PO-0087 gửi nhà cung cấp: hàng đặt, đơn giá mua, tổng 148.500.000 ₫; không in giá bán.",
+  "w": 874
+ },
+ {
+  "id": "admin-settings-zalo",
+  "route": "/admin/settings/zalo",
+  "tpl": "Settings Panels + Form",
+  "note": "Kết nối Zalo OA (D47): App ID nhập ở đây, Secret Key giữ trong Vault, token tự làm mới; 4 sự kiện gửi tin một chiều cho khách; chỉ roles.manage.",
+  "w": 1280
+ },
+ {
+  "id": "admin-notification-compose",
+  "route": "/admin/notifications/compose",
+  "tpl": "Form + Preview",
+  "note": "Soạn thông báo cập nhật (D83): gửi tới Khách/Thợ/Nhân viên, nhãn, tiêu đề tối đa 80 ký tự, nội dung tối đa 600; hỏi lại trước khi gửi; có Đã gửi gần đây.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-gan-nhanh",
+  "route": "(hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Gán nhanh: người + xe + khung giờ hoặc đơn vị vận chuyển ngoài; kiểm tra trùng lịch trước khi lưu.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-thu-tien",
+  "route": "(hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Thu tiền: số tiền tự phân bổ khoản cũ nhất trước, phần dư phải tích tiền ứng trước.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-chi-tien",
+  "route": "(hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Chi tiền cho nhà cung cấp: có lý do và chứng từ; ghi Sổ quỹ.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-chuyen-khoan",
+  "route": "(hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Sửa thông tin chuyển khoản hiện cho khách ở cổng (D39); tên chủ tài khoản tự viết hoa.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-sepay",
+  "route": "(hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Tự ghi tiền về SePay (D42): bật/tắt, tiền tố nội dung; khớp thì tự lập phiếu thu.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-xu-ly-ngan-hang",
+  "route": "(hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Xử lý giao dịch ngân hàng chờ: chọn khách rồi Ghi phiếu thu, hoặc Bỏ qua không ghi sổ.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-tao-phieu-chi",
+  "route": "(hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Tạo phiếu chi: danh mục, quỹ, số tiền, ảnh chứng từ; cần duyệt theo quyền.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-xac-minh-phieu",
+  "route": "(hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Xác minh phiếu giao: mới ghi công nợ phải thu theo số lượng khách nhận.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-delivery-leftover",
+  "route": "(hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Hồ sơ Hàng còn trên xe: tồn trên xe tách riêng khỏi tồn kho.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-delivery-return",
+  "route": "(hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Hồ sơ Khách trả hàng khi giao: nhập lại kho, giảm công nợ.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-delivery-shrink",
+  "route": "(hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Hồ sơ Hao hụt khi giao: chi phí hao hụt, không tính vào nợ khách.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-dao-giao-dich",
+  "route": "(hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Đảo giao dịch: số đã ghi không sửa, chỉ tạo giao dịch đảo có lý do (UX-200).",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-tinh-luong",
+  "route": "(hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Tính lương tháng: chọn tháng, tính lại bản tạm; không đụng kỳ đã chốt.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-chi-tra-luong",
+  "route": "(hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Chi trả phiếu lương sau khi chốt kỳ: ghi Sổ quỹ.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-chot-cong",
+  "route": "(hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Chốt kỳ chấm công: sau chốt không sửa công, muốn sửa phải mở lại có lý do.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-sua-cong",
+  "route": "(hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Sửa công: cần lý do, giờ cũ giữ trong lịch sử.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-them-nhan-su",
+  "route": "(hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Thêm nhân sự: hồ sơ, vai trò, thiết lập lương, tài khoản cổng thợ.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-ngung-nhan-vien",
+  "route": "(hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Ngừng nhân viên: danh sách hậu quả rõ, không xóa lịch sử.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-vai-tro",
+  "route": "(hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Thêm vai trò: chọn quyền theo nhóm; không tự cấp quyền cao hơn mình.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-nguoi-dung",
+  "route": "(hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Thêm người dùng: vai trò, chi nhánh được vào, mật khẩu tạm một lần.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-service-schedule",
+  "route": "(hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Xếp lịch yêu cầu dịch vụ: tạo việc dịch vụ và báo khách.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-service-reject",
+  "route": "(hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Từ chối yêu cầu dịch vụ: bắt buộc có lý do, khách thấy lý do.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-loai-dich-vu",
+  "route": "(hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Thêm loại dịch vụ: tên, đơn vị tính, giá khách; đơn giá trả thợ nằm ở Đơn giá công việc.",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-xac-nhan-xoa",
+  "route": "(hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Xác nhận xóa chung: nêu rõ hậu quả, nút nguy hiểm tách khỏi nút an toàn (UX-200).",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-xac-nhan-ngung",
+  "route": "(hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Xác nhận ngừng áp dụng chung (đơn giá, khoản thu nhập, xe...).",
+  "w": 1280
+ },
+ {
+  "id": "admin-popup-notification-confirm",
+  "route": "(hộp thoại)",
+  "tpl": "Dialog Wizard",
+  "note": "Hỏi lại trước khi gửi thông báo cập nhật (D83): nêu số người nhận.",
+  "w": 1280
+ },
+ {
+  "id": "work-login",
+  "route": "/work/login",
+  "tpl": "Login (mobile)",
+  "note": "Thẻ chồng lên dải xanh, lề 16, tab 3 cổng cao 52 với biểu tượng trên chữ, ô nhập 16px, nút 56px (D30).",
+  "w": 390
+ },
+ {
+  "id": "work-change-password",
+  "route": "/work/change-password",
+  "tpl": "Form (mobile)",
+  "note": "Đổi mật khẩu: ba ô có nhãn, hiện/ẩn, kiểm tra quy tắc ngay khi gõ; một nút chính.",
+  "w": 390
+ },
+ {
+  "id": "work-home",
+  "route": "/work",
+  "tpl": "Home (mobile)",
+  "note": "Hôm nay: lời chào, thẻ ca, thẻ xanh việc đang làm 4 bước + Gọi/Chỉ đường/Mở việc, Tiếp theo hôm nay (dòng thời gian), Sắp tới.",
+  "w": 390
+ },
+ {
+  "id": "work-home-dark",
+  "route": "/work (nền tối)",
+  "tpl": "Home dark (mobile)",
+  "note": "D84: bản tối của đúng giao diện hiện tại; mọi màu qua biến --portal-*, tương phản AA, trạng thái luôn có chữ.",
+  "w": 390
+ },
+ {
+  "id": "work-job-detail",
+  "route": "/work/jobs/[id]",
+  "tpl": "Detail (mobile)",
+  "note": "Quay lại + Loại · mã + tên khách + chip; 4 bước vòng tròn số; địa điểm; Hàng trên xe; thao tác dính đáy.",
+  "w": 390
+ },
+ {
+  "id": "work-job-delivered",
+  "route": "/work/jobs/[id]/delivered",
+  "tpl": "Wizard step (mobile)",
+  "note": "Giao đủ / Giao thiếu 2 nút gạt; từng dòng hàng số lượng xanh; ảnh, người nhận, nút lớn \"Đã giao · chụp ảnh\".",
+  "w": 390
+ },
+ {
+  "id": "work-job-delivered-photos",
+  "route": "/work/jobs/[id]/delivered (ảnh đang tải)",
+  "tpl": "Wizard step (mobile)",
+  "note": "Ảnh còn đang tải: nút xác nhận khóa \"Đang tải ảnh (1/2)…\" để không gửi thiếu bằng chứng.",
+  "w": 390
+ },
+ {
+  "id": "work-job-delivered-error",
+  "route": "/work/jobs/[id]/delivered (ảnh lỗi)",
+  "tpl": "Wizard step (mobile)",
+  "note": "Có ảnh lỗi tải: ô đỏ \"Lỗi tải · Thử lại\", nút xác nhận khóa cho tới khi tải xong hoặc xóa ảnh lỗi.",
+  "w": 390
+ },
+ {
+  "id": "work-job-delivered-ready",
+  "route": "/work/jobs/[id]/delivered (đủ ảnh)",
+  "tpl": "Wizard step (mobile)",
+  "note": "Cả hai ảnh đã tải: nút thành \"Xác nhận đã giao (2 ảnh)\" (xanh lá, hoàn tất).",
+  "w": 390
+ },
+ {
+  "id": "work-job-short",
+  "route": "/work/jobs/[id]/delivered (giao thiếu)",
+  "tpl": "Wizard step (mobile)",
+  "note": "Giao thiếu: số lượng từng dòng (−/+ 72px, theo đơn vị bán), lý do bắt buộc; vẫn cần ảnh. Không giao được thì cần lý do.",
+  "w": 390
+ },
+ {
+  "id": "work-dispatch",
+  "route": "/work/dispatch",
+  "tpl": "Dispatch board (mobile)",
+  "note": "D85 Điều phối của thợ chính: một cột; Chờ người (việc bị từ chối lên đầu) với gợi ý một chạm; Đã giao hôm nay + Đổi người.",
+  "w": 390
+ },
+ {
+  "id": "work-pool",
+  "route": "/work/pool",
+  "tpl": "Cards (mobile)",
+  "note": "Việc chờ nhận: lọc chip, thẻ có giờ, lượng, khoảng cách, tiền chuyến; một nút \"Nhận việc này\" 52px.",
+  "w": 390
+ },
+ {
+  "id": "work-tracking",
+  "route": "/work/tracking",
+  "tpl": "Status page (mobile)",
+  "note": "Vị trí: chỉ hiện trạng thái (Chưa vào ca / Đang chia sẻ / Chưa cho phép / Máy không hỗ trợ); không có nút bấm khi đang lái.",
+  "w": 390
+ },
+ {
+  "id": "work-tracking-denied",
+  "route": "/work/tracking (chưa cho phép)",
+  "tpl": "Status page (mobile)",
+  "note": "Chưa cho phép vị trí: chấm cam trên thanh trên + cách bật 3 bước, nút \"Kiểm tra lại\".",
+  "w": 390
+ },
+ {
+  "id": "work-attendance",
+  "route": "/work/attendance",
+  "tpl": "Timesheet (mobile)",
+  "note": "Chấm công: ca hôm nay, tổng kết tháng, lịch sử theo ngày với trạng thái chữ + màu.",
+  "w": 390
+ },
+ {
+  "id": "work-earnings",
+  "route": "/work/earnings",
+  "tpl": "Earnings (mobile)",
+  "note": "Thẻ tối Dự kiến nhận + 3 ô; Chấm công tuần T2–CN (xanh/vàng gạch chân/xanh dương/viền đứt/xám gạch ngang); Phiếu lương đã chốt; Các khoản tháng này.",
+  "w": 390
+ },
+ {
+  "id": "work-messages",
+  "route": "/work/messages",
+  "tpl": "Inbox (mobile)",
+  "note": "Điện thoại một cột: danh bạ (ảnh chữ cái, tin cuối, giờ, chấm số chưa đọc); ô \"Tìm người…\" ở dưới cùng.",
+  "w": 390
+ },
+ {
+  "id": "work-messages-chat",
+  "route": "/work/messages (khung chat)",
+  "tpl": "Chat (mobile)",
+  "note": "Khung chat Messenger: bong bóng của mình bên phải nền xanh, người kia bên trái; ô nhập bo tròn + Gửi.",
+  "w": 390
+ },
+ {
+  "id": "work-profile",
+  "route": "/work/profile",
+  "tpl": "Profile (mobile)",
+  "note": "Tôi: Chấm công, Chia sẻ vị trí, Tin nhắn, Đổi mật khẩu, Giao diện (Sáng/Tối/Theo thiết bị + Cỡ chữ, D84), Đăng xuất.",
+  "w": 390
+ },
+ {
+  "id": "public-login",
+  "route": "/login",
+  "tpl": "Login",
+  "note": "Thẻ đơn 480px giữa màn trên dải xanh, logo công ty thay chữ HX (D49), tab Vận hành / Thợ & tài xế / Khách hàng, không khối giới thiệu (D30).",
+  "w": 1280
+ },
+ {
+  "id": "public-recovery",
+  "route": "/recovery",
+  "tpl": "Auth form",
+  "note": "Khôi phục mật khẩu: một ô, một nút; thông báo không tiết lộ tài khoản có tồn tại; quay lại đăng nhập.",
+  "w": 640
+ },
+ {
+  "id": "public-select-branch",
+  "route": "/select-branch",
+  "tpl": "Auth chooser",
+  "note": "Chọn chi nhánh làm việc: danh sách thẻ chọn một, ghi nhớ trên máy; chỉ hiện khi tài khoản có từ 2 chi nhánh.",
+  "w": 640
+ },
+ {
+  "id": "public-tai-ve",
+  "route": "/tai-ve",
+  "tpl": "Install guide (mobile)",
+  "note": "Trang công khai gửi qua Zalo: nhận ra máy Android / iPhone và chỉ hiện các bước đúng máy; chép link; nền sáng.",
+  "w": 390
+ },
+ {
+  "id": "public-not-found",
+  "route": "/404",
+  "tpl": "Empty state",
+  "note": "Không tìm thấy trang: giải thích ngắn, một lối về trang chủ; không hiện mã kỹ thuật.",
+  "w": 640
+ },
+ {
+  "id": "public-error",
+  "route": "/error",
+  "tpl": "Error state",
+  "note": "Có lỗi: cho biết dữ liệu không mất, nút \"Thử lại\" rõ, lối về trang chủ; không hiện stack hay mã lỗi.",
+  "w": 640
+ },
+ {
+  "id": "public-loading",
+  "route": "/loading",
+  "tpl": "Skeleton",
+  "note": "Thanh tiến trình 3px màu chính trên cùng (~62%, ánh xanh); skeleton đúng dạng màn Danh sách: khung lọc trái + bảng 8 dòng, độ dài thanh khác nhau.",
+  "w": 1280
+ },
+ {
+  "id": "work-profile-theme",
+  "route": "/work/profile/appearance",
+  "tpl": "Settings (mobile)",
+  "note": "Giao diện: Chế độ màu Sáng/Tối/Tự động (D84), Kiểu giao diện Classic (mặc định) / Mới với hai thẻ xem trước khác rõ, Cỡ chữ; áp ngay, lưu theo thiết bị; nút 52px.",
+  "w": 390
+ },
+ {
+  "id": "work-profile-theme-new",
+  "route": "/work/profile/appearance (đã chọn Mới + Tối)",
+  "tpl": "Settings (mobile)",
+  "note": "Sau khi chọn Mới + Tối: chính màn này đã đổi theo ngay.",
+  "w": 390
+ },
+ {
+  "id": "work-home-new",
+  "route": "/work (giao diện Mới)",
+  "tpl": "Home (mobile)",
+  "note": "Hôm nay ở giao diện Mới: thanh trên nhẹ, thẻ bo lớn, nút tròn, menu nổi.",
+  "w": 390
+ },
+ {
+  "id": "work-home-pc",
+  "route": "/work (máy tính / máy tính bảng ≥ 800px)",
+  "tpl": "Responsive shell (desktop)",
+  "note": "UX-800: menu dọc bên trái thay menu dưới; Hôm nay hai cột (việc đang làm | Tiếp theo, Sắp tới); hai nút Tin nhắn + Đăng xuất nền trắng viền xám (UX-FB18-001).",
+  "w": 1280
+ },
+ {
+  "id": "work-dispatch-pc",
+  "route": "/work/dispatch (máy tính bảng / máy tính)",
+  "tpl": "Dispatch board (desktop)",
+  "note": "D85 trên màn rộng: Chờ người dạng lưới hai cột, Đã phân giao hôm nay ở cột phải; cùng trạng thái và nút như điện thoại.",
+  "w": 1280
+ },
+ {
+  "id": "public-recovery-confirm",
+  "route": "/auth/reset (liên kết trong email)",
+  "tpl": "Auth form",
+  "note": "Đặt mật khẩu mới sau khi bấm liên kết trong email: hai ô, quy tắc kiểm ngay khi gõ, một nút.",
+  "w": 640
+ },
+ {
+  "id": "public-recovery-confirm-done",
+  "route": "/auth/reset (thành công)",
+  "tpl": "Auth result",
+  "note": "Đã đổi mật khẩu: xác nhận ngắn, nút về đăng nhập.",
+  "w": 640
+ },
+ {
+  "id": "public-recovery-confirm-expired",
+  "route": "/auth/reset (liên kết hết hạn)",
+  "tpl": "Auth result",
+  "note": "Liên kết đã dùng hoặc hết hạn: giải thích một câu, nút xin liên kết mới, không lộ tài khoản.",
+  "w": 640
+ },
+ {
+  "id": "public-auth-confirm",
+  "route": "/auth/confirm (xác nhận email)",
+  "tpl": "Auth result",
+  "note": "Xác nhận email: đã xác nhận thành công, nút vào đăng nhập.",
+  "w": 640
+ },
+ {
+  "id": "public-auth-confirm-expired",
+  "route": "/auth/confirm (liên kết hết hạn)",
+  "tpl": "Auth result",
+  "note": "Liên kết xác nhận email hết hạn: nút gửi lại email xác nhận.",
+  "w": 640
+ },
+ {
+  "id": "work-popup-update",
+  "route": "/work (D83 Thông báo cập nhật)",
+  "tpl": "Bottom sheet (mobile)",
+  "note": "D83: hiện một lần ở Hôm nay, tấm trượt dưới, đếm 1/3, bấm \"Đã hiểu\" để sang tin sau.",
+  "w": 390
+ },
+ {
+  "id": "work-popup-push",
+  "route": "/work (bật thông báo đẩy)",
+  "tpl": "Bottom sheet (mobile)",
+  "note": "Xin bật thông báo đẩy trên máy để nhận việc mới kể cả khi tắt màn hình (D86); không ép, có \"Để sau\".",
+  "w": 390
+ },
+ {
+  "id": "work-popup-clock-in",
+  "route": "/work (Vào ca)",
+  "tpl": "Bottom sheet (mobile)",
+  "note": "Vào ca: xác nhận ca và giờ; nhắc vị trí chỉ gửi trong ca.",
+  "w": 390
+ },
+ {
+  "id": "work-popup-clock-out",
+  "route": "/work (Ra ca)",
+  "tpl": "Bottom sheet (mobile)",
+  "note": "Ra ca: cảnh báo còn việc đang giao chưa xong; nút chính vẫn là hành động đang hỏi.",
+  "w": 390
+ },
+ {
+  "id": "work-popup-location",
+  "route": "/work (hỏi quyền vị trí)",
+  "tpl": "Bottom sheet (mobile)",
+  "note": "Hỏi trước khi trình duyệt/Android hiện hộp quyền: nói rõ để làm gì, chỉ trong ca.",
+  "w": 390
+ },
+ {
+  "id": "work-popup-claim",
+  "route": "/work/pool (Nhận việc)",
+  "tpl": "Bottom sheet (mobile)",
+  "note": "Nhận việc từ bể: xác nhận trước khi nhận để không nhận nhầm khi cuộn bằng ngón cái.",
+  "w": 390
+ },
+ {
+  "id": "work-popup-reassign",
+  "route": "/work/dispatch (Đổi người, thợ chính D85)",
+  "tpl": "Bottom sheet (mobile)",
+  "note": "Chọn người khác cho một việc đã phân hoặc đang chờ; chỉ đổi được đến khi xuất kho/bắt đầu.",
+  "w": 390
+ },
+ {
+  "id": "work-popup-short",
+  "route": "/work/jobs/[id]/delivered (Giao thiếu)",
+  "tpl": "Bottom sheet (mobile)",
+  "note": "Giao thiếu kèm lý do bắt buộc; vẫn cần ảnh.",
+  "w": 390
+ },
+ {
+  "id": "work-popup-undeliverable",
+  "route": "/work/jobs/[id]/delivered (Không giao được)",
+  "tpl": "Bottom sheet (mobile)",
+  "note": "Không giao được cần lý do; chọn nhanh lý do thường gặp rồi ghi thêm. Nút gửi màu đỏ vì là kết quả xấu.",
+  "w": 390
+ },
+ {
+  "id": "work-popup-decline",
+  "route": "/work/jobs/[id] (Từ chối việc)",
+  "tpl": "Bottom sheet (mobile)",
+  "note": "Từ chối trước khi hàng bàn giao; điều phối nhận lại việc kèm ghi chú. Nút chính là \"Giữ việc\", nút từ chối tách riêng.",
+  "w": 390
+ },
+ {
+  "id": "work-popup-photo",
+  "route": "/work/jobs/[id]/delivered (Xóa / chụp lại ảnh)",
+  "tpl": "Bottom sheet (mobile)",
+  "note": "Ảnh đã tải: chụp lại là hành động chính, xóa tách riêng, \"Giữ ảnh\" để thoát.",
+  "w": 390
+ },
+ {
+  "id": "work-popup-confirm-delivered",
+  "route": "/work/jobs/[id]/delivered (Xác nhận đã giao)",
+  "tpl": "Bottom sheet (mobile)",
+  "note": "Xác nhận cuối: tóm tắt hàng, số ảnh, người nhận; nút xanh lá vì là hoàn tất.",
+  "w": 390
+ },
+ {
+  "id": "work-popup-unknown",
+  "route": "/work/jobs/[id]/delivered (Chưa rõ kết quả)",
+  "tpl": "Bottom sheet (mobile)",
+  "note": "UX-850: mất kết nối khi gửi là \"Chưa rõ kết quả\", không báo thất bại; ảnh giữ nguyên; nút kiểm tra lại không tạo lệnh mới.",
+  "w": 390
+ },
+ {
+  "id": "work-popup-password-done",
+  "route": "/work/change-password (thành công)",
+  "tpl": "Bottom sheet (mobile)",
+  "note": "Đổi mật khẩu xong: xác nhận ngắn, về Hôm nay.",
+  "w": 390
+ },
+ {
+  "id": "work-popup-logout",
+  "route": "/work/profile (Đăng xuất)",
+  "tpl": "Bottom sheet (mobile)",
+  "note": "Đăng xuất có xác nhận; nút chính là ở lại, đăng xuất tách riêng; cảnh báo khi đang trong ca.",
+  "w": 390
+ },
+ {
+  "id": "customer-register",
+  "route": "/customer/register",
+  "tpl": "Login Card + Form",
+  "note": "Đăng ký tự phục vụ (UX-CUST-008). Số điện thoại trùng khách đang hoạt động: KHÔNG tạo khách mới, KHÔNG tự gắn; ghi yêu cầu chờ văn phòng duyệt (D78). Đây là trạng thái chờ (cam), không phải lỗi; nút đổi thành \"Gửi yêu cầu chờ duyệt\".",
+  "w": 390
+ },
+ {
+  "id": "customer-register-pending",
+  "route": "/customer/register (sau khi gửi)",
+  "tpl": "Login Card + Result",
+  "note": "Sau khi gửi: thay cả form bằng màn \"Đã ghi yêu cầu\" (màu chờ, không đỏ); khách được đăng xuất, mỗi lần đăng nhập lại vẫn báo như vậy tới khi văn phòng quyết (D78).",
+  "w": 390
+ },
+ {
+  "id": "customer-login",
+  "route": "/customer/login",
+  "tpl": "Login Card",
+  "note": "Một thẻ duy nhất (D30): tab Vận hành / Thợ & tài xế / Khách hàng, logo công ty (D49), ô \"Email hoặc số điện thoại\", Đăng ký tài khoản.",
+  "w": 390
+ },
+ {
+  "id": "customer-home",
+  "route": "/customer",
+  "tpl": "Dashboard Cards (điện thoại)",
+  "note": "Mã khách + tên; thẻ xanh đơn đang giao với thanh tiến độ và \"Xe tới khoảng HH:mm\"; Đặt lại nhanh 2 thẻ; dòng công nợ; Đơn gần đây (UX-FB18-001).",
+  "w": 390
+ },
+ {
+  "id": "customer-orders",
+  "route": "/customer/orders",
+  "tpl": "Filterable Table (thẻ dọc)",
+  "note": "Mỗi đơn một thẻ; cổng khách chỉ có nhãn \"Đã duyệt\" cho mọi đơn đã xác nhận chưa giao (D48); hai thẻ Hàng hóa / Dịch vụ.",
+  "w": 390
+ },
+ {
+  "id": "customer-order-new",
+  "route": "/customer/orders/new",
+  "tpl": "Checkout Form",
+  "note": "Thẻ Công trình, ô tìm, nút lọc Tất cả · Đã chọn · nhóm; mỗi hàng một thẻ; Thêm → − số + (bộ đếm 72 px); thanh xanh cố định trên menu dưới (UX-FB18-001).",
+  "w": 390
+ },
+ {
+  "id": "customer-order-review",
+  "route": "/customer/orders/new (popup)",
+  "tpl": "Dialog / Bottom Sheet",
+  "note": "\"Xem lại đơn\": giao tới, giờ muốn nhận, ghi chú, bảng hàng, tạm tính; Gửi đơn / Sửa đơn. Cửa hàng duyệt rồi báo ngày giao, chưa giữ hàng cho tới khi duyệt.",
+  "w": 390
+ },
+ {
+  "id": "customer-order-detail",
+  "route": "/customer/orders/:id",
+  "tpl": "Order Detail",
+  "note": "Theo dõi đơn: chip trạng thái, thẻ lượt giao, Hành trình dọc có giờ, Hàng hóa, \"Đặt lại đơn này\", công nợ và thanh toán mức an toàn cho khách.",
+  "w": 390
+ },
+ {
+  "id": "customer-order-rejected",
+  "route": "/customer/orders/:id (bị từ chối)",
+  "tpl": "Order Detail + Notice",
+  "note": "Đơn không được cửa hàng nhận: nhãn \"Đã hủy\" cùng lý do khách nhìn thấy; không giữ hàng; có Đặt lại đơn này.",
+  "w": 390
+ },
+ {
+  "id": "customer-reports-ordered",
+  "route": "/customer/reports/ordered",
+  "tpl": "Data Dashboard + Cards",
+  "note": "Báo cáo hàng đã đặt (D98). Mọi số (đơn, loại hàng, giao đủ, tổng tiền, từng thẻ, theo ngày) được tính bằng code từ cùng một danh sách đơn nên khớp: Tổng tiền = hàng + dịch vụ; cuối danh sách là \"Tổng cộng hàng hóa\".",
+  "w": 390
+ },
+ {
+  "id": "customer-debts",
+  "route": "/customer/debts",
+  "tpl": "Order Detail + Collapsible List",
+  "note": "Công nợ: thẻ Còn phải trả + thanh 3 màu Trong hạn / Sắp tới hạn (≤ 7 ngày) / Quá hạn; mỗi khoản một đơn có nút Thanh toán; Thanh toán tất cả (D42). Không còn khung chuyển khoản tối.",
+  "w": 390
+ },
+ {
+  "id": "customer-pay-qr",
+  "route": "/customer/debts (cửa sổ Thanh toán)",
+  "tpl": "Full-screen Dialog",
+  "note": "Cửa sổ Thanh toán D42: ảnh QR ≤ 300 px, bảng Số tiền / Nội dung + Sao chép / Ngân hàng & số TK / Chủ TK, dải vàng \"Đang chờ tiền về…\".",
+  "w": 390
+ },
+ {
+  "id": "customer-pay-done",
+  "route": "/customer/debts (đã nhận tiền)",
+  "tpl": "Full-screen Dialog + Success",
+  "note": "Khi ngân hàng xác nhận: khung xanh \"Đã nhận thanh toán 2.500.000 ₫\" + mã phiếu thu; đóng cửa sổ thì trang công nợ tải lại.",
+  "w": 390
+ },
+ {
+  "id": "customer-service-new",
+  "route": "/customer/services/new",
+  "tpl": "Checkout Form",
+  "note": "Chọn loại dịch vụ, công trình, ngày muốn; gửi đi là \"Chờ xác nhận lịch\" (chưa phải lịch chắc chắn).",
+  "w": 390
+ },
+ {
+  "id": "customer-service-detail",
+  "route": "/customer/services/:id",
+  "tpl": "Work Item Detail",
+  "note": "Đã xếp lịch: khách không tự hủy, chỉ gọi cửa hàng.",
+  "w": 390
+ },
+ {
+  "id": "customer-service-detail-pending",
+  "route": "/customer/services/:id (chờ)",
+  "tpl": "Work Item Detail",
+  "note": "Chờ xác nhận lịch: còn được hủy yêu cầu.",
+  "w": 390
+ },
+ {
+  "id": "customer-service-detail-rejected",
+  "route": "/customer/services/:id (từ chối)",
+  "tpl": "Work Item Detail",
+  "note": "Đã từ chối kèm lý do; có thể gửi yêu cầu khác.",
+  "w": 390
+ },
+ {
+  "id": "customer-messages",
+  "route": "/customer/messages",
+  "tpl": "Messaging Inbox",
+  "note": "Chỉ nhắn với văn phòng; một cột trên điện thoại; ô nhập 16 px; không thấy tin của khách khác.",
+  "w": 390
+ },
+ {
+  "id": "customer-profile",
+  "route": "/customer/profile",
+  "tpl": "Settings Panels",
+  "note": "Hồ sơ khách: công trình, người nhận hàng, đổi mật khẩu, giao diện, Đăng xuất. Vai Chủ tài khoản / Người lo tiền / Người nhận hàng quyết định thấy gì.",
+  "w": 390
+ },
+ {
+  "id": "customer-change-password",
+  "route": "/customer/change-password",
+  "tpl": "Login Card",
+  "note": "Bắt buộc sau khi đăng nhập bằng mật khẩu tạm; mọi trang cổng dẫn tới đây tới khi đổi xong; có Đăng xuất.",
+  "w": 390
+ },
+ {
+  "id": "customer-quotations-off",
+  "route": "/customer/quotations (đã tắt, D1)",
+  "tpl": "Empty State",
+  "note": "Báo giá tắt hẳn (D1): không có mục menu, route trả \"không tìm thấy\" — hiện trạng thái trống, không nút bị khóa.",
+  "w": 390
+ },
+ {
+  "id": "customer-home-pc",
+  "route": "/customer (máy tính)",
+  "tpl": "Dashboard (2 cột)",
+  "note": "Bản máy tính: thẻ xanh đơn đang giao rộng, Đặt lại nhanh, bảng Đơn gần đây; cột phải: công nợ, báo cáo hôm qua, liên hệ. Một nút chính xanh lá \"Đặt hàng mới\".",
+  "w": 1280
+ },
+ {
+  "id": "customer-orders-pc",
+  "route": "/customer/orders (máy tính)",
+  "tpl": "Filterable Table",
+  "note": "Khung lọc trái có số đếm, bảng bên phải, mũi tên đầu dòng; cổng khách chỉ có nhãn \"Đã duyệt\" cho đơn đã xác nhận chưa giao (D48); hai thẻ Hàng hóa / Dịch vụ.",
+  "w": 1280
+ },
+ {
+  "id": "customer-order-new-pc",
+  "route": "/customer/orders/new (máy tính)",
+  "tpl": "Checkout Form (cột phải dính)",
+  "note": "Danh sách hàng bên trái (tìm, lọc nhóm, đổi đơn vị, − số +); cột phải dính \"Đơn của bạn\": giao tới, giờ nhận, tạm tính theo bảng giá và nút Xem & gửi đơn (mở \"Xem lại đơn\").",
+  "w": 1280
+ },
+ {
+  "id": "customer-order-detail-pc",
+  "route": "/customer/orders/:id (máy tính)",
+  "tpl": "Order Detail (2 cột)",
+  "note": "Hành trình ngang có giờ, Hàng hóa dạng bảng; cột phải: lượt giao, giao tới, công nợ đơn này, thanh toán. \"Đặt lại đơn này\" là nút viền (không có nút xanh lá).",
+  "w": 1280
+ },
+ {
+  "id": "customer-reports-ordered-pc",
+  "route": "/customer/reports/ordered (máy tính)",
+  "tpl": "Data Dashboard + Table",
+  "note": "Báo cáo hàng đã đặt (D98), số liệu cùng nguồn với bản điện thoại (tính bằng code): 4 ô số hàng ngang, bảng loại hàng có mở \"Nằm trong N đơn\", cột phải theo ngày + dịch vụ + xuất file.",
+  "w": 1280
+ },
+ {
+  "id": "customer-debts-pc",
+  "route": "/customer/debts (máy tính)",
+  "tpl": "Table + Dialog",
+  "note": "Công nợ: bảng khoản cần thanh toán (mỗi dòng một đơn) + thẻ Còn phải trả với thanh 3 màu; bấm Thanh toán mở hộp thoại giữa màn hình có QR ngay (D42).",
+  "w": 1280
+ },
+ {
+  "id": "customer-pay-qr-pc",
+  "route": "/customer/debts (hộp thoại Thanh toán, máy tính)",
+  "tpl": "Dialog",
+  "note": "Hộp thoại Thanh toán giữa màn hình: QR bên trái, bảng Số tiền / Nội dung / Ngân hàng & số TK / Chủ TK bên phải, dải \"Đang chờ tiền về…\".",
+  "w": 1280
+ },
+ {
+  "id": "customer-pay-done-pc",
+  "route": "/customer/debts (đã nhận tiền, máy tính)",
+  "tpl": "Dialog + Success",
+  "note": "Khi ngân hàng báo tiền về: khung xanh \"Đã nhận thanh toán 2.500.000 ₫\" + mã phiếu thu.",
+  "w": 1280
+ },
+ {
+  "id": "customer-service-new-pc",
+  "route": "/customer/services/new (máy tính)",
+  "tpl": "Checkout Form",
+  "note": "Chọn loại dịch vụ, công trình, ngày giờ muốn, ghi chú; gửi đi là \"Chờ xác nhận lịch\". Cột phải giải thích các bước.",
+  "w": 1280
+ },
+ {
+  "id": "customer-service-detail-pc",
+  "route": "/customer/services/:id (máy tính)",
+  "tpl": "Work Item Detail",
+  "note": "Đã xếp lịch: khách không tự hủy, chỉ gọi cửa hàng; tiến trình ngang.",
+  "w": 1280
+ },
+ {
+  "id": "customer-profile-pc",
+  "route": "/customer/profile (máy tính)",
+  "tpl": "Settings Panels (2 cột)",
+  "note": "Hồ sơ: công trình, người nhận hàng; cột phải: tài khoản, giao diện & màu, Đăng xuất.",
+  "w": 1280
+ },
+ {
+  "id": "customer-messages-pc",
+  "route": "/customer/messages (máy tính)",
+  "tpl": "Messaging Inbox (2 cột)",
+  "note": "Hai cột như UX: khung chat bên trái (bong bóng của mình bên phải nền xanh), danh bạ bên phải; chỉ nhắn với văn phòng.",
+  "w": 1280
+ },
+ {
+  "id": "customer-login-pc",
+  "route": "/customer/login (máy tính)",
+  "tpl": "Login Card",
+  "note": "Một thẻ trắng 480px giữa màn hình trên dải xanh (D30), logo công ty (D49), tab Vận hành / Thợ & tài xế / Khách hàng.",
+  "w": 1280
+ },
+ {
+  "id": "customer-register-pc",
+  "route": "/customer/register (máy tính)",
+  "tpl": "Login Card + Form",
+  "note": "Số điện thoại trùng khách có sẵn: trạng thái chờ màu cam (không đỏ), nút \"Gửi yêu cầu chờ duyệt\" (D78).",
+  "w": 1280
+ },
+ {
+  "id": "customer-profile-theme",
+  "route": "/customer/profile → Giao diện",
+  "tpl": "Settings Panels",
+  "note": "Hai nhóm lựa chọn độc lập: Chế độ màu (Sáng/Tối/Tự động) và Giao diện (Classic mặc định / Mới, hai thẻ xem trước khác nhau rõ), cỡ chữ; lưu theo thiết bị, áp ngay.",
+  "w": 390
+ },
+ {
+  "id": "customer-profile-theme-pc",
+  "route": "/customer/profile → Giao diện (máy tính)",
+  "tpl": "Settings Panels",
+  "note": "Bản máy tính: Chế độ màu 3 thẻ ngang, Giao diện Classic / Mới (xem trước cửa sổ máy tính khác nhau rõ), cỡ chữ; áp ngay, lưu theo thiết bị.",
+  "w": 1280
+ },
+ {
+  "id": "customer-popup-update",
+  "route": "Popup thông báo cập nhật (D83), mở một lần ở Trang chủ",
+  "tpl": "Dialog",
+  "note": "Giá đổi từng mặt hàng giá cũ → mới, \"Tăng/Giảm\" bằng chữ, ngày áp dụng; tin từ cửa hàng; đếm 1/3; chỉ có \"Đã hiểu\" (không nút mở bảng giá). Chỉ Chủ tài khoản và Kế toán thấy giá; không hiện tên nhóm giá.",
+  "w": 390
+ },
+ {
+  "id": "customer-popup-update-pc",
+  "route": "Popup thông báo cập nhật (D83), mở một lần ở Trang chủ (máy tính)",
+  "tpl": "Dialog",
+  "note": "Giá đổi từng mặt hàng giá cũ → mới, \"Tăng/Giảm\" bằng chữ, ngày áp dụng; tin từ cửa hàng; đếm 1/3; chỉ có \"Đã hiểu\" (không nút mở bảng giá). Chỉ Chủ tài khoản và Kế toán thấy giá; không hiện tên nhóm giá.",
+  "w": 1280
+ },
+ {
+  "id": "customer-popup-push",
+  "route": "Popup Bật thông báo trên máy này",
+  "tpl": "Dialog",
+  "note": "Xin bật thông báo đẩy: báo đơn được duyệt, xe sắp tới, giá đổi. iPhone cần thêm vào Màn hình chính trước.",
+  "w": 390
+ },
+ {
+  "id": "customer-popup-push-pc",
+  "route": "Popup Bật thông báo trên máy này (máy tính)",
+  "tpl": "Dialog",
+  "note": "Xin bật thông báo đẩy: báo đơn được duyệt, xe sắp tới, giá đổi. iPhone cần thêm vào Màn hình chính trước.",
+  "w": 1280
+ },
+ {
+  "id": "customer-popup-credit-limit",
+  "route": "Popup khi đặt hàng: công nợ vượt hạn mức",
+  "tpl": "Dialog",
+  "note": "Đơn làm công nợ vượt hạn mức: báo bằng lời dễ hiểu, không lộ chính sách nội bộ; đơn vẫn là Chờ duyệt để cửa hàng xem xét.",
+  "w": 390
+ },
+ {
+  "id": "customer-popup-credit-limit-pc",
+  "route": "Popup khi đặt hàng: công nợ vượt hạn mức (máy tính)",
+  "tpl": "Dialog",
+  "note": "Đơn làm công nợ vượt hạn mức: báo bằng lời dễ hiểu, không lộ chính sách nội bộ; đơn vẫn là Chờ duyệt để cửa hàng xem xét.",
+  "w": 1280
+ },
+ {
+  "id": "customer-popup-reorder",
+  "route": "Popup Đặt lại đơn này",
+  "tpl": "Dialog",
+  "note": "Đặt lại từ đơn cũ: lấy lại công trình và hàng, giá theo bảng giá hôm nay (có thể khác lần trước); đưa vào màn Đặt hàng để xem lại rồi mới gửi.",
+  "w": 390
+ },
+ {
+  "id": "customer-popup-reorder-pc",
+  "route": "Popup Đặt lại đơn này (máy tính)",
+  "tpl": "Dialog",
+  "note": "Đặt lại từ đơn cũ: lấy lại công trình và hàng, giá theo bảng giá hôm nay (có thể khác lần trước); đưa vào màn Đặt hàng để xem lại rồi mới gửi.",
+  "w": 1280
+ },
+ {
+  "id": "customer-popup-cancel-order",
+  "route": "Popup Hủy đơn (chỉ khi hàng chưa lên xe, D94/D95)",
+  "tpl": "Dialog (nguy hiểm)",
+  "note": "Đơn SO-0233 còn Chờ duyệt nên hủy được. Ô lý do; \"Hủy đơn\" đỏ tách riêng; \"Giữ đơn\" là lối an toàn.",
+  "w": 390
+ },
+ {
+  "id": "customer-popup-cancel-order-pc",
+  "route": "Popup Hủy đơn (chỉ khi hàng chưa lên xe, D94/D95) (máy tính)",
+  "tpl": "Dialog (nguy hiểm)",
+  "note": "Đơn SO-0233 còn Chờ duyệt nên hủy được. Ô lý do; \"Hủy đơn\" đỏ tách riêng; \"Giữ đơn\" là lối an toàn.",
+  "w": 1280
+ },
+ {
+  "id": "customer-popup-cancel-blocked",
+  "route": "Popup khi hủy đơn đã lên xe",
+  "tpl": "Dialog",
+  "note": "Đơn đã có phiếu giao chạy/đã lên xe: khách không tự hủy được, chỉ gọi cửa hàng (D94/D95).",
+  "w": 390
+ },
+ {
+  "id": "customer-popup-cancel-blocked-pc",
+  "route": "Popup khi hủy đơn đã lên xe (máy tính)",
+  "tpl": "Dialog",
+  "note": "Đơn đã có phiếu giao chạy/đã lên xe: khách không tự hủy được, chỉ gọi cửa hàng (D94/D95).",
+  "w": 1280
+ },
+ {
+  "id": "customer-popup-cancel-service",
+  "route": "Popup Hủy yêu cầu dịch vụ",
+  "tpl": "Dialog (nguy hiểm)",
+  "note": "Chỉ yêu cầu còn \"Chờ xác nhận lịch\" mới hủy được; đã xếp lịch thì gọi cửa hàng.",
+  "w": 390
+ },
+ {
+  "id": "customer-popup-cancel-service-pc",
+  "route": "Popup Hủy yêu cầu dịch vụ (máy tính)",
+  "tpl": "Dialog (nguy hiểm)",
+  "note": "Chỉ yêu cầu còn \"Chờ xác nhận lịch\" mới hủy được; đã xếp lịch thì gọi cửa hàng.",
+  "w": 1280
+ },
+ {
+  "id": "customer-popup-site",
+  "route": "Popup Chọn công trình / điểm giao",
+  "tpl": "Dialog + radio list",
+  "note": "Chọn công trình (kèm địa chỉ, người nhận) hoặc \"+ Địa chỉ giao mới\".",
+  "w": 390
+ },
+ {
+  "id": "customer-popup-site-pc",
+  "route": "Popup Chọn công trình / điểm giao (máy tính)",
+  "tpl": "Dialog + radio list",
+  "note": "Chọn công trình (kèm địa chỉ, người nhận) hoặc \"+ Địa chỉ giao mới\".",
+  "w": 1280
+ },
+ {
+  "id": "customer-popup-site-new",
+  "route": "Popup Thêm địa chỉ giao mới",
+  "tpl": "Dialog + Form",
+  "note": "Tên công trình, địa chỉ, người nhận, số điện thoại; lưu xong chọn luôn cho đơn.",
+  "w": 390
+ },
+ {
+  "id": "customer-popup-site-new-pc",
+  "route": "Popup Thêm địa chỉ giao mới (máy tính)",
+  "tpl": "Dialog + Form",
+  "note": "Tên công trình, địa chỉ, người nhận, số điện thoại; lưu xong chọn luôn cho đơn.",
+  "w": 1280
+ },
+ {
+  "id": "customer-popup-receiver",
+  "route": "Popup Thêm người nhận hàng (vai)",
+  "tpl": "Dialog + Form",
+  "note": "Họ tên, số điện thoại, vai: Người nhận hàng (không thấy tiền) hoặc Người lo tiền (xem công nợ, thanh toán); công trình phụ trách.",
+  "w": 390
+ },
+ {
+  "id": "customer-popup-receiver-pc",
+  "route": "Popup Thêm người nhận hàng (vai) (máy tính)",
+  "tpl": "Dialog + Form",
+  "note": "Họ tên, số điện thoại, vai: Người nhận hàng (không thấy tiền) hoặc Người lo tiền (xem công nợ, thanh toán); công trình phụ trách.",
+  "w": 1280
+ },
+ {
+  "id": "customer-popup-force-password",
+  "route": "Popup Đổi mật khẩu bắt buộc lần đầu (mật khẩu tạm)",
+  "tpl": "Dialog (không đóng được)",
+  "note": "Đăng nhập bằng mật khẩu tạm: mọi trang dẫn tới đây cho tới khi đổi xong; không có nút đóng; có Đăng xuất.",
+  "w": 390
+ },
+ {
+  "id": "customer-popup-force-password-pc",
+  "route": "Popup Đổi mật khẩu bắt buộc lần đầu (mật khẩu tạm) (máy tính)",
+  "tpl": "Dialog (không đóng được)",
+  "note": "Đăng nhập bằng mật khẩu tạm: mọi trang dẫn tới đây cho tới khi đổi xong; không có nút đóng; có Đăng xuất.",
+  "w": 1280
+ },
+ {
+  "id": "customer-popup-logout",
+  "route": "Popup Đăng xuất (xác nhận)",
+  "tpl": "Dialog",
+  "note": "Hỏi lại trước khi đăng xuất để khỏi bấm nhầm; \"Ở lại\" là lối an toàn.",
+  "w": 390
+ },
+ {
+  "id": "customer-popup-logout-pc",
+  "route": "Popup Đăng xuất (xác nhận) (máy tính)",
+  "tpl": "Dialog",
+  "note": "Hỏi lại trước khi đăng xuất để khỏi bấm nhầm; \"Ở lại\" là lối an toàn.",
+  "w": 1280
+ },
+ {
+  "id": "customer-popup-cash",
+  "route": "Popup Trả tiền mặt tại cửa hàng (D45)",
+  "tpl": "Dialog + Result",
+  "note": "Sau khi chọn khoản: sinh mã YC, \"Vui lòng mang số tiền và mã tới cửa hàng\"; CHƯA ghi sổ cho tới khi kế toán xác nhận đã thu (D44/D45). Không có \"báo chuyển khoản\" (D8 đã tắt).",
+  "w": 390
+ },
+ {
+  "id": "customer-popup-cash-pc",
+  "route": "Popup Trả tiền mặt tại cửa hàng (D45) (máy tính)",
+  "tpl": "Dialog + Result",
+  "note": "Sau khi chọn khoản: sinh mã YC, \"Vui lòng mang số tiền và mã tới cửa hàng\"; CHƯA ghi sổ cho tới khi kế toán xác nhận đã thu (D44/D45). Không có \"báo chuyển khoản\" (D8 đã tắt).",
+  "w": 1280
+ }
+]

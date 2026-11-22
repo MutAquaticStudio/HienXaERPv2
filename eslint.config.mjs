@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Concept Astryx (docs/astryx/concept): dự án Vite tham chiếu, không thuộc ứng dụng.
+    "docs/astryx/concept/**",
   ]),
   // D69: a variable taken out of an object only to leave it out of the rest ({ raw, ...kept }) and an argument named with a leading
   // underscore are deliberate, not unused.

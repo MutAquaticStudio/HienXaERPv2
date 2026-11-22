@@ -2,6 +2,8 @@
 
 Tài liệu bàn giao cho phiên làm việc tiếp theo (Claude Code hoặc người). Đọc kèm `CLAUDE.md` (quy tắc bắt buộc), `Spec.md` (D1–D98), `tasks.md`, `implementation.md` (nhật ký, rất dài — grep theo mã D/FB hoặc ngày).
 
+> **Giao diện Astryx (22/11/2026):** phần dựng giao diện mới (theme Classic/Astryx) đang làm dở — bàn giao riêng ở `docs/astryx/HANDOFF.md`, design system ở `docs/astryx/DESIGN_SYSTEM.md`.
+
 ## 00. Phiên 04–18/11/2026 (PR #103–#134, D57–D98, tất cả đã lên QA + Production)
 
 `implementation.md` chỉ ghi tới 04/11; chi tiết các quyết định sau đó nằm trong `Spec.md` (grep `**D57**` … `**D98**`) và mô tả từng PR.
