@@ -38,6 +38,7 @@ Owner (14/11/2026): *"Từ hôm nay vào 7h30 sáng mỗi ngày vào sheet 11.26
 ## Dòng Owner cho bỏ qua
 
 - Tab `11.26`: dòng **454, 455** (trùng đơn SO-2026-000353) và **465** (trùng đơn SO-2026-000399): Owner 16/11/2026 "trùng rồi thì bỏ qua".
+- Tab `11.26`: dòng **506** (trùng SO-2026-000399), **569** (trùng SO-2026-000502), **593, 595, 596** (trùng SO-2026-000503), **624, 625** (trùng SO-2026-000505) và **670** (trùng SO-2026-000606): Owner 25/11/2026 "nếu các dòng trùng đơn trùng ngày thì bỏ qua". Từ nay dòng nào bị giữ lại vì trùng đơn cổng khách thì cứ bỏ qua, chỉ báo số dòng.
 
 ## Quy tắc trong `nhap-so-hang-ngay.sql`
 
