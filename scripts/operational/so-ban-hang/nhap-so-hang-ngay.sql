@@ -36,7 +36,7 @@ create or replace function pg_temp.hx_nhap_so(tab text, raw jsonb, dry boolean, 
 declare
   -- Tên vật tư trên sổ → mã vật tư ERP
   stock_map constant jsonb := '{"Cát đen":"CAT-DEN","Cát nền":"CAT-NEN","Cvbt":"CVBT","Đá":"DA","Đá bẩn":"DA-BAN","Gạch A2":"GACH-A2","Gạch đặc":"GACH-DAC",
-    "Gạch đen":"GACH-DEN","Gạch lỗ":"GACH-LO","Kê 10":"KE10","Kê 2":"KE2","Kê 3":"KE3","Kê 8":"KE8","Keo chít mạch":"KEO-CHIT-MACH","Sắt 6":"SAT6",
+    "Gạch đen":"GACH-DEN","Gạch lỗ":"GACH-LO","Kê 10":"KE10","Kê 2":"KE2","Kê 3":"KE3","Kê 8":"KE8","Kê 9":"KE9","Bê tông tươi":"BE-TONG-TUOI","Gạch Hồng Sơn":"GACH-HS","Keo chít mạch":"KEO-CHIT-MACH","Sắt 6":"SAT6",
     "Sắt 6 đai":"SAT6-DAI","Sắt 8 đai":"SAT8-DAI","Sắt 10":"SAT10-CB300","Sắt 12":"SAT12-CB300","Sắt 14":"SAT14-CB300","Sắt 16":"SAT16-CB300",
     "Sắt 18":"SAT18-CB300","Sắt 18cb400":"SAT18-CB400","Sắt 20":"SAT20-CB300","Thép buộc":"THEP-BUOC","XIBS30":"XIBS30","XIBS40":"XIBS40","XIHH30":"XIHH30"}';
   -- ĐVT trên sổ → ký hiệu đơn vị ERP ("Xe" là Xe cn nhỏ, Owner 14/11/2026); ĐVT khác dùng đúng chữ trên sổ.
